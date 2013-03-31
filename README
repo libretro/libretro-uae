@@ -49,6 +49,6 @@ Usage:
 Knows Bugs: 
  
 	- the startup disk choose at start of retroarch is not mounted , use uae.cfg or gui to mount a disk.
-	- When load savesate , exiting GUI whithout reset . You have to re-enter GUI and do the reset .
+	- When load savesate , exiting GUI without reset . You have to re-enter GUI and do the reset .
 	- Everything not working well, It's a debug release , so expect to more bug.
 
