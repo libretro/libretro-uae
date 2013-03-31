@@ -1,0 +1,3 @@
+sinctable.o: sinctable.c ../src/include/sinctable.h
+
+../src/include/sinctable.h:

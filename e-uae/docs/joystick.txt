@@ -1,0 +1,91 @@
+Joystick port emulation
+=======================
+
+An Amiga has two joystick ports. Port 0 typically has a mouse attached to it
+and port 1 may have a digital joystick, joypad or some other device
+connected. E-UAE can emulate Amiga mice and joysticks using either input
+from a physical mouse or joystick or by using specific key presses on the
+keyboard to synthesize mouse and joystick movements or button clicks.
+
+The device connected to port 0 can be configured with the joyport0=<mode>
+configuration file option and the device at port 1 with joyport1=<mode>.
+Additionally, some versions of E-UAE may supply a GUI controls to configure
+the joystick.
+
+Here <mode> can be one of:
+
+none    - no device is connected to this port.
+
+mouse   - a mouse will be emulated on this port using the host's default
+          mouse (usually the device you use to move the mouse pointer on your
+          desktop). Up to three mouse buttons are supported and a scroll
+          wheel is currently supported when using E-UAE's X11 or SDL
+          graphics drivers.
+
+joy0    - a digital joystick will be emulated on this port using input from
+          the first joystick detected on the host. This host device can be
+          either a digital or analog joystick.
+
+          Typically Amiga software supports up to three joystick fire buttons
+          (although most games only require one or two) and these will be
+          emulated by the first three fire buttons on the host joystick
+          (additional buttons, if present, may be used when emulating a CD32
+          controller - see below).
+
+joy1    - a digital joystick will be emulated using the second host joystick.
+
+joy<n>  - a digital joystick will be emulated using the <n-1>th host
+          joystick.
+
+kbd1    - a digital joystick is emulated using keys on the numeric keypad of
+          the host keyboard, where:
+
+          key pad 4 = joystick left
+          key pad 6 = joystick right
+          key pad 8 = joystick up
+          key pad 2 = joystick down
+          key pad 5 = joystick fire button 1
+
+kbd2    - a digital joystick is emulated using the cursor keys and right Ctrl
+          or right Alt key on the host keyboard, where:
+
+          cursor left  = joystick left
+          cursor right = joystick right
+          cursor up    = joystick up
+          cursor down  = joystick down
+          right Ctrl   = joystick fire button 1
+          right Alt    = joystick fire button 1
+
+          Note that both the right Alt and right Ctrl keys produce fire
+          button events since some keyboards (e.g. PC/USB keyboards on an
+          Amiga, ADB Mac keyboards) don't produce unique events for right
+          and left Ctrl and other keyboards (e.g Amiga keyboards and some
+          laptop keyboards) don't even have a right Ctrl key.
+
+kbd3    - a digital joystick is emulated using the following keys:
+
+          F        = joystick left
+          H        = joystick right
+          T        = joystick up
+          B        = joystick down
+          left Alt = joystick fire button 1
+
+Note that, when you employ any of the above keyboard-based joystick
+emulations, the keys used by the joystick emulation are used exclusively for
+joystick input - they will not produce normal key presses.
+
+
+Emulating a CD32 controller
+===========================
+
+When emulating a CD32 (to do this, E-UAE must be booted with CD32 ROMs) the
+joystick configured to port 1 may emulate a CD32 controller. The buttons on
+the joystick will be mapped to CD32 controller buttons as follows:
+
+          button 1  = CD32 Red (Fire/Select) button
+          button 2  = CD32 Blue (Second fire/Stop) button
+          button 3  = CD32 Yellow (Loop) button
+          button 4  = CD32 Green (Shuffle) button
+          button 5  = CD32 FFW button
+          button 6  = CD32 RWD button
+          button 7  = CD32 Play button

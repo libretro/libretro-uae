@@ -1,0 +1,54 @@
+Floppy drive emulation
+======================
+
+E-UAE emulates up to four floppy drives. Standard PC floppy drives cannot
+read Amiga floppies, so floppy disks are currently supported as image files
+(support for Catweasel hardware, a floppy controller which can read Amiga
+floppies - and other unusual disk formats - will be added in a future
+version).
+
+E-UAE supports a number of floppy image formats, optionally compressed by
+gzip or packed inside a Zip archive.
+
+ADF
+---
+
+The classic floppy image format for UAE, a plain raw image of the disk's
+formatted contents.
+
+
+DMS
+---
+
+DMS was a popular disk image cruncher. E-UAE can transparently read DMS
+images.
+
+
+FDI
+---
+
+FDI is a floppy image format used by the Disk2FDI tool. See
+http://www.oldskool.org/disk2fdi.
+
+
+IPF
+---
+
+IPF is the floppy image format employed by the CAPS project (see
+http://caps-project.org/). A suitable plug-in, downloadble from the CAPS web
+site, must be installed on the host system to allow IPF images to be used.
+(At the time of writing, the plug-in is available for only x86 and PPC Linux
+hosts and AmigaOS hosts.)
+
+
+Creating blank ADF images
+=========================
+
+On Unix-like platforms, a blank floppy image can be created as follows. To
+create a standard 3.5" DD image, use:
+
+dd if=/dev/zero of=blank.adf count=1760
+
+To create a 3.5" HD image, use:
+
+dd if=/dev/zero of=blank.adf count=3520

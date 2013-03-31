@@ -1,0 +1,65 @@
+#
+# Makefile.in for UAE tools
+#
+
+@SET_MAKE@
+CC        = @CC@
+LDFLAGS   = @LDFLAGS@
+CFLAGS    = @CFLAGS@ -D__inline__=@ac_cv_c_inline@
+LIBRARIES = @LIBS@
+
+INSTALL         = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA    = @INSTALL_DATA@
+prefix          = @prefix@
+exec_prefix     = @exec_prefix@
+bindir          = @bindir@
+libdir          = @libdir@
+sysconfdir      = @sysconfdir@
+
+VPATH = @top_srcdir@
+
+.SUFFIXES: .o .c .h .m .i .S
+
+INCLUDES=-I. -I@top_srcdir@/../include/ -I@top_srcdir@
+
+all: gencpu gencomp build68k genblitter genlinetoscr
+
+install:
+
+
+clean:
+	-rm -f *.o
+	-rm cpudefs.c
+	-rm -f gencpu gencomp genblitter build68k genlinetoscr
+
+
+distclean: clean
+	-rm -f config.cache config.log config.status
+	-rm -f Makefile sysconfig.h
+	-rm -f *.c
+
+genblitter: genblitter.o blitops.o writelog.o
+	$(CC) $(LDFLAGS) -o genblitter genblitter.o blitops.o writelog.o
+build68k: build68k.o writelog.o
+	$(CC) $(LDFLAGS) -o build68k build68k.o writelog.o
+gencpu: gencpu.o readcpu.o cpudefs.o missing.o writelog.o
+	$(CC) $(LDFLAGS) -o gencpu gencpu.o readcpu.o cpudefs.o missing.o writelog.o
+gencomp: gencomp.o readcpu.o cpudefs.o missing.o
+	$(CC) $(LDFLAGS) -o gencomp gencomp.o readcpu.o missing.o cpudefs.o writelog.o
+genlinetoscr: genlinetoscr.o
+	$(CC) $(LDFLAGS) -o genlinetoscr genlinetoscr.o
+
+custom.o: blit.h
+drawing.o: linetoscr.c
+
+cpudefs.c: build68k @top_srcdir@/../table68k
+	./build68k <@top_srcdir@/../table68k >cpudefs.c
+
+.c.o:
+	$(CC) $(INCLUDES) -c $(INCDIRS) $(CFLAGS) $(X_CFLAGS) $(DEBUGFLAGS) $(CFLAGS_$@) $< -o $@
+.c.s:
+	$(CC) $(INCLUDES) -S $(INCDIRS) $(CFLAGS) $(X_CFLAGS) $(DEBUGFLAGS) $< -o $@
+.c.i:
+	$(CC) $(INCLUDES) -E $(INCDIRS) $(CFLAGS) $(X_CFLAGS) $(DEBUGFLAGS) $< > $@
+

@@ -1,0 +1,182 @@
+Keyboard emulation
+==================
+
+E-UAE emulates an Amiga keyboard layout by a straightforward mapping - where
+possible - of host keys to Amiga keys. In general, the alphanumeric keys,
+function keys, numbers, punctuation, cursor keys, numeric keypad, etc.
+should work as expected (that is, the symbol on the key cap should be
+produced in AmigaOS when the key is pressed). There are some difficulties,
+however, particularly with international keyboard layouts, and we shall discuss
+these in a moment.
+
+In addition, the following keys are mapped to the Amiga keys and Help key:
+
+Left Super		Left Amiga
+Right Super		Right Amiga
+PageDown		Left Amiga
+PageUp			Right Amiga
+Menu key		Right Amiga
+Insert			Help
+
+The "Super" keys are the Windows keys on a PC keyboard, Command keys on a Mac
+keyboard, Amiga keys on an Amiga keyboard, etc. Note that most Mac keyboards
+don't differentiate between left and right Option keys, and both will
+produce a Left Amiga.
+
+Currently, E-UAE's keyboard mapping is not user-configurable. This will be
+addressed in a future release.
+
+
+International keyboards
+=======================
+
+If you are using E-UAE built with the X11 or SDL graphics drivers then you
+may set the kbd_lang= option to specify your keyboard layout (you also need
+to pick an appropriate keyboard driver in AmigaOS).
+
+Supported layouts currently include:
+
+de - German
+dk - Danish
+es - Spanish
+us - USA (default)
+se - Swedish
+fr - French
+it - Italian
+
+Pick the layout that best fits your keyboard (e.g. use 'us' for British
+keyboards).
+
+Support for some layouts is currently poor - for example, numeric and
+punctuation keys are interchanged on the French layout - and SDL poorly
+supports international keys.
+
+A partial solution is to use E-UAE's raw key mapping (see below).
+
+
+Command key sequences
+=====================
+
+The following key combinations invoke UAE commands or functions:
+
+F12 + Q                 Quit UAE
+F12 + R                 Reset UAE (warm reset)
+F12 + Left Shift + R    Reset UAE (cold reset)
+F12 + D                 Open built-in debugger/monitor
+
+F12 + S                 Toggle between windowed display and full-screen mode
+                        (if supported by the graphics driver).
+F12 + G                 Toggle mouse-grab mode (in windowed mode)
+F12 + I (or             Toggle display inhibit (Amiga screenmodes, not P96)
+Scroll Lock)
+F12 + A                 Cycle through audio interpolation modes
+                        (interpolation works with 16-bit audio only)
+
+F12 + Numpad Plus       Increase frame-skip rate
+F12 + Numpad Minus      Decrease frame-skip rate
+
+F12 + F1                Open dialog to insert floppy image in drive 0
+F12 + F2                Open dialog to insert floppy image in drive 1
+F12 + F3                Open dialog to insert floppy image in drive 2
+F12 + F4                Open dialog to insert floppy image in drive 3
+F12 + Left Shift + F1   Eject floppy image in drive 0
+F12 + Left Shift + F2   Eject floppy image in drive 1
+F12 + Left Shift + F3   Eject floppy image in drive 2
+F12 + Left Shift + F4   Eject floppy image in drive 3
+
+F12 + F5                Open dialog to load emulator state file.
+F12 + Left Shift + F5   Open dialog to save emulator state file.
+
+F12 + Nampad 0                 Quick save emulator state.
+F12 + Right Shift + Numpad 0   Quick load emulator state.
+F12 + Numpad 1                 Quick save emulator state to slot 1.
+F12 + Right Shift + Numpad 1   Quick load emulator state from slot 1.
+F12 + Numpad 'n'               Quick save emulator state to slot 'n'.
+F12 + Right Shift + Numpad 'n' Quick load emulator state from slot 'n'.
+
+F12 + F                 Emulates freeze button of Action Replay cartridge
+                        (if you have a cartridge ROM loaded).
+
+On Mac OS X, use F11 rather than F12 in the key sequences above (reason: F12
+is used by Finder on OS X to eject a CD. On OS 10.3, I believe F11 may be
+used by Expose, so you may need to change your Expose settings.) On AmigaOS,
+use CTRL+Left Alt instead of F12 (reason: most Amigas don't have F12 keys).
+
+
+Raw key-mapping
+===============
+
+When emulating an Amiga keyboard in UAE, the tricky thing is how to translate
+key-presses on the host to virtual key-presses on the emulated Amiga.
+Traditionally, when running UAE on Unix systems using X or SDL, UAE maps
+host key symbols (cooked keys, the translated symbols produced according to
+your operating system's keymap settings) to raw Amiga key-presses. This
+approach has a number of problems, especially with international keyboards.
+This is mainly due to the number of translations involved in this process
+and the fact that it requires that apples be converted into oranges, back
+into apples and then into oranges again for a key-press on the host keyboard
+to eventually end up on your virtual Amiga screen.
+
+When mapping cooked keys, what happens is this. You press a key. Ignoring
+the really low-level stuff, your host operating system produces a raw
+key code denoting which key on the keyboard is pressed (this keycode
+identifies the position of the key on the keyboard, not the symbol that is
+painted on the key cap). Your OS then translates this to a key symbol using
+your keymap settings to produce (if your keymap is correct) a value which
+actually does correspond to the symbol painted on the physical key on your
+keyboard.
+
+If E-UAE tries to work with this translated key symbol, it then has to
+somehow convert that back into a raw keycode appropriate to if that key
+were pressed on an Amiga keyboard (and then AmigaOS will use its keymap
+settings to translate it into a key symbol again). This requires that E-UAE
+know about international keyboard layouts, and requires the graphics system
+to report unique events for all host keys (SDL does not completely support
+some international layouts, for example).
+
+One solution is for UAE to instead ask the host operating system for the raw
+keycode corresponding to a key-press and map that to a raw Amiga keycode.
+This is potentially easier and more accurate, since we are now converting
+like to like, apples to apples, raw key-presses to raw key-presses. The
+problem now is, instead of having to support different international
+keyboard layouts, UAE has to understand different keyboard types (e.g.,
+standard PC104/5 keyboards, Mac keyboards, Sun keyboards) and - more
+annoyingly - the different raw keycodes that different operating systems and
+different graphics systems on the same operating system assign to what are
+logically or even physically identical keys.
+
+The upshot of all this is that raw key-mapping is currently (optionally)
+supported when:
+
+a) E-UAE is built with the X11 graphics driver, your X server supports the
+   XKB extension and you are using a keyboard which produces xfree86
+   keycodes (e.g., PC and Mac keyboards with XFree86 on Linux do);
+b) E-UAE is built with the SDL graphics driver and you are running it on
+   Linux on XFree86 with a PC or Mac keyboard, on MacOS X, on BeOS or on
+   AmigaOS (or an AmigaOS clone);
+c) E-UAE is built with the BeOS graphics driver; or
+d) E-UAE is built with the AmigaOS graphics driver.
+
+As I said above, raw key-mapping better supports international keyboards, so
+is recommended for most users, although its not terribly well tested and
+some problems may exist. One such problem is that the command-key sequences
+listed above will work as if you had a US keyboard rather than whatever
+international flavour of keyboard you actually have. I'll fix this eventually.
+
+When raw key-mapping is optional, it is enabled with a config option. When
+using the SDL graphics driver, add
+
+sdl.map_raw_keys=true
+
+to your config file. When using X11, add
+
+x11.map_raw_keys=true
+
+Both the SDL and X11 graphics driver will try to enable raw key-mapping by
+default if they can support it on your host platform.
+
+Note that the AmigaOS version of E-UAE when built with native AmigaOS
+graphic support and the BeOS version when built with native BeOS graphics
+support both always do raw key mapping, so no comparable config options is
+supported or required in these situations. Note also, however, that the
+command-key problem described above is exhibited in both cases.

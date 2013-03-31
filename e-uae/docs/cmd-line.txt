@@ -1,0 +1,196 @@
+Command line options for E-UAE
+==============================
+
+E-UAE supports the following command-line options. Note that, where
+applicable, these will over-ride any similar options specified in the
+default configuration file.
+
+In the following, <path> should be substituted with an appropriate file path
+and <n> with an integer.
+
+This document (like the rest of the documentation) is a work-in-progress.
+
+
+-h
+ Displays summary of configuration options.
+
+
+-f <path>
+ Load the configuration file specified by <path>. See configuration.txt for
+ more information about configuration files. For example:
+
+ -f ~/my_uae_configs/a1200.uaerc
+
+
+-s <option>
+ Specify an option in configuration file (<key>=<value>) format. For
+ example, use 
+ 
+ -s ntsc=true
+ 
+ to start E-UAE in NTSC mode.
+ 
+ See configuration.txt for supported options.
+ 
+
+-0 <path>
+-1 <path>
+-2 <path>
+-3 <path>
+ Mount the floppy disk image specified by <path> in drive 0/1/2/3. For
+ example:
+
+ -0 somedisk.adf
+
+
+-r <path>
+ Load the ROM image specified by <path>.
+
+
+-K <path>
+ Use the key file specified by <path> to decrypt an encrypted ROM image (from
+ Cloanto's AmigaForever package).
+
+
+-C<n>
+ Selects type of CPU to emulate. The value <n> corresponds to CPU types as
+ follows:
+ 0: 6800
+ 1: 68010
+ 2: 68020
+ 3: 68020/68881
+ 4: 68040
+
+
+-w<n>
+ Selects the performance model for the CPU emulation.
+
+ A value of 0 for <n> corresponds to 'real' CPU speed, that is,
+ approximately A500 speed; a value of -1 corresponds to the 'max' CPU speed,
+ that is, the emulation will run as fast as your system allows. A positive
+ value for <n> will select 'adjustable' CPU speed, where <n> specifies the
+ number of virtual emulator cycles that each CPU instructions will take and
+ can be between 1 and 5120. (Positive values for <n> correspond to the same
+ values specified with the 'finegrain_cpu_speed=' configuration option).
+
+
+-v<n>
+ Selects the type of Amiga chip set to emulate. The value <n> corresponds to
+ chip set types as follows:
+
+ 0: OCS
+ 1: OCS but with the ECS or "Fat" Agnus.
+ 3: ECS
+ 4: AGA
+
+
+-c<n>
+ Emulate <n> * 512 KB of Chip memory. The valid  range of values for <n> is
+ from 1 to 16, which corresponds to 512 KB to 8 MB of Chip memory. For example:
+
+ -c4
+
+ will cause E-UAE to emulate 2 MB of Chip memory.
+
+
+-b<n>
+ Emulate <n> * 256 KB of Slow memory. Valid values for <n>  include 0, 2, 4
+ and 6, which corresponds to 0 KB, 512 KB, 1 MB and 1.5 MB, respectively.
+
+
+-F<n>
+ Emulate <n> MB of ZorroII Fast memory. A maximum of 8 MB is supported.
+
+
+-Z<n>
+ Emulate <n> MB of ZorroIII Fast memory. A maximum of 512 MB is supported.
+
+
+-U<n>
+ Emulate <n> MB of video memory on the virtual Picasso96 graphics card.
+ Selecting <n>  greater than 0, enables the Picasso96 emulation, and a maximum
+ of 32 MB of video memory may be emulated.
+
+
+-m/M
+ Use filesystem as Amiga volume, arguments are: access,'Amiga
+ volume-name':'host directory path' - where 'access' can be 'read-only' or
+ 'read-write'
+
+-W
+ Hardfile specifications, arguments are: access, sectors, surfaces,
+ reserved, blocksize, path format
+
+-S
+ parse_sound_spec
+
+-R
+ frame-skip rate, between 1 and 20
+
+-i
+ print illegal memory access by Amiga software?
+
+-J
+ joystick: Use -J xy, where x and y can be 0 for joystick 0, 1 for joystick
+ 1, M for mouse, and a, b or c for different keyboard settings.
+
+-t
+ test drawing speed
+
+-G
+ disable GUI and goes straight to emulator
+
+-D
+ Enable the debugger
+
+-n
+ Perform blits immediately, 0: disable, 1: enable
+
+-l
+ keyboard language: (possible arguments: de, dk, us, se, fr, it, es)
+
+-O
+ The format to use is: "width:height:modifiers", where modifiers are: l:
+ Treat display as lo-res, x: Center display horizontally, y: Center display
+ vertically, d: double line, a: fullscreen Amiga, p: fullscreen Picasso96,
+ c: Correct aspect ratio
+
+-H
+ color_mode, or amiga_screen_type (if compiled with Amiga GFX support)
+
+
+Options specific to the X11 graphics driver
+===========================================
+
+-L
+ Use "low-bandwidth" mode, which may reduce the amount of data transferred
+ between E-UAE and the X server. That's particularly an advantage when these
+ are running on two different machines in a network.
+
+-T
+ Use the MIT-SHM extension. This may not be available on all machines, and
+ it will not work if E-UAE and the X server are not running on the same
+ machine. In all other configurations, turning on this option will give you
+ a huge speed improvement.
+
+-x
+ Turn off the X11 mouse cursor.
+
+
+Options specific to the AmigaOS graphics driver
+===============================================
+
+-T
+ If using a palette-mapped display (256 colours or fewer), render the output
+ in grey-scale rather than colour.
+
+-x
+ If using a palette-mapped display (256 colours or fewer), don't dither the
+ output.
+
+
+Options specific to the Curses graphics driver
+==============================================
+
+-x
+ Enable reverse video.

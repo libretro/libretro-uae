@@ -1,0 +1,184 @@
+SCSI emulation
+==============
+
+E-UAE's SCSI emulation allows any CD-ROM drives on the host machine to be
+used as Amiga SCSI devices within the emulation. You can use this to fully
+support CD-ROMs, audio discs, CD-writing, etc. in AmigaOS. SCSI emulation is
+also required to emulate a CD-TV or CD32.
+
+In general, to enable SCSI emulation simply add the 'scsi=true' option to
+your config file. Any useable CD or DVD devices that E-UAE finds will be
+available to AmigaOS via the device driver 'uaescsi.device' on consecutive
+unit numbers starting at unit 0. However, depending on your host platform,
+there may a number of host configuration issues which can make using the
+SCSI emulation problematic.
+
+I'll start with the easy stuff. If you're running E-UAE on AmigaOS (or a
+clone) or BeOS, then don't worry. The SCSI emulation works transparently.
+Just set the 'scsi=true' config option and away you go.
+
+
+Linux
+-----
+
+Starting with version 0.8.29, E-UAE's SCSI emulation can directly
+communicate with the Linux kernel's CD-ROM driver to access a single
+CD/DVD drive (it currently doesn't support multiple drives, unlike the
+libscg back-end).
+
+To use, simply specify the drive's device file with the configuration
+option 'scsi_device=' (as well as, obviously, 'scsi=true'. For example:
+
+scsi_device=/dev/hdc
+
+You should ensure that the account you use to run E-UAE has permission
+to access this device file.
+
+You may run into problems if your Linux distribution has the HAL
+daemon installed. This software continually polls your removable media
+drives to detect insertion/removal of discs, and this activity may
+interfere with E-UAE's SCSI emulation. A solution to this problem
+needs to be investigated.
+
+This Linux-native SCSI back-end is less well-tested than the libscg
+back-end. It has not been tested with real SCSI devices (only ATAPI
+devices) and depending on the bugginess of your Linux ATAPI driver
+and/or the firmware of your drive, problems may occur.
+
+
+Linux and libscg
+----------------
+
+Using the libscg-based SCSI emulation on Linux can be troublesome,
+depending on how your Linux system is set up. If cdrecord works on
+your set-up, then there's a good chance that the SCSI emulation will
+too since it uses cdrecord's SCSI transport layer, libscg. There are
+some points to be aware of, however.
+
+Firstly, you need a kernel module installed which support sending SCSI
+commands to your CD/DVD device. For real SCSI devices, this will be the sg
+(SCSI generic) module. For ATAPI devices on 2.4 kernels, you need the
+ide-scsi (SCSI over ATA) module and the sg module. (On 2.6 kernels, the
+ide-cd driver directly supports sending SCSI commands to ATAPI devices, but
+we'll come to that in a minute.)
+
+If you're using sg or ide-scsi and sg, then your devices are accessed via
+device nodes of the form /dev/sg0, /dev/sg1, etc. You need read and write
+permission on all of these for SCSI emulation in E-UAE to work (Note that
+cdrecord is typically installed SUID root, so typically the default
+permissions on the /dev/sgx nodes will not be sufficient. Installing E-UAE as
+SUID root is one possibility, but not a terribly good idea security-wise.
+One solution to this is to set the owner of the /dev/sgx nodes as the group
+'cdrom' and add you own user account to that group. For example, as root, do
+
+# chgrp cdrom /dev/sg*
+# adduser evilrich cdrom
+
+Use your own account ID, of course, rather than 'evilrich', which is me.
+
+If your system doesn't have the adduser command, you can always manually
+edit the /etc/group file or use some whizz-bang, GUI-based user/group
+configuration utility to do the job.
+
+If you log in as yourself again and start E-UAE (remember to add 'scsi=true'
+to your config file first), then the SCSI emulation should work. If so you'll
+see something like this logged to the console when E-UAE starts up.
+
+scsibus0:
+  0,0,0  0 'BTC     ' 'BCE1610IM       ' 'A.20' CD-ROM
+  0,1,0  1 *
+  0,2,0  2 *
+  0,3,0  3 *
+  0,4,0  4 *
+  0,5,0  5 *
+  0,6,0  6 *
+  0,7,0  7 *
+SCSIDEV: 1 devices found
+support_scsi = 1 support_ioctl = 0
+
+If you're using a 2.6 kernel, E-UAE can access ATAPI devices on the host
+directly via the kernel ide-cd driver without the sg kernel module. To do
+this on older 2.6 kernels, add the config option
+
+scsi_device=ATAPI
+
+in your config file (remember to add scsi=true also) and make sure you have
+read and write access to the necessary device nodes corresponding to the
+devices you wish to use with UAE (for example, /dev/hdc or whatever).
+
+For newer 2.6 kernels (>=2.6.12?), the libscg ATAPI transport method no
+longer works and you have to use the ATA method. To do this, specify the
+device path to your CD/DVD drive with the scsi_device= option. For example:
+
+scsi_device=/dev/hdc
+
+
+MacOS X
+-------
+
+Now we get to the real problems. SCSI emulation with E-UAE on OS X is
+currently a real pig, due to some features and limitations of OS X. The big
+problem is that you need a writable device - a CD or DVD burner - for SCSI
+emulation to work at all. This is because the OS X kernel will only let you
+send SCSI commands to a writable device (for this problem to be solved, UAE
+would need to support a real SCSI emulation - the current implementation is
+simply a wrapper around a host SCSI device).
+
+The second problem is that the Finder does not like sharing a removable
+media device with any other application. For SCSI emulation to work, you
+must start UAE without a disc inserted in your CD or DVD writer. Otherwise,
+Finder will auto-mount the disc and not let UAE access the device. A
+different (more drastic) solution is to kill OS X's auto-mount daemon, but the
+procedure for doing this differs depending on which version of OS X you
+have. Somebody remind me to look this up and fill in the details here.
+
+The third problem is getting UAE to locate your CD or DVD writer. libscg on
+OS X (the SCSI transport layer which UAE uses) doesn't support bus-scanning
+on OS X. Only one device can currently be used with UAE, and you have to
+name it explicitly with the 'scsi_device=' option in your config file.
+
+For the first CD writer, this will be:
+
+scsi_device=IOCompactDiscServices/0
+
+For the first DVD writer, this will be
+
+scsi_device=IODVDServices/0
+
+Also remember to add the 'scsi=true' option to your config.
+
+If set up correctly, UAE will output something similar to the following when
+starting up:
+
+scsibus:0
+  0,0,0  0 'YAMAHA  ' 'CRW842S         ' '1.0f' CD-ROM
+  0,1,0  0 'YAMAHA  ' 'CRW842S         ' '1.0f' CD-ROM
+  0,2,0  0 'YAMAHA  ' 'CRW842S         ' '1.0f' CD-ROM
+  0,3,0  0 'YAMAHA  ' 'CRW842S         ' '1.0f' CD-ROM
+  0,4,0  0 'YAMAHA  ' 'CRW842S         ' '1.0f' CD-ROM
+  0,5,0  0 'YAMAHA  ' 'CRW842S         ' '1.0f' CD-ROM
+  0,6,0  0 'YAMAHA  ' 'CRW842S         ' '1.0f' CD-ROM
+  0,7,0  0 'YAMAHA  ' 'CRW842S         ' '1.0f' CD-ROM
+  0,8,0  0 'YAMAHA  ' 'CRW842S         ' '1.0f' CD-ROM
+  0,9,0  0 'YAMAHA  ' 'CRW842S         ' '1.0f' CD-ROM
+  0,10,0  0 'YAMAHA  ' 'CRW842S         ' '1.0f' CD-ROM
+  0,11,0  0 'YAMAHA  ' 'CRW842S         ' '1.0f' CD-ROM
+  0,12,0  0 'YAMAHA  ' 'CRW842S         ' '1.0f' CD-ROM
+  0,13,0  0 'YAMAHA  ' 'CRW842S         ' '1.0f' CD-ROM
+  0,14,0  0 'YAMAHA  ' 'CRW842S         ' '1.0f' CD-ROM
+  0,15,0  0 'YAMAHA  ' 'CRW842S         ' '1.0f' CD-ROM
+SCSIDEV: 16 devices found
+support_scsi = 1 support_ioctl = 0
+
+and then it'll complain a bit about being unable to get exclusive access and
+then it'll say
+
+(0,0,0) = uaescsi.device:0
+
+Okay. Don't look so worried. What's happening here is that UAE is trying to
+scan for SCSI devices, can't, and ends up finding the same device 16 times.
+Not very elegant, I know, but it works. I will tidy this up eventually. If
+Finder has an exclusive lock on your device because it has mounted a disc,
+UAE will just say 'Unable to get exclusive access to device' once and say:
+
+SCSIDEV: 0 devices found

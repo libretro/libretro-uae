@@ -1,0 +1,154 @@
+E-UAE 0.8.29-WIP4
+=================
+
+E-UAE is an Amiga emulator, a program that allows you to run software
+designed for Amiga computers on other platforms, such as Linux or Mac
+OS. It is based on UAE, the original Ubiquitous Amiga Emulator, and
+WinUAE, the Windows version of UAE. While it owes a huge debt to these
+two great projects, E-UAE diverges from both, aiming to improve
+performance and features on a variety of host platforms.
+
+The name E-UAE stemmed from the fact that this project needed a name,
+and, since it was an 'experimental' version of UAE, everybody was
+calling it 'Experimental' UAE. While I have long since accepted that
+moniker, I still don't intend the 'E' to mean anything it particular.
+Although the project is currently 'experimental' - that is, it is a
+long way from being anything close to finished - it should still be
+robust enough to use.
+
+E-UAE currently builds and runs - with varying degrees of supported
+features - on Unix and Unix-like platforms (including Linux, Solaris
+and Mac OS X), BeOS, AmigaOS and clones (including AmigaOS 3.x,
+AmigaOS 4.0, MorphOS and AROS), and Windows (with Cygwin or MinGW32).
+
+E-UAE is open-source software and is made available under the terms of
+the GPL. See the COPYING file included with the E-UAE archive for
+details.
+
+E-UAE is based on the work of dozens of contributors including Bernd
+Schmidt (the original author and maintainer of UAE), Bernie Meyer (the
+author of the x86 JIT compiler), Toni Wilen (the current maintainer of
+WinUAE), and many more.
+
+Note that to make full use of E-UAE you will need access to an image
+of some version of the Amiga Kickstart ROM (although E-UAE does include
+a ROM emulation which may work with some old games). The Amiga
+Kickstart ROMs are copyrighted material and may not be freely
+distributed (so don't ask me for a copy). If you don't have an Amiga
+from which you can legally make a ROM image, a selection of ROM images
+are available for purchase online from Cloanto (publishers of the
+Amiga Forever distribution). See http://www.amigaforever.com/
+
+
+What's new since 0.8.29-WIP3
+============================
+
+A huge amount of work has gone into E-UAE since the last public
+release. Not of all of this work will be readily apparent to users
+since it took place under the surface. However, some user-visible
+changes include:
+
+* Emulation core from WinUAE 1.3.x merged.
+* Much more stable on SMP hosts.
+* Builds on Solaris x86 (with GCC).
+* Integrated mouse-hack feature merged from WinUAE (this synchronizes
+  the Amiga mouse pointer with the host pointer when E-UAE is running
+  in a window on your desktop) merged from WinUAE. The old AmigaOS
+  mousehack tool is no longer required.
+* New, easier-to-use Linux SCSI back-end (Jochen Becher).
+* Experimental GL renderer in SDL display back-end (originally from
+  Jochen Becher but mostly re-written). On most platforms this is yet
+  to offer much over the existing 2D renderer, but on Mac OS X it
+  offers significantly better performance. Enabled with
+  'sdl.use_gl=true'.
+* Support for the 'uae-configuration' tool merged from WinUAE. This is
+  an AmigaOS shell command which allows UAE settings to be queried and
+  modified from within the emulation environment.
+* Better, smoother performance when cpu_speed=real (A500 speed). E-UAE
+  adapts better to changing system latencies.
+* 'Sinc' audio interpolation added (Antti Lankila).
+* Minor performance improvements in interpretive CPU emulator and JIT
+  engine.
+* Mac OS X icon added (from Daniel Pimley).
+* Lots of bugs fixes, including:
+  - Broken 'delayed' interrupt handling when JIT was disabled.
+  - Inconsistent refreshing of P96 screens.
+  - Filesystems being mounted twice.
+  - Hardfiles broken following a reset.
+  - Broken detection of XKB path in X11 driver (fix from Peter Volkov).
+
+
+Still to do
+===========
+
+The following features of UAE and/or WinUAE are not yet supported yet
+in E-UAE. These include:
+
+* Serial and parallel port emulation.
+* AHI soundcard emulation.
+* Catweasel support.
+* Graphics filters, scaling, etc.
+* Floppy drive sounds.
+
+
+Known problems
+==============
+
+Some significant misfeatures that I know about and am/will be working
+to fix (eventually):
+
+* Only platforms supporting the GTK+ toolkit have a useable
+  configuration GUI (and the GTK+ GUI is still incomplete). However,
+  Mac OS X users may like to try Daniel Pimley's graphical front-end,
+  Hi Toro. See http://www.pimley.net/projects/.
+* JIT direct memory access only works on Linux/x86 and, by default,
+  you may only emulate up to 32MB of direct ZIII RAM; select more than
+  that and the JIT will fall back on indirect memory access and hence
+  will be slower. This is due to a system limit on the size of a POSIX
+  shared memory segment. You can overcome this limit my modifying the
+  value of the procfs setting, /proc/sys/kernel/shmmax.
+* Virtual filesystem doesn't support platforms which use UTF-8 for
+  filenames (e.g., OS X, Linux with a UTF-8 locale, etc.). Filenames
+  with characters outside of the core ASCII range will be mangled.
+* OpenGL renderer is experimental, unfinished and has no error
+  recovery.
+* Tear-free graphical output (with the gfx_vsync=true option) doesn't
+  work on most platforms yet (the exceptions being Mac OS X with the
+  SDL/GL renderer and AmigaOS4.0 with SDL).
+* The Mac OS X version is currently for PowerPC hardware only (I don't
+  have an Intel Mac). Users with Macintel hardware may wish to try
+  Jens Weichert's Intel builds. See http://e-uae.de.vu/.
+* The build scripts are a horrible, unmaintainable mess.
+* Full documentation is lacking.
+
+
+Using E-UAE
+===========
+
+Documentation is a work-in-progress. See the docs directory.
+
+
+Compiling E-UAE yourself
+========================
+
+See the docs/compiling.txt file for more information about building
+E-UAE.
+
+
+CVS
+===
+
+Details about how to access the CVS repository containing the current
+development version of E-UAE can be found at:
+
+http://sourceforge.net/cvs/?group_id=109723
+
+
+Contact
+=======
+
+See http://www.freelists.org/list/uae for details of a mailing list
+discussing problems with and development of E-UAE.
+
+Send bug reports, comments, patches, etc. to the above list or to:
+Richard Drummond <uae@rcdrummond.net>

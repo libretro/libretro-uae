@@ -1,0 +1,13 @@
+
+- fix/finish kbd , vkbd ,kbd modifier ...
+- fix/finish joyemu, fire_but2
+- fix/finish first retro loading game
+- fix/finish exit properly retro
+- fix/finish option menu 
+- fix/finish the main implementation  
+- cleanup code
+- more tests /fix bugs
+
+
+
+ 

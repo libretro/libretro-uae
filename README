@@ -1,0 +1,53 @@
+		E-UAE-0.8.29-WIP4 LIBRETRO DEBUG VERSION
+
+
+What?: First attempt to build e-uae with libretro 
+Why ?: Why not ?
+Who ?: Rtype 
+
+
+All credits to :
+
+Richard Drummond "http://www.rcdrummond.net/uae/"
+
+E-UAE is based on the work of dozens of contributors including Bernd
+Schmidt (the original author and maintainer of UAE), Bernie Meyer (the
+author of the x86 JIT compiler), Toni Wilen (the current maintainer of
+WinUAE), and many more.
+
+This RETRO port is based on PS3 version E-UAE 0.8.29-WIP4 release 8
+so aslo credits to Ole.
+
+And of course for the RetroArch/Libretro team : "http://www.libretro.org/"
+
+It's a quick hack.
+At this time , works the basis but buggy on linux /android.
+
+Remember ,Everything not working well, It's a debug release , so expect to more bug.
+
+
+Default Control :
+
+L2  Show/Hide statut
+R2    
+L   Show/Hide vkbd .
+R   Change Mouse speed 1 to 6 . (for gui and emu)
+SEL Toggle Mouse/Joy mode .
+STR Toggle Num Joy . 
+A   Fire/Mouse btn A / Valid key in vkbd
+B   Mouse btn B
+X   Umount in E-UAE GUI 
+Y   E-UAE GUI
+
+
+
+Usage:
+
+	Launch retroarch , select a startup dsk , and e-uae sould boot.
+
+	
+Knows Bugs: 
+ 
+	- the startup disk choose at start of retroarch is not mounted , use uae.cfg or gui to mount a disk
+	- Everything not working well, It's a debug release , so expect to more bug.
+

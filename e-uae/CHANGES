@@ -1,0 +1,541 @@
+20040302
+- Fix building of SCSI emulation on OS X. Update config script to link with
+  IOKit framework when building against libscg on OS X. Update install_scg
+  script to re-run ranlib on libscg/libschily on OS X after copying.
+- Tweaks for building scsi emulation on BeOS.
+- Tidied up sleep code. Reimplemented my_usleep() to uae_msleep() which
+  takes a sleep duration in milliseconds rather then usecs.
+- Misc clean-ups in preparation for getting stuff merged in WinUAE tree.
+- Hacked support in config script for compiling against libscg/libschily
+  external to source tree (this needs tidying up). Yet more options -
+  --with-libscg-prefix etc.
+- Bug in libscg block driver was causing segfault when CD32 was reset. Fixed.
+- Libscg block driver wasn't clearing SCSI error codes before executing SCSI
+  inquiry or test unit ready commands (I was passing args in the wrong order
+  to memset. Ooops!). This was causing problems when scanning the SCSI bus
+  (particularly for real SCSI busses on the host) and was causing CD32
+  emulation to fail to detect disk changes. Fixed.
+
+20040222
+- Only build enforcer when we have JIT/natmem support.
+- Begin merging GTK+ changes back (bearing in mind that this time GTK thread 
+  is secondary again). GUI can again be opened after emulation proper has 
+  been started and failure to open GTK+ GUI will not cause UAE to fail.
+- Fix configure script with regard to libscg. When building in source tree,
+  add current directory to library path.
+- Fix configure script with regard to CAPS. Use CPPFLAGS rather than CFLAGS
+  to specify directory to include CAPS header from.
+- Fix install_libscg script to work on *BSD (and OS X). Problems still exist
+  linking on OS X due to the whacky linker there.
+- Replace mode sense/select 6 to 10 translation in libscg block device driver
+  with calls to the new generic code imported from WinUAE 0.8.25.
+- Merged WinUAE 0.8.25
+- Back out GTK+ GUI changes. It seems that running the GUI as the primary
+  thread and SDL as the secondary really hurts performance. Also back out
+  SDL timers for clock speed calibration since it's not needed now.
+- Added config option --enable-enforcer
+- Added AHI emulation glue from WinUAE (this includes support for WinUAE
+  enforcer, etc.) This hodge-podge of code is in misc.c (for want of a
+  better place to put it). AHI emulation still needs porting and back-ends
+  for the various sound drivers supported (which will be fun).
+- Merged changes from WinUAE 0.8.24
+- Fixed bug in libscg driver which was causing segfault on reset
+
+20040219 (not publicly released)
+- CD led display now works.
+- Assorted fixes for building akiko (CD32) emulation.
+- Implemented block device driver using cdrtools 2.0.x's libscg (this is
+  largely based on the old scsidev driver). CD/DVD devices only are
+  currently supported.
+- Quick fix for the Unix bsdsocket emulation, so that it no longer directly
+  requires POSIX threads, semaphores and thread-local storage. This fixes
+  many problems when UAE is built against SDL. It should also now work
+  on OS X with SDL now, but it still doesn't on BeOS due to limitations with 
+  the BeOS socket API. Many problems remain, and a re-write is still needed.
+- Support for IPF (CAPS) floppy images added.
+- Use SDL timers for calibration in md-i386-gcc when building with SDL.
+  Using POSIX timers directly can screw threading. This is currently less
+  accurate, and requires a longer calibration period. 
+- Fix for building on older SDL versions without mousewheel support.
+- Fixes for SDL sound which were causing threading problems.
+- Implement the Gtk+ LEDs updates as a separate callback. This lets us
+  schedule the events callback more frequently.
+- Make GTK+ GUI thread the main thread which launches the UAE thread (rather
+  than vice-versa). Makes the code slightly cleaner, and allows the GUI to
+  be opened after the emulation is started. The use_gui config file option
+  now means that the GUI is not opened at start-up, but may be opened later.
+  Added hotkey combination F12 + Enter to SDL and X11 targets to for this
+  purpose.
+- Work-around that allows filesystems to be mounted from host ISO filesystems
+  when flagged as read/write in the config file. On systems with statvfs() and
+  on Linux (where statvfs() is not used because of broken implementations) UAE
+  will now mount such filesystems as read-only. More work needed here.
+- On md-ppc-gcc target, make m68k CPU flags a bitfield. This generates better
+  code.
+- SDL gfx driver was broken on 8-bit host displays. Fixed for both native and
+  P96 screens. Try running UAE on the Linux framebuffer device at 8-bit if
+  you want to see some serious speed.
+
+20040129
+- Ta da! JIT now works on BeOS/x86 (albeit without direct memory support).
+  Still, it gives 10x the speed of pure interpretation. I finally sussed
+  what was causing the stack problems - cpuopti! Solution: don't run cpuopti
+  on platforms that can't handle the x86 assembly magic in newcpu.c for
+  calling opcode handlers - e.g. BeOS. Obvious when ya think about it. ;-)
+- Merged and updated Axel's BeOS sound driver from BeUAE. Sound quality is
+  still poor on my system - but somewhat less so. ;-)
+- Config file support for running xres/mimeset on the compiled binary when
+  targetting BeOS. Added Axel's resource file to the dist.
+- Tidied up BeOS floppy image dialog. If invoked in full-screen mode, UAE
+  will now try and switch to windowed mode before opening the dialog.
+ 
+20040126
+- Dist was missing a file from src/gfx-x11. Fixed.
+- Typo in OS x raw key driver. Fixed.
+
+20040125
+- In Amiga target, set the UAE processes's pr_WindowPtr to ensure requesters
+  appear on UAE's screen.
+- Tidy up Amiga gfx target. Remove Graffiti support. Add new Amiga-specific
+  options to configure the type of screen UAE runs on (still more to do).
+- Allow comments again in cfgfiles. Lines beginning with '#' will be ignored.
+- Remove hacks in sleep.c. 
+- Add support for popping up floppy dialogs in Gtk+ UI in response to
+  gui_display() callback from UAE.
+- Fix raw keyboard handling with SDL target. If the SDL window loses focus
+  when keys are held down, SDL generates key-up events with 0 keycode for
+  the keys that are pressed. UAE couldn't generate proper key-up events and
+  keys were 'sticking'. Respond to loss of focus and force keys to be
+  'released'.
+- Initial implementation of main.cpp for BeOS.
+- Break out gui stubs from beos.cpp into separate file gui.cpp. Implemented
+  gui_message() via a BAlert and implemented file dialog for inserting disk
+  images.
+- Fix fsusage.c on BeOS. The K&R declaration for adjust_blocks() was
+  screwing up the compiler for some reason.
+- Fix to fsusage.c to build on systems with a working SVR4 statvfs() (many
+  non-glibc Unices). I had forgotten to revert back to using STAT_STATVFS
+  rather than HAVE_STATVFS. Thanks to Ian Chapman for reporting the problem
+  and testing the fix.
+- Comment out JIT debugging messages in the Linux segv handler with
+  #ifdef JIT_DEBUG like the win32 handler does. The user doesn't need to be
+  worried by all those scary messages.
+- Fix GCC-specific abort() macro to call exit() rather than abort(). This
+  ensures that any atexit() routines are called -  and the user will get
+  their X display back.
+- Fix AmigaOS POSIX semaphore emulation so that the semaphore thread is always
+  killed at exit (previously it wouldn't be unless all sempahores had been
+  deleted).
+- Move disk image requester code from ami-win.c to ami-gui.c. Now used in
+  response to an appropriate gui_display() call. 
+- Re-implemented gui_message() in AmigaOS target to display messages as
+  EasyRequest requesters.
+- Re-implemented and cleaned up keyboard handling in AmigaOS target to fully use
+  inputdevice.c and new hotkey key code. AmigaOS now supports a similar range
+  of hotkeys as X11 and SDL targets - all starting with Ctrl+LAlt rather
+  than F12.
+- Implemented os-target main.c support (e.g., for start-up and support code).
+  Factored out break handling from the gfx targets and implemented it in the
+  various os targets.
+- Added option sdl.map_raw_keys to allow the choice between mapping cooked
+  or raw keys with SDL gfx target.
+- Added support for parsing gfx-target options.
+- Separated gfx target from OS target. Unix target is now called 'unix'
+  rather than the previously confusing 'x11'. Gfx targets include 'x11',
+  'sdl', etc.
+- Inputdevice handling overhaul (work-in-progress)
+  * Got rid of the input-dummy.c hack and implemented the necessary code in
+    each  of the gfx drivers.
+  * Cleaned up and simplified input handling in X11 and SDL targets, now
+    re-using more code from inputdevice.c.
+  * Implemented mouse wheel support in X11 and SDL targets.
+  * Initial implementation of target-independent hotkey handling.
+  * Initial support for target-independent raw key mapping (currently used in
+    SDL only).
+- Screen mode tweaks to SDL gfx target. SDL not supplying precisely the mode
+  you asked for should cause fewer problems now. UAE also now asks for a hardware
+  surface (which works with, e.g., the dga and fbcon SDL video drivers).
+- Implemented simple on-screen P96 RectFills and Blits using SDL blitting
+  functions (this can double the scroll speed of CON: windows even when
+  running  in a SW surface).
+- Lots of changes to the P96 emulation bringing in new code from Win32
+  version - fixes the annoying scroll bug with CON: windows. (The big-endian
+  red/blue swapping bug which can occur with some types of blits on 32-bit
+  screens remains - and I'm convinced it's a bug in P96 itself. ;-)
+- GUI tweaks to go with the --disable-natmem option.
+- Added new config option --disable-natmem to build the JIT without direct
+  memory access. This should let the JIT build on other x86 Unices and
+  Unix-likes (JIT direct memory is currently dependent on x86/Linux segv
+  signal handling) until we can make it more portable. It'll also now
+  build on BeOS, although it bombs at run-time. Something strange seems to
+  be going  on with the stack there, I think.
+- Tweaks to let compemu_support.c build without sys/mman.h (e.g. on BeOS)
+- Merged changes from my 0.8.23 branch. This means we're now based on WinUAE
+  0.8.23.
+- Hacked in support for building GTK+ GUI with GTK+2.x (the config script
+  will prefer GTK+2.x over GTK+1.x if both are available).
+- Began importing new GTK+ GUI elements, starting with new CPU prefs page.
+  This'll now let you play with idling (if you're JIT-enabled) and my
+  busy-wait switch. (I'm not happy with the layout of this page, however, so]
+  it'll change again for the next release.)  
+- Bumped AmigaOS default stack to 32k (it uses a lot more when run on
+  AmigaOS < 3.9 for some reason).
+- Tweaks for building on MorphOS. It now builds against ixemul, but not
+  libnix (there appears to be a lot missing from MorphOS's implementation of
+  libnix). I cannot test it, however, 'cos I ain't got MorphOS.
+
+20040107
+- Fix for floppy data not being initialized to 0 when allocated on the heap 
+  (when SAVE_MEMORY is defined).
+- Fix for typo in gfx-x11/xwin.c which was causing compilation to fail
+  (thanks to Giacomo Magnini for spotting this one).
+- Add __stack declaration to AmigaOS target to enable automatic enlargement
+  of stack with libnix's swapstack module if the stack size is too low on
+  start-up. Set min size to 16384 for now, which stack snooping reveals is
+  erring heavily on the side of caution. I don't want to use stack
+  checking/extension code because UAE is already slow enough on a classic
+  Amiga. ;-)
+
+20040106
+- Fix for libnix auto-opening libraries on AmigaOS target and thus asking
+  for inflated version numbers (it asks for v37 of everything by default).
+- Fix typos in BeOS implementation of fsusage.
+
+20040104
+- Use sample8_handler() rather than ULAW handler for 8-bit mono audio in SDL
+  sound driver.
+- Fix switching of audio interpolation mode in x11 and SDL gfx targets.
+- Define PICASSO96_SUPPORTED declaration in targets/t-beos.h when building
+  with SDL so that P96 support will be included.
+- Renamed set_alarm function in md-i386-gcc/support.c since it conflicts
+  with a BeOS kernel function.
+- Added a -version command-line option. 
+- Added full package version string to about page in Gtk UI (if defined).
+- Fixed HD LED on no-gui, AmigaOS and BeOS targets.
+- Re-did my implementation of POSIX semaphores for AmigaOS target. My
+  previous version didn't work, since it was pretty much a straightforward 
+  mapping of POSIX semaphores onto Exec semaphores - but, since POSIX sems
+  don't have an owner whereas Exec sems do, this obviously wasn't going to
+  do the job. Doh! Should read docs more carefully in future. The new
+  implementation uses message-passing with a semaphore server thread to
+  achieve locking - and, as an added bonus, locking now obeys break signals.
+  Filesystem threads and hardfile support now both work on AmigaOS. Yay! 
+- Implemented fsuage for BeOS.
+- Implemented new BeOS sound driver. 
+- Detect libossaudio in config script to enable use of OSS audio on
+  NetBSD/OpenBSD. Swap order of OSS and Sun audio in config script, so that
+  Sun audio is preferred over OSS on NetBSD etc.
+- Port od-beos/beos.cpp to new inputdevice API.
+- Disable BeOS sound driver. Needs to be rewritten.
+- Break out BeOS joystick code to separate file (joystick.cpp) and port to new
+  inputdevice API. Now uses enhanced joystick API (although currently
+  support only 1 stick).
+- Tweaks to od-beos/beos.cpp to get it closer to compiling.
+- Use snooze() for my_usleep() on BeOS
+- Fix x11 gfx target so it'll build without P96 support.
+- Don't define NO_MAIN_IN_MAIN_C when compiling against SDL on BeOS. This'll
+  need to be changed later if we want the BeOS GUI to work with SDL target.
+- Fixed P96 support in x11 target
+- Added a log statement when retrying a hardfile mounted as read/write but
+  without write permission as read-only.
+- Fixed hardfile-unix.c to obey read-only flag.
+- Fixed expansion.c to build without P96
+- Fixed display of FPS counter on AmigaOS, GTK+ and no-gui targets.
+- Merged new autoconf 2.5x/automake build system. Still very much a
+  work-in-progress. Advanatges: more flexible, more config options, better
+  support for cross-compiling and for building in separate directory.
+- Fixed a serious typo: sleep was being used instead of usleep (if nanosleep
+  was not available).
+- Merged updated sleep code from my 0.8.23 branch. For systems with rpt, UAE
+  will now test the chosen sleep routine and decide whether busy waiting is
+  necessary or not. (If it takes 10ms or more to do a 1ms sleep, then busy-wait
+  by default. The user will be eevntually able to turn this off with a config 
+  option.)
+- When building with the SAVE_MEMORY option, allocate floppy data at
+  run-time. This shaves MBs off the BSS size and means that the AmigaOS
+  binary doesn't need such a large unfragmented piece of memory to run.
+- Make memory.h include osdep/memory.h to pick up OS-specific options.
+  AmigaOS version now picks up the SAVE_MEMORY option correctly.
+- Fixed AmigaOS gfx driver not clearing screen properly
+- Implemented fsusage for AmigaOS
+- Implemented frame timing for classic (m68k) AmigaOS using the EClock.
+- Implemented AmigaOS threading/semaphore code (not complete).
+- Implemented AmigaOS joystick driver using gameport.device
+- Applied patch from Giuseppe Ghibò to re-enable the -h command-line option
+  to show information about config options.
+- Renamed the bsdsocket.c to bsdsocket-posix.c and imported the old
+  bsdsocket.c file (as used by WinUAE). Hopefully one day there can be some
+  reconciliation between the two. ;-)
+- Modified the bsdsocket emulation so that a trap is installed even when the
+  emulation proper is not built. This stops UAE crashing when the Amiga side
+  of the emulation is used, but no emulation is present in UAE itself.
+- Fixed bsdsocket emulation so that it really (this time) obeys the bsdsock
+  config file option.
+
+20031215
+- If options file not found in home directory or current directory, then
+  use home directory as default path. This enables the GTK+ UI to save
+  a newly generated config file in a sane place.
+- In SDL target, changed full-screen mode to always grab mouse input. This
+  works around mouse motion problems in full-screen mode in OS X.
+- Kludged on a widget for selecting cycle-exact CPU mode in the gtk UI. I
+  don't want to add much to the GUI just now because it's in the process of
+  being rewritten - but this was cheap to do and it doesn't make sense to
+  build in cycle-exact mode if it cannot be easily used.
+- Tweaks to allow building without cycle-exact CPU (CPUEMU_6 undefined).
+  There's no config file support for this as yet, but if you want to save
+  buckets of time when compiling, load up src/Makefile and remove that
+  define in CFLAGS and cpuemu_*_6.o/compemu_*_6.o from OBJS.
+- Fixed a race condition which caused the name of a newly selected kickstart
+  image or key file sometimes not to be displayed.
+- Added a scale factor to read_processor_time() on x86 target. People were
+  reporting timing problems on fast machines, and I believe the problem is due
+  to the number of ticks per second of the processor clock (syncbase) not
+  fitting in a signed int (on 2GHz+ machines). By scaling down the clock
+  (currently by a factor of 16), hopefully this problem is solved. Also
+  modified the RDTSC call to return the processor time as a full 64-bits. This
+  is needed so that scaled down clock still rolls over in 32 bits (and indeed
+  read_processor_time() still returns time as 32 bits).
+- Added a patch from Stephen Anthony to make the floppy file dialog in gtkui
+  remember the last path used (saves all that searching through folders to
+  find the right ADF file).
+- Initial implementation of hardfile support on Unix (no LFS or Gtk GUI
+  support yet). RDB hardfiles cause problems with recent versions of HDToolBox
+  which needs to be further investigated.
+- Some minor tweaks to AmigaOS and BeOS targets (AmigaOS target should now
+  build out of the box, but still a lot of work to do on BeOS).
+- Lots of tidying doing trivial syncs with WinUAE 0.8.22r9.
+- Cleaned up sleep_millis() and sleep_millis_busy(). They're now in sleep.c
+  and will call my_usleep() - which will be replaced with an apropriate libc
+  or OS call depending on what's available (e.g., nanosleep(), usleep() or
+  SDL_Delay()). sleep_millis() will now busy wait if possible when asked to
+  sleep for less than 10ms (the granularity of most system sleep routines will
+  not allow sleeping for shorter periods - according to the docs).
+  sleep_millis_busy() will now only sleep if busy waiting is not required (for
+  sub-10ms sleeps).
+- Cleaned up MAX_PATH nonsense. Arbitrarily assigned a value of 512 if it's
+  not defined. (We could use MAXPATHLEN from POSIX headers, but this value
+  is just as arbitrary and rather wasteful. E.g., it's 2048 on Linux. Anybody
+  really need paths that long?)
+- Commented out unused routines createinputfile(), etc. in zfile.c which were
+  there to support external dms tool but are no longer required (and anyway
+  don't build on AmigaOS without ixemul due to the lack of the dubious
+  tempnam() function).
+- Tidied up usage of strcmpi() and stricmp(). Replaced with strcasecmp() and
+  added configure support for substituting strcasecmp() for one of these if
+  it isn't available. (Shouldn't be necessary. strcasecmp() is a BSD standard,
+  but the other two are aren't always available - e.g. Linux doesn't have them.)
+- Fixed configure script to build bsdsocket emulation by default only on
+  Unix platforms.
+- Fixed misreporting of bsdsocket emulation not being built when it has been.
+
+20031202
+- Modified gencpu (and build scripts) to generate cpuemu.c in three pieces
+  like it does in WinUAE. This should require less memory to build the CPU
+  emulation and should thus speed up compilation on GCC3 (it also opens the
+  door to compile-time configuration of the CPU emulation).
+- Modified configure script to omit X86_ASSEMBLY option when building for
+  x86 BeOS (it doesn't work there).
+- Modified configure script to allow building with GCC 3 on x86 (this was
+  already possible on other archs). The cpuopti step is simply omitted
+  (since cpuopti won't currently work with GCC 3 output).
+- Updated Amiga target. Closer to building now (with GCC at least). Sound and
+  joystick support still to do, and config options probably need tweaking.
+- Add updated Solaris sound driver from Elmar Plischke.
+- Added patch from Elmar to allow bsdsocket emulation to compile on Solaris.
+- Removed GNU varargs macros throughout (this should allow UAE to be compiled
+  without GCC once more). Thanks to Elmar for pointing this out.
+- Freeing memory in mapped_free() was broken when JIT was compiled in but
+  direct memory access disabled. Fixed
+- Imported support for using DMS floppy images from WinUAE.
+- Support for using zipped or gzipped ADF files was broken. Fixed.
+- Accept __POWERPC__ and __ppc__ as a synonyms of __powerpc__ when
+  testing for PPC architecture in configure script (GCC on MacOS X uses
+  these).
+- Cleaned up custom.c and drawing.c in preparation for merge with WinUAE. (This
+  breaks P96 in SDL and X11 targets. I've fixed SDL, but X11 fix is still to
+  do).
+- Added support for switching between windowed/full-screen mode on SDL target,
+  even when SDL doesn't support SDL_WM_ToggleFullScreen (e.g. MacOS X).
+- Added hack to allow the use of F11 as the hot-key modifier in SDL target.
+  F12 doesn't work as other keys under MacOS X it seems. Key up/down events
+  are generated only when the key is released - so it's no good for a hot-key
+  modifier.
+- When changing from a P96 screen mode to an Amiga screen mode, a segfault
+  could occur. Fixed.
+- JIT causes segfault on start-up on 2.6 kernels (and some 2.4 kernels).
+  Problem is due to messing about with the processes's LDT (Local Descriptor
+  Table) to accelerate access to VM's memory. Disabled this for now until I
+  find a solution.
+- Partial support for Danish keyboards in SDL target (some keys aren't
+  currently supported by SDL keysyms).
+
+20031118
+- Added scripts to build debian package
+- Added Carl Drougge's bsdsocket.library and source to package (this handles
+  the Amiga side of his bsdsocket emulation, which is already included in this
+  tree).
+- Added this changelog to package
+- Updated docs dir from uae-0.8.22 (I still had 0.8.21).
+- Added 1280x960 screen mode to SDL and X11 targets - I prefer square pixels!
+- Changing Amiga/P96 screen mode in SDL target while mouse was grabbed would
+  screw mouse motion because UAE would forget mouse mode. Fixed.
+- Changing Amiga/P96 screen mode in SDL target would cause full-screen mode
+  to be lost. Fixed.
+- Changing P96 screen mode to a larger mode in SDL target caused a crash. Fixed.
+- Re-did video mode selection in SDL target. 15-bit modes now work for P96.
+- Ensured that files which include the SDL headers do so with the proper
+  path (That is, no path. It's provided by sdl-config).
+- Lots of clean-ups in preparation for getting stuff merged in the WinUAE tree.
+- Removed code for the Windows target from this tree. Eventually I want to
+  get it building with MinGW, Cygwin and maybe even OpenWatcom - but we're
+  some way from that goal, so for right now we'll just save some bandwidth.
+- Removed code for Acorn, pOS, DOS, OS/2 and NeXT targets. I'm sure that these
+  don't work now, and I don't have the facilities to test them anyway.
+- Recoded source files to ensure the use of Unix-style end-of-line markers.
+  GCC on BeOS was barfing on the DOS CR/LF codes that accidentally got imported
+  from the WinUAE tree.
+
+20031113
+- Added mapping of left and right "super" keys (Windows keys on a Windows
+  keyboard) to left and right Amiga keys in SDL and X targets.
+- Swapped mapping of apostrophe and back quote keys in SDL target
+
+20031106
+- Silly me. Timehack was demanding clocks to be exactly in sync with 1us
+  accuracy.  Made it less strict and only update amiga time if it is out by
+  more  than 1ms.
+- Added dummy set_thread_priority() function in sdl and posix thread
+  wrappers (require if using filesystem threads).
+- Tweaks for configure script:
+  * Better detection of when thread support is required (currently
+    filesystem code requires threads - even when not building with
+    UAE_FILESYS_THREADS option - due to dependency on hardfile code).
+  * Filesystem threads will now be compiled in by default
+  * Configure now works again on BeOS (whether it will build is another
+    story.)
+- Fixes to re-enable building without a GUI.
+- Made bsdsocket emulation a compile-time option.
+- Really fix dummy joystick driver in od-generic.
+- Fixed joystick counting in Linux joystick driver.
+- Fixed mouse button mapping in X target.
+- Fixed moused movement in DGA mode and when grabbed in X target
+- Fixed X pointer being displayed in UAE window after grabbing and
+  ungrabbing mouse with X target.
+- Fixed various functions which should have been exported from
+  gfxutil.c but were declared static.
+
+20031011
+- Fixed UAE side of timehack which was translating Unix Epoch UTC
+  time to Amiga Epoch UTC+2.
+- Added support in Amiga side of timehack for setting clock to local time
+  using offset from UTC read from environment variable TZ. Added 
+  break handling, so you can now kill the damn thing.
+- Ported dummy sound driver in generic target to new sound API. 
+- Put back big-endian fixes for OSS sound target (which for some reason 
+  never made it into this tree).
+- Got X11 target compiling again. Still needs work on mouse handling.
+- Linux joystick driver now works. (Did it ever work before?) Not tested
+  on BSD, though. This uses the old and crap v0.x Linux joystick API.
+  Need to add a driver for the new API.
+- Lots of of clean-up in input layer. Ported all the joystick drivers
+  to the new inputdevice API and thus got rid of some of my hacks
+  in input-dummy.c (this will eventually go away all together).
+- GTK+ GUI now works on Darwin/MacOS X with SDL threads. POSIX semaphores
+  appear to be broken there, however.
+- Cleaned up threads targets. Implemented the sleep_millis() function
+  in each of the thread.h targets (previously, SDL implementation was
+  in sdlgfx.c). Now you can build with SDL threads without SDL gfx.
+- Added debug logging to GTK+ GUI.
+- Lots of clean-up in GTK+ GUI. Reworked pausing and quitting code.
+  Verified that no GTK+ widgets are directly accessed from main UAE
+  thread - hopefully clearing up GUI lock-up problems that have been
+  reported. Moved more code into gtk_gui_thread() and added a semaphore
+  to sync with UAE thread on GUI start-up.
+- Started documenting GTK+ code.
+- Fixed font problem in About page of GTK+ GUI. The code was changing
+  the default font style, not just applying style to widget (although
+  this bug didn't seem to effect any of my Linux boxes, it did show up on
+  Darwin).
+- Fixed sizing policy of GTK+ main window. When the window's vertical
+  size was increased, the Snaphots gadgets would expand - which looked
+  very ugly. Now they don't.
+
+20031005
+- First stab at a GTK message box implementation that is used to report
+  certain warnings to the user via a GUI dialog rather than just dumping a
+  message on the console. (It's not used much, yet, but is used to report
+  problems in loading a Kickstart image, etc.)
+- More mucking about with memory.c. Verified that differences with WinUAE
+  are either bugs in WinUAE or differences in the way Windows does things.
+  Did some more tidying up and started doing some documentation.
+- Fixed a bug that would cause a segfault if the ROM keyfile (for encoded
+  Cloanto ROMs) was unable to be read.
+- Hacked a solution to the problem that most config changes effected in the
+  GTK GUI wouldn't be saved out to a config file unless the VM was running
+  (to accept the changes).
+- Fixed a bug with the new input subsystem and the GTK UI that that meant
+  changes in joystick port preferences didn't take effect and couldn't be
+  saved out in the config file.
+- Added config file support for 8-bit sound back in. 
+- Started bringing back some of the snaphost code (still not ready to go yet,
+  though).
+
+20031003
+- Fixed problem with SDL not cleaning up if UAE dies horribly or is killed.
+  Now, when running full-screen and UAE dies, you should get your X display
+  back.
+- Finished merging the new config-file code from WinUAE (many of the new
+  config options aren't actually used yet, though). New filesys config code
+  may cause problems with config files from my earlier versions and cause
+  duplicate disks to be mounted. Just go into the hard drive section of the
+  config and remove any duplicates. (In hindsight, I should have merged all
+  the new config code in one go.)
+- Disabled the load and save snapshot buttons in the GTK+ UI. The snapshot
+  function isn't actually useable yet. I'll re-enable them when it is.
+- Merged latest ShapeShifter hack from WinUAE and did some tidying up
+  of memory.c.
+- Switched a lot of the debugging output in bsdsocket.c to be generated only
+  with a compile-time option (cut down the rubbish dumped to the console).
+
+20031001
+- Fixed endian problem with P96 screens on SDL on big-endian hardware such as
+  the PPC. This is a quick fix and just chooses the right byte-order for pixel
+  encoding depending on the host machine's byte-order. A better fix would take
+  account of the display's byte-order rather than the host's (similar applies to
+  the previous AGA fix). This and a fix for plain X11 target to do. There
+  appears to still be an occasional problem with P96 on 32-bit screens where red
+  and blue guns are swapped. Possibly a bug somewhere in the blitting code
+  in the P96 emulation. Need more time to investigate.
+  
+20030930 (mistakenly tagged the release as 20030330)
+- Fixed endian problem with AGA screens on big-endian hardware such as the
+  PPC.
+- Fixed bug in the GTK+ UI which stopped the AGA option in the chipset page
+  being selected even when it was selected in your config.
+
+20030928-3
+- Fixed problem with processor time calculations on the ppc-gcc target. This
+  fix will have wide-ranging effects on UAE's performance on the PPC, since
+  the processor timer (the PPC's timebase counter) is used to
+  synchronize m68k emulation with custom chip emulation. 'Adjustable' cpu mode
+  now works.
+
+20030928-2
+- Binary only release due to hosed PPC binary. Ooops.
+
+20030928
+- First release to the A1g3dev mailing list.
+- Loads and loads of changes and fixes to plain old UAE-0.8.22 including:
+  * Latest CPU, x86 JIT and custom-chip emulations from WinUAE 0.8.22r9
+  * Latest filesystem code from WinUAE 0.8.22r9 (notification on a virtual
+    filesystem should now work).
+  * New input device code merged from WinUAE. Needs testing and attention.
+  * Several SDL fixes, particularly with clean-up and exiting.
+  * Fixed 16-bit SDL and OSS sound for big-endian machines
+  * Loads of GTK+ UI fixes, particularly with threading and exiting.
+  * Fixed bugs in floppy section of GTK+ UI (as a plus the LEDs now work).
+  * Replaced hard drive section of the GTK+ UI. A lot more useable.
+  * Assorted config and make script tweaks
+  * Assorted fixes to clean up code and cut down on compiler warnings.
+  * Possibly more that have I forgotten about . . .

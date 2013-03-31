@@ -1,0 +1,59 @@
+#!/bin/sh
+#
+# copy those files that are necessary to use the libscg
+# in UAE
+# 
+# Patrick Ohly, 9.4.2000, GPL
+#
+# Updated for cdrtools 2.0.x Richard Drummond 15.2.2004
+
+#
+# check arguments
+#
+if [ $# -lt 1 ] || [ $# -gt 3 ] || [ "$1" == "--help" ]; then
+    echo "usage: $0 <cdrtools dir> <machine type (optional)>"
+    exit 0
+fi
+cdrecorddir=$1
+if ! [ -d "$cdrecorddir" ] || ! [ -d "$cdrecorddir"/include ]; then
+    echo "$0: $cdrecorddir is not the cdrtools top level directory"
+    exit 10
+fi
+cdrecinc="$cdrecorddir"/include
+
+#
+# try to find machine type 
+#
+if [ "$2"x != x ]; then
+    machine="$2"
+else
+    machine=`ls "$cdrecorddir"/libs`
+    if [ `echo "$machine" | wc -l` -gt 1 ]; then
+        echo "please specify your machine type - libscg was compiled for:"
+        echo "$machine"
+        exit 10
+    elif [ "$machine"x == x ]; then
+        echo "please compile cdrecord for your machine first"
+        exit 10
+    fi
+fi
+
+#
+# find our own directory
+# hint: this file is in src
+#
+uaedir=`dirname "$0"`
+
+cp -R -f "$cdrecinc/btorder.h" "$cdrecinc/intcvt.h" "$cdrecinc/mconfig.h" \
+         "$cdrecinc/prototyp.h" "$cdrecinc/utypes.h" "$cdrecorddir/libscg/scg" \
+	 "$cdrecorddir/incs/$machine/xconfig.h" "$uaedir/include"
+cp -f "$cdrecorddir/libs/$machine/libscg.a" \
+      "$cdrecorddir/libs/$machine/libschily.a" "$uaedir"
+
+case $machine in
+  *-darwin-*)
+    ranlib -a "$uaedir/libscg.a"
+    ranlib -a "$uaedir/libschily.a"
+    ;;
+esac
+											

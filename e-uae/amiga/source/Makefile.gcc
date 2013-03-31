@@ -1,0 +1,11 @@
+#!/usr/bin/make -f
+# Makefile to build UAE amiga tools with GCC
+
+CC = gcc
+CFLAGS  = -O2 -noixemul -fomit-frame-pointer -msmall-code -fbaserel
+LDFLAGS = $(CFLAGS) -s
+
+timehack: timehack.o
+
+clean:
+	-rm timehack timehack.o

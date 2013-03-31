@@ -1,0 +1,33 @@
+Networking
+==========
+
+The Amiga environment running within UAE may share the host machine's
+network access via an emulation of the bsdsocket.library (this library
+provides the standard Amiga networking API). This isn't supported on
+all target platforms yet, but it should work on Linux, Unix and
+Mac OS X.
+
+The emulation of the bsdsocket.library API is not complete, but should
+be sufficient to allow you to use most popular AmigaOS network
+clients, such as web browsers and mail readers.
+
+To enable the bsdsocket.library emulation (assuming you are using a
+version of E-UAE with this feature compiled in), add the option
+
+bsdsocket_emu=true
+
+to your config file.
+
+Note that you do not need to install any real Amiga network stack - such
+as AmiTCP or Miami - to be able to use the bsdsocket emulation.
+
+Also note that when using the bsdsocket.library emulation that your
+AmigaOS environment will use the same IP address as the host platform.
+This may limit the types of networking software you can run in the
+emulated Amiga environment. For example, Amiga software will not be
+able to bind to ports already in use by host software, and your host
+operating system may impose access controls on certain ranges of ports.
+
+Older versions of E-UAE required that a bsdsocket.library wrapper file
+be installed somewhere in the LIBS: path in your Amiga environment.
+This is no longer the case, and this file should now be removed.
