@@ -11,8 +11,10 @@
 
 #include "filesys.h"
 
+#ifndef PS3PORT
 #if HAVE_SYS_PARAM_H
 # include <sys/param.h>
+#endif
 #endif
 
 #if HAVE_SYS_MOUNT_H

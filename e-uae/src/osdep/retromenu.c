@@ -103,7 +103,7 @@
 #define MAX_DISK 6
 
 #ifdef __PS3__
-#define SAVE_PATH "/dev_hdd0/game/EUAE00829/USRDIR/SAVE/"
+#define SAVE_PATH "/dev_hdd0/HOMEBREW/UAE/"
 #else
 	#ifdef AND
 	#define SAVE_PATH "mnt/sdcard/euae/save/"
@@ -119,7 +119,7 @@ extern int PAS;
 extern int vsync_enabled;
 
 #ifdef __PS3__
-char** rpath = NULL; //use "/" as a root path
+char* rpath[] = {"/dev_hdd0/HOMEBREW/UAE", "/dev_hdd0/HOMEBREW", NULL};
 #else
 char* rpath[] = {"/mnt/sdcard/euae", "../../UAEDSK", NULL};
 #endif
@@ -210,6 +210,7 @@ extern unsigned short int bmp[TEX_WIDTH * TEX_HEIGHT];
 #define pixbuf bmp
 #define draw_rect(a,b,c,d,e)	DrawFBoxBmp(pixbuf,a,b,c,d,RGB565(22,23,26) )
 #define draw_text(a,b,c,d) 	Draw_text(pixbuf,a,b, menu_pos == index ? 0xff00:0xffff,0x8080,1,1 ,64,c)
+#define draw_text2(a,b,c,d) 	Draw_text(pixbuf,a,b, 0xffff,0x8080,1,1 ,64,c)
 #define RETRO_FSEL();	\
 	if(filebrowse==0){\
 		filebrowse=1;\
@@ -238,7 +239,11 @@ int sav_event=0;
 #ifdef AND
 #define DEFAULT_PATH "/mnt/sdcard/euae/"
 #else
+#ifdef PS3PORT
+#define DEFAULT_PATH "/dev_hdd0/HOMEBREW/UAE/"
+#else
 #define DEFAULT_PATH "/"
+#endif
 #endif
 
 int filebrowse=0;
@@ -315,7 +320,7 @@ void update_title_bar(void) {
 		getBogoSize(currprefs.bogomem_size)
 	);
 	draw_rect(ovl_left+24*8,ovl_top+26,408,8,1); //clean the previous text off the scrren
-	draw_text(ovl_left+24*8,ovl_top+26, (unsigned char*) tmp , color_hi);		
+	draw_text2(ovl_left+24*8,ovl_top+26, (unsigned char*) tmp , color_hi);		
 
 }
 
@@ -342,7 +347,7 @@ void  init_main_screen(void) {
 	draw_rect(ovl_left+10,ovl_top+40,580,1,3);
 //	draw_rect(10,132,300,1,3);
 
-	draw_text(ovl_left+10,ovl_top+26, (unsigned char*)PACKAGE_STRING, color_hi);
+	draw_text2(ovl_left+10,ovl_top+26, (unsigned char*)PACKAGE_STRING, color_hi);
 
 	sprintf(kickrom_name, "%s\0", currprefs.romfile);
 
@@ -361,9 +366,9 @@ void paint_status_bar(void) {
 	}
 	//draw either status line help text or the last message
 	if (statline_msg[0] == 0) {
-		draw_text(ovl_left+10,ovl_top+206, (unsigned char*)statline[statusId], color_lo);
+		draw_text2(ovl_left+10,ovl_top+206, (unsigned char*)statline[statusId], color_lo);
 	} else {
-		draw_text(ovl_left+10,ovl_top+206, (unsigned char*)statline_msg, color_lo);
+		draw_text2(ovl_left+10,ovl_top+206, (unsigned char*)statline_msg, color_lo);
 		statline_msg[0] = 0;
 	}
 

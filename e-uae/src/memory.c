@@ -20,7 +20,7 @@
 #include "autoconf.h"
 #include "savestate.h"
 #include "ar.h"
-#include "crc32.h"
+#include "uaecrc32.h"
 
 #ifdef USE_MAPPED_MEMORY
 #include <sys/mman.h>
@@ -1899,7 +1899,7 @@ uae_u8 *save_rom (int first, uae_u32 *len, uae_u8 *dstptr)
     save_u32 (mem_size);
     save_u32 (mem_type);
     save_u32 (longget (mem_start + 12));	/* version+revision */
-    save_u32 (get_crc32 (kickmemory, mem_size));
+    save_u32 (uae_get_crc32 (kickmemory, mem_size));
     sprintf ((char *) dst, "Kickstart %d.%d", wordget (mem_start + 12), wordget (mem_start + 14));
     dst += strlen ((const char *) dst) + 1;
     strcpy ((char *) dst, currprefs.romfile);/* rom image name */

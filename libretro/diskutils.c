@@ -9,6 +9,10 @@
 #include <stdlib.h>
 #include <errno.h>
 
+#ifdef PS3PORT
+#define S_ISDIR(x) (x & CELL_FS_S_IFDIR)
+#endif
+
 int ndsknum=0;
 static int entries; 
 

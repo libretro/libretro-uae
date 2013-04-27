@@ -14,6 +14,8 @@
 #include "xwin.h"
 #include "custom.h"
 
+#include "hrtimer.h"
+
 #define PIX_BYTES 2
 
 #define TD_POSY 30
@@ -200,6 +202,7 @@ int retro_renderSound(short* samples, int sampleCount) {
 
 }
 
+#if 0
 #include <sys/types.h>
 #include <sys/time.h>
 #include <time.h>
@@ -217,6 +220,7 @@ long GetTicks(void)
 #endif
                                                                               
 } 
+#endif
 
 int RLOOP=1;
 void retro_loop(){

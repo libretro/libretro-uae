@@ -43,7 +43,7 @@
 #include "caps.h"
 #endif
 #endif
-#include "crc32.h"
+#include "uaecrc32.h"
 
 #include <ctype.h>
 
@@ -1247,7 +1247,7 @@ static void decode_pcdos (drive *drv)
 	secbuf[17] = side;
 	secbuf[18] = 1 + i;
 	secbuf[19] = 2; // 128 << 2 = 512
-	crc16 = get_crc16 (secbuf + 12, 3 + 1 + 4);
+	crc16 = uae_get_crc16 (secbuf + 12, 3 + 1 + 4);
 	secbuf[20] = crc16 >> 8;
 	secbuf[21] = crc16 & 0xff;
 	memset (secbuf + 22, 0x4e, 22);
@@ -1257,7 +1257,7 @@ static void decode_pcdos (drive *drv)
 	secbuf[58] = 0xa1;
 	secbuf[59] = 0xfb;
 	read_floppy_data (drv->diskfile, ti, i * 512, &secbuf[60], 512);
-	crc16 = get_crc16(secbuf + 56, 3 + 1 + 512);
+	crc16 = uae_get_crc16(secbuf + 56, 3 + 1 + 512);
 	secbuf[60 + 512] = crc16 >> 8;
 	secbuf[61 + 512] = crc16 & 0xff;
 	memset (secbuf + 512 + 62, 0x4e, 76 / drv->ddhd);
@@ -1668,7 +1668,7 @@ static int drive_write_pcdos (drive *drv)
 
 	    tmp[0] = 0xa1; tmp[1] = 0xa1; tmp[2] = 0xa1; tmp[3] = mark;
 	    tmp[4] = cyl; tmp[5] = head; tmp[6] = sector; tmp[7] = size;
-	    if (get_crc16 (tmp, 8) != crc || cyl != drv->cyl || head != side || size != 2 || sector < 1 || sector > (int)drv->num_secs) {
+	    if (uae_get_crc16 (tmp, 8) != crc || cyl != drv->cyl || head != side || size != 2 || sector < 1 || sector > (int)drv->num_secs) {
 		write_log ("PCDOS: track %d, corrupted sector header\n", drv->cyl * 2 + side);
 		return 1;
 	    }
@@ -1684,7 +1684,7 @@ static int drive_write_pcdos (drive *drv)
 	for (i = 0; i < 512; i++)
 	    secbuf[i + 4] = mfmdecode (&mbuf, shift);
 	crc = (mfmdecode (&mbuf, shift) << 8) | mfmdecode (&mbuf, shift);
-	if (get_crc16(secbuf, 3 + 1 + 512) != crc) {
+	if (uae_get_crc16(secbuf, 3 + 1 + 512) != crc) {
 	    write_log ("PCDOS: track %d, sector %d data checksum error\n",
 		drv->cyl * 2 + side, sector + 1);
 	    continue;
@@ -3137,7 +3137,7 @@ static uae_u32 getadfcrc (drive *drv)
 	return 0;
     zfile_fseek (drv->diskfile, 0, SEEK_SET);
     zfile_fread (b, 1, size, drv->diskfile);
-    crc32 = get_crc32 (b, size);
+    crc32 = uae_get_crc32 (b, size);
     free (b);
     return crc32;
 }

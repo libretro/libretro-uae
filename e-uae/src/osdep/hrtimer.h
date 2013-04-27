@@ -10,7 +10,18 @@
 #define EUAE_OSDEP_HRTIMER_H
 
 #ifdef PS3PORT
-#include <sys/systime.h>
+#include "sys/sys_time.h"
+#include "sys/timer.h"
+#define usleep  sys_timer_usleep
+
+STATIC_INLINE void gettimeofday (struct timeval *tv, void *blah)
+{
+    int64_t time = sys_time_get_system_time();
+
+    tv->tv_sec  = time / 1000000;
+    tv->tv_usec = time - (tv->tv_sec * 1000000);  // implicit rounding will take care of this for us
+}
+
 #else
 #include <sys/types.h>
 #include <sys/time.h>
@@ -25,23 +36,9 @@ STATIC_INLINE frame_time_t osdep_gethrtime (void)
     
 #ifndef _ANDROID_
 
-#ifdef PS3PORT
-
-#warning "GetTick PS3\n"
-
-	unsigned long	ticks_micro;
-	uint64_t secs;
-	uint64_t nsecs;
-
-	sys_time_get_current_time(&secs, &nsecs);
-	ticks_micro =  secs * 1000000UL + (nsecs / 1000);
-
-	return ticks_micro;
-#else
    	struct timeval tv;
    	gettimeofday (&tv, NULL);
    	return tv.tv_sec*1000000 + tv.tv_usec;
-#endif
 
 #else
 

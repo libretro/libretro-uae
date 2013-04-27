@@ -74,7 +74,11 @@ void Emu_uninit(){
 #ifdef AND
 #define DEFAULT_PATH "/mnt/sdcard/euae/"
 #else
-#define DEFAULT_PATH "/"
+	#ifdef PS3PORT
+	#define DEFAULT_PATH "/dev_hdd0/HOMEBREW/UAE/"
+	#else
+	#define DEFAULT_PATH "/"
+	#endif
 #endif
 
 #define MDEBUG

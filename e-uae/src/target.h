@@ -13,7 +13,11 @@
 #ifdef AND
 #define OPTIONSFILENAME "/mnt/sdcard/euae/uae.cfg"
 #else
-#define OPTIONSFILENAME "../cfg/uae.cfg"
+	#ifdef PS3PORT
+	#define OPTIONSFILENAME "/dev_hdd0/HOMEBREW/UAE/uae.cfg"
+	#else
+	#define OPTIONSFILENAME "../cfg/uae.cfg"
+	#endif
 #endif
 
 #endif
@@ -23,11 +27,14 @@
 #ifdef AND
 #define MULTI_OPTIONS "/mnt/sdcard/euae/uae.cfg", "../cfg/uae.cfg",  NULL
 #else
-#define MULTI_OPTIONS "../cfg/uae.cfg", "./uae.cfg",  NULL
-#endif
+	#ifdef PS3PORT
+	#define MULTI_OPTIONS "/dev_hdd0/HOMEBREW/UAE/uae.cfg", "../cfg/uae.cfg",  NULL
+	#else
+	#define MULTI_OPTIONS "../cfg/uae.cfg", "./uae.cfg",  NULL
+	#endif
 
 #endif
-
+#endif
 /* #define NO_MAIN_IN_MAIN_C */
 
 #define DEFPRTNAME "null"

@@ -22,6 +22,14 @@
 #include <assert.h>
 #include <limits.h>
 
+#ifdef PS3PORT
+#define getenv(a)	"/dev_hdd0/HOMEBREW/UAE/"
+#define F_OK 0
+#define R_OK 4
+#define S_ISDIR(x) (x & CELL_FS_S_IFDIR)
+#define S_ISREG(m) (m & CELL_FS_S_IFREG)
+#endif
+
 #ifndef __STDC__
 #ifndef _MSC_VER
 #error "Your compiler is not ANSI. Get a real one."

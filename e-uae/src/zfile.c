@@ -17,7 +17,7 @@
 #include "dms/cdata.h"
 #include "dms/pfile.h"
 #include "gui.h"
-#include "crc32.h"
+#include "uaecrc32.h"
 
 #include <zlib.h>
 
@@ -748,7 +748,7 @@ uae_u32 zfile_crc32 (struct zfile *f)
     if (!f)
 	return 0;
     if (f->data)
-	return get_crc32 (f->data, f->size);
+	return uae_get_crc32 (f->data, f->size);
     pos = zfile_ftell (f);
     zfile_fseek (f, 0, SEEK_END);
     size = zfile_ftell (f);
@@ -759,7 +759,7 @@ uae_u32 zfile_crc32 (struct zfile *f)
     zfile_fseek (f, 0, SEEK_SET);
     zfile_fread (p, 1, size, f);
     zfile_fseek (f, pos, SEEK_SET);
-    crc = get_crc32 (p, size);
+    crc = uae_get_crc32 (p, size);
     free (p);
     return crc;
 }

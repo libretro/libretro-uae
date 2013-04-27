@@ -1963,7 +1963,7 @@ put_time (long days, long mins, long ticks)
      * the difference if we can. This ain't easy to do in
      * a portable, thread-safe way.
      */
-#  if defined HAVE_GMTIME_R && defined HAVE_LOCALTIME_R
+#  if defined HAVE_GMTIME_R && defined HAVE_LOCALTIME_R && !defined PS3PORT
     {
 	struct tm tm;
         struct tm now_tm;
