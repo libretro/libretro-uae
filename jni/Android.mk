@@ -28,7 +28,7 @@ CORE_SRCS := $(EMU)/main.c $(EMU)/newcpu.c $(EMU)/fpp.c $(EMU)/memory.c $(EMU)/c
 	$(EMU)/hotkeys.c $(EMU)/enforcer.c  $(EMU)/missing.c \
 	$(EMU)/readcpu.c $(EMU)/writelog.c $(EMU)/unzip.c $(EMU)/zfile.c $(EMU)/sinctable.c
 
-CORE_SRCS += $(EMU)/hardfile.c $(EMU)/hardfile_unix.c $(EMU)/scsi-none.c $(EMU)/fsusage.c  $(EMU)/crc32.c \
+CORE_SRCS += $(EMU)/hardfile.c $(EMU)/hardfile_unix.c $(EMU)/scsi-none.c $(EMU)/fsusage.c  $(EMU)/uaecrc32.c \
 	$(EMU)/events.c $(EMU)/misc.c 
 
 #PPU_SRCS += blkdev.c scsiemul.c
