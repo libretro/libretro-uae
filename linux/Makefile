@@ -44,7 +44,7 @@ CORE_SRCS := $(EMU)/main.o $(EMU)/newcpu.o $(EMU)/fpp.o $(EMU)/memory.o $(EMU)/c
 	$(EMU)/hotkeys.o $(EMU)/enforcer.o  $(EMU)/missing.o \
 	$(EMU)/readcpu.o $(EMU)/writelog.o $(EMU)/unzip.o $(EMU)/zfile.o $(EMU)/sinctable.o
 
-CORE_SRCS += $(EMU)/hardfile.o $(EMU)/hardfile_unix.o $(EMU)/scsi-none.o $(EMU)/fsusage.o  $(EMU)/crc32.o \
+CORE_SRCS += $(EMU)/hardfile.o $(EMU)/hardfile_unix.o $(EMU)/scsi-none.o $(EMU)/fsusage.o  $(EMU)/uaecrc32.o \
 	$(EMU)/events.o $(EMU)/misc.o 
 
 #PPU_SRCS += blkdev.o scsiemul.o
