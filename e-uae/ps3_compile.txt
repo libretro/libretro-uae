@@ -1,5 +1,0 @@
-Install psl1ght and run "make clean" then "make pkg" in current directory.
-Run "make clean" to clean the build (and to create build directories).
-Run "make pkg log=true" to enable logging console.
-
-Note: make file is preconfigured for psl1ght so don't run ./configure

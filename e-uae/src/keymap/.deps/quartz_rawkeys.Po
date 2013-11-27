@@ -1,1 +1,0 @@
-quartz_rawkeys.o: quartz_rawkeys.c

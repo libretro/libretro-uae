@@ -1,1 +1,0 @@
-blkdev-linux.o: blkdev-linux.c

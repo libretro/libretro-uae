@@ -1,0 +1,1 @@
+sinctable.o: sinctable.c

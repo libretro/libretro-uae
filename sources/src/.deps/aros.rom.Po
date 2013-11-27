@@ -1,0 +1,1 @@
+aros.rom.o: aros.rom.c

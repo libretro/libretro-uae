@@ -1,1 +1,0 @@
-beos_rawkeys.o: beos_rawkeys.c

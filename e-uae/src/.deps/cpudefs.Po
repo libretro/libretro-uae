@@ -1,8 +1,0 @@
-cpudefs.o: cpudefs.c sysconfig.h ../src/include/uae_types.h \
- ../src/include/readcpu.h
-
-sysconfig.h:
-
-../src/include/uae_types.h:
-
-../src/include/readcpu.h:

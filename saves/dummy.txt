@@ -1,0 +1,2 @@
+here is the place for savestates (linux)
+add a dummy file for git upload. 

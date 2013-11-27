@@ -1,0 +1,9 @@
+u_heavy.o: u_heavy.c cdata.h u_heavy.h getbits.h maketbl.h
+
+cdata.h:
+
+u_heavy.h:
+
+getbits.h:
+
+maketbl.h:

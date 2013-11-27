@@ -1,9 +1,4 @@
-		E-UAE-0.8.29-WIP4 LIBRETRO DEBUG VERSION
-
-
-What?: First attempt to build e-uae with libretro 
-Why ?: Why not ?
-Who ?: Rtype 
+		L-UAE LIBRETRO UAE DEBUG VERSION
 
 
 All credits to :
@@ -15,16 +10,18 @@ Schmidt (the original author and maintainer of UAE), Bernie Meyer (the
 author of the x86 JIT compiler), Toni Wilen (the current maintainer of
 WinUAE), and many more.
 
-This RETRO port is based on PS3 version E-UAE 0.8.29-WIP4 release 8
+This RETRO port was  based at start on PS3 version E-UAE 0.8.29-WIP4 release 8
 so aslo credits to Ole.
 
+For now we use the UEA core provide by PUAE 2.6.1
+https://github.com/GnoStiC/PUAE Credits to Mustafa 'GnoStiC' TUFAN
+	
 And of course for the RetroArch/Libretro team : "http://www.libretro.org/"
 
 It's a quick hack.
-At this time , works the basis but buggy on linux /android.
+At this time , works the basis but buggy on win/linux/android.
 
 Remember ,Everything not working well, It's a debug release , so expect to more bug.
-
 
 Default Control :
 
@@ -52,3 +49,5 @@ Knows Bugs:
 	- When load savesate , exiting GUI without reset . You have to re-enter GUI and do the reset .
 	- Everything not working well, It's a debug release , so expect to more bug.
 
+
+We plan to use the core of winuae in the future, but no release date for now.
