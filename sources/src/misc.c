@@ -109,7 +109,7 @@ void getgfxoffset (int *dxp, int *dyp, int *mxp, int *myp)
 
 int vsync_switchmode (int hz)
 {
-#if 0
+#ifndef RETRO
     static struct PicassoResolution *oldmode;
     static int oldhz;
 	int w = currentmode->native_width;
@@ -161,9 +161,10 @@ int vsync_switchmode (int hz)
                     config_changed = 1;
             }
             return true;
-    }
+    } 
+#else
+return false;
 #endif
- return false;
 }
 
 //win32.cpp
@@ -171,11 +172,7 @@ int extraframewait = 5;
 
 void sleep_millis_main (int ms)
 {
-#ifdef WIN32PORT
-	usleep(ms*1024);
-#else
 	uae_msleep (ms);
-#endif
 }
 
 void target_restart (void)
@@ -735,10 +732,12 @@ void update_debug_info(void)
 {
 }
 
+#ifdef RETRO
 const TCHAR *target_get_display_name (int num, bool friendlyname){return NULL;}
 int target_get_display (const TCHAR *name){return -1;}
 int target_checkcapslock (int scancode, int *state){return 0;}
 void setmaintitle(){}
+#endif
 
 #if defined PICASSO96
 ///////////////////////////////////////////////////
@@ -777,10 +776,8 @@ struct MultiDisplay *getdisplay (struct uae_prefs *p)
 	return getdisplay2 (p, -1);
 }
 
-
 int target_get_display (const TCHAR *name)
 {
-#if 0
 	int oldfound = -1;
 	int found = -1;
 	unsigned int i;
@@ -800,7 +797,6 @@ int target_get_display (const TCHAR *name)
 			oldfound = found;
 		}
 	}
-#endif
 	return -1;
 }
 const TCHAR *target_get_display_name (int num, bool friendlyname)
@@ -815,7 +811,6 @@ const TCHAR *target_get_display_name (int num, bool friendlyname)
 	return md->monitorid;
 }
 #endif
-
 static int isfullscreen_2 (struct uae_prefs *p)
 {
     int idx = screen_is_picasso ? 1 : 0;
@@ -833,7 +828,6 @@ int isfullscreen (void)
 #define SM_CYVIRTUALSCREEN      79
 #define REFRESH_RATE_RAW 1
 #define REFRESH_RATE_LACE 2
-
 #ifndef WIN32PORT
 static int GetSystemMetrics (int nIndex) {
 	switch (nIndex) {
@@ -845,10 +839,9 @@ static int GetSystemMetrics (int nIndex) {
 	return 0;
 }
 #endif
-
 static int resolution_compare (const void *a, const void *b)
 {
-#if 0 
+#ifndef RETRO
 	struct PicassoResolution *ma = (struct PicassoResolution *)a;
 	struct PicassoResolution *mb = (struct PicassoResolution *)b;
 	if (ma->res.width < mb->res.width)
@@ -860,14 +853,13 @@ static int resolution_compare (const void *a, const void *b)
 	if (ma->res.height > mb->res.height)
 		return 1;
 	return ma->depth - mb->depth;
-#endif 
+#else 
 return 0;
+#endif
 }
-
-#if 0
+#ifndef RETRO
 static void sortmodes (struct MultiDisplay *md)
 {
-
 	int	i, idx = -1;
 	int pw = -1, ph = -1;
 
@@ -1083,8 +1075,6 @@ void enumeratedisplays (void) {
 	md->primary = true;
 }
 #endif
-#if 1 
-
 void updatedisplayarea (void)
 {
 /*
@@ -1212,7 +1202,7 @@ static bool waitvblankstate (bool state, int *maxvpos, int *flags)
 static int vblank_wait (void)
 {
 	int vp;
-printf("ddddddddddddddddddddddVSYNC\n");
+
 	for (;;) {
 		int opos = prevvblankpos;
 		if (!getvblankpos (&vp))
@@ -1281,12 +1271,7 @@ bool vsync_busywait_do (int *freetime, bool lace, bool oddeven)
 						break;
 					if (vp > 0)
 						break;
-					//sleep_millis (1);
-#ifdef WIN32PORT
-	usleep(1*1024);
-#else
-	sleep_millis (1);
-#endif
+					sleep_millis (1);
 				}
 				if (ap->gfx_vflip != 0) {
 					show_screen (0);
@@ -1393,4 +1378,3 @@ FIXME:
 	return false;
 }
 
-#endif

@@ -17,6 +17,7 @@
 # include <sys/param.h>
 #endif
 #endif
+
 #if HAVE_SYS_MOUNT_H
 # include <sys/mount.h>
 #endif
@@ -65,8 +66,11 @@ int filesys_is_readonly (const char *path)
      * type. (We should be more clever and parse /etc/fstab
      * and /etc/mtab, but this'll do for just now).
      */
+#ifdef RETRO
 //RETRO
 # include <sys/statfs.h>
+#endif
+
     struct statfs buf;
 
     if (statfs (path, &buf) == 0) {

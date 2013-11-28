@@ -1,6 +1,11 @@
 		L-UAE LIBRETRO UAE DEBUG VERSION
 
 
+
+based on P-UAE 2.6.1 https://github.com/GnoStiC/PUAE 
+Git Commit: 0186c1b16f7181ffa02d73e6920d3180ce457c46
+
+
 All credits to :
 
 Richard Drummond "http://www.rcdrummond.net/uae/"
@@ -11,11 +16,15 @@ author of the x86 JIT compiler), Toni Wilen (the current maintainer of
 WinUAE), and many more.
 
 This RETRO port was  based at start on PS3 version E-UAE 0.8.29-WIP4 release 8
-so aslo credits to Ole.
+(so aslo credits to Ole.)
 
-For now we use the UEA core provide by PUAE 2.6.0
-https://github.com/GnoStiC/PUAE Credits to Mustafa 'GnoStiC' TUFAN
-	
+For now we use the UEA core provide by P-UAE 2.6.1 :
+Git Commit: 0186c1b16f7181ffa02d73e6920d3180ce457c46
+https://github.com/GnoStiC/PUAE 
+
+Credits to Mustafa 'GnoStiC' TUFAN
+
+
 And of course for the RetroArch/Libretro team : "http://www.libretro.org/"
 
 It's a quick hack.

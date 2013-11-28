@@ -5,9 +5,7 @@
 #include "custom.h"
 #include "events.h"
 #include "newcpu.h"
-//#ifndef ANDPORT
 #include "machdep/m68kops.h"
-//#endif
 #include "cpu_prefetch.h"
 #include "cputbl.h"
 #define CPUFUNC(x) x##_ff
@@ -4642,7 +4640,7 @@ void REGPARAM2 CPUFUNC(op_0cd0_22)(uae_u32 opcode)
 {	uaecptr dsta;
 	dsta = m68k_areg (regs, dstreg);
 {	uae_s16 dst = x_get_word (dsta);
-	if ((dsta & 1) && currprefs.cpu_compatible && get_cpu_model () == 68060) {
+	if ((dsta & 1) && currprefs.int_no_unimplemented && get_cpu_model () == 68060) {
 	m68k_incpc (4);
 		op_unimpl (opcode);
 		goto endlabel9252;
@@ -4672,7 +4670,7 @@ void REGPARAM2 CPUFUNC(op_0cd8_22)(uae_u32 opcode)
 	dsta = m68k_areg (regs, dstreg);
 {	uae_s16 dst = x_get_word (dsta);
 	m68k_areg (regs, dstreg) += 2;
-	if ((dsta & 1) && currprefs.cpu_compatible && get_cpu_model () == 68060) {
+	if ((dsta & 1) && currprefs.int_no_unimplemented && get_cpu_model () == 68060) {
 		m68k_areg (regs, dstreg) -= 2;
 	m68k_incpc (4);
 		op_unimpl (opcode);
@@ -4703,7 +4701,7 @@ void REGPARAM2 CPUFUNC(op_0ce0_22)(uae_u32 opcode)
 	dsta = m68k_areg (regs, dstreg) - 2;
 {	uae_s16 dst = x_get_word (dsta);
 	m68k_areg (regs, dstreg) = dsta;
-	if ((dsta & 1) && currprefs.cpu_compatible && get_cpu_model () == 68060) {
+	if ((dsta & 1) && currprefs.int_no_unimplemented && get_cpu_model () == 68060) {
 		m68k_areg (regs, dstreg) += 2;
 	m68k_incpc (4);
 		op_unimpl (opcode);
@@ -4733,7 +4731,7 @@ void REGPARAM2 CPUFUNC(op_0ce8_22)(uae_u32 opcode)
 {	uaecptr dsta;
 	dsta = m68k_areg (regs, dstreg) + (uae_s32)(uae_s16)get_word_ce030_prefetch (4);
 {	uae_s16 dst = x_get_word (dsta);
-	if ((dsta & 1) && currprefs.cpu_compatible && get_cpu_model () == 68060) {
+	if ((dsta & 1) && currprefs.int_no_unimplemented && get_cpu_model () == 68060) {
 	m68k_incpc (6);
 		op_unimpl (opcode);
 		goto endlabel9255;
@@ -4763,7 +4761,7 @@ void REGPARAM2 CPUFUNC(op_0cf0_22)(uae_u32 opcode)
 	m68k_incpc (4);
 {	dsta = get_disp_ea_020 (m68k_areg (regs, dstreg), 0);
 {	uae_s16 dst = x_get_word (dsta);
-	if ((dsta & 1) && currprefs.cpu_compatible && get_cpu_model () == 68060) {
+	if ((dsta & 1) && currprefs.int_no_unimplemented && get_cpu_model () == 68060) {
 		op_unimpl (opcode);
 		goto endlabel9256;
 	}
@@ -4789,7 +4787,7 @@ void REGPARAM2 CPUFUNC(op_0cf8_22)(uae_u32 opcode)
 {	uaecptr dsta;
 	dsta = (uae_s32)(uae_s16)get_word_ce030_prefetch (4);
 {	uae_s16 dst = x_get_word (dsta);
-	if ((dsta & 1) && currprefs.cpu_compatible && get_cpu_model () == 68060) {
+	if ((dsta & 1) && currprefs.int_no_unimplemented && get_cpu_model () == 68060) {
 	m68k_incpc (6);
 		op_unimpl (opcode);
 		goto endlabel9257;
@@ -4817,7 +4815,7 @@ void REGPARAM2 CPUFUNC(op_0cf9_22)(uae_u32 opcode)
 {	uaecptr dsta;
 	dsta = get_long_ce030_prefetch (4);
 {	uae_s16 dst = x_get_word (dsta);
-	if ((dsta & 1) && currprefs.cpu_compatible && get_cpu_model () == 68060) {
+	if ((dsta & 1) && currprefs.int_no_unimplemented && get_cpu_model () == 68060) {
 	m68k_incpc (8);
 		op_unimpl (opcode);
 		goto endlabel9258;
@@ -5448,7 +5446,7 @@ void REGPARAM2 CPUFUNC(op_0ed0_22)(uae_u32 opcode)
 {	uaecptr dsta;
 	dsta = m68k_areg (regs, dstreg);
 {	uae_s32 dst = x_get_long (dsta);
-	if ((dsta & 3) && currprefs.cpu_compatible && get_cpu_model () == 68060) {
+	if ((dsta & 3) && currprefs.int_no_unimplemented && get_cpu_model () == 68060) {
 	m68k_incpc (4);
 		op_unimpl (opcode);
 		goto endlabel9281;
@@ -5478,7 +5476,7 @@ void REGPARAM2 CPUFUNC(op_0ed8_22)(uae_u32 opcode)
 	dsta = m68k_areg (regs, dstreg);
 {	uae_s32 dst = x_get_long (dsta);
 	m68k_areg (regs, dstreg) += 4;
-	if ((dsta & 3) && currprefs.cpu_compatible && get_cpu_model () == 68060) {
+	if ((dsta & 3) && currprefs.int_no_unimplemented && get_cpu_model () == 68060) {
 		m68k_areg (regs, dstreg) -= 4;
 	m68k_incpc (4);
 		op_unimpl (opcode);
@@ -5509,7 +5507,7 @@ void REGPARAM2 CPUFUNC(op_0ee0_22)(uae_u32 opcode)
 	dsta = m68k_areg (regs, dstreg) - 4;
 {	uae_s32 dst = x_get_long (dsta);
 	m68k_areg (regs, dstreg) = dsta;
-	if ((dsta & 3) && currprefs.cpu_compatible && get_cpu_model () == 68060) {
+	if ((dsta & 3) && currprefs.int_no_unimplemented && get_cpu_model () == 68060) {
 		m68k_areg (regs, dstreg) += 4;
 	m68k_incpc (4);
 		op_unimpl (opcode);
@@ -5539,7 +5537,7 @@ void REGPARAM2 CPUFUNC(op_0ee8_22)(uae_u32 opcode)
 {	uaecptr dsta;
 	dsta = m68k_areg (regs, dstreg) + (uae_s32)(uae_s16)get_word_ce030_prefetch (4);
 {	uae_s32 dst = x_get_long (dsta);
-	if ((dsta & 3) && currprefs.cpu_compatible && get_cpu_model () == 68060) {
+	if ((dsta & 3) && currprefs.int_no_unimplemented && get_cpu_model () == 68060) {
 	m68k_incpc (6);
 		op_unimpl (opcode);
 		goto endlabel9284;
@@ -5569,7 +5567,7 @@ void REGPARAM2 CPUFUNC(op_0ef0_22)(uae_u32 opcode)
 	m68k_incpc (4);
 {	dsta = get_disp_ea_020 (m68k_areg (regs, dstreg), 0);
 {	uae_s32 dst = x_get_long (dsta);
-	if ((dsta & 3) && currprefs.cpu_compatible && get_cpu_model () == 68060) {
+	if ((dsta & 3) && currprefs.int_no_unimplemented && get_cpu_model () == 68060) {
 		op_unimpl (opcode);
 		goto endlabel9285;
 	}
@@ -5595,7 +5593,7 @@ void REGPARAM2 CPUFUNC(op_0ef8_22)(uae_u32 opcode)
 {	uaecptr dsta;
 	dsta = (uae_s32)(uae_s16)get_word_ce030_prefetch (4);
 {	uae_s32 dst = x_get_long (dsta);
-	if ((dsta & 3) && currprefs.cpu_compatible && get_cpu_model () == 68060) {
+	if ((dsta & 3) && currprefs.int_no_unimplemented && get_cpu_model () == 68060) {
 	m68k_incpc (6);
 		op_unimpl (opcode);
 		goto endlabel9286;
@@ -5623,7 +5621,7 @@ void REGPARAM2 CPUFUNC(op_0ef9_22)(uae_u32 opcode)
 {	uaecptr dsta;
 	dsta = get_long_ce030_prefetch (4);
 {	uae_s32 dst = x_get_long (dsta);
-	if ((dsta & 3) && currprefs.cpu_compatible && get_cpu_model () == 68060) {
+	if ((dsta & 3) && currprefs.int_no_unimplemented && get_cpu_model () == 68060) {
 	m68k_incpc (8);
 		op_unimpl (opcode);
 		goto endlabel9287;
@@ -32618,7 +32616,7 @@ return;
 }
 
 #endif
-/* PTESTR.L (An) */
+/* PTESTW.L (An) */
 #ifndef CPUEMU_68000_ONLY
 void REGPARAM2 CPUFUNC(op_f548_22)(uae_u32 opcode)
 {
@@ -32632,7 +32630,7 @@ return;
 }
 
 #endif
-/* PTESTW.L (An) */
+/* PTESTR.L (An) */
 #ifndef CPUEMU_68000_ONLY
 void REGPARAM2 CPUFUNC(op_f568_22)(uae_u32 opcode)
 {
@@ -32646,7 +32644,7 @@ return;
 }
 
 #endif
-/* PLPAR.L (An) */
+/* PLPAW.L (An) */
 #ifndef CPUEMU_68000_ONLY
 void REGPARAM2 CPUFUNC(op_f588_22)(uae_u32 opcode)
 {
@@ -32660,7 +32658,7 @@ return;
 }
 
 #endif
-/* PLPAW.L (An) */
+/* PLPAR.L (An) */
 #ifndef CPUEMU_68000_ONLY
 void REGPARAM2 CPUFUNC(op_f5c8_22)(uae_u32 opcode)
 {

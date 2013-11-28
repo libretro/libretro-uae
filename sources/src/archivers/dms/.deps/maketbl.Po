@@ -1,5 +1,0 @@
-maketbl.o: maketbl.c cdata.h maketbl.h
-
-cdata.h:
-
-maketbl.h:

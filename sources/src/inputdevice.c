@@ -73,6 +73,8 @@ extern uae_u32 uaerand (void);
 
 int inputdevice_logging = 0;
 
+#define COMPA_RESERVED_FLAGS ID_FLAG_INVERT
+
 #define ID_FLAG_CANRELEASE 0x1000
 #define ID_FLAG_TOGGLED 0x2000
 #define ID_FLAG_CUSTOMEVENT_TOGGLED1 0x4000
@@ -120,7 +122,7 @@ static const int slotorder2[] = { 8, 1, 2, 3, 4, 5, 6, 7 };
 
 struct uae_input_device2 {
 	uae_u32 buttonmask;
-	int states[MAX_INPUT_DEVICE_EVENTS / 2];
+	int states[MAX_INPUT_DEVICE_EVENTS / 2][MAX_INPUT_SUB_EVENT + 1];
 };
 
 static struct uae_input_device2 joysticks2[MAX_INPUT_DEVICES];
@@ -154,7 +156,7 @@ static struct teststore testmode_wait[TESTMODE_MAX];
 static int bouncy;
 static unsigned long bouncy_cycles;
 
-static int handle_input_event (int nr, int state, int max, int autofire, bool canstoprecord, bool playbackevent);
+int handle_input_event (int nr, int state, int max, int autofire, bool canstoprecord, bool playbackevent);
 
 static struct inputdevice_functions idev[IDTYPE_MAX];
 
@@ -2217,7 +2219,7 @@ uae_u8 handle_joystick_buttons (uae_u8 pra, uae_u8 dra)
 	if (inputdevice_logging & 4) {
 		static uae_u8 old;
 		if (but != old)
-			write_log (_T("BFE001: %02X:%02X %x\n"), dra, but, M68K_GETPC);
+			write_log (_T("BFE001 R: %02X:%02X %x\n"), dra, but, M68K_GETPC);
 		old = but;
 	}
 	return but;
@@ -2229,6 +2231,9 @@ void handle_cd32_joystick_cia (uae_u8 pra, uae_u8 dra)
 	static int oldstate[2];
 	int i;
 
+	if (inputdevice_logging & 4) {
+		write_log (_T("BFE001 W: %02X:%02X %x\n"), dra, pra, M68K_GETPC);
+	}
 	cap_check ();
 	for (i = 0; i < 2; i++) {
 		uae_u8 but = 0x40 << i;
@@ -2240,10 +2245,12 @@ void handle_cd32_joystick_cia (uae_u8 pra, uae_u8 dra)
 					cd32_shifter[i]--;
 					if (cd32_shifter[i] < 0)
 						cd32_shifter[i] = 0;
+					if (inputdevice_logging & 4)
+						write_log (_T("CD32 %d shift: %d %08x\n"), i, cd32_shifter[i], M68K_GETPC);
 				}
 			}
 		}
-		oldstate[i] = pra & but;
+		oldstate[i] = dra & pra & but;
 	}
 }
 
@@ -2573,7 +2580,7 @@ uae_u16 POTGOR (void)
 		write_log (_T("POTGOR %04X %s\n"), v, debuginfo(0));
 #endif
 	if (inputdevice_logging & 16)
-		write_log (_T("POTGO_R: %04X %08X %d\n"), v, M68K_GETPC, cd32_shifter[1]);
+		write_log (_T("POTGO_R: %04X %08X %d %d\n"), v, M68K_GETPC, cd32_shifter[0], cd32_shifter[1]);
 	return v;
 }
 
@@ -2995,7 +3002,7 @@ static uae_u64 isqual (int evt)
 	return ID_FLAG_QUALIFIER1 << (num * 2);
 }
 
-static int handle_input_event (int nr, int state, int max, int autofire, bool canstopplayback, bool playbackevent)
+int handle_input_event (int nr, int state, int max, int autofire, bool canstopplayback, bool playbackevent)
 {
 	struct inputevent *ie;
 	int joy;
@@ -3733,30 +3740,23 @@ static bool process_custom_event (struct uae_input_device *id, int offset, int s
 	return true;
 }
 
-static void setbuttonstateall (struct uae_input_device *id, struct uae_input_device2 *id2, int button, int state)
+static void setbuttonstateall (struct uae_input_device *id, struct uae_input_device2 *id2, int button, int buttonstate)
 {
 	static frame_time_t switchdevice_timeout;
 	int i;
 	uae_u32 mask = 1 << button;
 	uae_u32 omask = id2 ? id2->buttonmask & mask : 0;
-	uae_u32 nmask = (state ? 1 : 0) << button;
+	uae_u32 nmask = (buttonstate ? 1 : 0) << button;
 	uae_u64 qualmask[MAX_INPUT_SUB_EVENT];
 	bool qualonly;
 
-
-	if (input_play && state)
+	if (input_play && buttonstate)
 		inprec_realtimev ();
-
 	if (input_play)
 		return;
-//printf("0TO22TO\n");
-
-//if(0){
 	if (!id->enabled) {
-
-//printf("TO22TO\n");
 		frame_time_t t = read_processor_time ();
-		if (state) {
+		if (buttonstate) {
 			switchdevice_timeout = t;
 		} else {
 			int port = button;
@@ -3766,7 +3766,6 @@ static void setbuttonstateall (struct uae_input_device *id, struct uae_input_dev
 		}
 		return;
 	}
-//printf("1TO22TO\n");
 	if (button >= ID_BUTTON_TOTAL)
 		return;
 
@@ -3774,10 +3773,8 @@ static void setbuttonstateall (struct uae_input_device *id, struct uae_input_dev
 
 	bool didcustom = false;
 
-//printf("TOTO\n");
-
 	for (i = 0; i < MAX_INPUT_SUB_EVENT; i++) {
-		int sub = sublevdir[state == 0 ? 1 : 0][i];
+		int sub = sublevdir[buttonstate == 0 ? 1 : 0][i];
 		uae_u64 *flagsp = &id->flags[ID_BUTTON_OFFSET + button][sub];
 		int evt = id->eventid[ID_BUTTON_OFFSET + button][sub];
 /* REMOVEME:
@@ -3790,6 +3787,16 @@ static void setbuttonstateall (struct uae_input_device *id, struct uae_input_dev
 		int autofire = (flags & ID_FLAG_AUTOFIRE) ? 1 : 0;
 		int toggle = (flags & ID_FLAG_TOGGLE) ? 1 : 0;
 		int inverttoggle = (flags & ID_FLAG_INVERTTOGGLE) ? 1 : 0;
+		int invert = (flags & ID_FLAG_INVERT) ? 1 : 0;
+		int state;
+
+		if (buttonstate < 0) {
+			state = buttonstate;
+		} else if (invert) {
+			state = buttonstate ? 0 : 1;
+		} else {
+			state = buttonstate;
+		}
 
 		if (!state) {
 			didcustom |= process_custom_event (id, ID_BUTTON_OFFSET + button, state, qualmask, autofire, i);
@@ -3828,7 +3835,8 @@ static void setbuttonstateall (struct uae_input_device *id, struct uae_input_dev
 		} else {
 			if (!checkqualifiers (evt, flags, qualmask, NULL)) {
 				if (!state && !(flags & ID_FLAG_CANRELEASE)) {
-					continue;
+					if (!invert)
+						continue;
 				} else if (state) {
 					continue;
 				}
@@ -3849,7 +3857,7 @@ static void setbuttonstateall (struct uae_input_device *id, struct uae_input_dev
 		queue_input_event (-1, NULL, -1, 0, 0, 1);
 
 	if (id2 && ((omask ^ nmask) & mask)) {
-		if (state)
+		if (buttonstate)
 			id2->buttonmask |= mask;
 		else
 			id2->buttonmask &= ~mask;
@@ -4406,7 +4414,7 @@ static void setcompakb (int *kb, int *srcmap, int index, int af)
 					if (uid->extra[l] == id) {
 						inputdevice_sparecopy (uid, l, 0);
 						uid->eventid[l][0] = srcmap[k];
-						uid->flags[l][0] = 0;
+						uid->flags[l][0] &= COMPA_RESERVED_FLAGS;
 						uid->port[l][0] = index + 1;
 						xfree (uid->custom[l][0]);
 						uid->custom[l][0] = NULL;
@@ -4486,7 +4494,7 @@ static void clearevent (struct uae_input_device *uid, int evt)
 		for (int j = 0; j < MAX_INPUT_SUB_EVENT; j++) {
 			if (uid->eventid[i][j] == evt) {
 				uid->eventid[i][j] = 0;
-				uid->flags[i][j] = 0;
+				uid->flags[i][j] &= COMPA_RESERVED_FLAGS;
 				xfree (uid->custom[i][j]);
 				uid->custom[i][j] = NULL;
 			}
@@ -4499,7 +4507,7 @@ static void clearkbrevent (struct uae_input_device *uid, int evt)
 		for (int j = 0; j < MAX_INPUT_SUB_EVENT; j++) {
 			if (uid->eventid[i][j] == evt) {
 				uid->eventid[i][j] = 0;
-				uid->flags[i][j] = 0;
+				uid->flags[i][j] &= COMPA_RESERVED_FLAGS;
 				xfree (uid->custom[i][j]);
 				uid->custom[i][j] = NULL;
 				if (j == 0)
@@ -4579,7 +4587,7 @@ static void cleardevgp (struct uae_input_device *uid, int num, bool nocustom, in
 				if (nocustom && (uid[num].flags[i][j] & ID_FLAG_GAMEPORTSCUSTOM_MASK))
 					continue;
 				uid[num].eventid[i][j] = 0;
-				uid[num].flags[i][j] = 0;
+				uid[num].flags[i][j] &= COMPA_RESERVED_FLAGS;
 				xfree (uid[num].custom[i][j]);
 				uid[num].custom[i][j] = NULL;
 				uid[num].port[i][j] = 0;
@@ -4597,7 +4605,7 @@ static void cleardevkbrgp (struct uae_input_device *uid, int num, bool nocustom,
 				if (nocustom && (uid[num].flags[i][j] & ID_FLAG_GAMEPORTSCUSTOM_MASK))
 					continue;
 				uid[num].eventid[i][j] = 0;
-				uid[num].flags[i][j] = 0;
+				uid[num].flags[i][j] &= COMPA_RESERVED_FLAGS;
 				xfree (uid[num].custom[i][j]);
 				uid[num].custom[i][j] = NULL;
 				uid[num].port[i][j] = 0;
@@ -5317,15 +5325,14 @@ void inputdevice_updateconfig_internal (const struct uae_prefs *srcprrefs, struc
 	copyjport (srcprrefs, dstprefs, 3);
 
 	resetinput ();
-//printf("befùùùùùùùùùùore start %d\n");
 
 	joysticks = dstprefs->joystick_settings[dstprefs->input_selected_setting];
 	mice = dstprefs->mouse_settings[dstprefs->input_selected_setting];
 	keyboards = dstprefs->keyboard_settings[dstprefs->input_selected_setting];
 	internalevents = dstprefs->internalevent_settings[dstprefs->input_selected_setting];
-//printf("bef***********ùùùùùùùùùùore start %d\n");
+
 	matchdevices_all (dstprefs);
-//printf("bef***********ùùùùùùùùùùore start %d\n");
+
 	memset (joysticks2, 0, sizeof joysticks2);
 	memset (mice2, 0, sizeof mice2);
 
@@ -5340,8 +5347,6 @@ void inputdevice_updateconfig_internal (const struct uae_prefs *srcprrefs, struc
 	}
 
 	compatibility_copy (dstprefs, true);
-
-
 	joysticks = dstprefs->joystick_settings[dstprefs->input_selected_setting];
 	mice = dstprefs->mouse_settings[dstprefs->input_selected_setting];
 	keyboards = dstprefs->keyboard_settings[dstprefs->input_selected_setting];
@@ -5454,10 +5459,8 @@ void inputdevice_default_prefs (struct uae_prefs *p)
 	p->input_mouse_speed = 100;
 	p->input_autofire_linecnt = 600;
 	p->input_keyboard_type = 0;
-//printf("EE1111111E\n");
-//	keyboard_default = keyboard_default_table[p->input_keyboard_type];
-
-//	inputdevice_default_kb_all (p);
+	keyboard_default = keyboard_default_table[p->input_keyboard_type];
+	inputdevice_default_kb_all (p);
 }
 
 // set default keyboard and keyboard>joystick layouts
@@ -5537,7 +5540,7 @@ static void rqualifiers (uae_u64 flags, bool release)
 	}
 }
 
-static int inputdevice_translatekeycode_2 (int keyboard, int scancode, int state, bool qualifiercheckonly)
+static int inputdevice_translatekeycode_2 (int keyboard, int scancode, int keystate, bool qualifiercheckonly)
 {
 	struct uae_input_device *na = &keyboards[keyboard];
 	int j, k;
@@ -5546,9 +5549,6 @@ static int inputdevice_translatekeycode_2 (int keyboard, int scancode, int state
 
 	if (!keyboards || scancode < 0)
 		return handled;
-
-//	if (!state)
-//		process_custom_event (NULL, 0, 0, 0, 0, 0);
 
 	j = 0;
 	while (j < MAX_INPUT_DEVICE_EVENTS && na->extra[j] >= 0) {
@@ -5560,13 +5560,23 @@ static int inputdevice_translatekeycode_2 (int keyboard, int scancode, int state
 			if (qualonly)
 				qualifiercheckonly = true;
 			for (k = 0; k < MAX_INPUT_SUB_EVENT; k++) {/* send key release events in reverse order */
-				uae_u64 *flagsp = &na->flags[j][sublevdir[state == 0 ? 1 : 0][k]];
-				int evt = na->eventid[j][sublevdir[state == 0 ? 1 : 0][k]];
+				uae_u64 *flagsp = &na->flags[j][sublevdir[keystate == 0 ? 1 : 0][k]];
+				int evt = na->eventid[j][sublevdir[keystate == 0 ? 1 : 0][k]];
 				uae_u64 flags = *flagsp;
 				int autofire = (flags & ID_FLAG_AUTOFIRE) ? 1 : 0;
 				int toggle = (flags & ID_FLAG_TOGGLE) ? 1 : 0;
 				int inverttoggle = (flags & ID_FLAG_INVERTTOGGLE) ? 1 : 0;
+				int invert = (flags & ID_FLAG_INVERT) ? 1 : 0;
 				int toggled;
+				int state;
+
+				if (keystate < 0) {
+					state = keystate;
+				} else if (invert) {
+					state = keystate ? 0 : 1;
+				} else {
+					state = keystate;
+				}
 
 				setqualifiers (evt, state > 0);
 
@@ -5622,16 +5632,19 @@ static int inputdevice_translatekeycode_2 (int keyboard, int scancode, int state
 				} else {
 					rqualifiers (flags, state ? true : false);
 					if (!checkqualifiers (evt, flags, qualmask, na->eventid[j])) {
-						if (!state && !(flags & ID_FLAG_CANRELEASE))
+						if (!state && !(flags & ID_FLAG_CANRELEASE)) {
+							if (!invert)
+								continue;
+						} else if (state) {
 							continue;
-						else if (state)
-							continue;
+						}
 					}
 
 					if (state) {
-						*flagsp |= ID_FLAG_CANRELEASE;
+						if (!invert)
+							*flagsp |= ID_FLAG_CANRELEASE;
 					} else {
-						if (!(flags & ID_FLAG_CANRELEASE))
+						if (!(flags & ID_FLAG_CANRELEASE) && !invert)
 							continue;
 						*flagsp &= ~ID_FLAG_CANRELEASE;
 					}
@@ -6138,6 +6151,8 @@ int inputdevice_get_mapping (int devnum, int num, uae_u64 *pflags, int *pport, T
 		flags |= IDEV_MAPPED_TOGGLE;
 	if (flag & ID_FLAG_INVERTTOGGLE)
 		flags |= IDEV_MAPPED_INVERTTOGGLE;
+	if (flag & ID_FLAG_INVERT)
+		flags |= IDEV_MAPPED_INVERT;
 	if (flag & ID_FLAG_GAMEPORTSCUSTOM1)
 		flags |= IDEV_MAPPED_GAMEPORTSCUSTOM1;
 	if (flag & ID_FLAG_GAMEPORTSCUSTOM2)
@@ -6190,12 +6205,13 @@ int inputdevice_set_mapping (int devnum, int num, const TCHAR *name, TCHAR *cust
 		return 0;
 	if (data >= 0) {
 		amask = events[eid].allow_mask;
-		flag &= ~(ID_FLAG_AUTOFIRE_MASK | ID_FLAG_GAMEPORTSCUSTOM_MASK | IDEV_MAPPED_QUALIFIER_MASK);
+		flag &= ~(ID_FLAG_AUTOFIRE_MASK | ID_FLAG_GAMEPORTSCUSTOM_MASK | IDEV_MAPPED_QUALIFIER_MASK | ID_FLAG_INVERT);
 		if (amask & AM_AF) {
 			flag |= (flags & IDEV_MAPPED_AUTOFIRE_SET) ? ID_FLAG_AUTOFIRE : 0;
 			flag |= (flags & IDEV_MAPPED_TOGGLE) ? ID_FLAG_TOGGLE : 0;
 			flag |= (flags & IDEV_MAPPED_INVERTTOGGLE) ? ID_FLAG_INVERTTOGGLE : 0;
 		}
+		flag |= (flags & IDEV_MAPPED_INVERT) ? ID_FLAG_INVERT : 0;
 		flag |= (flags & IDEV_MAPPED_GAMEPORTSCUSTOM1) ? ID_FLAG_GAMEPORTSCUSTOM1 : 0;
 		flag |= (flags & IDEV_MAPPED_GAMEPORTSCUSTOM2) ? ID_FLAG_GAMEPORTSCUSTOM2 : 0;
 		flag |= flags & IDEV_MAPPED_QUALIFIER_MASK;
@@ -6617,7 +6633,6 @@ int inputdevice_testread (int *devnum, int *wtype, int *state, bool doread)
 void setjoybuttonstate (int joy, int button, int state)
 {
 	if (testmode) {
-//printf("testmode\n");
 		inputdevice_testrecord (IDTYPE_JOYSTICK, joy, IDEV_WIDGET_BUTTON, button, state, -1);
 		if (state < 0)
 			inputdevice_testrecord (IDTYPE_JOYSTICK, joy, IDEV_WIDGET_BUTTON, button, 0, -1);
@@ -6630,7 +6645,6 @@ void setjoybuttonstate (int joy, int button, int state)
 		return;
 	}
 #endif
-//printf("setbuttonstateall\n");
 	setbuttonstateall (&joysticks[joy], &joysticks2[joy], button, state ? 1 : 0);
 }
 
@@ -6671,13 +6685,10 @@ void setmousebuttonstateall (int mouse, uae_u32 buttonbits, uae_u32 buttonmask)
 void setmousebuttonstate (int mouse, int button, int state)
 {
 	uae_u32 obuttonmask = mice2[mouse].buttonmask;
-//printf("TOTO\n");
-
 	if (testmode) {
 		inputdevice_testrecord (IDTYPE_MOUSE, mouse, IDEV_WIDGET_BUTTON, button, state, -1);
 		return;
 	}
-//printf("TOTO\n");
 	setbuttonstateall (&mice[mouse], &mice2[mouse], button, state);
 	if (obuttonmask != mice2[mouse].buttonmask)
 		mousehack_helper (mice2[mouse].buttonmask);
@@ -6692,35 +6703,42 @@ void setjoystickstate (int joy, int axis, int state, int max)
 	struct uae_input_device2 *id2 = &joysticks2[joy];
 	int deadzone = currprefs.input_joymouse_deadzone * max / 100;
 	int i, v1, v2;
-//printf("setjoystickstate\n");
+
 	if (testmode) {
-//printf("testmode setjoystickstate\n");
 		inputdevice_testrecord (IDTYPE_JOYSTICK, joy, IDEV_WIDGET_AXIS, axis, state, max);
 		return;
 	}
 	v1 = state;
-	v2 = id2->states[axis];
-//printf("1 setjoystickstate %d \n",joy);
+	v2 = id2->states[axis][MAX_INPUT_SUB_EVENT];
+
+	write_log (_T("new=%d old=%d state=%d max=%d\n"), v1, v2, state, max);
+
 	if (v1 < deadzone && v1 > -deadzone)
 		v1 = 0;
 	if (v2 < deadzone && v2 > -deadzone)
 		v2 = 0;
-	if (v1 == v2)
-		return;
-	if (input_play && state)
-		inprec_realtimev ();
+	if (input_play && state) {
+		if (v1 != v2)
+			inprec_realtimev ();
+	}
 	if (input_play)
 		return;
 	if (!joysticks[joy].enabled) {
-//printf("0 setjoystickstate\n");
-		if (v1)
+		if (v1 && v1 != v2)
 			switchdevice (&joysticks[joy], axis * 2 + (v1 < 0 ? 0 : 1), false);
 		return;
 	}
-
-	for (i = 0; i < MAX_INPUT_SUB_EVENT; i++)
-		handle_input_event (id->eventid[ID_AXIS_OFFSET + axis][i], state, max, id->flags[ID_AXIS_OFFSET + axis][i] & ID_FLAG_AUTOFIRE, true, false);
-	id2->states[axis] = state;
+	for (i = 0; i < MAX_INPUT_SUB_EVENT; i++) {
+		uae_u64 flags = id->flags[ID_AXIS_OFFSET + axis][i];
+		if (flags & ID_FLAG_INVERT)
+			state = -state;
+		if (state != id2->states[axis][i]) {
+			write_log(_T("-> %d %d\n"), i, state);
+		handle_input_event (id->eventid[ID_AXIS_OFFSET + axis][i], state, max, flags & ID_FLAG_AUTOFIRE, true, false);
+			id2->states[axis][i] = state;
+		}
+	}
+	id2->states[axis][MAX_INPUT_SUB_EVENT] = v1;
 }
 int getjoystickstate (int joy)
 {
@@ -6784,8 +6802,12 @@ void setmousestate (int mouse, int axis, int data, int isabs)
 	diff = (int)fract[mouse][axis];
 	v += diff;
 	fract[mouse][axis] -= diff;
-	for (i = 0; i < MAX_INPUT_SUB_EVENT; i++)
+	for (i = 0; i < MAX_INPUT_SUB_EVENT; i++) {
+		uae_u64 flags = id->flags[ID_AXIS_OFFSET + axis][i];
+		if (!isabs && (flags & ID_FLAG_INVERT))
+			v = -v;
 		handle_input_event (id->eventid[ID_AXIS_OFFSET + axis][i], v, 0, 0, true, false);
+	}
 }
 
 int getmousestate (int joy)

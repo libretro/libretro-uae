@@ -23,7 +23,7 @@
 #include "autoconf.h"
 #include "savestate.h"
 #include "ar.h"
-#include "uaecrc32.h"
+#include "crc32.h"
 #include "gui.h"
 #include "cdtv.h"
 #include "akiko.h"
@@ -2425,7 +2425,9 @@ static void fill_ce_banks (void)
 	// data cachable regions
 	memset (ce_cachable, 0, sizeof ce_cachable);
 	memset (ce_cachable + (0x00200000 >> 16), 1, currprefs.fastmem_size >> 16);
-	memset (ce_cachable + (0x10000000 >> 16), 1, currprefs.z3fastmem_size >> 16);
+	memset (ce_cachable + (0x00c00000 >> 16), 1, currprefs.bogomem_size >> 16);
+	memset (ce_cachable + (z3fastmem_start >> 16), 1, currprefs.z3fastmem_size >> 16);
+	memset (ce_cachable + (z3fastmem2_start >> 16), 1, currprefs.z3fastmem2_size >> 16);
 
 	if (&get_mem_bank (0) == &chipmem_bank) {
 		for (i = 0; i < (0x200000 >> 16); i++)

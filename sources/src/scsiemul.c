@@ -80,6 +80,7 @@ static struct devstruct devst[MAX_TOTAL_SCSI_DEVICES];
 static struct priv_devstruct pdevst[MAX_OPEN_DEVICES];
 static uae_u32 nscmd_cmd;
 static uae_sem_t change_sem;
+static int log_scsi;
 
 static struct device_info *devinfo (struct devstruct *devst, struct device_info *di)
 {
@@ -324,7 +325,7 @@ int scsi_do_disk_change (int unitnum, int insert, int *pollmode)
 	int i, j, ret;
 
 	ret = -1;
-	if (!change_sem)
+	if (!change_sem.sem)
 		return ret;
 	uae_sem_wait (&change_sem);
 	for (i = 0; i < MAX_TOTAL_SCSI_DEVICES; i++) {

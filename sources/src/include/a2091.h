@@ -24,6 +24,11 @@ void wdscsi_sasr (uae_u8);
 
 void scsi_hsync (void);
 
+uae_u8 wdregs[32];
+struct scsi_data *scsis[8];
+
+#define WD33C93 _T("WD33C93")
+
 int a2091_add_scsi_unit (int ch, struct uaedev_config_info *ci);
 int a3000_add_scsi_unit (int ch, struct uaedev_config_info *ci);
 

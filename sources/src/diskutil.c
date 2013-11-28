@@ -1,7 +1,7 @@
 #include "sysconfig.h"
 #include "sysdeps.h"
 
-#include "uaecrc32.h"
+#include "crc32.h"
 #include "diskutil.h"
 
 #define MFMMASK 0x55555555

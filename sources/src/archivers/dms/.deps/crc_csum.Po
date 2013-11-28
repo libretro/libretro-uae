@@ -1,5 +1,0 @@
-crc_csum.o: crc_csum.c cdata.h crc_csum.h
-
-cdata.h:
-
-crc_csum.h:

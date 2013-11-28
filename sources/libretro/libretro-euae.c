@@ -183,7 +183,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 void retro_get_system_info(struct retro_system_info *info)
 {
    	memset(info, 0, sizeof(*info));
-   	info->library_name     = "PUAE-2.6.0";
+   	info->library_name     = "PUAE-2.6.1";
    	info->library_version  = "v1";
    	//info->valid_extensions = "adf|ADF|DMS|dms|ZIP|zip";
    // 	info->need_fullpath    = /*true;//*/false;

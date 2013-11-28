@@ -2,7 +2,7 @@
 #include "sysconfig.h"
 #include "sysdeps.h"
 
-#include "uaecrc32.h"
+#include "crc32.h"
 
 static unsigned long crc_table32[256];
 static unsigned short crc_table16[256];

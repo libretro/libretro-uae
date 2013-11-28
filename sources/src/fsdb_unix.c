@@ -14,12 +14,6 @@
 #include "fsdb.h"
 #include "misc.h"
 
-#if defined(__CELLOS_LV2__) 
-#include <unistd.h> //stat() is defined here
-#define S_ISDIR(x) (x & CELL_FS_S_IFDIR)
-#define F_OK 0
-#endif
-
 /* these are deadly (but I think allowed on the Amiga): */
 #define NUM_EVILCHARS 7
 static TCHAR evilchars[NUM_EVILCHARS] = { '\\', '*', '?', '\"', '<', '>', '|' };

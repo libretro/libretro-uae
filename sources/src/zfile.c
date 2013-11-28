@@ -17,7 +17,7 @@
 #include "zfile.h"
 #include "disk.h"
 #include "gui.h"
-#include "uaecrc32.h"
+#include "crc32.h"
 #include "fsdb.h"
 #include "fsusage.h"
 #include "zarchive.h"

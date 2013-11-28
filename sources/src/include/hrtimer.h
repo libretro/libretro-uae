@@ -11,10 +11,10 @@
 
 #include "machdep/rpt.h"
 #include "osdep/hrtimer.h"
-
+/*
 STATIC_INLINE frame_time_t uae_gethrtime (void)
 {
-#if 0 //def HAVE_MACHDEP_TIMER
+#ifdef HAVE_MACHDEP_TIMER
     if (currprefs.use_processor_clock)
 		return machdep_gethrtime ();
     else
@@ -24,7 +24,7 @@ STATIC_INLINE frame_time_t uae_gethrtime (void)
 
 STATIC_INLINE frame_time_t uae_gethrtimebase (void)
 {
-#if 0//def HAVE_MACHDEP_TIMER
+#ifdef HAVE_MACHDEP_TIMER
    if (currprefs.use_processor_clock)
        return machdep_gethrtimebase ();
    else
@@ -34,12 +34,12 @@ STATIC_INLINE frame_time_t uae_gethrtimebase (void)
 
 STATIC_INLINE void uae_inithrtimer (void)
 {
-#if 0 //def HAVE_MACHDEP_TIMER
+#ifdef HAVE_MACHDEP_TIMER
    if (currprefs.use_processor_clock && machdep_inithrtimer ())
        return;
    else
 #endif
        osdep_inithrtimer ();
 }
-
+*/
 #endif

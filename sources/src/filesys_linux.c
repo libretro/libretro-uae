@@ -5,9 +5,11 @@
  *
  * Copyright 2012-2013 Mustafa 'GnoStiC' Tufan
  */
+
 #ifndef PS3PORT
 #include <sys/timeb.h>
 #endif
+#include <sys/timeb.h>
 #include "zfile.h"
 
 typedef int BOOL;
@@ -19,6 +21,7 @@ typedef int BOOL;
 #define ERROR_ACCESS_DENIED		5
 #define INVALID_SET_FILE_POINTER	((DWORD)-1)
 #define NO_ERROR			0
+
 #endif
 
 #define FILE_BEGIN	0
@@ -73,22 +76,10 @@ typedef struct {
 #endif
 
 #ifdef WIN32PORT
-/*
- #define S_IRWXU 00700
-  #define S_IRUSR 00400
-  #define S_IWUSR 00200
-  #define S_IXUSR 00100
-  */
- // #define S_IRWXG 00070
-  #define S_IRGRP 00040
-  #define S_IWGRP 00020
- // #define S_IXGRP 00010
-  
- //#define S_IRWXO 00007
+ #define S_IRGRP 00040
+ #define S_IWGRP 00020
  #define S_IROTH 00004
  #define S_IWOTH 00002
- //#define S_IXOTH 00001
-//#define O_NONBLOCK 0
 #endif
 // fsdb_mywin32
 bool my_stat (const TCHAR *name, struct mystat *statbuf)
@@ -120,12 +111,12 @@ bool my_stat (const TCHAR *name, struct mystat *statbuf)
 	return false;
 }
 
-
 static int setfiletime (const TCHAR *name, int days, int minute, int tick, int tolocal)
 {
 //FIXME
 	return 0;
 }
+
 #if defined(PS3PORT) || defined(WIN32PORT)
 #warning LSTAT STAT
 #define lstat stat
@@ -138,13 +129,12 @@ bool my_utime (const TCHAR *name, struct mytimeval *tv)
         struct mytimeval tv2;
 #ifndef PS3PORT
         if (!tv) {
-
                 struct timeb time;
                 ftime (&time);
                 tv2.tv_sec = time.time;
                 tv2.tv_usec = time.millitm * 1000;
                 tolocal = 0;
-        } else 
+        } else
 #else
                 tv2.tv_sec = 1;
                 tv2.tv_usec = 1000;
@@ -171,7 +161,6 @@ bool my_utime (const TCHAR *name, struct mytimeval *tv)
 int my_existsfile (const char *name)
 {
         struct stat sonuc;
-
         if (lstat (name, &sonuc) == -1) {
                 return 0;
         } else {
@@ -412,7 +401,6 @@ static bool CloseHandle(HANDLE hObject) {
 	return true;
 }
 #endif
-
 void my_close (struct my_openfile_s *mos)
 {
 	close (mos->h);
@@ -466,7 +454,6 @@ uae_s64 my_lseek (struct my_openfile_s *mos, uae_s64 offset, int whence) {
 		return -1;
 	return old.QuadPart;
 }
-
 #ifndef WIN32PORT
 static HANDLE CreateFile(const TCHAR *lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, DWORD lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile) {
 	int flags = 0, mode = S_IRUSR | S_IRGRP | S_IROTH;
@@ -501,7 +488,6 @@ static HANDLE CreateFile(const TCHAR *lpFileName, DWORD dwDesiredAccess, DWORD d
 
 	int fd = 0;
 	mode = S_IRUSR | S_IWUSR;
-
 #if !defined(PS3PORT) && !defined(WIN32PORT)
 	if (dwFlagsAndAttributes & FILE_FLAG_NO_BUFFERING)
 		flags |= O_SYNC;
@@ -594,7 +580,6 @@ static BOOL SetEndOfFile(HANDLE hFile) {
 	return false;
 }
 #endif
-
 int my_truncate (const TCHAR *name, uae_u64 len) {
 	HANDLE hFile;
 	int result = -1;

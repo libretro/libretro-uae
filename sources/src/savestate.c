@@ -974,7 +974,7 @@ static int save_state_internal (struct zfile *f, const TCHAR *description, int c
 	dst = save_cdtv (&len, NULL);
 	save_chunk (f, dst, len, _T("CDTV"), 0);
 	xfree (dst);
-	dst = save_dmac (&len, NULL);
+	dst = save_cdtv_dmac (&len, NULL);
 	save_chunk (f, dst, len, _T("DMAC"), 0);
 	xfree (dst);
 #endif

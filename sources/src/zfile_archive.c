@@ -9,7 +9,6 @@
 #include "sysconfig.h"
 #include "sysdeps.h"
 
-//#ifdef PS3PORT
 #if defined(PS3PORT) || defined(WIN32PORT)
 #define tzset() 
 #define timezone 0
@@ -25,7 +24,7 @@
 #include "zfile.h"
 #include "archivers/zip/unzip.h"
 #include "archivers/dms/pfile.h"
-#include "uaecrc32.h"
+#include "crc32.h"
 #include "disk.h"
 #include "fsdb.h"
 #include "misc.h"

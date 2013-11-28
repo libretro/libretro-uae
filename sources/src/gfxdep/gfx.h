@@ -1,11 +1,12 @@
  /*
   * UAE - The Un*x Amiga Emulator
   *
-  * Target specific stuff
+  * Target specific stuff, SDL version
   *
-  * Copyright 1997 Bernd Schmidt
+  * Copyright 2004 Richard Drummond
   */
 
-#define GFX_NAME "g2"
-#define USE_G2LIB_GFX
+#define GFX_NAME "sdl"
+#define USE_SDL_GFX
 //#define PICASSO96_SUPPORTED
+//#define PICASSO96

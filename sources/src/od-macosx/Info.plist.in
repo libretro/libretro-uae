@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDocumentTypes</key>
+	<array>
+	    <dict>
+		<key>CFBundleTypeExtensions</key>
+		<array>
+		    <string>uaerc</string>
+		</array>
+		<key>CFBundleTypeName</key>
+		<string>PUAE Configuration</string>
+		<key>CFBundleTypeRole</key>
+		<string>Viewer</string>
+	    </dict>
+	</array>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleExecutable</key>
+	<string>uae</string>
+	<key>CFBundleIconFile</key>
+	<string>puae.icns</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleName</key>
+	<string>@PACKAGE_NAME@</string>
+	<key>CFBundleShortVersionString</key>
+	<string>@VERSION@</string>
+	<key>CFBundleVersion</key>
+	<string>@PACKAGE_COMMIT@</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>(c) 2006-2013 Mustafa 'GnoStiC' Tufan</string>
+</dict>
+</plist>

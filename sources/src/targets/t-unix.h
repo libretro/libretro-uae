@@ -6,8 +6,6 @@
   * Copyright 1997 Bernd Schmidt
   */
 
-#ifndef PS3PORT
-
 #define TARGET_NAME "unix"
 
 #define TARGET_ROM_PATH         "~/"
@@ -26,24 +24,3 @@
 
 #define DEFPRTNAME "lpr"
 #define DEFSERNAME "/dev/ttyS1"
-
-#else
-
-#define TARGET_NAME "RETRO"
-
-#define TARGET_ROM_PATH ""
-#define TARGET_FLOPPY_PATH ""
-#define TARGET_HARDFILE_PATH ""
-#define TARGET_SAVESTATE_PATH ""
-
-#ifndef OPTIONSFILENAME
-#define OPTIONSFILENAME "/dev_hdd0/HOMEBREW/UAE/uae.cfg"
-#endif
-
-#define DEFPRTNAME "null"
-#define DEFSERNAME "null"
-
-
-
-#endif
-

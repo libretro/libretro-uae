@@ -49,6 +49,7 @@
 #    define uae_msleep(msecs) Delay (msecs <= 20 ? 1 : msecs/20);
 # endif // __amigaos4__ || __MORPHOS__
 #elif defined HAVE_NANOSLEEP
+#ifndef WIN32PORT
 #    define uae_msleep(msecs) \
 	    { \
 		if (msecs < 1000) { \
@@ -61,6 +62,11 @@
 		    nanosleep (&t, 0); \
 		} \
 	    }
+#else  
+#define uae_msleep(msecs) \
+	    { usleep (msecs * ONE_THOUSAND); }
+
+#endif
 #elif defined HAVE_USLEEP
 #     define uae_msleep(msecs) usleep (msecs * ONE_THOUSAND)
 #elif defined USE_SDL
@@ -68,9 +74,5 @@
 #     else
 #      error "No system sleep function found"
 #endif // Get uae_msleep working
-
-#ifdef PS3PORT
-#     define uae_msleep(msecs) usleep (msecs * ONE_THOUSAND)
-#endif
 
 void sleep_test (void);

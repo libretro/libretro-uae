@@ -12,10 +12,6 @@
 #ifndef UAE_STRING_H
 #define UAE_STRING_H
 
-#ifdef PS3PORT
-#undef HAVE_STRINGS_H
-#endif
-
 #ifdef HAVE_STRINGS_H
 #include <strings.h>
 #endif

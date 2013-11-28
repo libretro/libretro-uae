@@ -174,7 +174,7 @@ static uae_u8 all_zeros[MAX_PIXELS_PER_LINE];
 uae_u8 *xlinebuffer;
 
 static int *amiga2aspect_line_map, *native2amiga_line_map;
-static uae_u8 *row_map[MAX_UAE_HEIGHT + 1];
+static uae_u8 **row_map;
 static uae_u8 row_tmp[MAX_PIXELS_PER_LINE * 32 / 8];
 static int max_drawn_amiga_line;
 
@@ -193,7 +193,7 @@ typedef void (*line_draw_func)(int, int, bool);
 
 #define LINESTATE_SIZE ((MAXVPOS + 2) * 2 + 1)
 
-static uae_u8 linestate[LINESTATE_SIZE], linestate2[LINESTATE_SIZE];
+static uae_u8 linestate[LINESTATE_SIZE];
 
 uae_u8 line_data[(MAXVPOS + 2) * 2][MAX_PLANES * MAX_WORDS_PER_LINE * 2];
 
@@ -691,6 +691,7 @@ void record_diw_line (int plfstrt, int first, int last)
    All of these are forced into the visible window (VISIBLE_LEFT_BORDER .. VISIBLE_RIGHT_BORDER).
    PLAYFIELD_START and PLAYFIELD_END are in window coordinates.  */
 static int playfield_start, playfield_end;
+static int real_playfield_start, real_playfield_end;
 static int linetoscr_diw_start, linetoscr_diw_end;
 static int native_ddf_left, native_ddf_right;
 #if 0
@@ -735,6 +736,11 @@ static void pfield_init_linetoscr (void)
 	native_ddf_left = coord_hw_to_window_x (ddf_left);
 	native_ddf_right = coord_hw_to_window_x (ddf_right);
 
+	if (native_ddf_left < 0)
+		native_ddf_left = 0;
+	if (native_ddf_right < native_ddf_left)
+		native_ddf_right = native_ddf_left;
+
 	linetoscr_diw_start = dp_for_drawing->diwfirstword;
 	linetoscr_diw_end = dp_for_drawing->diwlastword;
 
@@ -760,6 +766,9 @@ static void pfield_init_linetoscr (void)
 		playfield_end = visible_left_border;
 	if (playfield_end > visible_right_border)
 		playfield_end = visible_right_border;
+
+	real_playfield_end = playfield_end;
+	real_playfield_start = playfield_start;
 
 	// Sprite hpos don't include DIW_DDF_OFFSET and can appear 1 lores pixel
 	// before first bitplane pixel appears.
@@ -830,6 +839,7 @@ static void pfield_init_linetoscr (void)
 
 	if (dip_for_drawing->nr_sprites == 0)
 		return;
+
 	/* We need to clear parts of apixels.  */
 	if (linetoscr_diw_start < native_ddf_left) {
 		int size = res_shift_from_window (native_ddf_left - linetoscr_diw_start);
@@ -1733,9 +1743,9 @@ STATIC_INLINE void draw_sprites_ecs (struct sprite_entry *e)
 	}
 }
 
-#if 0
+#ifdef AGA
 /* clear possible bitplane data outside DIW area */
-static void clear_bitplane_border (void)
+static void clear_bitplane_border_aga (void)
 {
 	int len, shift = res_shift;
 	uae_u8 v = 0;
@@ -1892,6 +1902,9 @@ void init_row_map (void)
 		write_log (_T("Resolution too high, aborting\n"));
 		abort ();
 	}
+	if (!row_map)
+		row_map = xmalloc (uae_u8*, MAX_UAE_HEIGHT + 1);
+	
 	if (oldbufmem && oldbufmem == gfxvidinfo.bufmem &&
 		oldheight == gfxvidinfo.height_allocated &&
 		oldpitch == gfxvidinfo.rowbytes)
@@ -2321,6 +2334,10 @@ static void pfield_draw_line (int lineno, int gfx_ypos, int follow_ypos)
 
 		if (dip_for_drawing->nr_sprites) {
 			int i;
+#ifdef AGA
+			if (colors_for_drawing.bordersprite)
+				clear_bitplane_border_aga ();
+#endif
 
 			for (i = 0; i < dip_for_drawing->nr_sprites; i++) {
 #ifdef AGA
@@ -2850,17 +2867,19 @@ bool draw_frame (struct vidbuffer *vb)
 
 	init_row_map ();
 	memcpy (oldstate, linestate, LINESTATE_SIZE);
-	memcpy (linestate, linestate2, LINESTATE_SIZE);
 	for (int i = 0; i < LINESTATE_SIZE; i++) {
 		uae_u8 v = linestate[i];
-		if (v == LINE_REMEMBERED_AS_PREVIOUS)
+		if (v == LINE_REMEMBERED_AS_PREVIOUS) {
+			linestate[i - 1] = LINE_DECIDED_DOUBLE;
 			v = LINE_AS_PREVIOUS;
-		else if (v == LINE_DONE_AS_PREVIOUS)
+		} else if (v == LINE_DONE_AS_PREVIOUS) {
+			linestate[i - 1] = LINE_DECIDED_DOUBLE;
 			v = LINE_AS_PREVIOUS;
-		else if (v == LINE_REMEMBERED_AS_BLACK)
+		} else if (v == LINE_REMEMBERED_AS_BLACK) {
 			v = LINE_BLACK;
-		else if (v == LINE_DONE)
+		} else if (v == LINE_DONE) {
 			v = LINE_DECIDED;
+		}
 		linestate[i] = v;
 	}
 	last_drawn_line = 0;
@@ -3009,8 +3028,6 @@ void redraw_frame (void)
 
 bool vsync_handle_check (void)
 {
-	check_picasso ();
-
 	int changed = check_prefs_changed_gfx ();
 	if (changed > 0) {
 		reset_drawing ();
@@ -3031,6 +3048,7 @@ bool vsync_handle_check (void)
 #endif
 	check_prefs_changed_custom ();
 	check_prefs_changed_cpu ();
+	check_picasso ();
 	return changed != 0;
 }
 
@@ -3087,13 +3105,12 @@ void vsync_handle_redraw (int long_frame, int lof_changed, uae_u16 bplcon0p, uae
 
 void hsync_record_line_state (int lineno, enum nln_how how, int changed)
 {
-	uae_u8 *state, *state2;
+	uae_u8 *state;
 
 	if (framecnt != 0)
 		return;
 
 	state = linestate + lineno;
-	state2 = linestate2 + lineno;
 	changed += frame_redraw_necessary + ((lineno >= lightpen_y1 && lineno <= lightpen_y2) ? 1 : 0);
 
 	switch (how) {
@@ -3123,7 +3140,6 @@ void hsync_record_line_state (int lineno, enum nln_how how, int changed)
 			state[1] = LINE_DECIDED; //LINE_BLACK;
 		break;
 	}
-	*state2 = *state;
 }
 
 /* REMOVEME:

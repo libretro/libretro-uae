@@ -5,9 +5,7 @@
 #include "custom.h"
 #include "events.h"
 #include "newcpu.h"
-//#ifndef ANDPORT
 #include "machdep/m68kops.h"
-//#endif
 #include "cpu_prefetch.h"
 #include "cputbl.h"
 #include "cpummu.h"
@@ -33988,7 +33986,7 @@ return 4 * CYCLE_UNIT / 2;
 }
 
 #endif
-/* PTESTR.L (An) */
+/* PTESTW.L (An) */
 #ifndef CPUEMU_68000_ONLY
 uae_u32 REGPARAM2 CPUFUNC(op_f548_31)(uae_u32 opcode)
 {
@@ -34001,7 +33999,7 @@ return 4 * CYCLE_UNIT / 2;
 }
 
 #endif
-/* PTESTW.L (An) */
+/* PTESTR.L (An) */
 #ifndef CPUEMU_68000_ONLY
 uae_u32 REGPARAM2 CPUFUNC(op_f568_31)(uae_u32 opcode)
 {

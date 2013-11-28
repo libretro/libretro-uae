@@ -17,13 +17,13 @@ Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include "sysconfig.h"
 #include "sysdeps.h"
+#include "target.h"
 
 #ifndef ANDPORT
 #include "target.h"
 #else
 #include "targets/t-android.h"
 #endif
-
 
 #if defined TARGET_AMIGAOS
 #include <devices/timer.h>
@@ -128,10 +128,8 @@ int get_fs_usage (const char *path, const char *disk, struct fs_usage *fsp)
 # include <unistd.h>
 #endif
 
-#ifndef PS3PORT
 #if HAVE_SYS_PARAM_H
 # include <sys/param.h>
-#endif
 #endif
 
 #if HAVE_SYS_MOUNT_H
@@ -335,7 +333,6 @@ int get_fs_usage (const TCHAR *path, const TCHAR *disk, struct fs_usage *fsp)
 #if defined(__PS3__) || defined(RETRO)
  return -1;
 #else
-
 #if !defined(STAT_STATFS2_FS_DATA) && !defined(STAT_READ_FILSYS) && !defined(ANDROID)
 	/* !Ultrix && !SVR2 */
 
@@ -348,6 +345,7 @@ int get_fs_usage (const TCHAR *path, const TCHAR *disk, struct fs_usage *fsp)
 #endif /* not STAT_STATFS2_FS_DATA && not STAT_READ_FILSYS */
 
 	return 0;
+
 #endif /* ps3 */
 }
 

@@ -137,7 +137,7 @@ void event2_newevent_xx (int no, evt t, uae_u32 data, evfunc2 func)
 {
 	evt et;
 	static int next = ev2_misc;
-//printf("vent2_newevent_xx\n");
+
 	et = t + get_cycles ();
 	if (no < 0) {
 		no = next;

@@ -1,5 +1,0 @@
-getbits.o: getbits.c cdata.h getbits.h
-
-cdata.h:
-
-getbits.h:

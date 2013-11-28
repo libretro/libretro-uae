@@ -207,7 +207,7 @@
 #include "zfile.h"
 #include "ar.h"
 #include "savestate.h"
-#include "uaecrc32.h"
+#include "crc32.h"
 #include "akiko.h"
 #include "misc.h"
 

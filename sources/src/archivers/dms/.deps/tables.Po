@@ -1,5 +1,0 @@
-tables.o: tables.c cdata.h tables.h
-
-cdata.h:
-
-tables.h:

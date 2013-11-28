@@ -378,6 +378,8 @@ extern void mallocemu_free (void *ptr);
 #include "targets/t-android.h"
 #endif
 
+
+//#include "target.h"
 #if !defined(RECUR) && !defined(NO_MACHDEP)
 #include "machdep/machdep.h"
 #include "gfxdep/gfx.h"
@@ -448,6 +450,7 @@ extern int gui_message_multibutton (int flags, const char *format,...);
 #endif //xfree_debug
 
 #define DBLEQU(f, i) (abs ((f) - (i)) < 0.000001)
+
 #ifndef WIN32PORT
 #define TCHAR char
 #endif
@@ -487,6 +490,7 @@ extern int gui_message_multibutton (int flags, const char *format,...);
 #define _tcstod strtod
 #define _T
 #define sleep_millis uae_msleep
+
 #define _istalnum iswalnum
 #ifndef WIN32PORT
 #define ULONG unsigned long
@@ -501,7 +505,6 @@ extern int gui_message_multibutton (int flags, const char *format,...);
 #ifndef offsetof
 #  define offsetof(type, member)  __builtin_offsetof (type, member)
 #endif /* offsetof */
-
 #ifdef WIN32PORT
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -515,6 +518,6 @@ DWORD GetLastError(void);
 #ifndef ANDPORT
 typedef int64_t off64_t;
 #endif
-//DWORD GetLastError(void);
+
 
 #endif /* UAE_SYSDEPS_H */

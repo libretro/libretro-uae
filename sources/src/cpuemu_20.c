@@ -5,9 +5,7 @@
 #include "custom.h"
 #include "events.h"
 #include "newcpu.h"
-//#ifndef ANDPORT
 #include "machdep/m68kops.h"
-//#endif
 #include "cpu_prefetch.h"
 #include "cputbl.h"
 #define CPUFUNC(x) x##_ff

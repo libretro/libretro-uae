@@ -3074,7 +3074,7 @@ void compute_framesync (void)
 	struct chipset_refresh *cr = get_chipset_refresh ();
 	while (cr) {
 		double v = -1;
-		if (!picasso_on) {
+		if (!picasso_on && !picasso_requested_on) {
 			if (isvsync_chipset ()) {
 				if (cr->index == CHIPSET_REFRESH_PAL || cr->index == CHIPSET_REFRESH_NTSC) {
 					if ((fabs (vblank_hz - 50) < 1 || fabs (vblank_hz - 60) < 1 || fabs (vblank_hz - 100) < 1 || fabs (vblank_hz - 120) < 1) && currprefs.gfx_apmode[0].gfx_vsync == 2 && currprefs.gfx_apmode[0].gfx_fullscreen > 0) {
@@ -3127,6 +3127,10 @@ void compute_framesync (void)
 	}
 	stored_chipset_refresh = cr;
 	interlace_changed = 0;
+	lof_togglecnt_lace = 0;
+	lof_togglecnt_nlace = 0;
+	nlace_cnt = NLACE_CNT_NEEDED;
+	lof_changing = 0;
 	gfxvidinfo.inxoffset = -1;
 	gfxvidinfo.inyoffset = -1;
 
@@ -3197,7 +3201,7 @@ void compute_framesync (void)
 
 	compute_vsynctime ();
 
-	write_log (_T("%s mode%s%s V=%.4fHz H=%0.4fHz (%dx%d+%d) IDX=%d (%s) D=%d RTG=%d\n"),
+	write_log (_T("%s mode%s%s V=%.4fHz H=%0.4fHz (%dx%d+%d) IDX=%d (%s) D=%d RTG=%d/%d\n"),
 		isntsc ? _T("NTSC") : _T("PAL"),
 		islace ? _T(" lace") : _T(""),
 		doublescan > 0 ? _T(" dblscan") : _T(""),
@@ -3206,7 +3210,7 @@ void compute_framesync (void)
 		maxhpos, maxvpos, lof_store ? 1 : 0,
 		cr ? cr->index : -1,
 		cr != NULL && cr->label != NULL ? cr->label : _T("<?>"),
-		currprefs.gfx_apmode[picasso_on ? 1 : 0].gfx_display, picasso_on
+		currprefs.gfx_apmode[picasso_on ? 1 : 0].gfx_display, picasso_on, picasso_requested_on
 	);
 
 	config_changed = 1;
@@ -3858,13 +3862,10 @@ static void send_interrupt_do (uae_u32 v)
 
 void send_interrupt (int num, int delay)
 {
-//printf("****************************send_interrupt************\n");
 	if (use_eventmode (0x8000) && delay > 0) {
-//printf("****************************send_interrupt************\n");
 		if (!(intreq & (1 << num)))
 			event2_newevent_xx (-1, delay, num, send_interrupt_do);
 	} else {
-//printf("****************************send_interrupt************\n");
 		send_interrupt_do (num);
 	}
 }
@@ -5915,11 +5916,8 @@ static void fpscounter (bool frameok)
 		if ((timeframes & 15) == 0) {
 			gui_fps (fps, (int)idle, frameok ? 0 : 1);
 		}
-	} 
+	}
 }
-
-//RETRO HACK
-extern int RLOOP;
 
 // vsync functions that are not hardware timing related
 static void vsync_handler_pre (void)
@@ -5932,11 +5930,7 @@ static void vsync_handler_pre (void)
 		if (vsync_handle_check ()) {
 			redraw_frame ();
 			render_screen (true);
-			show_screen (0); 
-//#ifdef ANDPORT
-RLOOP=0;
-//#endif
-//write_log("RETRO LOOP 0\n");
+			show_screen (0);
 		}
 		config_check_vsync ();
 	}

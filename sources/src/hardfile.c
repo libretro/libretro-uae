@@ -1651,12 +1651,7 @@ static void abort_async (struct hardfileprivdata *hfpd, uaecptr request, int err
 	while (i < MAX_ASYNC_REQUESTS) {
 		if (hfpd->d_request[i] == request && hfpd->d_request_type[i] == ASYNC_REQUEST_TEMP) {
 			/* ASYNC_REQUEST_TEMP = request is processing */
-#ifdef WIN32PORT
-	usleep(1*1024);
-#else
-	sleep_millis (1);
-#endif
-		//	sleep_millis (1);
+			sleep_millis (1);
 			i = 0;
 			continue;
 		}

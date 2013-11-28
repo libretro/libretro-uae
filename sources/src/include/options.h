@@ -13,7 +13,7 @@
 
 #define UAEMAJOR 2
 #define UAEMINOR 6
-#define UAESUBREV 0
+#define UAESUBREV 1
 
 #include "uae_types.h"
 
@@ -353,8 +353,8 @@ struct uae_prefs {
 	bool lightboost_strobo;
 
 	int gfx_filter;
-	TCHAR gfx_filtershader[2 * MAX_FILTERSHADERS][MAX_DPATH];
-	TCHAR gfx_filtermask[2 * MAX_FILTERSHADERS][MAX_DPATH];
+	TCHAR gfx_filtershader[2 * MAX_FILTERSHADERS + 1][MAX_DPATH];
+	TCHAR gfx_filtermask[2 * MAX_FILTERSHADERS + 1][MAX_DPATH];
 	TCHAR gfx_filteroverlay[MAX_DPATH];
 	struct wh gfx_filteroverlay_pos;
 	int gfx_filteroverlay_overscan;
@@ -482,6 +482,8 @@ struct uae_prefs {
 	int fpu_model;
 	int fpu_revision;
 	bool cpu_compatible;
+	bool int_no_unimplemented;
+	bool fpu_no_unimplemented;
 	bool address_space_24;
 	bool picasso96_nocustom;
 	int picasso96_modeflags;

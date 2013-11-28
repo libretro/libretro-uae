@@ -2520,16 +2520,16 @@ const struct cputbl CPUFUNC(op_smalltbl_0)[] = {
 { CPUFUNC(op_f518_0), 62744 }, /* PFLUSHA */
 #endif
 #ifndef CPUEMU_68000_ONLY
-{ CPUFUNC(op_f548_0), 62792 }, /* PTESTR */
+{ CPUFUNC(op_f548_0), 62792 }, /* PTESTW */
 #endif
 #ifndef CPUEMU_68000_ONLY
-{ CPUFUNC(op_f568_0), 62824 }, /* PTESTW */
+{ CPUFUNC(op_f568_0), 62824 }, /* PTESTR */
 #endif
 #ifndef CPUEMU_68000_ONLY
-{ CPUFUNC(op_f588_0), 62856 }, /* PLPAR */
+{ CPUFUNC(op_f588_0), 62856 }, /* PLPAW */
 #endif
 #ifndef CPUEMU_68000_ONLY
-{ CPUFUNC(op_f5c8_0), 62920 }, /* PLPAW */
+{ CPUFUNC(op_f5c8_0), 62920 }, /* PLPAR */
 #endif
 #ifndef CPUEMU_68000_ONLY
 { CPUFUNC(op_f600_0), 62976 }, /* MOVE16 */
@@ -4426,8 +4426,8 @@ const struct cputbl CPUFUNC(op_smalltbl_1)[] = {
 { CPUFUNC(op_f508_0), 62728 }, /* PFLUSH */
 { CPUFUNC(op_f510_0), 62736 }, /* PFLUSHAN */
 { CPUFUNC(op_f518_0), 62744 }, /* PFLUSHA */
-{ CPUFUNC(op_f548_0), 62792 }, /* PTESTR */
-{ CPUFUNC(op_f568_0), 62824 }, /* PTESTW */
+{ CPUFUNC(op_f548_0), 62792 }, /* PTESTW */
+{ CPUFUNC(op_f568_0), 62824 }, /* PTESTR */
 { CPUFUNC(op_f600_0), 62976 }, /* MOVE16 */
 { CPUFUNC(op_f608_0), 62984 }, /* MOVE16 */
 { CPUFUNC(op_f610_0), 62992 }, /* MOVE16 */
@@ -21719,16 +21719,16 @@ const struct cputbl CPUFUNC(op_smalltbl_22)[] = {
 { (cpuop_func*)CPUFUNC(op_f518_22), 62744 }, /* PFLUSHA */
 #endif
 #ifndef CPUEMU_68000_ONLY
-{ (cpuop_func*)CPUFUNC(op_f548_22), 62792 }, /* PTESTR */
+{ (cpuop_func*)CPUFUNC(op_f548_22), 62792 }, /* PTESTW */
 #endif
 #ifndef CPUEMU_68000_ONLY
-{ (cpuop_func*)CPUFUNC(op_f568_22), 62824 }, /* PTESTW */
+{ (cpuop_func*)CPUFUNC(op_f568_22), 62824 }, /* PTESTR */
 #endif
 #ifndef CPUEMU_68000_ONLY
-{ (cpuop_func*)CPUFUNC(op_f588_22), 62856 }, /* PLPAR */
+{ (cpuop_func*)CPUFUNC(op_f588_22), 62856 }, /* PLPAW */
 #endif
 #ifndef CPUEMU_68000_ONLY
-{ (cpuop_func*)CPUFUNC(op_f5c8_22), 62920 }, /* PLPAW */
+{ (cpuop_func*)CPUFUNC(op_f5c8_22), 62920 }, /* PLPAR */
 #endif
 #ifndef CPUEMU_68000_ONLY
 { (cpuop_func*)CPUFUNC(op_f600_22), 62976 }, /* MOVE16 */
@@ -23626,8 +23626,8 @@ const struct cputbl CPUFUNC(op_smalltbl_23)[] = {
 { (cpuop_func*)CPUFUNC(op_f508_22), 62728 }, /* PFLUSH */
 { (cpuop_func*)CPUFUNC(op_f510_22), 62736 }, /* PFLUSHAN */
 { (cpuop_func*)CPUFUNC(op_f518_22), 62744 }, /* PFLUSHA */
-{ (cpuop_func*)CPUFUNC(op_f548_22), 62792 }, /* PTESTR */
-{ (cpuop_func*)CPUFUNC(op_f568_22), 62824 }, /* PTESTW */
+{ (cpuop_func*)CPUFUNC(op_f548_22), 62792 }, /* PTESTW */
+{ (cpuop_func*)CPUFUNC(op_f568_22), 62824 }, /* PTESTR */
 { (cpuop_func*)CPUFUNC(op_f600_22), 62976 }, /* MOVE16 */
 { (cpuop_func*)CPUFUNC(op_f608_22), 62984 }, /* MOVE16 */
 { (cpuop_func*)CPUFUNC(op_f610_22), 62992 }, /* MOVE16 */
@@ -27995,10 +27995,10 @@ const struct cputbl CPUFUNC(op_smalltbl_31)[] = {
 { CPUFUNC(op_f518_31), 62744 }, /* PFLUSHA */
 #endif
 #ifndef CPUEMU_68000_ONLY
-{ CPUFUNC(op_f548_31), 62792 }, /* PTESTR */
+{ CPUFUNC(op_f548_31), 62792 }, /* PTESTW */
 #endif
 #ifndef CPUEMU_68000_ONLY
-{ CPUFUNC(op_f568_31), 62824 }, /* PTESTW */
+{ CPUFUNC(op_f568_31), 62824 }, /* PTESTR */
 #endif
 #ifndef CPUEMU_68000_ONLY
 { CPUFUNC(op_f600_31), 62976 }, /* MOVE16 */
@@ -32962,16 +32962,16 @@ const struct cputbl CPUFUNC(op_smalltbl_33)[] = {
 { CPUFUNC(op_f518_33), 62744 }, /* PFLUSHA */
 #endif
 #ifndef CPUEMU_68000_ONLY
-{ CPUFUNC(op_f548_33), 62792 }, /* PTESTR */
+{ CPUFUNC(op_f548_33), 62792 }, /* PTESTW */
 #endif
 #ifndef CPUEMU_68000_ONLY
-{ CPUFUNC(op_f568_33), 62824 }, /* PTESTW */
+{ CPUFUNC(op_f568_33), 62824 }, /* PTESTR */
 #endif
 #ifndef CPUEMU_68000_ONLY
-{ CPUFUNC(op_f588_33), 62856 }, /* PLPAR */
+{ CPUFUNC(op_f588_33), 62856 }, /* PLPAW */
 #endif
 #ifndef CPUEMU_68000_ONLY
-{ CPUFUNC(op_f5c8_33), 62920 }, /* PLPAW */
+{ CPUFUNC(op_f5c8_33), 62920 }, /* PLPAR */
 #endif
 #ifndef CPUEMU_68000_ONLY
 { CPUFUNC(op_f600_33), 62976 }, /* MOVE16 */

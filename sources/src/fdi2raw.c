@@ -37,7 +37,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "sysconfig.h"
 #include "sysdeps.h"
 #include "zfile.h"
-#include "uaecrc32.h"
+#include "crc32.h"
 /* ELSE */
 //#include "types.h"
 

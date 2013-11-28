@@ -49,7 +49,7 @@ int disk_debug_track = -1;
 #ifdef CAPS
 #include "caps.h"
 #endif
-#include "uaecrc32.h"
+#include "crc32.h"
 #include "inputdevice.h"
 #include "amax.h"
 #ifdef RETROPLATFORM
@@ -2586,8 +2586,11 @@ void disk_insert_force (int num, const TCHAR *name, bool forcedwriteprotect)
 {
 	disk_insert_2 (num, name, 1, forcedwriteprotect);
 }
-
-/*static */void DISK_check_change (void)
+#ifdef RETRO
+void DISK_check_change (void)
+#else
+static void DISK_check_change (void)
+#endif
 {
 	if (currprefs.floppy_speed != changed_prefs.floppy_speed)
 		currprefs.floppy_speed = changed_prefs.floppy_speed;

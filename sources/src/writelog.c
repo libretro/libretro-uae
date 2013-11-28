@@ -17,14 +17,12 @@
 #include "uae_types.h"
 #include "writelog.h"
 
-extern FILE * mdbgfile;
-
 void write_log (const char *fmt, ...)
 {
     va_list ap;
     va_start (ap, fmt);
 #ifdef HAVE_VFPRINTF
-    vfprintf (/*mdbgfile*/stderr, fmt, ap);
+    vfprintf (stderr, fmt, ap);
 #else
     /* Technique stolen from GCC.  */
     {
@@ -37,7 +35,7 @@ void write_log (const char *fmt, ...)
 	x6 = va_arg (ap, int);
 	x7 = va_arg (ap, int);
 	x8 = va_arg (ap, int);
-	fprintf (/*mdbgfile*/stderr, fmt, x1, x2, x3, x4, x5, x6, x7, x8);
+	fprintf (stderr, fmt, x1, x2, x3, x4, x5, x6, x7, x8);
     }
 #endif
 }
@@ -70,7 +68,7 @@ void jit_abort (const char *fmt, ...)
 
 void flush_log (void)
 {
-	fflush (/*mdbgfile*/stderr);
+	fflush (stderr);
 }
 
 // Write Debug Log

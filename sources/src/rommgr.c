@@ -14,7 +14,7 @@
 #include "rommgr.h"
 #include "memory_uae.h"
 #include "zfile.h"
-#include "uaecrc32.h"
+#include "crc32.h"
 
 #include "autoconf.h"
 
@@ -174,7 +174,7 @@ static struct romdata roms[] = {
 	{ _T("Freezer: X-Power Professional 500 v1.2"),           1,  2,  1,   2, _T("XPOWER\0"),             131072, 65, 0,     0, ROMTYPE_XPOWER,      0,  1, NULL,            0x9e70c231, { 0xa2977a1c, 0x41a8ca7d, 0x4af4a168, 0x726da542, 0x179d5963 }, NULL },
 	{ _T(" AROS KS ROM (built-in)"),                          0,  0,  0,   0, _T("AROS\0"),           2 * 524288, 66, 0,     0, ROMTYPE_KICK,        0,  0, NULL,            0xffffffff, {          0,          0,          0,          0,          0 }, _T("AROS") },
 	{ _T("Freezer: Nordic Power v2.0"),                       2,  0,  2,   0, _T("NPOWER\0"),              65536, 67, 0,     0, ROMTYPE_NORDIC,      0,  1, NULL,            0xa4db2906, { 0x0aec68f7, 0x25470c89, 0x6b699ff4, 0x6623dec5, 0xc777466e }, NULL },
-	{ _T("Freezer: X-Power Professional 500 v1.3"),           1,  2,  1,   2, _T("XPOWER\0"),             131072, 68, 0,     0, ROMTYPE_XPOWER,      0,  1, NULL,            0x31e057f0, { 0x84650266, 0x465d1859, 0x7fd71dee, 0x00775930, 0xb7e450ee }, NULL },
+	{ _T("Freezer: X-Power Professional 500 v1.3"),           1,  3,  1,   3, _T("XPOWER\0"),             131072, 68, 0,     0, ROMTYPE_XPOWER,      0,  1, NULL,            0x31e057f0, { 0x84650266, 0x465d1859, 0x7fd71dee, 0x00775930, 0xb7e450ee }, NULL },
 	{ _T("Freezer: Nordic Power v1.5"),                       1,  5,  1,   5, _T("NPOWER\0"),              65536, 69, 0,     0, ROMTYPE_NORDIC,      0,  1, NULL,            0x83b4b21c, { 0xc56ced25, 0x506a5aab, 0x3fa13813, 0x4fc9e5ae, 0x0f9d3709 }, NULL },
 	{ _T("Freezer: Nordic Power v3.0"),                       3,  0,  3,   0, _T("NPOWER\0"),              65536, 70, 0,     0, ROMTYPE_NORDIC,      0,  1, NULL,            0x72850aef, { 0x59c91d1f, 0xa8f118f9, 0x0bdba05a, 0x9ae788d7, 0x7a6cc7c9 }, NULL },
 	{ _T("KS ROM v2.04 (A3000)"),                             2,  4, 37, 175, _T("A3000\0"),              524288, 71, 8,     0, ROMTYPE_KICK,        0,  0, NULL,            0x234a7233, { 0xd82ebb59, 0xafc53540, 0xddf2d718, 0x7ecf239b, 0x7ea91590 }, NULL },
@@ -234,7 +234,7 @@ static struct romdata roms[] = {
 	ALTROM(69,  1,  1,  32768, ROMTYPE_EVEN|ROMTYPE_SCRAMBLED|ROMTYPE_8BIT, 0xdd207174, 0xae67652d, 0x64f5db20, 0x0f4b2110, 0xee59567f, 0xfbd90a1b)
 	ALTROM(69,  1,  2,  32768, ROMTYPE_ODD |ROMTYPE_SCRAMBLED|ROMTYPE_8BIT, 0x8f93d85d, 0x73c62d21, 0x40c0c092, 0x6315b702, 0xdd5d0f05, 0x3dad7fab)
 	ALTROM(70,  1,  1,  32768, ROMTYPE_EVEN|ROMTYPE_SCRAMBLED|ROMTYPE_8BIT, 0xf3330e1f, 0x3a597db2, 0xb7d11b6c, 0xb8e13496, 0xc215f223, 0x88c4ca3c)
-	ALTROM(70,  1,  2,  32768, ROMTYPE_EVEN|ROMTYPE_SCRAMBLED|ROMTYPE_8BIT, 0xee58e0f9, 0x4148f4cb, 0xb42cec33, 0x8ca144de, 0xd4f54118, 0xe0f185dd)
+	ALTROM(70,  1,  2,  32768, ROMTYPE_ODD |ROMTYPE_SCRAMBLED|ROMTYPE_8BIT, 0xee58e0f9, 0x4148f4cb, 0xb42cec33, 0x8ca144de, 0xd4f54118, 0xe0f185dd)
 
 	/* Dummy, last line, do not remove! */
 	{ NULL, 0,  0,  0,  0, NULL, 0, 0, 0, 0, 0, 0, 0, NULL, 0, { 0, 0, 0, 0, 0 }, NULL }

@@ -292,7 +292,7 @@ static UnitInfo *getuip (struct uae_prefs *p, int index)
 		return NULL;
 	return &mountinfo.ui[index];
 }
- 
+
 int get_filesys_unitconfig (struct uae_prefs *p, int index, struct mountedinfo *mi)
 {
 	UnitInfo *ui = getuip(p, index);
@@ -317,7 +317,6 @@ int get_filesys_unitconfig (struct uae_prefs *p, int index, struct mountedinfo *
 			mi->ismedia = true;
 			return FILESYS_VIRTUAL;
 		} else if (uci->ci.type == UAEDEV_HDF) {
-
 			ui->hf.ci.readonly = true;
 			ui->hf.ci.blocksize = uci->ci.blocksize;
 			if (!hdf_open (&ui->hf, uci->ci.rootdir)) {
@@ -340,12 +339,12 @@ int get_filesys_unitconfig (struct uae_prefs *p, int index, struct mountedinfo *
 			ui->hf.ci.blocksize = uci->ci.blocksize;
 			mi->size = -1;
 			mi->ismounted = true;
-/*FIXME RETRO
+#if !defined(ANDPORT) && !defined(WIN32PORT) && !defined(PS3PORT) 
 			if (blkdev_get_info (p, ui->hf.ci.cd_emu_unit, &di)) {
 				mi->ismedia = di.media_inserted != 0;
 				_tcscpy (mi->rootdir, di.label);
 			}
-*/
+#endif
 #if 0
 			if (ui->hf.ci.cd_emu_unit == 0)
 				_tcscpy (mi->rootdir, _T("CD"));
@@ -354,7 +353,6 @@ int get_filesys_unitconfig (struct uae_prefs *p, int index, struct mountedinfo *
 #endif
 		}
 	} else {
-
 		if (!ui->controller || (ui->controller && p->cs_ide)) {
 			mi->ismounted = 1;
 			if (uci->ci.type == UAEDEV_HDF)
@@ -650,13 +648,12 @@ static int set_filesys_unit_1 (int nr, struct uaedev_config_info *ci)
 
 	return nr;
 err:
-//printf("HD ERROR ****************\n");
 	if (ui->hf.handle_valid)
 		hdf_close (&ui->hf);
 	return -1;
 }
 
-/*static*/ int set_filesys_unit (int nr, struct uaedev_config_info *ci)
+static int set_filesys_unit (int nr, struct uaedev_config_info *ci)
 {
 	int ret;
 
@@ -664,7 +661,7 @@ err:
 	return ret;
 }
 
-/*static */int add_filesys_unit (struct uaedev_config_info *ci)
+static int add_filesys_unit (struct uaedev_config_info *ci)
 {
 	int ret;
 
@@ -3291,7 +3288,7 @@ static void
 		mode = SHARED_LOCK;
 	}
 
-	TRACE((_T("ACTION_LOCK(0x%lx, \"%s\", %d)\n"), lock, bstr (unit, name), mode));
+	TRACE((_T("ACTION_LOCK(0x%08x, \"%s\", %d)\n"), lock, bstr (unit, name), mode));
 	DUMPLOCK(unit, lock);
 
 	a = find_aino (unit, lock, bstr (unit, name), &err);
@@ -4501,7 +4498,7 @@ static void do_find (Unit *unit, dpacket packet, int mode, int create, int fallb
 	int aino_created = 0;
 	int isvirtual = unit->volflags & (MYVOLUMEINFO_ARCHIVE | MYVOLUMEINFO_CDFS);
 
-	TRACE((_T("ACTION_FIND_*(0x%lx,0x%lx,\"%s\",%d,%d)\n"), fh, lock, bstr (unit, name), mode, create));
+	TRACE((_T("ACTION_FIND_*(0x%08x,0x%08x,\"%s\",%d,%d)\n"), fh, lock, bstr (unit, name), mode, create));
 	TRACE((_T("fh=%x lock=%x name=%x\n"), fh, lock, name));
 	DUMPLOCK(unit, lock);
 
@@ -5224,6 +5221,7 @@ int my_mkdir (const TCHAR *name)
         return CreateDirectory (namep, NULL) == 0 ? -1 : 0;
 }
 #endif
+
 static void
 	action_create_dir (Unit *unit, dpacket packet)
 {
@@ -6395,8 +6393,9 @@ static uae_u32 REGPARAM2 filesys_diagentry (TrapContext *context)
 #define PP_FSPTR 404
 #define PP_ADDTOFSRES 408
 #define PP_FSRES 412
-#define PP_EXPLIB 416
-#define PP_FSHDSTART 420
+#define PP_FSRES_CREATED 416
+#define PP_EXPLIB 420
+#define PP_FSHDSTART 424
 
 static uae_u32 REGPARAM2 filesys_dev_bootfilesys (TrapContext *context)
 {
@@ -6872,6 +6871,9 @@ static int rdb_mount (UnitInfo *uip, int unit_no, int partnum, uaecptr parmpacke
 		err = -1;
 		goto error;
 	}
+	if (dostype == 0xffffffff) {
+		write_log (_T("RDB: WARNING: dostype = 0xFFFFFFFF. FFS bug can report partition in \"no disk inserted\" state!!\n"));
+	}
 
 	err = 2;
 
@@ -6991,7 +6993,10 @@ static void addfakefilesys (uaecptr parmpacket, uae_u32 dostype, int ver, int re
 		put_long (parmpacket + PP_FSHDSTART + 12 + 5 * 4, ci->priority);
 		flags |= 0x20;
 	}
-	put_long (parmpacket + PP_FSHDSTART + 12 + 8 * 4, kickstart_version < 36 && dostype == 0x444f5300 ? 0 : -1); // globvec
+	put_long (parmpacket + PP_FSHDSTART + 12 + 8 * 4, dostype == 0x444f5300 ? 0 : -1); // globvec
+	// if OFS = seglist -> NULL
+	if ((dostype & 0xffffff00) == 0x444f5300)
+		flags &= ~0x080;
 	put_long (parmpacket + PP_FSHDSTART + 8, flags); // patchflags
 }
 
@@ -7045,6 +7050,11 @@ static int dofakefilesys (UnitInfo *uip, uaecptr parmpacket, struct uaedev_confi
 		addfakefilesys (parmpacket, dostype, ver, rev, ci);
 			return FILESYS_HARDFILE;
 	}
+	if ((dostype & 0xffffff00) == 0x444f5300 && (!uip->filesysdir || !uip->filesysdir[0])) {
+		write_log (_T("RDB: OFS, using ROM default FS.\n"));
+		return FILESYS_HARDFILE;
+	}
+
 	tmp[0] = 0;
 	if (uip->filesysdir && _tcslen (uip->filesysdir) > 0) {
 		_tcscpy (tmp, uip->filesysdir);
@@ -7068,10 +7078,7 @@ static int dofakefilesys (UnitInfo *uip, uaecptr parmpacket, struct uaedev_confi
 	zf = zfile_fopen (tmp, _T("rb"), ZFD_NORMAL);
 	if (!zf) {
 		addfakefilesys (parmpacket, dostype, ver, rev, ci);
-		write_log (_T("RDB: filesys not found\n"));
-		if ((dostype & 0xffffff00) == 0x444f5300)
-			return FILESYS_HARDFILE;
-		write_log (_T("RDB: mounted without filesys\n"));
+		write_log (_T("RDB: filesys not found, mounted without filesys\n"));
 		return FILESYS_HARDFILE;
 	}
 
@@ -7144,7 +7151,7 @@ static int dofakefilesys (UnitInfo *uip, uaecptr parmpacket, struct uaedev_confi
 	zfile_fclose (zf);
 	uip->rdb_filesyssize = size;
 
-	// DOS\0 is not in fs.resource
+	// DOS\0 is not in fs.resource and fs.resource already existed?
 	if (dostype == 0x444f5300 && oldversion < 0)
 		oldversion = 0;
 	put_long (parmpacket + PP_FSSIZE, uip->rdb_filesyssize);

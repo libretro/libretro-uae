@@ -1,0 +1,6406 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>puae_MainWindow</class>
+ <widget class="QMainWindow" name="puae_MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>710</width>
+    <height>566</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>PUAE 2.5.0</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <widget class="QTabWidget" name="tab_main">
+    <property name="geometry">
+     <rect>
+      <x>5</x>
+      <y>5</y>
+      <width>700</width>
+      <height>500</height>
+     </rect>
+    </property>
+    <property name="currentIndex">
+     <number>4</number>
+    </property>
+    <widget class="QWidget" name="tab_about">
+     <attribute name="title">
+      <string>About</string>
+     </attribute>
+     <widget class="QLabel" name="label">
+      <property name="geometry">
+       <rect>
+        <x>210</x>
+        <y>30</y>
+        <width>57</width>
+        <height>15</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>PUAE</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_paths">
+     <attribute name="title">
+      <string>Paths</string>
+     </attribute>
+     <widget class="QLineEdit" name="IDC_PATHS_ROM">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>25</y>
+        <width>471</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Verdana</family>
+        <pointsize>14</pointsize>
+       </font>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_2">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>231</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Verdana</family>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>System ROMs:</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="IDC_PATHS_ROMS">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>25</y>
+        <width>26</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>..</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="IDC_PATHS_CONFIG">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>65</y>
+        <width>471</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="IDC_PATHS_CONFIGS">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>65</y>
+        <width>26</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>..</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_3">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>50</y>
+        <width>231</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Configuration Files:</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="IDC_PATHS_SAVESTATE">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>145</y>
+        <width>471</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="IDC_PATHS_SCREENSHOT">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>105</y>
+        <width>471</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="IDC_PATHS_SAVESTATES">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>145</y>
+        <width>26</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>..</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="IDC_PATHS_SCREENSHOTS">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>105</y>
+        <width>26</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>..</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_7">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>90</y>
+        <width>231</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Screenshots:</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_8">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>130</y>
+        <width>231</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>State files:</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="IDC_PATHS_AVIOUTPUT">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>185</y>
+        <width>471</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="IDC_PATHS_SAVEIMAGES">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>225</y>
+        <width>26</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>..</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="IDC_PATHS_SAVEIMAGE">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>225</y>
+        <width>471</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="IDC_PATHS_AVIOUTPUTS">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>185</y>
+        <width>26</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>..</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="IDC_PATHS_RIPS">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>265</y>
+        <width>26</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>..</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_9">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>210</y>
+        <width>231</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Saveimages:</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="IDC_PATHS_RIP">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>265</y>
+        <width>471</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_10">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>250</y>
+        <width>231</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Rips:</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_11">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>170</y>
+        <width>231</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Videos:</string>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="IDC_PATHS_CONFIGCACHE">
+      <property name="geometry">
+       <rect>
+        <x>320</x>
+        <y>47</y>
+        <width>181</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Cache configuration files</string>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="IDC_PATHS_DEFAULT">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>300</y>
+        <width>151</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Reset to defaults</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="IDC_ROM_RESCAN">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>331</y>
+        <width>151</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Rescan ROMs</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="IDC_RESETDISKHISTORY">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>361</y>
+        <width>151</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Clear Disk History</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_quickstart">
+     <attribute name="title">
+      <string>Quickstart</string>
+     </attribute>
+     <widget class="QGroupBox" name="groupBox">
+      <property name="geometry">
+       <rect>
+        <x>5</x>
+        <y>10</y>
+        <width>515</width>
+        <height>80</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Emulated Hardware</string>
+      </property>
+      <widget class="QLabel" name="label_12">
+       <property name="geometry">
+        <rect>
+         <x>145</x>
+         <y>25</y>
+         <width>57</width>
+         <height>15</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Model:</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="IDC_QUICKSTART_MODEL">
+       <property name="geometry">
+        <rect>
+         <x>206</x>
+         <y>20</y>
+         <width>236</width>
+         <height>25</height>
+        </rect>
+       </property>
+       <item>
+        <property name="text">
+         <string>A500</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>A500+</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>A600</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>A1000</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>A1200</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>A3000</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>A4000</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>CD32</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>CDTV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Arcadia Multi Select System</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Expanded WinUAE example configuration</string>
+        </property>
+       </item>
+      </widget>
+      <widget class="QLabel" name="label_13">
+       <property name="geometry">
+        <rect>
+         <x>97</x>
+         <y>50</y>
+         <width>90</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Configuration:</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="IDC_QUICKSTART_CONFIGURATION">
+       <property name="geometry">
+        <rect>
+         <x>205</x>
+         <y>45</y>
+         <width>296</width>
+         <height>25</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_QUICKSTART_NTSC">
+       <property name="geometry">
+        <rect>
+         <x>445</x>
+         <y>20</y>
+         <width>61</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>NTSC</string>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_2">
+      <property name="geometry">
+       <rect>
+        <x>5</x>
+        <y>105</y>
+        <width>515</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Compatibility vs Required CPU Power</string>
+      </property>
+      <widget class="QLabel" name="label_61">
+       <property name="geometry">
+        <rect>
+         <x>15</x>
+         <y>25</y>
+         <width>131</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Best compatibility</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_62">
+       <property name="geometry">
+        <rect>
+         <x>386</x>
+         <y>25</y>
+         <width>121</width>
+         <height>15</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Low compatibility</string>
+       </property>
+      </widget>
+      <widget class="QSlider" name="IDC_QUICKSTART_COMPATIBILITY">
+       <property name="geometry">
+        <rect>
+         <x>135</x>
+         <y>25</y>
+         <width>241</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_3">
+      <property name="geometry">
+       <rect>
+        <x>5</x>
+        <y>165</y>
+        <width>511</width>
+        <height>56</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Host Configuration</string>
+      </property>
+      <widget class="QLabel" name="label_63">
+       <property name="geometry">
+        <rect>
+         <x>15</x>
+         <y>30</y>
+         <width>96</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Configuration:</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="IDC_QUICKSTART_HOSTCONFIG">
+       <property name="geometry">
+        <rect>
+         <x>116</x>
+         <y>25</y>
+         <width>381</width>
+         <height>25</height>
+        </rect>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_4">
+      <property name="geometry">
+       <rect>
+        <x>5</x>
+        <y>230</y>
+        <width>511</width>
+        <height>135</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Emulated Drives</string>
+      </property>
+      <widget class="QCheckBox" name="IDC_DF0QENABLE">
+       <property name="geometry">
+        <rect>
+         <x>8</x>
+         <y>20</y>
+         <width>131</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Floppy Drive DF0:</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="IDC_DF0TEXTQ">
+       <property name="geometry">
+        <rect>
+         <x>8</x>
+         <y>40</y>
+         <width>495</width>
+         <height>25</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="IDC_DF0QQ">
+       <property name="geometry">
+        <rect>
+         <x>158</x>
+         <y>15</y>
+         <width>131</width>
+         <height>26</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Select Image File</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="IDC_EJECT0Q">
+       <property name="geometry">
+        <rect>
+         <x>439</x>
+         <y>15</y>
+         <width>61</width>
+         <height>26</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Eject</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_DF0WPQ">
+       <property name="geometry">
+        <rect>
+         <x>307</x>
+         <y>20</y>
+         <width>126</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Write Protected</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="IDC_EJECT1Q">
+       <property name="geometry">
+        <rect>
+         <x>441</x>
+         <y>75</y>
+         <width>61</width>
+         <height>26</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Eject</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_DF1WPQ">
+       <property name="geometry">
+        <rect>
+         <x>310</x>
+         <y>80</y>
+         <width>126</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Write Protected</string>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="IDC_DF1TEXTQ">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>101</y>
+         <width>495</width>
+         <height>25</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="IDC_DF1QQ">
+       <property name="geometry">
+        <rect>
+         <x>160</x>
+         <y>75</y>
+         <width>131</width>
+         <height>26</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Select Image File</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_DF1QENABLE">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>80</y>
+         <width>131</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Floppy Drive DF1:</string>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_5">
+      <property name="geometry">
+       <rect>
+        <x>313</x>
+        <y>366</y>
+        <width>201</width>
+        <height>40</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Mode</string>
+      </property>
+      <widget class="QCheckBox" name="IDC_QUICKSTARTMODE">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>15</y>
+         <width>176</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Start in Quickstart mode</string>
+       </property>
+      </widget>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_configurations">
+     <attribute name="title">
+      <string>Configurations</string>
+     </attribute>
+    </widget>
+    <widget class="QWidget" name="tab_hardware">
+     <attribute name="title">
+      <string>Hardware</string>
+     </attribute>
+     <widget class="QTabWidget" name="tabWidget_2">
+      <property name="geometry">
+       <rect>
+        <x>5</x>
+        <y>0</y>
+        <width>686</width>
+        <height>466</height>
+       </rect>
+      </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="tab_hw_cpu">
+       <attribute name="title">
+        <string>CPU and FPU</string>
+       </attribute>
+       <widget class="QGroupBox" name="groupBox_6">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>0</y>
+          <width>161</width>
+          <height>240</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>CPU</string>
+        </property>
+        <widget class="QRadioButton" name="IDC_CPU0">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>20</y>
+           <width>97</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>68000</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="IDC_CPU1">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>40</y>
+           <width>97</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>68010</string>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="IDC_CPU2">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>60</y>
+           <width>97</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>68020</string>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="IDC_CPU3">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>80</y>
+           <width>97</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>68030</string>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="IDC_CPU4">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>100</y>
+           <width>97</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>68040</string>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="IDC_CPU5">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>120</y>
+           <width>97</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>68060</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="IDC_COMPATIBLE24">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>150</y>
+           <width>136</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>24-bit addressing</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="IDC_COMPATIBLE">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>170</y>
+           <width>131</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>More Compatible</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="IDC_JITENABLE">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>190</y>
+           <width>84</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>JIT</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="IDC_MMUENABLE">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>210</y>
+           <width>111</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>68040 MMU</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_7">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>250</y>
+          <width>160</width>
+          <height>130</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>FPU</string>
+        </property>
+        <widget class="QRadioButton" name="IDC_FPU0">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>20</y>
+           <width>97</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>None</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="IDC_FPU1">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>40</y>
+           <width>97</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>68881</string>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="IDC_FPU2">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>60</y>
+           <width>97</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>68882</string>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="IDC_FPU3">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>80</y>
+           <width>116</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>CPU Internal</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="IDC_COMPATIBLE_FPU">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>105</y>
+           <width>136</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>More compatible</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_8">
+        <property name="geometry">
+         <rect>
+          <x>170</x>
+          <y>1</y>
+          <width>340</width>
+          <height>141</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>CPU Emulation Speed</string>
+        </property>
+        <widget class="QRadioButton" name="IDC_CS_HOST">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>25</y>
+           <width>316</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Fastest possible, but maintain chipset timing</string>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="IDC_CS_68000">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>45</y>
+           <width>321</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Approximate A500 or A500/A1200 cycle-exact</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="IDC_CS_ADJUSTABLE">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>65</y>
+           <width>311</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Adjustable between CPU and chipset</string>
+         </property>
+        </widget>
+        <widget class="QSlider" name="IDC_SPEED">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>110</y>
+           <width>121</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_14">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>110</y>
+           <width>31</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>CPU</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_15">
+         <property name="geometry">
+          <rect>
+           <x>165</x>
+           <y>110</y>
+           <width>57</width>
+           <height>15</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Chipset</string>
+         </property>
+        </widget>
+        <widget class="QSlider" name="IDC_CPUIDLE">
+         <property name="geometry">
+          <rect>
+           <x>245</x>
+           <y>110</y>
+           <width>91</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_16">
+         <property name="geometry">
+          <rect>
+           <x>285</x>
+           <y>95</y>
+           <width>57</width>
+           <height>15</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>CPU Idle</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_9">
+        <property name="geometry">
+         <rect>
+          <x>170</x>
+          <y>250</y>
+          <width>340</width>
+          <height>130</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Advanced JIT Settings</string>
+        </property>
+        <widget class="QCheckBox" name="IDC_JITFPU">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>100</y>
+           <width>116</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>FPU support</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="IDC_CONSTJUMP">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>80</y>
+           <width>116</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Constant jump</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="IDC_HARDFLUSH">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>60</y>
+           <width>101</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Hard Flush</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="IDC_NOFLAGS">
+         <property name="geometry">
+          <rect>
+           <x>125</x>
+           <y>60</y>
+           <width>84</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>No flags</string>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="IDC_TRUST0">
+         <property name="geometry">
+          <rect>
+           <x>240</x>
+           <y>60</y>
+           <width>97</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Direct</string>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="IDC_TRUST1">
+         <property name="geometry">
+          <rect>
+           <x>240</x>
+           <y>80</y>
+           <width>97</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Indirect</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_4">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>30</y>
+           <width>76</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Cache size:</string>
+         </property>
+        </widget>
+        <widget class="QSlider" name="IDC_CACHE">
+         <property name="geometry">
+          <rect>
+           <x>124</x>
+           <y>30</y>
+           <width>131</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="IDC_CACHETEXT">
+         <property name="geometry">
+          <rect>
+           <x>280</x>
+           <y>25</y>
+           <width>56</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_10">
+        <property name="geometry">
+         <rect>
+          <x>170</x>
+          <y>160</y>
+          <width>340</width>
+          <height>80</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Cycle-exact CPU Emulation Speed</string>
+        </property>
+        <widget class="QLabel" name="label_17">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>35</y>
+           <width>106</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>CPU Frequency</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="IDC_CPU_FREQUENCY2">
+         <property name="geometry">
+          <rect>
+           <x>247</x>
+           <y>30</y>
+           <width>91</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="IDC_CPU_FREQUENCY">
+         <property name="geometry">
+          <rect>
+           <x>140</x>
+           <y>30</y>
+           <width>91</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <item>
+          <property name="text">
+           <string>A500</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>A1200</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>2x</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Custom</string>
+          </property>
+         </item>
+        </widget>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="tab_hw_chipset">
+       <attribute name="title">
+        <string>Chipset</string>
+       </attribute>
+       <widget class="QGroupBox" name="groupBox_11">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>0</y>
+          <width>251</width>
+          <height>180</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Chipset</string>
+        </property>
+        <widget class="QRadioButton" name="IDC_OCS">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>25</y>
+           <width>97</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>OCS</string>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="IDC_ECS_AGNUS">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>50</y>
+           <width>97</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>ECS Agnus</string>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="IDC_ECS">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>75</y>
+           <width>97</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Full ECS</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="IDC_AGA">
+         <property name="geometry">
+          <rect>
+           <x>140</x>
+           <y>25</y>
+           <width>97</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>AGA</string>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="IDC_ECS_DENISE">
+         <property name="geometry">
+          <rect>
+           <x>140</x>
+           <y>50</y>
+           <width>97</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>ECS Denise</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="IDC_NTSC">
+         <property name="geometry">
+          <rect>
+           <x>140</x>
+           <y>75</y>
+           <width>84</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>NTSC</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_18">
+         <property name="geometry">
+          <rect>
+           <x>25</x>
+           <y>135</y>
+           <width>96</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Chipset Extra</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="IDC_CS_EXT">
+         <property name="geometry">
+          <rect>
+           <x>145</x>
+           <y>130</y>
+           <width>82</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <item>
+          <property name="text">
+           <string/>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Generic</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>CDTV</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>CD32</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>A500</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>A500+</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>A600</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>A1000</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>A1200</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>A2000</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>A3000</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>A3000T</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>A4000</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>A4000T</string>
+          </property>
+         </item>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_12">
+        <property name="geometry">
+         <rect>
+          <x>260</x>
+          <y>0</y>
+          <width>250</width>
+          <height>180</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Options</string>
+        </property>
+        <widget class="QCheckBox" name="IDC_BLITIMM">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>20</y>
+           <width>146</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Immediate Blitter</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="IDC_CYCLEEXACT">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>40</y>
+           <width>126</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Cycle-exact</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="IDC_GENLOCK">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>60</y>
+           <width>161</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Genlock connected</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_13">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>191</y>
+          <width>505</width>
+          <height>75</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Collision Level</string>
+        </property>
+        <widget class="QRadioButton" name="IDC_COLLISION0">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>25</y>
+           <width>97</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>None</string>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="IDC_COLLISION1">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>45</y>
+           <width>126</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Sprites Only</string>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="IDC_COLLISION2">
+         <property name="geometry">
+          <rect>
+           <x>175</x>
+           <y>25</y>
+           <width>276</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Sprites and Sprites vs. Playfield</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="IDC_COLLISION3">
+         <property name="geometry">
+          <rect>
+           <x>175</x>
+           <y>45</y>
+           <width>97</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Full</string>
+         </property>
+        </widget>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="tab_hw_advchipset">
+       <attribute name="title">
+        <string>Adv. Chipset</string>
+       </attribute>
+       <widget class="QGroupBox" name="groupBox_15">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>35</y>
+          <width>505</width>
+          <height>55</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Battery Backed Up Real Time Clock</string>
+        </property>
+        <widget class="QRadioButton" name="IDC_CS_RTC1">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>25</y>
+           <width>97</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>None</string>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="IDC_CS_RTC2">
+         <property name="geometry">
+          <rect>
+           <x>140</x>
+           <y>25</y>
+           <width>97</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>MSM6242B</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="IDC_CS_RTC3">
+         <property name="geometry">
+          <rect>
+           <x>275</x>
+           <y>25</y>
+           <width>97</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>RF5C01A</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="IDC_CS_RTCADJUST">
+         <property name="geometry">
+          <rect>
+           <x>412</x>
+           <y>25</y>
+           <width>86</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_16">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>95</y>
+          <width>505</width>
+          <height>50</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>CIA-A TOD Clock Source</string>
+        </property>
+        <widget class="QRadioButton" name="IDC_CS_CIAA_TOD1">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>25</y>
+           <width>121</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Vertical Sync</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="IDC_CS_CIAA_TOD2">
+         <property name="geometry">
+          <rect>
+           <x>160</x>
+           <y>25</y>
+           <width>156</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Power Supply 50Hz</string>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="IDC_CS_CIAA_TOD3">
+         <property name="geometry">
+          <rect>
+           <x>335</x>
+           <y>25</y>
+           <width>151</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Power Supply 60Hz</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_COMPATIBLE">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>10</y>
+          <width>171</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Compatible Settings</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_CIAOVERLAY">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>160</y>
+          <width>156</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>CIA ROM Overlay</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_CD32CD">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>176</y>
+          <width>156</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>CD32 CD</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_CDTVCD">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>192</y>
+          <width>156</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>CDTV CD</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_IDE1">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>209</y>
+          <width>156</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>A600/A1200 IDE</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_KSMIRROR_E0">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>227</y>
+          <width>156</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>ROM Mirror (E0)</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_RESETWARNING">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>244</y>
+          <width>156</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>KB Reset Warning</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_A2091">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>287</y>
+          <width>156</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>A590/A2091 SCSI</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_A4091">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>304</y>
+          <width>156</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>A4091 SCSI</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_RAMSEY">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>338</y>
+          <width>156</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Ramsey revision:</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_FATGARY">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>361</y>
+          <width>156</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Fat Gary revision:</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_KSMIRROR_A8">
+        <property name="geometry">
+         <rect>
+          <x>185</x>
+          <y>227</y>
+          <width>156</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>ROM Mirror (A8)</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_A1000RAM">
+        <property name="geometry">
+         <rect>
+          <x>185</x>
+          <y>160</y>
+          <width>156</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>A1000 Boot RAM/ROM</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_CD32C2P">
+        <property name="geometry">
+         <rect>
+          <x>185</x>
+          <y>176</y>
+          <width>156</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>CD32 C2P</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_CDTVSCSI">
+        <property name="geometry">
+         <rect>
+          <x>185</x>
+          <y>304</y>
+          <width>156</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>CDTV SCSI</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_DMAC">
+        <property name="geometry">
+         <rect>
+          <x>185</x>
+          <y>287</y>
+          <width>156</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>A3000 SCSI</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_NOEHB">
+        <property name="geometry">
+         <rect>
+          <x>185</x>
+          <y>244</y>
+          <width>156</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>No-EHB Denise</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_CDTVRAM">
+        <property name="geometry">
+         <rect>
+          <x>185</x>
+          <y>192</y>
+          <width>156</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>CDTV SRAM</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_IDE2">
+        <property name="geometry">
+         <rect>
+          <x>185</x>
+          <y>209</y>
+          <width>156</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>A4000/A4000T IDE</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_SLOWISFAST">
+        <property name="geometry">
+         <rect>
+          <x>345</x>
+          <y>227</y>
+          <width>156</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>C00000 is Fast RAM</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_DF0IDHW">
+        <property name="geometry">
+         <rect>
+          <x>345</x>
+          <y>160</y>
+          <width>156</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>DF0: ID Hardware</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_CD32NVRAM">
+        <property name="geometry">
+         <rect>
+          <x>345</x>
+          <y>176</y>
+          <width>156</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>CD32 NVRAM</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_DMAC2">
+        <property name="geometry">
+         <rect>
+          <x>345</x>
+          <y>287</y>
+          <width>156</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>A4000T SCSI</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_DIPAGNUS">
+        <property name="geometry">
+         <rect>
+          <x>345</x>
+          <y>244</y>
+          <width>156</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>A1000 Agnus (8361)</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_CDTVRAMEXP">
+        <property name="geometry">
+         <rect>
+          <x>345</x>
+          <y>192</y>
+          <width>171</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>CDTV SRAM Expansion</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_PCMCIA">
+        <property name="geometry">
+         <rect>
+          <x>345</x>
+          <y>209</y>
+          <width>156</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>PCMCIA</string>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="IDC_CS_RAMSEYREV">
+        <property name="geometry">
+         <rect>
+          <x>170</x>
+          <y>335</y>
+          <width>71</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="IDC_CS_FATGARYREV">
+        <property name="geometry">
+         <rect>
+          <x>170</x>
+          <y>360</y>
+          <width>71</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_AGNUS">
+        <property name="geometry">
+         <rect>
+          <x>285</x>
+          <y>338</y>
+          <width>156</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Agnus/Alice revision:</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_CS_DENISE">
+        <property name="geometry">
+         <rect>
+          <x>285</x>
+          <y>361</y>
+          <width>156</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Denise/Lisa revision:</string>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="IDC_CS_DENISEREV">
+        <property name="geometry">
+         <rect>
+          <x>440</x>
+          <y>360</y>
+          <width>71</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="IDC_CS_AGNUSREV">
+        <property name="geometry">
+         <rect>
+          <x>440</x>
+          <y>335</y>
+          <width>71</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_19">
+        <property name="geometry">
+         <rect>
+          <x>40</x>
+          <y>270</y>
+          <width>311</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>A4091/A4000T SCSI not yet implemented.</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="tab_hw_rom">
+       <attribute name="title">
+        <string>ROM</string>
+       </attribute>
+       <widget class="QGroupBox" name="groupBox_17">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>25</y>
+          <width>505</width>
+          <height>160</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>System ROM Settings</string>
+        </property>
+        <widget class="QPushButton" name="IDC_KICKCHOOSER">
+         <property name="geometry">
+          <rect>
+           <x>475</x>
+           <y>35</y>
+           <width>26</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>..</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_20">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>20</y>
+           <width>231</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Main ROM file:</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_21">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>70</y>
+           <width>231</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Extended ROM file:</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="IDC_ROMCHOOSER2">
+         <property name="geometry">
+          <rect>
+           <x>475</x>
+           <y>80</y>
+           <width>26</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>..</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="IDC_ROMFILE">
+         <property name="geometry">
+          <rect>
+           <x>11</x>
+           <y>35</y>
+           <width>456</width>
+           <height>25</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="IDC_ROMFILE2">
+         <property name="geometry">
+          <rect>
+           <x>11</x>
+           <y>85</y>
+           <width>456</width>
+           <height>25</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="IDC_MAPROM">
+         <property name="geometry">
+          <rect>
+           <x>164</x>
+           <y>125</y>
+           <width>151</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="toolTip">
+          <string>Creates a BlizKick-compatible memory area.</string>
+         </property>
+         <property name="text">
+          <string>MapROM emulation</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="IDC_KICKSHIFTER">
+         <property name="geometry">
+          <rect>
+           <x>334</x>
+           <y>125</y>
+           <width>166</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="toolTip">
+          <string>Patches the system ROM for ShapeShifter compatibility.</string>
+         </property>
+         <property name="text">
+          <string>ShapeShifter support</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_18">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>210</y>
+          <width>505</width>
+          <height>135</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Miscellaneous</string>
+        </property>
+        <widget class="QLabel" name="label_23">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>71</y>
+           <width>231</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Flash RAM file:</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="IDC_CARTFILE">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>35</y>
+           <width>450</width>
+           <height>25</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="IDC_FLASHFILE">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>86</y>
+           <width>450</width>
+           <height>25</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="IDC_FLASHCHOOSER">
+         <property name="geometry">
+          <rect>
+           <x>470</x>
+           <y>85</y>
+           <width>25</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>..</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="IDC_CARTCHOOSER">
+         <property name="geometry">
+          <rect>
+           <x>470</x>
+           <y>33</y>
+           <width>25</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>..</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_22">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>19</y>
+           <width>231</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Cartridge ROM file:</string>
+         </property>
+        </widget>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="tab_hw_ram">
+       <attribute name="title">
+        <string>RAM</string>
+       </attribute>
+       <widget class="QGroupBox" name="groupBox_19">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>20</y>
+          <width>505</width>
+          <height>146</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Memory Settings</string>
+        </property>
+        <widget class="QLabel" name="label_chipmem">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>30</y>
+           <width>46</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Chip:</string>
+         </property>
+        </widget>
+        <widget class="QSlider" name="IDC_CHIPMEM">
+         <property name="geometry">
+          <rect>
+           <x>60</x>
+           <y>30</y>
+           <width>86</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="maximum">
+          <number>6</number>
+         </property>
+         <property name="value">
+          <number>1</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="IDC_CHIPRAM">
+         <property name="geometry">
+          <rect>
+           <x>155</x>
+           <y>25</y>
+           <width>51</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+        <widget class="QSlider" name="IDC_FASTMEM">
+         <property name="geometry">
+          <rect>
+           <x>60</x>
+           <y>65</y>
+           <width>86</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="maximum">
+          <number>4</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_fastmem">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>65</y>
+           <width>46</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Fast:</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="IDC_FASTRAM">
+         <property name="geometry">
+          <rect>
+           <x>155</x>
+           <y>60</y>
+           <width>51</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+        <widget class="QSlider" name="IDC_Z3FASTMEM">
+         <property name="geometry">
+          <rect>
+           <x>345</x>
+           <y>65</y>
+           <width>86</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="maximum">
+          <number>17</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_z3fast">
+         <property name="geometry">
+          <rect>
+           <x>290</x>
+           <y>65</y>
+           <width>61</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Z3 Fast:</string>
+         </property>
+        </widget>
+        <widget class="QSlider" name="IDC_SLOWMEM">
+         <property name="geometry">
+          <rect>
+           <x>345</x>
+           <y>30</y>
+           <width>86</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="maximum">
+          <number>4</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="IDC_Z3FASTRAM">
+         <property name="geometry">
+          <rect>
+           <x>440</x>
+           <y>60</y>
+           <width>51</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_slowmem">
+         <property name="geometry">
+          <rect>
+           <x>305</x>
+           <y>30</y>
+           <width>46</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Slow:</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="IDC_SLOWRAM">
+         <property name="geometry">
+          <rect>
+           <x>440</x>
+           <y>25</y>
+           <width>51</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_32bitchip">
+         <property name="geometry">
+          <rect>
+           <x>260</x>
+           <y>100</y>
+           <width>91</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>32-bit Chip:</string>
+         </property>
+        </widget>
+        <widget class="QSlider" name="IDC_Z3CHIPMEM">
+         <property name="geometry">
+          <rect>
+           <x>345</x>
+           <y>100</y>
+           <width>86</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="maximum">
+          <number>7</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="IDC_Z3CHIPRAM">
+         <property name="geometry">
+          <rect>
+           <x>440</x>
+           <y>95</y>
+           <width>51</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_34">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>175</y>
+          <width>505</width>
+          <height>110</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>A3000/A4000 Advanced Memory Settings</string>
+        </property>
+        <widget class="QSlider" name="IDC_MBMEM2">
+         <property name="geometry">
+          <rect>
+           <x>345</x>
+           <y>65</y>
+           <width>86</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="maximum">
+          <number>7</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_slotfastmem">
+         <property name="geometry">
+          <rect>
+           <x>185</x>
+           <y>65</y>
+           <width>156</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Processor Slot Fast RAM:</string>
+         </property>
+        </widget>
+        <widget class="QSlider" name="IDC_MBMEM1">
+         <property name="geometry">
+          <rect>
+           <x>345</x>
+           <y>30</y>
+           <width>86</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="maximum">
+          <number>7</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="IDC_MBRAM2">
+         <property name="geometry">
+          <rect>
+           <x>440</x>
+           <y>60</y>
+           <width>51</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_mbfastmem">
+         <property name="geometry">
+          <rect>
+           <x>190</x>
+           <y>30</y>
+           <width>151</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Motherboard Fast RAM:</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="IDC_MBRAM1">
+         <property name="geometry">
+          <rect>
+           <x>440</x>
+           <y>25</y>
+           <width>51</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="tab_hw_floppy">
+       <attribute name="title">
+        <string>Floppy Drives</string>
+       </attribute>
+       <widget class="QComboBox" name="IDC_DF0TEXT">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>35</y>
+          <width>510</width>
+          <height>25</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_35">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>304</y>
+          <width>505</width>
+          <height>80</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>New Floppy Disk Image</string>
+        </property>
+        <widget class="QComboBox" name="IDC_FLOPPYTYPE">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>20</y>
+           <width>136</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <item>
+          <property name="text">
+           <string>3.5&quot; DD</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>3.5&quot; HD</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>3.5&quot; DD (PC)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>3.5&quot; HD (PC)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>5.25&quot; SD</string>
+          </property>
+         </item>
+        </widget>
+        <widget class="QPushButton" name="IDC_CREATE">
+         <property name="geometry">
+          <rect>
+           <x>165</x>
+           <y>20</y>
+           <width>156</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Create Standard Disk</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="IDC_CREATE_RAW">
+         <property name="geometry">
+          <rect>
+           <x>339</x>
+           <y>20</y>
+           <width>156</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Create Custom Disk</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="IDC_FLOPPYSPDTEXT_2">
+         <property name="geometry">
+          <rect>
+           <x>165</x>
+           <y>50</y>
+           <width>156</width>
+           <height>25</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_volume">
+         <property name="geometry">
+          <rect>
+           <x>80</x>
+           <y>55</y>
+           <width>76</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Disk Label:</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="IDC_FLOPPY_BOOTABLE">
+         <property name="geometry">
+          <rect>
+           <x>340</x>
+           <y>50</y>
+           <width>84</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Bootblock</string>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="IDC_FLOPPY_FFS">
+         <property name="geometry">
+          <rect>
+           <x>435</x>
+           <y>50</y>
+           <width>56</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>FFS</string>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_36">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>249</y>
+          <width>505</width>
+          <height>46</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Floppy Drive Emulation Speed</string>
+        </property>
+        <widget class="QLineEdit" name="IDC_FLOPPYSPDTEXT">
+         <property name="geometry">
+          <rect>
+           <x>322</x>
+           <y>20</y>
+           <width>176</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QSlider" name="IDC_FLOPPYSPD">
+         <property name="geometry">
+          <rect>
+           <x>25</x>
+           <y>20</y>
+           <width>231</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="maximum">
+          <number>4</number>
+         </property>
+         <property name="value">
+          <number>1</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QPushButton" name="IDC_DF0">
+        <property name="geometry">
+         <rect>
+          <x>480</x>
+          <y>5</y>
+          <width>25</width>
+          <height>26</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="IDC_EJECT0">
+        <property name="geometry">
+         <rect>
+          <x>388</x>
+          <y>5</y>
+          <width>80</width>
+          <height>26</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Eject</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_DF0ENABLE">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>9</y>
+          <width>84</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>DF0:</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="IDC_DF0TYPE">
+        <property name="geometry">
+         <rect>
+          <x>124</x>
+          <y>6</y>
+          <width>82</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="currentIndex">
+         <number>1</number>
+        </property>
+        <item>
+         <property name="text">
+          <string>Disabled</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>3.5&quot; DD</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>3.5&quot; HD</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>5.25&quot; SD</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>3.5&quot; ESCOM</string>
+         </property>
+        </item>
+       </widget>
+       <widget class="QCheckBox" name="IDC_DF0WP">
+        <property name="geometry">
+         <rect>
+          <x>252</x>
+          <y>10</y>
+          <width>126</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Write Protected</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_DF1ENABLE">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>69</y>
+          <width>84</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>DF1:</string>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="IDC_DF1TYPE">
+        <property name="geometry">
+         <rect>
+          <x>124</x>
+          <y>66</y>
+          <width>82</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <item>
+         <property name="text">
+          <string>Disabled</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>3.5&quot; DD</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>3.5&quot; HD</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>5.25&quot; SD</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>3.5&quot; ESCOM</string>
+         </property>
+        </item>
+       </widget>
+       <widget class="QComboBox" name="IDC_DF1TEXT">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>95</y>
+          <width>510</width>
+          <height>25</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="IDC_DF1">
+        <property name="geometry">
+         <rect>
+          <x>480</x>
+          <y>65</y>
+          <width>25</width>
+          <height>26</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="IDC_EJECT1">
+        <property name="geometry">
+         <rect>
+          <x>388</x>
+          <y>65</y>
+          <width>80</width>
+          <height>26</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Eject</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_DF1WP">
+        <property name="geometry">
+         <rect>
+          <x>252</x>
+          <y>70</y>
+          <width>126</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Write Protected</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_DF2ENABLE">
+        <property name="geometry">
+         <rect>
+          <x>12</x>
+          <y>129</y>
+          <width>84</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>DF2:</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="IDC_DF3">
+        <property name="geometry">
+         <rect>
+          <x>480</x>
+          <y>185</y>
+          <width>25</width>
+          <height>26</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="IDC_DF2TYPE">
+        <property name="geometry">
+         <rect>
+          <x>126</x>
+          <y>126</y>
+          <width>82</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <item>
+         <property name="text">
+          <string>Disabled</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>3.5&quot; DD</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>3.5&quot; HD</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>5.25&quot; SD</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>3.5&quot; ESCOM</string>
+         </property>
+        </item>
+       </widget>
+       <widget class="QCheckBox" name="IDC_DF3ENABLE">
+        <property name="geometry">
+         <rect>
+          <x>12</x>
+          <y>189</y>
+          <width>84</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>DF3:</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="IDC_EJECT3">
+        <property name="geometry">
+         <rect>
+          <x>390</x>
+          <y>185</y>
+          <width>80</width>
+          <height>26</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Eject</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_DF3WP">
+        <property name="geometry">
+         <rect>
+          <x>254</x>
+          <y>190</y>
+          <width>126</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Write Protected</string>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="IDC_DF2TEXT">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>155</y>
+          <width>510</width>
+          <height>25</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="IDC_DF3TYPE">
+        <property name="geometry">
+         <rect>
+          <x>126</x>
+          <y>186</y>
+          <width>82</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <item>
+         <property name="text">
+          <string>Disabled</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>3.5&quot; DD</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>3.5&quot; HD</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>5.25&quot; SD</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>3.5&quot; ESCOM</string>
+         </property>
+        </item>
+       </widget>
+       <widget class="QPushButton" name="IDC_DF2">
+        <property name="geometry">
+         <rect>
+          <x>480</x>
+          <y>125</y>
+          <width>25</width>
+          <height>26</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="IDC_EJECT2">
+        <property name="geometry">
+         <rect>
+          <x>390</x>
+          <y>125</y>
+          <width>80</width>
+          <height>26</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Eject</string>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="IDC_DF3TEXT">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>215</y>
+          <width>510</width>
+          <height>25</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_DF2WP">
+        <property name="geometry">
+         <rect>
+          <x>254</x>
+          <y>130</y>
+          <width>126</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Write Protected</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="tab_hw_harddrives">
+       <attribute name="title">
+        <string>Hard Drives</string>
+       </attribute>
+       <widget class="QTableWidget" name="IDC_VOLUMELIST">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>5</y>
+          <width>505</width>
+          <height>192</height>
+         </rect>
+        </property>
+        <column>
+         <property name="text">
+          <string>*</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Device</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Volume</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Path</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>R/W</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Block Size</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Size</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>BootPri</string>
+         </property>
+        </column>
+       </widget>
+       <widget class="QPushButton" name="IDC_NEW_FS">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>209</y>
+          <width>196</width>
+          <height>26</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Add Directory or Archive...</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="IDC_NEW_HF">
+        <property name="geometry">
+         <rect>
+          <x>215</x>
+          <y>209</y>
+          <width>141</width>
+          <height>26</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Add Hardfile...</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="IDC_NEW_HD">
+        <property name="geometry">
+         <rect>
+          <x>375</x>
+          <y>209</y>
+          <width>136</width>
+          <height>26</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Add Hard Drive...</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_MAPDRIVES_NET">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>300</y>
+          <width>171</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Include network drives</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_MAPDRIVES_CD">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>280</y>
+          <width>186</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Include CD/DVD drives</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_MAPDRIVES">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>240</y>
+          <width>186</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Add PC Drives at startup</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_MAPDRIVES_REMOVABLE">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>260</y>
+          <width>186</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Include removable drives</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_NOUAEFSDB">
+        <property name="geometry">
+         <rect>
+          <x>201</x>
+          <y>240</y>
+          <width>221</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Disable UAEFSDB-support</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_MAPDRIVES_AUTO">
+        <property name="geometry">
+         <rect>
+          <x>201</x>
+          <y>280</y>
+          <width>221</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Automount removable drives</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_NORECYCLEBIN">
+        <property name="geometry">
+         <rect>
+          <x>201</x>
+          <y>260</y>
+          <width>196</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Don't use Trash Bin</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="IDC_REMOVE">
+        <property name="geometry">
+         <rect>
+          <x>424</x>
+          <y>245</y>
+          <width>86</width>
+          <height>26</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Remove</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="IDC_EDIT">
+        <property name="geometry">
+         <rect>
+          <x>424</x>
+          <y>270</y>
+          <width>86</width>
+          <height>26</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Properties</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="IDC_CD_SELECT">
+        <property name="geometry">
+         <rect>
+          <x>125</x>
+          <y>330</y>
+          <width>166</width>
+          <height>32</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Select Image File</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="IDC_CD_EJECT">
+        <property name="geometry">
+         <rect>
+          <x>415</x>
+          <y>330</y>
+          <width>91</width>
+          <height>32</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Eject</string>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="IDC_CD_TYPE">
+        <property name="geometry">
+         <rect>
+          <x>295</x>
+          <y>330</y>
+          <width>111</width>
+          <height>26</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_cddrvimg">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>340</y>
+          <width>106</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>CD Drive/Image</string>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="IDC_CD_TEXT">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>355</y>
+          <width>496</width>
+          <height>26</height>
+         </rect>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="tab_14">
+       <attribute name="title">
+        <string>Expansions</string>
+       </attribute>
+       <widget class="QGroupBox" name="groupBox_54">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>15</y>
+          <width>505</width>
+          <height>221</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>RTG Graphics Card</string>
+        </property>
+        <widget class="QComboBox" name="IDC_RTG_8BIT">
+         <property name="geometry">
+          <rect>
+           <x>365</x>
+           <y>20</y>
+           <width>136</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <item>
+          <property name="text">
+           <string>8-bit (*)</string>
+          </property>
+         </item>
+        </widget>
+        <widget class="QComboBox" name="IDC_RTG_16BIT">
+         <property name="geometry">
+          <rect>
+           <x>365</x>
+           <y>50</y>
+           <width>136</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <item>
+          <property name="text">
+           <string>R5G6B5PC (*)</string>
+          </property>
+         </item>
+        </widget>
+        <widget class="QComboBox" name="IDC_RTG_32BIT">
+         <property name="geometry">
+          <rect>
+           <x>365</x>
+           <y>110</y>
+           <width>136</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <item>
+          <property name="text">
+           <string>B8G8R8A8 (*)</string>
+          </property>
+         </item>
+        </widget>
+        <widget class="QComboBox" name="IDC_RTG_24BIT">
+         <property name="geometry">
+          <rect>
+           <x>365</x>
+           <y>80</y>
+           <width>136</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <item>
+          <property name="text">
+           <string>(24bit)</string>
+          </property>
+         </item>
+        </widget>
+        <widget class="QComboBox" name="IDC_RTG_SCALE_ASPECTRATIO">
+         <property name="geometry">
+          <rect>
+           <x>365</x>
+           <y>180</y>
+           <width>136</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <item>
+          <property name="text">
+           <string>Automatic</string>
+          </property>
+         </item>
+        </widget>
+        <widget class="QLabel" name="label_aspratio">
+         <property name="geometry">
+          <rect>
+           <x>285</x>
+           <y>185</y>
+           <width>81</width>
+           <height>15</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Aspect ratio:</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_vbl">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>185</y>
+           <width>81</width>
+           <height>15</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Refresh rate:</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="IDC_RTG_VBLANKRATE">
+         <property name="geometry">
+          <rect>
+           <x>100</x>
+           <y>180</y>
+           <width>136</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <item>
+          <property name="text">
+           <string>Chipset</string>
+          </property>
+         </item>
+        </widget>
+        <widget class="QCheckBox" name="IDC_RTG_MATCH_DEPTH">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>90</y>
+           <width>286</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Match host and RTG color depth if possible</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="IDC_RTG_SCALE">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>110</y>
+           <width>271</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Scale if smaller than display size setting</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="IDC_RTG_SCALE_ALLOW">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>130</y>
+           <width>236</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Always scale in windowed mode</string>
+         </property>
+        </widget>
+        <widget class="QSlider" name="IDC_P96MEM">
+         <property name="geometry">
+          <rect>
+           <x>95</x>
+           <y>50</y>
+           <width>126</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_rtgmem">
+         <property name="geometry">
+          <rect>
+           <x>25</x>
+           <y>50</y>
+           <width>57</width>
+           <height>15</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Memory:</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="IDC_P96RAM">
+         <property name="geometry">
+          <rect>
+           <x>235</x>
+           <y>45</y>
+           <width>71</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_55">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>265</y>
+          <width>206</width>
+          <height>100</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Miscellaneous Expansions</string>
+        </property>
+        <widget class="QCheckBox" name="IDC_CATWEASEL">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>25</y>
+           <width>181</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Catweasel Z2 emulation</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="IDC_SCSIDEVICE">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>45</y>
+           <width>176</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>uaescsi.device</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_56">
+        <property name="geometry">
+         <rect>
+          <x>220</x>
+          <y>265</y>
+          <width>290</width>
+          <height>100</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Network</string>
+        </property>
+        <widget class="QCheckBox" name="IDC_SOCKETS">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>20</y>
+           <width>140</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>bsdsocket.library</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="IDC_SANA2">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>40</y>
+           <width>151</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>uaenet.device</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="IDC_A2065">
+         <property name="geometry">
+          <rect>
+           <x>205</x>
+           <y>40</y>
+           <width>84</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>A2065 Z2</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="IDC_NETDEVICE">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>65</y>
+           <width>271</width>
+           <height>25</height>
+          </rect>
+         </property>
+        </widget>
+       </widget>
+      </widget>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_host">
+     <attribute name="title">
+      <string>Host</string>
+     </attribute>
+     <widget class="QTabWidget" name="tab_host_main">
+      <property name="geometry">
+       <rect>
+        <x>5</x>
+        <y>0</y>
+        <width>686</width>
+        <height>466</height>
+       </rect>
+      </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="tab_host_display">
+       <attribute name="title">
+        <string>Display</string>
+       </attribute>
+       <widget class="QGroupBox" name="groupBox_20">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>5</y>
+          <width>511</width>
+          <height>116</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Screen</string>
+        </property>
+        <widget class="QComboBox" name="IDC_DISPLAYSELECT">
+         <property name="geometry">
+          <rect>
+           <x>100</x>
+           <y>20</y>
+           <width>396</width>
+           <height>25</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="IDC_RESOLUTION">
+         <property name="geometry">
+          <rect>
+           <x>100</x>
+           <y>44</y>
+           <width>116</width>
+           <height>25</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="comboBox_3">
+         <property name="geometry">
+          <rect>
+           <x>225</x>
+           <y>44</y>
+           <width>82</width>
+           <height>25</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="IDC_REFRESHRATE">
+         <property name="geometry">
+          <rect>
+           <x>370</x>
+           <y>44</y>
+           <width>126</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <item>
+          <property name="text">
+           <string>Default</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>50Hz (PAL)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>60Hz (NTSC)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>100Hz (PAL)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>120Hz (NTSC)</string>
+          </property>
+         </item>
+        </widget>
+        <widget class="QLineEdit" name="IDC_XSIZE">
+         <property name="geometry">
+          <rect>
+           <x>100</x>
+           <y>80</y>
+           <width>76</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="IDC_YSIZE">
+         <property name="geometry">
+          <rect>
+           <x>190</x>
+           <y>80</y>
+           <width>76</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_scrwin">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>85</y>
+           <width>76</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Windowed:</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_scrfull">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>35</y>
+           <width>76</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Fullscreen:</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="IDC_BUFFERING">
+         <property name="geometry">
+          <rect>
+           <x>335</x>
+           <y>75</y>
+           <width>161</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <item>
+          <property name="text">
+           <string>No buffering</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Double buffering</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Triple buffering</string>
+          </property>
+         </item>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_21">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>125</y>
+          <width>396</width>
+          <height>226</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Settings</string>
+        </property>
+        <widget class="QComboBox" name="IDC_SCREENMODE_NATIVE">
+         <property name="geometry">
+          <rect>
+           <x>205</x>
+           <y>20</y>
+           <width>181</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <item>
+          <property name="text">
+           <string>Windowed</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Full Screen</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Full Screen + VSync</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Full Screen + AutoVSync</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Full-window</string>
+          </property>
+         </item>
+        </widget>
+        <widget class="QLabel" name="label_scrnative">
+         <property name="geometry">
+          <rect>
+           <x>115</x>
+           <y>25</y>
+           <width>86</width>
+           <height>15</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Native mode:</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="IDC_SCREENMODE_RTG">
+         <property name="geometry">
+          <rect>
+           <x>205</x>
+           <y>45</y>
+           <width>181</width>
+           <height>25</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_scrrtgmode">
+         <property name="geometry">
+          <rect>
+           <x>130</x>
+           <y>50</y>
+           <width>86</width>
+           <height>15</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>RTG mode:</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="IDC_BLACKER_THAN_BLACK">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>75</y>
+           <width>151</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Blacker than black</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="IDC_FLICKERFIXER">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>95</y>
+           <width>206</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Remove interlace artifacts</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="IDC_LORES_SMOOTHED">
+         <property name="geometry">
+          <rect>
+           <x>215</x>
+           <y>75</y>
+           <width>171</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Filtered low resolution</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="IDC_LORES">
+         <property name="geometry">
+          <rect>
+           <x>205</x>
+           <y>120</y>
+           <width>181</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="currentIndex">
+          <number>1</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>Lores</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Hires (normal)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>SuperHires</string>
+          </property>
+         </item>
+        </widget>
+        <widget class="QLabel" name="label_scrres">
+         <property name="geometry">
+          <rect>
+           <x>115</x>
+           <y>125</y>
+           <width>86</width>
+           <height>15</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Resolution:</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_scrrefresh">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>160</y>
+           <width>57</width>
+           <height>15</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Refresh:</string>
+         </property>
+        </widget>
+        <widget class="QSlider" name="IDC_FRAMERATE">
+         <property name="geometry">
+          <rect>
+           <x>85</x>
+           <y>160</y>
+           <width>160</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="IDC_RATETEXT">
+         <property name="geometry">
+          <rect>
+           <x>270</x>
+           <y>155</y>
+           <width>113</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_scrfpsadj">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>190</y>
+           <width>61</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>FPS Adj.:</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="IDC_RATE2TEXT">
+         <property name="geometry">
+          <rect>
+           <x>342</x>
+           <y>185</y>
+           <width>41</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QSlider" name="IDC_FRAMERATE2">
+         <property name="geometry">
+          <rect>
+           <x>85</x>
+           <y>190</y>
+           <width>241</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="sliderPosition">
+          <number>50</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="IDC_RES_AUTOSWITCH">
+         <property name="geometry">
+          <rect>
+           <x>215</x>
+           <y>95</y>
+           <width>171</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Resolution autoswitch</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_22">
+        <property name="geometry">
+         <rect>
+          <x>409</x>
+          <y>125</y>
+          <width>106</width>
+          <height>91</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Centering</string>
+        </property>
+        <widget class="QCheckBox" name="IDC_XCENTER">
+         <property name="geometry">
+          <rect>
+           <x>7</x>
+           <y>20</y>
+           <width>96</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Horizontal</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="IDC_YCENTER">
+         <property name="geometry">
+          <rect>
+           <x>7</x>
+           <y>40</y>
+           <width>84</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Vertical</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_23">
+        <property name="geometry">
+         <rect>
+          <x>409</x>
+          <y>225</y>
+          <width>106</width>
+          <height>126</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Line Mode</string>
+        </property>
+        <widget class="QRadioButton" name="IDC_LM_NORMAL">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>20</y>
+           <width>97</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Normal</string>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="IDC_LM_DOUBLED">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>40</y>
+           <width>97</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Double</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="IDC_LM_SCANLINES">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>60</y>
+           <width>97</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Scanlines</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QPushButton" name="IDC_DA_RESET">
+        <property name="geometry">
+         <rect>
+          <x>380</x>
+          <y>355</y>
+          <width>131</width>
+          <height>26</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Reset to defaults</string>
+        </property>
+       </widget>
+       <widget class="QSlider" name="IDC_DA_SLIDER">
+        <property name="geometry">
+         <rect>
+          <x>140</x>
+          <y>360</y>
+          <width>160</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="IDC_DA_MODE">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>355</y>
+          <width>126</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <item>
+         <property name="text">
+          <string>Brightness</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Contrast</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Gamma</string>
+         </property>
+        </item>
+       </widget>
+       <widget class="QLineEdit" name="IDC_BRIGHTNESSTEXT">
+        <property name="geometry">
+         <rect>
+          <x>315</x>
+          <y>360</y>
+          <width>41</width>
+          <height>20</height>
+         </rect>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="tab_host_sound">
+       <attribute name="title">
+        <string>Sound</string>
+       </attribute>
+       <widget class="QComboBox" name="IDC_SOUNDCARDLIST">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>10</y>
+          <width>506</width>
+          <height>25</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_24">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>45</y>
+          <width>201</width>
+          <height>131</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Sound Emulation</string>
+        </property>
+        <widget class="QRadioButton" name="IDC_SOUND0">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>20</y>
+           <width>97</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Disabled</string>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="IDC_SOUND1">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>40</y>
+           <width>186</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Disabled, but emulated</string>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="IDC_SOUND2">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>60</y>
+           <width>97</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Emulated</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="IDC_SOUND_AUTO">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>100</y>
+           <width>171</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Automatic switching</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_25">
+        <property name="geometry">
+         <rect>
+          <x>215</x>
+          <y>75</y>
+          <width>296</width>
+          <height>46</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Volume</string>
+        </property>
+        <widget class="QSlider" name="IDC_SOUNDVOLUME">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>20</y>
+           <width>191</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="sliderPosition">
+          <number>99</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="IDC_SOUNDVOLUME2">
+         <property name="geometry">
+          <rect>
+           <x>225</x>
+           <y>20</y>
+           <width>61</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_26">
+        <property name="geometry">
+         <rect>
+          <x>215</x>
+          <y>130</y>
+          <width>296</width>
+          <height>46</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Sound Buffer Size</string>
+        </property>
+        <widget class="QSlider" name="horizontalSlider_3">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>20</y>
+           <width>191</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>7</number>
+         </property>
+         <property name="sliderPosition">
+          <number>4</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="IDC_SOUNDBUFFERTEXT">
+         <property name="geometry">
+          <rect>
+           <x>225</x>
+           <y>20</y>
+           <width>61</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QCheckBox" name="IDC_SOUND_EXCLUSIVE">
+        <property name="geometry">
+         <rect>
+          <x>215</x>
+          <y>50</y>
+          <width>141</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Exclusive mode</string>
+        </property>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_27">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>180</y>
+          <width>506</width>
+          <height>116</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Settings</string>
+        </property>
+        <widget class="QLabel" name="label_sndchan">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>20</y>
+           <width>101</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Channel mode:</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="IDC_SOUNDSTEREO">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>35</y>
+           <width>181</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="currentIndex">
+          <number>1</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>Mono</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Stereo</string>
+          </property>
+         </item>
+        </widget>
+        <widget class="QLabel" name="label_sndfreq">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>65</y>
+           <width>76</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Frequency:</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="IDC_SOUNDFREQ">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>80</y>
+           <width>82</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="currentIndex">
+          <number>4</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>11025</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>15000</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>22050</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>32000</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>44100</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>48000</string>
+          </property>
+         </item>
+        </widget>
+        <widget class="QLabel" name="label_sndswap">
+         <property name="geometry">
+          <rect>
+           <x>105</x>
+           <y>65</y>
+           <width>101</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Swap channels:</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="IDC_SOUNDSWAP">
+         <property name="geometry">
+          <rect>
+           <x>105</x>
+           <y>80</y>
+           <width>91</width>
+           <height>25</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_sndstsep">
+         <property name="geometry">
+          <rect>
+           <x>230</x>
+           <y>20</y>
+           <width>121</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Stereo seperation:</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="IDC_SOUNDSTEREOSEP">
+         <property name="geometry">
+          <rect>
+           <x>230</x>
+           <y>35</y>
+           <width>91</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <item>
+          <property name="text">
+           <string>100%</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>90%</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>80%</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>70%</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>60%</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>50%</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>40%</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>30%</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>20%</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>10%</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>0%</string>
+          </property>
+         </item>
+        </widget>
+        <widget class="QLabel" name="label_snddelay">
+         <property name="geometry">
+          <rect>
+           <x>230</x>
+           <y>65</y>
+           <width>101</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Stereo delay:</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="IDC_SOUNDSTEREOMIX">
+         <property name="geometry">
+          <rect>
+           <x>230</x>
+           <y>80</y>
+           <width>91</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <item>
+          <property name="text">
+           <string>-</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>1</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>2</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>3</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>4</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>5</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>6</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>7</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>8</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>9</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>10</string>
+          </property>
+         </item>
+        </widget>
+        <widget class="QComboBox" name="IDC_SOUNDFILTER">
+         <property name="geometry">
+          <rect>
+           <x>375</x>
+           <y>80</y>
+           <width>111</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <item>
+          <property name="text">
+           <string>Always off</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Emulated (A500)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Emulated (A1200)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Always on (A500)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Always on (A1200)</string>
+          </property>
+         </item>
+        </widget>
+        <widget class="QLabel" name="label_sndfilter">
+         <property name="geometry">
+          <rect>
+           <x>375</x>
+           <y>65</y>
+           <width>101</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Audio filter:</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_sndinter">
+         <property name="geometry">
+          <rect>
+           <x>375</x>
+           <y>20</y>
+           <width>101</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Interpolation:</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="IDC_SOUNDINTERPOLATION">
+         <property name="geometry">
+          <rect>
+           <x>375</x>
+           <y>35</y>
+           <width>111</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <item>
+          <property name="text">
+           <string>Disabled</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Anti</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Sinc</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>RH</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Crux</string>
+          </property>
+         </item>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_28">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>305</y>
+          <width>371</width>
+          <height>80</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Floppy Drive Sound Emulation</string>
+        </property>
+        <widget class="QComboBox" name="IDC_SOUNDDRIVESELECT">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>50</y>
+           <width>351</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <item>
+          <property name="text">
+           <string>No Sound</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>A500 (PUAE built-in)</string>
+          </property>
+         </item>
+        </widget>
+        <widget class="QSlider" name="IDC_SOUNDDRIVEVOLUME">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>25</y>
+           <width>160</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="sliderPosition">
+          <number>67</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="IDC_SOUNDDRIVEVOLUME2">
+         <property name="geometry">
+          <rect>
+           <x>195</x>
+           <y>20</y>
+           <width>76</width>
+           <height>21</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="IDC_SOUNDDRIVE">
+         <property name="geometry">
+          <rect>
+           <x>280</x>
+           <y>20</y>
+           <width>82</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <item>
+          <property name="text">
+           <string>DF0:</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>DF1:</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>DF2:</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>DF3:</string>
+          </property>
+         </item>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_29">
+        <property name="geometry">
+         <rect>
+          <x>390</x>
+          <y>305</y>
+          <width>120</width>
+          <height>66</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Drivers</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="tab_host_gameports">
+       <attribute name="title">
+        <string>Game Ports</string>
+       </attribute>
+       <widget class="QGroupBox" name="groupBox_30">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>5</y>
+          <width>501</width>
+          <height>261</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Mouse and Joystick settings</string>
+        </property>
+        <widget class="QLabel" name="label_33">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>25</y>
+           <width>57</width>
+           <height>15</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Port 1</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="IDC_PORT0_JOYS">
+         <property name="geometry">
+          <rect>
+           <x>95</x>
+           <y>20</y>
+           <width>396</width>
+           <height>25</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="IDC_PORT0_JOYSMODE">
+         <property name="geometry">
+          <rect>
+           <x>215</x>
+           <y>45</y>
+           <width>106</width>
+           <height>25</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="IDC_PORT1_JOYSMODE">
+         <property name="geometry">
+          <rect>
+           <x>215</x>
+           <y>100</y>
+           <width>106</width>
+           <height>25</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="IDC_PORT1_JOYS">
+         <property name="geometry">
+          <rect>
+           <x>95</x>
+           <y>75</y>
+           <width>396</width>
+           <height>25</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_34">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>80</y>
+           <width>57</width>
+           <height>15</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Port 2</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="IDC_SWAP">
+         <property name="geometry">
+          <rect>
+           <x>195</x>
+           <y>130</y>
+           <width>171</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Swap ports</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="comboBox_4">
+         <property name="geometry">
+          <rect>
+           <x>95</x>
+           <y>45</y>
+           <width>116</width>
+           <height>25</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="comboBox_6">
+         <property name="geometry">
+          <rect>
+           <x>95</x>
+           <y>100</y>
+           <width>116</width>
+           <height>25</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="pushButton_2">
+         <property name="geometry">
+          <rect>
+           <x>335</x>
+           <y>45</y>
+           <width>76</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Test</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="pushButton_5">
+         <property name="geometry">
+          <rect>
+           <x>415</x>
+           <y>45</y>
+           <width>76</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Remap</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="pushButton_6">
+         <property name="geometry">
+          <rect>
+           <x>415</x>
+           <y>100</y>
+           <width>76</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Remap</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="pushButton_7">
+         <property name="geometry">
+          <rect>
+           <x>335</x>
+           <y>100</y>
+           <width>76</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Test</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_31">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>275</y>
+          <width>496</width>
+          <height>80</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Mouse extra settings</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="tab_host_ioports">
+       <attribute name="title">
+        <string>IO ports</string>
+       </attribute>
+       <widget class="QGroupBox" name="groupBox_32">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>5</y>
+          <width>501</width>
+          <height>181</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Parallel Port</string>
+        </property>
+        <widget class="QComboBox" name="comboBox">
+         <property name="geometry">
+          <rect>
+           <x>105</x>
+           <y>20</y>
+           <width>381</width>
+           <height>25</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_46">
+         <property name="geometry">
+          <rect>
+           <x>25</x>
+           <y>25</y>
+           <width>76</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Printer:</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_47">
+         <property name="geometry">
+          <rect>
+           <x>25</x>
+           <y>50</y>
+           <width>76</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Type:</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="comboBox_2">
+         <property name="geometry">
+          <rect>
+           <x>105</x>
+           <y>45</y>
+           <width>381</width>
+           <height>25</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="pushButton">
+         <property name="geometry">
+          <rect>
+           <x>169</x>
+           <y>75</y>
+           <width>121</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Flush print job</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="lineEdit_2">
+         <property name="geometry">
+          <rect>
+           <x>407</x>
+           <y>75</y>
+           <width>76</width>
+           <height>25</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_48">
+         <property name="geometry">
+          <rect>
+           <x>331</x>
+           <y>80</y>
+           <width>66</width>
+           <height>15</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Autoflush</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="lineEdit_6">
+         <property name="geometry">
+          <rect>
+           <x>252</x>
+           <y>105</y>
+           <width>231</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="comboBox_25">
+         <property name="geometry">
+          <rect>
+           <x>106</x>
+           <y>135</y>
+           <width>376</width>
+           <height>25</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_49">
+         <property name="geometry">
+          <rect>
+           <x>25</x>
+           <y>140</y>
+           <width>76</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Sampler:</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_50">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>110</y>
+           <width>201</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Ghostscript extra parameters:</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_33">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>190</y>
+          <width>501</width>
+          <height>86</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Serial Port</string>
+        </property>
+        <widget class="QComboBox" name="comboBox_24">
+         <property name="geometry">
+          <rect>
+           <x>110</x>
+           <y>20</y>
+           <width>381</width>
+           <height>25</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="checkBox_5">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>55</y>
+           <width>84</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Shared</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="checkBox_6">
+         <property name="geometry">
+          <rect>
+           <x>125</x>
+           <y>55</y>
+           <width>84</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>RTS/CTS</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="checkBox_7">
+         <property name="geometry">
+          <rect>
+           <x>240</x>
+           <y>55</y>
+           <width>84</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Direct</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="checkBox_8">
+         <property name="geometry">
+          <rect>
+           <x>333</x>
+           <y>55</y>
+           <width>136</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>uaeserial.device</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_37">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>279</y>
+          <width>501</width>
+          <height>46</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>MIDI</string>
+        </property>
+        <widget class="QLabel" name="label_35">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>20</y>
+           <width>57</width>
+           <height>15</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Out:</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_36">
+         <property name="geometry">
+          <rect>
+           <x>265</x>
+           <y>20</y>
+           <width>57</width>
+           <height>15</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>In:</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="comboBox_22">
+         <property name="geometry">
+          <rect>
+           <x>95</x>
+           <y>15</y>
+           <width>121</width>
+           <height>25</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="comboBox_23">
+         <property name="geometry">
+          <rect>
+           <x>335</x>
+           <y>15</y>
+           <width>151</width>
+           <height>25</height>
+          </rect>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_38">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>334</y>
+          <width>501</width>
+          <height>46</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Protection Dongle</string>
+        </property>
+        <widget class="QComboBox" name="comboBox_21">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>20</y>
+           <width>406</width>
+           <height>25</height>
+          </rect>
+         </property>
+        </widget>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="tab_host_input">
+       <attribute name="title">
+        <string>Input</string>
+       </attribute>
+       <widget class="QComboBox" name="IDC_INPUTTYPE">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>5</y>
+          <width>111</width>
+          <height>26</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="IDC_INPUTDEVICE">
+        <property name="geometry">
+         <rect>
+          <x>125</x>
+          <y>5</y>
+          <width>466</width>
+          <height>26</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="IDC_INPUTDEVICEDISABLE">
+        <property name="geometry">
+         <rect>
+          <x>595</x>
+          <y>10</y>
+          <width>26</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+       <widget class="QTableWidget" name="IDC_INPUTLIST">
+        <property name="geometry">
+         <rect>
+          <x>15</x>
+          <y>50</y>
+          <width>651</width>
+          <height>192</height>
+         </rect>
+        </property>
+        <column>
+         <property name="text">
+          <string>Input source</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Input target</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Autofire</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Toggle</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>#</string>
+         </property>
+        </column>
+       </widget>
+       <widget class="QComboBox" name="IDC_INPUTAMIGACNT">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>250</y>
+          <width>56</width>
+          <height>26</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="IDC_INPUTAMIGA">
+        <property name="geometry">
+         <rect>
+          <x>75</x>
+          <y>250</y>
+          <width>386</width>
+          <height>26</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="IDC_INPUTTEST">
+        <property name="geometry">
+         <rect>
+          <x>460</x>
+          <y>250</y>
+          <width>86</width>
+          <height>32</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Test</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="IDC_INPUTREMAP">
+        <property name="geometry">
+         <rect>
+          <x>545</x>
+          <y>250</y>
+          <width>91</width>
+          <height>32</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Remap</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_6">
+        <property name="geometry">
+         <rect>
+          <x>25</x>
+          <y>305</y>
+          <width>151</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Joystick dead zone (%):</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_38">
+        <property name="geometry">
+         <rect>
+          <x>25</x>
+          <y>335</y>
+          <width>151</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Autofire rate (lines):</string>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="IDC_INPUTDEADZONE">
+        <property name="geometry">
+         <rect>
+          <x>185</x>
+          <y>305</y>
+          <width>61</width>
+          <height>22</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="IDC_INPUTAUTOFIRERATE">
+        <property name="geometry">
+         <rect>
+          <x>185</x>
+          <y>330</y>
+          <width>61</width>
+          <height>22</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_39">
+        <property name="geometry">
+         <rect>
+          <x>260</x>
+          <y>305</y>
+          <width>166</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Digital joy-mouse speed:</string>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="IDC_INPUTSPEEDD">
+        <property name="geometry">
+         <rect>
+          <x>430</x>
+          <y>305</y>
+          <width>61</width>
+          <height>22</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_40">
+        <property name="geometry">
+         <rect>
+          <x>260</x>
+          <y>335</y>
+          <width>166</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Analog joy-mouse speed:</string>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="IDC_INPUTSPEEDA">
+        <property name="geometry">
+         <rect>
+          <x>430</x>
+          <y>330</y>
+          <width>61</width>
+          <height>22</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="IDC_INPUTCOPYFROM">
+        <property name="geometry">
+         <rect>
+          <x>520</x>
+          <y>330</y>
+          <width>111</width>
+          <height>26</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="IDC_INPUTCOPY">
+        <property name="geometry">
+         <rect>
+          <x>520</x>
+          <y>300</y>
+          <width>114</width>
+          <height>32</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Copy from:</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="IDC_INPUTSWAP">
+        <property name="geometry">
+         <rect>
+          <x>520</x>
+          <y>355</y>
+          <width>114</width>
+          <height>32</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Swap 1&lt;&gt;2</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="tab_host_output">
+       <attribute name="title">
+        <string>Output</string>
+       </attribute>
+      </widget>
+      <widget class="QWidget" name="tab_host_filter">
+       <attribute name="title">
+        <string>Filter</string>
+       </attribute>
+      </widget>
+      <widget class="QWidget" name="tab_host_diskswapper">
+       <attribute name="title">
+        <string>Disk Swapper</string>
+       </attribute>
+      </widget>
+      <widget class="QWidget" name="tab_host_miscellaneous">
+       <attribute name="title">
+        <string>Miscellaneous</string>
+       </attribute>
+       <widget class="QGroupBox" name="groupBox_39">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>5</y>
+          <width>506</width>
+          <height>191</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Miscellaneous Options</string>
+        </property>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_40">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>205</y>
+          <width>141</width>
+          <height>176</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Keyboard LEDs</string>
+        </property>
+        <widget class="QComboBox" name="comboBox_26">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>30</y>
+           <width>110</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <item>
+          <property name="text">
+           <string>(Numlock)</string>
+          </property>
+         </item>
+        </widget>
+        <widget class="QComboBox" name="comboBox_27">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>60</y>
+           <width>110</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <item>
+          <property name="text">
+           <string>(Capslock)</string>
+          </property>
+         </item>
+        </widget>
+        <widget class="QComboBox" name="comboBox_28">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>90</y>
+           <width>110</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <item>
+          <property name="text">
+           <string>(ScrollLock)</string>
+          </property>
+         </item>
+        </widget>
+        <widget class="QCheckBox" name="checkBox">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>130</y>
+           <width>96</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>USB mode</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_41">
+        <property name="geometry">
+         <rect>
+          <x>155</x>
+          <y>205</y>
+          <width>356</width>
+          <height>50</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Logging</string>
+        </property>
+        <widget class="QCheckBox" name="checkBox_2">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>20</y>
+           <width>111</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Create log file</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="checkBox_10">
+         <property name="geometry">
+          <rect>
+           <x>130</x>
+           <y>20</y>
+           <width>171</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Illegal memory access</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_42">
+        <property name="geometry">
+         <rect>
+          <x>155</x>
+          <y>260</y>
+          <width>356</width>
+          <height>121</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>State Files</string>
+        </property>
+        <widget class="QPushButton" name="pushButton_3">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>30</y>
+           <width>131</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Load state..</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="pushButton_4">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>75</y>
+           <width>131</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Save state..</string>
+         </property>
+        </widget>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="tab_host_extensions">
+       <attribute name="title">
+        <string>Pri. and Extensions</string>
+       </attribute>
+       <widget class="QGroupBox" name="groupBox_43">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>15</y>
+          <width>156</width>
+          <height>126</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>When Active</string>
+        </property>
+        <widget class="QLabel" name="label_53">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>20</y>
+           <width>111</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Run at priority</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="comboBox_31">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>35</y>
+           <width>136</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="currentIndex">
+          <number>1</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>Above Normal</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Normal</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Below Normal</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Low</string>
+          </property>
+         </item>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_44">
+        <property name="geometry">
+         <rect>
+          <x>180</x>
+          <y>15</y>
+          <width>156</width>
+          <height>126</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>When InActive</string>
+        </property>
+        <widget class="QLabel" name="label_54">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>20</y>
+           <width>111</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Run at priority</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="comboBox_32">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>35</y>
+           <width>136</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="currentIndex">
+          <number>2</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>Above Normal</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Normal</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Below Normal</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Low</string>
+          </property>
+         </item>
+        </widget>
+        <widget class="QCheckBox" name="checkBox_14">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>70</y>
+           <width>131</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Pause emulation</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="checkBox_15">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>90</y>
+           <width>131</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Disabled sound</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_45">
+        <property name="geometry">
+         <rect>
+          <x>350</x>
+          <y>15</y>
+          <width>156</width>
+          <height>126</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>When Minimized</string>
+        </property>
+        <widget class="QLabel" name="label_56">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>20</y>
+           <width>111</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Run at priority</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="comboBox_34">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>35</y>
+           <width>136</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="currentIndex">
+          <number>3</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>Above Normal</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Normal</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Below Normal</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Low</string>
+          </property>
+         </item>
+        </widget>
+        <widget class="QCheckBox" name="checkBox_18">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>70</y>
+           <width>131</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Pause emulation</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="checkBox_19">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>90</y>
+           <width>131</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Disabled sound</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </widget>
+      </widget>
+     </widget>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>710</width>
+     <height>22</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+ <designerdata>
+  <property name="gridDeltaX">
+   <number>5</number>
+  </property>
+  <property name="gridDeltaY">
+   <number>5</number>
+  </property>
+  <property name="gridSnapX">
+   <bool>true</bool>
+  </property>
+  <property name="gridSnapY">
+   <bool>true</bool>
+  </property>
+  <property name="gridVisible">
+   <bool>true</bool>
+  </property>
+ </designerdata>
+</ui>

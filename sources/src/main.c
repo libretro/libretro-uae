@@ -805,7 +805,6 @@ _tcscpy (optionsfile, "/mnt/sdcard/euae");
 _tcscat (optionsfile, _T("/"));
 #endif
 #endif
-
 	parse_cmdline_2 (argc, argv);
 
 	_tcscat (optionsfile, restart_config);
@@ -871,6 +870,8 @@ void reset_all_systems (void)
 	sampler_init ();
 #endif
 }
+
+#ifdef RETRO
 //RETRO FIXME
 const char* get_current_config_name() {
 	if (restart_config[0] == 0) {
@@ -879,6 +880,7 @@ const char* get_current_config_name() {
 		return restart_config;
 	}
 }
+#endif
 
 /* Okay, this stuff looks strange, but it is here to encourage people who
 * port UAE to re-use as much of this code as possible. Functions that you
@@ -901,15 +903,11 @@ void do_start_program (void)
 		candirect = 1;
 #endif
 	/* Do a reset on startup. Whether this is elegant is debatable. */
-//FIXME RETRO
 	inputdevice_updateconfig (&changed_prefs, &currprefs);
-
 	if (quit_program >= 0)
 		quit_program = UAE_RESET;
 
 	{
-printf("before start %d\n",quit_program);
-//	testloop();
 		m68k_go (1);
 	}
 }
@@ -1022,25 +1020,23 @@ static int real_main2 (int argc, TCHAR **argv)
 	if (result)
 		atexit (SDL_Quit);
 #endif
-write_log (_T("in loop\n"));
-
 	config_changed = 1;
 	if (restart_config[0]) {
 		default_prefs (&currprefs, 0);
 		fixup_prefs (&currprefs);
 	}
-write_log (_T("0loop\n"));
+
 	if (! graphics_setup ()) {
 		write_log (_T("Graphics Setup Failed\n"));
 		exit (1);
-	} 
-write_log (_T("1loop\n"));
+	}
+
 	if (restart_config[0])
 		parse_cmdline_and_init_file (argc, argv);
 	else
 		currprefs = changed_prefs;
 
-	uae_inithrtimer ();
+//	uae_inithrtimer ();
 
 	if (!machdep_init ()) {
 		write_log (_T("Machine Init Failed.\n"));
@@ -1106,8 +1102,8 @@ write_log (_T("1loop\n"));
 	currprefs.produce_sound = 0;
 
 	savestate_init ();
-//	keybuf_init (); /* Must come after init_joystick */
-//write_log (_T("2loop\n"));
+	keybuf_init (); /* Must come after init_joystick */
+
 	memory_hardreset (2);
 	memory_reset ();
 
@@ -1125,7 +1121,7 @@ write_log (_T("1loop\n"));
 
 	reset_frame_rate_hack ();
 	init_m68k (); /* must come after reset_frame_rate_hack (); */
-//write_log (_T("2loop\n"));
+
 	gui_update ();
 
 	if (graphics_init ()) {
@@ -1142,8 +1138,7 @@ write_log (_T("1loop\n"));
 			}
 			currprefs.produce_sound = 0;
 		}
-write_log (_T("32loop\n"));
-		start_program ();return 0;
+		start_program ();
 	}
 
 	return 0;
@@ -1163,9 +1158,13 @@ void real_main (int argc, TCHAR **argv)
 #endif
 
 	write_log (_T("Enumerating display devices.. \n"));
-	//enumeratedisplays ();
+#ifndef RETRO
+	enumeratedisplays ();
+#endif
 	write_log (_T("Sorting devices and modes..\n"));
-	//sortdisplays ();
+#ifndef RETRO
+	sortdisplays ();
+#endif
 //	write_log (_T("Display buffer mode = %d\n"), ddforceram);
 //	enumerate_sound_devices ();
 	write_log (_T("done\n"));
@@ -1177,12 +1176,10 @@ void real_main (int argc, TCHAR **argv)
 #ifdef PARALLEL_PORT
 	paraport_mask = paraport_init ();
 #endif
-write_log (_T("before loop\n"));
 	while (restart_program) {
 		int ret;
 		changed_prefs = currprefs;
 		ret = real_main2 (argc, argv);
-return 0;
 		if (ret == 0 && quit_to_gui)
 			restart_program = 1;
 		leave_program ();
@@ -1192,9 +1189,12 @@ return 0;
 }
 
 #ifndef NO_MAIN_IN_MAIN_C
+#ifdef RETRO
 int umain (int argc, TCHAR **argv)
+#else
+int main (int argc, TCHAR **argv)
+#endif
 {
-printf("RRRR\n");
 	real_main (argc, argv);
 	return 0;
 }

@@ -398,7 +398,7 @@ int get_cpu_model (void);
 # undef Exception
 #endif
 void REGPARAM3 MakeSR (void) REGPARAM;
-void SetSR (uae_u16 sr);
+//void SetSR (uae_u16 sr);
 void REGPARAM3 MakeFromSR (void) REGPARAM;
 void REGPARAM3 Exception (int) REGPARAM;
 void NMI (void);
@@ -415,9 +415,9 @@ void init_m68k_full (void);
 void m68k_go (int);
 void m68k_dumpstate (uaecptr *);
 void m68k_dumpstate2 (uaecptr, uaecptr *);
-void m68k_reset (int);
 int getDivu68kCycles (uae_u32 dividend, uae_u16 divisor);
 int getDivs68kCycles (uae_s32 dividend, uae_s16 divisor);
+void divbyzero_special (bool issigned, uae_s32 dst);
 void m68k_do_rte (void);
 void protect_roms (bool);
 void unprotect_maprom (void);
