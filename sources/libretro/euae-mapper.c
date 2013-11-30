@@ -27,6 +27,8 @@ char DSKNAME[512];
 
 int gmx=320,gmy=240; //gui mouse
 
+int al[2];//left analog1
+int ar[2];//right analog1
 unsigned char MXjoy0; // joy
 int touch=-1; // gui mouse btn
 int fmousex,fmousey; // emu mouse
@@ -44,6 +46,8 @@ int STAT_BASEY;
 
 extern char Key_Sate[512];
 extern char Key_Sate2[512];
+
+extern bool opt_analog;
 
 extern char * filebrowser(const char *path_and_name);
 
@@ -396,8 +400,21 @@ void update_input(void)
   
 	if(MOUSEMODE==-1){ //Joy mode
 
-		for(i=4;i<9;i++)if( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) )MXjoy0 |= vbt[i]; // Joy press	
+
+                al[0] =(input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X));
+                al[1] =(input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y));
+
+		setjoybuttonstate (0,0,input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A));
+		setjoybuttonstate (0,1,input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B));
+
+if(opt_analog){
+		setjoystickstate  (0, 0, al[0], 32767);
+		setjoystickstate  (0, 1, al[1], 32767);   
+}
+else{
+		for(i=4;i<8/*9*/;i++)if( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) )MXjoy0 |= vbt[i]; // Joy press	
 		retro_joy0(MXjoy0);
+}
 
 	   	mouse_x = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_X);
 	   	mouse_y = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_Y);
@@ -411,6 +428,15 @@ void update_input(void)
 	else {  //Mouse mode
 		fmousex=fmousey=0;
 
+//ANALOG RIGHT
+                ar[0] = (input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X));
+                ar[1] = (input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y));
+
+		if(ar[0]<=-1024)fmousex-=(-ar[0])/1024;
+		if(ar[0]>= 1024)fmousex+=( ar[0])/1024;
+		if(ar[1]<=-1024)fmousey-=(-ar[1])/1024;
+		if(ar[1]>= 1024)fmousey+=( ar[1])/1024;
+//PAD
 		if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT))fmousex += PAS;
 
 		if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT))fmousex -= PAS;

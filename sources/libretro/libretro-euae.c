@@ -12,6 +12,7 @@ int VIRTUAL_WIDTH ;
 int sndbufpos=0;
 char Key_Sate[512];
 char Key_Sate2[512];
+bool opt_analog=false;
 
 extern unsigned short int  bmp[1024*1024];
 extern int pauseg,SND ,SHIFTON,snd_sampler;
@@ -34,9 +35,11 @@ void retro_set_environment(retro_environment_t cb)
 
    struct retro_variable variables[] = {
       {
-         "resolution",
-         "Internal resolution; 640x480|720x480|800x600|1024x768",
-
+         "resolution","Internal resolution; 640x480|720x480|800x600|1024x768",
+         
+      },
+      {
+	 "analog","Use Analog; OFF|ON",
       },
       { NULL, NULL },
    };
@@ -48,9 +51,10 @@ void retro_set_environment(retro_environment_t cb)
 
 static void update_variables(void)
 {
-   struct retro_variable var = {
-      .key = "resolution",
-   };
+   struct retro_variable var = {0};
+
+   var.key = "resolution";
+   var.value = NULL;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
@@ -65,13 +69,27 @@ static void update_variables(void)
       if (pch)
          retroh = strtoul(pch, NULL, 0);
 
-      fprintf(stderr, "[libretro-test]: Got size: %u x %u.\n", retrow, retroh);
+        fprintf(stderr, "[libretro-test]: Got size: %u x %u.\n", retrow, retroh);
 
 	CROP_WIDTH =retrow;
 	CROP_HEIGHT= (retroh-80);
 	VIRTUAL_WIDTH = retrow;
 	texture_init();
 	Screen_SetFullUpdate();
+   }
+
+   var.key = "analog";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      fprintf(stderr, "value: %s\n", var.value);
+      if (strcmp(var.value, "OFF") == 0)
+         opt_analog = false;
+      if (strcmp(var.value, "ON") == 0)
+         opt_analog = true;
+
+	fprintf(stderr, "[libretro-test]: Analog: %s.\n",opt_analog?"ON":"OFF");
    }
 
 }
@@ -117,7 +135,7 @@ void Emu_init(){
 	if(!emuThread && !mainThread)
     	{
         	mainThread = co_active();
-        	emuThread = co_create(1048576*sizeof(void*)/*65536*sizeof(void*)*/, retro_wrap_emulator);
+        	emuThread = co_create(/*1048576*sizeof(void*)*/65536*sizeof(void*), retro_wrap_emulator);
     	}
 }
 
@@ -146,7 +164,7 @@ void retro_init(void)
     		exit(0);//return false;
     	}
 	InitOSGLU();
-    texture_init();
+        texture_init();
 
 	Emu_init();
 

@@ -6711,7 +6711,7 @@ void setjoystickstate (int joy, int axis, int state, int max)
 	v1 = state;
 	v2 = id2->states[axis][MAX_INPUT_SUB_EVENT];
 
-	write_log (_T("new=%d old=%d state=%d max=%d\n"), v1, v2, state, max);
+	//write_log (_T("new=%d old=%d state=%d max=%d\n"), v1, v2, state, max);
 
 	if (v1 < deadzone && v1 > -deadzone)
 		v1 = 0;
@@ -6733,7 +6733,7 @@ void setjoystickstate (int joy, int axis, int state, int max)
 		if (flags & ID_FLAG_INVERT)
 			state = -state;
 		if (state != id2->states[axis][i]) {
-			write_log(_T("-> %d %d\n"), i, state);
+			//write_log(_T("-> %d %d\n"), i, state);
 		handle_input_event (id->eventid[ID_AXIS_OFFSET + axis][i], state, max, flags & ID_FLAG_AUTOFIRE, true, false);
 			id2->states[axis][i] = state;
 		}
