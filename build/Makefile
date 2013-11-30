@@ -1,4 +1,3 @@
-
 include ./makefile_common.mk
 
 DEFINES += -DCPUEMU_0 -DCPUEMU_11 -DCPUEMU_12 -DCPUEMU_20 -DCPUEMU_21 -DCPUEMU_22  -DFPUEMU -DUNALIGNED_PROFITABLE -DAMAX -DAGA -DAUTOCONFIG -DFILESYS -DSUPPORT_THREADS  -DFDI2RAW -DDEBUGGER -DSAVESTATE -DENFORCER -DACTION_REPLAY -DXARCADE -DCPUEMU_31 -DCPUEMU_32  -DCPUEMU_33 -DMMUEMU -DFULLMMU
@@ -26,9 +25,7 @@ ifeq ($(platform), android)
    SHARED :=  -Wl,--fix-cortex-a8 -llog -lz -shared -Wl,--version-script=$(LIBRETRO)/link.T -Wl,--no-undefined
    PLATFLAGS :=  -DANDROID -DRETRO -DAND -DLSB_FIRST -DALIGN_DWORD  -D__LIBRETRO__ -DANDPORT -DARM_OPT_TEST=1
 else ifeq ($(platform), unix)
-   CC = gcc-4.4
-AR =gcc-ar
-LD = ld
+   CC = gcc
    TARGET := libretro-puae.so
    fpic := -fPIC
    SHARED :=  -lz -lpthread  -shared -Wl,--version-script=$(LIBRETRO)/link.T 
