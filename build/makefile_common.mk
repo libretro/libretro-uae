@@ -36,6 +36,8 @@ CORE_SRCS2 += \
 CORE_SRCS2 += $(EMU)/machdep/support.o $(EMU)/osdep/gui.o $(EMU)/osdep/retroglue.o $(EMU)/sounddep/sound.o \
 	$(EMU)/osdep/retromenu.o $(EMU)/threaddep/thread.o
 
+LIBCO_SRCS = $(LIBCOOBJ)/libco.o 
+
 ifeq ($(platform),android)
 LIBCO_SRCS += $(LIBCOOBJ)/armeabi_asm.o
 else
