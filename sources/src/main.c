@@ -966,9 +966,20 @@ void do_leave_program (void)
 	machdep_free ();
 }
 
+#ifdef RETRO
+extern int pauseg,romnotfound;
+#endif
+
 void start_program (void)
 {
 //TODO: remove
+#ifdef RETRO
+if(romnotfound==1){
+	pauseg=1;
+	printf("RETRO:ROM NOT FOUND\n");
+	pause_select();
+}
+#endif
 	gui_display (-1);
 	do_start_program ();
 }

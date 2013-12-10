@@ -712,6 +712,7 @@ static void reset_drive (int num)
 	gui_led (num + LED_DF0, 0);
 	drive_settype_id (drv);
 	_tcscpy (currprefs.floppyslots[num].df, changed_prefs.floppyslots[num].df);
+
 	drv->newname[0] = 0;
 	drv->newnamewriteprotected = false;
 	if (!drive_insert (drv, &currprefs, num, currprefs.floppyslots[num].df, false, false))
@@ -2601,7 +2602,9 @@ static void DISK_check_change (void)
 #if 0
 		drive *drv = floppy + i;
 #endif
+
 		if (currprefs.floppyslots[i].dfxtype != changed_prefs.floppyslots[i].dfxtype) {
+
 			currprefs.floppyslots[i].dfxtype = changed_prefs.floppyslots[i].dfxtype;
 			reset_drive (i);
 #ifdef RETROPLATFORM

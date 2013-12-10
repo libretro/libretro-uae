@@ -1,6 +1,6 @@
 include ./makefile_common.mk
 
-DEFINES += -DCPUEMU_0 -DCPUEMU_11 -DCPUEMU_12 -DCPUEMU_20 -DCPUEMU_21 -DCPUEMU_22  -DFPUEMU -DUNALIGNED_PROFITABLE -DAMAX -DAGA -DAUTOCONFIG -DFILESYS -DSUPPORT_THREADS  -DFDI2RAW -DDEBUGGER -DSAVESTATE -DENFORCER -DACTION_REPLAY -DXARCADE -DCPUEMU_31 -DCPUEMU_32  -DCPUEMU_33 -DMMUEMU -DFULLMMU
+DEFINES += -DCPUEMU_0 -DCPUEMU_11 -DCPUEMU_12 -DCPUEMU_20 -DCPUEMU_21 -DCPUEMU_22  -DFPUEMU -DUNALIGNED_PROFITABLE -DAMAX -DAGA -DAUTOCONFIG -DFILESYS -DSUPPORT_THREADS  -DFDI2RAW -DDEBUGGER -DSAVESTATE -DENFORCER -DACTION_REPLAY -DXARCADE -DCPUEMU_31 -DCPUEMU_32  -DCPUEMU_33 -DMMUEMU -DFULLMMU -DDRIVESOUND
 #-DSCSIEMU -DSCSIEMU_LINUX_IOCTL -DUSE_SDL -DDRIVESOUND -DBSDSOCKET -DCDTV -DCD32  -DA2091 -DNCR  -DGAYLE
 
 ifeq ($(platform),)
@@ -71,10 +71,12 @@ ifeq ($(subplatform), 32)
    CC = i586-mingw32msvc-gcc
 else
    CC = x86_64-w64-mingw32-gcc
+   CFLAGS += -fno-aggressive-loop-optimizations
 endif
    PLATFLAGS :=  -DRETRO -DLSB_FIRST -DALIGN_DWORD -DWIN32PORT -DWIN32
    TARGET := retro-puae.dll
-   SHARED := -shared -static-libgcc -s -Wl,--version-script=$(LIBRETRO)/link.T -Wl,--no-undefined 
+   SHARED := -lz -shared -static-libgcc -s -Wl,--version-script=$(LIBRETRO)/link.T -Wl,--no-undefined 
+   fpic := -fPIC
 endif
 
 ifeq ($(DEBUG), 1)
@@ -82,9 +84,11 @@ ifeq ($(DEBUG), 1)
 else
    CFLAGS += -O3
 endif
-CFLAGS += $(DEFINES) \
- -fomit-frame-pointer -ffast-math  -fno-strength-reduce -O3 -finline-functions -funroll-loops    -std=c99\
--DRETRO=1 -fPIC
+CFLAGS += $(DEFINES) -DRETRO=1  \
+-std=gnu99 -O3 -finline-functions -funroll-loops -fsigned-char \
+        -Wno-strict-prototypes -ffast-math -fomit-frame-pointer -fno-strength-reduce -fno-builtin -s
+# -fomit-frame-pointer -ffast-math  -fno-strength-reduce -O3 -finline-functions -funroll-loops    -std=c99\
+#-DRETRO=1 -fPIC
 # -fno-aggressive-loop-optimizations
 
 #CFLAGS += $(DEFINES)\
@@ -117,7 +121,7 @@ $(TARGET): $(OBJECTS)
 endif
 
 %.o: %.c
-	$(CC) $(CFLAGS) $(PLATFLAGS) $(HINCLUDES) -c -o $@ $<
+	$(CC) $(fpic) $(CFLAGS) $(PLATFLAGS) $(HINCLUDES) -c -o $@ $<
 
 clean:
 	rm -f $(OBJECTS) $(TARGET) 

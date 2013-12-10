@@ -21,6 +21,8 @@ extern void DrawFBoxBmp(unsigned  short  *buffer,int x,int y,int dx,int dy,unsig
 
 extern void DrawBoxBmp(unsigned  short  *buffer,int x,int y,int dx,int dy,unsigned  short  color);
 
+extern void DrawPointBmp(unsigned  short  *buffer,int x,int y,unsigned  short color);
+
 extern void DrawHlineBmp(unsigned  short  *buffer,int x,int y,int dx,int dy,unsigned  short  color);
 
 extern void DrawVlineBmp(unsigned  short *buffer,int x,int y,int dx,int dy,unsigned  short  color);

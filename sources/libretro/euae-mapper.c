@@ -15,7 +15,7 @@
 #include <time.h>
 #endif
 
-unsigned short int bmp[1024*1024];
+unsigned short int bmp[1024*1024],savebmp[1024*1024];
 
 int NPAGE=-1, KCOL=1, BKGCOLOR=0, MAXPAS=6;
 int SHIFTON=-1,MOUSEMODE=-1,NUMJOY=0,SHOWKEY=-1,PAS=2,STATUTON=-1;
@@ -136,8 +136,8 @@ void gui_poll_events(){
 	if(Ktime - LastFPSTime >= 1000/50){
 		frame++; 
  	    	LastFPSTime = Ktime;		
-		//co_switch(mainThread);
-		retro_run();
+		co_switch(mainThread);
+		//retro_run();
  	}
 }
 
@@ -231,8 +231,10 @@ void update_input(void)
    	input_poll_cb();
 	Process_key();
 
-        if (Key_Sate[RETROK_F11] || input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y) )
+        if (Key_Sate[RETROK_F11] || input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y) ){
 		pauseg=1;
+		//enter_gui(); //old
+	}
 
 	i=10;//show vkey toggle
 	if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && mbt[i]==0 )
@@ -476,8 +478,87 @@ else{
 
 }
 
-int update_input_gui()
+int input_gui()
 {
+	int SAVPAS=PAS;	
+	int ret=0;
+
+   	input_poll_cb();
+
+	int mouse_l;
+	int mouse_r;
+	int16_t mouse_x,mouse_y;
+	mouse_x=mouse_y=0;
+
+	//mouse/joy toggle
+	if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, 2) && mbt[2]==0 )
+	    	mbt[2]=1;
+	else if ( mbt[2]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, 2) ){
+	   	mbt[2]=0;
+		MOUSEMODE=-MOUSEMODE;
+	}
+
+	if(MOUSEMODE==1){
+
+//TODO FIX THIS :(
+#if defined(PS3PORT) 
+ 		//Slow Joypad Mouse Emulation for PS3
+		static int pair=-1;
+	 	pair=-pair;
+		if(pair==1)return;
+		PAS=1;
+#elif defined(WIIPORT) 
+		PAS=1;
+#endif
+
+		if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT))mouse_x += PAS;
+		if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT))mouse_x -= PAS;
+		if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN))mouse_y += PAS;
+		if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP))mouse_y -= PAS;
+		mouse_l=input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A);
+		mouse_r=input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B);
+
+		PAS=SAVPAS;
+	}
+	else {
+
+   		mouse_x = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_X);
+   		mouse_y = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_Y);
+   		mouse_l    = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_LEFT);
+   		mouse_r    = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_RIGHT);
+	}
+
+   	static int mmbL=0,mmbR=0;
+	
+	if(mmbL==0 && mouse_l){
+
+		mmbL=1;		
+		touch=1;
+
+	}
+	else if(mmbL==1 && !mouse_l) {
+ 		
+                mmbL=0;
+		touch=-1;
+	}
+
+	if(mmbR==0 && mouse_r){
+		mmbR=1;		
+	}
+	else if(mmbR==1 && !mouse_r) {
+                mmbR=0;
+	}
+
+        gmx+=mouse_x;
+        gmy+=mouse_y;
+	if(gmx<0)gmx=0;
+        if(gmx>retrow-1)gmx=retrow-1;
+        if(gmy<0)gmy=0;
+        if(gmy>retroh-1)gmy=retroh-1;
+}
+
+int update_input_gui(){
+
 	int ret=0;	
 	static int dskflag[7]={0,0,0,0,0,0,0};// UP -1 DW 1 A 2 B 3 LFT -10 RGT 10 X 4	
 

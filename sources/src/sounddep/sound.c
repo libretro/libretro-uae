@@ -28,10 +28,11 @@
 
 #define MAX_BSIZE 2048
 
-uae_u16* sndbuffer = NULL;
-uae_u16* sndbufpt;
+uae_u16 *paula_sndbuffer = NULL;
+uae_u16 *paula_sndbufpt;
+int paula_sndbufsize;
 //int sndblocksize;
-int sndbufsize;
+//int sndbufsize;
 int sound_initialized = 0;
 
 

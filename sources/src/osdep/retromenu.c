@@ -121,12 +121,6 @@ extern int PAS;
 
 extern int vsync_enabled;
 
-#ifdef __PS3__
-char* rpath[] = {"/dev_hdd0/HOMEBREW/UAE", "/dev_hdd0/HOMEBREW", NULL};
-#else
-char* rpath[] = {"/mnt/sdcard/euae", "../../UAEDSK", NULL};
-#endif
-
 char* statline[] = {
 	"1 select file    0 exit",			//0
 	"1 insert    2 eject    0 exit",		//1
@@ -182,7 +176,7 @@ static int draw_menu_item(int index, char* name, char* value, int statId);
 static int draw_menu_item2(int index, char* name, char* value, int statId);
 void update_cpu_menu(void);
 char* get_hdf_name(int index);
-static int hardfile_testrdb (char *filename);
+/*static*/ int hardfile_testrdb (char *filename);
 void update_hdf_menu(void);
 void update_video_menu(void);
 void update_sound_menu(void);
@@ -191,8 +185,8 @@ void update_save_menu(void);
 void update_main_menu(void);
 int do_action(int action);
 int action_state_menu(int action);
-static void mount_hdf(int index, char* name);
-static void unmount_all_hdfs(void);
+/*static*/ void mount_hdf(int index, char* name);
+/*static*/ void unmount_all_hdfs(void);
 int action_hdf_menu(int action);
 int action_misc_menu(int action);
 int action_sound_menu(int action);
@@ -490,7 +484,7 @@ char* get_hdf_name(int index) {
 		return "\0";
 }
 
-static int hardfile_testrdb (char *filename)
+/*static*/ int hardfile_testrdb (char *filename)
 {
 	struct zfile *f = zfile_fopen (filename, "rb",0);
 	uae_u8 tmp[8];
@@ -776,7 +770,7 @@ int action_state_menu(int action) {
 	return 0;
 }
 
-static void mount_hdf(int index, char* name) {
+/*static*/ void mount_hdf(int index, char* name) {
 //FIXME RETRO SET IF SLOT USED NOT ADD
 	struct uaedev_config_info uci;
 
@@ -811,7 +805,7 @@ static void mount_hdf(int index, char* name) {
 
 }
 
-static void unmount_all_hdfs(void) {
+/*static*/ void unmount_all_hdfs(void) {
 
 	int units = nr_units(/*currprefs.mountinfo*/);
 	while (units > 0) {

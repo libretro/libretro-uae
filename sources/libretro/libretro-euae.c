@@ -13,8 +13,9 @@ int sndbufpos=0;
 char Key_Sate[512];
 char Key_Sate2[512];
 bool opt_analog=false;
+static int firstps=0;
 
-extern unsigned short int  bmp[1024*1024];
+extern unsigned short int  bmp[1024*1024],savebmp[1024*1024];
 extern int pauseg,SND ,SHIFTON,snd_sampler;
 extern short signed int SNDBUF[1024*2];
 extern char RPATH[512];
@@ -252,6 +253,29 @@ signed short rsnd=0;
 
 static firstpass=1;
 
+int save_bkg(){
+	memcpy(savebmp, bmp,sizeof(bmp));
+}
+int restore_bkg(){
+	memcpy(bmp,savebmp,sizeof(bmp));
+}
+void pause_select(){
+
+	if(pauseg==1 && firstps==0){
+		firstps=1;
+		enter_gui0();
+		firstps=0;
+	}
+}
+void enter_gui0(){	
+
+	save_bkg();
+
+	Dialog_DoProperty();
+	pauseg=0;
+
+	restore_bkg();
+}
 void retro_run(void)
 {
    	int x;
@@ -265,7 +289,6 @@ void retro_run(void)
 		if(firstpass){firstpass=0;goto sortie;}
 		update_input();	
 	}
-	else enter_gui();
 
 sortie:
    	

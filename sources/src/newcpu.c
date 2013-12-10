@@ -1260,6 +1260,7 @@ void check_prefs_changed_cpu (void)
 
 	if (!config_changed)
 		return;
+
 #ifdef JIT
 	changed = check_prefs_changed_comp ();
 #endif

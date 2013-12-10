@@ -100,6 +100,14 @@ void textCpixel(unsigned  short *buffer,int x,int x2,int y,unsigned  short  colo
 	
 }
 
+void DrawPointBmp(unsigned  short  *buffer,int x,int y,unsigned  short color){
+	
+	int idx;
+
+	idx=x+y*VIRTUAL_WIDTH;
+	buffer[idx]=color;	
+}
+
 void DrawFBoxBmp(unsigned  short  *buffer,int x,int y,int dx,int dy,unsigned  short color){
 	
 	int i,j,idx;

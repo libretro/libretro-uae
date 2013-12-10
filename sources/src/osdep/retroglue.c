@@ -215,6 +215,8 @@ void ScreenUpdate () {
 }
 
 void retro_flush_screen (struct vidbuf_description *gfxinfo, int ystart, int yend) {
+
+	if(pauseg==1)pause_select();
 	co_switch(mainThread);
 }
 

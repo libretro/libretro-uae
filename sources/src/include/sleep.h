@@ -19,6 +19,10 @@
 # endif
 #endif
 
+#ifdef RETRO
+#define SDL_Delay GetTicks2
+#endif
+
 #define ONE_THOUSAND	1000
 #define ONE_MILLION	(1000 * 1000)
 

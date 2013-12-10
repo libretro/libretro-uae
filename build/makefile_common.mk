@@ -2,6 +2,7 @@ EMU = ../sources/src
 LIBCOOBJ = ../sources/utils/libco
 LIBUTILS =../sources/utils
 LIBRETRO = ../sources/libretro
+GUI = ../sources/gui-retro
 
 CORE_SRCS2 :=  \
 	$(EMU)/main.o $(EMU)/newcpu.o $(EMU)/memory.o $(EMU)/rommgr.o $(EMU)/custom.o \
@@ -36,19 +37,34 @@ CORE_SRCS2 += \
 CORE_SRCS2 += $(EMU)/machdep/support.o $(EMU)/osdep/gui.o $(EMU)/osdep/retroglue.o $(EMU)/sounddep/sound.o \
 	$(EMU)/osdep/retromenu.o $(EMU)/threaddep/thread.o
 
-LIBCO_SRCS = $(LIBCOOBJ)/libco.o 
+DLG_SRCS = $(GUI)/dialog.o\
+$(GUI)/paths.o \
+$(GUI)/file.o \
+$(GUI)/unzip.o \
+$(GUI)/thumb.o \
+$(GUI)/zip.o \
+$(GUI)/str.o \
+$(GUI)/dlgFloppy.o \
+$(GUI)/dlgHardDisk.o \
+$(GUI)/dlgFileSelect.o \
+$(GUI)/dlgMemory.o \
+$(GUI)/dlgJoystick.o \
+$(GUI)/dlgAbout.o \
+$(GUI)/dlgSound.o \
+$(GUI)/dlgAlert.o \
+$(GUI)/dlgMain.o \
+$(GUI)/dlgMisc.o \
+$(GUI)/dlgVideo.o \
+$(GUI)/dlgRom.o \
+$(GUI)/dlgSystem.o \
+$(GUI)/sdlgui.o
 
+LIBCO_SRCS = $(LIBCOOBJ)/libco.o 
 ifeq ($(platform),android)
 LIBCO_SRCS += $(LIBCOOBJ)/armeabi_asm.o
-else
-UNAME_M := $(shell uname -m)
-ifneq ($(filter arm%,$(UNAME_M)),)
-LIBCO_SRCS += $(LIBCOOBJ)/armeabi_asm.o        
-endif
 endif
 
-
-BUILD_APP =  $(CORE_SRCS2) $(LIBCO_SRCS)
+BUILD_APP =  $(CORE_SRCS2) $(LIBCO_SRCS) $(DLG_SRCS)
 
 HINCLUDES := -I./$(EMU) -I./$(EMU)/include -I$(LIBRETRO) -I$(LIBUTILS)
 

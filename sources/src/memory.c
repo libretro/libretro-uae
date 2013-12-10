@@ -2554,6 +2554,10 @@ void memory_clear (void)
 	expansion_clear ();
 }
 
+#ifdef RETRO
+int romnotfound=0;
+#endif
+
 void memory_reset (void)
 {
 	int bnk, bnk_end;
@@ -2620,6 +2624,9 @@ void memory_reset (void)
 			if (_tcslen (currprefs.romfile) > 0) {
 				write_log (_T("Failed to open '%s'\n"), currprefs.romfile);
 				notify_user (NUMSG_NOROM);
+#ifdef RETRO
+				romnotfound=1;
+#endif
 			}
 			load_kickstart_replacement ();
 		} else {

@@ -11,9 +11,14 @@
 #define SOUNDSTUFF 1
 extern int retro_renderSound(short* samples, int sampleCount);
 
-extern uae_u16 *sndbuffer;
-extern uae_u16 *sndbufpt;
-extern int sndbufsize;
+#define sndbuffer paula_sndbuffer
+#define sndbufpt paula_sndbufpt
+#define sndbufsize paula_sndbufsize
+
+extern uae_u16 *paula_sndbuffer;
+extern uae_u16 *paula_sndbufpt;
+extern int paula_sndbufsize;
+
 
 extern int soundcheck;
 
@@ -24,7 +29,7 @@ static __inline__ void check_sound_buffers (void)
     if (size >= sndbufsize) {
 	//LOG_MSG2("render sound %i   ",soundcheck++ );
 #ifdef DRIVESOUND
-	driveclick_mix ((uae_s16*)sndbuffer, sndbufsize >> 1);
+	driveclick_mix ((uae_s16*)sndbuffer, sndbufsize >> 1,currprefs.dfxclickchannelmask);
 #endif	
 	retro_renderSound((short*) sndbuffer, sndbufsize >> 1);	
 	sndbufpt = sndbuffer;
