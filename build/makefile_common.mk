@@ -62,6 +62,11 @@ $(GUI)/sdlgui.o
 LIBCO_SRCS = $(LIBCOOBJ)/libco.o 
 ifeq ($(platform),android)
 LIBCO_SRCS += $(LIBCOOBJ)/armeabi_asm.o
+else
+UNAME_M := $(shell uname -m)
+ifneq ($(filter arm%,$(UNAME_M)),)
+LIBCO_SRCS += $(LIBCOOBJ)/armeabi_asm.o        
+endif
 endif
 
 BUILD_APP =  $(CORE_SRCS2) $(LIBCO_SRCS) $(DLG_SRCS)
