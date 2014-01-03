@@ -33,7 +33,7 @@ else ifeq ($(platform), unix)
    #PLATFLAGS += -fPIC -fsigned-char -finline  -fno-common -fno-builtin -fweb -frename-registers -falign-functions=16 -fsingle-precision-constant
 else ifeq ($(platform), osx)
    TARGET := libretro.dylib
-   fpic := -fPIC
+   fpic := -fPIC -mmacosx-version-min=10.6
    SHARED := -dynamiclib
    PLATFLAGS :=  -DRETRO -DLSB_FIRST -DALIGN_DWORD  -D__LIBRETRO__
 else ifeq ($(platform), wii)
