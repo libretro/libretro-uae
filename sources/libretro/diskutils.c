@@ -20,7 +20,11 @@ extern unsigned short int bmp[1024 * 1024];
 
 char *FILE_EXT[]={"adf","ADF","MSA","msa","cfg","CFG","rom","ROM","dms","DMS","hdf","HDF","zip","ZIP",NULL};
 
+#ifdef _MSC_VER
+#define PATHSEP '\\'
+#else
 #define PATHSEP '/'
+#endif
 
 #if 0
 //unused 
@@ -149,12 +153,10 @@ int scandir(const char *dirp, struct dirent ***namelist,
 static struct dirent **files_free(struct dirent **files)
 {
 	int i;
-	if (files != NULL)
+	if (files)
 	{
 		for(i=0; i<entries; i++)
-		{
 			free(files[i]);
-		}
 		free(files);
 	}
 	return NULL;
@@ -227,18 +229,17 @@ char * filebrowser(const char *path_and_name){
     	static char seldsk[512];	 
 
 	
-	if(first==0){
+	if(first==0)
+   {
 
-		entries = 0;		
-			
-		if (path_and_name && path_and_name[0])
-		{
-			sprintf(path,"%s\0",path_and_name);			
-		}
-		
-		first++;
+      entries = 0;		
 
-	}
+      if (path_and_name && path_and_name[0])
+         sprintf(path,"%s\0",path_and_name);			
+
+      first++;
+
+   }
 
 	if (reloaddir)
 	{

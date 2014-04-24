@@ -64,16 +64,6 @@ void retro_set_input_poll(retro_input_poll_t cb)
    	input_poll_cb = cb;
 }
 
-#ifdef AND
-#define DEFAULT_PATH "/mnt/sdcard/euae/"
-#else
-	#ifdef PS3PORT
-	#define DEFAULT_PATH "/dev_hdd0/HOMEBREW/UAE/"
-	#else
-	#define DEFAULT_PATH "/"
-	#endif
-#endif
-
 #define MDEBUG
 #ifdef MDEBUG
 #define mprintf printf
