@@ -49,20 +49,19 @@ static SGOBJ aboutdlg[] =
  * Show the "about" dialog:
  */
 void Dialog_AboutDlg(void)
-{ 
-        int but;
-	/* Center PROG_NAME title string */
-	aboutdlg[1].x = (aboutdlg[0].w - strlen(PROG_NAME)) / 2;
+{
+   int but;
+   /* Center PROG_NAME title string */
+   aboutdlg[1].x = (aboutdlg[0].w - strlen(PROG_NAME)) / 2;
 
-	SDLGui_CenterDlg(aboutdlg);
+   SDLGui_CenterDlg(aboutdlg);
 
-        do
-	{
-                but=SDLGui_DoDialog(aboutdlg, NULL);
-                gui_poll_events();
+   do
+   {
+      but=SDLGui_DoDialog(aboutdlg, NULL);
+      gui_poll_events();
 
-        }
-        while (but != DLGABOUT_EXIT && but != SDLGUI_QUIT
-	       && but != SDLGUI_ERROR && !bQuitProgram);
-
+   }
+   while (but != DLGABOUT_EXIT && but != SDLGUI_QUIT
+         && but != SDLGUI_ERROR && !bQuitProgram);
 }

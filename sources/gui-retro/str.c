@@ -19,7 +19,6 @@ const char Str_fileid[] = "Hatari str.c : " __DATE__ " " __TIME__;
 #include "utype.h"
 #include "str.h"
 
-
 /**
  * Remove whitespace from beginning and end of a string.
  * Returns the trimmed string (string content is moved
@@ -27,34 +26,34 @@ const char Str_fileid[] = "Hatari str.c : " __DATE__ " " __TIME__;
  */
 char *Str_Trim(char *buffer)
 {
-	int i, linelen;
+   int i, linelen;
 
-	if (buffer == NULL)
-		return NULL;
+   if (!buffer)
+      return NULL;
 
-	linelen = strlen(buffer);
+   linelen = strlen(buffer);
 
-	for (i = 0; i < linelen; i++)
-	{
-		if (!isspace(buffer[i]))
-			break;
-	}
+   for (i = 0; i < linelen; i++)
+   {
+      if (!isspace(buffer[i]))
+         break;
+   }
 
-	if (i > 0 && i < linelen)
-	{
-		linelen -= i;
-		memmove(buffer, buffer + i, linelen);
-	}
+   if (i > 0 && i < linelen)
+   {
+      linelen -= i;
+      memmove(buffer, buffer + i, linelen);
+   }
 
-	for (i = linelen; i > 0; i--)
-	{
-		if (!isspace(buffer[i-1]))
-			break;
-	}
+   for (i = linelen; i > 0; i--)
+   {
+      if (!isspace(buffer[i-1]))
+         break;
+   }
 
-	buffer[i] = '\0';
+   buffer[i] = '\0';
 
-	return buffer;
+   return buffer;
 }
 
 

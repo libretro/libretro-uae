@@ -39,44 +39,50 @@ extern int pauseg;
  */
 bool Dialog_DoProperty(void)
 {
-	bool bOKDialog;  /* Did user 'OK' dialog? */	
-        bool bForceReset;
-	bool bLoadedSnapshot;
+   bool bOKDialog;  /* Did user 'OK' dialog? */	
+   bool bForceReset;
+   bool bLoadedSnapshot;
 
-	bQuitProgram=false;
+   bQuitProgram=false;
 
-	changed_prefs	=  currprefs;
+   changed_prefs	=  currprefs;
 
-	pause_sound();
-	uae_pause();
+   pause_sound();
+   uae_pause();
 
-	bOKDialog = Dialog_MainDlg(&bForceReset, &bLoadedSnapshot);
+   bOKDialog = Dialog_MainDlg(&bForceReset, &bLoadedSnapshot);
 
-	if(bForceReset==true){
-		uae_reset(0,0);
-		retro_uae_reset(0);
-		return bOKDialog;
-	}
+   if(bForceReset)
+   {
+      uae_reset(0,0);
+      retro_uae_reset(0);
+      return bOKDialog;
+   }
 
-	if(bQuitProgram==true){
-		uae_quit();
-		retro_shutdown_uae();
-	}
+   if(bQuitProgram)
+   {
+      uae_quit();
+      retro_shutdown_uae();
+   }
 
-	if(MUSTRESET){
-		memory_reset();
-		uae_reset(1,1);
-		retro_uae_reset(1);
-		MUSTRESET=0;
-	}
-	if(MUSTRESET_CFG){
-		uae_reset(1,1);
-		retro_uae_reset(1);
-		MUSTRESET_CFG=0;
-	}
+   if(MUSTRESET)
+   {
+      memory_reset();
+      uae_reset(1,1);
+      retro_uae_reset(1);
+      MUSTRESET=0;
+   }
 
-	reset_drawing();
-	uae_resume();resume_sound();
+   if(MUSTRESET_CFG)
+   {
+      uae_reset(1,1);
+      retro_uae_reset(1);
+      MUSTRESET_CFG=0;
+   }
 
-	return bOKDialog;
+   reset_drawing();
+   uae_resume();
+   resume_sound();
+
+   return bOKDialog;
 }

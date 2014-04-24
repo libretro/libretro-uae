@@ -1,5 +1,5 @@
 #ifndef LIBRETRO_HATARI_H
-#define LIBRETRO_HATARI_H 1
+#define LIBRETRO_HATARI_H
 
 #include <stdint.h>
 #include <string.h>
