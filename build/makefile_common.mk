@@ -2,7 +2,7 @@ EMU = ../sources/src
 LIBCOOBJ = ../sources/utils/libco
 LIBUTILS =../sources/utils
 LIBRETRO = ../sources/libretro
-GUI = ../sources/gui-retro
+GUI = ../sources/src/gui-retro
 
 CORE_SRCS2 :=  \
 	$(EMU)/main.o $(EMU)/newcpu.o $(EMU)/memory.o $(EMU)/rommgr.o $(EMU)/custom.o \
