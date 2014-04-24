@@ -18,7 +18,7 @@ static int entries;
 
 extern unsigned short int bmp[1024 * 1024];
 
-char *FILE_EXT[]={"adf","ADF","MSA","msa","cfg","CFG","rom","ROM","dms","DMS","hdf","HDF","zip","ZIP",NULL};
+char *FILE_EXT[]={"adf","ADF","cfg","CFG","dms","DMS","hdf","HDF","msa","MSA","rom","ROM","zip","ZIP",NULL};
 
 #ifdef _MSC_VER
 #define PATHSEP '\\'
