@@ -262,7 +262,7 @@ char * filebrowser(const char *path_and_name)
 
    ndsknum=entries;
 
-   i f(ndsknum >= MAXSEL)
+   if (ndsknum >= MAXSEL)
       LIMSEL=MAXSEL;
    else
       LIMSEL=ndsknum;
