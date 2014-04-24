@@ -168,8 +168,6 @@ void retro_get_system_info(struct retro_system_info *info)
    memset(info, 0, sizeof(*info));
    info->library_name     = "PUAE";
    info->library_version  = "v2.6.1";
-   // 	info->need_fullpath    = /*true;//*/false;
-   //	info->valid_extensions = NULL; // Anything is fine, we don't care.
    info->need_fullpath    = true;
    info->block_extract = false;	
    info->valid_extensions = "adf|dms|zip";
@@ -272,13 +270,11 @@ sortie:
 
 bool retro_load_game(const struct retro_game_info *info)
 {
-   const char *full_path;
-
-   (void)info;
-
-   full_path = info->path;
-
-   strcpy(RPATH,full_path);
+   if (*info->path)
+   {
+      const char *full_path = (const char*)info->path;
+      strcpy(RPATH,full_path);
+   }
 
    return true;
 }

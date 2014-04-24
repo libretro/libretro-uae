@@ -283,7 +283,8 @@ void update_input(void)
    i=9;//switch shift On/Off 
    if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && mbt[i]==0 )
    mbt[i]=1;
-   else if ( mbt[i]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) ){
+   else if ( mbt[i]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) )
+   {
    mbt[i]=0;
    SHIFTON=-SHIFTON;
    Screen_SetFullUpdate();
@@ -293,7 +294,7 @@ void update_input(void)
    i=12;//show/hide statut
    if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && mbt[i]==0 )
       mbt[i]=1;
-   else if ( mbt[i]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) )
+   else if (mbt[i]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i))
    {
       mbt[i]=0;
       STATUTON=-STATUTON;
@@ -316,36 +317,44 @@ void update_input(void)
 
       if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) && vkflag[0]==0 )
          vkflag[0]=1;
-      else if (vkflag[0]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) ){
+      else if (vkflag[0]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) )
+      {
          vkflag[0]=0;
          vky -= 1; 
       }
 
       if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN) && vkflag[1]==0 )
          vkflag[1]=1;
-      else if (vkflag[1]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN) ){
+      else if (vkflag[1]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN) )
+      {
          vkflag[1]=0;
          vky += 1; 
       }
 
       if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT) && vkflag[2]==0 )
          vkflag[2]=1;
-      else if (vkflag[2]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT) ){
+      else if (vkflag[2]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT) )
+      {
          vkflag[2]=0;
          vkx -= 1;
       }
 
       if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) && vkflag[3]==0 )
          vkflag[3]=1;
-      else if (vkflag[3]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) ){
+      else if (vkflag[3]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) )
+      {
          vkflag[3]=0;
          vkx += 1;
       }
 
-      if(vkx<0)vkx=9;
-      if(vkx>9)vkx=0;
-      if(vky<0)vky=4;
-      if(vky>4)vky=0;
+      if(vkx < 0)
+         vkx=9;
+      if(vkx > 9)
+         vkx=0;
+      if(vky < 0)
+         vky=4;
+      if(vky > 4)
+         vky=0;
 
       virtual_kdb(bmp,vkx,vky);
 
