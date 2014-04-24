@@ -73,7 +73,7 @@ BUILD_APP =  $(CORE_SRCS2) $(LIBCO_SRCS) $(DLG_SRCS)
 
 HINCLUDES := -I./$(EMU) -I./$(EMU)/include -I$(LIBRETRO) -I$(LIBUTILS)
 
-OBJECTS := $(BUILD_APP)  $(LIBRETRO)/libretro-euae.o  $(LIBRETRO)/euae-mapper.o  $(LIBRETRO)/vkbd.o \
+OBJECTS := $(BUILD_APP)  $(LIBRETRO)/libretro.o  $(LIBRETRO)/euae-mapper.o  $(LIBRETRO)/vkbd.o \
 	 $(LIBRETRO)/graph.o  $(LIBRETRO)/diskutils.o  $(LIBRETRO)/fontmsx.o  
 
 
