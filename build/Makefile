@@ -31,6 +31,9 @@ else ifeq ($(platform), unix)
    SHARED :=  -lz -lpthread  -shared -Wl,--version-script=$(LIBRETRO)/link.T 
    #PLATFLAGS :=  -DRETRO -DLSB_FIRST -DALIGN_DWORD  -D__LIBRETRO__
    #PLATFLAGS += -fPIC -fsigned-char -finline  -fno-common -fno-builtin -fweb -frename-registers -falign-functions=16 -fsingle-precision-constant
+   ifeq ($(shell uname --hardware-platform), x86_64)
+      PLATFLAGS += -DBIT64
+   endif
 else ifeq ($(platform), osx)
    TARGET := libretro.dylib
    fpic := -fPIC -mmacosx-version-min=10.6
