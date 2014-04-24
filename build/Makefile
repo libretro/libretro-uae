@@ -13,12 +13,6 @@ else ifneq ($(findstring Darwin,$(shell uname -a)),)
 else ifneq ($(findstring win,$(shell uname -a)),)
    platform = win
 endif
-ifeq ($(shell uname --hardware-platform), x86_64)
-	PLATFLAGS += -DBIT64
-endif
-ifeq ($(shell uname -m), x86_64)
-	PLATFLAGS += -DBIT64
-endif
 endif
 
 TARGET_NAME := puae
