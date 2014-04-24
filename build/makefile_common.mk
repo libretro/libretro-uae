@@ -1,7 +1,7 @@
 EMU = ../sources/src
 LIBCOOBJ = ../sources/utils/libco
 LIBUTILS =../sources/utils
-LIBRETRO = ../sources/libretro
+LIBRETRO = ../sources/src/od-retro
 GUI = ../sources/src/gui-retro
 
 CORE_SRCS2 :=  \

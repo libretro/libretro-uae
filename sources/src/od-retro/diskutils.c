@@ -70,8 +70,7 @@ int diskmgr(){
 
 int alphasort2(const struct dirent **d1, const struct dirent **d2)
 {
-   const struct dirent *c1;
-   const struct dirent *c2;
+   const struct dirent *c1, *c2;
    c1 = *d1;
    c2 = *d2;
    return strcmp(c1->d_name, c2->d_name);
@@ -83,11 +82,12 @@ int scandir(const char *dirp, struct dirent ***namelist,
 
 {
 
-   DIR *dp = opendir (dirp);
-   struct dirent *current;
-   struct dirent **names = NULL;
+   DIR *dp = (DIR*)opendir(dirp);
+   struct dirent *current, **names;
    size_t names_size = 0, pos;
    int save;
+
+   names = NULL;
 
    if (dp == NULL)
       return -1;

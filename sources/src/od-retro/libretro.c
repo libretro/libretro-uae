@@ -25,7 +25,6 @@ extern short signed int SNDBUF[1024*2];
 extern char RPATH[512];
 
 extern void update_input(void);
-extern void texture_init(void);
 
 static retro_video_refresh_t video_cb;
 static retro_audio_sample_t audio_cb;
@@ -74,7 +73,7 @@ static void update_variables(void)
       CROP_WIDTH =retrow;
       CROP_HEIGHT= (retroh-80);
       VIRTUAL_WIDTH = retrow;
-      texture_init();
+      memset(bmp, 0, sizeof(bmp));
       Screen_SetFullUpdate();
    }
 
@@ -113,12 +112,6 @@ static void retro_wrap_emulator(void)
    }
 }
 
-void texture_init(){
-
-   memset(bmp, 0, sizeof(bmp));
-
-} 
-
 void retro_init(void)
 {
 
@@ -138,7 +131,7 @@ void retro_init(void)
       exit(0);//return false;
    }
    InitOSGLU();
-   texture_init();
+   memset(bmp, 0, sizeof(bmp));
 
    update_variables();
 
