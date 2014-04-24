@@ -170,7 +170,7 @@ void retro_get_system_info(struct retro_system_info *info)
    info->library_version  = "v2.6.1";
    info->need_fullpath    = true;
    info->block_extract = false;	
-   info->valid_extensions = "adf|dms|zip";
+   info->valid_extensions = "adf|dms|fdi|ipf|zip";
 }
 
 void retro_get_system_av_info(struct retro_system_av_info *info)
