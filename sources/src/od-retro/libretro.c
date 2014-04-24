@@ -31,8 +31,6 @@ static retro_audio_sample_t audio_cb;
 static retro_audio_sample_batch_t audio_batch_cb;
 static retro_environment_t environ_cb;
 
-FILE * mdbgfile;
-
 void retro_set_environment(retro_environment_t cb)
 {
    environ_cb = cb;
@@ -115,12 +113,6 @@ static void retro_wrap_emulator(void)
 void retro_init(void)
 {
 
-#ifdef ANDPORT
-   mdbgfile=fopen("/mnt/sdcard/puae_dbg.txt","w");
-#else
-   mdbgfile=fopen("./puae_dbg.txt","w");
-#endif	
-
    memset(Key_Sate,0,512);
    memset(Key_Sate2,0,512);
 
@@ -152,7 +144,6 @@ void retro_deinit(void)
 {	
 
    UnInitOSGLU();	
-   fclose(mdbgfile);
 
    if(emuThread)
       co_delete(emuThread);
