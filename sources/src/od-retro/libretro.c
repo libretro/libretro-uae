@@ -10,8 +10,8 @@ int CROP_WIDTH;
 int CROP_HEIGHT;
 int VIRTUAL_WIDTH;
 int sndbufpos=0;
-char Key_Sate[512];
-char Key_Sate2[512];
+char key_state[512];
+char key_state2[512];
 bool opt_analog=false;
 static int firstps=0;
 
@@ -113,8 +113,8 @@ static void retro_wrap_emulator(void)
 void retro_init(void)
 {
 
-   memset(Key_Sate,0,512);
-   memset(Key_Sate2,0,512);
+   memset(key_state,0,512);
+   memset(key_state2,0,512);
 
    enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
    if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
