@@ -45,8 +45,8 @@ unsigned long  Ktime=0 , LastFPSTime=0;
 int BOXDEC= 32+2;
 int STAT_BASEY;
 
-extern char Key_Sate[512];
-extern char Key_Sate2[512];
+extern char key_state[512];
+extern char key_state2[512];
 
 extern bool opt_analog;
 
@@ -173,12 +173,12 @@ void Process_key(void)
    int i;
    for(i=0;i<320;i++)
    {
-      Key_Sate[i]=input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0,i)?0x80:0;
+      key_state[i]=input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0,i)?0x80:0;
 
       if(SDLKeyToAMIGAScanCode[i]==0x60/*AK_LSH*/ )
       {  //SHIFT CASE
 
-         if( Key_Sate[i] && Key_Sate2[i]==0 )
+         if( key_state[i] && key_state2[i]==0 )
          {
             if(SHIFTON == 1)
                retro_key_up(	SDLKeyToAMIGAScanCode[i] );					
@@ -187,25 +187,25 @@ void Process_key(void)
 
             SHIFTON=-SHIFTON;
 
-            Key_Sate2[i]=1;
+            key_state2[i]=1;
 
          }
-         else if (!Key_Sate[i] && Key_Sate2[i]==1)
-            Key_Sate2[i]=0;
+         else if (!key_state[i] && key_state2[i]==1)
+            key_state2[i]=0;
 
       }
       else
       {
 
-         if(Key_Sate[i] && SDLKeyToAMIGAScanCode[i]!=-1  && Key_Sate2[i] == 0)
+         if(key_state[i] && SDLKeyToAMIGAScanCode[i]!=-1  && key_state2[i] == 0)
          {
             retro_key_down(SDLKeyToAMIGAScanCode[i]);		
-            Key_Sate2[i]=1;
+            key_state2[i]=1;
          }
-         else if ( !Key_Sate[i] && SDLKeyToAMIGAScanCode[i]!=-1 && Key_Sate2[i]==1 )
+         else if ( !key_state[i] && SDLKeyToAMIGAScanCode[i]!=-1 && key_state2[i]==1 )
          {
             retro_key_up(SDLKeyToAMIGAScanCode[i]);
-            Key_Sate2[i]=0;
+            key_state2[i]=0;
 
          }
 
@@ -233,7 +233,7 @@ void update_input(void)
    input_poll_cb();
    Process_key();
 
-   if (Key_Sate[RETROK_F11] || input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y))
+   if (key_state[RETROK_F11] || input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y))
    {
       pauseg=1;
       //enter_gui(); //old
