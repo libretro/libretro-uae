@@ -62,7 +62,7 @@ extern uae_u32 wait_cpu_cycle_read_ce020 (uaecptr addr, int mode);
 extern void wait_cpu_cycle_write_ce020 (uaecptr addr, int mode, uae_u32 v);
 
 #undef DIRECT_MEMFUNCS_SUCCESSFUL
-#ifndef ANDPORT
+#if !defined(ANDPORT) && !defined(ARM)
 #include "machdep/maccess.h"
 #else
 #include "machdep/maccess-generic.h"
