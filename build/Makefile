@@ -12,6 +12,8 @@ else ifneq ($(findstring Darwin,$(shell uname -a)),)
    platform = osx
 else ifneq ($(findstring win,$(shell uname -a)),)
    platform = win
+else ifneq ($(findstring arm,$(shell uname -a)),)
+    PLATFLAGS +=  -DARM  -marm	
 endif
 endif
 

@@ -11,7 +11,7 @@
 #define EUAE_MACHDEP_RPT_H
 
 
-#if !defined(ANDPORT) && !defined(WIN32PORT) && !defined(__arm__)
+#if !defined(ANDPORT) && !defined(WIN32PORT) && !defined(ARM)
 
 #ifdef PS3PORT
 
