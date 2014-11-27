@@ -11,7 +11,7 @@
 
 #ifndef ANDPORT  
 
-#if defined(PS3PORT) || defined(WIN32PORT) || defined(__x86_64__)
+#if defined(PS3PORT) || defined(WIN32PORT) || defined(__x86_64__) || defined(ARM)
 #warning "TEST TESTFLAGS no opt"
 
 #define FLAGBIT_N	15
