@@ -809,7 +809,8 @@ _tcscat (optionsfile, _T("/"));
 
 	_tcscat (optionsfile, restart_config);
 
-	if (! target_cfgfile_load (&currprefs, optionsfile, 0, default_config)) {
+
+	if (argc > 1 && ! target_cfgfile_load (&currprefs, argv[1], 0, default_config)) {
 		write_log (_T("failed to load config '%s'\n"), optionsfile);
 #ifdef OPTIONS_IN_HOME
 		/* sam: if not found in $HOME then look in current directory */
@@ -1161,7 +1162,10 @@ void real_main (int argc, TCHAR **argv)
 	restart_program = 1;
 
 	fetch_configurationpath (restart_config, sizeof (restart_config) / sizeof (TCHAR));
-	_tcscat (restart_config, OPTIONSFILENAME);
+
+	if(argc>1) {
+		_tcscat (restart_config, argv[1]);
+	} else  _tcscat (restart_config, OPTIONSFILENAME);
 	default_config = 1;
 
 #ifdef NATMEM_OFFSET

@@ -12,6 +12,8 @@
 #include "drawing.h"
 #include "statusline.h"
 
+extern int ledtype;
+
 /*
 * Some code to put status information on the screen.
 */
@@ -66,12 +68,31 @@ static void write_tdnumber (uae_u8 *buf, int bpp, int x, int y, int num, uae_u32
 	const char *numptr;
 
 	numptr = numbers + num * TD_NUM_WIDTH + NUMBERS_NUM * TD_NUM_WIDTH * y;
-	for (j = 0; j < TD_NUM_WIDTH; j++) {
-		if (*numptr == 'x')
-			putpixel (buf, bpp, x + j, c1, 1);
-		else if (*numptr == '+')
-			putpixel (buf, bpp, x + j, c2, 0);
-		numptr++;
+	
+	if(ledtype == 0)
+	{
+		for (j = 0; j < TD_NUM_WIDTH; j++)
+		{
+			if (*numptr == 'x')
+				putpixel (buf, bpp, x + j, c1, 1);
+			else if (*numptr == '+')
+				putpixel (buf, bpp, x + j, c2, 0);
+			numptr++;
+		}
+	}
+	else if(ledtype == 1)
+	{
+		for (j = 0; j < TD_NUM_WIDTH; j++)
+		{
+			if (*numptr == 'x')
+				putpixel (buf, bpp, x + j, c1, 1);
+			else if (*numptr == '+')
+				putpixel (buf, bpp, x + j, c2, 0);
+			else
+				putpixel (buf, bpp, x + j, 0, 0);
+			numptr++;
+		}
+		
 	}
 }
 
@@ -89,6 +110,8 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
 	else
 		x_start = TD_PADX;
 
+  if(ledtype == 0)
+	{
 	for (led = 0; led < LED_MAX; led++) {
 /* REMOVEME:
  * nowhere used
@@ -266,5 +289,79 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
 					write_tdnumber (buf, bpp, x, y - TD_PADY, num4, pen_rgb, c2);
 			}
 		}
+	}
+	}
+	else if(ledtype == 1)
+	{
+		for (led = 1; led < LED_MAX; led++) {
+
+	int pos, num1 = -1, num2 = -1, num3 = -1, num4 = -1;
+	int x, c, on = 0, am = 2;
+	xcolnr on_rgb = 0, on_rgb2 = 0, off_rgb = 0, pen_rgb = 0;
+	int half = 0;
+
+	if (!(currprefs.leds_on_screen_mask[picasso_on ? 1 : 0] & (1 << led)))
+		continue;
+
+	pen_rgb = c1;
+	if (led >= LED_DF0 && led <= LED_DF3) {
+		int pled = led - LED_DF0;
+		int track = gui_data.drive_track[pled];
+		pos = 6 + pled;
+		on_rgb = 0x00cc00;
+		on_rgb2 = 0x006600;
+		off_rgb = 0x003300;
+		if (!gui_data.drive_disabled[pled]) {
+			num1 = -1;
+			num2 = track / 10;
+			num3 = track % 10;
+			on = gui_data.drive_motor[pled];
+			if (gui_data.drive_writing[pled]) {
+				on_rgb = 0xcc0000;
+				on_rgb2 = 0x880000;
+			}
+
+			if (gui_data.df[pled][0] == 0)
+				pen_rgb = ledcolor (0x00aaaaaa, rc, gc, bc, alpha);
+		}
+
+	} else
+		return;
+	on_rgb |= 0x33000000;
+	off_rgb |= 0x33000000;
+
+	if (half > 0) {
+		c = ledcolor (on ? (y >= TD_TOTAL_HEIGHT / 2 ? on_rgb2 : on_rgb) : off_rgb, rc, gc, bc, alpha);
+	} else if (half < 0) {
+		c = ledcolor (on ? (y < TD_TOTAL_HEIGHT / 2 ? on_rgb2 : on_rgb) : off_rgb, rc, gc, bc, alpha);
+	} else {
+		c = ledcolor (on ? on_rgb : off_rgb, rc, gc, bc, alpha);
+	}
+	border = 0;
+	if (y == 0 || y == TD_TOTAL_HEIGHT - 1) {
+		c = ledcolor (TD_BORDER, rc, gc, bc, alpha);
+		border = 1;
+	}
+
+	x = x_start + pos * TD_WIDTH;
+
+	if (y >= TD_PADY && y - TD_PADY < TD_NUM_HEIGHT && on){
+		if (num3 >= 0) {
+			x += (TD_LED_WIDTH - am * TD_NUM_WIDTH) / 2;
+			if (num1 > 0) {
+				write_tdnumber (buf, bpp, x, y - TD_PADY, num1, pen_rgb, c2);
+				x += TD_NUM_WIDTH;
+			}
+			if (num2 >= 0) {
+				write_tdnumber (buf, bpp, x, y - TD_PADY, num2, pen_rgb, c2);
+				x += TD_NUM_WIDTH;
+			}
+			write_tdnumber (buf, bpp, x, y - TD_PADY, num3, pen_rgb, c2);
+			x += TD_NUM_WIDTH;
+			if (num4 > 0)
+				write_tdnumber (buf, bpp, x, y - TD_PADY, num4, pen_rgb, c2);
+		}
+	}
+	}
 	}
 }
