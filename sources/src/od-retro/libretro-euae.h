@@ -12,7 +12,6 @@
 extern cothread_t mainThread;
 extern cothread_t emuThread;
 
-
 #define Uint8 unsigned char
 #define Uint16 unsigned short int
 #define Uint32 unsigned int
@@ -26,12 +25,7 @@ extern int retroh;
 extern int CROP_WIDTH;
 extern int CROP_HEIGHT;
 extern int VIRTUAL_WIDTH ;
-/*
-#define TEX_WIDTH 640
-#define TEX_HEIGHT 480
-#define CROP_WIDTH 640
-#define CROP_HEIGHT 400
-*/
+
 #define NPLGN 10
 #define NLIGN 5
 #define NLETT 5

@@ -186,18 +186,17 @@ void retro_key_up(int key){
 extern int pauseg,SND;
 int RLOOP=1;
 
-int retro_renderSound(short* samples, int sampleCount) {
+int retro_renderSound(short* samples, int sampleCount)
+{
+   int i; 
 
-	int i; 
+   if (sampleCount < 1 || SND!=1 || pauseg==1)
+      return 0;
 
-	if (sampleCount < 1 || SND!=1 || pauseg==1) {
-		return 0;
-	}
-	for(i=0;i<sampleCount;i+=2){/*
-		SNDBUF[sndbufpos++]=samples[i];
-		SNDBUF[sndbufpos++]=samples[i+1];*/
-		retro_audio_cb( samples[i], samples[i+1]);
-	}
+   for(i=0;i<sampleCount;i+=2)
+   {
+      retro_audio_cb( samples[i], samples[i+1]);
+   }
 }
 
 int InitOSGLU(void)
@@ -210,18 +209,20 @@ int  UnInitOSGLU(void)
 
 }
 
-void ScreenUpdate () {
-
+void ScreenUpdate ()
+{
 }
 
-void retro_flush_screen (struct vidbuf_description *gfxinfo, int ystart, int yend) {
-
-	if(pauseg==1)pause_select();
+void retro_flush_screen (struct vidbuf_description *gfxinfo, int ystart, int yend)
+{
+	if(pauseg==1)
+      pause_select();
 	co_switch(mainThread);
 }
 
 
-void retro_flush_block (struct vidbuf_description *gfxinfo, int ystart, int yend) {
+void retro_flush_block (struct vidbuf_description *gfxinfo, int ystart, int yend)
+{
 }
 
 void retro_flush_line (struct vidbuf_description *gfxinfo, int y) {

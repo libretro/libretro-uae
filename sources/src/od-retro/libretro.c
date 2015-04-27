@@ -124,10 +124,11 @@ static void retro_wrap_emulator(void)
 
    environ_cb(RETRO_ENVIRONMENT_SHUTDOWN, 0); 
 
-   // Were done here
+   /* We're done here */
    co_switch(mainThread);
 
-   // Dead emulator, but libco says not to return
+   /* Dead emulator, 
+    * but libco says not to return. */
    while(true)
    {
       LOGI("Running a dead emulator.");
@@ -137,45 +138,40 @@ static void retro_wrap_emulator(void)
 
 void retro_init(void)
 {
+   enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
 
    memset(key_state,0,512);
    memset(key_state2,0,512);
 
-   enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
    if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
    {
       fprintf(stderr, "RGB565 is not supported.\n");
       exit(0);//return false;
    }
+
    InitOSGLU();
    memset(bmp, 0, sizeof(bmp));
 
    update_variables();
 
-   // commented out to allow resolution selection in core options
-   //retrow=640; 
-   //retroh=480;
-   CROP_WIDTH =retrow;
-   CROP_HEIGHT= (retroh-80);
+   CROP_WIDTH    = retrow;
+   CROP_HEIGHT   = (retroh - 80);
    VIRTUAL_WIDTH = retrow;
 
    if(!emuThread && !mainThread)
    {
       mainThread = co_active();
-      emuThread = co_create(/*1048576*sizeof(void*)*/65536*sizeof(void*), retro_wrap_emulator);
+      emuThread = co_create(65536 * sizeof(void*), retro_wrap_emulator);
    }
 }
 
 void retro_deinit(void)
 {	
-
    UnInitOSGLU();	
 
    if(emuThread)
       co_delete(emuThread);
    emuThread = 0;
-
-   LOGI("Retro DeInit\n");
 }
 
 unsigned retro_api_version(void)
@@ -195,13 +191,13 @@ void retro_get_system_info(struct retro_system_info *info)
    info->library_name     = "PUAE";
    info->library_version  = "v2.6.1";
    info->need_fullpath    = true;
-   info->block_extract = false;	
-   info->valid_extensions = "adf|dms|fdi|ipf|zip";
+   info->block_extract    = false;	
+   info->valid_extensions = "adf|dms|fdi|ipf|zip|uae";
 }
 
 void retro_get_system_av_info(struct retro_system_av_info *info)
 {
-   struct retro_game_geometry geom = { 640,480,1024,1024,4.0 / 3.0 };
+   struct retro_game_geometry geom   = { 640,480,1024,1024,4.0 / 3.0 };
    struct retro_system_timing timing = { 60.0, 22050.0 };
 
    info->geometry = geom;
@@ -245,10 +241,12 @@ int save_bkg(void)
 {
    memcpy(savebmp, bmp,sizeof(bmp));
 }
+
 int restore_bkg(void)
 {
    memcpy(bmp,savebmp,sizeof(bmp));
 }
+
 void pause_select(void)
 {
    if(pauseg==1 && firstps==0)
