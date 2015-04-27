@@ -23,6 +23,7 @@ extern int SHIFTON;
 extern int snd_sampler;
 extern short signed int SNDBUF[1024*2];
 extern char RPATH[512];
+int ledtype;
 
 extern void update_input(void);
 
@@ -36,8 +37,9 @@ void retro_set_environment(retro_environment_t cb)
    environ_cb = cb;
 
    struct retro_variable variables[] = {
-      { "resolution","Internal resolution; 640x480|720x480|800x600|1024x768", },
+      { "resolution","Internal resolution; 640x400|640x480|720x480|800x600|1024x768", },
       { "analog","Use Analog; OFF|ON", },
+      { "leds","Leds; Standard|Simplified", },
       { NULL, NULL },
    };
 /*
@@ -84,18 +86,39 @@ static void update_variables(void)
    {
       fprintf(stderr, "value: %s\n", var.value);
       if (strcmp(var.value, "OFF") == 0)
-         opt_analog = false;
+        opt_analog = false;
       if (strcmp(var.value, "ON") == 0)
-         opt_analog = true;
+        opt_analog = true;
+      ledtype = 1;
 
       fprintf(stderr, "[libretro-test]: Analog: %s.\n",opt_analog?"ON":"OFF");
+   }
+   
+   var.key = "leds";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      fprintf(stderr, "value: %s\n", var.value);
+      if (strcmp(var.value, "Standard") == 0)
+      {
+        ledtype = 0;        
+        fprintf(stderr, "[libretro-test]: Leds: Standard\n");
+      }
+      if (strcmp(var.value, "Simplified") == 0)
+      {
+        ledtype = 1;  
+        fprintf(stderr, "[libretro-test]: Leds: Simplified\n");
+      }
    }
 }
 
 static void retro_wrap_emulator(void)
 {
-   char **argv2 = (char *[]){"puae\0", "\0"};
-   umain(1,argv2);
+   static const char* argv[2];
+   argv[0] = "puae";
+   argv[1] = RPATH;
+   umain(2,argv);
 
    pauseg=-1;
 
@@ -129,8 +152,9 @@ void retro_init(void)
 
    update_variables();
 
-   retrow=640; 
-   retroh=480;
+   // commented out to allow resolution selection in core options
+   //retrow=640; 
+   //retroh=480;
    CROP_WIDTH =retrow;
    CROP_HEIGHT= (retroh-80);
    VIRTUAL_WIDTH = retrow;
@@ -272,6 +296,8 @@ sortie:
 
 bool retro_load_game(const struct retro_game_info *info)
 {
+   RPATH[0] = "\0";
+
    if (*info->path)
    {
       const char *full_path = (const char*)info->path;

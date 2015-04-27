@@ -239,7 +239,7 @@ void update_input(void)
       //enter_gui(); //old
    }
 
-   i=10;//show vkey toggle
+   i=3;//show vkey toggle
    if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && mbt[i]==0 )
       mbt[i]=1;
    else if ( mbt[i]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) )
@@ -258,7 +258,7 @@ void update_input(void)
       MOUSEMODE=-MOUSEMODE;
    }
 
-   i=3;//num joy toggle
+   i=10;//num joy toggle
    if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && mbt[i]==0 )
       mbt[i]=1;
    else if ( mbt[i]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) )
