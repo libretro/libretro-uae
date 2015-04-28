@@ -193,7 +193,7 @@ char * filebrowser(const char *path_and_name)
       entries = 0;		
 
       if (path_and_name && path_and_name[0])
-         sprintf(path,"%s\0",path_and_name);			
+         sprintf(path,"%s",path_and_name);			
 
       first++;
    }
@@ -269,7 +269,7 @@ char * filebrowser(const char *path_and_name)
       case  2 : //OK
          {
             char *tempstr = (char*)malloc(FILENAME_MAX);
-            sprintf(tempstr,"%s%s\0",path,files[select]->d_name);
+            sprintf(tempstr,"%s%s",path,files[select]->d_name);
 
 
             if ( File_DirExists(tempstr) == 1 || \
@@ -282,7 +282,7 @@ char * filebrowser(const char *path_and_name)
                   File_HandleDotDirs(tempstr);
                else strcat(tempstr, "/"/*PATHSEP*/);
 
-               sprintf(path, "%s\0",tempstr);				
+               sprintf(path, "%s",tempstr);				
                reloaddir = true;
 
                free(tempstr);
