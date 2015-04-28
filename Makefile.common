@@ -142,19 +142,8 @@ SOURCES_C += $(GUI)/dialog.c\
 				 $(GUI)/dlgSystem.c \
 				 $(GUI)/sdlgui.c
 
-SOURCES_C += $(LIBRETRO)/libco/libco.c
-ifeq ($(platform),android)
-SOURCES_ASM += $(LIBRETRO)/libco/armeabi_asm.S
-else ifeq ($(platform),rpi)
-SOURCES_ASM += $(LIBRETRO)/libco/armeabi_asm.S
-else
-UNAME_M := $(shell uname -m)
-ifneq ($(filter arm%,$(UNAME_M)),)
-SOURCES_ASM += $(LIBRETRO)/libco/armeabi_asm.S
-endif
-endif
-
 SOURCES_C += $(LIBRETRO)/libretro.c \
+				 $(LIBRETRO)/libco/libco.c \
 				 $(LIBRETRO)/libretro-mapper.c \
 				 $(LIBRETRO)/vkbd.c \
 				 $(LIBRETRO)/graph.c \
