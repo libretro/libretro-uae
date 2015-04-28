@@ -13,13 +13,13 @@
 #define UAE_ENDIAN_H
 
 /* Try to use system bswap_16/bswap_32 functions. */
-#if defined HAVE_BSWAP_16 && defined HAVE_BSWAP_32 && !defined WIN32PORT
+#if defined HAVE_BSWAP_16 && defined HAVE_BSWAP_32
 # ifdef HAVE_BYTESWAP_H
 #  include <byteswap.h>
 # endif
 #else
 /* Else, if using SDL, try SDL's endian functions. */
-# ifdef USE_SDL
+# if defined(USE_SDL) && !defined(__LIBRETRO__)
 #  include <SDL_endian.h>
 #  define bswap_16(x) SDL_Swap16(x)
 #  define bswap_32(x) SDL_Swap32(x)

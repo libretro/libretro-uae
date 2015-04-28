@@ -36,7 +36,7 @@ else ifeq ($(platform), osx)
    TARGET := $(TARGET_NAME)_libretro.dylib
    fpic := -fPIC -mmacosx-version-min=10.6
    SHARED := -dynamiclib
-   PLATFLAGS +=  -DRETRO -DLSB_FIRST -DALIGN_DWORD  -D__LIBRETRO__
+   PLATFLAGS +=  -DRETRO -DLSB_FIRST -DALIGN_DWORD
 else ifeq ($(platform), android)
    CC = arm-linux-androideabi-gcc
    AR = @arm-linux-androideabi-ar
@@ -45,7 +45,7 @@ else ifeq ($(platform), android)
    fpic := -fPIC
 	LDFLAGS := -lz
    SHARED :=  -Wl,--fix-cortex-a8 -shared -Wl,--version-script=$(LIBRETRO)/link.T -Wl,--no-undefined
-   PLATFLAGS += -DANDROID -DRETRO -DAND -DLSB_FIRST -DALIGN_DWORD  -D__LIBRETRO__ -DANDPORT -DARM_OPT_TEST=1
+   PLATFLAGS += -DANDROID -DRETRO -DAND -DLSB_FIRST -DALIGN_DWORD -DANDPORT -DARM_OPT_TEST=1
 else ifeq ($(platform), wii)
    TARGET := $(TARGET_NAME)_libretro_wii.a
    CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
@@ -89,6 +89,7 @@ endif
 
 DEFINES += -DCPUEMU_0 -DCPUEMU_11 -DCPUEMU_12 -DCPUEMU_20 -DCPUEMU_21 -DCPUEMU_22  -DFPUEMU -DUNALIGNED_PROFITABLE -DAMAX -DAGA -DAUTOCONFIG -DFILESYS -DSUPPORT_THREADS  -DFDI2RAW -DDEBUGGER -DSAVESTATE -DENFORCER -DACTION_REPLAY -DXARCADE -DCPUEMU_31 -DCPUEMU_32  -DCPUEMU_33 -DMMUEMU -DFULLMMU
 #-DSCSIEMU -DSCSIEMU_LINUX_IOCTL -DUSE_SDL -DDRIVESOUND -DBSDSOCKET -DCDTV -DCD32  -DA2091 -DNCR  -DGAYLE
+DEFINES += -D__LIBRETRO__
 CFLAGS += $(DEFINES) -DRETRO=1 -DINLINE="inline" -std=gnu99 
 
 all: $(TARGET)
