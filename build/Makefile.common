@@ -1,0 +1,163 @@
+EMU      = $(CORE_DIR)/../sources/src
+LIBCOOBJ = $(CORE_DIR)/../sources/utils/libco
+LIBUTILS = $(CORE_DIR)/../sources/utils
+GUI      = $(CORE_DIR)/../sources/src/gui-retro
+LIBRETRO = $(CORE_DIR)/../sources/src/od-retro
+
+INCFLAGS := -I./$(EMU) -I./$(EMU)/include -I$(LIBRETRO) -I$(LIBUTILS)
+
+SOURCES_C +=  $(EMU)/main.c \
+				  $(EMU)/newcpu.c \
+				  $(EMU)/memory.c \
+				  $(EMU)/rommgr.c \
+				  $(EMU)/custom.c \
+				  $(EMU)/serial.c \
+				  $(EMU)/dongle.c \
+				  $(EMU)/cia.c \
+				  $(EMU)/blitter.c \
+				  $(EMU)/blittable.c \
+				  $(EMU)/blitfunc.c \
+				  $(EMU)/autoconf.c \
+				  $(EMU)/traps.o\
+				  $(EMU)/keybuf.c \
+				  $(EMU)/expansion.c \
+				  $(EMU)/inputrecord.c \
+				  $(EMU)/keymap/keymap.c\
+				  $(EMU)/diskutil.c \
+				  $(EMU)/zfile.c \
+				  $(EMU)/zfile_archive.c \
+				  $(EMU)/cfgfile.c \
+				  $(EMU)/inputdevice.c \
+				  $(EMU)/gfxutil.c \
+				  $(EMU)/gfxlib.c \
+				  $(EMU)/audio.c \
+				  $(EMU)/sinctable.c \
+				  $(EMU)/statusline.c \
+				  $(EMU)/drawing.c \
+				  $(EMU)/consolehook.c \
+				  $(EMU)/native2amiga.c \
+				  $(EMU)/disk.c \
+				  $(EMU)/crc32.c \
+				  $(EMU)/savestate.c \
+				  $(EMU)/arcadia.c \
+				  $(EMU)/cd32_fmv.c \
+				  $(EMU)/uaeexe.c \
+				  $(EMU)/uaelib.c \
+				  $(EMU)/uaeresource.c \
+				  $(EMU)/uaeserial.c \
+				  $(EMU)/fdi2raw.c\
+				  $(EMU)/hotkeys.c \
+				  $(EMU)/amax.c \
+				  $(EMU)/ar.c \
+				  $(EMU)/driveclick.c \
+				  $(EMU)/enforcer.c \
+				  $(EMU)/misc.c \
+				  $(EMU)/uaenet.c \
+				  $(EMU)/a2065.c \
+				  $(EMU)/missing.c \
+				  $(EMU)/readcpu.c \
+				  $(EMU)/hrtmon.rom.c \
+				  $(EMU)/events.c \
+				  $(EMU)/calc.c \
+				  $(EMU)/aros.rom.c \
+				  $(EMU)/specialmonitors.c \
+				  $(EMU)/writelog.c \
+				  $(EMU)/debug.c \
+				  $(EMU)/identify.c \
+				  $(EMU)/osdep/memory.c \
+				  $(EMU)/osdep/parser.c \
+				  $(EMU)/osdep/main.c \
+				  $(EMU)/blkdev.c \
+				  $(EMU)/blkdev_cdimage.c
+
+#SOURCES_C += $(EMU)/picasso96.c \
+				 $(EMU)/cdtv.c \
+				 $(EMU)/akiko.c \
+				 $(EMU)/a2091.c \
+				 $(EMU)/scsi.c \
+				 $(EMU)/ncr_scsi.c \
+				 $(EMU)/gayle.c
+
+SOURCES_C += $(EMU)/archivers/dms/crc_csum.c \
+				 $(EMU)/archivers/dms/getbits.c \
+				 $(EMU)/archivers/dms/maketbl.c \
+				 $(EMU)/archivers/dms/pfile.c \
+				 $(EMU)/archivers/dms/tables.c \
+				 $(EMU)/archivers/dms/u_deep.c \
+				 $(EMU)/archivers/dms/u_heavy.c \
+				 $(EMU)/archivers/dms/u_init.c  \
+				 $(EMU)/archivers/dms/u_medium.c \
+				 $(EMU)/archivers/dms/u_quick.c \
+				 $(EMU)/archivers/dms/u_rle.c
+
+SOURCES_C += $(EMU)/hardfile.c \
+				  $(EMU)/hardfile_unix.c \
+				  $(EMU)/scsi-none.c \
+				  $(EMU)/fsusage.c \
+				  $(EMU)/filesys.c \
+				  $(EMU)/filesys_unix.c \
+				  $(EMU)/fsdb.c \
+				  $(EMU)/fsdb_unix.c \
+				  $(EMU)/bsdsocket.c \
+				  $(EMU)/cpuemu_0.c \
+				  $(EMU)/cpuemu_11.c \
+				  $(EMU)/cpuemu_12.c \
+				  $(EMU)/cpuemu_20.c \
+				  $(EMU)/cpuemu_21.c \
+				  $(EMU)/cpuemu_22.c \
+				  $(EMU)/cpustbl.c \
+				  $(EMU)/cpudefs.c \
+				  $(EMU)/cpuemu_31.c \
+				  $(EMU)/cpuemu_32.c  \
+				  $(EMU)/cpuemu_33.c \
+				  $(EMU)/cpummu.c \
+				  $(EMU)/cpummu30.c \
+				  $(EMU)/fpp.c 
+
+SOURCES_C += $(EMU)/machdep/support.c \
+				 $(EMU)/osdep/gui.c \
+				 $(EMU)/osdep/retroglue.c \
+				 $(EMU)/sounddep/sound.c \
+				 $(EMU)/osdep/retromenu.c \
+				 $(EMU)/threaddep/thread.c
+
+SOURCES_C += $(GUI)/dialog.c\
+				 $(GUI)/paths.c \
+				 $(GUI)/file.c \
+				 $(GUI)/unzip.c \
+				 $(GUI)/thumb.c \
+				 $(GUI)/zip.c \
+				 $(GUI)/str.c \
+				 $(GUI)/dlgFloppy.c \
+				 $(GUI)/dlgHardDisk.c \
+				 $(GUI)/dlgFileSelect.c \
+				 $(GUI)/dlgMemory.c \
+				 $(GUI)/dlgJoystick.c \
+				 $(GUI)/dlgAbout.c \
+				 $(GUI)/dlgSound.c \
+				 $(GUI)/dlgAlert.c \
+				 $(GUI)/dlgMain.c \
+				 $(GUI)/dlgMisc.c \
+				 $(GUI)/dlgVideo.c \
+				 $(GUI)/dlgRom.c \
+				 $(GUI)/dlgSystem.c \
+				 $(GUI)/sdlgui.c
+
+SOURCES_C += $(LIBCOOBJ)/libco.c
+ifeq ($(platform),android)
+SOURCES_ASM += $(LIBCOOBJ)/armeabi_asm.S
+else ifeq ($(platform),rpi)
+SOURCES_ASM += $(LIBCOOBJ)/armeabi_asm.S
+else
+UNAME_M := $(shell uname -m)
+ifneq ($(filter arm%,$(UNAME_M)),)
+SOURCES_ASM += $(LIBCOOBJ)/armeabi_asm.S
+endif
+endif
+
+SOURCES_C += $(LIBRETRO)/libretro.c \
+				 $(LIBRETRO)/euae-mapper.c \
+				 $(LIBRETRO)/vkbd.c \
+				 $(LIBRETRO)/graph.c \
+				 $(LIBRETRO)/diskutils.c \
+				 $(LIBRETRO)/fontmsx.c 

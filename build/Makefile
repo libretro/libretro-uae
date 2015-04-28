@@ -1,4 +1,3 @@
-include ./makefile_common.mk
 
 PLATFLAGS :=
 
@@ -19,19 +18,23 @@ endif
 
 TARGET_NAME := puae
 
+CORE_DIR  := .
+ROOT_DIR  := .
+LIBRETRO_DIR = $(CORE_DIR)/../sources/src/od-retro
+
 ifeq ($(platform), unix)
    CC = gcc
    TARGET := $(TARGET_NAME)_libretro.so
    fpic := -fPIC
 	LDFLAGS := -lz -lpthread
-   SHARED := -shared -Wl,--version-script=$(LIBRETRO)/link.T 
+   SHARED := -shared -Wl,--version-script=$(LIBRETRO_DIR)/link.T 
 # use for raspberry pi
 else ifeq ($(platform), rpi) 
 	   TARGET := $(TARGET_NAME)_libretro.so
 	   fpic := -fPIC
 		 LDFLAGS := -lz -lpthread
 		 PLATFLAGS +=  -DARM  -marm
-	   SHARED := -shared -Wl,--version-script=$(LIBRETRO)/link.T 
+	   SHARED := -shared -Wl,--version-script=$(LIBRETRO_DIR)/link.T 
 else ifeq ($(platform), osx)
    TARGET := $(TARGET_NAME)_libretro.dylib
    fpic := -fPIC -mmacosx-version-min=10.6
@@ -44,7 +47,7 @@ else ifeq ($(platform), android)
    TARGET := $(TARGET_NAME)_libretro_android.so
    fpic := -fPIC
 	LDFLAGS := -lz
-   SHARED :=  -Wl,--fix-cortex-a8 -shared -Wl,--version-script=$(LIBRETRO)/link.T -Wl,--no-undefined
+   SHARED :=  -Wl,--fix-cortex-a8 -shared -Wl,--version-script=$(LIBRETRO_DIR)/link.T -Wl,--no-undefined
    PLATFLAGS += -DANDROID -DRETRO -DAND -DLSB_FIRST -DALIGN_DWORD -DANDPORT -DARM_OPT_TEST=1
 else ifeq ($(platform), wii)
    TARGET := $(TARGET_NAME)_libretro_wii.a
@@ -77,7 +80,7 @@ endif
    PLATFLAGS +=  -DRETRO -DLSB_FIRST -DALIGN_DWORD -DWIN32PORT -DWIN32
    TARGET := $(TARGET_NAME)_libretro.dll
    fpic := -fPIC
-   SHARED := -shared -static-libgcc -s -Wl,--version-script=$(LIBRETRO)/link.T -Wl,--no-undefined 
+   SHARED := -shared -static-libgcc -s -Wl,--version-script=$(LIBRETRO_DIR)/link.T -Wl,--no-undefined 
 	LDFLAGS := -lm -lz
 endif
 
@@ -92,6 +95,12 @@ DEFINES += -DCPUEMU_0 -DCPUEMU_11 -DCPUEMU_12 -DCPUEMU_20 -DCPUEMU_21 -DCPUEMU_2
 DEFINES += -D__LIBRETRO__
 CFLAGS += $(DEFINES) -DRETRO=1 -DINLINE="inline" -std=gnu99 
 
+include Makefile.common
+
+OBJECTS += $(SOURCES_C:.c=.o) $(SOURCES_CXX:.cpp=.o) $(SOURCES_ASM:.S=.o)
+
+INCDIRS := $(EXTRA_INCLUDES) $(INCFLAGS)
+
 all: $(TARGET)
 
 ifeq ($(platform), wii)
@@ -103,15 +112,18 @@ $(TARGET): $(OBJECTS)
 
 else ifeq ($(platform), win)
 $(TARGET): $(OBJECTS)
-	$(CC) $(fpic) $(SHARED) $(INCLUDES) -o $@ $(OBJECTS) $(LDFLAGS)
+	$(CC) $(fpic) $(SHARED) $(INCDIRS) -o $@ $(OBJECTS) $(LDFLAGS)
 else
 $(TARGET): $(OBJECTS)
-	$(CC) $(fpic) $(SHARED) $(INCLUDES) -o $@ $(OBJECTS)
+	$(CC) $(fpic) $(SHARED) $(INCDIRS) -o $@ $(OBJECTS)
 
 endif
 
 %.o: %.c
-	$(CC) $(fpic) $(CFLAGS) $(PLATFLAGS) $(HINCLUDES) -c -o $@ $<
+	$(CC) $(fpic) $(CFLAGS) $(PLATFLAGS) $(INCDIRS) -c -o $@ $<
+
+%.o: %.S
+	$(CC_AS) $(CFLAGS) -c $^ -o $@
 
 clean:
 	rm -f $(OBJECTS) $(TARGET) 
