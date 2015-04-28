@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <libco/libco.h>
 
-#include "libco/libco.h"
 extern cothread_t mainThread;
 extern cothread_t emuThread;
 

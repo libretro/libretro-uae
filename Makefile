@@ -20,21 +20,20 @@ TARGET_NAME := puae
 
 CORE_DIR  := .
 ROOT_DIR  := .
-LIBRETRO_DIR = $(CORE_DIR)/../sources/src/od-retro
 
 ifeq ($(platform), unix)
    CC = gcc
    TARGET := $(TARGET_NAME)_libretro.so
    fpic := -fPIC
 	LDFLAGS := -lz -lpthread
-   SHARED := -shared -Wl,--version-script=$(LIBRETRO_DIR)/link.T 
+   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T 
 # use for raspberry pi
 else ifeq ($(platform), rpi) 
 	   TARGET := $(TARGET_NAME)_libretro.so
 	   fpic := -fPIC
 		 LDFLAGS := -lz -lpthread
 		 PLATFLAGS +=  -DARM  -marm
-	   SHARED := -shared -Wl,--version-script=$(LIBRETRO_DIR)/link.T 
+	   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T 
 else ifeq ($(platform), osx)
    TARGET := $(TARGET_NAME)_libretro.dylib
    fpic := -fPIC -mmacosx-version-min=10.6
@@ -47,7 +46,7 @@ else ifeq ($(platform), android)
    TARGET := $(TARGET_NAME)_libretro_android.so
    fpic := -fPIC
 	LDFLAGS := -lz
-   SHARED :=  -Wl,--fix-cortex-a8 -shared -Wl,--version-script=$(LIBRETRO_DIR)/link.T -Wl,--no-undefined
+   SHARED :=  -Wl,--fix-cortex-a8 -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
    PLATFLAGS += -DANDROID -DRETRO -DAND -DLSB_FIRST -DALIGN_DWORD -DANDPORT -DARM_OPT_TEST=1
 else ifeq ($(platform), wii)
    TARGET := $(TARGET_NAME)_libretro_wii.a
@@ -80,7 +79,7 @@ endif
    PLATFLAGS +=  -DRETRO -DLSB_FIRST -DALIGN_DWORD -DWIN32PORT -DWIN32
    TARGET := $(TARGET_NAME)_libretro.dll
    fpic := -fPIC
-   SHARED := -shared -static-libgcc -s -Wl,--version-script=$(LIBRETRO_DIR)/link.T -Wl,--no-undefined 
+   SHARED := -shared -static-libgcc -s -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined 
 	LDFLAGS := -lm -lz
 endif
 
