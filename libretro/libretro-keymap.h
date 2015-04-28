@@ -1,8 +1,6 @@
-#include "keyboard.h"
 
 /* scancode key to MAC scan code mapping table */
-const char 
-SDLKeyToAMIGAScanCode[512] =
+const int keyboard_translation[512] =
 {
 	/* ST,  PC Code */
 	-1,    /* 0 */ 	-1,    /* 1 */ 	-1,    /* 2 */ 	-1,    /* 3 */ 	-1,    /* 4 */ 	-1,    /* 5 */ 	-1,    /* 6 */ 	-1,    /* 7 */
