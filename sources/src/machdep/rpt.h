@@ -10,12 +10,16 @@
 #ifndef EUAE_MACHDEP_RPT_H
 #define EUAE_MACHDEP_RPT_H
 
+#ifndef STATIC_INLINE
+#define STATIC_INLINE static inline
+#endif
 
 #if !defined(ANDPORT) && !defined(WIN32PORT) && !defined(ARM)
 
 #ifdef __CELLOS_LV2__
 
 #warning "GetTick PS3\n"
+
 
 STATIC_INLINE uae_s64 read_processor_time (void)
 {
