@@ -91,10 +91,7 @@ long GetTicks2(void)
 { // in MSec
 #ifndef _ANDROID_
 
-#ifdef PS3PORT
-
-   //#warning "GetTick PS3\n"
-
+#ifdef __CELLOS_LV2__
    unsigned long	ticks_micro;
    uint64_t secs;
    uint64_t nsecs;
