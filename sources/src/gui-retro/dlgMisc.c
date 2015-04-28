@@ -150,7 +150,7 @@ void Dialog_MiscDlg(void)
 					//savestate_initsave (tmpPath, 1,1,1);
 					savestate_state = STATE_DORESTORE;
 
-					return 1;
+					return;
 				}
 
 			break;

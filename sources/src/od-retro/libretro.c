@@ -247,15 +247,6 @@ int restore_bkg(void)
    memcpy(bmp,savebmp,sizeof(bmp));
 }
 
-void pause_select(void)
-{
-   if(pauseg==1 && firstps==0)
-   {
-      firstps=1;
-      enter_gui0();
-      firstps=0;
-   }
-}
 void enter_gui0(void)
 {
    save_bkg();
@@ -264,6 +255,16 @@ void enter_gui0(void)
    pauseg=0;
 
    restore_bkg();
+}
+
+void pause_select(void)
+{
+   if(pauseg==1 && firstps==0)
+   {
+      firstps=1;
+      enter_gui0();
+      firstps=0;
+   }
 }
 
 void retro_run(void)
