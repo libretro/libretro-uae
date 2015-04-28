@@ -17,8 +17,9 @@ CORE_SRCS2 :=  \
 	$(EMU)/ar.o $(EMU)/driveclick.o $(EMU)/enforcer.o $(EMU)/misc.o $(EMU)/uaenet.o $(EMU)/a2065.o \
 	$(EMU)/missing.o $(EMU)/readcpu.o $(EMU)/hrtmon.rom.o $(EMU)/events.o $(EMU)/calc.o\
 	$(EMU)/aros.rom.o $(EMU)/specialmonitors.o $(EMU)/writelog.o  $(EMU)/debug.o\
-	$(EMU)/identify.o  $(EMU)/osdep/memory.o $(EMU)/osdep/parser.o $(EMU)/osdep/main.o
-#$(EMU)/blkdev.o $(EMU)/blkdev_cdimage.o $(EMU)/picasso96.o $(EMU)/cdtv.o $(EMU)/akiko.o $(EMU)/a2091.o
+	$(EMU)/identify.o  $(EMU)/osdep/memory.o $(EMU)/osdep/parser.o $(EMU)/osdep/main.o \
+   $(EMU)/blkdev.o  $(EMU)/blkdev_cdimage.o
+#$(EMU)/picasso96.o $(EMU)/cdtv.o $(EMU)/akiko.o $(EMU)/a2091.o
 # $(EMU)/scsi.o $(EMU)/ncr_scsi.o   $(EMU)/gayle.o
 
 CORE_SRCS2 += $(EMU)/archivers/dms/crc_csum.o $(EMU)/archivers/dms/getbits.o $(EMU)/archivers/dms/maketbl.o \
