@@ -10,19 +10,19 @@
 #ifndef EUAE_MACHDEP_RPT_H
 #define EUAE_MACHDEP_RPT_H
 
-#ifndef STATIC_INLINE
-#define STATIC_INLINE static inline
+#include <sys/time.h>
+
+#ifndef osd_ticks_t
+#define osd_ticks_t uae_s64
 #endif
 
-#if !defined(ANDPORT) && !defined(WIN32PORT) && !defined(ARM)
+#ifndef frame_time_t
+#define frame_time_t uae_s64
+#endif
 
-#ifdef __CELLOS_LV2__
-
-#warning "GetTick PS3\n"
-
-
-STATIC_INLINE uae_s64 read_processor_time (void)
+STATIC_INLINE frame_time_t machdep_gethrtime (void)
 {
+#ifdef __CELLOS_LV2__
    unsigned long	ticks_micro;
    uint64_t secs;
    uint64_t nsecs;
@@ -31,60 +31,7 @@ STATIC_INLINE uae_s64 read_processor_time (void)
    ticks_micro = secs * 1000000UL + (nsecs / 1000);
 
    return ticks_micro;
-}
 #else
-
-STATIC_INLINE uae_s64 read_processor_time (void)
-{
-   uae_s64 tsc;
-
-   /* Don't assume the assembler knows rdtsc */
-   __asm__ __volatile__ (".byte 0x0f,0x31" : "=A" (tsc) :);
-
-#ifdef __linux__ 
-   /* Hack to synchronize syncbase and re-compute
-    * vsynctime when TSC frequency changes */
-
-   /* How many times per second tsc will be synced */
-#define TSC_SYNC_FREQUENCY 8
-   {
-      extern frame_time_t linux_get_tsc_freq (void);
-      extern void         compute_vsynctime (void);
-      //	extern frame_time_t syncbaseo;
-      extern int syncbase;
-
-      static frame_time_t next_tsc_synctime;
-      static frame_time_t prev_syncbase;
-
-      if (tsc > next_tsc_synctime)
-      {
-         uae_s64 new_tsc_freq = linux_get_tsc_freq ();
-
-         if (new_tsc_freq > 0)
-         {
-            syncbase = new_tsc_freq;
-            next_tsc_synctime = tsc + (syncbase / TSC_SYNC_FREQUENCY);
-
-            if (syncbase != prev_syncbase)
-            {
-               prev_syncbase = syncbase;
-               compute_vsynctime ();
-            }
-         }
-      }
-   }
-
-   return tsc;
-}
-#endif 
-
-#endif
-#else
-#include <sys/time.h>
-#define osd_ticks_t uae_s64
-STATIC_INLINE uae_s64 read_processor_time (void)
-{
-
    struct timeval    tp;
    static osd_ticks_t start_sec = 0;
 
@@ -92,16 +39,7 @@ STATIC_INLINE uae_s64 read_processor_time (void)
    if (start_sec==0)
       start_sec = tp.tv_sec;
    return (tp.tv_sec - start_sec) * (osd_ticks_t) 1000000 + tp.tv_usec;
-
-}
-
 #endif
-
-#define frame_time_t uae_s64
-
-STATIC_INLINE frame_time_t machdep_gethrtime (void)
-{
-   return read_processor_time ();
 }
 
 frame_time_t machdep_gethrtimebase (void);
