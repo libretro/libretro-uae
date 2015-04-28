@@ -18,16 +18,6 @@
 
 /* CPU supports AVX2 */
 /* #undef HAVE_AVX2 */
-#ifndef PS3PORT
-/* Define to 1 if you have the 'bswap_16' function. */
-#define HAVE_BSWAP_16 1
-
-/* Define to 1 if you have the 'bswap_32' function. */
-#define HAVE_BSWAP_32 1
-
-/* Define to 1 if you have the <byteswap.h> header file. */
-#define HAVE_BYTESWAP_H 1
-#endif
 
 /* Define to 1 if you have the <caps/capsimage.h> header file. */
 /* #undef HAVE_CAPS_CAPSIMAGE_H */
