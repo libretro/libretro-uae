@@ -20,7 +20,7 @@ extern int scan_roms (int);
 /*
  * Handle break signal
  */
-#ifndef PS3PORT
+#ifndef __CELLOS_LV2__
 #include <signal.h>
 #endif
 
@@ -35,7 +35,7 @@ static RETSIGTYPE sigbrkhandler (int foo)
     activate_debugger ();
 #endif
 
-#ifndef PS3PORT
+#ifndef __CELLOS_LV2__
 #if !defined(__unix) || defined(__NeXT__) 
     signal (SIGINT, sigbrkhandler);
 #endif
@@ -50,7 +50,7 @@ int debuggable (void)
 
 void setup_brkhandler (void)
 {
-#ifndef PS3PORT
+#ifndef __CELLOS_LV2__
 #if defined(__unix) && !defined(__NeXT__)
     struct sigaction sa;
     sa.sa_handler = sigbrkhandler;

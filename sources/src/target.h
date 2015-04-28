@@ -6,7 +6,7 @@
   * Copyright 1997 Bernd Schmidt
   */
 
-#ifndef PS3PORT
+#ifndef __CELLOS_LV2__
 
 #define TARGET_NAME "unix"
 
@@ -42,8 +42,6 @@
 
 #define DEFPRTNAME "null"
 #define DEFSERNAME "null"
-
-
 
 #endif
 

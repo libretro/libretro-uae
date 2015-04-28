@@ -27,7 +27,7 @@
 #endif
 #define POSIX_SERIAL
 
-#if !defined(PS3PORT) && !defined(WIN32PORT)
+#if !defined(__CELLOS_LV2__) && !defined(WIN32PORT)
 #ifdef POSIX_SERIAL
 #include <termios.h>
 #include <unistd.h>
@@ -43,7 +43,7 @@
 #undef POSIX_SERIAL
 #endif
 
-#if !defined(PS3PORT) && !defined(WIN32PORT)
+#if !defined(__CELLOS_LV2__) && !defined(WIN32PORT)
 #ifndef O_NONBLOCK
 #define O_NONBLOCK O_NDELAY
 #endif

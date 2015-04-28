@@ -229,7 +229,7 @@ int sav_event=0;
 #ifdef AND
 #define DEFAULT_PATH "/mnt/sdcard/euae/"
 #else
-#ifdef PS3PORT
+#ifdef __CELLOS_LV2__
 #define DEFAULT_PATH "/dev_hdd0/HOMEBREW/UAE/"
 #else
 #define DEFAULT_PATH "/"

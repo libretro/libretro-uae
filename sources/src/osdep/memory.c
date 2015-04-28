@@ -14,7 +14,7 @@
 #include "options.h"
 #include "autoconf.h"
 #ifndef ANDROID
-#ifndef PS3PORT
+#ifndef __CELLOS_LV2__
 #ifndef WIN32PORT
 #include <sys/sysctl.h>
 #endif

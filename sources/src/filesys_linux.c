@@ -6,7 +6,7 @@
  * Copyright 2012-2013 Mustafa 'GnoStiC' Tufan
  */
 
-#ifndef PS3PORT
+#ifndef __CELLOS_LV2__
 #include <sys/timeb.h>
 #endif
 #include <sys/timeb.h>
@@ -81,7 +81,8 @@ typedef struct {
  #define S_IROTH 00004
  #define S_IWOTH 00002
 #endif
-// fsdb_mywin32
+
+/* fsdb_mywin32 */
 bool my_stat (const TCHAR *name, struct mystat *statbuf)
 {
 	struct _stat64 st;
@@ -117,7 +118,7 @@ static int setfiletime (const TCHAR *name, int days, int minute, int tick, int t
 	return 0;
 }
 
-#if defined(PS3PORT) || defined(WIN32PORT)
+#if defined(__CELLOS_LV2__) || defined(WIN32PORT)
 #warning LSTAT STAT
 #define lstat stat
 #endif
@@ -127,7 +128,7 @@ bool my_utime (const TCHAR *name, struct mytimeval *tv)
         int tolocal;
         int days, mins, ticks;
         struct mytimeval tv2;
-#ifndef PS3PORT
+#ifndef __CELLOS_LV2__
         if (!tv) {
                 struct timeb time;
                 ftime (&time);
@@ -488,11 +489,11 @@ static HANDLE CreateFile(const TCHAR *lpFileName, DWORD dwDesiredAccess, DWORD d
 
 	int fd = 0;
 	mode = S_IRUSR | S_IWUSR;
-#if !defined(PS3PORT) && !defined(WIN32PORT)
+#if !defined(__CELLOS_LV2__) && !defined(WIN32PORT)
 	if (dwFlagsAndAttributes & FILE_FLAG_NO_BUFFERING)
 		flags |= O_SYNC;
 #endif
-#if !defined(PS3PORT) && !defined(WIN32PORT)
+#if !defined(__CELLOS_LV2__) && !defined(WIN32PORT)
 	flags |= O_NONBLOCK;
 #endif
 	fd = open(lpFileName, flags, mode);
@@ -503,7 +504,7 @@ static HANDLE CreateFile(const TCHAR *lpFileName, DWORD dwDesiredAccess, DWORD d
 	}/* else {
 		write_log ("FS: '%s' open successful\n", lpFileName);
 	}*/
-#if !defined(PS3PORT) && !defined(WIN32PORT)
+#if !defined(__CELLOS_LV2__) && !defined(WIN32PORT)
 	// turn of nonblocking reads/writes
 	fcntl(fd, F_GETFL, &flags);
 	fcntl(fd, F_SETFL, flags & ~O_NONBLOCK);
