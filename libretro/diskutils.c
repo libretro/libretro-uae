@@ -9,26 +9,21 @@
 #include <stdlib.h>
 #include <errno.h>
 
+int ndsknum=0;
+static int entries; 
+
+extern unsigned short int bmp[TEX_WIDTH * TEX_HEIGHT];
+
 #ifdef __CELLOS_LV2__
 #define S_ISDIR(x) (x & CELL_FS_S_IFDIR)
 #endif
 
-int ndsknum=0;
-static int entries; 
-
-extern unsigned short int bmp[1024 * 1024];
-
-char *FILE_EXT[]={"adf","ADF","cfg","CFG","dms","DMS","hdf","HDF","msa","MSA","rom","ROM","zip","ZIP",NULL};
-
-#ifdef _MSC_VER
-#define PATHSEP '\\'
-#else
 #define PATHSEP '/'
-#endif
 
 int alphasort2(const struct dirent **d1, const struct dirent **d2)
 {
-   const struct dirent *c1, *c2;
+   const struct dirent *c1;
+   const struct dirent *c2;
    c1 = *d1;
    c2 = *d2;
    return strcmp(c1->d_name, c2->d_name);
@@ -37,24 +32,22 @@ int alphasort2(const struct dirent **d1, const struct dirent **d2)
 int scandir(const char *dirp, struct dirent ***namelist,
       int (*filter)(const struct dirent *),
       int (*compar)(const struct dirent **, const struct dirent **))
-
 {
-
-   DIR *dp = (DIR*)opendir(dirp);
-   struct dirent *current, **names;
+   DIR *dp = opendir (dirp);
+   struct dirent *current;
+   struct dirent **names = NULL;
    size_t names_size = 0, pos;
    int save;
 
-   names = NULL;
+   (void)save;
 
    if (dp == NULL)
       return -1;
 
-   save = errno;
-
+   save  = errno;
    errno = 0;
+   pos   = 0;
 
-   pos = 0;
    while ((current = readdir (dp)) != NULL)
       if (filter == NULL || (*filter) (current))
       {
@@ -103,6 +96,7 @@ int scandir(const char *dirp, struct dirent ***namelist,
    return pos;
 }
 
+
 /*-----------------------------------------------------------------------*/
 /**
  * Free file entries
@@ -110,8 +104,7 @@ int scandir(const char *dirp, struct dirent ***namelist,
 static struct dirent **files_free(struct dirent **files)
 {
    int i;
-   
-   if (files)
+   if (files != NULL)
    {
       for(i=0; i<entries; i++)
          free(files[i]);
@@ -123,7 +116,6 @@ static struct dirent **files_free(struct dirent **files)
 void File_HandleDotDirs(char *path)
 {
    int len = strlen(path);
-
    if (len >= 2 &&
          path[len-2] == PATHSEP &&
          path[len-1] == '.')
@@ -137,10 +129,9 @@ void File_HandleDotDirs(char *path)
          path[len-1] == '.')
    {
       /* go one dir up */
-      if (len == 3)
+      if (len == 3) {
          path[1] = 0;		/* already root */
-      else
-      {
+      } else {
          char *ptr;
          path[len-3] = 0;
          ptr = strrchr(path, PATHSEP);
@@ -152,8 +143,8 @@ void File_HandleDotDirs(char *path)
 
 bool File_DirExists(const char *pathdir)
 {
-   struct stat buf;
-   return (stat(pathdir, &buf) == 0 && S_ISDIR(buf.st_mode));
+	struct stat buf;
+	return (stat(pathdir, &buf) == 0 && S_ISDIR(buf.st_mode));
 }
 
 int HandleExtension(char *path,char *ext)
@@ -165,7 +156,9 @@ int HandleExtension(char *path,char *ext)
          path[len-3] == ext[0] &&
          path[len-2] == ext[1] &&
          path[len-1] == ext[2])
+   {
       return 1;
+   }
 
    return 0;
 }
@@ -173,10 +166,11 @@ int HandleExtension(char *path,char *ext)
 //basic filebrowser
 #define MAXSEL 10
 
-char * filebrowser(const char *path_and_name)
+char *filebrowser(const char *path_and_name)
 {
-   static struct dirent **files = NULL;
+   static char seldsk[512];	 
    static char path[FILENAME_MAX];                 /* The actual path names */
+   static struct dirent **files = NULL;
    static bool reloaddir = true;
    static int first=0;
 
@@ -184,8 +178,8 @@ char * filebrowser(const char *path_and_name)
    static int firstin=0,fselect=0,select=0,pselect=0;
    static int padcountdown = 0;
    static int pad_held_down = 0;
-   static char seldsk[512];	 
 
+   (void)firstin;
 
    if(first==0)
    {
@@ -219,41 +213,49 @@ char * filebrowser(const char *path_and_name)
 
    ndsknum=entries;
 
-   if (ndsknum >= MAXSEL)
+   if(ndsknum>=MAXSEL)
       LIMSEL=MAXSEL;
    else
       LIMSEL=ndsknum;
 
-   if(padcountdown) padcountdown--;
+   if(padcountdown)
+      padcountdown--;
 
-   i=update_input_gui();
+   i = update_input_gui();
 
-   switch(i){
-
+   switch(i)
+   {
       case -1 : //UP
          if(padcountdown==0)
          {
             select--;
-            if(select<0)select=0;
+            if(select<0)
+               select=0;
 
-            if(fselect>0)fselect--;
+            if(fselect>0)
+               fselect--;
 
-            if(pad_held_down++<4) padcountdown=10;
-            else padcountdown = 2;
+            if(pad_held_down++<4)
+               padcountdown=10;
+            else
+               padcountdown = 2;
 
             if(select<pselect)pselect--;
          }
          break;
-      case  1 : //DOWN
+      case  1 : /* DOWN */
          if(padcountdown==0)
          {
             select++;
-            if(select>ndsknum-1)select=ndsknum-1;
+            if(select>ndsknum-1)
+               select=ndsknum-1;
+            if(fselect<LIMSEL-1)
+               fselect++;
 
-            if(fselect<LIMSEL-1)fselect++;
-
-            if(pad_held_down++<4) padcountdown=10;
-            else padcountdown=2;
+            if(pad_held_down++<4)
+               padcountdown=10;
+            else
+               padcountdown=2;
 
             if(select> (pselect+LIMSEL-1) )pselect++;
          }
@@ -267,14 +269,13 @@ char * filebrowser(const char *path_and_name)
          break;
       case  2 : //OK
          {
-            char *tempstr = (char*)malloc(FILENAME_MAX);
-            sprintf(tempstr,"%s%s",path,files[select]->d_name);
 
+            char *tempstr = malloc(FILENAME_MAX);
+            sprintf(tempstr,"%s%s",path,files[select]->d_name);
 
             if ( File_DirExists(tempstr) == 1 || \
                   strcmp(files[select]->d_name,".")==0 || \
-                  strcmp(files[select]->d_name,"..")==0 )
-            {
+                  strcmp(files[select]->d_name,"..")==0 ) {
 
 
                if(strcmp(files[select]->d_name,".")==0 || strcmp(files[select]->d_name,"..")==0 )
@@ -286,7 +287,7 @@ char * filebrowser(const char *path_and_name)
 
                free(tempstr);
 
-               select=fselect=pselect=0;
+               select= fselect = pselect = 0;
 
                return "NO CHOICE";
             }
@@ -297,9 +298,11 @@ char * filebrowser(const char *path_and_name)
 
             //FIXME
 
-            for(i = 0; FILE_EXT[i] != NULL; i++)
-               if( HandleExtension(files[select]->d_name,FILE_EXT[i]))return (char*)seldsk;
-
+            if( HandleExtension(files[select]->d_name,"DSK") ||\
+                  HandleExtension(files[select]->d_name,"dsk") ||\
+                  HandleExtension(files[select]->d_name,"SNA") ||\
+                  HandleExtension(files[select]->d_name,"sna") )
+               return (char*)seldsk;
             return "NO CHOICE";
          }
          break;
@@ -310,17 +313,21 @@ char * filebrowser(const char *path_and_name)
          break;
    }
 
-   if(i!=-1 && i!=1) pad_held_down = 0;
+   if(i!=-1 && i!=1)
+      pad_held_down = 0;
 
    DrawFBoxBmp(bmp,CROP_WIDTH/4,CROP_HEIGHT/10,CROP_WIDTH/2,CROP_HEIGHT-20,RGB565(3,3,3));
    DrawFBoxBmp(bmp,2+CROP_WIDTH/4,1+CROP_HEIGHT/10,-4+CROP_WIDTH/2,-2+CROP_HEIGHT-20,RGB565(22,23,26));
 
    for(i = pselect; i < (pselect + LIMSEL); i++)
    {
-      if( fselect == (i-pselect) )	
-         Draw_text(bmp,20+CROP_WIDTH/4,50+(i-pselect)*30,RGB565(5, 5, 5),0x0,1,2,40,"%s",files[i]->d_name);
-      else
-         Draw_text(bmp,20+CROP_WIDTH/4,50+(i-pselect)*30,RGB565(25, 5, 5),0x0,1,2,40,"%s",files[i]->d_name);
+      Draw_text(bmp,
+            20 + CROP_WIDTH / 4,
+            30 + (i-pselect) * 16,
+            RGB565((fselect == (i-pselect)) ? 25 : 5, 5, 5),
+            0x0, 1, 1, 40,
+            "%s",
+            files[i]->d_name);
    }
 
    return "NO CHOICE";

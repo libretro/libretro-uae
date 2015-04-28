@@ -20,6 +20,9 @@ extern cothread_t emuThread;
 
 #define LOGI printf
 
+#define TEX_WIDTH 400
+#define TEX_HEIGHT 300
+
 extern int retrow; 
 extern int retroh;
 extern int CROP_WIDTH;
