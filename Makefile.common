@@ -155,7 +155,7 @@ endif
 endif
 
 SOURCES_C += $(LIBRETRO)/libretro.c \
-				 $(LIBRETRO)/euae-mapper.c \
+				 $(LIBRETRO)/libretro-mapper.c \
 				 $(LIBRETRO)/vkbd.c \
 				 $(LIBRETRO)/graph.c \
 				 $(LIBRETRO)/diskutils.c \

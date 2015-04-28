@@ -18,7 +18,7 @@
 
 #include "inputdevice.h"
 
-#include "libretro-euae.h"
+#include "libretro-glue.h"
 
 #define PIX_BYTES 2
 

@@ -1,6 +1,5 @@
 #include "libretro.h"
-
-#include "libretro-euae.h"
+#include "libretro-glue.h"
 #include "AMIGAkeymap.h"
 #include "graph.h"
 #include "vkbd.h"

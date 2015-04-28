@@ -12,7 +12,6 @@
 *  Content:    Win32-specific gui features for UAE port.
 *
 ***************************************************************************/
-//RETRO HACK
 
 #include "sysconfig.h"
 #include "sysdeps.h"
@@ -29,6 +28,9 @@
 #include "filesys.h"
 #include "zfile.h"
 #include "gensound.h"
+
+#include "libretro-glue.h"
+extern unsigned short int bmp[TEX_WIDTH * TEX_HEIGHT];
 
 #define MPOS_CFG_SELECT 0
 #define MPOS_FLOPPY1 1
@@ -194,8 +196,6 @@ int action_video_menu(int action);
 int action_cpu_menu(int action);
 int action_main_menu(int action);
 
-#include "libretro-euae.h"
-extern unsigned short int bmp[1024 * 1024];
 
 #define pixbuf bmp
 #define draw_rect(a,b,c,d,e)	DrawFBoxBmp(pixbuf,a,b,c,d,RGB565(22,23,26) )

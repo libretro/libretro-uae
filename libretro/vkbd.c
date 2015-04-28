@@ -1,4 +1,4 @@
-#include "libretro-euae.h"
+#include "libretro-glue.h"
 
 #include "vkbd_def.h"
 #include "graph.h"

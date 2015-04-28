@@ -1,5 +1,5 @@
 #include "libretro.h"
-#include "libretro-euae.h"
+#include "libretro-glue.h"
 
 cothread_t mainThread;
 cothread_t emuThread;
