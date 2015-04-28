@@ -16,6 +16,8 @@
 
 #include "hrtimer.h"
 
+#include "inputdevice.h"
+
 #include "libretro-euae.h"
 
 #define PIX_BYTES 2
@@ -372,7 +374,6 @@ void clean_led_area(void) {
 	memset(addr, 0, size);
 }
 
-#include "inputdevice.h"
 
 
 /***************************************************************
