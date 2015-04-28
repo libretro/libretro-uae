@@ -20,7 +20,7 @@
 #define frame_time_t uae_s64
 #endif
 
-STATIC_INLINE frame_time_t machdep_gethrtime (void)
+STATIC_INLINE uae_s64 read_processor_time(void)
 {
 #ifdef __CELLOS_LV2__
    unsigned long	ticks_micro;
@@ -40,6 +40,11 @@ STATIC_INLINE frame_time_t machdep_gethrtime (void)
       start_sec = tp.tv_sec;
    return (tp.tv_sec - start_sec) * (osd_ticks_t) 1000000 + tp.tv_usec;
 #endif
+}
+
+STATIC_INLINE frame_time_t machdep_gethrtime (void)
+{
+   return read_processor_time();
 }
 
 frame_time_t machdep_gethrtimebase (void);
