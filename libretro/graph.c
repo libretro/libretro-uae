@@ -167,6 +167,8 @@ void DrawHlineBmp(unsigned  short  *buffer,int x,int y,int dx,int dy,unsigned  s
 {
    int i,j,idx;
 
+   (void)j;
+
    for(i=x;i<x+dx;i++)
    {
       idx=i+y*VIRTUAL_WIDTH;
@@ -177,6 +179,8 @@ void DrawHlineBmp(unsigned  short  *buffer,int x,int y,int dx,int dy,unsigned  s
 void DrawVlineBmp(unsigned  short *buffer,int x,int y,int dx,int dy,unsigned  short  color)
 {
    int i,j,idx;
+
+   (void)i;
 
    for(j=y;j<y+dy;j++)
    {
@@ -345,13 +349,14 @@ void filter_scale2x(unsigned char *srcPtr, unsigned srcPitch,
 void Draw_string(unsigned short *surf, signed short int x, signed short int y, const unsigned char *string,unsigned short maxstrlen,unsigned short xscale, unsigned short yscale, unsigned short fg, unsigned short bg)
 {
    int k,strlen;
+   int xrepeat, yrepeat;
    unsigned char *linesurf;
    signed short int ypixel;
    unsigned short *yptr; 
    int col, bit;
    unsigned char b;
 
-   int xrepeat, yrepeat;
+   (void)k;
 
    if(!string)
       return;
@@ -400,6 +405,8 @@ void Draw_text(unsigned  short *buffer,int x,int y,unsigned  short  fgcol,unsign
    int boucle=0;  
    char text[256];	   	
    va_list	ap;			
+
+   (void)boucle;
 
    if (string == NULL)
       return;
