@@ -45,7 +45,7 @@ unsigned long now_time;
 unsigned long stat_time;
 unsigned long stat_count;
 
-//static unsigned long scaled_sample_evtime;
+static unsigned long scaled_sample_evtime;
 /*
 void set_volume_sound_device (struct sound_data *sd, int volume, int mute)
 {
@@ -118,7 +118,7 @@ int init_sound (void)
 	return 1;
     }
 
-    int rate = 22500;
+    int rate = 44100;
     if (sound_initialized) {
 	return 1;
     }

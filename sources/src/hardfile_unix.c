@@ -289,7 +289,7 @@ int hdf_open_target (struct hardfiledata *hfd, const char *pname)
 				write_log ("HDF '%s' re-opened in zfile-mode\n", name);
 				fclose (h);
 				hfd->handle->h = INVALID_HANDLE_VALUE;
-				hfd->handle->zf = zfile_fopen(name, /*hfd->readonly ? "rb" :*/ "r+b", ZFD_NORMAL);
+				hfd->handle->zf = zfile_fopen(name, /*hfd->readonly ? "rb" :*/ "rb", ZFD_NORMAL);
 				hfd->handle->zfile = 1;
 				if (!h)
 					goto end;

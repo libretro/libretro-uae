@@ -16,8 +16,12 @@
 
 #include <stdbool.h>
 
+#ifdef ANDROID
+#define SDL_Delay GetTicks
+#else
 #define SDL_Delay GetTicks2
-
+#endif
+  
 enum
 {
   SGBOX,

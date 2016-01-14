@@ -39,6 +39,15 @@ else ifeq ($(platform), osx)
    fpic := -fPIC -mmacosx-version-min=10.6
    SHARED := -dynamiclib
    PLATFLAGS +=  -DRETRO -DLSB_FIRST -DALIGN_DWORD
+else ifeq ($(platform), android-armv7)
+   CC = arm-linux-androideabi-gcc
+   AR = @arm-linux-androideabi-ar
+   LD = @arm-linux-androideabi-g++ 
+   TARGET := $(TARGET_NAME)_libretro_android.so
+   fpic := -fPIC
+	LDFLAGS := -lz -lm
+   SHARED :=  -Wl,--fix-cortex-a8 -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
+   PLATFLAGS += -DANDROID -DRETRO -DAND -DLSB_FIRST -DALIGN_DWORD -DANDPORT -DA_ZIP
 else ifeq ($(platform), android)
    CC = arm-linux-androideabi-gcc
    AR = @arm-linux-androideabi-ar
@@ -110,6 +119,9 @@ $(TARGET): $(OBJECTS)
 	$(AR) rcs $@ $(OBJECTS) 
 
 else ifeq ($(platform), win)
+$(TARGET): $(OBJECTS)
+	$(CC) $(fpic) $(SHARED) $(INCDIRS) -o $@ $(OBJECTS) $(LDFLAGS)
+else ifeq ($(platform), android-armv7)
 $(TARGET): $(OBJECTS)
 	$(CC) $(fpic) $(SHARED) $(INCDIRS) -o $@ $(OBJECTS) $(LDFLAGS)
 else
