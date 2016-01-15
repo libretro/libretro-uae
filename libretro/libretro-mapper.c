@@ -33,7 +33,7 @@ int NPAGE=-1, KCOL=1, BKGCOLOR=0, MAXPAS=6;
 int SHIFTON=-1,MOUSEMODE=-1,NUMJOY=0,SHOWKEY=-1,PAS=2,STATUTON=-1;
 
 short signed int SNDBUF[1024*2];
-int snd_sampler = 44100 / 60;
+int snd_sampler = 44100 / 50;
 char RPATH[512];
 char DSKNAME[512];
 

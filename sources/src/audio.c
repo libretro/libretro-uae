@@ -2044,7 +2044,6 @@ void led_filter_audio (void)
 
 void audio_vsync (void)
 {
-#if 0
 #if SOUNDSTUFF > 0
 	int max, min;
 	int vsync = isvsync ();
@@ -2075,7 +2074,6 @@ void audio_vsync (void)
 		extrasamples = 99;
 	if (extrasamples < -99)
 		extrasamples = -99;
-#endif
 #endif
 }
 

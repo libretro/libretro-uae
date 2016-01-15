@@ -39,7 +39,7 @@ void retro_set_environment(retro_environment_t cb)
    struct retro_variable variables[] = {
       { "resolution","Internal resolution; 640x400|640x480|720x480|800x600|1024x768", },
       { "analog","Use Analog; OFF|ON", },
-      { "leds","Leds; Standard|Simplified", },
+      { "leds","Leds; Standard|Simplified|None", },
       { NULL, NULL },
    };
 /*
@@ -109,6 +109,11 @@ static void update_variables(void)
       {
         ledtype = 1;  
         fprintf(stderr, "[libretro-test]: Leds: Simplified\n");
+      }
+      if (strcmp(var.value, "None") == 0)
+      {
+        ledtype = 2;  
+        fprintf(stderr, "[libretro-test]: Leds: None\n");
       }
    }
 }
@@ -198,7 +203,7 @@ void retro_get_system_info(struct retro_system_info *info)
 void retro_get_system_av_info(struct retro_system_av_info *info)
 {
    struct retro_game_geometry geom   = { 640,480,1024,1024,4.0 / 3.0 };
-   struct retro_system_timing timing = { 60.0, 22050.0 };
+   struct retro_system_timing timing = { 50.0, 44100.0 };
 
    info->geometry = geom;
    info->timing   = timing;
@@ -301,8 +306,37 @@ bool retro_load_game(const struct retro_game_info *info)
    {
       const char *full_path = (const char*)info->path;
       strcpy(RPATH,full_path);
-   }
 
+      // checking parsed file for custom resolution
+      FILE * configfile;
+
+      int w = 0;
+      int h = 0;
+
+      char filebuf[1000];
+      char setting[20];
+      char value[20];
+      if(configfile = fopen ( RPATH, "r"))
+      {
+         while(fgets(filebuf,1000,configfile))
+         {
+            sscanf(filebuf,"gfx_width = %d",&w);
+            sscanf(filebuf,"gfx_height = %d",&h);
+         }
+         fclose(configfile);
+      }
+
+      if (w && h)
+      {
+         retrow = w;
+         retroh = h;
+         CROP_WIDTH = retrow;
+         CROP_HEIGHT = (retroh-80);
+         VIRTUAL_WIDTH = retrow;
+         memset(bmp, 0, sizeof(bmp));
+         Screen_SetFullUpdate();
+      }
+   }
    return true;
 }
 
