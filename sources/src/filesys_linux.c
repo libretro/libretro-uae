@@ -6,11 +6,20 @@
  * Copyright 2012-2013 Mustafa 'GnoStiC' Tufan
  */
 
-#ifndef __CELLOS_LV2__
-#include <sys/timeb.h>
-#endif
-#include <sys/timeb.h>
 #include "zfile.h"
+
+#include <sys/time.h>
+
+__BEGIN_DECLS
+
+struct timeb {
+    time_t          time;
+    unsigned short  millitm;
+    short           timezone;
+    short           dstflag;
+};
+
+extern int  ftime(struct timeb*  timebuf);
 
 typedef int BOOL;
 

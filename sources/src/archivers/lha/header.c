@@ -206,7 +206,18 @@ unix_to_generic_filename(char *name, int len)
 #endif
 
 #ifdef FTIME
-#include <sys/timeb.h>
+#include <sys/time.h>
+
+__BEGIN_DECLS
+
+struct timeb {
+    time_t          time;
+    unsigned short  millitm;
+    short           timezone;
+    short           dstflag;
+};
+
+extern int  ftime(struct timeb*  timebuf);
 #endif
 
 /*
