@@ -193,7 +193,7 @@ int uae_sem_init (uae_sem_t *sem, int pshared, unsigned int value)
 {
 	if (!sem || (sem && sem->sem))
 		return -1;
-	sem->sem = (sem_t*)calloc(0, sizeof(sem_t));
+	sem->sem = (sem_t*)calloc(1, sizeof(sem_t));
 	return sem_init (sem->sem, pshared, value);
 }
 
