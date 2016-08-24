@@ -645,6 +645,7 @@ static int get_kb_widget_num (int mouse)
 
 static int get_kb_widget_type (int mouse, int num, char *name, uae_u32 *code)
 {
+    if (code) *code = ~0;
     return IDEV_WIDGET_NONE;
 }
 
