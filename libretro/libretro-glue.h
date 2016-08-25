@@ -6,17 +6,13 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include <libco/libco.h>
 
 extern cothread_t mainThread;
 extern cothread_t emuThread;
 
-#define Uint8 unsigned char
-#define Uint16 unsigned short int
-#define Uint32 unsigned int
-
-#include <stdbool.h>
 
 #define LOGI printf
 

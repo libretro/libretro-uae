@@ -494,14 +494,14 @@ static void *ZIP_ExtractFile(unzFile uf, const char *filename, uLong size)
  * Load disk image from a .ZIP archive into memory, set  the number
  * of bytes loaded into pImageSize and return the data or NULL on error.
  */
-Uint8 *ZIP_ReadDisk(const char *pszFileName, const char *pszZipPath, long *pImageSize)
+uint8_t *ZIP_ReadDisk(const char *pszFileName, const char *pszZipPath, long *pImageSize)
 {
 	uLong ImageSize=0;
 	unzFile uf=NULL;
-	Uint8 *buf;
+	uint8_t *buf;
 	char *path;
 	int nDiskType = -1;
-	Uint8 *pDiskBuffer = NULL;
+	uint8_t *pDiskBuffer = NULL;
 
 	*pImageSize = 0;
 
@@ -599,10 +599,10 @@ bool ZIP_WriteDisk(const char *pszFileName,unsigned char *pBuffer,int ImageSize)
  * Load first file from a .ZIP archive into memory, and return the number
  * of bytes loaded.
  */
-Uint8 *ZIP_ReadFirstFile(const char *pszFileName, long *pImageSize, const char * const ppszExts[])
+uint8_t *ZIP_ReadFirstFile(const char *pszFileName, long *pImageSize, const char * const ppszExts[])
 {
 	unzFile uf=NULL;
-	Uint8 *pBuffer;
+	uint8_t *pBuffer;
 	char *pszZipPath;
 	unz_file_info file_info;
 
