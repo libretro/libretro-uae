@@ -20,8 +20,8 @@ const char SDLGui_fileid[] = "Hatari sdlgui.c : " __DATE__ " " __TIME__;
 #include "utype.h"
 
 typedef struct{
-     Sint16 x, y;
-     Uint16 w, h;
+     int16_t x, y;
+     uint16_t w, h;
 } SDL_Rect;
 
 #include "dialog.h"
@@ -200,8 +200,8 @@ static void SDLGui_DrawEditField(const SGOBJ *edlg, int objnum)
 static void SDLGui_DrawBox(const SGOBJ *bdlg, int objnum)
 {
 	int x, y, w, h, offset;
-	Uint32 grey =  0xC0C0C0FF;
-	Uint32 upleftc, downrightc;
+	uint32_t grey =  0xC0C0C0FF;
+	uint32_t upleftc, downrightc;
 
 	x = bdlg[objnum].x*sdlgui_fontwidth;
 	y = bdlg[objnum].y*sdlgui_fontheight;
@@ -331,9 +331,9 @@ static void SDLGui_DrawScrollbar(const SGOBJ *bdlg, int objnum)
 	int x, y, w, h;
         int offset = 0;
 
-	Uint32 grey0 = 0x808080FF;//SDL_MapRGB(pSdlGuiScrn->format,128,128,128);
-	Uint32 grey1 = 0xC4C4C4FF;//SDL_MapRGB(pSdlGuiScrn->format,196,196,196);
-	Uint32 grey2 = 0x404040FF;//SDL_MapRGB(pSdlGuiScrn->format, 64, 64, 64);
+	uint32_t grey0 = 0x808080FF;//SDL_MapRGB(pSdlGuiScrn->format,128,128,128);
+	uint32_t grey1 = 0xC4C4C4FF;//SDL_MapRGB(pSdlGuiScrn->format,196,196,196);
+	uint32_t grey2 = 0x404040FF;//SDL_MapRGB(pSdlGuiScrn->format, 64, 64, 64);
 
 	x = bdlg[objnum].x * sdlgui_fontwidth;
 	y = bdlg[objnum].y * sdlgui_fontheight + bdlg[objnum].h;
@@ -388,7 +388,7 @@ static void SDLGui_EditField(SGOBJ *dlg, int objnum)
 	int bStopEditing = false;           /* true if user wants to exit the edit field */
 	char *txt;                          /* Shortcut for dlg[objnum].txt */
 	SDL_Rect rect;
-	Uint32 grey, cursorCol;
+	uint32_t grey, cursorCol;
 	SDL_Event event;
 	int nOldUnicodeMode;
 
@@ -625,7 +625,7 @@ int SDLGui_DoDialog(SGOBJ *dlg, int/*SDL_Event */*pEventOut)
 	int i, j, b;
 	int /*SDL_Event*/ sdlEvent;//SDL_Event sdlEvent;
 	SDL_Rect rct;
-	Uint32 grey;
+	uint32_t grey;
 	
 	SDL_Rect dlgrect, bgrect;
 

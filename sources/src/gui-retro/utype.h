@@ -5,20 +5,7 @@
 #ifndef HATARI_UTYPE_H
 #define HATARI_UTYPE_H
 
-typedef unsigned char	Uint8;
-typedef signed char	Sint8;
-typedef unsigned short	Uint16;
-typedef signed short	Sint16;
-typedef unsigned int	Uint32;
-typedef signed int	Sint32;
-
-typedef signed char     int8;
-typedef signed short    int16;
-typedef signed int   int32;
-typedef unsigned char   uint8;
-typedef unsigned short  uint16;
-typedef unsigned int  uint32;
-
+#include <stdint.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>

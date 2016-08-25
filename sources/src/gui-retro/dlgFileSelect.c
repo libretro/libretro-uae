@@ -13,6 +13,8 @@
 const char DlgFileSelect_fileid[] = "Hatari dlgFileSelect.c : " __DATE__ " " __TIME__;
 
 #include <sys/stat.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "sdlgui.h"
