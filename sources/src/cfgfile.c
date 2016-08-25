@@ -1386,7 +1386,7 @@ int cfgfile_path_mp (const TCHAR *option, const TCHAR *value, const TCHAR *name,
 	if (!cfgfile_string (option, value, name, location, maxsz))
 		return 0;
 	//TCHAR *s = target_expand_environment (location);
-	_tcsncpy (location, location, maxsz - 1);
+	//_tcsncpy (location, location, maxsz - 1);
 	location[maxsz - 1] = 0;
 	if (mp) {
 		for (int i = 0; i < MAX_PATHS; i++) {
