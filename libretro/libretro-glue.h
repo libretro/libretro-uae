@@ -41,4 +41,6 @@ extern int CROP_HEIGHT;
 
 #define RGB565(r, g, b)  (((r) << (5+6)) | ((g) << 6) | (b))
 
+#define TCHAR char /* from sysdeps.h */
+int umain (int argc, TCHAR **argv);
 #endif

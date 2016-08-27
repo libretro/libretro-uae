@@ -201,12 +201,12 @@ int retro_renderSound(short* samples, int sampleCount)
    }
 }
 
-int InitOSGLU(void)
+void InitOSGLU(void)
 {
 
 }
 
-int  UnInitOSGLU(void)
+void  UnInitOSGLU(void)
 {
 
 }

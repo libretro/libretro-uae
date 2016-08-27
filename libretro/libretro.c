@@ -1,14 +1,16 @@
 #include "libretro.h"
+#include "gui-retro/dialog.h"
+#include "osdep/retroglue.h"
+#include "libretro-mapper.h"
 #include "libretro-glue.h"
 
 cothread_t mainThread;
 cothread_t emuThread;
 
-int retrow=640; 
-int retroh=480;
+int retrow = 0;
+int retroh = 0;
 int CROP_WIDTH;
 int CROP_HEIGHT;
-int VIRTUAL_WIDTH;
 int sndbufpos=0;
 char key_state[512];
 char key_state2[512];
@@ -54,7 +56,7 @@ void retro_set_environment(retro_environment_t cb)
    environ_cb = cb;
 
    struct retro_variable variables[] = {
-      { "resolution","Internal resolution; 640x400|640x480|720x480|800x600|1024x768", },
+      { "resolution","Internal resolution; 640x400|640x480|720x480|720x540|800x600|1024x768", },
       { "analog","Use Analog; OFF|ON", },
       { "leds","Leds; Standard|Simplified|None", },
       { NULL, NULL },
@@ -91,7 +93,6 @@ static void update_variables(void)
 
       CROP_WIDTH =retrow;
       CROP_HEIGHT= (retroh-80);
-      VIRTUAL_WIDTH = retrow;
       memset(bmp, 0, sizeof(bmp));
       Screen_SetFullUpdate();
    }
@@ -137,12 +138,10 @@ static void update_variables(void)
 
 static void retro_wrap_emulator(void)
 {
-   static const char* argv[2];
-   argv[0] = "puae";
-   argv[1] = RPATH;
-   umain(2,argv);
+   static char *argv[] = { "puae", RPATH };
+   umain(sizeof(argv)/sizeof(*argv), argv);
 
-   pauseg=-1;
+   pauseg = -1;
 
    environ_cb(RETRO_ENVIRONMENT_SHUTDOWN, 0); 
 
@@ -162,8 +161,8 @@ void retro_init(void)
 {
    enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
 
-   memset(key_state,0,512);
-   memset(key_state2,0,512);
+   memset(key_state, 0, sizeof(key_state));
+   memset(key_state2, 0, sizeof(key_state2));
 
    if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
    {
@@ -178,7 +177,6 @@ void retro_init(void)
 
    CROP_WIDTH    = retrow;
    CROP_HEIGHT   = (retroh - 80);
-   VIRTUAL_WIDTH = retrow;
 
    if(!emuThread && !mainThread)
    {
@@ -220,6 +218,7 @@ void retro_get_system_info(struct retro_system_info *info)
 void retro_get_system_av_info(struct retro_system_av_info *info)
 {
    struct retro_game_geometry geom   = { 640,480,1024,1024,4.0 / 3.0 };
+   //struct retro_game_geometry geom   = { 720,540,1024,1024,4.0 / 3.0 };
    struct retro_system_timing timing = { 50.0, 44100.0 };
 
    info->geometry = geom;
@@ -257,14 +256,14 @@ extern unsigned short * sndbuffer;
 extern int sndbufsize;
 signed short rsnd=0;
 
-static firstpass=1;
+static int firstpass = 1;
 
-int save_bkg(void)
+void save_bkg(void)
 {
    memcpy(savebmp, bmp,sizeof(bmp));
 }
 
-int restore_bkg(void)
+void restore_bkg(void)
 {
    memcpy(bmp,savebmp,sizeof(bmp));
 }
@@ -291,8 +290,6 @@ void pause_select(void)
 
 void retro_run(void)
 {
-   int x;
-
    bool updated = false;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
@@ -319,12 +316,12 @@ bool retro_load_game(const struct retro_game_info *info)
 {
    environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, input_descriptors);
 
-   RPATH[0] = "\0";
+   RPATH[0] = '\0';
 
    if (*info->path)
    {
       const char *full_path = (const char*)info->path;
-      strcpy(RPATH,full_path);
+      strncpy(RPATH, full_path, sizeof(RPATH));
 
       // checking parsed file for custom resolution
       FILE * configfile;
@@ -332,12 +329,10 @@ bool retro_load_game(const struct retro_game_info *info)
       int w = 0;
       int h = 0;
 
-      char filebuf[1000];
-      char setting[20];
-      char value[20];
-      if(configfile = fopen ( RPATH, "r"))
+      char filebuf[4096];
+      if((configfile = fopen (RPATH, "r")))
       {
-         while(fgets(filebuf,1000,configfile))
+	while(fgets(filebuf, sizeof(filebuf), configfile))
          {
             sscanf(filebuf,"gfx_width = %d",&w);
             sscanf(filebuf,"gfx_height = %d",&h);
@@ -351,7 +346,6 @@ bool retro_load_game(const struct retro_game_info *info)
          retroh = h;
          CROP_WIDTH = retrow;
          CROP_HEIGHT = (retroh-80);
-         VIRTUAL_WIDTH = retrow;
          memset(bmp, 0, sizeof(bmp));
          Screen_SetFullUpdate();
       }
@@ -361,7 +355,7 @@ bool retro_load_game(const struct retro_game_info *info)
 
 void retro_unload_game(void)
 {
-   pauseg=0;
+   pauseg = 0;
 }
 
 unsigned retro_get_region(void)
