@@ -387,3 +387,14 @@ extern void memcpyah (uae_u8 *dst, uaecptr src, int size);
 
 extern uae_s32 getz2size (struct uae_prefs *p);
 extern ULONG getz2endaddr (void);
+
+#if 0
+void *arm_memset(void *s, int c, size_t n);
+void *arm_memcpy(void *dest, const void *src, size_t n);
+#define uae4all_memclr(p,l) arm_memset(p,0,l)
+#define uae4all_memcpy arm_memcpy
+#else
+#define uae4all_memcpy memcpy
+#define uae4all_memclr(p,l) memset(p, 0, l)
+#endif
+
