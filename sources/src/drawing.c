@@ -1785,7 +1785,14 @@ static void weird_bitplane_fix (void)
 } while (0)
 
 #define GETLONG(P) (*(uae_u32 *)P)
+#if defined(DEBUG) && 0
+#define DATA_POINTER(n) ((debug_bpl_mask & (1 << n)) ? (line_data[lineno] + (n) * MAX_WORDS_PER_LINE * 2) : (debug_bpl_mask_one ? all_ones : all_zeros))
+#else
+#define DATA_POINTER(n) (line_data[lineno] + (n)*MAX_WORDS_PER_LINE*2)
+#endif
 
+#define UNROLL_PFIELD
+#ifndef UNROLL_PFIELD
 /* We use the compiler's inlining ability to ensure that PLANES is in effect a compile time
    constant.  That will cause some unnecessary code to be optimized away.
    Don't touch this if you don't know what you are doing.  */
@@ -1855,7 +1862,7 @@ static void NOINLINE pfield_doline_n6 (uae_u32 *data, int count) { pfield_doline
 #ifdef AGA
 static void NOINLINE pfield_doline_n7 (uae_u32 *data, int count) { pfield_doline_1 (data, count, 7); }
 static void NOINLINE pfield_doline_n8 (uae_u32 *data, int count) { pfield_doline_1 (data, count, 8); }
-#endif
+#endif /*AGA*/
 
 static void pfield_doline (int lineno)
 {
@@ -1863,7 +1870,6 @@ static void pfield_doline (int lineno)
 	uae_u32 *data = pixdata.apixels_l + MAX_PIXELS_PER_LINE / 4;
 
 #ifdef SMART_UPDATE
-#define DATA_POINTER(n) ((debug_bpl_mask & (1 << n)) ? (line_data[lineno] + (n) * MAX_WORDS_PER_LINE * 2) : (debug_bpl_mask_one ? all_ones : all_zeros))
 	real_bplpt[0] = DATA_POINTER (0);
 	real_bplpt[1] = DATA_POINTER (1);
 	real_bplpt[2] = DATA_POINTER (2);
@@ -1891,6 +1897,501 @@ static void pfield_doline (int lineno)
 #endif
 	}
 }
+#else /*UNROLL_PFIELD*/
+
+#define MERGE_0(a,b,mask,shift) {\
+    register uae_u32 tmp = mask & (b>>shift); \
+    a = tmp; \
+    b ^= (tmp << shift); \
+  }
+
+#define DO_SWLONG(A,V) {\
+    register uae_u8 *b = (uae_u8 *)(A); \
+    register uae_u32 v = (V); \
+    *b++ = v >> 24; \
+    *b++ = v >> 16; \
+    *b++ = v >> 8; \
+    *b = v; \
+  }
+
+//#define LINEDATA_DECL , uae_u8 line_data[(MAXVPOS + 2) * 2][MAX_PLANES * MAX_WORDS_PER_LINE * 2]
+//#define LINEDATA_ARG0 ,line_data
+#define LINEDATA_DECL
+#define LINEDATA_ARG0
+
+# ifdef USE_ARMNEON
+void ARM_doline_n1(uae_u32 *pixels, int wordcount, int lineno LINEDATA_DECL);
+void NEON_doline_n2(uae_u32 *pixels, int wordcount, int lineno LINEDATA_DECL);
+void NEON_doline_n3(uae_u32 *pixels, int wordcount, int lineno LINEDATA_DECL);
+void NEON_doline_n4(uae_u32 *pixels, int wordcount, int lineno LINEDATA_DECL);
+void NEON_doline_n6(uae_u32 *pixels, int wordcount, int lineno LINEDATA_DECL);
+void NEON_doline_n8(uae_u32 *pixels, int wordcount, int lineno LINEDATA_DECL);
+
+#include "pfield_doline_arm_neon.c"
+# endif /*USE_ARMNEON*/
+
+static void pfield_doline_n1 (uae_u32 *pixels, int wordcount, int lineno LINEDATA_DECL)
+{
+  uae_u8 *real_bplpt0;
+
+   real_bplpt0 = DATA_POINTER (0);
+
+   while (wordcount-- > 0) {
+      uae_u32 b0,b1,b2,b3,b4,b5,b6,b7;
+      b7 = GETLONG ((uae_u32 *)real_bplpt0); real_bplpt0 += 4;
+
+      MERGE_0(b6, b7, 0x55555555, 1);
+
+      MERGE_0(b4, b6, 0x33333333, 2);
+      MERGE_0(b5, b7, 0x33333333, 2);
+
+      MERGE_0(b0, b4, 0x0f0f0f0f, 4);
+      MERGE_0(b1, b5, 0x0f0f0f0f, 4);
+      MERGE_0(b2, b6, 0x0f0f0f0f, 4);
+      MERGE_0(b3, b7, 0x0f0f0f0f, 4);
+
+      MERGE (b0, b1, 0x00ff00ff, 8);
+      MERGE (b2, b3, 0x00ff00ff, 8);
+      MERGE (b4, b5, 0x00ff00ff, 8);
+      MERGE (b6, b7, 0x00ff00ff, 8);
+
+      MERGE (b0, b2, 0x0000ffff, 16);
+      DO_SWLONG(pixels, b0);
+      DO_SWLONG(pixels + 4, b2);
+      MERGE (b1, b3, 0x0000ffff, 16);
+      DO_SWLONG(pixels + 2, b1);
+      DO_SWLONG(pixels + 6, b3);
+      MERGE (b4, b6, 0x0000ffff, 16);
+      DO_SWLONG(pixels + 1, b4);
+      DO_SWLONG(pixels + 5, b6);
+      MERGE (b5, b7, 0x0000ffff, 16);
+      DO_SWLONG(pixels + 3, b5);
+      DO_SWLONG(pixels + 7, b7);
+      pixels += 8;
+   }
+}
+
+static void pfield_doline_n2 (uae_u32 *pixels, int wordcount, int lineno LINEDATA_DECL)
+{
+  uae_u8 *real_bplpt[2];
+
+   real_bplpt[0] = DATA_POINTER (0);
+   real_bplpt[1] = DATA_POINTER (1);
+
+   while (wordcount-- > 0) {
+      uae_u32 b0,b1,b2,b3,b4,b5,b6,b7;
+      b6 = GETLONG ((uae_u32 *)real_bplpt[1]); real_bplpt[1] += 4;
+      b7 = GETLONG ((uae_u32 *)real_bplpt[0]); real_bplpt[0] += 4;
+
+      MERGE (b6, b7, 0x55555555, 1);
+
+      MERGE_0(b4, b6, 0x33333333, 2);
+      MERGE_0(b5, b7, 0x33333333, 2);
+
+      MERGE_0(b0, b4, 0x0f0f0f0f, 4);
+      MERGE_0(b1, b5, 0x0f0f0f0f, 4);
+      MERGE_0(b2, b6, 0x0f0f0f0f, 4);
+      MERGE_0(b3, b7, 0x0f0f0f0f, 4);
+
+      MERGE (b0, b1, 0x00ff00ff, 8);
+      MERGE (b2, b3, 0x00ff00ff, 8);
+      MERGE (b4, b5, 0x00ff00ff, 8);
+      MERGE (b6, b7, 0x00ff00ff, 8);
+
+      MERGE (b0, b2, 0x0000ffff, 16);
+      DO_SWLONG(pixels, b0);
+      DO_SWLONG(pixels + 4, b2);
+      MERGE (b1, b3, 0x0000ffff, 16);
+      DO_SWLONG(pixels + 2, b1);
+      DO_SWLONG(pixels + 6, b3);
+      MERGE (b4, b6, 0x0000ffff, 16);
+      DO_SWLONG(pixels + 1, b4);
+      DO_SWLONG(pixels + 5, b6);
+      MERGE (b5, b7, 0x0000ffff, 16);
+      DO_SWLONG(pixels + 3, b5);
+      DO_SWLONG(pixels + 7, b7);
+      pixels += 8;
+   }
+}
+
+static void pfield_doline_n3 (uae_u32 *pixels, int wordcount, int lineno LINEDATA_DECL)
+{
+  uae_u8 *real_bplpt[3];
+
+   real_bplpt[0] = DATA_POINTER (0);
+   real_bplpt[1] = DATA_POINTER (1);
+   real_bplpt[2] = DATA_POINTER (2);
+   
+   while (wordcount-- > 0) {
+      uae_u32 b0,b1,b2,b3,b4,b5,b6,b7;
+      b5 = GETLONG ((uae_u32 *)real_bplpt[2]); real_bplpt[2] += 4;
+      b6 = GETLONG ((uae_u32 *)real_bplpt[1]); real_bplpt[1] += 4;
+      b7 = GETLONG ((uae_u32 *)real_bplpt[0]); real_bplpt[0] += 4;
+
+      MERGE_0(b4, b5, 0x55555555, 1);
+      MERGE (b6, b7, 0x55555555, 1);
+
+      MERGE (b4, b6, 0x33333333, 2);
+      MERGE (b5, b7, 0x33333333, 2);
+
+      MERGE_0(b0, b4, 0x0f0f0f0f, 4);
+      MERGE_0(b1, b5, 0x0f0f0f0f, 4);
+      MERGE_0(b2, b6, 0x0f0f0f0f, 4);
+      MERGE_0(b3, b7, 0x0f0f0f0f, 4);
+
+      MERGE (b0, b1, 0x00ff00ff, 8);
+      MERGE (b2, b3, 0x00ff00ff, 8);
+      MERGE (b4, b5, 0x00ff00ff, 8);
+      MERGE (b6, b7, 0x00ff00ff, 8);
+
+      MERGE (b0, b2, 0x0000ffff, 16);
+      DO_SWLONG(pixels, b0);
+      DO_SWLONG(pixels + 4, b2);
+      MERGE (b1, b3, 0x0000ffff, 16);
+      DO_SWLONG(pixels + 2, b1);
+      DO_SWLONG(pixels + 6, b3);
+      MERGE (b4, b6, 0x0000ffff, 16);
+      DO_SWLONG(pixels + 1, b4);
+      DO_SWLONG(pixels + 5, b6);
+      MERGE (b5, b7, 0x0000ffff, 16);
+      DO_SWLONG(pixels + 3, b5);
+      DO_SWLONG(pixels + 7, b7);
+      pixels += 8;
+   }
+}
+
+static void pfield_doline_n4 (uae_u32 *pixels, int wordcount, int lineno LINEDATA_DECL)
+{
+#if defined(__SYMBIAN32__) && !defined(__WINS__) && defined(USE_ASSEMBLER_CODE)
+   PFIELD_DOLINE_N4 (pixels, wordcount, (uae_u8 *)&line_data[lineno], MAX_WORDS_PER_LINE * 2);
+#else
+
+  uae_u8 *real_bplpt[4];
+
+  real_bplpt[0] = DATA_POINTER (0);
+  real_bplpt[1] = DATA_POINTER (1);
+  real_bplpt[2] = DATA_POINTER (2);
+  real_bplpt[3] = DATA_POINTER (3);
+
+   while (wordcount-- > 0) {
+      uae_u32 b0,b1,b2,b3,b4,b5,b6,b7;
+      b4 = GETLONG ((uae_u32 *)real_bplpt[3]); real_bplpt[3] += 4;
+      b5 = GETLONG ((uae_u32 *)real_bplpt[2]); real_bplpt[2] += 4;
+      b6 = GETLONG ((uae_u32 *)real_bplpt[1]); real_bplpt[1] += 4;
+      b7 = GETLONG ((uae_u32 *)real_bplpt[0]); real_bplpt[0] += 4;
+
+      MERGE (b4, b5, 0x55555555, 1);
+      MERGE (b6, b7, 0x55555555, 1);
+
+      MERGE (b4, b6, 0x33333333, 2);
+      MERGE (b5, b7, 0x33333333, 2);
+
+      MERGE_0(b0, b4, 0x0f0f0f0f, 4);
+      MERGE_0(b1, b5, 0x0f0f0f0f, 4);
+      MERGE_0(b2, b6, 0x0f0f0f0f, 4);
+      MERGE_0(b3, b7, 0x0f0f0f0f, 4);
+
+      MERGE (b0, b1, 0x00ff00ff, 8);
+      MERGE (b2, b3, 0x00ff00ff, 8);
+      MERGE (b4, b5, 0x00ff00ff, 8);
+      MERGE (b6, b7, 0x00ff00ff, 8);
+
+      MERGE (b0, b2, 0x0000ffff, 16);
+      DO_SWLONG(pixels, b0);
+      DO_SWLONG(pixels + 4, b2);
+      MERGE (b1, b3, 0x0000ffff, 16);
+      DO_SWLONG(pixels + 2, b1);
+      DO_SWLONG(pixels + 6, b3);
+      MERGE (b4, b6, 0x0000ffff, 16);
+      DO_SWLONG(pixels + 1, b4);
+      DO_SWLONG(pixels + 5, b6);
+      MERGE (b5, b7, 0x0000ffff, 16);
+      DO_SWLONG(pixels + 3, b5);
+      DO_SWLONG(pixels + 7, b7);
+      pixels += 8;
+   }
+#endif
+}
+
+static void pfield_doline_n5 (uae_u32 *pixels, int wordcount, int lineno LINEDATA_DECL)
+{
+#if defined(__SYMBIAN32__) && !defined(__WINS__) && defined(USE_ASSEMBLER_CODE)
+   PFIELD_DOLINE_N5 (pixels, wordcount, (uae_u8 *)&line_data[lineno], MAX_WORDS_PER_LINE * 2);
+#else
+  uae_u8 *real_bplpt[5];
+
+   real_bplpt[0] = DATA_POINTER (0);
+   real_bplpt[1] = DATA_POINTER (1);
+   real_bplpt[2] = DATA_POINTER (2);
+   real_bplpt[3] = DATA_POINTER (3);
+   real_bplpt[4] = DATA_POINTER (4);
+
+   while (wordcount-- > 0) {
+      uae_u32 b0,b1,b2,b3,b4,b5,b6,b7;
+      b3 = GETLONG ((uae_u32 *)real_bplpt[4]); real_bplpt[4] += 4;
+      b4 = GETLONG ((uae_u32 *)real_bplpt[3]); real_bplpt[3] += 4;
+      b5 = GETLONG ((uae_u32 *)real_bplpt[2]); real_bplpt[2] += 4;
+      b6 = GETLONG ((uae_u32 *)real_bplpt[1]); real_bplpt[1] += 4;
+      b7 = GETLONG ((uae_u32 *)real_bplpt[0]); real_bplpt[0] += 4;
+
+      MERGE_0(b2, b3, 0x55555555, 1);
+      MERGE (b4, b5, 0x55555555, 1);
+      MERGE (b6, b7, 0x55555555, 1);
+
+      MERGE_0(b0, b2, 0x33333333, 2);
+      MERGE_0(b1, b3, 0x33333333, 2);
+      MERGE (b4, b6, 0x33333333, 2);
+      MERGE (b5, b7, 0x33333333, 2);
+
+      MERGE (b0, b4, 0x0f0f0f0f, 4);
+      MERGE (b1, b5, 0x0f0f0f0f, 4);
+      MERGE (b2, b6, 0x0f0f0f0f, 4);
+      MERGE (b3, b7, 0x0f0f0f0f, 4);
+
+      MERGE (b0, b1, 0x00ff00ff, 8);
+      MERGE (b2, b3, 0x00ff00ff, 8);
+      MERGE (b4, b5, 0x00ff00ff, 8);
+      MERGE (b6, b7, 0x00ff00ff, 8);
+
+      MERGE (b0, b2, 0x0000ffff, 16);
+      DO_SWLONG(pixels, b0);
+      DO_SWLONG(pixels + 4, b2);
+      MERGE (b1, b3, 0x0000ffff, 16);
+      DO_SWLONG(pixels + 2, b1);
+      DO_SWLONG(pixels + 6, b3);
+      MERGE (b4, b6, 0x0000ffff, 16);
+      DO_SWLONG(pixels + 1, b4);
+      DO_SWLONG(pixels + 5, b6);
+      MERGE (b5, b7, 0x0000ffff, 16);
+      DO_SWLONG(pixels + 3, b5);
+      DO_SWLONG(pixels + 7, b7);
+      pixels += 8;
+   }
+#endif
+}
+
+static void pfield_doline_n6 (uae_u32 *pixels, int wordcount, int lineno LINEDATA_DECL)
+{
+#if defined(__SYMBIAN32__) && !defined(__WINS__) && defined(USE_ASSEMBLER_CODE)
+   PFIELD_DOLINE_N6 (pixels, wordcount, (uae_u8 *)&line_data[lineno], MAX_WORDS_PER_LINE * 2);
+#else
+  uae_u8 *real_bplpt[6];
+
+   real_bplpt[0] = DATA_POINTER (0);
+   real_bplpt[1] = DATA_POINTER (1);
+   real_bplpt[2] = DATA_POINTER (2);
+   real_bplpt[3] = DATA_POINTER (3);
+   real_bplpt[4] = DATA_POINTER (4);
+   real_bplpt[5] = DATA_POINTER (5);
+   
+   while (wordcount-- > 0) {
+      uae_u32 b0,b1,b2,b3,b4,b5,b6,b7;
+      b2 = GETLONG ((uae_u32 *)real_bplpt[5]); real_bplpt[5] += 4;
+      b3 = GETLONG ((uae_u32 *)real_bplpt[4]); real_bplpt[4] += 4;
+      b4 = GETLONG ((uae_u32 *)real_bplpt[3]); real_bplpt[3] += 4;
+      b5 = GETLONG ((uae_u32 *)real_bplpt[2]); real_bplpt[2] += 4;
+      b6 = GETLONG ((uae_u32 *)real_bplpt[1]); real_bplpt[1] += 4;
+      b7 = GETLONG ((uae_u32 *)real_bplpt[0]); real_bplpt[0] += 4;
+
+      MERGE (b2, b3, 0x55555555, 1);
+      MERGE (b4, b5, 0x55555555, 1);
+      MERGE (b6, b7, 0x55555555, 1);
+
+      MERGE_0(b0, b2, 0x33333333, 2);
+      MERGE_0(b1, b3, 0x33333333, 2);
+      MERGE (b4, b6, 0x33333333, 2);
+      MERGE (b5, b7, 0x33333333, 2);
+
+      MERGE (b0, b4, 0x0f0f0f0f, 4);
+      MERGE (b1, b5, 0x0f0f0f0f, 4);
+      MERGE (b2, b6, 0x0f0f0f0f, 4);
+      MERGE (b3, b7, 0x0f0f0f0f, 4);
+
+      MERGE (b0, b1, 0x00ff00ff, 8);
+      MERGE (b2, b3, 0x00ff00ff, 8);
+      MERGE (b4, b5, 0x00ff00ff, 8);
+      MERGE (b6, b7, 0x00ff00ff, 8);
+
+      MERGE (b0, b2, 0x0000ffff, 16);
+      DO_SWLONG(pixels, b0);
+      DO_SWLONG(pixels + 4, b2);
+      MERGE (b1, b3, 0x0000ffff, 16);
+      DO_SWLONG(pixels + 2, b1);
+      DO_SWLONG(pixels + 6, b3);
+      MERGE (b4, b6, 0x0000ffff, 16);
+      DO_SWLONG(pixels + 1, b4);
+      DO_SWLONG(pixels + 5, b6);
+      MERGE (b5, b7, 0x0000ffff, 16);
+      DO_SWLONG(pixels + 3, b5);
+      DO_SWLONG(pixels + 7, b7);
+      pixels += 8;
+   }
+#endif
+}
+
+#ifdef AGA
+static void pfield_doline_n7 (uae_u32 *pixels, int wordcount, int lineno LINEDATA_DECL)
+{
+#if defined(__SYMBIAN32__) && !defined(__WINS__) && defined(USE_ASSEMBLER_CODE)
+   PFIELD_DOLINE_N7 (pixels, wordcount, (uae_u8 *)&line_data[lineno], MAX_WORDS_PER_LINE * 2);
+#else
+  uae_u8 *real_bplpt[7];
+   real_bplpt[0] = DATA_POINTER (0);
+   real_bplpt[1] = DATA_POINTER (1);
+   real_bplpt[2] = DATA_POINTER (2);
+   real_bplpt[3] = DATA_POINTER (3);
+   real_bplpt[4] = DATA_POINTER (4);
+   real_bplpt[5] = DATA_POINTER (5);
+   real_bplpt[6] = DATA_POINTER (6);
+
+   while (wordcount-- > 0) {
+      uae_u32 b0,b1,b2,b3,b4,b5,b6,b7;
+      b1 = GETLONG ((uae_u32 *)real_bplpt[6]); real_bplpt[6] += 4;
+      b2 = GETLONG ((uae_u32 *)real_bplpt[5]); real_bplpt[5] += 4;
+      b3 = GETLONG ((uae_u32 *)real_bplpt[4]); real_bplpt[4] += 4;
+      b4 = GETLONG ((uae_u32 *)real_bplpt[3]); real_bplpt[3] += 4;
+      b5 = GETLONG ((uae_u32 *)real_bplpt[2]); real_bplpt[2] += 4;
+      b6 = GETLONG ((uae_u32 *)real_bplpt[1]); real_bplpt[1] += 4;
+      b7 = GETLONG ((uae_u32 *)real_bplpt[0]); real_bplpt[0] += 4;
+
+      MERGE_0(b0, b1, 0x55555555, 1);
+      MERGE (b2, b3, 0x55555555, 1);
+      MERGE (b4, b5, 0x55555555, 1);
+      MERGE (b6, b7, 0x55555555, 1);
+
+      MERGE (b0, b2, 0x33333333, 2);
+      MERGE (b1, b3, 0x33333333, 2);
+      MERGE (b4, b6, 0x33333333, 2);
+      MERGE (b5, b7, 0x33333333, 2);
+
+      MERGE (b0, b4, 0x0f0f0f0f, 4);
+      MERGE (b1, b5, 0x0f0f0f0f, 4);
+      MERGE (b2, b6, 0x0f0f0f0f, 4);
+      MERGE (b3, b7, 0x0f0f0f0f, 4);
+
+      MERGE (b0, b1, 0x00ff00ff, 8);
+      MERGE (b2, b3, 0x00ff00ff, 8);
+      MERGE (b4, b5, 0x00ff00ff, 8);
+      MERGE (b6, b7, 0x00ff00ff, 8);
+
+      MERGE (b0, b2, 0x0000ffff, 16);
+      DO_SWLONG(pixels, b0);
+      DO_SWLONG(pixels + 4, b2);
+      MERGE (b1, b3, 0x0000ffff, 16);
+      DO_SWLONG(pixels + 2, b1);
+      DO_SWLONG(pixels + 6, b3);
+      MERGE (b4, b6, 0x0000ffff, 16);
+      DO_SWLONG(pixels + 1, b4);
+      DO_SWLONG(pixels + 5, b6);
+      MERGE (b5, b7, 0x0000ffff, 16);
+      DO_SWLONG(pixels + 3, b5);
+      DO_SWLONG(pixels + 7, b7);
+      pixels += 8;
+   }
+#endif
+}
+
+static void pfield_doline_n8 (uae_u32 *pixels, int wordcount, int lineno LINEDATA_DECL)
+{
+#if defined(__SYMBIAN32__) && !defined(__WINS__) && defined(USE_ASSEMBLER_CODE)
+   PFIELD_DOLINE_N8 (pixels, wordcount, (uae_u8 *)&line_data[lineno], MAX_WORDS_PER_LINE * 2);
+#else
+  uae_u8 *real_bplpt[8];
+
+  real_bplpt[0] = DATA_POINTER (0);
+  real_bplpt[1] = DATA_POINTER (1);
+  real_bplpt[2] = DATA_POINTER (2);
+  real_bplpt[3] = DATA_POINTER (3);
+  real_bplpt[4] = DATA_POINTER (4);
+  real_bplpt[5] = DATA_POINTER (5);
+  real_bplpt[6] = DATA_POINTER (6);
+  real_bplpt[7] = DATA_POINTER (7);
+
+   while (wordcount-- > 0) {
+      uae_u32 b0,b1,b2,b3,b4,b5,b6,b7;
+      b0 = GETLONG ((uae_u32 *)real_bplpt[7]); real_bplpt[7] += 4;
+      b1 = GETLONG ((uae_u32 *)real_bplpt[6]); real_bplpt[6] += 4;
+      b2 = GETLONG ((uae_u32 *)real_bplpt[5]); real_bplpt[5] += 4;
+      b3 = GETLONG ((uae_u32 *)real_bplpt[4]); real_bplpt[4] += 4;
+      b4 = GETLONG ((uae_u32 *)real_bplpt[3]); real_bplpt[3] += 4;
+      b5 = GETLONG ((uae_u32 *)real_bplpt[2]); real_bplpt[2] += 4;
+      b6 = GETLONG ((uae_u32 *)real_bplpt[1]); real_bplpt[1] += 4;
+      b7 = GETLONG ((uae_u32 *)real_bplpt[0]); real_bplpt[0] += 4;
+
+      MERGE (b0, b1, 0x55555555, 1);
+      MERGE (b2, b3, 0x55555555, 1);
+      MERGE (b4, b5, 0x55555555, 1);
+      MERGE (b6, b7, 0x55555555, 1);
+
+      MERGE (b0, b2, 0x33333333, 2);
+      MERGE (b1, b3, 0x33333333, 2);
+      MERGE (b4, b6, 0x33333333, 2);
+      MERGE (b5, b7, 0x33333333, 2);
+
+      MERGE (b0, b4, 0x0f0f0f0f, 4);
+      MERGE (b1, b5, 0x0f0f0f0f, 4);
+      MERGE (b2, b6, 0x0f0f0f0f, 4);
+      MERGE (b3, b7, 0x0f0f0f0f, 4);
+
+      MERGE (b0, b1, 0x00ff00ff, 8);
+      MERGE (b2, b3, 0x00ff00ff, 8);
+      MERGE (b4, b5, 0x00ff00ff, 8);
+      MERGE (b6, b7, 0x00ff00ff, 8);
+
+      MERGE (b0, b2, 0x0000ffff, 16);
+      DO_SWLONG(pixels, b0);
+      DO_SWLONG(pixels + 4, b2);
+      MERGE (b1, b3, 0x0000ffff, 16);
+      DO_SWLONG(pixels + 2, b1);
+      DO_SWLONG(pixels + 6, b3);
+      MERGE (b4, b6, 0x0000ffff, 16);
+      DO_SWLONG(pixels + 1, b4);
+      DO_SWLONG(pixels + 5, b6);
+      MERGE (b5, b7, 0x0000ffff, 16);
+      DO_SWLONG(pixels + 3, b5);
+      DO_SWLONG(pixels + 7, b7);
+      pixels += 8;
+   }
+#endif
+}
+#else /*AGA*/
+#define pfield_doline_n7 pfield_doline_dummy
+#define pfield_doline_n8 pfield_doline_dummy
+#endif /*AGA*/
+
+static void pfield_doline_n0 (uae_u32 *pixels, int wordcount, int lineno LINEDATA_DECL)
+{
+	uae4all_memclr(pixels, wordcount << 5);
+}
+
+static void pfield_doline_dummy (uae_u32 *pixels, int wordcount, int lineno LINEDATA_DECL)
+{
+}
+
+typedef void (*pfield_doline_func)(uae_u32 *_GCCRES_, int, int LINEDATA_DECL);
+
+# ifdef USE_ARMNEON
+static pfield_doline_func pfield_doline_n[16]={
+	pfield_doline_n0, ARM_doline_n1, NEON_doline_n2, NEON_doline_n3,
+	NEON_doline_n4, pfield_doline_n5, NEON_doline_n6, pfield_doline_n7,
+	NEON_doline_n8, pfield_doline_dummy,pfield_doline_dummy,pfield_doline_dummy,
+	pfield_doline_dummy,pfield_doline_dummy,pfield_doline_dummy,pfield_doline_dummy
+};
+# else /*USE_ARMNEON*/
+static pfield_doline_func pfield_doline_n[16]={
+	pfield_doline_n0, pfield_doline_n1,pfield_doline_n2,pfield_doline_n3,
+	pfield_doline_n4, pfield_doline_n5,pfield_doline_n6,pfield_doline_n7,
+	pfield_doline_n8, pfield_doline_dummy,pfield_doline_dummy,pfield_doline_dummy,
+	pfield_doline_dummy,pfield_doline_dummy,pfield_doline_dummy,pfield_doline_dummy
+};
+# endif /*USE_ARMNEON*/
+
+static __inline__ void pfield_doline (int lineno)
+{
+  pfield_doline_n[bplplanecnt](pixdata.apixels_l + MAX_PIXELS_PER_LINE/4,dp_for_drawing->plflinelen,lineno LINEDATA_ARG0);
+}
+#endif /*UNROLL_PFIELD*/
+
 
 void init_row_map (void)
 {
