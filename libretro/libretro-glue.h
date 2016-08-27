@@ -23,7 +23,6 @@ extern int retrow;
 extern int retroh;
 extern int CROP_WIDTH;
 extern int CROP_HEIGHT;
-extern int VIRTUAL_WIDTH ;
 
 #define NPLGN 10
 #define NLIGN 5
