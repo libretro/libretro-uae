@@ -1,8 +1,6 @@
 #ifndef GRAPH_H
 #define GRAPH_H 1
 
-#define VIRTUAL_WIDTH 640
-
 typedef struct
 {
 	int x, y;
@@ -35,7 +33,7 @@ extern void DrawBoxF(unsigned  short  *buf,box b,char t[],unsigned short  color,
 
 extern void DrawCircle(unsigned short *buf,int x, int y, int radius,unsigned short rgba,int full);
 
-extern void Draw_string(unsigned short *surf, signed short int x, signed short int y, const unsigned char *string, unsigned  short int maxstrlen, unsigned  short int xscale, unsigned  short int yscale,unsigned  short int fg, unsigned  short int bg);
+extern void Draw_string(unsigned short *surf, signed short int x, signed short int y, const char *string, unsigned  short int maxstrlen, unsigned  short int xscale, unsigned  short int yscale,unsigned  short int fg, unsigned  short int bg);
 
 extern void Draw_text(unsigned  short *buffer,int x,int y,unsigned  short  fgcol,unsigned  short int bgcol ,int scalex,int scaley , int max,char *string,...);
 
