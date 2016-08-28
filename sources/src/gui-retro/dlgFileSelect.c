@@ -19,10 +19,10 @@ const char DlgFileSelect_fileid[] = "Hatari dlgFileSelect.c : " __DATE__ " " __T
 
 #include "sdlgui.h"
 #include "file.h"
-//#include "paths.h"
+#include "paths.h"
 #include "zip.h"
-
-extern bool bQuitProgram;
+#include "dialog.h"
+#include "libretro-mapper.h"
 
 //RETRO
 extern int alphasort2(const struct dirent **d1, const struct dirent **d2);
@@ -257,11 +257,11 @@ extern int gmx,gmy;
  */
 static void DlgFileSelect_ManageScrollbar(void)
 {
-	int b, x, y;
+	int b, y;
 	int scrollY, scrollYmin, scrollYmax, scrollH_half;
 	float scrollMove;
 	
-	x=gmx;y=gmy;//b = SDL_GetMouseState(&x, &y);
+	y=gmy;//b = SDL_GetMouseState(&x, &y);
 
 	/* If mouse is down on the scrollbar for the first time */
 	if (fsdlg[SGFSDLG_SCROLLBAR].state & SG_MOUSEDOWN) {
@@ -493,7 +493,7 @@ char* SDLGui_FileSelect(const char *path_and_name, char **zip_path, bool bAllowN
 	char *path, *fname;                 /* The actual file and path names */
 	bool reloaddir = true;              /* Do we have to reload the directory file list? */
 	int retbut;
-	bool bOldMouseVisibility;
+	//bool bOldMouseVisibility;
 	int selection;                      /* The selection index */
 	char *zipfilename;                  /* Filename in zip file */
 	char *zipdir;
@@ -820,15 +820,15 @@ char* SDLGui_FileSelect(const char *path_and_name, char **zip_path, bool bAllowN
 				break;
 			case SGFSDLG_UP:                    /* Scroll up */
 				DlgFileSelect_ScrollUp();
-				SDL_Delay(10);
+				usleep(10*1000); /*us*/
 				break;
 			case SGFSDLG_DOWN:                  /* Scroll down */
 				DlgFileSelect_ScrollDown();
-				SDL_Delay(10);
+				usleep(10*1000); /*us*/
 				break;
 			case SGFSDLG_SCROLLBAR:             /* Scrollbar selected */
 				DlgFileSelect_ManageScrollbar();
-				SDL_Delay(10);
+				usleep(10*1000); /*us*/
 				break;
 			case SGFSDLG_FILENAME:              /* User entered new filename */
 				strcpy(fname, dlgfname);
