@@ -4,6 +4,7 @@
 #include "libretro-keymap.h"
 #include "graph.h"
 #include "vkbd.h"
+#include "libretro-mapper.h"
 
 #ifdef __CELLOS_LV2__
 #include "sys/sys_time.h"

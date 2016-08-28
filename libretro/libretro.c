@@ -1,22 +1,36 @@
 #include "libretro.h"
+#include "gui-retro/dialog.h"
+#include "osdep/retroglue.h"
+#include "libretro-mapper.h"
 #include "libretro-glue.h"
+
+
+#define EMULATOR_DEF_WIDTH 640
+#define EMULATOR_DEF_HEIGHT 400
+#define EMULATOR_MAX_WIDTH 1024
+#define EMULATOR_MAX_HEIGHT 1024
+
+#if EMULATOR_DEF_WIDTH < 0 || EMULATOR_DEF_WIDTH > EMULATOR_MAX_WIDTH || EMULATOR_DEF_HEIGHT < 0 || EMULATOR_DEF_HEIGHT > EMULATOR_MAX_HEIGHT
+#error EMULATOR_DEF_WIDTH || EMULATOR_DEF_HEIGHT
+#endif
 
 cothread_t mainThread;
 cothread_t emuThread;
 
-int retrow=640; 
-int retroh=480;
+int defaultw = EMULATOR_DEF_WIDTH;
+int defaulth = EMULATOR_DEF_HEIGHT;
+int retrow = 0;
+int retroh = 0;
 int CROP_WIDTH;
 int CROP_HEIGHT;
-int VIRTUAL_WIDTH;
 int sndbufpos=0;
 char key_state[512];
 char key_state2[512];
-bool opt_analog=false;
-static int firstps=0;
+bool opt_analog = false;
+static int firstps = 0;
 
-extern unsigned short int  bmp[1024*1024];
-extern unsigned short int  savebmp[1024*1024];
+extern unsigned short int  bmp[EMULATOR_MAX_WIDTH*EMULATOR_MAX_HEIGHT];
+extern unsigned short int  savebmp[EMULATOR_MAX_WIDTH*EMULATOR_MAX_HEIGHT];
 extern int pauseg;
 extern int SND;
 extern int SHIFTON;
@@ -51,19 +65,18 @@ static struct retro_input_descriptor input_descriptors[] = {
 
 void retro_set_environment(retro_environment_t cb)
 {
-   environ_cb = cb;
-
    struct retro_variable variables[] = {
-      { "resolution","Internal resolution; 640x400|640x480|720x480|800x600|1024x768", },
-      { "analog","Use Analog; OFF|ON", },
-      { "leds","Leds; Standard|Simplified|None", },
-      { NULL, NULL },
+     { "resolution", "Internal resolution; 640x400|640x432|640x480|640x540|704x480|704x540|720x480|720x540|800x600|1024x768", },
+     { "analog","Use Analog; OFF|ON", },
+     { "leds","Leds; Standard|Simplified|None", },
+     { NULL, NULL },
    };
-/*
-   bool no_rom = true;
-   cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &no_rom);
-*/
+  /*
+    bool no_rom = true;
+    cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &no_rom);
+  */
    
+   environ_cb = cb;
    cb(RETRO_ENVIRONMENT_SET_VARIABLES, variables);
 }
 
@@ -82,18 +95,10 @@ static void update_variables(void)
 
       pch = strtok(str, "x");
       if (pch)
-         retrow = strtoul(pch, NULL, 0);
+         defaultw = strtoul(pch, NULL, 0);
       pch = strtok(NULL, "x");
       if (pch)
-         retroh = strtoul(pch, NULL, 0);
-
-      fprintf(stderr, "[libretro-test]: Got size: %u x %u.\n", retrow, retroh);
-
-      CROP_WIDTH =retrow;
-      CROP_HEIGHT= (retroh-80);
-      VIRTUAL_WIDTH = retrow;
-      memset(bmp, 0, sizeof(bmp));
-      Screen_SetFullUpdate();
+         defaulth = strtoul(pch, NULL, 0);
    }
 
    var.key = "analog";
@@ -101,14 +106,11 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      fprintf(stderr, "value: %s\n", var.value);
       if (strcmp(var.value, "OFF") == 0)
         opt_analog = false;
       if (strcmp(var.value, "ON") == 0)
         opt_analog = true;
       ledtype = 1;
-
-      fprintf(stderr, "[libretro-test]: Analog: %s.\n",opt_analog?"ON":"OFF");
    }
    
    var.key = "leds";
@@ -116,33 +118,27 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      fprintf(stderr, "value: %s\n", var.value);
       if (strcmp(var.value, "Standard") == 0)
       {
         ledtype = 0;        
-        fprintf(stderr, "[libretro-test]: Leds: Standard\n");
       }
       if (strcmp(var.value, "Simplified") == 0)
       {
         ledtype = 1;  
-        fprintf(stderr, "[libretro-test]: Leds: Simplified\n");
       }
       if (strcmp(var.value, "None") == 0)
       {
         ledtype = 2;  
-        fprintf(stderr, "[libretro-test]: Leds: None\n");
       }
    }
 }
 
 static void retro_wrap_emulator(void)
 {
-   static const char* argv[2];
-   argv[0] = "puae";
-   argv[1] = RPATH;
-   umain(2,argv);
+   static char *argv[] = { "puae", RPATH };
+   umain(sizeof(argv)/sizeof(*argv), argv);
 
-   pauseg=-1;
+   pauseg = -1;
 
    environ_cb(RETRO_ENVIRONMENT_SHUTDOWN, 0); 
 
@@ -162,12 +158,12 @@ void retro_init(void)
 {
    enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
 
-   memset(key_state,0,512);
-   memset(key_state2,0,512);
+   memset(key_state, 0, sizeof(key_state));
+   memset(key_state2, 0, sizeof(key_state2));
 
    if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
    {
-      fprintf(stderr, "RGB565 is not supported.\n");
+      fprintf(stderr, "[libretro-uae]: RGB565 is not supported.\n");
       exit(0);//return false;
    }
 
@@ -178,7 +174,6 @@ void retro_init(void)
 
    CROP_WIDTH    = retrow;
    CROP_HEIGHT   = (retroh - 80);
-   VIRTUAL_WIDTH = retrow;
 
    if(!emuThread && !mainThread)
    {
@@ -219,10 +214,14 @@ void retro_get_system_info(struct retro_system_info *info)
 
 void retro_get_system_av_info(struct retro_system_av_info *info)
 {
-   struct retro_game_geometry geom   = { 640,480,1024,1024,4.0 / 3.0 };
+   static struct retro_game_geometry geom480   = { 640, 480, EMULATOR_MAX_WIDTH, EMULATOR_MAX_HEIGHT, 4.0 / 3.0 };
+   static struct retro_game_geometry geom540   = { 720, 540, EMULATOR_MAX_WIDTH, EMULATOR_MAX_HEIGHT, 4.0 / 3.0 };
    struct retro_system_timing timing = { 50.0, 44100.0 };
 
-   info->geometry = geom;
+   if      (retrow == 640 && retroh == 400) info->geometry = geom480;
+   else if (retrow == 640 && retroh == 400) info->geometry = geom480;
+   else if (retrow == 720 && retroh == 540) info->geometry = geom540;
+   else { static struct retro_game_geometry geom; geom.base_width=retrow; geom.base_height=retroh; geom.max_width=EMULATOR_MAX_WIDTH; geom.max_height=EMULATOR_MAX_HEIGHT; geom.aspect_ratio=(float)retrow/(float)retroh; info->geometry = geom; }
    info->timing   = timing;
 }
 
@@ -257,14 +256,14 @@ extern unsigned short * sndbuffer;
 extern int sndbufsize;
 signed short rsnd=0;
 
-static firstpass=1;
+static int firstpass = 1;
 
-int save_bkg(void)
+void save_bkg(void)
 {
    memcpy(savebmp, bmp,sizeof(bmp));
 }
 
-int restore_bkg(void)
+void restore_bkg(void)
 {
    memcpy(bmp,savebmp,sizeof(bmp));
 }
@@ -274,7 +273,7 @@ void enter_gui0(void)
    save_bkg();
 
    Dialog_DoProperty();
-   pauseg=0;
+   pauseg = 0;
 
    restore_bkg();
 }
@@ -291,8 +290,6 @@ void pause_select(void)
 
 void retro_run(void)
 {
-   int x;
-
    bool updated = false;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
@@ -317,51 +314,51 @@ sortie:
 
 bool retro_load_game(const struct retro_game_info *info)
 {
-   environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, input_descriptors);
+  int w = 0, h = 0;
 
-   RPATH[0] = "\0";
+  environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, input_descriptors);
 
-   if (*info->path)
-   {
+  RPATH[0] = '\0';
+
+  if (*info->path)
+    {
       const char *full_path = (const char*)info->path;
-      strcpy(RPATH,full_path);
+      strncpy(RPATH, full_path, sizeof(RPATH));
 
       // checking parsed file for custom resolution
       FILE * configfile;
 
-      int w = 0;
-      int h = 0;
+      char filebuf[4096];
+      if((configfile = fopen (RPATH, "r")))
+	{
+	  while(fgets(filebuf, sizeof(filebuf), configfile))
+	    {
+	      sscanf(filebuf,"gfx_width = %d",&w);
+	      sscanf(filebuf,"gfx_height = %d",&h);
+	    }
+	  fclose(configfile);
+	}
+    }
 
-      char filebuf[1000];
-      char setting[20];
-      char value[20];
-      if(configfile = fopen ( RPATH, "r"))
-      {
-         while(fgets(filebuf,1000,configfile))
-         {
-            sscanf(filebuf,"gfx_width = %d",&w);
-            sscanf(filebuf,"gfx_height = %d",&h);
-         }
-         fclose(configfile);
-      }
+  if (w<=0 || h<=0 || w>EMULATOR_MAX_WIDTH || h>EMULATOR_MAX_HEIGHT) {
+    w = defaultw;
+    h = defaulth;
+    }
 
-      if (w && h)
-      {
-         retrow = w;
-         retroh = h;
-         CROP_WIDTH = retrow;
-         CROP_HEIGHT = (retroh-80);
-         VIRTUAL_WIDTH = retrow;
-         memset(bmp, 0, sizeof(bmp));
-         Screen_SetFullUpdate();
-      }
-   }
-   return true;
+  fprintf(stderr, "[libretro-uae]: resolution selected: %dx%d (default: %dx%d)\n", w, h, defaultw, defaulth);
+
+  retrow = w;
+  retroh = h;
+  CROP_WIDTH = retrow;
+  CROP_HEIGHT = (retroh-80);
+  memset(bmp, 0, sizeof(bmp));
+  Screen_SetFullUpdate();
+  return true;
 }
 
 void retro_unload_game(void)
 {
-   pauseg=0;
+   pauseg = 0;
 }
 
 unsigned retro_get_region(void)

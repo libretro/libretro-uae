@@ -23,7 +23,6 @@ extern int retrow;
 extern int retroh;
 extern int CROP_WIDTH;
 extern int CROP_HEIGHT;
-extern int VIRTUAL_WIDTH ;
 
 #define NPLGN 10
 #define NLIGN 5
@@ -42,4 +41,6 @@ extern int VIRTUAL_WIDTH ;
 
 #define RGB565(r, g, b)  (((r) << (5+6)) | ((g) << 6) | (b))
 
+#define TCHAR char /* from sysdeps.h */
+int umain (int argc, TCHAR **argv);
 #endif
