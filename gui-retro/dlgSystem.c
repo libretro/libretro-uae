@@ -25,7 +25,9 @@ const char DlgSystem_fileid[] = "Hatari dlgSystem.c : " __DATE__ " " __TIME__;
 #include "uae.h"
 #include "options.h"
 #include "disk.h"
-#include "sleep.h"
+#ifdef LIBRETRO_FSUAE
+#include "newcpu.h"
+#endif
 #include "autoconf.h"
 
 #include "custom.h"

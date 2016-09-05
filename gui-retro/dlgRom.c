@@ -50,7 +50,9 @@ static SGOBJ romdlg[] =
 	{ -1, 0, 0, 0,0, 0,0, NULL }
 };
 
+#ifdef LIBRETRO_PUAE
 #define FILENAME_MAX 512
+#endif
 char szTosImageFileName[FILENAME_MAX];
 bool bPatchTos;
 char szCartridgeImageFileName[FILENAME_MAX];

@@ -14,6 +14,7 @@ const char DlgMisc_fileid[] = "Hatari dlgMisc.c : " __DATE__ " " __TIME__;
 
 #include "dialog.h"
 #include "sdlgui.h"
+#include "libretro-mapper.h"
 
 #define DLGMISC_LEDON       3
 #define DLGMISC_LEDOFF      4
@@ -33,7 +34,9 @@ const char DlgMisc_fileid[] = "Hatari dlgMisc.c : " __DATE__ " " __TIME__;
 #include "uae.h"
 #include "options.h"
 #include "disk.h"
-#include "sleep.h"
+#ifdef LIBRETRO_FSUAE
+#include "newcpu.h"
+#endif
 #include "autoconf.h"
 #include "custom.h"
 #include "inputdevice.h"

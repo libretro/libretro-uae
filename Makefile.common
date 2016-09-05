@@ -150,3 +150,5 @@ SOURCES_C += $(LIBRETRO)/libretro.c \
 				 $(LIBRETRO)/graph.c \
 				 $(LIBRETRO)/diskutils.c \
 				 $(LIBRETRO)/fontmsx.c 
+
+CFLAGS += -DLIBRETRO_PUAE

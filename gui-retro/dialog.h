@@ -14,6 +14,7 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include "../libretro/libretro-mapper.h"
 
 extern bool bQuitProgram;
 

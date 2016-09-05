@@ -10,10 +10,11 @@
 
   Show information about the program and its license.
 */
-const char DlgAbout_fileid[] = "Hatari dlgAbout.c : " __DATE__ " " __TIME__;
-
+#include <string.h>
 #include "dialog.h"
 #include "sdlgui.h"
+
+const char DlgAbout_fileid[] = "Hatari dlgAbout.c : " __DATE__ " " __TIME__;
 
 #define PROG_NAME "Libretro P-UAE 2.6.1"
 

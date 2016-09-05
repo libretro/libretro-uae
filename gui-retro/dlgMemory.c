@@ -10,6 +10,7 @@
 */
 const char DlgMemory_fileid[] = "Hatari dlgMemory.c : " __DATE__ " " __TIME__;
 
+#include "libretro-mapper.h"
 #include "dialog.h"
 #include "sdlgui.h"
 #include "file.h"
@@ -19,7 +20,9 @@ const char DlgMemory_fileid[] = "Hatari dlgMemory.c : " __DATE__ " " __TIME__;
 #include "uae.h"
 #include "options.h"
 #include "disk.h"
-#include "sleep.h"
+#ifdef LIBRETRO_FSUAE 
+#include "newcpu.h"
+#endif
 #include "autoconf.h"
 #include "custom.h"
 #include "inputdevice.h"
@@ -54,7 +57,7 @@ const char DlgMemory_fileid[] = "Hatari dlgMemory.c : " __DATE__ " " __TIME__;
 
 #define DLGMEM_EXIT     25
 
-static chipm[9]={0x80000,0x100000,0x200000,0x300000,0x400000,0x500000,0x600000,0x700000,0x800000};
+static int chipm[9]={0x80000,0x100000,0x200000,0x300000,0x400000,0x500000,0x600000,0x700000,0x800000};
 
 static char dlgSnapShotName[36+1];
 
