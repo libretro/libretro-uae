@@ -1,6 +1,6 @@
 EMU      = $(CORE_DIR)/sources/src
 LIBUTILS = $(CORE_DIR)/sources/utils
-GUI      = $(CORE_DIR)/sources/src/gui-retro
+GUI      = $(CORE_DIR)/gui-retro
 LIBRETRO = $(CORE_DIR)/libretro
 RETRODEP = $(CORE_DIR)/retrodep
 
