@@ -2,8 +2,9 @@ EMU      = $(CORE_DIR)/sources/src
 LIBUTILS = $(CORE_DIR)/sources/utils
 GUI      = $(CORE_DIR)/sources/src/gui-retro
 LIBRETRO = $(CORE_DIR)/libretro
+RETRODEP = $(CORE_DIR)/retrodep
 
-INCFLAGS := -I$(EMU) -I$(EMU)/include -I$(LIBRETRO) -I$(LIBRETRO)/libco -I$(LIBUTILS)
+INCFLAGS := -I$(EMU) -I$(EMU)/include -I$(LIBRETRO) -I$(CORE_DIR)/libretro-include -I$(LIBUTILS)
 
 SOURCES_C +=  $(EMU)/main.c \
 				  $(EMU)/newcpu.c \
@@ -63,9 +64,9 @@ SOURCES_C +=  $(EMU)/main.c \
 				  $(EMU)/writelog.c \
 				  $(EMU)/debug.c \
 				  $(EMU)/identify.c \
-				  $(EMU)/osdep/memory.c \
-				  $(EMU)/osdep/parser.c \
-				  $(EMU)/osdep/main.c \
+				  $(RETRODEP)/memory.c \
+				  $(RETRODEP)/parser.c \
+				  $(RETRODEP)/main.c \
 				  $(EMU)/blkdev.c \
 				  $(EMU)/blkdev_cdimage.c
 
@@ -114,10 +115,10 @@ SOURCES_C += $(EMU)/hardfile.c \
 				  $(EMU)/fpp.c 
 
 SOURCES_C += $(EMU)/machdep/support.c \
-				 $(EMU)/osdep/gui.c \
-				 $(EMU)/osdep/retroglue.c \
+				 $(RETRODEP)/gui.c \
+				 $(RETRODEP)/retroglue.c \
 				 $(EMU)/sounddep/sound.c \
-				 $(EMU)/osdep/retromenu.c \
+				 $(RETRODEP)/retromenu.c \
 				 $(EMU)/threaddep/thread.c
 
 SOURCES_C += $(GUI)/dialog.c\
@@ -143,7 +144,7 @@ SOURCES_C += $(GUI)/dialog.c\
 				 $(GUI)/sdlgui.c
 
 SOURCES_C += $(LIBRETRO)/libretro.c \
-				 $(LIBRETRO)/libco/libco.c \
+				 $(CORE_DIR)/libco/libco.c \
 				 $(LIBRETRO)/libretro-mapper.c \
 				 $(LIBRETRO)/vkbd.c \
 				 $(LIBRETRO)/graph.c \
