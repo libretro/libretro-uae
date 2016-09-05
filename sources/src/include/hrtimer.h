@@ -10,7 +10,7 @@
 #define EUAE_HRTIMER_H
 
 #include "machdep/rpt.h"
-#include "osdep/hrtimer.h"
+#include "retrodep/hrtimer.h"
 /*
 STATIC_INLINE frame_time_t uae_gethrtime (void)
 {

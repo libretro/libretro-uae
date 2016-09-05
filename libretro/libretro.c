@@ -1,6 +1,6 @@
 #include "libretro.h"
 #include "gui-retro/dialog.h"
-#include "osdep/retroglue.h"
+#include "retrodep/retroglue.h"
 #include "libretro-mapper.h"
 #include "libretro-glue.h"
 
