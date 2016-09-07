@@ -27,6 +27,7 @@ ifeq ($(platform), unix)
    fpic := -fPIC
 	LDFLAGS := -lz -lpthread
    SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T 
+
 # use for raspberry pi
 else ifeq ($(platform), rpi) 
 	   TARGET := $(TARGET_NAME)_libretro.so
@@ -34,11 +35,13 @@ else ifeq ($(platform), rpi)
 		 LDFLAGS := -lz -lpthread
 		 PLATFLAGS +=  -DARM  -marm
 	   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T 
+
 else ifeq ($(platform), osx)
    TARGET := $(TARGET_NAME)_libretro.dylib
    fpic := -fPIC -mmacosx-version-min=10.6
    SHARED := -dynamiclib
    PLATFLAGS +=  -DRETRO -DLSB_FIRST -DALIGN_DWORD
+
 else ifeq ($(platform), android-armv7)
    CC = arm-linux-androideabi-gcc
    AR = @arm-linux-androideabi-ar
@@ -48,6 +51,7 @@ else ifeq ($(platform), android-armv7)
 	LDFLAGS := -lz -lm
    SHARED :=  -Wl,--fix-cortex-a8 -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
    PLATFLAGS += -DANDROID -DRETRO -DAND -DLSB_FIRST -DALIGN_DWORD -DANDPORT -DA_ZIP
+
 else ifeq ($(platform), android)
    CC = arm-linux-androideabi-gcc
    AR = @arm-linux-androideabi-ar
@@ -57,8 +61,9 @@ else ifeq ($(platform), android)
 	LDFLAGS := -lz
    SHARED :=  -Wl,--fix-cortex-a8 -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
    PLATFLAGS += -DANDROID -DRETRO -DAND -DLSB_FIRST -DALIGN_DWORD -DANDPORT -DARM_OPT_TEST=1
+
 else ifeq ($(platform), wii)
-   TARGET := $(TARGET_NAME)_libretro_wii.a
+   TARGET := $(TARGET_NAME)_libretro_$(platform).a
    CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
    AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)   
    ZLIB_DIR = $(LIBUTILS)/zlib/
@@ -67,8 +72,10 @@ else ifeq ($(platform), wii)
 	-D__powerpc__ -D__POWERPC__ -DGEKKO -DHW_RVL -mrvl -mcpu=750 -meabi -mhard-float -D__ppc__
    LDFLAGS :=   -lm -lpthread -lc
    PLATFLAGS +=  -DRETRO -DALIGN_DWORD -DWIIPORT
+	STATIC_LINKING=1
+
 else ifeq ($(platform), ps3)
-   TARGET := $(TARGET_NAME)_libretro_ps3.a
+   TARGET := $(TARGET_NAME)_libretro_$(platform).a
    CC = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-gcc.exe
    AR = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-ar.exe
    ZLIB_DIR = $(LIBUTILS)/zlib/
@@ -76,6 +83,13 @@ else ifeq ($(platform), ps3)
    CFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DMSB_FIRST -DBYTE_ORDER=BIG_ENDIAN  -DBYTE_ORDER=BIG_ENDIAN \
 	-D__CELLOS_LV2 -DPS3PORT=1 -DHAVE_MEMALIGN -DHAVE_ASPRINTF -I$(ZLIB_DIR) 
    PLATFLAGS +=  -DRETRO -DALIGN_DWORD 
+	STATIC_LINKING=1
+else ifeq ($(platform), emscripten)
+   TARGET := $(TARGET_NAME)_libretro_$(platform).bc
+   PLATFLAGS +=  -DRETRO -DALIGN_DWORD 
+   CFLAGS    +=  -DHAVE_MEMALIGN -DHAVE_ASPRINTF -I$(ZLIB_DIR) 
+	STATIC_LINKING=1
+
 else
 
 
@@ -111,23 +125,11 @@ INCDIRS := $(EXTRA_INCLUDES) $(INCFLAGS)
 
 all: $(TARGET)
 
-ifeq ($(platform), wii)
-$(TARGET): $(OBJECTS) 
-	$(AR) rcs $@ $(OBJECTS) 
-else ifeq ($(platform), ps3)
-$(TARGET): $(OBJECTS) 
-	$(AR) rcs $@ $(OBJECTS) 
-
-else ifeq ($(platform), win)
 $(TARGET): $(OBJECTS)
-	$(CC) $(fpic) $(SHARED) $(INCDIRS) -o $@ $(OBJECTS) $(LDFLAGS)
-else ifeq ($(platform), android-armv7)
-$(TARGET): $(OBJECTS)
-	$(CC) $(fpic) $(SHARED) $(INCDIRS) -o $@ $(OBJECTS) $(LDFLAGS)
+ifeq ($(STATIC_LINKING_LINK),1)
+	$(AR) rcs $@ $(OBJECTS) 
 else
-$(TARGET): $(OBJECTS)
-	$(CC) $(fpic) $(SHARED) $(INCDIRS) -o $@ $(OBJECTS)
-
+	$(CC) $(fpic) $(SHARED) $(INCDIRS) -o $@ $(OBJECTS) $(LDFLAGS)
 endif
 
 %.o: %.c
