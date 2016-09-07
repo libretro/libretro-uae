@@ -68,7 +68,7 @@ extern void wait_cpu_cycle_write_ce020 (uaecptr addr, int mode, uae_u32 v);
 #include "machdep/maccess-generic.h"
 #endif
 
-#include "osdep/memory_uae.h"
+#include "retrodep/memory_uae.h"
 
 #define chipmem_start 0x00000000
 #define bogomem_start 0x00C00000
