@@ -320,8 +320,7 @@ off_t File_Length(const char *pszFileName)
  */
 bool File_Exists(const char *filename)
 {
-//RETRO HACK
-#ifdef RETRO
+#ifdef __LIBRETRO__
 
 if( access( filename, F_OK ) != -1 ) {
     // file exists

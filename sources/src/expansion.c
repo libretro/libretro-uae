@@ -1196,8 +1196,7 @@ static void expamem_init_z3fastmem2 (void)
 	expamem_init_z3fastmem_2 (&z3fastmem2_bank, z3fastmem2_start, currprefs.z3fastmem2_size, allocated_z3fastmem2);
 }
 
-#ifdef RETRO
-//RETRO
+#ifdef __LIBRETRO__
 uaecptr p96ram_start;
 #endif
 

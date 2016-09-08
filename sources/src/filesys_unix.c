@@ -66,8 +66,7 @@ int filesys_is_readonly (const char *path)
      * type. (We should be more clever and parse /etc/fstab
      * and /etc/mtab, but this'll do for just now).
      */
-#ifdef RETRO
-//RETRO
+#ifdef __LIBRETRO__
 # include <sys/statfs.h>
 #endif
 

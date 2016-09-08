@@ -15,8 +15,7 @@
 #include <string.h>
 
 #if HAVE_STRINGS_H
-//RETRO HACK
-#ifdef RETRO
+#ifdef __LIBRETRO__
 #ifndef PS3PORT
 # include <strings.h>
 #endif

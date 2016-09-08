@@ -776,7 +776,7 @@ static void parse_cmdline (int argc, TCHAR **argv)
 }
 #endif
 
-#ifdef RETRO
+#ifdef __LIBRETRO__
 #undef OPTIONS_IN_HOME
 #endif
 
@@ -796,7 +796,7 @@ static void parse_cmdline_and_init_file (int argc, TCHAR **argv)
 	}
 #endif
 
-#ifdef RETRO
+#ifdef __LIBRETRO__
 #ifndef ANDPORT
 _tcscpy (optionsfile, ".");
 _tcscat (optionsfile, _T("/"));
@@ -872,7 +872,7 @@ void reset_all_systems (void)
 #endif
 }
 
-#ifdef RETRO
+#ifdef __LIBRETRO__
 //RETRO FIXME
 const char* get_current_config_name() {
 	if (restart_config[0] == 0) {
@@ -967,14 +967,14 @@ void do_leave_program (void)
 	machdep_free ();
 }
 
-#ifdef RETRO
+#ifdef __LIBRETRO__
 extern int pauseg,romnotfound;
 #endif
 
 void start_program (void)
 {
 //TODO: remove
-#ifdef RETRO
+#ifdef __LIBRETRO__
 if(romnotfound==1){
 	pauseg=1;
 	printf("RETRO:ROM NOT FOUND\n");
@@ -1173,11 +1173,11 @@ void real_main (int argc, TCHAR **argv)
 #endif
 
 	write_log (_T("Enumerating display devices.. \n"));
-#ifndef RETRO
+#ifndef __LIBRETRO__
 	enumeratedisplays ();
 #endif
 	write_log (_T("Sorting devices and modes..\n"));
-#ifndef RETRO
+#ifndef __LIBRETRO__
 	sortdisplays ();
 #endif
 //	write_log (_T("Display buffer mode = %d\n"), ddforceram);
@@ -1204,7 +1204,7 @@ void real_main (int argc, TCHAR **argv)
 }
 
 #ifndef NO_MAIN_IN_MAIN_C
-#ifdef RETRO
+#ifdef __LIBRETRO__
 int umain (int argc, TCHAR **argv)
 #else
 int main (int argc, TCHAR **argv)

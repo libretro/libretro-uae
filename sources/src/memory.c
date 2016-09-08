@@ -2554,7 +2554,7 @@ void memory_clear (void)
 	expansion_clear ();
 }
 
-#ifdef RETRO
+#ifdef __LIBRETRO__
 int romnotfound=0;
 #endif
 
@@ -2624,7 +2624,7 @@ void memory_reset (void)
 			if (_tcslen (currprefs.romfile) > 0) {
 				write_log (_T("Failed to open '%s'\n"), currprefs.romfile);
 				notify_user (NUMSG_NOROM);
-#ifdef RETRO
+#ifdef __LIBRETRO__
 				romnotfound=1;
 #endif
 			}

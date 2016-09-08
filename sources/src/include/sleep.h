@@ -19,7 +19,7 @@
 # endif
 #endif
 
-#ifdef RETRO
+#ifdef __LIBRETRO__
 #define SDL_Delay GetTicks2
 #endif
 

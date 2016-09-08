@@ -10,8 +10,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-//RETO HACK
-#ifdef RETRO
+#ifdef __LIBRETRO__
 #include <ctype.h>
 
 #ifdef PS3PORT

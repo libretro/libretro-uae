@@ -109,7 +109,7 @@ void getgfxoffset (int *dxp, int *dyp, int *mxp, int *myp)
 
 int vsync_switchmode (int hz)
 {
-#ifndef RETRO
+#ifndef __LIBRETRO__
     static struct PicassoResolution *oldmode;
     static int oldhz;
 	int w = currentmode->native_width;
@@ -732,7 +732,7 @@ void update_debug_info(void)
 {
 }
 
-#ifdef RETRO
+#ifdef __LIBRETRO__
 const TCHAR *target_get_display_name (int num, bool friendlyname){return NULL;}
 int target_get_display (const TCHAR *name){return -1;}
 int target_checkcapslock (int scancode, int *state){return 0;}
@@ -841,7 +841,7 @@ static int GetSystemMetrics (int nIndex) {
 #endif
 static int resolution_compare (const void *a, const void *b)
 {
-#ifndef RETRO
+#ifndef __LIBRETRO__
 	struct PicassoResolution *ma = (struct PicassoResolution *)a;
 	struct PicassoResolution *mb = (struct PicassoResolution *)b;
 	if (ma->res.width < mb->res.width)
@@ -857,7 +857,8 @@ static int resolution_compare (const void *a, const void *b)
 return 0;
 #endif
 }
-#ifndef RETRO
+
+#ifndef __LIBRETRO__
 static void sortmodes (struct MultiDisplay *md)
 {
 	int	i, idx = -1;
