@@ -48,6 +48,7 @@ int fmousex,fmousey; // emu mouse
 int pauseg=0; //enter_gui
 int SND=1; //SOUND ON/OFF
 int NUMjoy=1;
+int slowdown=0;
 
 static int mbt[16]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
@@ -122,6 +123,7 @@ void gui_poll_events(void)
 
    if(Ktime - LastFPSTime >= 1000/50)
    {
+      slowdown=0;
       frame++; 
       LastFPSTime = Ktime;		
       co_switch(mainThread);
@@ -531,19 +533,11 @@ int input_gui(void)
       mbt[2]=0;
       MOUSEMODE=-MOUSEMODE;
    }
-
+   
+   if(slowdown>0)return;
+   
    if(MOUSEMODE==1)
    {
-      //TODO FIX THIS :(
-#if defined(PS3PORT) 
-      //Slow Joypad Mouse Emulation for PS3
-      static int pair=-1;
-      pair=-pair;
-      if(pair==1)return;
-      PAS=1;
-#elif defined(WIIPORT) 
-      PAS=1;
-#endif
 
       if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT))mouse_x += PAS;
       if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT))mouse_x -= PAS;
@@ -561,7 +555,8 @@ int input_gui(void)
       mouse_l    = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_LEFT);
       mouse_r    = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_RIGHT);
    }
-
+   
+   slowdown=1;
    static int mmbL=0,mmbR=0;
 
    if(mmbL==0 && mouse_l)
