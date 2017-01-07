@@ -39,6 +39,7 @@ else ifeq ($(platform), rpi)
 else ifeq ($(platform), osx)
    TARGET := $(TARGET_NAME)_libretro.dylib
    fpic := -fPIC -mmacosx-version-min=10.6
+   LDFLAGS := -lz
    SHARED := -dynamiclib
    PLATFLAGS +=  -DRETRO -DLSB_FIRST -DALIGN_DWORD
 
