@@ -69,10 +69,10 @@ else ifeq ($(platform), wii)
    AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
    ZLIB_DIR = $(LIBUTILS)/zlib/
    CFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DMSB_FIRST -DBYTE_ORDER=BIG_ENDIAN  -DBYTE_ORDER=BIG_ENDIAN \
-	-DWIIPORT=1 -DHAVE_MEMALIGN -DHAVE_ASPRINTF -I$(ZLIB_DIR) -I$(DEVKITPRO)/libogc/include \
+	-DHAVE_MEMALIGN -DHAVE_ASPRINTF -I$(ZLIB_DIR) -I$(DEVKITPRO)/libogc/include \
 	-D__powerpc__ -D__POWERPC__ -DGEKKO -DHW_RVL -mrvl -mcpu=750 -meabi -mhard-float -D__ppc__
    LDFLAGS :=   -lm -lpthread -lc
-   PLATFLAGS +=  -DRETRO -DALIGN_DWORD -DWIIPORT
+   PLATFLAGS +=  -DRETRO -DALIGN_DWORD
 	STATIC_LINKING=1
 
 else ifeq ($(platform), ps3)
