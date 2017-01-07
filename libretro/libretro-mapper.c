@@ -534,7 +534,7 @@ int input_gui(void)
       MOUSEMODE=-MOUSEMODE;
    }
    
-   if(slowdown>0)return;
+   if(slowdown>0)return 0;
    
    if(MOUSEMODE==1)
    {
@@ -586,6 +586,8 @@ int input_gui(void)
       gmy=0;
    if(gmy>retroh-1)
       gmy=retroh-1;
+   
+   return 0;
 }
 
 int update_input_gui(void)
