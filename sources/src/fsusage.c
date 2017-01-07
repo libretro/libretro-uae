@@ -330,7 +330,7 @@ int get_fs_usage (const TCHAR *path, const TCHAR *disk, struct fs_usage *fsp)
 
 #endif /* STAT_STATVFS */
 
-#if defined(__PS3__) || defined(RETRO)
+#if defined(__PS3__) || defined(__LIBRETRO__)
  return -1;
 #else
 #if !defined(STAT_STATFS2_FS_DATA) && !defined(STAT_READ_FILSYS) && !defined(ANDROID)
