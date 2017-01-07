@@ -19,10 +19,10 @@ Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "sysdeps.h"
 #include "target.h"
 
-#ifndef ANDPORT
-#include "target.h"
-#else
+#ifdef ANDROID
 #include "targets/t-android.h"
+#else
+#include "target.h"
 #endif
 
 #if defined TARGET_AMIGAOS

@@ -9,7 +9,7 @@
 #ifndef EUAE_MACHDEP_M68KOPS_H
 #define EUAE_MACHDEP_M68KOPS_H
 
-#ifndef ANDPORT  
+#ifndef ANDROID
 
 #if defined(__CELLOS_LV2__) || defined(WIN32PORT) || defined(__x86_64__) || defined(ARM)
 #warning "TEST TESTFLAGS no opt"

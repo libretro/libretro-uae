@@ -51,7 +51,7 @@ else ifeq ($(platform), android-armv7)
    fpic := -fPIC
 	LDFLAGS := -lz -lm
    SHARED :=  -Wl,--fix-cortex-a8 -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
-   PLATFLAGS += -DANDROID -DRETRO -DAND -DLSB_FIRST -DALIGN_DWORD -DANDPORT -DA_ZIP
+   PLATFLAGS += -DANDROID -DRETRO -DAND -DLSB_FIRST -DALIGN_DWORD -DA_ZIP
 
 else ifeq ($(platform), android)
    CC = arm-linux-androideabi-gcc
@@ -61,7 +61,7 @@ else ifeq ($(platform), android)
    fpic := -fPIC
 	LDFLAGS := -lz
    SHARED :=  -Wl,--fix-cortex-a8 -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
-   PLATFLAGS += -DANDROID -DRETRO -DAND -DLSB_FIRST -DALIGN_DWORD -DANDPORT -DARM_OPT_TEST=1
+   PLATFLAGS += -DANDROID -DRETRO -DAND -DLSB_FIRST -DALIGN_DWORD -DARM_OPT_TEST=1
 
 else ifeq ($(platform), wii)
    TARGET := $(TARGET_NAME)_libretro_$(platform).a

@@ -123,6 +123,6 @@ STATIC_INLINE int cctrue (int cc)
     abort ();
     return 0;
 }
-#ifndef ANDPORT
+#ifndef ANDROID
 #define USE_X86_FPUCW 1
 #endif
