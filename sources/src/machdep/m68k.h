@@ -33,7 +33,7 @@ extern struct flag_struct regflags;
 
 #if !defined(ARM_OPT_TEST)
 
-#ifdef PS3PORT
+#ifdef __CELLOS_LV2__
 /*
 #warning PS3 FLAG MK68
 #define FLAGBIT_N	31

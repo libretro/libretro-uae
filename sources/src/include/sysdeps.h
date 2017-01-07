@@ -367,7 +367,7 @@ extern void mallocemu_free (void *ptr);
 #define ASM_SYM_FOR_FUNC(a)
 #endif
 
-#ifdef PS3PORT
+#ifdef __CELLOS_LV2__
 #define timezone 0
 #define daylight 0
 #endif

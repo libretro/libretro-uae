@@ -339,7 +339,7 @@ int get_filesys_unitconfig (struct uae_prefs *p, int index, struct mountedinfo *
 			ui->hf.ci.blocksize = uci->ci.blocksize;
 			mi->size = -1;
 			mi->ismounted = true;
-#if !defined(ANDPORT) && !defined(WIN32PORT) && !defined(PS3PORT) 
+#if !defined(ANDPORT) && !defined(WIN32PORT) && !defined(__CELLOS_LV2__) 
 			if (blkdev_get_info (p, ui->hf.ci.cd_emu_unit, &di)) {
 				mi->ismedia = di.media_inserted != 0;
 				_tcscpy (mi->rootdir, di.label);
