@@ -22,7 +22,6 @@ CORE_DIR  := .
 ROOT_DIR  := .
 
 ifeq ($(platform), unix)
-   CC = gcc
    TARGET := $(TARGET_NAME)_libretro.so
    fpic := -fPIC
 	LDFLAGS := -lz -lpthread
@@ -93,11 +92,7 @@ else ifeq ($(platform), emscripten)
 
 else
 
-
-ifeq ($(subplatform), 32)
-   CC = i586-mingw32msvc-gcc
-else
-   CC = x86_64-w64-mingw32-gcc
+ifneq ($(subplatform), 32)
    CFLAGS += -fno-aggressive-loop-optimizations
 endif
    PLATFLAGS +=  -DRETRO -DLSB_FIRST -DALIGN_DWORD -DWIN32PORT -DWIN32
