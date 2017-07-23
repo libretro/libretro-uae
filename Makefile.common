@@ -18,7 +18,7 @@ SOURCES_C +=  $(EMU)/main.c \
 				  $(EMU)/blittable.c \
 				  $(EMU)/blitfunc.c \
 				  $(EMU)/autoconf.c \
-				  $(EMU)/traps.o\
+				  $(EMU)/traps.c\
 				  $(EMU)/keybuf.c \
 				  $(EMU)/expansion.c \
 				  $(EMU)/inputrecord.c \
