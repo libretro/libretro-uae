@@ -797,11 +797,11 @@ static void parse_cmdline_and_init_file (int argc, TCHAR **argv)
 #endif
 
 #ifdef __LIBRETRO__
-#ifndef ANDPORT
-_tcscpy (optionsfile, ".");
+#ifdef ANDROID
+_tcscpy (optionsfile, "/mnt/sdcard/euae");
 _tcscat (optionsfile, _T("/"));
 #else
-_tcscpy (optionsfile, "/mnt/sdcard/euae");
+_tcscpy (optionsfile, ".");
 _tcscat (optionsfile, _T("/"));
 #endif
 #endif

@@ -367,15 +367,15 @@ extern void mallocemu_free (void *ptr);
 #define ASM_SYM_FOR_FUNC(a)
 #endif
 
-#ifdef PS3PORT
+#ifdef __CELLOS_LV2__
 #define timezone 0
 #define daylight 0
 #endif
 
-#ifndef ANDPORT
-#include "target.h"
-#else
+#ifdef ANDROID
 #include "targets/t-android.h"
+#else
+#include "target.h"
 #endif
 
 
@@ -515,7 +515,7 @@ typedef unsigned short WORD;
 typedef long long LONGLONG;
 DWORD GetLastError(void);
 #endif
-#ifndef ANDPORT
+#ifndef ANDROID
 typedef int64_t off64_t;
 #endif
 

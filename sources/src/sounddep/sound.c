@@ -13,7 +13,7 @@
 #include "sysdeps.h"
 
 #include "options.h"
-#ifndef PS3PORT
+#ifndef __CELLOS_LV2__ 
 #include "memory.h"
 #endif
 #include "custom.h"

@@ -13,7 +13,7 @@
 #ifdef __LIBRETRO__
 #include <ctype.h>
 
-#ifdef PS3PORT
+#ifdef __CELLOS_LV2__
 #include <sdk_version.h>
 #include <cell.h>
 #include <stdio.h>

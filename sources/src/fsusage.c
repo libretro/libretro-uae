@@ -19,10 +19,10 @@ Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "sysdeps.h"
 #include "target.h"
 
-#ifndef ANDPORT
-#include "target.h"
-#else
+#ifdef ANDROID
 #include "targets/t-android.h"
+#else
+#include "target.h"
 #endif
 
 #if defined TARGET_AMIGAOS
@@ -330,7 +330,7 @@ int get_fs_usage (const TCHAR *path, const TCHAR *disk, struct fs_usage *fsp)
 
 #endif /* STAT_STATVFS */
 
-#if defined(__PS3__) || defined(RETRO)
+#if defined(__PS3__) || defined(__LIBRETRO__)
  return -1;
 #else
 #if !defined(STAT_STATFS2_FS_DATA) && !defined(STAT_READ_FILSYS) && !defined(ANDROID)

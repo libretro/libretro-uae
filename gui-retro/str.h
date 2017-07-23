@@ -16,7 +16,7 @@
 
 #if HAVE_STRINGS_H
 #ifdef __LIBRETRO__
-#ifndef PS3PORT
+#ifndef __CELLOS_LV2__
 # include <strings.h>
 #endif
 #endif

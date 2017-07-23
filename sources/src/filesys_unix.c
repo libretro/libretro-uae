@@ -12,7 +12,7 @@
 
 #include "filesys.h"
 
-#ifndef PS3PORT
+#ifndef __CELLOS_LV2__
 #if HAVE_SYS_PARAM_H
 # include <sys/param.h>
 #endif
