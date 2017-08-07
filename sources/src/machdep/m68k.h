@@ -47,6 +47,12 @@ extern struct flag_struct regflags;
 #define FLAGBIT_C	8
 #define FLAGBIT_V	0
 #define FLAGBIT_X	8
+#elif defined (WIIU)
+#define FLAGBIT_N	31
+#define FLAGBIT_Z	29
+#define FLAGBIT_V	22
+#define FLAGBIT_C	21
+#define FLAGBIT_X	21
 #else
 #define FLAGBIT_N	15
 #define FLAGBIT_Z	14
@@ -123,6 +129,8 @@ STATIC_INLINE int cctrue (int cc)
     abort ();
     return 0;
 }
+#ifndef WIIU
 #ifndef ANDROID
 #define USE_X86_FPUCW 1
+#endif
 #endif

@@ -546,6 +546,11 @@ char* SDLGui_FileSelect(const char *path_and_name, char **zip_path, bool bAllowN
 		strncpy(path, path_and_name, FILENAME_MAX);
 		path[FILENAME_MAX-1] = '\0';
 	}
+#ifdef WIIU
+        else {
+		sprintf(path, "sd:/");
+	}
+#endif
 	if (!File_DirExists(path))
 	{
 		File_SplitPath(path, path, fname, NULL);

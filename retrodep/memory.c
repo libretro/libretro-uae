@@ -13,10 +13,12 @@
 
 #include "options.h"
 #include "autoconf.h"
+#ifndef WIIU
 #ifndef ANDROID
 #ifndef __CELLOS_LV2__
 #ifndef WIN32PORT
 #include <sys/sysctl.h>
+#endif
 #endif
 #endif
 #endif

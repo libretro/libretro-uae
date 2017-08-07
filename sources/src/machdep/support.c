@@ -25,7 +25,7 @@
 
 struct flag_struct regflags;
 
-#if defined(__CELLOS_LV2__) || defined(WIN32PORT)
+#if defined(__CELLOS_LV2__) || defined(WIN32PORT) || defined(WIIU)
 
 frame_time_t machdep_gethrtimebase (void)
 {

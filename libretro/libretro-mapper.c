@@ -100,6 +100,10 @@ void enter_gui(void)
    enter_options();
 }
 
+#ifdef WIIU
+#include <features_cpu.h>
+#endif
+
 /* in milliseconds */
 long GetTicks(void)
 {
@@ -107,6 +111,8 @@ long GetTicks(void)
    struct timespec now;
    clock_gettime(CLOCK_MONOTONIC, &now);
    return (now.tv_sec*1000000 + now.tv_nsec/1000)/1000;
+#elif defined(WIIU)
+return (cpu_features_get_time_usec())/1000;
 #else
    struct timeval tv;
    gettimeofday (&tv, NULL);

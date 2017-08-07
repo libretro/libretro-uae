@@ -46,6 +46,8 @@
  */
 #ifdef __BEOS__
 # define uae_msleep(msecs) snooze (msecs * ONE_THOUSAND)
+#elif defined(WIIU)
+#define uae_msleep(msecs) //usleep (msecs * ONE_THOUSAND)
 #elif defined TARGET_AMIGAOS
 #   if defined __amigaos4__ || defined __MORPHOS__
 #    define uae_msleep(msecs) TimeDelay (0, msecs / ONE_THOUSAND, (msecs % ONE_THOUSAND) * ONE_THOUSAND)

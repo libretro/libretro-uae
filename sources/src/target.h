@@ -6,7 +6,7 @@
   * Copyright 1997 Bernd Schmidt
   */
 
-#ifndef __CELLOS_LV2__
+#if !defined(__CELLOS_LV2__) && !defined(WIIU)
 
 #define TARGET_NAME "unix"
 
@@ -26,6 +26,22 @@
 
 #define DEFPRTNAME "lpr"
 #define DEFSERNAME "/dev/ttyS1"
+
+#elif defined(WIIU)
+
+#define TARGET_NAME "RETRO"
+
+#define TARGET_ROM_PATH "sd:/"
+#define TARGET_FLOPPY_PATH "sd:/"
+#define TARGET_HARDFILE_PATH "sd:/"
+#define TARGET_SAVESTATE_PATH "sd:/"
+
+#ifndef OPTIONSFILENAME
+#define OPTIONSFILENAME "sd:/retroarch/cores/system/uae.cfg"
+#endif
+
+#define DEFPRTNAME "null"
+#define DEFSERNAME "null"
 
 #else
 

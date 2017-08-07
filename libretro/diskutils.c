@@ -74,7 +74,7 @@ int scandir(const char *dirp, struct dirent ***namelist,
 
          names[pos++] = (struct dirent *) memcpy (vnew, current, dsize);
       }
-
+#ifndef WIIU
    if (errno != 0)
    {
       save = errno;
@@ -85,7 +85,7 @@ int scandir(const char *dirp, struct dirent ***namelist,
 
       return -1;
    }
-
+#endif
    closedir (dp);
 
 

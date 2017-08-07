@@ -73,7 +73,21 @@ else ifeq ($(platform), wii)
    LDFLAGS :=   -lm -lpthread -lc
    PLATFLAGS +=  -DRETRO -DALIGN_DWORD
 	STATIC_LINKING=1
-
+# Nintendo Wii U
+else ifeq ($(platform), wiiu)
+       TARGET := $(TARGET_NAME)_libretro_$(platform).a
+       CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
+       CXX = $(DEVKITPPC)/bin/powerpc-eabi-g++$(EXE_EXT)
+       AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
+       COMMONFLAGS += -DGEKKO -DWIIU -DHW_RVL -mwup -mcpu=750 -meabi -mhard-float -D__POWERPC__ -D__ppc__ -DMSB_FIRST -DWORDS_BIGENDIAN=1
+       COMMONFLAGS += -U__INT32_TYPE__ -U __UINT32_TYPE__ -D__INT32_TYPE__=int -DC68K_BIG_ENDIAN
+       COMMONFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DMSB_FIRST -DBYTE_ORDER=BIG_ENDIAN  -DBYTE_ORDER=BIG_ENDIAN 
+       CFLAGS += $(COMMONFLAGS) -I$(DEVKITPRO)/portlibs/ppc/include -I$(CORE_DIR)/wiiu-deps
+       HAVE_COMPAT = 1
+       MSB_FIRST = 1
+   PLATFLAGS +=  -DRETRO -DALIGN_DWORD
+	STATIC_LINKING=1
+STATIC_LINKING_LINK=1
 else ifeq ($(platform), ps3)
    TARGET := $(TARGET_NAME)_libretro_$(platform).a
    CC = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-gcc.exe
