@@ -24,6 +24,10 @@
 #include <features_cpu.h>
 #endif
 
+#ifdef __CELLOS_LV2__
+#include <sys/sys_time.h>
+#endif
+
 STATIC_INLINE uae_s64 read_processor_time(void)
 {
 #ifdef __CELLOS_LV2__
