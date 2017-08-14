@@ -24,21 +24,21 @@ ROOT_DIR  := .
 ifeq ($(platform), unix)
    TARGET := $(TARGET_NAME)_libretro.so
    fpic := -fPIC
-	LDFLAGS := -lz -lpthread
+	LDFLAGS := -lpthread
    SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T
 
 # use for raspberry pi
 else ifeq ($(platform), rpi)
 	   TARGET := $(TARGET_NAME)_libretro.so
 	   fpic := -fPIC
-		 LDFLAGS := -lz -lpthread
+		 LDFLAGS := -lpthread
 		 PLATFLAGS +=  -DARM  -marm
 	   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T
 
 else ifeq ($(platform), osx)
    TARGET := $(TARGET_NAME)_libretro.dylib
    fpic := -fPIC -mmacosx-version-min=10.6
-   LDFLAGS := -lz
+   LDFLAGS :=
    SHARED := -dynamiclib
    PLATFLAGS +=  -DRETRO -DLSB_FIRST -DALIGN_DWORD
 
@@ -48,7 +48,7 @@ else ifeq ($(platform), android-armv7)
    LD = @arm-linux-androideabi-g++
    TARGET := $(TARGET_NAME)_libretro_android.so
    fpic := -fPIC
-	LDFLAGS := -lz -lm
+	LDFLAGS := -lm
    SHARED :=  -Wl,--fix-cortex-a8 -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
    PLATFLAGS += -DANDROID -DRETRO -DAND -DLSB_FIRST -DALIGN_DWORD -DA_ZIP
 
@@ -58,7 +58,7 @@ else ifeq ($(platform), android)
    LD = @arm-linux-androideabi-g++ 
    TARGET := $(TARGET_NAME)_libretro_android.so
    fpic := -fPIC
-	LDFLAGS := -lz
+	LDFLAGS := 
    SHARED :=  -Wl,--fix-cortex-a8 -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
    PLATFLAGS += -DANDROID -DRETRO -DAND -DLSB_FIRST -DALIGN_DWORD -DARM_OPT_TEST=1
 
@@ -113,7 +113,7 @@ endif
    TARGET := $(TARGET_NAME)_libretro.dll
    fpic := -fPIC
    SHARED := -shared -static-libgcc -s -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
-	LDFLAGS := -lm -lz
+	LDFLAGS := -lm
 endif
 
 ifeq ($(DEBUG), 1)

@@ -2,9 +2,10 @@ EMU      = $(CORE_DIR)/sources/src
 LIBUTILS = $(CORE_DIR)/sources/utils
 GUI      = $(CORE_DIR)/gui-retro
 LIBRETRO = $(CORE_DIR)/libretro
+DEPS_DIR = $(CORE_DIR)/deps
 RETRODEP = $(CORE_DIR)/retrodep
 
-INCFLAGS := -I$(EMU) -I$(EMU)/include -I$(LIBRETRO) -I$(CORE_DIR)/libretro-include -I$(LIBUTILS) -I$(CORE_DIR)
+INCFLAGS := -I$(EMU) -I$(EMU)/include -I$(LIBRETRO) -I$(CORE_DIR)/libretro-include -I$(LIBUTILS) -I$(CORE_DIR) -I$(DEPS_DIR)/zlib
 
 SOURCES_C +=  $(EMU)/main.c \
 				  $(EMU)/newcpu.c \
@@ -150,5 +151,22 @@ SOURCES_C += $(LIBRETRO)/libretro.c \
 				 $(LIBRETRO)/graph.c \
 				 $(LIBRETRO)/diskutils.c \
 				 $(LIBRETRO)/fontmsx.c 
+
+ifneq ($(STATIC_LINKING), 1)
+SOURCES_C += $(DEPS_DIR)/zlib/adler32.c \
+				 $(DEPS_DIR)/zlib/compress.c \
+				 $(DEPS_DIR)/zlib/crc32.c \
+				 $(DEPS_DIR)/zlib/deflate.c \
+				 $(DEPS_DIR)/zlib/gzclose.c \
+				 $(DEPS_DIR)/zlib/gzlib.c \
+				 $(DEPS_DIR)/zlib/gzread.c \
+				 $(DEPS_DIR)/zlib/gzwrite.c \
+				 $(DEPS_DIR)/zlib/inffast.c \
+				 $(DEPS_DIR)/zlib/inflate.c \
+				 $(DEPS_DIR)/zlib/inftrees.c \
+				 $(DEPS_DIR)/zlib/trees.c \
+				 $(DEPS_DIR)/zlib/uncompr.c \
+				 $(DEPS_DIR)/zlib/zutil.c
+endif
 
 CFLAGS += -DLIBRETRO_PUAE
