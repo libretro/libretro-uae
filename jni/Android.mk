@@ -40,6 +40,8 @@ LOCAL_CFLAGS += $(CFLAGS)
 
 LOCAL_CFLAGS += $(INCFLAGS) -I./include
 
+LOCAL_CFLAGS += -std=c99
+
 LOCAL_LDLIBS := -lz
 
 include $(BUILD_SHARED_LIBRARY)
