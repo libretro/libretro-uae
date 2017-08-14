@@ -71,6 +71,10 @@
 
 #define SPRBORDER 0
 
+#ifdef WIIU
+#include <features_cpu.h>
+#endif
+
 /* internal prototypes */
 void uae_abort (const TCHAR *format,...);
 int is_bitplane_dma (int hpos);
@@ -3446,8 +3450,13 @@ static uae_u32 REGPARAM2 timehack_helper (TrapContext *context)
 		return timehack_alive;
 
 	timehack_alive = 10;
-
+#if defined(WIIU)
+        int64_t time = cpu_features_get_time_usec();
+    	tv.tv_sec  = time / 1000000;
+    	tv.tv_usec = time - (tv.tv_sec * 1000000);
+#else
 	gettimeofday (&tv, NULL);
+#endif
 	put_long (m68k_areg (regs, 0), tv.tv_sec - (((365 * 8 + 2) * 24) * 60 * 60));
 	put_long (m68k_areg (regs, 0) + 4, tv.tv_usec);
 	return 0;

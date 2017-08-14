@@ -163,6 +163,11 @@ void uae_set_thread_priority (uae_thread_id *tid/*, int pri*/)
 #include "sysconfig.h"
 #include "sysdeps.h"
 
+#ifdef WIIU
+#include <wiiu_pthread.h>
+#include <wiiu/os/semaphore.h>
+
+#else
 #include <pthread.h>
 #include <semaphore.h>
 
@@ -198,5 +203,5 @@ int uae_sem_init (uae_sem_t *sem, int pshared, unsigned int value)
 }
 
 #endif
-
+#endif
 #endif

@@ -127,7 +127,7 @@ static int setfiletime (const TCHAR *name, int days, int minute, int tick, int t
 	return 0;
 }
 
-#if defined(__CELLOS_LV2__) || defined(WIN32PORT)
+#if defined(__CELLOS_LV2__) || defined(WIN32PORT) || defined(WIIU)
 #warning LSTAT STAT
 #define lstat stat
 #endif
@@ -137,7 +137,7 @@ bool my_utime (const TCHAR *name, struct mytimeval *tv)
         int tolocal;
         int days, mins, ticks;
         struct mytimeval tv2;
-#ifndef __CELLOS_LV2__
+#if !defined(__CELLOS_LV2__) && !defined(WIIU)
         if (!tv) {
                 struct timeb time;
                 ftime (&time);
@@ -170,6 +170,15 @@ bool my_utime (const TCHAR *name, struct mytimeval *tv)
 
 int my_existsfile (const char *name)
 {
+#ifdef WIIU
+FILE * file = fopen(name, "r");
+    if (file) {
+        fclose(file);
+        return 1;
+    }
+    return 0;
+
+#else
         struct stat sonuc;
         if (lstat (name, &sonuc) == -1) {
                 return 0;
@@ -178,10 +187,25 @@ int my_existsfile (const char *name)
                         return 1;
         }
         return 0;
+#endif
 }
 
 int my_existsdir (const char *name)
 {
+#ifdef WIIU
+	DIR* dir = opendir(name);
+	if (dir)
+	{
+	    /* Directory exists. */
+	    closedir(dir);
+		return 1;
+	}
+	else 
+	{
+	    /* Directory does not exist. */
+		return 0;
+	}
+#else
         struct stat sonuc;
 
         if (lstat (name, &sonuc) == -1) {
@@ -191,6 +215,7 @@ int my_existsdir (const char *name)
                         return 1;
         }
         return 0;
+#endif
 }
 
 int my_getvolumeinfo (const char *root)

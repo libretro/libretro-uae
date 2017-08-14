@@ -161,7 +161,7 @@ bool File_DoesFileNameEndWithSlash(char *pszFileName)
  * or NULL for error.  If pFileSize is non-NULL, read file size
  * is set to that.
  */
-uint8_t *File_Read(const char *pszFileName, long *pFileSize, const char * const ppszExts[])
+uint8_t *UFile_Read(const char *pszFileName, long *pFileSize, const char * const ppszExts[])
 {
 	char *filepath = NULL;
 	uint8_t *pFile = NULL;
@@ -587,7 +587,7 @@ FILE *File_Open(const char *path, const char *mode)
  * Close given FILE pointer and return the closed pointer
  * as NULL for the idiom "fp = File_Close(fp);"
  */
-FILE *File_Close(FILE *fp)
+FILE *UFile_Close(FILE *fp)
 {
 	if (fp && fp != stdin && fp != stdout && fp != stderr)
 	{

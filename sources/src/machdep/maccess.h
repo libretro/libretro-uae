@@ -6,7 +6,7 @@
   * Copyright 1996 Bernd Schmidt
   */
 
-#ifdef __CELLOS_LV2__
+#if defined(__CELLOS_LV2__) || defined(WIIU)
 
 STATIC_INLINE uae_u32 do_get_mem_long (uae_u32 *a)
 {

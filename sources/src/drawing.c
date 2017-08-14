@@ -1065,7 +1065,11 @@ STATIC_INLINE uae_u8 render_sprites (int pos, int dualpf, uae_u8 apixel, int aga
 
 #define LTPARMS src_pixel, start, stop
 
+#ifdef MSB_FIRST
+#include "linetoscr-be.c"
+#else
 #include "linetoscr.c"
+#endif
 
 #ifdef ECS_DENISE
 /* ECS SuperHires special cases */

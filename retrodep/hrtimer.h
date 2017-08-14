@@ -8,7 +8,9 @@
 
 #ifndef EUAE_OSDEP_HRTIMER_H
 #define EUAE_OSDEP_HRTIMER_H
-
+#ifdef WIIU
+#include <features_cpu.h>
+#endif
 #ifdef __CELLOS_LV2__
 #include "sys/sys_time.h"
 #include "sys/timer.h"
@@ -21,7 +23,6 @@ static INLINE void gettimeofday (struct timeval *tv, void *blah)
     tv->tv_sec  = time / 1000000;
     tv->tv_usec = time - (tv->tv_sec * 1000000);  // implicit rounding will take care of this for us
 }
-
 #else
 #include <sys/types.h>
 #include <sys/time.h>
@@ -35,9 +36,13 @@ STATIC_INLINE frame_time_t osdep_gethrtime (void)
 {
 #ifndef _ANDROID_
 
+#ifdef WIIU
+   return cpu_features_get_time_usec();
+#else
    struct timeval tv;
    gettimeofday (&tv, NULL);
    return tv.tv_sec*1000000 + tv.tv_usec;
+#endif
 
 #else
 #define osd_ticks_t uae_s64

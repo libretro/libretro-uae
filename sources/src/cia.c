@@ -487,14 +487,22 @@ STATIC_INLINE void ciaa_checkalarm (int inc)
 }
 
 #ifdef TOD_HACK
+
+#if defined(WIIU)
+#include <features_cpu.h>
+#endif
 static uae_u64 tod_hack_tv, tod_hack_tod, tod_hack_tod_last;
 static int tod_hack_enabled;
 #define TOD_HACK_TIME 312 * 50 * 10
 static void tod_hack_reset (void)
 {
+#ifdef WIIU
+ 	tod_hack_tv = cpu_features_get_time_usec();
+#else
 	struct timeval tv;
 	gettimeofday (&tv, NULL);
 	tod_hack_tv = (uae_u64)tv.tv_sec * 1000000 + tv.tv_usec;
+#endif
 	tod_hack_tod = ciaatod;
 	tod_hack_tod_last = tod_hack_tod;
 }
@@ -551,8 +559,12 @@ static void do_tod_hack (int dotod)
 	}
 	if (!dotod && currprefs.cs_ciaatod == 0)
 		return;
+#ifdef WIIU
+ 	t = cpu_features_get_time_usec();
+#else
 	gettimeofday (&tv, NULL);
 	t = (uae_u64)tv.tv_sec * 1000000 + tv.tv_usec;
+#endif
 	if (t - tod_hack_tv >= (uae_u64)(1000000 / rate) ) {
 		tod_hack_tv += (uae_u64)(1000000 / rate);
 		docount = 1;
