@@ -625,7 +625,7 @@ static int REGPARAM2 dummy_check2 (uaecptr addr, uae_u32 size)
 	enforcer_display_hit (_T("CHECK from "),(uae_u32)(regs.pc_p - NMEM_OFFSET),addr);
 	return 0;
 }
-#endif 0
+#endif
 
 /*************************************************************
  enable the enforcer like support, maybe later this make MMU
