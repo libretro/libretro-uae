@@ -557,12 +557,12 @@ uint8_t *ZIP_ReadDisk(const char *pszFileName, const char *pszZipPath, long *pIm
 	}
 
 	switch(nDiskType) {
-	case ZIP_FILE_MSA:
+	/*case ZIP_FILE_MSA:*/
 		/* uncompress the MSA file */
-		pDiskBuffer = MSA_UnCompress(buf, (long *)&ImageSize);
+		/*pDiskBuffer = MSA_UnCompress(buf, (long *)&ImageSize);
 		free(buf);
 		buf = NULL;
-		break;
+		break;*/
 	case ZIP_FILE_DIM:
 		/* Skip DIM header */
 		ImageSize -= 32;
