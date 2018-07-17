@@ -62,6 +62,15 @@ else ifeq ($(platform), android)
    SHARED :=  -Wl,--fix-cortex-a8 -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
    PLATFLAGS += -DANDROID -DRETRO -DAND -DLSB_FIRST -DALIGN_DWORD -DARM_OPT_TEST=1
 
+# Nintendo Classic (Hakchi)
+else ifeq ($(platform), nintendoc)
+  TARGET := $(TARGET_NAME)_libretro.so
+  fpic := -fPIC
+  LDFLAGS := -lpthread
+  PLATFLAGS +=  -DARM  -marm
+  SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T
+CFLAGS += -marm -mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard
+
 else ifeq ($(platform), wii)
    TARGET := $(TARGET_NAME)_libretro_$(platform).a
    CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
