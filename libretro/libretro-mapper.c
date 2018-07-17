@@ -155,16 +155,16 @@ void Print_Statut(void)
 }
 
 /*
-   L2  show/hide Statut
-   R2  toggle snd ON/OFF
-   L   show/hide vkbd
+   L2  show/hide status
+   R2  p-uae gui
+   L   [UNUSED]
    R   MOUSE SPEED(gui/emu)
    SEL toggle mouse/joy mode
-   STR toggle num joy 
-   A   fire/mousea/valid key in vkbd
-   B   mouseb
-   X   [unused fixme: switch Shift ON/OFF] / umount in gui
-   Y   Emu Gui
+   STR show/hide virtual keyboard (vkbd)
+   A   joystick fire 1/mouse 1/valid key in vkbd
+   B   joystick fire 2/mouse 2
+   X   [UNUSED] fixme: switch Shift ON/OFF] / umount in gui
+   Y   [UNUSED]
    */
 
 void Screen_SetFullUpdate(void)
@@ -237,7 +237,7 @@ void update_input(void)
    input_poll_cb();
    Process_key();
 
-   if (key_state[RETROK_F11] || input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y))
+   if (key_state[RETROK_F11] || input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2))
    {
       pauseg=1;
       //enter_gui(); //old
@@ -260,8 +260,17 @@ void update_input(void)
    {
       mbt[i]=0;
       MOUSEMODE=-MOUSEMODE;
+      //bring up the status display to indicate mode has been switched
+      STATUTON=-STATUTON;
+      Screen_SetFullUpdate();
+      //wait a second then go off
+      sleep(1);
+      STATUTON=-STATUTON;
+      Screen_SetFullUpdate();
    }
 
+   /*
+   //Remove this toggle for now - doesn't do anything, no 2nd controller
    i=10;//num joy toggle
    if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && mbt[i]==0 )
       mbt[i]=1;
@@ -270,7 +279,7 @@ void update_input(void)
       mbt[i]=0;
       NUMJOY++;if(NUMJOY>1)NUMJOY=0;
       NUMjoy=-NUMjoy;
-   }
+   }*/
 
    i=11;//mouse gui speed
    if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && mbt[i]==0 )
@@ -295,7 +304,7 @@ void update_input(void)
    }
    */
 
-   i=12;//show/hide statut
+   i=12;//show/hide status
    if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && mbt[i]==0 )
       mbt[i]=1;
    else if (mbt[i]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i))
@@ -305,7 +314,9 @@ void update_input(void)
       Screen_SetFullUpdate();
    }
 
-   i=13;//sonud on/off
+   /*
+    //Remove - no practical use and confusing if accidently pressed
+   i=13;//sound on/off
    if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && mbt[i]==0 )
       mbt[i]=1;
    else if ( mbt[i]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) )
@@ -313,7 +324,7 @@ void update_input(void)
       mbt[i]=0;
       SND=-SND;
       //Screen_SetFullUpdate();
-   }
+   }*/
 
    if(SHOWKEY==1)
    {
