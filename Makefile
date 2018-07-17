@@ -34,15 +34,6 @@ else ifeq ($(platform), rpi)
 		 LDFLAGS := -lpthread
 		 PLATFLAGS +=  -DARM  -marm
 	   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T
-	
-# Nintendo Classic (Hakchi)
-else ifeq ($(platform), nintendoc)
-  TARGET := $(TARGET_NAME)_libretro.so
-  fpic := -fPIC
-  LDFLAGS := -lpthread
-  PLATFLAGS +=  -DARM  -marm
-  SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T
-  CFLAGS += -marm -mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard
 
 else ifeq ($(platform), osx)
    TARGET := $(TARGET_NAME)_libretro.dylib
