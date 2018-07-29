@@ -1,75 +1,23 @@
-		P-UAE LIBRETRO DEBUG VERSION
+libretro-uae fork
 
+Developed on Linux for the SNES Classic console (Linux ARM Cortex A7).
+May work with other architectures.
 
+Features:
 
-based on P-UAE 2.6.1 https://github.com/GnoStiC/PUAE 
-Git Commit: 0186c1b16f7181ffa02d73e6920d3180ce457c46
+2-Player Support
+Mouse speed up/down controls
+Removal of GUI
+Re-sized virtual keyboard
+Re-mapped default controls
 
-
-All credits to :
-
-Richard Drummond "http://www.rcdrummond.net/uae/"
-
-E-UAE is based on the work of dozens of contributors including Bernd
-Schmidt (the original author and maintainer of UAE), Bernie Meyer (the
-author of the x86 JIT compiler), Toni Wilen (the current maintainer of
-WinUAE), and many more.
-
-This RETRO port was  based at start on PS3 version E-UAE 0.8.29-WIP4 release 8
-(so aslo credits to Ole.)
-
-For now we use the UEA core provide by P-UAE 2.6.1 :
-Git Commit: 0186c1b16f7181ffa02d73e6920d3180ce457c46
-https://github.com/GnoStiC/PUAE 
-
-Credits to Mustafa 'GnoStiC' TUFAN
-
-
-And of course for the RetroArch/Libretro team : "http://www.libretro.org/"
-
-It's a quick hack.
-At this time , works the basis but buggy on win/linux/android.
-
-Remember ,Everything not working well, It's a debug release , so expect to more bug.
-
-Default Control :
-
-L2  Show/Hide statut
-R2  Sound on/off
-L   Toggle Num Joy .
-R   Change Mouse speed 1 to 6 . (for gui and emu)
-SEL Toggle Mouse/Joy mode .
-STR Show/Hide vkbd . 
-A   Fire/Mouse btn A / Valid key in vkbd
-B   Mouse btn B
-X    
-Y   E-UAE GUI
-
-
-
-Usage without configuration file:
-	Launch retroarch , select a startup dsk , and e-uae sould boot.
-	
-
-Using a configuration file for your games:
-  You can pass a uae configuration file as a rom and the core will load the
-	settings and start emulation without first showing the gui. Look at the sample
-	configuration file "RickDangerous.uae" for help. You can use that sample as a
-	starting point for making your own configuration files for each of your games.
-
-
-Recommended settings and information for Raspberry Pi 2:
-  - use CPU type 68000 and kickstart 1.3 for stability
-	- set floppy speed to 1x speed to avoid sound stuttering when loading games
-	- 640x400 is suitable for widescreen gaming and fits perfectly for most games
-	- you can use the config settings gfx_width and gfx_height to specify resolution
-	- study the settings in the sample file "RickDangerous.uae"
-	- whdload does not work
-	- overall the core performs very well with adf files
-
-Knows Bugs:
-	- When load savesate , exiting GUI without reset . You have to re-enter GUI and do the reset .
-	- Everything not working well, It's a debug release , so expect to more bug.
-
-
-We plan to use the core of winuae in the future, but no release date for now.
+L2 = show/hide status
+R2 = UNUSED
+L = mouse speed down (min 1)
+R = mouse speed up (max 6)
+SEL = toggle mouse/joy mode
+STR = show/hide virtual keyboard (vkbd)
+A = joystick fire 1/mouse 1/vkbd key pressed
+B = joystick fire 2/mouse 2
+X = UNUSED
+Y = UNUSED
