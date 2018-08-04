@@ -413,7 +413,7 @@ void update_input(void)
    { //Joy mode
 
       //dirty hack to register buttons
-      if (counter < 4)
+      if (counter < 8)
       {
         do_hack();
       }
@@ -491,11 +491,11 @@ void update_input(void)
    
 }
 
-// buttons don't register for some reason upon init or mouse/toggle until
-// they've been pressed once, another event happens, and then pressed again
+// joystick buttons don't register correctly upon init or mouse/toggle until
+// they've been pressed once 
 void do_hack(void)
 {
-   
+    
         if (counter == 0 && controller_state[0][0] != 1)
         {
             setjoybuttonstate (0, 0, 1);
@@ -515,6 +515,26 @@ void do_hack(void)
         {
             setjoybuttonstate (0, 1, 0);
             controller_state[0][1] = 0;
+        }
+        else if (counter == 4 && controller_state[1][0] != 1)
+        {
+            setjoybuttonstate (1, 0, 1);
+            controller_state[1][0] = 1;
+        }
+        else if (counter == 5 && controller_state[1][0] != 0)
+        {
+            setjoybuttonstate (1, 0, 0);
+            controller_state[1][0] = 0;
+        }
+        else if (counter == 6 && controller_state[1][1] != 1)
+        {
+            setjoybuttonstate (1, 1, 1);
+            controller_state[1][1] = 1;
+        }
+        else if (counter == 7 && controller_state[1][1] != 0)
+        {
+            setjoybuttonstate (1, 1, 0);
+            controller_state[1][1] = 0;
         }
         
         counter++;     
