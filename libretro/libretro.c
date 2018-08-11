@@ -3,7 +3,7 @@
 #include "retrodep/retroglue.h"
 #include "libretro-mapper.h"
 #include "libretro-glue.h"
-
+#include "sources/src/include/uae_types.h"
 
 #define EMULATOR_DEF_WIDTH 640
 #define EMULATOR_DEF_HEIGHT 400
@@ -29,6 +29,8 @@ char key_state2[512];
 bool opt_analog = false;
 static int firstps = 0;
 
+extern uae_u8 *natmem_offset;
+extern uae_u32 natmem_size;
 extern unsigned short int  bmp[EMULATOR_MAX_WIDTH*EMULATOR_MAX_HEIGHT];
 extern unsigned short int  savebmp[EMULATOR_MAX_WIDTH*EMULATOR_MAX_HEIGHT];
 extern int pauseg;
@@ -391,13 +393,15 @@ bool retro_unserialize(const void *data_, size_t size)
 
 void *retro_get_memory_data(unsigned id)
 {
-   (void)id;
+   if ( id == RETRO_MEMORY_SYSTEM_RAM )
+      return natmem_offset;
    return NULL;
 }
 
 size_t retro_get_memory_size(unsigned id)
 {
-   (void)id;
+   if ( id == RETRO_MEMORY_SYSTEM_RAM )
+      return natmem_size;
    return 0;
 }
 
