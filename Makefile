@@ -64,6 +64,7 @@ else ifeq ($(platform), android)
 
 # Nintendo Classic (Hakchi)
 else ifeq ($(platform), nintendoc)
+  CC = arm-linux-gnueabihf-gcc-5
   TARGET := $(TARGET_NAME)_libretro.so
   fpic := -fPIC
   LDFLAGS := -lpthread
@@ -151,6 +152,17 @@ else
 	$(CC) $(fpic) $(SHARED) $(INCDIRS) -o $@ $(OBJECTS) $(LDFLAGS)
 endif
 
+ifeq ($(platform),nintendoc)
+	@echo "** BUILDING HAKCHI HMOD PACKAGE **"
+	mkdir -p libretro/hakchi/etc/libretro/core/ libretro/hakchi/etc/libretro/info/
+	rm -f libretro/hakchi/etc/libretro/info/*
+	cp $(TARGET_NAME)_libretro.so libretro/hakchi/etc/libretro/core/
+	cd libretro/hakchi/etc/libretro/info/; wget https://buildbot.libretro.com/assets/frontend/info/$(TARGET_NAME)_libretro.info
+	cd libretro/hakchi/; tar -czvf "CORE_$(TARGET_NAME).hmod" *
+	
+endif
+
+
 %.o: %.c
 	$(CC) $(fpic) $(CFLAGS) $(PLATFLAGS) $(INCDIRS) -c -o $@ $<
 
@@ -158,7 +170,7 @@ endif
 	$(CC_AS) $(CFLAGS) -c $^ -o $@
 
 clean:
-	rm -f $(OBJECTS) $(TARGET)
+	rm -f $(OBJECTS) $(TARGET) libretro/hakchi/CORE_$(TARGET_NAME).hmod libretro/hakchi/etc/libretro/core/$(TARGET_NAME)_libretro.so
 
 .PHONY: clean
 
