@@ -339,7 +339,7 @@ int get_filesys_unitconfig (struct uae_prefs *p, int index, struct mountedinfo *
 			ui->hf.ci.blocksize = uci->ci.blocksize;
 			mi->size = -1;
 			mi->ismounted = true;
-#if !defined(ANDROID) && !defined(WIN32PORT) && !defined(__CELLOS_LV2__) 
+#if !defined(ANDROID) && !defined(_WIN32) && !defined(__CELLOS_LV2__) 
 			if (blkdev_get_info (p, ui->hf.ci.cd_emu_unit, &di)) {
 				mi->ismedia = di.media_inserted != 0;
 				_tcscpy (mi->rootdir, di.label);
@@ -5205,7 +5205,7 @@ static void
 	TRACE((_T("=%x %d\n"), GET_PCK_RES1 (packet), GET_PCK_RES2 (packet)));
 }
 
-#ifdef WIN32PORT
+#ifdef _WIN32
 int my_mkdir (const TCHAR *name)
 {
         const TCHAR *namep;
@@ -5257,7 +5257,7 @@ static void
 		PUT_PCK_RES2 (packet, ERROR_DISK_IS_FULL); /* best we can do */
 		return;
 	}
-#ifdef WIN32PORT
+#ifdef _WIN32
    if (my_mkdir (aino->nname) == -1) {
                 PUT_PCK_RES1 (packet, DOS_FALSE);
                 PUT_PCK_RES2 (packet, dos_errno ());

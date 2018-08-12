@@ -23,7 +23,7 @@ extern int  ftime(struct timeb*  timebuf);
 
 typedef int BOOL;
 
-#ifndef WIN32PORT
+#ifndef _WIN32
 
 #define INVALID_HANDLE_VALUE		((HANDLE)~0U)
 #define INVALID_FILE_ATTRIBUTES		((DWORD) -1)
@@ -38,7 +38,7 @@ typedef int BOOL;
 #define FILE_END	2
 
 #define FILE_FLAG_WRITE_THROUGH		0x80000000
-#ifndef WIN32PORT
+#ifndef _WIN32
 #define FILE_FLAG_OVERLAPPED		0x40000000
 #define FILE_FLAG_NO_BUFFERING		0x20000000
 #define FILE_FLAG_RANDOM_ACCESS		0x10000000
@@ -63,12 +63,12 @@ typedef int BOOL;
 #define FILE_ATTRIBUTE_SYSTEM		0x00000004
 #define FILE_ATTRIBUTE_DIRECTORY	0x00000010
 
-#ifndef WIN32PORT
+#ifndef _WIN32
 #define FILE_READ_DATA		0x0001
 #define FILE_WRITE_DATA		0x0002
 #define FILE_APPEND_DATA	0x0004
 #endif
-#ifndef WIN32PORT
+#ifndef _WIN32
 #define GENERIC_READ		FILE_READ_DATA
 #define GENERIC_WRITE		FILE_WRITE_DATA
 #endif
@@ -76,15 +76,13 @@ typedef int BOOL;
 #define FILE_SHARE_WRITE	0x00000002
 #define FILE_SHARE_DELETE	0x00000004
 
-#ifndef WIN32PORT
 typedef struct {
 	DWORD LowPart;
 	int32_t HighPart;
 	LONGLONG QuadPart;
 } LARGE_INTEGER;
-#endif
 
-#ifdef WIN32PORT
+#ifdef _WIN32
  #define S_IRGRP 00040
  #define S_IWGRP 00020
  #define S_IROTH 00004
@@ -127,7 +125,7 @@ static int setfiletime (const TCHAR *name, int days, int minute, int tick, int t
 	return 0;
 }
 
-#if defined(__CELLOS_LV2__) || defined(WIN32PORT) || defined(WIIU)
+#if defined(__CELLOS_LV2__) || defined(_WIN32) || defined(WIIU)
 #warning LSTAT STAT
 #define lstat stat
 #endif
@@ -425,7 +423,7 @@ int my_rename (const TCHAR *oldname, const TCHAR *newname)
 	*/
 	return rename(oldname, newname);
 }
-#ifndef WIN32PORT
+#ifndef _WIN32
 static bool CloseHandle(HANDLE hObject) {
 	if (!hObject)
 		return false;
@@ -441,7 +439,7 @@ void my_close (struct my_openfile_s *mos)
 	close (mos->h);
 	xfree (mos);
 }
-#ifndef WIN32PORT
+#ifndef _WIN32
 static DWORD SetFilePointer(HANDLE hFile, int32_t lDistanceToMove, int32_t *lpDistanceToMoveHigh, DWORD dwMoveMethod) {
 	if (!hFile)
 		return 0;
@@ -489,7 +487,7 @@ uae_s64 my_lseek (struct my_openfile_s *mos, uae_s64 offset, int whence) {
 		return -1;
 	return old.QuadPart;
 }
-#ifndef WIN32PORT
+#ifndef _WIN32
 static HANDLE CreateFile(const TCHAR *lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, DWORD lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile) {
 	int flags = 0, mode = S_IRUSR | S_IRGRP | S_IROTH;
 	if (dwDesiredAccess & FILE_WRITE_DATA) {
@@ -523,11 +521,11 @@ static HANDLE CreateFile(const TCHAR *lpFileName, DWORD dwDesiredAccess, DWORD d
 
 	int fd = 0;
 	mode = S_IRUSR | S_IWUSR;
-#if !defined(__CELLOS_LV2__) && !defined(WIN32PORT)
+#if !defined(__CELLOS_LV2__) && !defined(_WIN32)
 	if (dwFlagsAndAttributes & FILE_FLAG_NO_BUFFERING)
 		flags |= O_SYNC;
 #endif
-#if !defined(__CELLOS_LV2__) && !defined(WIN32PORT)
+#if !defined(__CELLOS_LV2__) && !defined(_WIN32)
 	flags |= O_NONBLOCK;
 #endif
 	fd = open(lpFileName, flags, mode);
@@ -538,7 +536,7 @@ static HANDLE CreateFile(const TCHAR *lpFileName, DWORD dwDesiredAccess, DWORD d
 	}/* else {
 		write_log ("FS: '%s' open successful\n", lpFileName);
 	}*/
-#if !defined(__CELLOS_LV2__) && !defined(WIN32PORT)
+#if !defined(__CELLOS_LV2__) && !defined(_WIN32)
 	// turn of nonblocking reads/writes
 	fcntl(fd, F_GETFL, &flags);
 	fcntl(fd, F_SETFL, flags & ~O_NONBLOCK);
@@ -605,7 +603,7 @@ err:
 	lseek(mos->h, 0, SEEK_SET); */
 	return mos;
 }
-#ifndef WIN32PORT
+#ifndef _WIN32
 static BOOL SetEndOfFile(HANDLE hFile) {
 	if (hFile) {
 		off64_t currOff = lseek(hFile, 0, SEEK_CUR);

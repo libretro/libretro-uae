@@ -109,7 +109,7 @@ else
 ifneq ($(subplatform), 32)
    CFLAGS += -fno-aggressive-loop-optimizations
 endif
-   PLATFLAGS +=  -DRETRO -DLSB_FIRST -DALIGN_DWORD -DWIN32PORT -DWIN32
+   PLATFLAGS +=  -DRETRO -DLSB_FIRST -DALIGN_DWORD -DWIN32
    TARGET := $(TARGET_NAME)_libretro.dll
    fpic := -fPIC
    SHARED := -shared -static-libgcc -s -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined

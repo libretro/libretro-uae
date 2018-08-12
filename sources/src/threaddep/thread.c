@@ -9,7 +9,7 @@
   * This handles initialization when using named semaphores.
   * Idea stolen from SDL.
   */
-#ifdef WIN32PORT
+#ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <process.h>

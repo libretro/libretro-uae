@@ -48,7 +48,7 @@
 /*	LHa File Definitions													*/
 /* ------------------------------------------------------------------------ */
 #ifdef S_IFLNK
-#ifdef WIN32PORT
+#ifdef _WIN32
 #define GETSTAT stat
 #else
 #define GETSTAT lstat

@@ -16,7 +16,7 @@
 #ifndef WIIU
 #ifndef ANDROID
 #ifndef __CELLOS_LV2__
-#ifndef WIN32PORT
+#ifndef _WIN32
 #include <sys/sysctl.h>
 #endif
 #endif

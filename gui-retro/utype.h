@@ -30,7 +30,7 @@
 //#define PROG_NAME "Hatari devel (" __DATE__ ")"
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #define PATHSEP '\\'
 #else
 #define PATHSEP '/'

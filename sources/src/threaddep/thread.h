@@ -6,7 +6,7 @@
   * Copyright 1997 Bernd Schmidt
   * Copyright 2004 Richard Drummond
   */
-#ifdef WIN32PORT
+#ifdef _WIN32
 
 #define WIN32_LEAN_AND_MEAN
 typedef HANDLE uae_sem_t;

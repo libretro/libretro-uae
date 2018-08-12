@@ -23,7 +23,7 @@ const char File_fileid[] = "Hatari file.c : " __DATE__ " " __TIME__;
 
 #include "utype.h"
 
-#if defined(WIN32) && !defined(_VCWIN_)
+#if defined(_WIN32) && !defined(_VCWIN_)
 #include <winsock2.h>
 #endif
 
@@ -32,7 +32,7 @@ const char File_fileid[] = "Hatari file.c : " __DATE__ " " __TIME__;
 #include "str.h"
 #include "zip.h"
 
-#if defined(WIN32)
+#if defined(_WIN32)
 #define ftello ftell
 #endif
 
@@ -105,7 +105,7 @@ static bool File_IsRootFileName(const char *pszFileName)
 	if (pszFileName[0] == PATHSEP)
 		return true;
 
-#ifdef WIN32
+#ifdef _WIN32
 	if (pszFileName[1] == ':')
 		return true;
 #endif

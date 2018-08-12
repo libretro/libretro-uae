@@ -21,9 +21,9 @@ const char Paths_fileid[] = "Hatari paths.c : " __DATE__ " " __TIME__;
 #include "paths.h"
 #include "file.h"
 
-#if defined(WIN32) && !defined(mkdir)
+#if defined(_WIN32) && !defined(mkdir)
 #define mkdir(name,mode) mkdir(name)
-#endif  /* WIN32 */
+#endif  /* _WIN32 */
 
 static char sWorkingDir[FILENAME_MAX];    /* Working directory */
 static char sDataDir[FILENAME_MAX];       /* Directory where data files of Hatari can be found */
@@ -149,7 +149,7 @@ static char *Paths_InitExecDir(const char *argv0)
 				*p = 0;                     /* Strip file name from path */
 		}
 	}
-//#elif defined(WIN32) || defined(__CEGCC__)
+//#elif defined(_WIN32) || defined(__CEGCC__)
 //	/* On Windows we can use GetModuleFileName for getting the exe path */
 //	GetModuleFileName(NULL, psExecDir, FILENAME_MAX);
 #endif
@@ -190,7 +190,7 @@ static void Paths_InitHomeDirs(void)
 	psHome = getenv("HOME");
 	if (psHome)
 		strncpy(sUserHomeDir, psHome, FILENAME_MAX);
-#if defined(WIN32)
+#if defined(_WIN32)
 	else
 	{
 		char *psDrive;

@@ -14,7 +14,7 @@
 
 #include <stdio.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #define PATHSEP '\\'
 #else
 #define PATHSEP '/'

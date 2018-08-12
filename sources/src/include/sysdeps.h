@@ -451,7 +451,7 @@ extern int gui_message_multibutton (int flags, const char *format,...);
 
 #define DBLEQU(f, i) (abs ((f) - (i)) < 0.000001)
 
-#ifndef WIN32PORT
+#ifndef _WIN32
 #define TCHAR char
 #endif
 #define REGPARAM3
@@ -492,7 +492,7 @@ extern int gui_message_multibutton (int flags, const char *format,...);
 #define sleep_millis uae_msleep
 
 #define _istalnum iswalnum
-#ifndef WIN32PORT
+#ifndef _WIN32
 #define ULONG unsigned long
 #endif
 #define _strtoui64 strtoul
@@ -505,7 +505,7 @@ extern int gui_message_multibutton (int flags, const char *format,...);
 #ifndef offsetof
 #  define offsetof(type, member)  __builtin_offsetof (type, member)
 #endif /* offsetof */
-#ifdef WIN32PORT
+#ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #else

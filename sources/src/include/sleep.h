@@ -55,7 +55,7 @@
 #    define uae_msleep(msecs) Delay (msecs <= 20 ? 1 : msecs/20);
 # endif // __amigaos4__ || __MORPHOS__
 #elif defined HAVE_NANOSLEEP
-#ifndef WIN32PORT
+#ifndef _WIN32
 #    define uae_msleep(msecs) \
 	    { \
 		if (msecs < 1000) { \

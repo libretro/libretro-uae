@@ -11,7 +11,7 @@
 
 #ifndef ANDROID
 
-#if defined(__CELLOS_LV2__) || defined(WIN32PORT) || defined(__x86_64__) || defined(ARM) || defined(WIIU)
+#if defined(__CELLOS_LV2__) || defined(_WIN32) || defined(__x86_64__) || defined(ARM) || defined(WIIU)
 #warning "TEST TESTFLAGS no opt"
 
 #ifdef WIIU

@@ -67,7 +67,7 @@ struct winuae_currentmode {
 
 static struct winuae_currentmode currentmodestruct;
 static struct winuae_currentmode *currentmode = &currentmodestruct;
-#ifndef WIN32PORT
+#ifndef _WIN32
 typedef struct {
   WORD  dmSize;
   WORD  dmDriverExtra;
@@ -828,7 +828,7 @@ int isfullscreen (void)
 #define SM_CYVIRTUALSCREEN      79
 #define REFRESH_RATE_RAW 1
 #define REFRESH_RATE_LACE 2
-#ifndef WIN32PORT
+#ifndef _WIN32
 static int GetSystemMetrics (int nIndex) {
 	switch (nIndex) {
 		case SM_CXSCREEN: return 1024;

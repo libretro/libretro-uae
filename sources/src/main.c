@@ -95,7 +95,7 @@ TCHAR optionsfile[256];
 static unsigned long randseed;
 static unsigned long oldhcounter;
 
-#ifndef WIN32PORT
+#ifndef _WIN32
 // Prototype in sysdeps.h
 DWORD GetLastError(void)
 {
