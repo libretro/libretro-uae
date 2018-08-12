@@ -40,7 +40,7 @@ else ifeq ($(platform), osx)
    fpic := -fPIC -mmacosx-version-min=10.6
    LDFLAGS :=
    SHARED := -dynamiclib
-   PLATFLAGS +=  -DRETRO -DLSB_FIRST -DALIGN_DWORD
+   PLATFLAGS +=  -DRETRO -DALIGN_DWORD
 
 else ifeq ($(platform), android-armv7)
    CC = arm-linux-androideabi-gcc
@@ -50,7 +50,7 @@ else ifeq ($(platform), android-armv7)
    fpic := -fPIC
 	LDFLAGS := -lm
    SHARED :=  -Wl,--fix-cortex-a8 -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
-   PLATFLAGS += -DANDROID -DRETRO -DAND -DLSB_FIRST -DALIGN_DWORD -DA_ZIP
+   PLATFLAGS += -DANDROID -DRETRO -DAND -DALIGN_DWORD -DA_ZIP
 
 else ifeq ($(platform), android)
    CC = arm-linux-androideabi-gcc
@@ -60,7 +60,7 @@ else ifeq ($(platform), android)
    fpic := -fPIC
 	LDFLAGS := 
    SHARED :=  -Wl,--fix-cortex-a8 -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
-   PLATFLAGS += -DANDROID -DRETRO -DAND -DLSB_FIRST -DALIGN_DWORD -DARM_OPT_TEST=1
+   PLATFLAGS += -DANDROID -DRETRO -DAND -DALIGN_DWORD -DARM_OPT_TEST=1
 
 else ifeq ($(platform), wii)
    TARGET := $(TARGET_NAME)_libretro_$(platform).a
@@ -109,7 +109,7 @@ else
 ifneq ($(subplatform), 32)
    CFLAGS += -fno-aggressive-loop-optimizations
 endif
-   PLATFLAGS +=  -DRETRO -DLSB_FIRST -DALIGN_DWORD -DWIN32
+   PLATFLAGS +=  -DRETRO -DALIGN_DWORD -DWIN32
    TARGET := $(TARGET_NAME)_libretro.dll
    fpic := -fPIC
    SHARED := -shared -static-libgcc -s -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
