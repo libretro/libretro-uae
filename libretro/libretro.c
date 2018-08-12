@@ -29,8 +29,10 @@ char key_state2[512];
 bool opt_analog = false;
 static int firstps = 0;
 
+#if defined(NATMEM_OFFSET)
 extern uae_u8 *natmem_offset;
 extern uae_u32 natmem_size;
+#endif
 extern unsigned short int  bmp[EMULATOR_MAX_WIDTH*EMULATOR_MAX_HEIGHT];
 extern unsigned short int  savebmp[EMULATOR_MAX_WIDTH*EMULATOR_MAX_HEIGHT];
 extern int pauseg;
@@ -393,15 +395,19 @@ bool retro_unserialize(const void *data_, size_t size)
 
 void *retro_get_memory_data(unsigned id)
 {
+#if defined(NATMEM_OFFSET)
    if ( id == RETRO_MEMORY_SYSTEM_RAM )
       return natmem_offset;
+#endif
    return NULL;
 }
 
 size_t retro_get_memory_size(unsigned id)
 {
+#if defined(NATMEM_OFFSET)
    if ( id == RETRO_MEMORY_SYSTEM_RAM )
       return natmem_size;
+#endif
    return 0;
 }
 
