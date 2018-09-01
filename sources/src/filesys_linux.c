@@ -10,6 +10,9 @@
 
 #include <sys/time.h>
 
+#ifdef FTIME
+#include <sys/time.h>
+
 __BEGIN_DECLS
 
 struct timeb {
@@ -20,6 +23,8 @@ struct timeb {
 };
 
 extern int  ftime(struct timeb*  timebuf);
+#endif
+
 
 typedef int BOOL;
 
@@ -76,11 +81,13 @@ typedef int BOOL;
 #define FILE_SHARE_WRITE	0x00000002
 #define FILE_SHARE_DELETE	0x00000004
 
+#ifndef _WIN32
 typedef struct {
 	DWORD LowPart;
 	int32_t HighPart;
 	LONGLONG QuadPart;
 } LARGE_INTEGER;
+#endif
 
 #ifdef _WIN32
  #define S_IRGRP 00040
