@@ -94,9 +94,9 @@ chipset=aga\n"
 
 // Amiga default kickstarts
 
-#define KICK13_ROM "kick13.rom"
-#define KICK20_ROM "kick20.rom"
-#define KICK31_ROM "kick31.rom"
+#define A500_ROM 	"kick34005.A500"
+#define A600_ROM 	"kick40063.A600"
+#define A1200_ROM 	"kick40068.A1200"
 
 static char uae_machine[256];
 static char uae_kickstart[16];
@@ -198,17 +198,17 @@ static void update_variables(void)
 		if (strcmp(var.value, "A500") == 0)
 		{
 			strcat(uae_machine, A500);
-			strcpy(uae_kickstart, KICK13_ROM);
+			strcpy(uae_kickstart, A500_ROM);
 		}
 		if (strcmp(var.value, "A600") == 0)
 		{
 			strcat(uae_machine, A600);
-			strcpy(uae_kickstart, KICK20_ROM);
+			strcpy(uae_kickstart, A600_ROM);
 		}
 		if (strcmp(var.value, "A1200") == 0)
 		{
 			strcat(uae_machine, A1200);
-			strcpy(uae_kickstart, KICK31_ROM);
+			strcpy(uae_kickstart, A1200_ROM);
 		}
    }
 
@@ -602,23 +602,23 @@ bool retro_load_game(const struct retro_game_info *info)
 				if((strstr(full_path, "(A500)") != NULL) || (strstr(full_path, "(OCS)") != NULL))
 				{
 					// Use A500
-					printf("Found '(A500)' or '(OCS)' in filename '%s'. We will use the A500 with kickstart rom 1.3 configuration.\n", full_path);
+					printf("Found '(A500)' or '(OCS)' in filename '%s'. We will use a A500 with kickstart 1.3 r34.005 rom configuration.\n", full_path);
 					fprintf(configfile, A500);
-					path_join((char*)&kickstart, retro_system_directory, KICK13_ROM);
+					path_join((char*)&kickstart, retro_system_directory, A500_ROM);
 				}
 				else if((strstr(full_path, "(A600)") != NULL) || (strstr(full_path, "(ECS)") != NULL))
 				{
 					// Use A600
-					printf("Found '(A600)' or '(ECS)' in filename '%s'. We will use the A600 with kickstart rom 2.0 configuration.\n", full_path);
+					printf("Found '(A600)' or '(ECS)' in filename '%s'. We will use a A600 with kickstart 3.1 r40.063 rom configuration.\n", full_path);
 					fprintf(configfile, A600);
-					path_join((char*)&kickstart, retro_system_directory, KICK20_ROM);
+					path_join((char*)&kickstart, retro_system_directory, A600_ROM);
 				}
 				else if((strstr(full_path, "(A1200)") != NULL) || (strstr(full_path, "(AGA)") != NULL))
 				{
 					// Use A1200
-					printf("Found '(A1200)' or '(AGA)' in filename '%s'. We will use the A1200 with kickstart rom 3.1 configuration.\n", full_path);
+					printf("Found '(A1200)' or '(AGA)' in filename '%s'. We will use a A1200 with kickstart 3.1 r40.068 rom configuration.\n", full_path);
 					fprintf(configfile, A1200);
-					path_join((char*)&kickstart, retro_system_directory, KICK31_ROM);
+					path_join((char*)&kickstart, retro_system_directory, A1200_ROM);
 				}
 				else
 				{
