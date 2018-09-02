@@ -150,7 +150,9 @@ SOURCES_C += $(LIBRETRO)/libretro.c \
 				 $(LIBRETRO)/vkbd.c \
 				 $(LIBRETRO)/graph.c \
 				 $(LIBRETRO)/diskutils.c \
-				 $(LIBRETRO)/fontmsx.c 
+				 $(LIBRETRO)/fontmsx.c \
+				 $(LIBRETRO)/retro_files.c \
+				 $(LIBRETRO)/retro_strings.c 
 
 ifneq ($(STATIC_LINKING), 1)
 SOURCES_C += $(DEPS_DIR)/zlib/adler32.c \
