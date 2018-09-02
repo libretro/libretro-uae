@@ -11,10 +11,6 @@
 #include <sys/time.h>
 
 #ifdef FTIME
-#include <sys/time.h>
-
-__BEGIN_DECLS
-
 struct timeb {
     time_t          time;
     unsigned short  millitm;
@@ -22,7 +18,9 @@ struct timeb {
     short           dstflag;
 };
 
-extern int  ftime(struct timeb*  timebuf);
+extern int ftime(struct timeb*  timebuf);
+#else
+#include <sys/timeb.h>
 #endif
 
 
