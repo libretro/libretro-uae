@@ -630,7 +630,11 @@ bool retro_load_game(const struct retro_game_info *info)
 
 				// Write common config
 				fprintf(configfile, uae_config);
-				fprintf(configfile, "show_leds=true\n"); // FIXME : Bug if led are not shown ? (example hang in Rick Dangerous 2).
+				
+				// FIXME : Bug if show_leds is set to false
+				// If this parameter is set to false or not specified (default false) Rick Dangerous 2 (adf or whd version) hang when selecting level.
+				// But no impact since the parameter in RetroArch configuration overload this setting : If Leds is set to none, the led won't be drawn on screen and it works...
+				fprintf(configfile, "show_leds=true\n");
 								
 				// Verifiy kickstart
 				if(!file_exists(kickstart))

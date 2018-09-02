@@ -19,6 +19,7 @@
 #include "retro_files.h"
 
 #include <sys/stat.h> 
+#include <stdio.h>
 #include <string.h>
 
 // Verify if file exists
