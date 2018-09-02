@@ -74,31 +74,42 @@ const char *retro_content_directory;
 
 // Amiga default models
 
-#define A500 " \
-cpu_type=68000\n \
-chipmem_size=2\n \
-bogomem_size=7\n \
+#define A500 "\
+cpu_type=68000\n\
+chipmem_size=2\n\
+bogomem_size=7\n\
 chipset=ocs\n"
 
-#define A600 " \
-cpu_type=68000\n \
-chipmem_size=2\n \
-fastmem_size=4\n \
+#define A600 "\
+cpu_type=68000\n\
+chipmem_size=2\n\
+fastmem_size=4\n\
 chipset=ecs\n"
 
-#define A1200 " \
-cpu_type=68ec020\n \
-chipmem_size=4\n \
-fastmem_size=8\n \
+#define A1200 "\
+cpu_type=68ec020\n\
+chipmem_size=4\n\
+fastmem_size=8\n\
 chipset=aga\n"
 
+// Amiga default kickstarts
+
+#define KICK13_ROM "kick13.rom"
+#define KICK20_ROM "kick20.rom"
+#define KICK31_ROM "kick31.rom"
+
+static char uae_machine[256];
+static char uae_kickstart[16];
 static char uae_config[1024];
 
 void retro_set_environment(retro_environment_t cb)
 {
+	// Max resolution is 640x512 for PAL and 640x400 for NTSC (they works fine when doubled)
+	// PUAE recommanded resolution is 720x568 for PAL with overscan and 720x480 for NTSC with overscan
+	
    struct retro_variable variables[] = {
      { "puae_model", "Model; A600|A1200|A500", },
-     { "puae_resolution", "Internal resolution; 720x568|640x400|640x432|640x480|640x540|704x480|704x540|720x480|720x540|800x600|1024x768", }, // PUAE recommanded resolution is 720x568
+     { "puae_resolution", "Internal resolution; 640x512|640x400|720x568|720x480|640x432|640x480|640x540|704x480|704x540|720x540|800x600|1024x768", },
      { "puae_analog","Use Analog; OFF|ON", },
      { "puae_leds","Leds; Standard|Simplified|None", },
      { "puae_cpu_speed", "CPU speed; real|max", },
@@ -127,6 +138,7 @@ void retro_set_environment(retro_environment_t cb)
 
 static void update_variables(void)
 {
+	uae_machine[0] = '\0';
 	uae_config[0] = '\0';
    struct retro_variable var = {0};
 
@@ -184,11 +196,20 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
 		if (strcmp(var.value, "A500") == 0)
-			strcat(uae_config, A500);
+		{
+			strcat(uae_machine, A500);
+			strcpy(uae_kickstart, KICK13_ROM);
+		}
 		if (strcmp(var.value, "A600") == 0)
-			strcat(uae_config, A600);
+		{
+			strcat(uae_machine, A600);
+			strcpy(uae_kickstart, KICK20_ROM);
+		}
 		if (strcmp(var.value, "A1200") == 0)
-			strcat(uae_config, A1200);
+		{
+			strcat(uae_machine, A1200);
+			strcpy(uae_kickstart, KICK31_ROM);
+		}
    }
 
    var.key = "puae_cpu_speed";
@@ -543,7 +564,6 @@ sortie:
 #define HDZ_FILE_EXT "hdz"
 #define UAE_FILE_EXT "uae"
 #define LIBRETRO_PUAE_CONF "puae_libretro.uae"
-#define KICK_ROM "kick.rom"
 #define WHDLOAD_HDF "WHDLoad.hdf"
 
 bool retro_load_game(const struct retro_game_info *info)
@@ -556,30 +576,19 @@ bool retro_load_game(const struct retro_game_info *info)
   
   if (*info->path)
   {
+	  const char *full_path = (const char*)info->path;
+			
 	  // If argument is a disk or hard drive image file file
-	  if(		strendswith((const char*)info->path, ADF_FILE_EXT)
-			||	strendswith((const char*)info->path, FDI_FILE_EXT)
-			||	strendswith((const char*)info->path, DMS_FILE_EXT)
-			||	strendswith((const char*)info->path, IPF_FILE_EXT)
-			||	strendswith((const char*)info->path, ZIP_FILE_EXT)
-			||	strendswith((const char*)info->path, HDF_FILE_EXT)
-			||	strendswith((const char*)info->path, HDZ_FILE_EXT))
+	  if(		strendswith(full_path, ADF_FILE_EXT)
+			||	strendswith(full_path, FDI_FILE_EXT)
+			||	strendswith(full_path, DMS_FILE_EXT)
+			||	strendswith(full_path, IPF_FILE_EXT)
+			||	strendswith(full_path, ZIP_FILE_EXT)
+			||	strendswith(full_path, HDF_FILE_EXT)
+			||	strendswith(full_path, HDZ_FILE_EXT))
 	  {
-			printf("Game '%s' is a disk or hard drive image file.\n", (const char*)info->path);
+			printf("Game '%s' is a disk or hard drive image file.\n", full_path);
 			
-			// Init kickstart
-			char kickstart[RETRO_PATH_MAX];
-			path_join((char*)&kickstart, retro_system_directory, KICK_ROM);
-			
-			// Verifiy kickstart
-			if(!file_exists(kickstart))
-			{
-				// Kickstart rom not found
-				fprintf(stderr, "Kickstart rom '%s' not found.\n", (const char*)&kickstart);
-				fprintf(stderr, "You must have a kickstart file ('kick.rom') in your RetroArch system directory to launch an disk or hard drive image file.\n");
-				return false;	  
-			}
-
 			path_join((char*)&RPATH, retro_save_directory, LIBRETRO_PUAE_CONF);
 			printf("Generating temporary uae config file '%s'.\n", (const char*)&RPATH);
 
@@ -587,14 +596,57 @@ bool retro_load_game(const struct retro_game_info *info)
 			FILE * configfile;
 			if((configfile = fopen(RPATH, "w")))
 			{
+				char kickstart[RETRO_PATH_MAX];
+
+				// If a machine was specified in the name of the game
+				if((strstr(full_path, "(A500)") != NULL) || (strstr(full_path, "(OCS)") != NULL))
+				{
+					// Use A500
+					printf("Found '(A500)' or '(OCS)' in filename '%s'. We will use the A500 with kickstart rom 1.3 configuration.\n", full_path);
+					fprintf(configfile, A500);
+					path_join((char*)&kickstart, retro_system_directory, KICK13_ROM);
+				}
+				else if((strstr(full_path, "(A600)") != NULL) || (strstr(full_path, "(ECS)") != NULL))
+				{
+					// Use A600
+					printf("Found '(A600)' or '(ECS)' in filename '%s'. We will use the A600 with kickstart rom 2.0 configuration.\n", full_path);
+					fprintf(configfile, A600);
+					path_join((char*)&kickstart, retro_system_directory, KICK20_ROM);
+				}
+				else if((strstr(full_path, "(A1200)") != NULL) || (strstr(full_path, "(AGA)") != NULL))
+				{
+					// Use A1200
+					printf("Found '(A1200)' or '(AGA)' in filename '%s'. We will use the A1200 with kickstart rom 3.1 configuration.\n", full_path);
+					fprintf(configfile, A1200);
+					path_join((char*)&kickstart, retro_system_directory, KICK31_ROM);
+				}
+				else
+				{
+					// No machine specified we will use the configured one
+					printf("No machine specified in filename '%s'. We will use the default configuration.\n", full_path);
+					fprintf(configfile, uae_machine);
+					path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
+				}
+
 				// Write common config
 				fprintf(configfile, uae_config);
 				fprintf(configfile, "show_leds=true\n"); // FIXME : Bug if led are not shown ? (example hang in Rick Dangerous 2).
+								
+				// Verifiy kickstart
+				if(!file_exists(kickstart))
+				{
+					// Kickstart rom not found
+					fprintf(stderr, "Kickstart rom '%s' not found.\n", (const char*)&kickstart);
+					fprintf(stderr, "You must have a correct kickstart file ('%s') in your RetroArch system directory to launch an disk or hard drive image file.\n", kickstart);
+					fclose(configfile);
+					return false;	  
+				}
+
 				fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
 
 				// If argument is a hard drive image file
-				if(		strendswith((const char*)info->path, HDF_FILE_EXT)
-					||	strendswith((const char*)info->path, HDZ_FILE_EXT))
+				if(		strendswith(full_path, HDF_FILE_EXT)
+					||	strendswith(full_path, HDZ_FILE_EXT))
 				{
 					// Init WHDLoad
 					char whdload[RETRO_PATH_MAX];
@@ -612,12 +664,12 @@ bool retro_load_game(const struct retro_game_info *info)
 					
 					// Write hard drives informations					
 					fprintf(configfile, "hardfile=read-write,32,1,2,512,%s\n", (const char*)&whdload);
-					fprintf(configfile, "hardfile=read-write,32,1,2,512,%s\n", (const char*)info->path);
+					fprintf(configfile, "hardfile=read-write,32,1,2,512,%s\n", full_path);
 				}
 				else
 				{
 					// Write floppy information
-					fprintf(configfile, "floppy0=%s\n", (const char*)info->path);
+					fprintf(configfile, "floppy0=%s\n", full_path);
 				}
 				fclose(configfile);
 			}
@@ -629,11 +681,10 @@ bool retro_load_game(const struct retro_game_info *info)
 			}	  
 	  }
 	  // If argument is an uae file
-	  else if(strendswith((const char*)info->path, UAE_FILE_EXT))
+	  else if(strendswith(full_path, UAE_FILE_EXT))
 	  {
-			printf("Game '%s' is an UAE config file.\n", (const char*)info->path);
+			printf("Game '%s' is an UAE config file.\n", full_path);
 		  
-			const char *full_path = (const char*)info->path;
 			strncpy(RPATH, full_path, sizeof(RPATH));
 
 			// checking parsed file for custom resolution
@@ -654,7 +705,7 @@ bool retro_load_game(const struct retro_game_info *info)
 	  else
 	  {
 			// Unsupported file format
-			fprintf(stderr, "Content '%s'. Unsupported file format.\n", (const char*)info->path);
+			fprintf(stderr, "Content '%s'. Unsupported file format.\n", full_path);
 			return false;	  
 	  }
   }
