@@ -10,7 +10,7 @@
 
 #include <sys/time.h>
 
-#ifdef FTIME
+#ifndef _WIN32
 struct timeb {
     time_t          time;
     unsigned short  millitm;
@@ -19,10 +19,7 @@ struct timeb {
 };
 
 extern int ftime(struct timeb*  timebuf);
-#else
-#include <sys/timeb.h>
 #endif
-
 
 typedef int BOOL;
 
