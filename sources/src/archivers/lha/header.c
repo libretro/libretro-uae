@@ -208,8 +208,6 @@ unix_to_generic_filename(char *name, int len)
 #ifdef FTIME
 #include <sys/time.h>
 
-__BEGIN_DECLS
-
 struct timeb {
     time_t          time;
     unsigned short  millitm;
