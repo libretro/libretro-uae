@@ -21,13 +21,7 @@ https://github.com/GnoStiC/PUAE
 
 Credits to Mustafa 'GnoStiC' TUFAN
 
-
 And of course for the RetroArch/Libretro team : "http://www.libretro.org/"
-
-It's a quick hack.
-At this time , works the basis but buggy on win/linux/android.
-
-Remember, everything not working well, it's a debug release, so expect bugs.
 
 ## Default Controls
 
@@ -44,14 +38,15 @@ X
 Y   E-UAE GUI
 ```
 
-## Disk images and WHDLoad support
+## Disk images, WHDLoad and M3U support
 You can pass a disk or hdd image (WHDLoad) as a rom.
 
 Supported format are :
 - adf, dms, fdi, ipf, zip files for disk images.
 - hdf, hdz for hdd images.
+- m3u for multiple disk images.
 
-When passing a disk or hdd image as parameter the core will generate a temporary uae configuration file in RetroArch saves directory and use it to automatically launch the game.
+When passing a disk image, a hdd image or a m3u file as parameter the core will generate a temporary uae configuration file in RetroArch saves directory and use it to automatically launch the game.
 
 ### Configuration
 To generate the temporary uae configuration file the core will use the core options configured in RetroArch.
@@ -79,17 +74,60 @@ It is critical to use kickstarts with the right MD5, otherwise the core might no
 |kick40063.A600|Kickstart v3.1 (Rev. 40.063)|Amiga 600|e40a5dfb3d017ba8779faba30cbd1c8e|
 |kick40068.A1200|Kickstart v3.1 (Rev. 40.068)|Amiga 1200|646773759326fbac3b2311fd8c8793ee|
 
+### M3U Support
+When you have a multi disk game, you can use a m3u file to specify each disk of the game and change them from the RetroArch Disk control interface.
+
+A M3U file is a simple text file with one disk per line (see https://en.wikipedia.org/wiki/M3U).
+
+Example :
+
+Simpsons, The - Bart vs. The Space Mutants.m3u
+```
+Simpsons, The - Bart vs. The Space Mutants_Disk1.adf
+Simpsons, The - Bart vs. The Space Mutants_Disk2.adf
+```
+Path can be absolute or relative to the location of the M3U file.
+
+When a game ask for it, you can change the current disk in the RetroArch 'Disk Control' menu :
+- Eject the current disk with 'Disk Cycle Tray Status'.
+- Select the right disk index.
+- Insert the new disk with 'Disk Cycle Tray Status'.
+
+Note : zip support is provided by RetroArch and is done before passing the game to the core. So, when using a m3u file, the specified disk image must be uncompressed (adf, dms, fdi, ipf file formats).
+
 ### WHDLoad
 To use WHDLoad games you'll need to have a prepared WHDLoad image named 'WHDLoad.hdf' in RetroArch system directory.
 
-In this WHDLoad image you must have the three kickstart roms in (kick34005.A500, kick40063.A600, kick40068.A1200) 'Dev/Kickstart' directory.
+In this WHDLoad image you must have the three kickstart roms (kick34005.A500, kick40063.A600, kick40068.A1200) in 'Dev/Kickstart' directory.
 
-To do this, you can consult the excellent tutorial by Allan Lindqvist (http://lindqvist.synology.me/wordpress/?page_id=182) just jump to the 'Create WHDLoad.hdf' section.
+To do this, you can consult the excellent tutorial made by Allan Lindqvist (http://lindqvist.synology.me/wordpress/?page_id=182) just jump to the 'Create WHDLoad.hdf' section.
 
-### Special
-You can specify which amiga model is needed for each specific game.
+The core only support HDD image files format (hdf and hdz) and slave file must be named 'game.Slave'. 
 
-To do this just add these strings to your adf or hdf filename :
+### Create a hdf file for a game 
+If you have a WHDLoad game in a zip or a directory, you will have to create an image file.
+
+To do this you can use ADFOpus (http://adfopus.sourceforge.net/) or amitools (https://github.com/cnvogelg/amitools).
+
+Example, to create a hdf file from a zipped WHDLoad game :
+- Extract files from the zip to a directory.
+- Go to the directory where files were extracted.
+- Rename the main slave file (ending with '.Slave') to 'game.Slave' (certains games have many slave files, guess wich is the right one).
+- Pack the directory in a hdf file :
+	- Using ADFOpus (see [Allan Lindqvist's tutorial](http://lindqvist.synology.me/wordpress/?page_id=182)).
+	- Using amitools.
+	
+The amitools command to use is :
+```
+xdftool -f <NAME_OF_HDF> pack <GAME_DIRECTORY> size=<SIZE_OF_HDF>
+```
+
+Note the size of the HDF specified by SIZE_OF_HDF must be greater than size of the directory to store the additional filesystem informations (I use a 1.25 ratio).
+
+### Game that needs a specific Amiga model (AGA games for instance)
+If a game needs a specific Amiga model (AGA games for instance), you can specify which amiga model to use.
+
+To do this just add these strings to your adf, hdf or m3u filename :
 - "(A500)" or "(OCS)" to use an Amiga 500 model.
 - "(A600)" or "(ECS)" to use an Amiga 600 model.
 - "(A1200)" or "(AGA)" to use an Amiga 1200 model.
@@ -106,8 +144,8 @@ Look at the sample configuration file "RickDangerous.uae" for help. You can use 
 You can find the whole documentation in [configuration.txt](configuration.txt).
 
 ## Knows Bugs
-- When load savesate , exiting GUI without reset. You have to re-enter GUI and do the reset.
-- Everything not working well, It's a debug release , so expect to more bug.
+- When load savesate, exiting GUI without reset. You have to re-enter GUI and do the reset.
+- It's a debug release, so expect bug.
 
 
 We plan to use the core of winuae in the future, but no release date for now.
