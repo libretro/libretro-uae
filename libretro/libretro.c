@@ -30,6 +30,8 @@ char key_state[512];
 char key_state2[512];
 bool opt_analog = false;
 static int firstps = 0;
+int CONTENT_IS_CFG=0;
+
 
 #if defined(NATMEM_OFFSET)
 extern uae_u8 *natmem_offset;
@@ -688,7 +690,7 @@ bool retro_load_game(const struct retro_game_info *info)
 	  else if(strendswith(full_path, UAE_FILE_EXT))
 	  {
 			printf("Game '%s' is an UAE config file.\n", full_path);
-		  
+		    CONTENT_IS_CFG = 1;
 			strncpy(RPATH, full_path, sizeof(RPATH));
 
 			// checking parsed file for custom resolution
