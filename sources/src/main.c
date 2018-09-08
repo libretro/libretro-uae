@@ -778,6 +778,7 @@ static void parse_cmdline (int argc, TCHAR **argv)
 
 #ifdef __LIBRETRO__
 #undef OPTIONS_IN_HOME
+extern int CONTENT_IS_CFG;
 #endif
 
 static void parse_cmdline_and_init_file (int argc, TCHAR **argv)
@@ -808,16 +809,31 @@ _tcscat (optionsfile, _T("/"));
 	parse_cmdline_2 (argc, argv);
 
 	_tcscat (optionsfile, restart_config);
+    
+    if(CONTENT_IS_CFG==0){
 
-
-	if (argc > 1 && ! target_cfgfile_load (&currprefs, argv[1], 0, default_config)) {
-		write_log (_T("failed to load config '%s'\n"), optionsfile);
+		if (! target_cfgfile_load (&currprefs, optionsfile, 0, default_config)) {
+			write_log (_T("failed to load config '%s'\n"), optionsfile);
 #ifdef OPTIONS_IN_HOME
-		/* sam: if not found in $HOME then look in current directory */
-		_tcscpy (optionsfile, restart_config);
-		target_cfgfile_load (&currprefs, optionsfile, 0, default_config);
+			/* if not found in $HOME then look in current directory */
+			_tcscpy (optionsfile, restart_config);
+			target_cfgfile_load (&currprefs, optionsfile, 0, default_config);
 #endif
+		}
+
 	}
+	else {
+		if (argc > 1 && ! target_cfgfile_load (&currprefs, argv[1], 0, default_config)) {
+			write_log (_T("failed to load config '%s'\n"), optionsfile);
+#ifdef OPTIONS_IN_HOME
+			/* if not found in $HOME then look in current directory */
+			_tcscpy (optionsfile, restart_config);
+			target_cfgfile_load (&currprefs, optionsfile, 0, default_config);
+#endif
+		}
+
+	}
+
 	fixup_prefs (&currprefs);
 
 	parse_cmdline (argc, argv);
@@ -981,6 +997,19 @@ if(romnotfound==1){
 	pause_select();
 }
 #endif
+if(CONTENT_IS_CFG==0){
+	printf("RPATH:(%s)\n",RPATH);
+	if (currprefs.nr_floppies-1 < 0 ) {
+		currprefs.nr_floppies = 0  + 1;
+	}
+	//check whether drive is enabled
+	if (currprefs.floppyslots[0].dfxtype < 0) {
+		changed_prefs.floppyslots[0 ].dfxtype = 0;
+		DISK_check_change();
+	}
+	strcpy (changed_prefs.floppyslots[0 ].df,RPATH);
+	DISK_check_change();
+    }
 	gui_display (-1);
 	do_start_program ();
 }
@@ -1162,8 +1191,7 @@ void real_main (int argc, TCHAR **argv)
 	restart_program = 1;
 
 	fetch_configurationpath (restart_config, sizeof (restart_config) / sizeof (TCHAR));
-
-	if(argc>1) {
+    if(argc>1 && CONTENT_IS_CFG==1) {
 		_tcscat (restart_config, argv[1]);
 	} else  _tcscat (restart_config, OPTIONSFILENAME);
 	default_config = 1;
