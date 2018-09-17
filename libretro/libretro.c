@@ -103,18 +103,31 @@ chipset=aga\n"
 #define A600_ROM 	"kick40063.A600"
 #define A1200_ROM 	"kick40068.A1200"
 
+#define PUAE_VIDEO_PAL 		0x01
+#define PUAE_VIDEO_NTSC 	0x02
+#define PUAE_VIDEO_HIRES 	0x04
+#define PUAE_VIDEO_CROP 	0x08
+
+#define PUAE_VIDEO_PAL_OV_LO 	PUAE_VIDEO_PAL
+#define PUAE_VIDEO_PAL_CR_LO 	PUAE_VIDEO_PAL|PUAE_VIDEO_CROP
+#define PUAE_VIDEO_NTSC_OV_LO 	PUAE_VIDEO_NTSC
+#define PUAE_VIDEO_NTSC_CR_LO 	PUAE_VIDEO_NTSC|PUAE_VIDEO_CROP
+#define PUAE_VIDEO_PAL_OV_HI 	PUAE_VIDEO_PAL|PUAE_VIDEO_HIRES
+#define PUAE_VIDEO_PAL_CR_HI 	PUAE_VIDEO_PAL|PUAE_VIDEO_CROP|PUAE_VIDEO_HIRES
+#define PUAE_VIDEO_NTSC_OV_HI 	PUAE_VIDEO_NTSC|PUAE_VIDEO_HIRES
+#define PUAE_VIDEO_NTSC_CR_HI 	PUAE_VIDEO_NTSC|PUAE_VIDEO_CROP|PUAE_VIDEO_HIRES
+
 static char uae_machine[256];
 static char uae_kickstart[16];
 static char uae_config[1024];
 
 void retro_set_environment(retro_environment_t cb)
 {
-	// Max resolution is 640x512 for PAL and 640x400 for NTSC (they works fine when doubled)
-	// PUAE recommanded resolution is 720x568 for PAL with overscan and 720x480 for NTSC with overscan
-	
    struct retro_variable variables[] = {
      { "puae_model", "Model; A600|A1200|A500", },
-     { "puae_resolution", "Internal resolution; 640x512|640x400|720x568|720x480|640x432|640x480|640x540|704x480|704x540|720x540|800x600|1024x768", },
+     { "puae_video_standard", "Video standard; PAL|NTSC", },
+     { "puae_video_hires", "High resolution; false|true", },
+     { "puae_video_crop_overscan", "Crop overscan; false|true", },
      { "puae_analog","Use Analog; OFF|ON", },
      { "puae_leds","Leds; Standard|Simplified|None", },
      { "puae_cpu_speed", "CPU speed; real|max", },
@@ -125,8 +138,7 @@ void retro_set_environment(retro_environment_t cb)
      { "puae_sound_interpol", "Sound interpolation; none|rh|crux|sync", },
      { "puae_floppy_speed", "Floppy speed; 100|200|300|400|500|600|700|800", },
      { "puae_immediate_blits", "Immediate blit; false|true", },
-     { "puae_ntsc", "NTSC Mode; false|true", },
-     { "puae_gfx_linemode", "Line mode; double|none", }, // Removed scanline, we have shaders for this
+     { "puae_ntsc", "NTSC chipset; false|true", },
      { "puae_gfx_correct_aspect", "Correct aspect ratio; true|false", },
      { "puae_gfx_center_vertical", "Vertical centering; simple|smart|none", },
      { "puae_gfx_center_horizontal", "Horizontal centering; simple|smart|none", },
@@ -143,25 +155,60 @@ void retro_set_environment(retro_environment_t cb)
 
 static void update_variables(void)
 {
-	uae_machine[0] = '\0';
-	uae_config[0] = '\0';
+   uae_machine[0] = '\0';
+   uae_config[0] = '\0';
+   unsigned int video_config = 0;
    struct retro_variable var = {0};
 
-   var.key = "puae_resolution";
+   var.key = "puae_model";
    var.value = NULL;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      char *pch;
-      char str[100];
-      snprintf(str, sizeof(str), var.value);
+		if (strcmp(var.value, "A500") == 0)
+		{
+			strcat(uae_machine, A500);
+			strcpy(uae_kickstart, A500_ROM);
+		}
+		if (strcmp(var.value, "A600") == 0)
+		{
+			strcat(uae_machine, A600);
+			strcpy(uae_kickstart, A600_ROM);
+		}
+		if (strcmp(var.value, "A1200") == 0)
+		{
+			strcat(uae_machine, A1200);
+			strcpy(uae_kickstart, A1200_ROM);
+		}
+   }
 
-      pch = strtok(str, "x");
-      if (pch)
-         defaultw = strtoul(pch, NULL, 0);
-      pch = strtok(NULL, "x");
-      if (pch)
-         defaulth = strtoul(pch, NULL, 0);
+   var.key = "puae_video_standard";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+	   if(strcmp(var.value, "PAL") == 0)
+		   video_config |= PUAE_VIDEO_PAL;
+	   else
+		   video_config |= PUAE_VIDEO_NTSC;
+   }
+
+   var.key = "puae_video_hires";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+	   if(strcmp(var.value, "true") == 0)
+		   video_config |= PUAE_VIDEO_HIRES;
+   }
+
+   var.key = "puae_video_crop_overscan";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+	   if(strcmp(var.value, "true") == 0)
+		   video_config |= PUAE_VIDEO_CROP;
    }
 
    var.key = "puae_analog";
@@ -193,28 +240,6 @@ static void update_variables(void)
       {
         ledtype = 2;  
       }
-   }
-
-   var.key = "puae_model";
-   var.value = NULL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-		if (strcmp(var.value, "A500") == 0)
-		{
-			strcat(uae_machine, A500);
-			strcpy(uae_kickstart, A500_ROM);
-		}
-		if (strcmp(var.value, "A600") == 0)
-		{
-			strcat(uae_machine, A600);
-			strcpy(uae_kickstart, A600_ROM);
-		}
-		if (strcmp(var.value, "A1200") == 0)
-		{
-			strcat(uae_machine, A1200);
-			strcpy(uae_kickstart, A1200_ROM);
-		}
    }
 
    var.key = "puae_cpu_speed";
@@ -307,16 +332,6 @@ static void update_variables(void)
 		strcat(uae_config, "\n");
    }
 
-   var.key = "puae_gfx_linemode";
-   var.value = NULL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-		strcat(uae_config, "gfx_linemode=");
-		strcat(uae_config, var.value);
-		strcat(uae_config, "\n");
-   }
-
    var.key = "puae_gfx_correct_aspect";
    var.value = NULL;
 
@@ -345,6 +360,78 @@ static void update_variables(void)
 		strcat(uae_config, "gfx_center_horizontal=");
 		strcat(uae_config, var.value);
 		strcat(uae_config, "\n");
+   }
+   
+	// Setting resolution
+	// According to PUAE configuration.txt :
+	//
+	// To emulate a high-resolution, fully overscanned PAL screen - either
+	// non-interlaced with line-doubling, or interlaced - you need to use a
+	// display of at least 720 by 568 pixels. If you specify a smaller size,
+	// E-UAE's display will be clipped to fit (and you can use the gfx_center_*
+	// options - see below - to centre the clipped region of the display).
+	// Similarly, to fully display an over-scanned lo-res PAL screen, you need a
+	// display of 360 by 284 pixels.
+	//
+	// So, here are the standard resolutions :
+	// - **360x284**: PAL Low resolution with overscan
+	// - **320x256**: PAL Low resolution cropped/clipped (without the "borders")
+	// - **360x240**: NTSC Low resolution with overscan
+	// - **320×200**: NTSC Low resolution cropped/clipped (without the "borders")
+	// - **720x568**: PAL High resolution with overscan
+	// - **640×512**: PAL High resolution cropped/clipped (without the "borders")
+	// - **720x480**: NTSC High resolution with overscan
+	// - **640×400**: NTSC High resolution cropped/clipped (without the "borders")
+   switch(video_config)
+   {
+		case PUAE_VIDEO_PAL_OV_LO:
+			defaultw = 360;
+			defaulth = 284;
+			strcat(uae_config, "gfx_lores=true\n");
+			strcat(uae_config, "gfx_linemode=none\n");
+			break;
+		case PUAE_VIDEO_PAL_CR_LO:
+			defaultw = 320;
+			defaulth = 256;
+			strcat(uae_config, "gfx_lores=true\n");
+			strcat(uae_config, "gfx_linemode=none\n");
+			break;
+		case PUAE_VIDEO_NTSC_OV_LO:
+			defaultw = 360;
+			defaulth = 240;
+			strcat(uae_config, "gfx_lores=true\n");
+			strcat(uae_config, "gfx_linemode=none\n");
+			break;
+		case PUAE_VIDEO_NTSC_CR_LO:
+			defaultw = 320;
+			defaulth = 200;
+			strcat(uae_config, "gfx_lores=true\n");
+			strcat(uae_config, "gfx_linemode=none\n");
+			break;
+		case PUAE_VIDEO_PAL_OV_HI:
+			defaultw = 720;
+			defaulth = 568;
+			strcat(uae_config, "gfx_lores=false\n");
+			strcat(uae_config, "gfx_linemode=double\n");
+			break;
+		case PUAE_VIDEO_PAL_CR_HI:
+			defaultw = 640;
+			defaulth = 512;
+			strcat(uae_config, "gfx_lores=false\n");
+			strcat(uae_config, "gfx_linemode=double\n");
+			break;
+		case PUAE_VIDEO_NTSC_OV_HI:
+			defaultw = 720;
+			defaulth = 480;
+			strcat(uae_config, "gfx_lores=false\n");
+			strcat(uae_config, "gfx_linemode=double\n");
+			break;
+		case PUAE_VIDEO_NTSC_CR_HI:
+			defaultw = 640;
+			defaulth = 400;
+			strcat(uae_config, "gfx_lores=false\n");
+			strcat(uae_config, "gfx_linemode=double\n");
+			break;
    }
 }
 
