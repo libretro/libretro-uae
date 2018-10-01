@@ -5,6 +5,7 @@
 #include "libretro-glue.h"
 #include "retro_files.h"
 #include "retro_strings.h"
+#include "retro_disk_control.h"
 #include "sources/src/include/uae_types.h"
 
 #define EMULATOR_DEF_WIDTH 640
@@ -71,6 +72,10 @@ static struct retro_input_descriptor input_descriptors[] = {
 const char *retro_save_directory;
 const char *retro_system_directory;
 const char *retro_content_directory;
+
+// Disk control context
+
+static dc_storage* dc;
 
 // Amiga default models
 
@@ -364,6 +369,99 @@ static void retro_wrap_emulator(void)
    }
 }
 
+//*****************************************************************************
+//*****************************************************************************
+// Disk control
+extern void disk_insert (int num, const TCHAR *name, bool forcedwriteprotect);
+extern void disk_eject (int num);
+
+static bool disk_set_eject_state(bool ejected)
+{
+	if (dc)
+	{
+		dc->eject_state = ejected;
+		
+		if(dc->eject_state)
+			disk_eject(0);
+		else
+			disk_insert(0, dc->files[dc->index], false);			
+	}
+	
+	return true;
+}
+
+static bool disk_get_eject_state(void)
+{
+	if (dc)
+		return dc->eject_state;
+	
+	return true;
+}
+
+static unsigned disk_get_image_index(void)
+{
+	if (dc)
+		return dc->index;
+	
+	return 0;
+}
+
+static bool disk_set_image_index(unsigned index)
+{
+	// Insert disk
+	if (dc)
+	{
+		// Same disk...
+		// This can mess things in the emu
+		if(index == dc->index)
+			return true;
+		
+		if ((index < dc->count) && (dc->files[index]))
+		{
+			dc->index = index;
+			printf("Disk (%d) inserted into drive A : %s\n", dc->index+1, dc->files[dc->index]);
+			return true;
+		}
+	}
+	
+	return false;
+}
+
+static unsigned disk_get_num_images(void)
+{
+	if (dc)
+		return dc->count;
+
+	return 0;
+}
+
+static bool disk_replace_image_index(unsigned index, const struct retro_game_info *info)
+{
+	// Not implemented
+	// No many infos on this in the libretro doc...
+	return false;
+}
+
+static bool disk_add_image_index(void)
+{
+	// Not implemented
+	// No many infos on this in the libretro doc...
+	return false;
+}
+
+static struct retro_disk_control_callback disk_interface = {
+   disk_set_eject_state,
+   disk_get_eject_state,
+   disk_get_image_index,
+   disk_set_image_index,
+   disk_get_num_images,
+   disk_replace_image_index,
+   disk_add_image_index,
+};
+
+//*****************************************************************************
+//*****************************************************************************
+// Init
 void retro_init(void)
 {
    enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
@@ -401,6 +499,10 @@ void retro_init(void)
    printf("Retro SAVE_DIRECTORY %s\n",retro_save_directory);
    printf("Retro CONTENT_DIRECTORY %s\n",retro_content_directory);
 
+ 	// Disk control interface
+	dc = dc_create();
+	environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &disk_interface);
+
    memset(key_state, 0, sizeof(key_state));
    memset(key_state2, 0, sizeof(key_state2));
 
@@ -432,6 +534,10 @@ void retro_deinit(void)
    if(emuThread)
       co_delete(emuThread);
    emuThread = 0;
+
+	// Clean the m3u storage
+	if(dc)
+		dc_free(dc);
 }
 
 unsigned retro_api_version(void)
@@ -452,7 +558,7 @@ void retro_get_system_info(struct retro_system_info *info)
    info->library_version  = "v2.6.1";
    info->need_fullpath    = true;
    info->block_extract    = false;	
-   info->valid_extensions = "adf|dms|fdi|ipf|zip|hdf|hdz|uae";
+   info->valid_extensions = "adf|dms|fdi|ipf|zip|hdf|hdz|uae|m3u";
 }
 
 void retro_get_system_av_info(struct retro_system_av_info *info)
@@ -563,6 +669,7 @@ sortie:
 #define HDF_FILE_EXT "hdf"
 #define HDZ_FILE_EXT "hdz"
 #define UAE_FILE_EXT "uae"
+#define M3U_FILE_EXT "m3u"
 #define LIBRETRO_PUAE_CONF "puae_libretro.uae"
 #define WHDLOAD_HDF "WHDLoad.hdf"
 
@@ -585,9 +692,10 @@ bool retro_load_game(const struct retro_game_info *info)
 			||	strendswith(full_path, IPF_FILE_EXT)
 			||	strendswith(full_path, ZIP_FILE_EXT)
 			||	strendswith(full_path, HDF_FILE_EXT)
-			||	strendswith(full_path, HDZ_FILE_EXT))
+			||	strendswith(full_path, HDZ_FILE_EXT)
+			||	strendswith(full_path, M3U_FILE_EXT))
 	  {
-			printf("Game '%s' is a disk or hard drive image file.\n", full_path);
+			printf("Game '%s' is a disk, a hard drive image or a m3u file.\n", full_path);
 			
 			path_join((char*)&RPATH, retro_save_directory, LIBRETRO_PUAE_CONF);
 			printf("Generating temporary uae config file '%s'.\n", (const char*)&RPATH);
@@ -672,8 +780,31 @@ bool retro_load_game(const struct retro_game_info *info)
 				}
 				else
 				{
-					// Write floppy information
-					fprintf(configfile, "floppy0=%s\n", full_path);
+					// If argument is a hard drive image file
+					if(strendswith(full_path, M3U_FILE_EXT))
+					{
+						// Parse the m3u file
+						dc_parse_m3u(dc, full_path);
+
+						// Some debugging
+						printf("m3u file parsed, %d file(s) found\n", dc->count);
+						for(unsigned i = 0; i < dc->count; i++)
+						{
+							printf("file %d: %s\n", i+1, dc->files[i]);
+						}						
+					}
+					else
+					{
+						// Add the file to disk control context
+						// Maybe, in a later version of retroarch, we could add disk on the fly (didn't find how to do this)
+						dc_add_file(dc, full_path);
+					}
+
+					// Init first disk
+					dc->index = 0;
+					dc->eject_state = false;
+					printf("Disk (%d) inserted into drive A : %s\n", dc->index+1, dc->files[dc->index]);
+					fprintf(configfile, "floppy0=%s\n", dc->files[0]);
 				}
 				fclose(configfile);
 			}
