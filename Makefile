@@ -18,6 +18,11 @@ endif
 
 TARGET_NAME := puae
 
+GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
+ifneq ($(GIT_VERSION)," unknown")
+	CFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
+endif
+
 CORE_DIR  := .
 ROOT_DIR  := .
 

@@ -136,6 +136,42 @@ Example : When launching "Alien Breed 2 (AGA).hdf" file the core will use an Ami
 
 If no special string is found the core will use the model configured in core options.
 
+### Resolution and rendering
+
+A said in P-UAE configuration.txt:
+
+```
+	To emulate a high-resolution, fully overscanned PAL screen - either
+	non-interlaced with line-doubling, or interlaced - you need to use a
+	display of at least 720 by 568 pixels. If you specify a smaller size,
+	E-UAE's display will be clipped to fit (and you can use the gfx_center_*
+	options - see below - to centre the clipped region of the display).
+	Similarly, to fully display an over-scanned lo-res PAL screen, you need a
+	display of 360 by 284 pixels.
+```
+
+Three parameters control the output resolution of the core :
+
+|Name|Values|Default|
+|---|---|---|
+|Video standard|PAL, NTSC|PAL|
+|High resolution|false, true|false|
+|Crop overscan|false, true|false|
+
+With this settings all the standards resolutions of the amiga are available :
+- **360x284**: PAL Low resolution with overscan
+- **320x256**: PAL Low resolution cropped/clipped (without the "borders")
+- **360x240**: NTSC Low resolution with overscan
+- **320×200**: NTSC Low resolution cropped/clipped (without the "borders")
+- **720x568**: PAL High resolution with overscan
+- **640×512**: PAL High resolution cropped/clipped (without the "borders")
+- **720x480**: NTSC High resolution with overscan
+- **640×400**: NTSC High resolution cropped/clipped (without the "borders")
+
+When using a high resolution mode, rendering will be doubled horizontally and vertically for low res games. It's compatible with High res games and the Workbench but scaling shaders (ex: scalefx) will look ugly.
+
+When using a low resolution, scaling shaders (scalefx) looks greats but high res games and and the workbench are badly rendered (but still usable).
+
 ## Using a configuration file for your games
 You can pass an '.uae' configuration file as a rom and the core will load the settings and start emulation without first showing the gui. 
 
