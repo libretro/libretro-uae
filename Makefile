@@ -49,8 +49,9 @@ else ifeq ($(platform), rpi)
 else ifeq ($(platform), classic_armv7_a7)
 	TARGET := $(TARGET_NAME)_libretro.so
 	fpic := -fPIC
-    LDFLAGS := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T  -Wl,--no-undefined
-	CFLAGS += -Ofast \
+    SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T  -Wl,--no-undefined
+    LDFLAGS += -lm -lpthread
+    CFLAGS += -Ofast -DARM \
 	-flto=4 -fwhole-program -fuse-linker-plugin \
 	-fdata-sections -ffunction-sections -Wl,--gc-sections \
 	-fno-stack-protector -fno-ident -fomit-frame-pointer \
