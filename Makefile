@@ -18,6 +18,11 @@ endif
 
 TARGET_NAME := puae
 
+GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
+ifneq ($(GIT_VERSION)," unknown")
+	CFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
+endif
+
 CORE_DIR  := .
 ROOT_DIR  := .
 
@@ -35,12 +40,45 @@ else ifeq ($(platform), rpi)
 		 PLATFLAGS +=  -DARM  -marm
 	   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T
 
+# Classic Platforms ####################
+# Platform affix = classic_<ISA>_<µARCH>
+# Help at https://modmyclassic.com/comp
+
+# (armv7 a7, hard point, neon based) ### 
+# NESC, SNESC, C64 mini 
+else ifeq ($(platform), classic_armv7_a7)
+	TARGET := $(TARGET_NAME)_libretro.so
+	fpic := -fPIC
+    SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T  -Wl,--no-undefined
+    LDFLAGS += -lm -lpthread
+    CFLAGS += -Ofast -DARM \
+	-flto=4 -fwhole-program -fuse-linker-plugin \
+	-fdata-sections -ffunction-sections -Wl,--gc-sections \
+	-fno-stack-protector -fno-ident -fomit-frame-pointer \
+	-falign-functions=1 -falign-jumps=1 -falign-loops=1 \
+	-fno-unwind-tables -fno-asynchronous-unwind-tables -fno-unroll-loops \
+	-fmerge-all-constants -fno-math-errno \
+	-marm -mtune=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard
+	CXXFLAGS += $(CFLAGS)
+	CPPFLAGS += $(CFLAGS)
+	ASFLAGS += $(CFLAGS)
+	ifeq ($(shell echo `$(CC) -dumpversion` "< 4.9" | bc -l), 1)
+	  CFLAGS += -march=armv7-a
+	else
+	  CFLAGS += -march=armv7ve
+	  # If gcc is 5.0 or later
+	  ifeq ($(shell echo `$(CC) -dumpversion` ">= 5" | bc -l), 1)
+	    LDFLAGS += -static-libgcc -static-libstdc++
+	  endif
+	endif
+#######################################
+
 else ifeq ($(platform), osx)
    TARGET := $(TARGET_NAME)_libretro.dylib
    fpic := -fPIC -mmacosx-version-min=10.6
    LDFLAGS :=
    SHARED := -dynamiclib
-   PLATFLAGS +=  -DRETRO -DLSB_FIRST -DALIGN_DWORD
+   PLATFLAGS +=  -DRETRO -DALIGN_DWORD
 
 else ifeq ($(platform), android-armv7)
    CC = arm-linux-androideabi-gcc
@@ -50,7 +88,7 @@ else ifeq ($(platform), android-armv7)
    fpic := -fPIC
 	LDFLAGS := -lm
    SHARED :=  -Wl,--fix-cortex-a8 -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
-   PLATFLAGS += -DANDROID -DRETRO -DAND -DLSB_FIRST -DALIGN_DWORD -DA_ZIP
+   PLATFLAGS += -DANDROID -DRETRO -DAND -DALIGN_DWORD -DA_ZIP
 
 else ifeq ($(platform), android)
    CC = arm-linux-androideabi-gcc
@@ -60,17 +98,7 @@ else ifeq ($(platform), android)
    fpic := -fPIC
 	LDFLAGS := 
    SHARED :=  -Wl,--fix-cortex-a8 -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
-   PLATFLAGS += -DANDROID -DRETRO -DAND -DLSB_FIRST -DALIGN_DWORD -DARM_OPT_TEST=1
-
-# Nintendo Classic (Hakchi)
-else ifeq ($(platform), nintendoc)
-  CC = arm-linux-gnueabihf-gcc-5
-  TARGET := $(TARGET_NAME)_libretro.so
-  fpic := -fPIC
-  LDFLAGS := -lpthread
-  PLATFLAGS +=  -DARM  -marm
-  SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T
-CFLAGS += -marm -mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard
+   PLATFLAGS += -DANDROID -DRETRO -DAND -DALIGN_DWORD -DARM_OPT_TEST=1
 
 else ifeq ($(platform), wii)
    TARGET := $(TARGET_NAME)_libretro_$(platform).a
@@ -119,7 +147,7 @@ else
 ifneq ($(subplatform), 32)
    CFLAGS += -fno-aggressive-loop-optimizations
 endif
-   PLATFLAGS +=  -DRETRO -DLSB_FIRST -DALIGN_DWORD -DWIN32PORT -DWIN32
+   PLATFLAGS +=  -DRETRO -DALIGN_DWORD -DWIN32
    TARGET := $(TARGET_NAME)_libretro.dll
    fpic := -fPIC
    SHARED := -shared -static-libgcc -s -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
@@ -146,22 +174,13 @@ INCDIRS := $(EXTRA_INCLUDES) $(INCFLAGS)
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
+	@echo "** BUILDING $(TARGET) FOR PLATFORM $(platform) **"
 ifeq ($(STATIC_LINKING_LINK),1)
 	$(AR) rcs $@ $(OBJECTS)
 else
 	$(CC) $(fpic) $(SHARED) $(INCDIRS) -o $@ $(OBJECTS) $(LDFLAGS)
 endif
-
-ifeq ($(platform),nintendoc)
-	@echo "** BUILDING HAKCHI HMOD PACKAGE **"
-	mkdir -p libretro/hakchi/etc/libretro/core/ libretro/hakchi/etc/libretro/info/
-	rm -f libretro/hakchi/etc/libretro/info/*
-	cp $(TARGET_NAME)_libretro.so libretro/hakchi/etc/libretro/core/
-	cd libretro/hakchi/etc/libretro/info/; wget https://buildbot.libretro.com/assets/frontend/info/$(TARGET_NAME)_libretro.info
-	cd libretro/hakchi/; tar -czvf "CORE_$(TARGET_NAME).hmod" *
-	
-endif
-
+	@echo "** BUILD SUCCESSFUL! GG NO RE **"
 
 %.o: %.c
 	$(CC) $(fpic) $(CFLAGS) $(PLATFLAGS) $(INCDIRS) -c -o $@ $<
@@ -170,7 +189,7 @@ endif
 	$(CC_AS) $(CFLAGS) -c $^ -o $@
 
 clean:
-	rm -f $(OBJECTS) $(TARGET) libretro/hakchi/CORE_$(TARGET_NAME).hmod libretro/hakchi/etc/libretro/core/$(TARGET_NAME)_libretro.so
+	rm -f $(OBJECTS) $(TARGET)
 
 .PHONY: clean
 
