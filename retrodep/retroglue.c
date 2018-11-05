@@ -96,19 +96,19 @@ void retro_mouse_but1(int down){
 
 static jflag[5]={0,0,0,0,0};
 
-void retro_joy0(unsigned char joy0){
+void retro_joy(int port, unsigned char joy0){
 //0x01,0x02,0x04,0x08,0x80
 // UP  DWN  LEFT RGT  BTN0
 // 0    1     2   3    4
 
 	if(joy0&0x80){
 		if(jflag[4]==0){
-			setjoybuttonstate(0, 0, 1); // joy0, button0, state ON
+			setjoybuttonstate(port, 0, 1); // joy0, button0, state ON
 			jflag[4]=1;
 		}
 	}else {
 		if(jflag[4]==1){
-			setjoybuttonstate(0, 0, 0); // joy0, button0, state OFF
+			setjoybuttonstate(port, 0, 0); // joy0, button0, state OFF
 			jflag[4]=0;
 		}
 	}
@@ -116,12 +116,12 @@ void retro_joy0(unsigned char joy0){
 	//Left
 	if(joy0&0x04){
 		if(jflag[2]==0){
-			setjoystickstate(0, 0, -1, 1);
+			setjoystickstate(port, 0, -1, 1);
 			jflag[2]=1;
 		}
 	}else {
 		if(jflag[2]==1){
-			setjoystickstate(0, 0, 0, 1);
+			setjoystickstate(port, 0, 0, 1);
 			jflag[2]=0;
 		}
 	}
@@ -129,12 +129,12 @@ void retro_joy0(unsigned char joy0){
 	//Down
 	if(joy0&0x02){
 		if(jflag[1]==0){
-			setjoystickstate(0, 1, 1, 1);
+			setjoystickstate(port, 1, 1, 1);
 			jflag[1]=1;
 		}
 	}else {
 		if(jflag[1]==1){
-			setjoystickstate(0, 1, 0, 1);
+			setjoystickstate(port, 1, 0, 1);
 			jflag[1]=0;
 		}
 	}
@@ -142,12 +142,12 @@ void retro_joy0(unsigned char joy0){
 	//Right
 	if(joy0&0x08){
 		if(jflag[3]==0){
-			setjoystickstate(0, 0, 1, 1);
+			setjoystickstate(port, 0, 1, 1);
 			jflag[3]=1;
 		}
 	}else {
 		if(jflag[3]==1){
-			setjoystickstate(0, 0, 0, 1);
+			setjoystickstate(port, 0, 0, 1);
 			jflag[3]=0;
 		}
 	}
@@ -156,12 +156,12 @@ void retro_joy0(unsigned char joy0){
 	if(joy0&0x01){
 		if(jflag[0]==0){
 
-			setjoystickstate(0, 1, -1, 1);
+			setjoystickstate(port, 1, -1, 1);
 			jflag[0]=1;
 		}
 	}else {
 		if(jflag[0]==1){
-			setjoystickstate(0, 1, 0, 1);
+			setjoystickstate(port, 1, 0, 1);
 			jflag[0]=0;
 		}
 	}
@@ -411,12 +411,7 @@ static void read_joysticks (void)
 
 static int get_joystick_num (void)
 {
-    return 1;
-}
-
-static char *get_joystick_uniquename (int joy)
-{
-    return "retro pad0";
+    return 2;
 }
 
 static int get_joystick_widget_num (int joy)
@@ -434,9 +429,20 @@ static int get_joystick_widget_first (int joy, int type)
     return -1;
 }
 
-static TCHAR *get_joystick_friendlyname (int joy)
-{
-      return "retro pad0";
+static TCHAR *get_joystick_friendlyname (int joy) {
+  switch (joy) {
+    case 0: return "Retro pad 0";
+    case 1: return "Retro pad 1";
+    default: return "Retro pad 2";
+  }
+}
+
+static char *get_joystick_uniquename (int joy) {
+  switch (joy) {
+    case 0: return "retropad0";
+    case 1: return "retropad1";
+    default: return "retropad2";
+  }
 }
 
 struct inputdevice_functions inputdevicefunc_joystick = {
@@ -454,24 +460,28 @@ struct inputdevice_functions inputdevicefunc_joystick = {
     get_joystick_flags
 };
 
-int input_get_default_joystick (struct uae_input_device *uid, int num, int port, int af, int mode, bool gp)
-//void input_get_default_joystick (struct uae_input_device *uid)
-{
-/*
-		uid[0].eventid[ID_AXIS_OFFSET + 0][0]   =  INPUTEVENT_JOY1_HORIZ;
-		uid[0].eventid[ID_AXIS_OFFSET + 1][0]   =  INPUTEVENT_JOY1_VERT;
-		uid[0].eventid[ID_BUTTON_OFFSET + 0][0] =  INPUTEVENT_JOY1_FIRE_BUTTON;
-		uid[0].eventid[ID_BUTTON_OFFSET + 1][0] =  INPUTEVENT_JOY1_2ND_BUTTON;
-		uid[0].eventid[ID_BUTTON_OFFSET + 2][0] =  INPUTEVENT_JOY1_3RD_BUTTON;
-*/
-		uid[0].eventid[ID_AXIS_OFFSET + 0][0]   =  INPUTEVENT_JOY2_HORIZ;
-		uid[0].eventid[ID_AXIS_OFFSET + 1][0]   =  INPUTEVENT_JOY2_VERT;
-		uid[0].eventid[ID_BUTTON_OFFSET + 0][0] =  INPUTEVENT_JOY2_FIRE_BUTTON;
-		uid[0].eventid[ID_BUTTON_OFFSET + 1][0] =  INPUTEVENT_JOY2_2ND_BUTTON;
-		uid[0].eventid[ID_BUTTON_OFFSET + 2][0] =  INPUTEVENT_JOY2_3RD_BUTTON;
+int input_get_default_joystick (struct uae_input_device *uid, int num, int port, int af, int mode, bool gp) {
+  if (port == 1) {
+    uid[1].eventid[ID_AXIS_OFFSET + 0][0]   =  INPUTEVENT_JOY1_HORIZ;
+    uid[1].eventid[ID_AXIS_OFFSET + 1][0]   =  INPUTEVENT_JOY1_VERT;
+    uid[1].eventid[ID_BUTTON_OFFSET + 0][0] =  INPUTEVENT_JOY1_FIRE_BUTTON;
+    uid[1].eventid[ID_BUTTON_OFFSET + 1][0] =  INPUTEVENT_JOY1_2ND_BUTTON;
+    uid[1].eventid[ID_BUTTON_OFFSET + 2][0] =  INPUTEVENT_JOY1_3RD_BUTTON;
+
+    uid[1].enabled = 1;
+  }
+
+  if (port == 0) {
+    uid[0].eventid[ID_AXIS_OFFSET + 0][0]   =  INPUTEVENT_JOY2_HORIZ;
+    uid[0].eventid[ID_AXIS_OFFSET + 1][0]   =  INPUTEVENT_JOY2_VERT;
+    uid[0].eventid[ID_BUTTON_OFFSET + 0][0] =  INPUTEVENT_JOY2_FIRE_BUTTON;
+    uid[0].eventid[ID_BUTTON_OFFSET + 1][0] =  INPUTEVENT_JOY2_2ND_BUTTON;
+    uid[0].eventid[ID_BUTTON_OFFSET + 2][0] =  INPUTEVENT_JOY2_3RD_BUTTON;
 
     uid[0].enabled = 1;
-return 1;
+  }
+
+  return 1;
 }
 
 
