@@ -25,6 +25,7 @@ SOURCES_C +=  $(EMU)/main.c \
 				  $(EMU)/inputrecord.c \
 				  $(EMU)/keymap/keymap.c\
 				  $(EMU)/diskutil.c \
+				  $(EMU)/caps/caps.c \
 				  $(EMU)/zfile.c \
 				  $(EMU)/zfile_archive.c \
 				  $(EMU)/cfgfile.c \
@@ -172,4 +173,4 @@ SOURCES_C += $(DEPS_DIR)/zlib/adler32.c \
 				 $(DEPS_DIR)/zlib/zutil.c
 endif
 
-CFLAGS += -DLIBRETRO_PUAE
+CFLAGS += -DLIBRETRO_PUAE -DCAPS
