@@ -6,10 +6,15 @@
 
 #ifdef _WIN32
 #include "windows.h"
+#define UAE_DLOPEN_SUPPORT 1
 #else
+#ifdef HAVE_DLOPEN
 #include <dlfcn.h>
+#define UAE_DLOPEN_SUPPORT 1
+#endif
 #endif
 
+#ifdef UAE_DLOPEN_SUPPORT
 UAE_DLHANDLE uae_dlopen(const TCHAR *path)
 {
 	UAE_DLHANDLE result;
@@ -54,3 +59,23 @@ void uae_dlclose(UAE_DLHANDLE handle)
 	dlclose(handle);
 #endif
 }
+
+// DLOPEN not supported
+#else
+UAE_DLHANDLE uae_dlopen(const TCHAR *path)
+{
+	write_log(_T("DLOPEN not supported\n"));
+	return NULL;
+}
+
+void *uae_dlsym(UAE_DLHANDLE handle, const char *name)
+{
+	write_log(_T("DLSYM not supported\n"));
+	return NULL;
+}
+
+void uae_dlclose(UAE_DLHANDLE handle)
+{
+	return;
+}
+#endif
