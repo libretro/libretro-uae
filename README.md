@@ -74,6 +74,15 @@ It is critical to use kickstarts with the right MD5, otherwise the core might no
 |kick40063.A600|Kickstart v3.1 (Rev. 40.063)|Amiga 600|e40a5dfb3d017ba8779faba30cbd1c8e|
 |kick40068.A1200|Kickstart v3.1 (Rev. 40.068)|Amiga 1200|646773759326fbac3b2311fd8c8793ee|
 
+### IPF Support
+Most full-price commercial Amiga games had some form of custom disk format and/or copy protection on them. For this reason, most commercial Amiga games cannot be stored in ADF files unaltered, but there is an alternative called Interchangeable Preservation Format (IPF) which was specifically designed for this purpose.
+
+IPF support is done through CAPSIMG library. To enable it you have to put a dynamic library called capsimg.dll (Windows) or capsimg.so (Linux, macOS) in your retroarch root directory (where retroarch executable is located).
+
+Compatible CAPSIMG libraries for Windows, macOS and Linux can be found at https://fs-uae.net/download#plugins
+
+Please be aware that there are 32-bits and 64-bits versions of the library. Choose the one corresponding to your RetroArch executable.
+
 ### M3U Support
 When you have a multi disk game, you can use a m3u file to specify each disk of the game and change them from the RetroArch Disk control interface.
 
