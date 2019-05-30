@@ -26,6 +26,7 @@ SOURCES_C +=  $(EMU)/main.c \
 				  $(EMU)/keymap/keymap.c\
 				  $(EMU)/diskutil.c \
 				  $(EMU)/caps/caps.c \
+				  $(EMU)/caps/uae_dlopen.c \
 				  $(EMU)/zfile.c \
 				  $(EMU)/zfile_archive.c \
 				  $(EMU)/cfgfile.c \
