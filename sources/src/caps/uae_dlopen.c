@@ -8,7 +8,7 @@
 #include "windows.h"
 #define UAE_DLOPEN_SUPPORT 1
 #else
-#ifdef HAVE_DLOPEN
+#if defined(HAVE_DLOPEN) && !defined(WIIU) // According to travis it seems that WiiU wrongly report to HAVE_DLOPEN...
 #include <dlfcn.h>
 #define UAE_DLOPEN_SUPPORT 1
 #endif
