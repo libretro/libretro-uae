@@ -142,7 +142,7 @@ const int keyboard_translation[512] =
 	/* Key state modifier keys */
 	-1,      /* SDLK_NUMLOCK = 300 */
 	AK_CAPSLOCK,    /* SDLK_CAPSLOCK = 301 */
-	AKS_INHIBITSCREEN,    /* SDLK_SCROLLOCK = 302 */
+	-1,    /* SDLK_SCROLLOCK = 302 */
 	AK_RSH,    /* SDLK_RSHIFT = 303 */
 	AK_LSH,    /* SDLK_LSHIFT = 304 */
 	AK_RCTRL,    /* SDLK_RCTRL = 305 */
