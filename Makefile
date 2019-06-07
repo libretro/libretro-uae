@@ -29,7 +29,7 @@ ROOT_DIR  := .
 ifeq ($(platform), unix)
    TARGET := $(TARGET_NAME)_libretro.so
    fpic := -fPIC
-	LDFLAGS := -lpthread
+	LDFLAGS += -lpthread
    SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T
 
 # use for raspberry pi
@@ -151,7 +151,7 @@ endif
    TARGET := $(TARGET_NAME)_libretro.dll
    fpic := -fPIC
    SHARED := -shared -static-libgcc -s -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
-	LDFLAGS := -lm
+	LDFLAGS += -lm
 endif
 
 ifeq ($(DEBUG), 1)
