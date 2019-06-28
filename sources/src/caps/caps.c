@@ -23,12 +23,15 @@ static int caps_flags = DI_LOCK_DENVAR|DI_LOCK_DENNOISE|DI_LOCK_NOISE|DI_LOCK_UP
 #define LIB_TYPE 1
 
 
-#if defined HAVE_DLOPEN && !defined HAVE_FRAMEWORK_CAPSIMAGE
+#if !defined HAVE_FRAMEWORK_CAPSIMAGE
 
-#include <dlfcn.h>
+#include "uae_dlopen.h"
 
-#define CAPSLIB_NAME    "libcapsimage.so.2"
-
+#ifdef _WIN32
+#define CAPSLIB_NAME    "capsimg.dll"
+#else
+#define CAPSLIB_NAME    "capsimg.so"
+#endif
 /*
  * Repository for function pointers to the CAPSLib routines
  * which gets filled when we link at run-time
@@ -60,22 +63,24 @@ struct {
 static int load_capslib (void)
 {
     /* This could be done more elegantly ;-) */
-    if ((capslib.handle = dlopen(CAPSLIB_NAME, RTLD_LAZY))) {
-	capslib.CAPSInit            = dlsym (capslib.handle, "CAPSInit");            if (dlerror () != 0) return 0;
-	capslib.CAPSExit            = dlsym (capslib.handle, "CAPSExit");            if (dlerror () != 0) return 0;
-	capslib.CAPSAddImage        = dlsym (capslib.handle, "CAPSAddImage");        if (dlerror () != 0) return 0;
-	capslib.CAPSRemImage        = dlsym (capslib.handle, "CAPSRemImage");        if (dlerror () != 0) return 0;
-	capslib.CAPSLockImage       = dlsym (capslib.handle, "CAPSLockImage");       if (dlerror () != 0) return 0;
-	capslib.CAPSLockImageMemory = dlsym (capslib.handle, "CAPSLockImageMemory"); if (dlerror () != 0) return 0;
-	capslib.CAPSUnlockImage     = dlsym (capslib.handle, "CAPSUnlockImage");     if (dlerror () != 0) return 0;
-	capslib.CAPSLoadImage       = dlsym (capslib.handle, "CAPSLoadImage");       if (dlerror () != 0) return 0;
-	capslib.CAPSGetImageInfo    = dlsym (capslib.handle, "CAPSGetImageInfo");    if (dlerror () != 0) return 0;
-	capslib.CAPSLockTrack       = dlsym (capslib.handle, "CAPSLockTrack");       if (dlerror () != 0) return 0;
-	capslib.CAPSUnlockTrack     = dlsym (capslib.handle, "CAPSUnlockTrack");     if (dlerror () != 0) return 0;
-	capslib.CAPSUnlockAllTracks = dlsym (capslib.handle, "CAPSUnlockAllTracks"); if (dlerror () != 0) return 0;
-	capslib.CAPSGetPlatformName = dlsym (capslib.handle, "CAPSGetPlatformName"); if (dlerror () != 0) return 0;
-	capslib.CAPSGetVersionInfo  = dlsym (capslib.handle, "CAPSGetVersionInfo");  if (dlerror () != 0) return 0;
+    if ((capslib.handle = uae_dlopen(CAPSLIB_NAME))) {
+    write_log (CAPSLIB_NAME " opened\n.");
+	capslib.CAPSInit            = uae_dlsym (capslib.handle, "CAPSInit");            if (capslib.CAPSInit == NULL) return 0;
+	capslib.CAPSExit            = uae_dlsym (capslib.handle, "CAPSExit");            if (capslib.CAPSExit == NULL) return 0;
+	capslib.CAPSAddImage        = uae_dlsym (capslib.handle, "CAPSAddImage");        if (capslib.CAPSAddImage == NULL) return 0;
+	capslib.CAPSRemImage        = uae_dlsym (capslib.handle, "CAPSRemImage");        if (capslib.CAPSRemImage == NULL) return 0;
+	capslib.CAPSLockImage       = uae_dlsym (capslib.handle, "CAPSLockImage");       if (capslib.CAPSLockImage == NULL) return 0;
+	capslib.CAPSLockImageMemory = uae_dlsym (capslib.handle, "CAPSLockImageMemory"); if (capslib.CAPSLockImageMemory == NULL) return 0;
+	capslib.CAPSUnlockImage     = uae_dlsym (capslib.handle, "CAPSUnlockImage");     if (capslib.CAPSUnlockImage == NULL) return 0;
+	capslib.CAPSLoadImage       = uae_dlsym (capslib.handle, "CAPSLoadImage");       if (capslib.CAPSLoadImage == NULL) return 0;
+	capslib.CAPSGetImageInfo    = uae_dlsym (capslib.handle, "CAPSGetImageInfo");    if (capslib.CAPSGetImageInfo == NULL) return 0;
+	capslib.CAPSLockTrack       = uae_dlsym (capslib.handle, "CAPSLockTrack");       if (capslib.CAPSLockTrack == NULL) return 0;
+	capslib.CAPSUnlockTrack     = uae_dlsym (capslib.handle, "CAPSUnlockTrack");     if (capslib.CAPSUnlockTrack == NULL) return 0;
+	capslib.CAPSUnlockAllTracks = uae_dlsym (capslib.handle, "CAPSUnlockAllTracks"); if (capslib.CAPSUnlockAllTracks == NULL) return 0;
+	capslib.CAPSGetPlatformName = uae_dlsym (capslib.handle, "CAPSGetPlatformName"); if (capslib.CAPSGetPlatformName == NULL) return 0;
+	capslib.CAPSGetVersionInfo  = uae_dlsym (capslib.handle, "CAPSGetVersionInfo");  if (capslib.CAPSGetVersionInfo == NULL) return 0;
 	if (capslib.CAPSInit() == imgeOk)
+		write_log ("Error while opening " CAPSLIB_NAME "\n.");
 	    return 1;
     }
     write_log ("Unable to open " CAPSLIB_NAME "\n.");
