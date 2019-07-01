@@ -21,7 +21,7 @@ https://github.com/GnoStiC/PUAE
 
 Credits to Mustafa 'GnoStiC' TUFAN
 
-And of course for the RetroArch/Libretro team : "http://www.libretro.org/"
+And of course for the RetroArch/Libretro team : "http://www.libretro.com/"
 
 ## Default Controls
 
