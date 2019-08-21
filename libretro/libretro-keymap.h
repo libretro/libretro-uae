@@ -25,11 +25,11 @@ const int keyboard_translation[512] =
 	-1,  /* SDLK_LEFTPAREN = 40 */
 	AK_MINUS,  /* SDLK_RIGHTPAREN = 41 */
 	-1,    /* SDLK_ASTERISK = 42 */
-	AK_NPADD,  /* SDLK_PLUS = 43 */
-	AK_M,  /* SDLK_COMMA = 44 */
-	AK_EQUAL,  /* SDLK_MINUS = 45 */
-	AK_COMMA,  /* SDLK_PERIOD = 46 */
-	AK_PERIOD,  /* SDLK_SLASH = 47 */
+	AK_EQUAL,  /* SDLK_PLUS = 43 */
+	AK_COMMA,  /* SDLK_COMMA = 44 */
+	AK_MINUS,  /* SDLK_MINUS = 45 */
+	AK_PERIOD,  /* SDLK_PERIOD = 46 */
+	AK_SLASH,  /* SDLK_SLASH = 47 */
 	AK_0,  /* SDLK_0 = 48 */
 	AK_1,  /* SDLK_1 = 49 */
 	AK_2,  /* SDLK_2 = 50 */
@@ -41,9 +41,9 @@ const int keyboard_translation[512] =
 	AK_8,  /* SDLK_8 = 56 */
 	AK_9,  /* SDLK_9 = 57 */
 	-1,    /* SDLK_COLON = 58 */
-	AK_COMMA,    /* SDLK_SEMICOLON = 59 */
+	AK_SEMICOLON,    /* SDLK_SEMICOLON = 59 */
 	AK_LTGT,    /* SDLK_LESS = 60 */
-	AK_SLASH,  /* SDLK_EQUALS = 61 */
+	AK_EQUAL,  /* SDLK_EQUALS = 61 */
 	AK_LTGT,    /* SDLK_GREATER  = 62 */
 	-1,    /* SDLK_QUESTION = 63 */
 	-1,    /* SDLK_AT = 64 */
@@ -56,8 +56,8 @@ const int keyboard_translation[512] =
 	AK_RBRACKET,  /* SDLK_RIGHTBRACKET = 93 */
 	-1,   /* SDLK_CARET = 94 */
 	-1,    /* SDLK_UNDERSCORE = 95 */
-	-1,    /* SDLK_BACKQUOTE = 96 */
-/*A*/AK_Q,
+	AK_BACKQUOTE,    /* SDLK_BACKQUOTE = 96 */
+/*A*/AK_A,
 /*B*/AK_B,
 /*C*/AK_C,
 /*D*/AK_D,
@@ -69,20 +69,20 @@ const int keyboard_translation[512] =
 /*J*/AK_J,
 /*K*/AK_K,
 /*L*/AK_L,
-/*M*/AK_SEMICOLON,
+/*M*/AK_M,
 /*N*/AK_N,
 /*O*/AK_O,
 /*P*/AK_P,
-/*Q*/AK_A,
+/*Q*/AK_Q,
 /*R*/AK_R,
 /*S*/AK_S,
 /*T*/AK_T,
 /*U*/AK_U,
 /*V*/AK_V,
-/*W*/AK_Z,
+/*W*/AK_W,
 /*X*/AK_X,
 /*Y*/AK_Y,
-/*Z*/AK_W,
+/*Z*/AK_Z,
 	-1,    /* 123 */	-1,    /* 124 */	-1,    /* 125 */	-1,    /* 126 */
 	AK_DEL,  /* SDLK_DELETE = 127 */
 	/* End of ASCII mapped keysyms */
@@ -120,7 +120,7 @@ const int keyboard_translation[512] =
 	AK_HELP,    /* SDLK_INSERT = 277 */
 	AK_NPLPAREN,    /* SDLK_HOME = 278 */
 	AK_NPRPAREN,    /* SDLK_END = 279 */
-	 AK_RAMI,    /* SDLK_PAGEUP = 280 */
+	AK_RAMI,    /* SDLK_PAGEUP = 280 */
 	AK_LAMI,    /* SDLK_PAGEDOWN = 281 */
 	/* Function keys */
 	AK_F1,    /* SDLK_F1 = 282 */

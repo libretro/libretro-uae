@@ -39,7 +39,6 @@ extern uae_u32 natmem_size;
 extern unsigned short int  bmp[EMULATOR_MAX_WIDTH*EMULATOR_MAX_HEIGHT];
 extern unsigned short int  savebmp[EMULATOR_MAX_WIDTH*EMULATOR_MAX_HEIGHT];
 extern int pauseg;
-extern int SND;
 extern int SHIFTON;
 extern int snd_sampler;
 extern short signed int SNDBUF[1024*2];
@@ -682,7 +681,10 @@ void retro_shutdown_uae(void)
    environ_cb(RETRO_ENVIRONMENT_SHUTDOWN, NULL);
 }
 
-void retro_reset(void){}
+void retro_reset(void)
+{
+   uae_reset(1, 1); /* hardreset, keyboardreset */
+}
 
 void retro_audio_cb( short l, short r)
 {
