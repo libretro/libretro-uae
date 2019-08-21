@@ -185,14 +185,14 @@ void retro_key_up(int key){
 	
 }
 
-extern int pauseg,SND;
+extern int pauseg;
 int RLOOP=1;
 
 int retro_renderSound(short* samples, int sampleCount)
 {
    int i; 
 
-   if (sampleCount < 1 || SND!=1 || pauseg==1)
+   if (sampleCount < 1 || pauseg==1)
       return 0;
 
    for(i=0;i<sampleCount;i+=2)

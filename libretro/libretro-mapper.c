@@ -46,7 +46,6 @@ unsigned char MXjoy0; // joy
 int touch=-1; // gui mouse btn
 int fmousex,fmousey; // emu mouse
 int pauseg=0; //enter_gui
-int SND=1; //SOUND ON/OFF
 int NUMjoy=1;
 int slowdown=0;
 
@@ -156,7 +155,6 @@ void Print_Statut(void)
 
 /*
    L2  show/hide Statut
-   R2  toggle snd ON/OFF
    L   show/hide vkbd
    R   MOUSE SPEED(gui/emu)
    SEL toggle mouse/joy mode
@@ -303,16 +301,6 @@ void update_input(void)
       mbt[i]=0;
       STATUTON=-STATUTON;
       Screen_SetFullUpdate();
-   }
-
-   i=13;//sonud on/off
-   if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && mbt[i]==0 )
-      mbt[i]=1;
-   else if ( mbt[i]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) )
-   {
-      mbt[i]=0;
-      SND=-SND;
-      //Screen_SetFullUpdate();
    }
 
    if(SHOWKEY==1)
