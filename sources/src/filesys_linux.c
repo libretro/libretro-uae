@@ -137,7 +137,7 @@ bool my_utime (const TCHAR *name, struct mytimeval *tv)
         int tolocal;
         int days, mins, ticks;
         struct mytimeval tv2;
-#if !defined(__CELLOS_LV2__) && !defined(WIIU)
+#if !defined(__CELLOS_LV2__) && !defined(WIIU) && !defined(__SWITCH__)
         if (!tv) {
                 struct timeb time;
                 ftime (&time);

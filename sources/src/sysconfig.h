@@ -36,7 +36,9 @@
 #define HAVE_DIRENT_H 1
 
 /* "Define to 1 if you have 'dlopen' function */
+#if !defined(__SWITCH__)
 #define HAVE_DLOPEN 1
+#endif
 
 /* Define to 1 if you have the <dustat.h> header file. */
 /* #undef HAVE_DUSTAT_H */
@@ -107,7 +109,9 @@
 #define HAVE_SELECT 1
 
 /* Define to 1 if you have the `setitimer' function. */
+#if !defined(__SWITCH__)
 #define HAVE_SETITIMER 1
+#endif
 
 /* Define to 1 if you have the `sigaction' function. */
 #define HAVE_SIGACTION 1
@@ -187,7 +191,9 @@
 /* #undef HAVE_SUN_AUDIOIO_H */
 
 /* Define to 1 if you have the `sync' function. */
+#if !defined(__SWITCH__)
 #define HAVE_SYNC 1
+#endif
 
 /* Define to 1 if you have the <sys/audioio.h> header file. */
 /* #undef HAVE_SYS_AUDIOIO_H */
@@ -337,7 +343,11 @@
 #define SIZEOF_SHORT 2
 
 /* The size of `void *', as computed by sizeof. */
+#if defined(__SWITCH__)
+#define SIZEOF_VOID_P 8
+#else
 #define SIZEOF_VOID_P 4
+#endif
 
 /* The size of `__int64', as computed by sizeof. */
 #define SIZEOF___INT64 0

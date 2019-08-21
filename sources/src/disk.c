@@ -14,7 +14,7 @@
 #include "sysconfig.h"
 #include "sysdeps.h"
 
-#if defined(__CELLOS_LV2__) || defined(_WIN32) || defined(WIIU)
+#if defined(__CELLOS_LV2__) || defined(_WIN32) || defined(WIIU) || defined(__SWITCH__)
 #define tzset() 
 #define timezone 0
 #define daylight 0
