@@ -682,7 +682,10 @@ void retro_shutdown_uae(void)
    environ_cb(RETRO_ENVIRONMENT_SHUTDOWN, NULL);
 }
 
-void retro_reset(void){}
+void retro_reset(void)
+{
+   uae_reset(1, 1); /* hardreset, keyboardreset */
+}
 
 void retro_audio_cb( short l, short r)
 {
