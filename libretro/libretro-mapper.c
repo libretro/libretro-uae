@@ -177,20 +177,15 @@ void Process_key(void)
    {
       key_state[i]=input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0,i)?0x80:0;
 
-      if(keyboard_translation[i]==0x60/*AK_LSH*/ )
-      {  //SHIFT CASE
+      if(keyboard_translation[i]==AK_CAPSLOCK)
+      {
 
          if( key_state[i] && key_state2[i]==0 )
          {
-            if(SHIFTON == 1)
-               retro_key_up(	keyboard_translation[i] );					
-            else if(SHIFTON == -1) 
-               retro_key_down(keyboard_translation[i] );
-
+            retro_key_down(keyboard_translation[i]);
+            retro_key_up(keyboard_translation[i]);
             SHIFTON=-SHIFTON;
-
             key_state2[i]=1;
-
          }
          else if (!key_state[i] && key_state2[i]==1)
             key_state2[i]=0;
@@ -201,13 +196,19 @@ void Process_key(void)
 
          if(key_state[i] && keyboard_translation[i]!=-1  && key_state2[i] == 0)
          {
-            retro_key_down(keyboard_translation[i]);		
+            if(SHIFTON==1)
+               retro_key_down(keyboard_translation[RETROK_LSHIFT]);
+
+            retro_key_down(keyboard_translation[i]);
             key_state2[i]=1;
          }
          else if ( !key_state[i] && keyboard_translation[i]!=-1 && key_state2[i]==1 )
          {
             retro_key_up(keyboard_translation[i]);
             key_state2[i]=0;
+
+            if(SHIFTON==1)
+               retro_key_up(keyboard_translation[RETROK_LSHIFT]);
 
          }
 
@@ -386,12 +387,10 @@ void update_input(void)
          }
          else
          {
-            if(i==0x60/*AK_LSH*/)
+            if(i==AK_CAPSLOCK)
             {
-               if(SHIFTON == 1)
-                  retro_key_up(i);
-               else retro_key_down(i);
-
+               retro_key_down(i);
+               retro_key_up(i);
                SHIFTON=-SHIFTON;
 
                Screen_SetFullUpdate();
