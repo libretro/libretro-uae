@@ -78,17 +78,18 @@ const char *retro_content_directory;
 static dc_storage* dc;
 
 // Amiga default models
+// chipmem_size 1 = 0.5MB, 2 = 1MB, 4 = 2MB
 
 #define A500 "\
 cpu_type=68000\n\
-chipmem_size=2\n\
-bogomem_size=7\n\
+chipmem_size=1\n\
+bogomem_size=2\n\
 chipset=ocs\n"
 
 #define A600 "\
 cpu_type=68000\n\
-chipmem_size=2\n\
-fastmem_size=4\n\
+chipmem_size=4\n\
+fastmem_size=8\n\
 chipset=ecs\n"
 
 #define A1200 "\
@@ -126,7 +127,7 @@ void retro_set_environment(retro_environment_t cb)
    struct retro_variable variables[] = {
      { "puae_model", "Model; A500|A600|A1200", },
      { "puae_video_standard", "Video standard; PAL|NTSC", },
-     { "puae_video_hires", "High resolution; false|true", },
+     { "puae_video_hires", "High resolution; true|false", },
      { "puae_video_crop_overscan", "Crop overscan; false|true", },
      { "puae_analog","Use Analog; OFF|ON", },
      { "puae_leds","Leds; Standard|Simplified|None", },
