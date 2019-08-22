@@ -158,6 +158,31 @@ else ifeq ($(platform), emscripten)
    CFLAGS    +=  -DHAVE_MEMALIGN -DHAVE_ASPRINTF -I$(ZLIB_DIR)
 	STATIC_LINKING=1
 
+else ifneq (,$(findstring ios,$(platform)))
+   TARGET := $(TARGET_NAME)_libretro_ios.dylib
+   COMMONFLAGS += -DHAVE_POSIX_MEMALIGN=1 -marm
+   fpic := -fPIC
+   SHARED := -dynamiclib
+   COMMONFLAGS += -DIOS
+   ifeq ($(IOSSDK),)
+      IOSSDK := $(shell xcodebuild -version -sdk iphoneos Path)
+   endif
+   ifeq ($(platform),ios-arm64)
+      CC = cc -arch arm64 -isysroot $(IOSSDK)
+      CXX = c++ -arch arm64 -isysroot $(IOSSDK)
+   else
+      CC = cc -arch armv7 -isysroot $(IOSSDK)
+      CXX = c++ -arch armv7 -isysroot $(IOSSDK)
+   endif
+   ifeq ($(platform),$(filter $(platform),ios9 ios-arm64))
+      CC += -miphoneos-version-min=8.0
+      COMMONFLAGS += -miphoneos-version-min=8.0
+   else
+      CC += -miphoneos-version-min=5.0
+      COMMONFLAGS += -miphoneos-version-min=5.0
+   endif
+   CFLAGS += $(COMMONFLAGS)
+   PLATFLAGS += -DRETRO -DALIGN_DWORD -DARM
 else
 
 ifneq ($(subplatform), 32)
