@@ -29,7 +29,7 @@ ROOT_DIR  := .
 ifeq ($(platform), unix)
    TARGET := $(TARGET_NAME)_libretro.so
    fpic := -fPIC
-	LDFLAGS := -lpthread
+	LDFLAGS += -lpthread
    SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T
 
 # use for raspberry pi
@@ -100,32 +100,48 @@ else ifeq ($(platform), android)
    SHARED :=  -Wl,--fix-cortex-a8 -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
    PLATFLAGS += -DANDROID -DRETRO -DAND -DALIGN_DWORD -DARM_OPT_TEST=1
 
-else ifeq ($(platform), wii)
+# CTR(3DS)
+else ifeq ($(platform), ctr)
+   TARGET := $(TARGET_NAME)_libretro_$(platform).a
+   CC = $(DEVKITARM)/bin/arm-none-eabi-gcc$(EXE_EXT)
+   CXX = $(DEVKITARM)/bin/arm-none-eabi-g++$(EXE_EXT)
+   AR = $(DEVKITARM)/bin/arm-none-eabi-ar$(EXE_EXT)
+   CFLAGS += -DARM11 -D_3DS -march=armv6k -mtune=mpcore -mfloat-abi=hard
+   PLATFLAGS += -DRETRO -DALIGN_DWORD
+   STATIC_LINKING=1
+   STATIC_LINKING_LINK=1
+
+# Nintendo Game Cube / Wii / WiiU
+else ifneq (,$(filter $(platform), ngc wii wiiu))
    TARGET := $(TARGET_NAME)_libretro_$(platform).a
    CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
+   CXX = $(DEVKITPPC)/bin/powerpc-eabi-g++$(EXE_EXT)
    AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
-   ZLIB_DIR = $(LIBUTILS)/zlib/
-   CFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DMSB_FIRST -DBYTE_ORDER=BIG_ENDIAN  -DBYTE_ORDER=BIG_ENDIAN \
-	-DHAVE_MEMALIGN -DHAVE_ASPRINTF -I$(ZLIB_DIR) -I$(DEVKITPRO)/libogc/include \
-	-D__powerpc__ -D__POWERPC__ -DGEKKO -DHW_RVL -mrvl -mcpu=750 -meabi -mhard-float -D__ppc__
-   LDFLAGS :=   -lm -lpthread -lc
+   COMMONFLAGS += -DGEKKO -mcpu=750 -meabi -mhard-float -D__POWERPC__ -D__ppc__ -DMSB_FIRST -DWORDS_BIGENDIAN=1
+   COMMONFLAGS += -U__INT32_TYPE__ -U __UINT32_TYPE__ -D__INT32_TYPE__=int -DC68K_BIG_ENDIAN
+   COMMONFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DBYTE_ORDER=BIG_ENDIAN
    PLATFLAGS +=  -DRETRO -DALIGN_DWORD
-	STATIC_LINKING=1
-# Nintendo Wii U
-else ifeq ($(platform), wiiu)
-       TARGET := $(TARGET_NAME)_libretro_$(platform).a
-       CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
-       CXX = $(DEVKITPPC)/bin/powerpc-eabi-g++$(EXE_EXT)
-       AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
-       COMMONFLAGS += -DGEKKO -DWIIU -DHW_RVL -mwup -mcpu=750 -meabi -mhard-float -D__POWERPC__ -D__ppc__ -DMSB_FIRST -DWORDS_BIGENDIAN=1
-       COMMONFLAGS += -U__INT32_TYPE__ -U __UINT32_TYPE__ -D__INT32_TYPE__=int -DC68K_BIG_ENDIAN
-       COMMONFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DMSB_FIRST -DBYTE_ORDER=BIG_ENDIAN  -DBYTE_ORDER=BIG_ENDIAN 
-       CFLAGS += $(COMMONFLAGS) -I$(DEVKITPRO)/portlibs/ppc/include -I$(CORE_DIR)/wiiu-deps
-       HAVE_COMPAT = 1
-       MSB_FIRST = 1
-   PLATFLAGS +=  -DRETRO -DALIGN_DWORD
-	STATIC_LINKING=1
-STATIC_LINKING_LINK=1
+   STATIC_LINKING=1
+   STATIC_LINKING_LINK=1
+   ifneq (,$(findstring wiiu,$(platform)))
+      COMMONFLAGS += -DWIIU -DHW_RVL
+   else ifneq (,$(findstring wii,$(platform)))
+      COMMONFLAGS += -DHW_RVL -mrvl
+   else ifneq (,$(findstring ngc,$(platform)))
+      COMMONFLAGS += -DHW_DOL -mrvl
+   endif
+   CFLAGS += $(COMMONFLAGS) -I$(DEVKITPRO)/portlibs/ppc/include -I$(CORE_DIR)/wiiu-deps
+
+# Nintendo Switch (libnx)
+else ifeq ($(platform), libnx)
+   include $(DEVKITPRO)/libnx/switch_rules
+   TARGET := $(TARGET_NAME)_libretro_$(platform).a
+   CFLAGS += -D__SWITCH__ -DHAVE_LIBNX -I$(LIBNX)/include/ -specs=$(LIBNX)/switch.specs
+   CFLAGS += -march=armv8-a -mtune=cortex-a57 -mtp=soft -mcpu=cortex-a57+crc+fp+simd -ffast-math
+   PLATFLAGS += -DRETRO -DALIGN_DWORD
+   STATIC_LINKING=1
+   STATIC_LINKING_LINK=1
+
 else ifeq ($(platform), ps3)
    TARGET := $(TARGET_NAME)_libretro_$(platform).a
    CC = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-gcc.exe
@@ -151,7 +167,7 @@ endif
    TARGET := $(TARGET_NAME)_libretro.dll
    fpic := -fPIC
    SHARED := -shared -static-libgcc -s -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
-	LDFLAGS := -lm
+	LDFLAGS += -lm
 endif
 
 ifeq ($(DEBUG), 1)
