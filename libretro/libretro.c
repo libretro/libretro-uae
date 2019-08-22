@@ -6,7 +6,11 @@
 #include "retro_files.h"
 #include "retro_strings.h"
 #include "retro_disk_control.h"
-#include "sources/src/include/uae_types.h"
+#include "uae_types.h"
+
+#include "sysdeps.h"
+#include "uae.h"
+#include "options.h"
 
 #define EMULATOR_DEF_WIDTH 640
 #define EMULATOR_DEF_HEIGHT 400
@@ -78,17 +82,18 @@ const char *retro_content_directory;
 static dc_storage* dc;
 
 // Amiga default models
+// chipmem_size 1 = 0.5MB, 2 = 1MB, 4 = 2MB
 
 #define A500 "\
 cpu_type=68000\n\
-chipmem_size=2\n\
-bogomem_size=7\n\
+chipmem_size=1\n\
+bogomem_size=2\n\
 chipset=ocs\n"
 
 #define A600 "\
 cpu_type=68000\n\
-chipmem_size=2\n\
-fastmem_size=4\n\
+chipmem_size=4\n\
+fastmem_size=8\n\
 chipset=ecs\n"
 
 #define A1200 "\
@@ -126,16 +131,15 @@ void retro_set_environment(retro_environment_t cb)
    struct retro_variable variables[] = {
      { "puae_model", "Model; A500|A600|A1200", },
      { "puae_video_standard", "Video standard; PAL|NTSC", },
-     { "puae_video_hires", "High resolution; false|true", },
+     { "puae_video_hires", "High resolution; true|false", },
      { "puae_video_crop_overscan", "Crop overscan; false|true", },
      { "puae_analog","Use Analog; OFF|ON", },
      { "puae_leds","Leds; Standard|Simplified|None", },
      { "puae_cpu_speed", "CPU speed; real|max", },
      { "puae_cpu_compatible", "CPU compatible; true|false", },
      { "puae_sound_output", "Sound output; normal|exact|interrupts|none", },
-     { "puae_sound_frequency", "Sound frequency; 44100|22050|11025", },
-     { "puae_sound_channels", "Sound channels; stereo|mixed|mono", },
-     { "puae_sound_interpol", "Sound interpolation; none|rh|crux|sync", },
+     { "puae_sound_stereo_separation", "Sound stereo separation; 100\%|90\%|80\%|70\%|60\%|50\%|40\%|30\%|20\%|10\%|0\%", },
+     { "puae_sound_interpol", "Sound interpolation; none|anti|sinc|rh|crux", },
      { "puae_floppy_speed", "Floppy speed; 100|200|300|400|500|600|700|800", },
      { "puae_immediate_blits", "Immediate blit; false|true", },
      { "puae_ntsc", "NTSC chipset; false|true", },
@@ -270,26 +274,24 @@ static void update_variables(void)
 		strcat(uae_config, "sound_output=");
 		strcat(uae_config, var.value);
 		strcat(uae_config, "\n");
+
+		if (strcmp(var.value, "none") == 0) changed_prefs.produce_sound=0;
+		else if (strcmp(var.value, "interrupts") == 0) changed_prefs.produce_sound=1;
+		else if (strcmp(var.value, "normal") == 0) changed_prefs.produce_sound=2;
+		else if (strcmp(var.value, "exact") == 0) changed_prefs.produce_sound=3;
    }
 
-   var.key = "puae_sound_frequency";
+   var.key = "puae_sound_stereo_separation";
    var.value = NULL;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-		strcat(uae_config, "sound_frequency=");
+		strcat(uae_config, "sound_stereo_separation=");
 		strcat(uae_config, var.value);
 		strcat(uae_config, "\n");
-   }
 
-   var.key = "puae_sound_channels";
-   var.value = NULL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-		strcat(uae_config, "sound_channels=");
-		strcat(uae_config, var.value);
-		strcat(uae_config, "\n");
+		int val = atoi(var.value) / 10;
+		changed_prefs.sound_stereo_separation=val;
    }
 
    var.key = "puae_sound_interpol";
@@ -300,6 +302,12 @@ static void update_variables(void)
 		strcat(uae_config, "sound_interpol=");
 		strcat(uae_config, var.value);
 		strcat(uae_config, "\n");
+
+		if (strcmp(var.value, "none") == 0) changed_prefs.sound_interpol=0;
+		else if (strcmp(var.value, "anti") == 0) changed_prefs.sound_interpol=1;
+		else if (strcmp(var.value, "sinc") == 0) changed_prefs.sound_interpol=2;
+		else if (strcmp(var.value, "rh") == 0) changed_prefs.sound_interpol=3;
+		else if (strcmp(var.value, "crux") == 0) changed_prefs.sound_interpol=4;
    }
 
    var.key = "puae_floppy_speed";
@@ -361,6 +369,24 @@ static void update_variables(void)
 		strcat(uae_config, var.value);
 		strcat(uae_config, "\n");
    }
+
+
+    /* Always trigger audio change */
+    config_changed = 1;
+    check_prefs_changed_audio();
+
+    /* Sound defaults */
+    strcat(uae_config, "sound_frequency=");
+    strcat(uae_config, "44100");
+    strcat(uae_config, "\n");
+
+    strcat(uae_config, "sound_filter=");
+    strcat(uae_config, "emulated");
+    strcat(uae_config, "\n");
+
+    strcat(uae_config, "sound_filter_type=");
+    strcat(uae_config, "enhanced");
+    strcat(uae_config, "\n");
    
 	// Setting resolution
 	// According to PUAE configuration.txt :
