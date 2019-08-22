@@ -124,7 +124,7 @@ static char uae_config[1024];
 void retro_set_environment(retro_environment_t cb)
 {
    struct retro_variable variables[] = {
-     { "puae_model", "Model; A600|A1200|A500", },
+     { "puae_model", "Model; A500|A600|A1200", },
      { "puae_video_standard", "Video standard; PAL|NTSC", },
      { "puae_video_hires", "High resolution; false|true", },
      { "puae_video_crop_overscan", "Crop overscan; false|true", },
