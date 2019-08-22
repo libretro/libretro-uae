@@ -73,13 +73,15 @@ else ifeq ($(platform), classic_armv7_a7)
 	endif
 #######################################
 
-else ifeq ($(platform), unix-armv7-hardfloat-neon)
+# (armv8 a35, hard point, neon based) ###
+# PlayStation Classic
+else ifeq ($(platform), classic_armv8_a35)
    TARGET := $(TARGET_NAME)_libretro.so
    fpic := -fPIC
-   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T  -Wl,--no-undefined
-   LDFLAGS += -lm -lpthread
-   CFLAGS += -marm -march=armv7-a -mtune=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard
-   PLATFLAGS += -DRETRO -DALIGN_DWORD -DARM
+   CFLAGS += -Ofast \
+	   -fmerge-all-constants -fno-math-errno -march=armv8-a \
+	   -marm -mcpu=cortex-a35 -mtune=cortex-a35 -mfpu=neon-fp-armv8 -mfloat-abi=hard
+   LDFLAGS += -static-libgcc -static-libstdc++ -fPIC
 
 else ifeq ($(platform), osx)
    TARGET := $(TARGET_NAME)_libretro.dylib
@@ -160,6 +162,7 @@ else ifeq ($(platform), ps3)
 	-D__CELLOS_LV2__ -DHAVE_MEMALIGN -DHAVE_ASPRINTF -I$(ZLIB_DIR)
    PLATFLAGS +=  -DRETRO -DALIGN_DWORD
 	STATIC_LINKING=1
+
 else ifeq ($(platform), emscripten)
    TARGET := $(TARGET_NAME)_libretro_$(platform).bc
    PLATFLAGS +=  -DRETRO -DALIGN_DWORD
@@ -190,6 +193,28 @@ else ifneq (,$(findstring ios,$(platform)))
       COMMONFLAGS += -miphoneos-version-min=5.0
    endif
    CFLAGS += $(COMMONFLAGS)
+   PLATFLAGS += -DRETRO -DALIGN_DWORD -DARM
+
+# ARM
+else ifneq (,$(findstring armv,$(platform)))
+   TARGET := $(TARGET_NAME)_libretro.so
+   fpic := -fPIC
+   ifneq (,$(findstring cortexa8,$(platform)))
+      CFLAGS += -marm -mcpu=cortex-a8
+   else ifneq (,$(findstring cortexa7,$(platform)))
+      CFLAGS += -marm -mcpu=cortex-a7
+   else ifneq (,$(findstring cortexa9,$(platform)))
+      CFLAGS += -marm -mcpu=cortex-a9
+   endif
+   CFLAGS += -marm
+   ifneq (,$(findstring neon,$(platform)))
+      CFLAGS += -mfpu=neon
+   endif
+   ifneq (,$(findstring softfloat,$(platform)))
+      CFLAGS += -mfloat-abi=softfp
+   else ifneq (,$(findstring hardfloat,$(platform)))
+      CFLAGS += -mfloat-abi=hard
+   endif
    PLATFLAGS += -DRETRO -DALIGN_DWORD -DARM
 else
 
