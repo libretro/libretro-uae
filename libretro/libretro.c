@@ -286,6 +286,10 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
+		strcat(uae_config, "sound_stereo_separation=");
+		strcat(uae_config, var.value);
+		strcat(uae_config, "\n");
+
 		int val = atoi(var.value) / 10;
 		changed_prefs.sound_stereo_separation=val;
    }
@@ -370,6 +374,19 @@ static void update_variables(void)
     /* Always trigger audio change */
     config_changed = 1;
     check_prefs_changed_audio();
+
+    /* Sound defaults */
+    strcat(uae_config, "sound_frequency=");
+    strcat(uae_config, "44100");
+    strcat(uae_config, "\n");
+
+    strcat(uae_config, "sound_filter=");
+    strcat(uae_config, "emulated");
+    strcat(uae_config, "\n");
+
+    strcat(uae_config, "sound_filter_type=");
+    strcat(uae_config, "enhanced");
+    strcat(uae_config, "\n");
    
 	// Setting resolution
 	// According to PUAE configuration.txt :
