@@ -78,6 +78,7 @@ else ifeq ($(platform), classic_armv7_a7)
 else ifeq ($(platform), classic_armv8_a35)
    TARGET := $(TARGET_NAME)_libretro.so
    fpic := -fPIC
+   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T  -Wl,--no-undefined
    CFLAGS += -Ofast \
 	   -fmerge-all-constants -fno-math-errno -march=armv8-a \
 	   -marm -mcpu=cortex-a35 -mtune=cortex-a35 -mfpu=neon-fp-armv8 -mfloat-abi=hard
@@ -198,6 +199,7 @@ else ifneq (,$(findstring ios,$(platform)))
 # ARM
 else ifneq (,$(findstring armv,$(platform)))
    TARGET := $(TARGET_NAME)_libretro.so
+   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T  -Wl,--no-undefined
    fpic := -fPIC
    ifneq (,$(findstring cortexa8,$(platform)))
       CFLAGS += -marm -mcpu=cortex-a8
