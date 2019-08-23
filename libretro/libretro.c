@@ -439,7 +439,6 @@ static void update_variables(void)
    }
 
    /* Always trigger audio change */
-   // NOTE: The following two commands cause slow-down on Switch (37 vs 50 fps) and some audio glitching, disabling for now.
    config_changed = 1;
    check_prefs_changed_audio();
 
