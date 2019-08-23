@@ -8,7 +8,7 @@ extern int KCOL;
 extern int BKGCOLOR;
 extern int SHIFTON;
 
-void virtual_kdb(unsigned short int *pixels,int vx,int vy)
+void virtual_kbd(unsigned short int *pixels,int vx,int vy)
 {
    int y,x,page   = (NPAGE== -1) ? 0 : 50;
    uint16_t  *pix = &pixels[0];

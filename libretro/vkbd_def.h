@@ -121,6 +121,6 @@ Mvk MVk[NPLGN*NLIGN*2]= {
    { "Ent" ,"Ent",AK_RET},
    { "Kbd" ,"Kbd",-4},
 
-} ;
+};
 
 #endif

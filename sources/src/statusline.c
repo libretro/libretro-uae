@@ -13,6 +13,7 @@
 #include "statusline.h"
 
 extern int ledtype;
+extern int LEDON;
 
 /*
 * Some code to put status information on the screen.
@@ -69,7 +70,7 @@ static void write_tdnumber (uae_u8 *buf, int bpp, int x, int y, int num, uae_u32
 
 	numptr = numbers + num * TD_NUM_WIDTH + NUMBERS_NUM * TD_NUM_WIDTH * y;
 	
-	if(ledtype == 0)
+	if(ledtype == 1)
 	{
 		for (j = 0; j < TD_NUM_WIDTH; j++)
 		{
@@ -80,7 +81,7 @@ static void write_tdnumber (uae_u8 *buf, int bpp, int x, int y, int num, uae_u32
 			numptr++;
 		}
 	}
-	else if(ledtype == 1)
+	else if(ledtype == 2)
 	{
 		for (j = 0; j < TD_NUM_WIDTH; j++)
 		{
@@ -98,6 +99,9 @@ static void write_tdnumber (uae_u8 *buf, int bpp, int x, int y, int num, uae_u32
 
 void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u32 *rc, uae_u32 *gc, uae_u32 *bc, uae_u32 *alpha)
 {
+	if(LEDON==-1)
+		return;
+
 	int x_start, j, led, border;
 	uae_u32 c1, c2, cb;
 
@@ -109,8 +113,8 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
 		x_start = totalwidth - TD_PADX - VISIBLE_LEDS * TD_WIDTH;
 	else
 		x_start = TD_PADX;
-
-  if(ledtype == 0)
+		
+	if(ledtype == 1)
 	{
 	for (led = 0; led < LED_MAX; led++) {
 /* REMOVEME:
@@ -291,7 +295,7 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
 		}
 	}
 	}
-	else if(ledtype == 1)
+	else if(ledtype == 2)
 	{
 		for (led = 1; led < LED_MAX; led++) {
 
