@@ -34,6 +34,7 @@ int sndbufpos=0;
 char key_state[512];
 char key_state2[512];
 bool opt_analog = false;
+bool opt_use_whdload_hdf = true;
 static int firstps = 0;
 
 #if defined(NATMEM_OFFSET)
@@ -137,15 +138,21 @@ void retro_set_environment(retro_environment_t cb)
      { "puae_leds","Leds; Standard|Simplified|None", },
      { "puae_cpu_speed", "CPU speed; real|max", },
      { "puae_cpu_compatible", "CPU compatible; true|false", },
+     { "puae_cycle_exact", "CPU cycle exact (A500 only); false|true", },
      { "puae_sound_output", "Sound output; normal|exact|interrupts|none", },
-     { "puae_sound_stereo_separation", "Sound stereo separation; 100\%|90\%|80\%|70\%|60\%|50\%|40\%|30\%|20\%|10\%|0\%", },
+     { "puae_sound_frequency", "Sound frequency; 44100|22050|11025", },
+     { "puae_sound_channels", "Sound channels; mixed|stereo|mono", },
+     { "puae_sound_stereo_separation", "Sound stereo separation (mixed only); 100\%|90\%|80\%|70\%|60\%|50\%|40\%|30\%|20\%|10\%|0\%", },
      { "puae_sound_interpol", "Sound interpolation; none|anti|sinc|rh|crux", },
+     { "puae_sound_filter", "Sound filter; off|emulated|on", },
+     { "puae_sound_filter_type", "Sound filter type; standard|enhanced", },
      { "puae_floppy_speed", "Floppy speed; 100|200|300|400|500|600|700|800", },
-     { "puae_immediate_blits", "Immediate blit; false|true", },
+     { "puae_immediate_blits", "Immediate blits; false|true", },
      { "puae_ntsc", "NTSC chipset; false|true", },
      { "puae_gfx_correct_aspect", "Correct aspect ratio; true|false", },
      { "puae_gfx_center_vertical", "Vertical centering; simple|smart|none", },
      { "puae_gfx_center_horizontal", "Horizontal centering; simple|smart|none", },
+     { "puae_use_whdload", "Use WHDLoad.hdf; enabled|disabled", },
      { NULL, NULL },
    };
   /*
@@ -281,6 +288,26 @@ static void update_variables(void)
 		else if (strcmp(var.value, "exact") == 0) changed_prefs.produce_sound=3;
    }
 
+   var.key = "puae_sound_frequency";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+		strcat(uae_config, "sound_frequency=");
+		strcat(uae_config, var.value);
+		strcat(uae_config, "\n");
+   }
+
+   var.key = "puae_sound_channels";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+		strcat(uae_config, "sound_channels=");
+		strcat(uae_config, var.value);
+		strcat(uae_config, "\n");
+   }
+
    var.key = "puae_sound_stereo_separation";
    var.value = NULL;
 
@@ -308,6 +335,26 @@ static void update_variables(void)
 		else if (strcmp(var.value, "sinc") == 0) changed_prefs.sound_interpol=2;
 		else if (strcmp(var.value, "rh") == 0) changed_prefs.sound_interpol=3;
 		else if (strcmp(var.value, "crux") == 0) changed_prefs.sound_interpol=4;
+   }
+
+   var.key = "puae_sound_filter";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      strcat(uae_config, "sound_filter=");
+      strcat(uae_config, var.value);
+      strcat(uae_config, "\n");
+   }
+
+   var.key = "puae_sound_filter_type";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      strcat(uae_config, "sound_filter_type=");
+      strcat(uae_config, var.value);
+      strcat(uae_config, "\n");
    }
 
    var.key = "puae_floppy_speed";
@@ -370,24 +417,32 @@ static void update_variables(void)
 		strcat(uae_config, "\n");
    }
 
+   var.key = "puae_cycle_exact";
+   var.value = NULL;
 
-    /* Always trigger audio change */
-    config_changed = 1;
-    check_prefs_changed_audio();
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+		strcat(uae_config, "cycle_exact=");
+		strcat(uae_config, var.value);
+		strcat(uae_config, "\n");
+   }
 
-    /* Sound defaults */
-    strcat(uae_config, "sound_frequency=");
-    strcat(uae_config, "44100");
-    strcat(uae_config, "\n");
+   var.key = "puae_use_whdload";
+   var.value = NULL;
 
-    strcat(uae_config, "sound_filter=");
-    strcat(uae_config, "emulated");
-    strcat(uae_config, "\n");
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "enabled") == 0)
+        opt_use_whdload_hdf = true;
+      if (strcmp(var.value, "disabled") == 0)
+        opt_use_whdload_hdf = false;
+   }
 
-    strcat(uae_config, "sound_filter_type=");
-    strcat(uae_config, "enhanced");
-    strcat(uae_config, "\n");
-   
+   /* Always trigger audio change */
+   // NOTE: The following two commands cause slow-down on Switch (37 vs 50 fps) and some audio glitching, disabling for now.
+   config_changed = 1;
+   check_prefs_changed_audio();
+
 	// Setting resolution
 	// According to PUAE configuration.txt :
 	//
@@ -876,22 +931,18 @@ bool retro_load_game(const struct retro_game_info *info)
 				if(		strendswith(full_path, HDF_FILE_EXT)
 					||	strendswith(full_path, HDZ_FILE_EXT))
 				{
-					// Init WHDLoad
-					char whdload[RETRO_PATH_MAX];
-					path_join((char*)&whdload, retro_system_directory, WHDLOAD_HDF);
-					
-					// Verifiy WHDLoad
-					if(!file_exists(whdload))
+					if (opt_use_whdload_hdf)
 					{
-						// WHDLoad image not found
-						fprintf(stderr, "WHDLoad image file '%s' not found.\n", (const char*)&whdload);
-						fprintf(stderr, "You must have a WHDLoad image file ('WHDLoad.hdf') in your RetroArch system directory to launch a hard drive image file.\n");
-						fclose(configfile);
-						return false;	  
+						// Init WHDLoad
+						char whdload[RETRO_PATH_MAX];
+						path_join((char*)&whdload, retro_system_directory, WHDLOAD_HDF);
+
+						// Verifiy WHDLoad
+						if(file_exists(whdload))
+							fprintf(configfile, "hardfile=read-write,32,1,2,512,%s\n", (const char*)&whdload);
+						else
+							fprintf(stderr, "WHDLoad image file '%s' not found.\n", (const char*)&whdload);
 					}
-					
-					// Write hard drives informations					
-					fprintf(configfile, "hardfile=read-write,32,1,2,512,%s\n", (const char*)&whdload);
 					fprintf(configfile, "hardfile=read-write,32,1,2,512,%s\n", full_path);
 				}
 				else
