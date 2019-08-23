@@ -27,7 +27,7 @@
 #endif
 #define POSIX_SERIAL
 
-#if !defined(__CELLOS_LV2__) && !defined(_WIN32) && !defined(WIIU) && !defined(__SWITCH__)
+#if !defined(__CELLOS_LV2__) && !defined(_WIN32) && !defined(WIIU) && !defined(__SWITCH__) && !defined(VITA)
 #ifdef POSIX_SERIAL
 #include <termios.h>
 #include <unistd.h>

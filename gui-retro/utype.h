@@ -30,6 +30,10 @@
 //#define PROG_NAME "Hatari devel (" __DATE__ ")"
 #endif
 
+#ifdef VITA
+#define getcwd(a,b) "ux0:/"
+#endif
+
 #ifdef _WIN32
 #define PATHSEP '\\'
 #else

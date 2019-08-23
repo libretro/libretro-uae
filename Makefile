@@ -153,6 +153,19 @@ else ifeq ($(platform), libnx)
    STATIC_LINKING=1
    STATIC_LINKING_LINK=1
 
+# Vita
+else ifeq ($(platform), vita)
+   TARGET := $(TARGET_NAME)_libretro_vita.a
+   CC = arm-vita-eabi-gcc$(EXE_EXT)
+   CXX = arm-vita-eabi-g++$(EXE_EXT)
+   AR = arm-vita-eabi-ar$(EXE_EXT)
+   COMMONFLAGS += -U__INT32_TYPE__ -U __UINT32_TYPE__ -D__INT32_TYPE__=int
+   COMMONFLAGS += -DHAVE_STRTOUL -DVITA
+   CFLAGS += $(COMMONFLAGS)
+   PLATFLAGS += -DRETRO -DALIGN_DWORD -DARM
+   STATIC_LINKING = 1
+   STATIC_LINKING_LINK=1
+
 else ifeq ($(platform), ps3)
    TARGET := $(TARGET_NAME)_libretro_$(platform).a
    CC = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-gcc.exe

@@ -36,7 +36,7 @@
 #define HAVE_DIRENT_H 1
 
 /* "Define to 1 if you have 'dlopen' function */
-#if !defined(__SWITCH__)
+#if !defined(__SWITCH__) && !defined(VITA)
 #define HAVE_DLOPEN 1
 #endif
 
@@ -87,7 +87,9 @@
 /* #undef HAVE_MMX */
 
 /* Define to 1 if you have the `nanosleep' function. */
+#ifndef VITA
 #define HAVE_NANOSLEEP 1
+#endif
 
 /* Define to 1 if you have the <ncurses.h> header file. */
 //#define HAVE_NCURSES_H 1
@@ -109,7 +111,7 @@
 #define HAVE_SELECT 1
 
 /* Define to 1 if you have the `setitimer' function. */
-#if !defined(__SWITCH__)
+#if !defined(__SWITCH__) && !defined(VITA)
 #define HAVE_SETITIMER 1
 #endif
 
@@ -191,7 +193,7 @@
 /* #undef HAVE_SUN_AUDIOIO_H */
 
 /* Define to 1 if you have the `sync' function. */
-#if !defined(__SWITCH__)
+#if !defined(__SWITCH__) && !defined(VITA)
 #define HAVE_SYNC 1
 #endif
 
@@ -476,3 +478,7 @@
 /* Define to empty if the keyword `volatile' does not work. Warning: valid
    code using `volatile' can become incorrect without. Disable with care. */
 /* #undef volatile */
+
+#ifdef VITA
+#define chmod(a, b)
+#endif

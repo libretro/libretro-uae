@@ -55,6 +55,13 @@
 #include "blkdev.h"
 #include "isofs_api.h"
 
+#ifdef VITA
+#include <psp2/types.h>
+#include <psp2/io/dirent.h>
+#include <psp2/kernel/threadmgr.h>
+#define mkdir(name,mode) sceIoMkdir(name, 0777)
+#endif
+
 #ifdef TARGET_AMIGAOS
 #include <dos/dos.h>
 #include <proto/dos.h>

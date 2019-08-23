@@ -10,6 +10,13 @@
 
 #include <sys/time.h>
 
+#ifdef VITA
+#include <psp2/types.h>
+#include <psp2/io/dirent.h>
+#include <psp2/kernel/threadmgr.h>
+#define rmdir(name) sceIoRmdir(name)
+#endif
+
 #ifndef _WIN32
 struct timeb {
     time_t          time;
@@ -127,7 +134,7 @@ static int setfiletime (const TCHAR *name, int days, int minute, int tick, int t
 	return 0;
 }
 
-#if defined(__CELLOS_LV2__) || defined(_WIN32) || defined(WIIU)
+#if defined(__CELLOS_LV2__) || defined(_WIN32) || defined(WIIU) || defined(VITA)
 #warning LSTAT STAT
 #define lstat stat
 #endif
@@ -137,7 +144,7 @@ bool my_utime (const TCHAR *name, struct mytimeval *tv)
         int tolocal;
         int days, mins, ticks;
         struct mytimeval tv2;
-#if !defined(__CELLOS_LV2__) && !defined(WIIU) && !defined(__SWITCH__)
+#if !defined(__CELLOS_LV2__) && !defined(WIIU) && !defined(__SWITCH__) && !defined(VITA)
         if (!tv) {
                 struct timeb time;
                 ftime (&time);

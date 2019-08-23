@@ -17,7 +17,9 @@
 #ifndef ANDROID
 #ifndef __CELLOS_LV2__
 #ifndef _WIN32
+#ifndef VITA
 #include <sys/sysctl.h>
+#endif
 #endif
 #endif
 #endif

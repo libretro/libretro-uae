@@ -201,7 +201,11 @@ int isaudiotrack (struct cd_toc_head *th, int block);
 
 enum cd_standard_unit { CD_STANDARD_UNIT_DEFAULT, CD_STANDARD_UNIT_AUDIO, CD_STANDARD_UNIT_CDTV, CD_STANDARD_UNIT_CD32 };
 
+#ifdef VITA
+int get_standard_cd_unit (unsigned int csu);
+#else
 int get_standard_cd_unit (enum cd_standard_unit csu);
+#endif
 void close_standard_cd_unit (int);
 void blkdev_cd_change (int unitnum, const TCHAR *name);
 

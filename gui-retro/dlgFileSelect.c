@@ -24,6 +24,11 @@ const char DlgFileSelect_fileid[] = "Hatari dlgFileSelect.c : " __DATE__ " " __T
 #include "dialog.h"
 #include "libretro-mapper.h"
 
+#ifdef VITA
+#include <psp2/kernel/processmgr.h>
+#define usleep sceKernelDelayThreadCB;
+#endif
+
 //RETRO
 extern int alphasort2(const struct dirent **d1, const struct dirent **d2);
 /*

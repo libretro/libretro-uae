@@ -185,6 +185,10 @@ static char *Paths_InitExecDir(const char *argv0)
  */
 static void Paths_InitHomeDirs(void)
 {
+#ifdef VITA
+	strcpy(sUserHomeDir, sWorkingDir);
+	strcpy(sHatariHomeDir, sWorkingDir);
+#else
 	char *psHome;
 
 	psHome = getenv("HOME");
@@ -232,6 +236,7 @@ static void Paths_InitHomeDirs(void)
 			}
 		}
 	}
+#endif
 }
 
 
@@ -247,13 +252,16 @@ void Paths_Init(const char *argv0)
 {
 	char *psExecDir;  /* Path string where the hatari executable can be found */
 
+#ifdef VITA
+	strcpy(sWorkingDir, "ux0:");
+#else
 	/* Init working directory string */
 	if (getcwd(sWorkingDir, FILENAME_MAX) == NULL)
 	{
 		/* This should never happen... just in case... */
 		strcpy(sWorkingDir, ".");
 	}
-
+#endif
 	/* Init the user's home directory string */
 	Paths_InitHomeDirs();
 

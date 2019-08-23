@@ -29,6 +29,11 @@ static INLINE void gettimeofday (struct timeval *tv, void *blah)
 #include <time.h>
 #endif
 
+#ifdef VITA
+#include <psp2/kernel/processmgr.h>
+#define usleep sceKernelDelayThreadCB;
+#endif
+
 #include "machdep/rpt.h"
 
 
