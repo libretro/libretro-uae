@@ -313,12 +313,13 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-		strcat(uae_config, "sound_stereo_separation=");
-		strcat(uae_config, var.value);
-		strcat(uae_config, "\n");
-
 		int val = atoi(var.value) / 10;
 		changed_prefs.sound_stereo_separation=val;
+		char buf[50];
+		snprintf(buf, 50, "%d", val);
+		strcat(uae_config, "sound_stereo_separation=");
+		strcat(uae_config, buf);
+		strcat(uae_config, "\n");
    }
 
    var.key = "puae_sound_interpol";
