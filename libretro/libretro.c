@@ -358,6 +358,26 @@ void retro_set_environment(retro_environment_t cb)
          "100"
       },
       {
+         "puae_floppy_sound",
+         "Floppy sound emulation (restart)",
+         "Needs external files in system/uae_data/",
+         {
+            { "100", "disabled" },
+            { "90", "10\% volume" },
+            { "80", "20\% volume" },
+            { "70", "30\% volume" },
+            { "60", "40\% volume" },
+            { "50", "50\% volume" },
+            { "40", "60\% volume" },
+            { "30", "70\% volume" },
+            { "20", "80\% volume" },
+            { "10", "90\% volume" },
+            { "0", "100\% volume" },
+            { NULL, NULL },
+         },
+         "100"
+      },
+      {
          "puae_immediate_blits",
          "Immediate blits",
          "",
@@ -816,6 +836,18 @@ static void update_variables(void)
 		strcat(uae_config, "floppy_speed=");
 		strcat(uae_config, var.value);
 		strcat(uae_config, "\n");
+   }
+
+   var.key = "puae_floppy_sound";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+        /* Sound is enabled by default if files are found, so this needs to be set always */
+        /* 100 is mute, 0 is max */
+        strcat(uae_config, "floppy_volume=");
+        strcat(uae_config, var.value);
+        strcat(uae_config, "\n");
    }
 
    var.key = "puae_immediate_blits";
