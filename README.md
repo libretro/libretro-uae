@@ -26,16 +26,10 @@ And of course for the RetroArch/Libretro team : "http://www.libretro.com/"
 ## Default Controls
 
 ```
-L2  Show/Hide statut
-R2  Sound on/off
-L   Toggle Num Joy .
-R   Change Mouse speed 1 to 6 . (for gui and emu)
-SEL Toggle Mouse/Joy mode .
-STR Show/Hide vkbd . 
-A   Fire/Mouse btn A / Valid key in vkbd
-B   Mouse btn B
-X    
-Y   E-UAE GUI
+L   Toggle virtual keyboard
+R   Toggle statusbar
+A   Button 1
+B   Button 2
 ```
 
 ## Disk images, WHDLoad and M3U support
@@ -103,6 +97,8 @@ When a game ask for it, you can change the current disk in the RetroArch 'Disk C
 - Insert the new disk with 'Disk Cycle Tray Status'.
 
 Note : zip support is provided by RetroArch and is done before passing the game to the core. So, when using a m3u file, the specified disk image must be uncompressed (adf, dms, fdi, ipf file formats).
+
+You can also append "(MD)" as in "MultiDrive" to the m3u filename to insert every disk in different drive for games that support multiple drives. Only possible if there are no more than 4 disks.
 
 ### WHDLoad
 To use WHDLoad games you'll need to have a prepared WHDLoad image named 'WHDLoad.hdf' in RetroArch system directory.
