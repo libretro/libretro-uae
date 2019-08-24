@@ -772,8 +772,36 @@ void retro_poll_event()
                   if(SHOWKEY==-1)
                      for (i=0;i<9;i++)
                         if(i==0 || (i>3 && i<9))
-                           if( input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, i) )
-                              MXjoy[retro_port] |= vbt[i];
+                           // Need to fight around presses on the same axis
+                           if(i>3 && i<8)
+                           {
+                              if(i==RETRO_DEVICE_ID_JOYPAD_UP)
+                              {
+                                    if( input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, i) && !input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN) )
+                                       MXjoy[retro_port] |= vbt[i];
+                              }
+                              else if(i==RETRO_DEVICE_ID_JOYPAD_DOWN)
+                              {
+                                    if( input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, i) && !input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) )
+                                       MXjoy[retro_port] |= vbt[i];
+                              }
+
+                              if(i==RETRO_DEVICE_ID_JOYPAD_LEFT)
+                              {
+                                    if( input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, i) && !input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) )
+                                       MXjoy[retro_port] |= vbt[i];
+                              }
+                              else if(i==RETRO_DEVICE_ID_JOYPAD_RIGHT)
+                              {
+                                    if( input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, i) && !input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT) )
+                                       MXjoy[retro_port] |= vbt[i];
+                              }
+                           }
+                           else
+                           {
+                              if( input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, i) )
+                                 MXjoy[retro_port] |= vbt[i];
+                           }
 
                   retro_joy(retro_port, MXjoy[retro_port]);
                }
@@ -866,8 +894,36 @@ void retro_poll_event()
             case RETRO_DEVICE_UAE_CD32PAD:
                MXjoy[retro_port]=0;
                   for (i=0;i<12;i++)
-                     if( input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, i) )
-                        MXjoy[retro_port] |= vbt[i];
+                     // Need to fight around presses on the same axis
+                     if(i>3 && i<8)
+                     {
+                        if(i==RETRO_DEVICE_ID_JOYPAD_UP)
+                        {
+                              if( input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, i) && !input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN) )
+                                 MXjoy[retro_port] |= vbt[i];
+                        }
+                        else if(i==RETRO_DEVICE_ID_JOYPAD_DOWN)
+                        {
+                              if( input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, i) && !input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) )
+                                 MXjoy[retro_port] |= vbt[i];
+                        }
+
+                        if(i==RETRO_DEVICE_ID_JOYPAD_LEFT)
+                        {
+                              if( input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, i) && !input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) )
+                                 MXjoy[retro_port] |= vbt[i];
+                        }
+                        else if(i==RETRO_DEVICE_ID_JOYPAD_RIGHT)
+                        {
+                              if( input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, i) && !input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT) )
+                                 MXjoy[retro_port] |= vbt[i];
+                        }
+                     }
+                     else
+                     {
+                        if( input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, i) )
+                           MXjoy[retro_port] |= vbt[i];
+                     }
 
                retro_joy(retro_port, MXjoy[retro_port]);
                break;
@@ -877,8 +933,36 @@ void retro_poll_event()
                if(SHOWKEY==-1)
                   for (i=0;i<9;i++)
                      if(i==0 || (i>3 && i<9))
-                        if( input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, i) )
-                           MXjoy[retro_port] |= vbt[i];
+                        // Need to fight around presses on the same axis
+                        if(i>3 && i<8)
+                        {
+                           if(i==RETRO_DEVICE_ID_JOYPAD_UP)
+                           {
+                                 if( input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, i) && !input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN) )
+                                    MXjoy[retro_port] |= vbt[i];
+                           }
+                           else if(i==RETRO_DEVICE_ID_JOYPAD_DOWN)
+                           {
+                                 if( input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, i) && !input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) )
+                                    MXjoy[retro_port] |= vbt[i];
+                           }
+
+                           if(i==RETRO_DEVICE_ID_JOYPAD_LEFT)
+                           {
+                                 if( input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, i) && !input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) )
+                                    MXjoy[retro_port] |= vbt[i];
+                           }
+                           else if(i==RETRO_DEVICE_ID_JOYPAD_RIGHT)
+                           {
+                                 if( input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, i) && !input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT) )
+                                    MXjoy[retro_port] |= vbt[i];
+                           }
+                        }
+                        else
+                        {
+                           if( input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, i) )
+                              MXjoy[retro_port] |= vbt[i];
+                        }
 
                retro_joy(retro_port, MXjoy[retro_port]);
                break;
