@@ -1682,7 +1682,7 @@ bool retro_load_game(const struct retro_game_info *info)
 				}
 				else
 				{
-					// If argument is a hard drive image file
+					// If argument is a m3u playlist
 					if(strendswith(full_path, M3U_FILE_EXT))
 					{
 						// Parse the m3u file
@@ -1705,8 +1705,28 @@ bool retro_load_game(const struct retro_game_info *info)
 					// Init first disk
 					dc->index = 0;
 					dc->eject_state = false;
-					printf("Disk (%d) inserted into drive A : %s\n", dc->index+1, dc->files[dc->index]);
+					printf("Disk (%d) inserted into drive DF0: %s\n", dc->index+1, dc->files[dc->index]);
 					fprintf(configfile, "floppy0=%s\n", dc->files[0]);
+
+					// Append rest of the disks to the config if m3u is a MultiDrive-m3u
+					if(strstr(full_path, "(MD)") != NULL)
+					{
+					    for(unsigned i = 1; i < dc->count; i++)
+					    {
+					        dc->index = i;
+					        if(i <= 3)
+					        {
+					            printf("Disk (%d) inserted into drive DF%d: %s\n", dc->index+1, i, dc->files[dc->index]);
+					            fprintf(configfile, "floppy%d=%s\n", i, dc->files[i]);
+                            }
+                            else
+                            {
+                                fprintf(stderr, "Too many disks for MultiDrive!\n");
+                                fclose(configfile);
+                                return false;
+                            }
+                        }
+                    }
 				}
 				fclose(configfile);
 			}
