@@ -171,7 +171,12 @@ void driveclick_init (void)
 				for (j = 0; j < CLICK_TRACKS; j++)
 					drvs[i][DS_CLICK].lengths[j] = drvs[i][DS_CLICK].len;
 //				get_plugin_path (path2, sizeof path2 / sizeof (TCHAR), _T("floppysounds"));
+#ifdef __LIBRETRO__
+				extern char *retro_system_directory;
+				_stprintf (path2, "%s%cuae_data%c", retro_system_directory, FSDB_DIR_SEPARATOR, FSDB_DIR_SEPARATOR);
+#else
 				_stprintf (path2, "%suae_data%c", "./", FSDB_DIR_SEPARATOR);
+#endif
 				_stprintf (tmp, _T("%sdrive_click_LOUD%s"),
 					path2, fs->dfxclickexternal);
 				v = loadsample (tmp, &drvs[i][DS_CLICK]);
