@@ -52,7 +52,7 @@ int gmx=320,gmy=240; //gui mouse
 
 //int al[2];//left analog1
 int ar[2];//right analog1
-unsigned char MXjoy[2]={0,0}; // joyports
+unsigned char MXjoy[4]={0}; // joyports
 int touch=-1; // gui mouse btn
 int fmousex,fmousey; // emu mouse
 int pauseg=0; //enter_gui
@@ -73,7 +73,7 @@ extern void retro_mouse(int, int);
 extern void retro_mouse_but0(int);
 extern void retro_mouse_but1(int);
 extern void retro_joy(unsigned int, unsigned char);
-extern unsigned uae_devices[2];
+extern unsigned uae_devices[4];
 extern int mapper_keys[30];
 extern int video_config;
 
@@ -761,7 +761,7 @@ void retro_poll_event()
       int i;
 
       int retro_port;
-      for (retro_port = 0; retro_port <= 1; retro_port++)
+      for (retro_port = 0; retro_port <= 3; retro_port++)
       {
          switch(uae_devices[retro_port])
          {

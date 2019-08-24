@@ -67,7 +67,7 @@ int keyId(const char *val)
 }
 
 extern void retro_poll_event(void);
-unsigned uae_devices[2];
+unsigned uae_devices[4];
 
 int mapper_keys[30]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 static char buf[64][4096] = { 0 };
@@ -1409,7 +1409,8 @@ void retro_init(void)
    {
       RETRO_DESCRIPTOR_BLOCK( 0 ),
       RETRO_DESCRIPTOR_BLOCK( 1 ),
-
+      RETRO_DESCRIPTOR_BLOCK( 2 ),
+      RETRO_DESCRIPTOR_BLOCK( 3 ),
       { 0 },
    };
 
@@ -1462,7 +1463,7 @@ unsigned retro_api_version(void)
 
 void retro_set_controller_port_device(unsigned port, unsigned device)
 {
-   if(port<2)
+   if(port<4)
    {
       uae_devices[port]=device;
       switch(device)

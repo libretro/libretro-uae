@@ -976,10 +976,11 @@ static uae_u8 ReadCIAB (unsigned int addr)
 			uae_u8 v;
 			parallel_direct_read_status (&v);
 			tmp |= v & 7;
-		} else {
+		} else
+#endif
+		{
 			tmp |= handle_parport_joystick (1, ciabpra, ciabdra);
 		}
-#endif
 		tmp = dongle_cia_read (1, reg, tmp);
 #if DONGLE_DEBUG > 0
 		if (notinrom ())

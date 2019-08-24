@@ -94,7 +94,7 @@ void retro_mouse_but1(int down){
 	setmousebuttonstate (0, 1, down);
 }
 
-static jflag[2][7]={0,0,0,0,0,0,0};
+static jflag[4][7]={0,0,0,0,0,0,0};
 
 void retro_joy(unsigned int port, unsigned char joy){
 // 0x001,0x002,0x004,0x008,0x010,0x020,0x040
@@ -438,12 +438,29 @@ static void read_joysticks (void)
 
 static int get_joystick_num (void)
 {
-    return 2;
+    return 4;
 }
 
 static char *get_joystick_uniquename (int joy)
 {
-    return (joy==0) ? "RetroPad0" : "RetroPad1";;
+    switch (joy)
+	{
+		case 0:
+			return "RetroPad0";
+			break;
+		case 1:
+			return "RetroPad1";
+			break;
+		case 2:
+			return "RetroPad2";
+			break;
+		case 3:
+			return "RetroPad3";
+			break;
+		default:
+			return "RetroPad1";
+			break;
+	}
 }
 
 static int get_joystick_widget_num (int joy)
@@ -463,7 +480,24 @@ static int get_joystick_widget_first (int joy, int type)
 
 static TCHAR *get_joystick_friendlyname (int joy)
 {
-    return (joy==0) ? "RetroPad0" : "RetroPad1";
+	switch (joy)
+	{
+		case 0:
+			return "RetroPad0";
+			break;
+		case 1:
+			return "RetroPad1";
+			break;
+		case 2:
+			return "RetroPad2";
+			break;
+		case 3:
+			return "RetroPad3";
+			break;
+		default:
+			return "RetroPad1";
+			break;
+	}
 }
 
 struct inputdevice_functions inputdevicefunc_joystick = {
@@ -496,8 +530,21 @@ int input_get_default_joystick (struct uae_input_device *uid, int num, int port,
     uid[1].eventid[ID_BUTTON_OFFSET + 1][0] =  INPUTEVENT_JOY1_2ND_BUTTON;
     uid[1].eventid[ID_BUTTON_OFFSET + 2][0] =  INPUTEVENT_JOY1_3RD_BUTTON;
 
+    uid[2].eventid[ID_AXIS_OFFSET + 0][0]   =  INPUTEVENT_PAR_JOY1_HORIZ;
+    uid[2].eventid[ID_AXIS_OFFSET + 1][0]   =  INPUTEVENT_PAR_JOY1_VERT;
+    uid[2].eventid[ID_BUTTON_OFFSET + 0][0] =  INPUTEVENT_PAR_JOY1_FIRE_BUTTON;
+    uid[2].eventid[ID_BUTTON_OFFSET + 1][0] =  INPUTEVENT_PAR_JOY1_2ND_BUTTON;
+
+    uid[3].eventid[ID_AXIS_OFFSET + 0][0]   =  INPUTEVENT_PAR_JOY2_HORIZ;
+    uid[3].eventid[ID_AXIS_OFFSET + 1][0]   =  INPUTEVENT_PAR_JOY2_VERT;
+    uid[3].eventid[ID_BUTTON_OFFSET + 0][0] =  INPUTEVENT_PAR_JOY2_FIRE_BUTTON;
+    uid[3].eventid[ID_BUTTON_OFFSET + 1][0] =  INPUTEVENT_PAR_JOY2_2ND_BUTTON;
+
     uid[0].enabled = 1;
     uid[1].enabled = 1;
+    uid[2].enabled = 1;
+    uid[3].enabled = 1;
+
     return 1;
 }
 
