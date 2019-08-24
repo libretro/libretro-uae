@@ -118,8 +118,8 @@ const int keyboard_translation[512] =
 	AK_RT,    /* SDLK_RIGHT = 275 */
 	AK_LF,    /* SDLK_LEFT = 276 */
 	AK_HELP,    /* SDLK_INSERT = 277 */
-	AK_NPLPAREN,    /* SDLK_HOME = 278 */
-	AK_NPRPAREN,    /* SDLK_END = 279 */
+	-1, //AK_NPLPAREN,    /* SDLK_HOME = 278 */
+	-1, //AK_NPRPAREN,    /* SDLK_END = 279 */
 	AK_RAMI,    /* SDLK_PAGEUP = 280 */
 	AK_LAMI,    /* SDLK_PAGEDOWN = 281 */
 	/* Function keys */

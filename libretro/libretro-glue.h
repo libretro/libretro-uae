@@ -36,12 +36,12 @@ extern int CROP_HEIGHT;
 #define XSIDE  (CROP_WIDTH/NPLGN -1)
 #define YSIDE  (CROP_HEIGHT/8 -1)
 
-#define YBASE0 (CROP_HEIGHT - NLIGN*YSIDE -8)
+#define YBASE0 (CROP_HEIGHT - NLIGN*YSIDE -80)
 #define XBASE0 0+4+2
 #define XBASE3 0
 #define YBASE3 YBASE0 -4
 
-#define STAT_DECX 120
+#define STAT_DECX 4
 #define STAT_YSZ  20
 
 #define RGB565(r, g, b)  (((r) << (5+6)) | ((g) << 6) | (b))
