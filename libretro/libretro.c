@@ -1165,21 +1165,52 @@ static void retro_wrap_emulator(void)
 //*****************************************************************************
 //*****************************************************************************
 // Disk control
-extern void disk_insert (int num, const TCHAR *name, bool forcedwriteprotect);
+extern void DISK_check_change(void);
+extern const char* Floppy_SetDiskFileNameNone(int Drive);
+extern const char* Floppy_SetDiskFileName(int Drive, const char *pszFileName, const char *pszZipPath);
 extern void disk_eject (int num);
 
 static bool disk_set_eject_state(bool ejected)
 {
 	if (dc)
 	{
-		dc->eject_state = ejected;
-		
-		if(dc->eject_state)
-			disk_eject(0);
+		if(dc->eject_state == ejected)
+			return true;
 		else
-			disk_insert(0, dc->files[dc->index], false);			
+			dc->eject_state = ejected;
+		
+		if (dc->eject_state)
+		{
+			Floppy_SetDiskFileNameNone(0);
+			changed_prefs.floppyslots[0].df[0] = 0;
+			DISK_check_change();
+			disk_eject(0);
+		}
+		else
+		{
+			if (strlen(dc->files[dc->index]) > 0)
+			{
+				if (File_Exists(dc->files[dc->index]))
+				{
+					// This sets szDiskFileName[0]
+					Floppy_SetDiskFileName(0, dc->files[dc->index], 0);
+
+					if (currprefs.nr_floppies-1 < 0 )
+						currprefs.nr_floppies = 1;
+
+					//check whether drive is enabled
+					if (currprefs.floppyslots[0].dfxtype < 0)
+					{
+						changed_prefs.floppyslots[0].dfxtype = 0;
+						DISK_check_change();
+					}
+					changed_prefs = currprefs;
+					strcpy (changed_prefs.floppyslots[0].df,dc->files[dc->index]);
+					DISK_check_change();
+				}
+			}
+		}
 	}
-	
 	return true;
 }
 
@@ -1208,7 +1239,7 @@ static bool disk_set_image_index(unsigned index)
 		// This can mess things in the emu
 		if(index == dc->index)
 			return true;
-		
+
 		if ((index < dc->count) && (dc->files[index]))
 		{
 			dc->index = index;
@@ -1216,7 +1247,7 @@ static bool disk_set_image_index(unsigned index)
 			return true;
 		}
 	}
-	
+
 	return false;
 }
 
@@ -1230,16 +1261,39 @@ static unsigned disk_get_num_images(void)
 
 static bool disk_replace_image_index(unsigned index, const struct retro_game_info *info)
 {
-	// Not implemented
-	// No many infos on this in the libretro doc...
-	return false;
+	if (dc)
+	{
+		if (index >= dc->count)
+			return false;
+
+		if(dc->files[index])
+		{
+			free(dc->files[index]);
+			dc->files[index] = NULL;
+		}
+
+		// TODO : Handling removing of a disk image when info = NULL
+
+		if(info != NULL)
+			dc->files[index] = strdup(info->path);
+	}
+
+    return false;
 }
 
 static bool disk_add_image_index(void)
 {
-	// Not implemented
-	// No many infos on this in the libretro doc...
-	return false;
+	if (dc)
+	{
+		if(dc->count <= DC_MAX_SIZE)
+		{
+			dc->files[dc->count] = NULL;
+			dc->count++;
+			return true;
+		}
+	}
+
+    return false;
 }
 
 static struct retro_disk_control_callback disk_interface = {
