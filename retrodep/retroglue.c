@@ -18,7 +18,10 @@
 
 #include "inputdevice.h"
 
+#include "libretro.h"
 #include "libretro-glue.h"
+#include "libretro-mapper.h"
+extern unsigned uae_devices[2];
 
 #define PIX_BYTES 2
 
@@ -94,28 +97,30 @@ void retro_mouse_but1(int down){
 	setmousebuttonstate (0, 1, down);
 }
 
-static jflag[4][7]={0,0,0,0,0,0,0};
+static jflag[4][11]={0,0,0,0,0,0,0,0,0,0,0};
 
-void retro_joy(unsigned int port, unsigned char joy){
-// 0x001,0x002,0x004,0x008,0x010,0x020,0x040
-// UP  DWN  LFT  RGT  BTN1 BTN2 BTN3
-// 0   1    2    3    4	   5	6
+void retro_joy(unsigned int port, unsigned long joy){
+// 0x001,0x002,0x004,0x008,0x010,0x020,0x040,0x200,0x400,0x800,0x100
+// UP    DWN   LFT   RGT   A  	 B     X     Y     L     R     STRT
+// 0     1	   2     3     4	 5	   6     7     8     9     10
+// setjoybuttonstate(port, button, state)
+
 //if(joy!=0) printf("JOY: %d, PORT: %d\n", joy, port);
 
-	// BTN1
+	// A
 	if(joy&0x010){
 		if(jflag[port][4]==0){
-			setjoybuttonstate(port, 0, 1); // joy0, button0, state ON
+			setjoybuttonstate(port, 0, 1);
 			jflag[port][4]=1;
 		}
 	}else {
 		if(jflag[port][4]==1){
-			setjoybuttonstate(port, 0, 0); // joy0, button0, state OFF
+			setjoybuttonstate(port, 0, 0);
 			jflag[port][4]=0;
 		}
 	}
 
-	// BTN2
+	// B
 	if(joy&0x020){
 		if(jflag[port][5]==0){
 			setjoybuttonstate(port, 1, 1);
@@ -128,7 +133,7 @@ void retro_joy(unsigned int port, unsigned char joy){
 		}
 	}
 
-	// BTN3
+	// X
 	if(joy&0x040){
 		if(jflag[port][6]==0){
 			setjoybuttonstate(port, 2, 1);
@@ -141,20 +146,73 @@ void retro_joy(unsigned int port, unsigned char joy){
 		}
 	}
 
-	//Left
-	if(joy&0x004){
-		if(jflag[port][2]==0){
-			setjoystickstate(port, 0, -1, 1);
-			jflag[port][2]=1;
+	// Y
+	if(joy&0x200){
+		if(jflag[port][7]==0){
+			setjoybuttonstate(port, 3, 1);
+			jflag[port][7]=1;
 		}
 	}else {
-		if(jflag[port][2]==1){
-			setjoystickstate(port, 0, 0, 1);
-			jflag[port][2]=0;
+		if(jflag[port][7]==1){
+			setjoybuttonstate(port, 3, 0);
+			jflag[port][7]=0;
 		}
 	}
 
-	//Down
+	// L
+	if(joy&0x400){
+		if(jflag[port][8]==0){
+			setjoybuttonstate(port, 4, 1);
+			jflag[port][8]=1;
+		}
+	}else {
+		if(jflag[port][8]==1){
+			setjoybuttonstate(port, 4, 0);
+			jflag[port][8]=0;
+		}
+	}
+
+	// R
+	if(joy&0x800){
+		if(jflag[port][9]==0){
+			setjoybuttonstate(port, 5, 1);
+			jflag[port][9]=1;
+		}
+	}else {
+		if(jflag[port][9]==1){
+			setjoybuttonstate(port, 5, 0);
+			jflag[port][9]=0;
+		}
+	}
+
+	// Start
+	if(joy&0x100){
+		if(jflag[port][10]==0){
+			setjoybuttonstate(port, 6, 1);
+			jflag[port][10]=1;
+		}
+	}else {
+		if(jflag[port][10]==1){
+			setjoybuttonstate(port, 6, 0);
+			jflag[port][10]=0;
+		}
+	}
+
+	// Up
+	if(joy&0x001){
+		if(jflag[port][0]==0){
+			setjoystickstate(port, 1, -1, 1);
+			jflag[port][0]=1;
+		}
+	}else {
+		if(jflag[port][0]==1){
+			setjoystickstate(port, 1, 0, 1);
+			jflag[port][0]=0;
+		}
+	}
+
+
+	// Down
 	if(joy&0x002){
 		if(jflag[port][1]==0){
 			setjoystickstate(port, 1, 1, 1);
@@ -167,7 +225,21 @@ void retro_joy(unsigned int port, unsigned char joy){
 		}
 	}
 
-	//Right
+	// Left
+	if(joy&0x004){
+		if(jflag[port][2]==0){
+			setjoystickstate(port, 0, -1, 1);
+			jflag[port][2]=1;
+		}
+	}else {
+		if(jflag[port][2]==1){
+			setjoystickstate(port, 0, 0, 1);
+			jflag[port][2]=0;
+		}
+	}
+
+
+	// Right
 	if(joy&0x008){
 		if(jflag[port][3]==0){
 			setjoystickstate(port, 0, 1, 1);
@@ -177,19 +249,6 @@ void retro_joy(unsigned int port, unsigned char joy){
 		if(jflag[port][3]==1){
 			setjoystickstate(port, 0, 0, 1);
 			jflag[port][3]=0;
-		}
-	}
-
-	//UP
-	if(joy&0x001){
-		if(jflag[port][0]==0){
-			setjoystickstate(port, 1, -1, 1);
-			jflag[port][0]=1;
-		}
-	}else {
-		if(jflag[port][0]==1){
-			setjoystickstate(port, 1, 0, 1);
-			jflag[port][0]=0;
 		}
 	}
 
@@ -518,17 +577,47 @@ struct inputdevice_functions inputdevicefunc_joystick = {
 int input_get_default_joystick (struct uae_input_device *uid, int num, int port, int af, int mode, bool gp)
 //void input_get_default_joystick (struct uae_input_device *uid)
 {
-    uid[0].eventid[ID_AXIS_OFFSET + 0][0]   =  INPUTEVENT_JOY2_HORIZ;
-    uid[0].eventid[ID_AXIS_OFFSET + 1][0]   =  INPUTEVENT_JOY2_VERT;
-    uid[0].eventid[ID_BUTTON_OFFSET + 0][0] =  INPUTEVENT_JOY2_FIRE_BUTTON;
-    uid[0].eventid[ID_BUTTON_OFFSET + 1][0] =  INPUTEVENT_JOY2_2ND_BUTTON;
-    uid[0].eventid[ID_BUTTON_OFFSET + 2][0] =  INPUTEVENT_JOY2_3RD_BUTTON;
+    if(uae_devices[0] == RETRO_DEVICE_UAE_CD32PAD)
+    {
+        uid[0].eventid[ID_AXIS_OFFSET + 0][0]   =  INPUTEVENT_JOY2_HORIZ;
+        uid[0].eventid[ID_AXIS_OFFSET + 1][0]   =  INPUTEVENT_JOY2_VERT;
+        uid[0].eventid[ID_BUTTON_OFFSET + 0][0] =  INPUTEVENT_JOY2_CD32_RED;
+        uid[0].eventid[ID_BUTTON_OFFSET + 1][0] =  INPUTEVENT_JOY2_CD32_BLUE;
+        uid[0].eventid[ID_BUTTON_OFFSET + 2][0] =  INPUTEVENT_JOY2_CD32_GREEN;
+        uid[0].eventid[ID_BUTTON_OFFSET + 3][0] =  INPUTEVENT_JOY2_CD32_YELLOW;
+        uid[0].eventid[ID_BUTTON_OFFSET + 4][0] =  INPUTEVENT_JOY2_CD32_RWD;
+        uid[0].eventid[ID_BUTTON_OFFSET + 5][0] =  INPUTEVENT_JOY2_CD32_FFW;
+        uid[0].eventid[ID_BUTTON_OFFSET + 6][0] =  INPUTEVENT_JOY2_CD32_PLAY;
+    }
+    else
+    {
+        uid[0].eventid[ID_AXIS_OFFSET + 0][0]   =  INPUTEVENT_JOY2_HORIZ;
+        uid[0].eventid[ID_AXIS_OFFSET + 1][0]   =  INPUTEVENT_JOY2_VERT;
+        uid[0].eventid[ID_BUTTON_OFFSET + 0][0] =  INPUTEVENT_JOY2_FIRE_BUTTON;
+        uid[0].eventid[ID_BUTTON_OFFSET + 1][0] =  INPUTEVENT_JOY2_2ND_BUTTON;
+        uid[0].eventid[ID_BUTTON_OFFSET + 2][0] =  INPUTEVENT_JOY2_3RD_BUTTON;
+    }
 
-    uid[1].eventid[ID_AXIS_OFFSET + 0][0]   =  INPUTEVENT_JOY1_HORIZ;
-    uid[1].eventid[ID_AXIS_OFFSET + 1][0]   =  INPUTEVENT_JOY1_VERT;
-    uid[1].eventid[ID_BUTTON_OFFSET + 0][0] =  INPUTEVENT_JOY1_FIRE_BUTTON;
-    uid[1].eventid[ID_BUTTON_OFFSET + 1][0] =  INPUTEVENT_JOY1_2ND_BUTTON;
-    uid[1].eventid[ID_BUTTON_OFFSET + 2][0] =  INPUTEVENT_JOY1_3RD_BUTTON;
+    if(uae_devices[1] == RETRO_DEVICE_UAE_CD32PAD)
+    {
+        uid[1].eventid[ID_AXIS_OFFSET + 0][0]   =  INPUTEVENT_JOY1_HORIZ;
+        uid[1].eventid[ID_AXIS_OFFSET + 1][0]   =  INPUTEVENT_JOY1_VERT;
+        uid[1].eventid[ID_BUTTON_OFFSET + 0][0] =  INPUTEVENT_JOY1_CD32_RED;
+        uid[1].eventid[ID_BUTTON_OFFSET + 1][0] =  INPUTEVENT_JOY1_CD32_BLUE;
+        uid[1].eventid[ID_BUTTON_OFFSET + 2][0] =  INPUTEVENT_JOY1_CD32_GREEN;
+        uid[1].eventid[ID_BUTTON_OFFSET + 3][0] =  INPUTEVENT_JOY1_CD32_YELLOW;
+        uid[1].eventid[ID_BUTTON_OFFSET + 4][0] =  INPUTEVENT_JOY1_CD32_RWD;
+        uid[1].eventid[ID_BUTTON_OFFSET + 5][0] =  INPUTEVENT_JOY1_CD32_FFW;
+        uid[1].eventid[ID_BUTTON_OFFSET + 6][0] =  INPUTEVENT_JOY1_CD32_PLAY;
+    }
+    else
+    {
+        uid[1].eventid[ID_AXIS_OFFSET + 0][0]   =  INPUTEVENT_JOY1_HORIZ;
+        uid[1].eventid[ID_AXIS_OFFSET + 1][0]   =  INPUTEVENT_JOY1_VERT;
+        uid[1].eventid[ID_BUTTON_OFFSET + 0][0] =  INPUTEVENT_JOY1_FIRE_BUTTON;
+        uid[1].eventid[ID_BUTTON_OFFSET + 1][0] =  INPUTEVENT_JOY1_2ND_BUTTON;
+        uid[1].eventid[ID_BUTTON_OFFSET + 2][0] =  INPUTEVENT_JOY1_3RD_BUTTON;
+    }
 
     uid[2].eventid[ID_AXIS_OFFSET + 0][0]   =  INPUTEVENT_PAR_JOY1_HORIZ;
     uid[2].eventid[ID_AXIS_OFFSET + 1][0]   =  INPUTEVENT_PAR_JOY1_VERT;
