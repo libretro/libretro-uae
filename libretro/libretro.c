@@ -1276,7 +1276,7 @@ static bool disk_set_image_index(unsigned index)
 		if ((index < dc->count) && (dc->files[index]))
 		{
 			dc->index = index;
-			printf("Disk (%d) inserted into drive A : %s\n", dc->index+1, dc->files[dc->index]);
+			printf("Disk (%d) inserted into drive DF0: %s\n", dc->index+1, dc->files[dc->index]);
 			return true;
 		}
 	}
@@ -1632,7 +1632,7 @@ bool retro_load_game(const struct retro_game_info *info)
   {
 	  const char *full_path = (const char*)info->path;
 			
-	  // If argument is a disk or hard drive image file file
+	  // If argument is a disk or hard drive image file
 	  if(		strendswith(full_path, ADF_FILE_EXT)
 			||	strendswith(full_path, FDI_FILE_EXT)
 			||	strendswith(full_path, DMS_FILE_EXT)
@@ -1677,7 +1677,7 @@ bool retro_load_game(const struct retro_game_info *info)
 				}
 				else
 				{
-					// No machine specified we will use the configured one
+					// No machine specified, we will use the configured one
 					printf("No machine specified in filename '%s'. We will use the default configuration.\n", full_path);
 					fprintf(configfile, uae_machine);
 					path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
@@ -1696,7 +1696,7 @@ bool retro_load_game(const struct retro_game_info *info)
 				{
 					// Kickstart rom not found
 					fprintf(stderr, "Kickstart rom '%s' not found.\n", (const char*)&kickstart);
-					fprintf(stderr, "You must have a correct kickstart file ('%s') in your RetroArch system directory to launch an disk or hard drive image file.\n", kickstart);
+					fprintf(stderr, "You must have a correct kickstart file ('%s') in your RetroArch system directory.\n", kickstart);
 					fclose(configfile);
 					return false;	  
 				}
@@ -1759,6 +1759,10 @@ bool retro_load_game(const struct retro_game_info *info)
 					        {
 					            printf("Disk (%d) inserted into drive DF%d: %s\n", dc->index+1, i, dc->files[dc->index]);
 					            fprintf(configfile, "floppy%d=%s\n", i, dc->files[i]);
+
+					            // By default only 2 drives are enabled, so floppyXtype needs to be set on the extra drives
+					            if(i > 1)
+                                    fprintf(configfile, "floppy%dtype=%d\n", i, 0); // 0 = 3.5" DD
                             }
                             else
                             {
@@ -1837,7 +1841,7 @@ bool retro_load_game(const struct retro_game_info *info)
              {
                  // Kickstart rom not found
                  fprintf(stderr, "Kickstart rom '%s' not found.\n", (const char*)&kickstart);
-                 fprintf(stderr, "You must have a correct kickstart file ('%s') in your RetroArch system directory to launch an disk or hard drive image file.\n", kickstart);
+                 fprintf(stderr, "You must have a correct kickstart file ('%s') in your RetroArch system directory.\n", kickstart);
                  fclose(configfile);
                  return false;
              }
