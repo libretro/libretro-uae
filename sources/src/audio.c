@@ -594,6 +594,12 @@ STATIC_INLINE void samplexx_sinc_handler (int *datasp)
 	}
 }
 
+static void do_filter(int *data, int num)
+{
+    if (currprefs.sound_filter)
+        *data = filter(*data, &sound_filter_state[num]);
+}
+
 static void sample16i_sinc_handler (void)
 {
 	int datas[4], data1;
@@ -842,6 +848,10 @@ static void sample16si_anti_handler (void)
 	data2 = datas[1] + datas[2];
 	data1 = FINISH_DATA (data1, 15);
 	data2 = FINISH_DATA (data2, 15);
+
+    do_filter(&data1, 0);
+    do_filter(&data2, 1);
+
 	set_sound_buffers ();
 	put_sound_word_left (data1);
 	put_sound_word_right (data2);
@@ -877,6 +887,10 @@ static void sample16si_sinc_handler (void)
 	data2 = datas[1] + datas[2];
 	data1 = FINISH_DATA (data1, 17);
 	data2 = FINISH_DATA (data2, 17);
+
+    do_filter(&data1, 0);
+    do_filter(&data2, 1);
+
 	set_sound_buffers ();
 	put_sound_word_left (data1);
 	put_sound_word_right (data2);
@@ -905,6 +919,10 @@ void sample16s_handler (void)
 	data2 = FINISH_DATA (data2, 15);
 	data3 = SBASEVAL16(1) + data1;
 	data3 = FINISH_DATA (data3, 15);
+
+    do_filter(&data2, 0);
+    do_filter(&data3, 1);
+
 	set_sound_buffers ();
 	put_sound_word_left (data2);
 	put_sound_word_right (data3);
@@ -978,6 +996,10 @@ static void sample16si_crux_handler (void)
 	data2 = FINISH_DATA (data2, 15);
 	data3 = SBASEVAL16(1) + data1;
 	data3 = FINISH_DATA (data3, 15);
+
+    do_filter(&data2, 0);
+    do_filter(&data3, 1);
+
 	set_sound_buffers ();
 	put_sound_word_left (data2);
 	put_sound_word_right (data3);
@@ -1032,6 +1054,10 @@ static void sample16si_rh_handler (void)
 	data2 = FINISH_DATA (data2, 15);
 	data3 = SBASEVAL16(1) + data1;
 	data3 = FINISH_DATA (data3, 15);
+
+    do_filter(&data2, 0);
+    do_filter(&data3, 1);
+
 	set_sound_buffers ();
 	put_sound_word_left (data2);
 	put_sound_word_right (data3);
@@ -1671,6 +1697,7 @@ void set_audio (void)
 	a500e_filter1_a0 = rc_calculate_a0 (currprefs.sound_freq, 6200);
 	a500e_filter2_a0 = rc_calculate_a0 (currprefs.sound_freq, 20000);
 	filter_a0 = rc_calculate_a0 (currprefs.sound_freq, 7000);
+	memset (sound_filter_state, 0, sizeof sound_filter_state);
 	led_filter_audio ();
 
 	/* Select the right interpolation method.  */

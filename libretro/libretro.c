@@ -257,28 +257,6 @@ void retro_set_environment(retro_environment_t cb)
          "normal"
       },
       {
-         "puae_sound_frequency",
-         "Sound frequency",
-         "",
-         {
-            { "44100", NULL },
-            { "22050", NULL }, 
-            { "11025", NULL },
-         },
-         "44100",
-      },
-      {
-         "puae_sound_channels",
-         "Sound channels",
-         "",
-         {
-            { "mixed", NULL },
-            { "stereo", NULL },
-            { "mono", NULL },
-         },
-         "mixed",
-      },
-      {
          "puae_sound_stereo_separation",
          "Sound stereo separation",
          "",
@@ -745,26 +723,6 @@ static void update_variables(void)
 		else if (strcmp(var.value, "interrupts") == 0) changed_prefs.produce_sound=1;
 		else if (strcmp(var.value, "normal") == 0) changed_prefs.produce_sound=2;
 		else if (strcmp(var.value, "exact") == 0) changed_prefs.produce_sound=3;
-   }
-
-   var.key = "puae_sound_frequency";
-   var.value = NULL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-		strcat(uae_config, "sound_frequency=");
-		strcat(uae_config, var.value);
-		strcat(uae_config, "\n");
-   }
-
-   var.key = "puae_sound_channels";
-   var.value = NULL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-		strcat(uae_config, "sound_channels=");
-		strcat(uae_config, var.value);
-		strcat(uae_config, "\n");
    }
 
    var.key = "puae_sound_stereo_separation";
