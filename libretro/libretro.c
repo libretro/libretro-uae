@@ -168,7 +168,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_model",
          "Model",
-         "",
+         "Needs restart",
          {
             { "A500", NULL },
             { "A600", NULL },
@@ -180,7 +180,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_video_standard",
          "Video standard",
-         "",
+         "Needs restart",
          {
             { "PAL", NULL },
             { "NTSC", NULL },
@@ -189,20 +189,9 @@ void retro_set_environment(retro_environment_t cb)
          "PAL"
       },
       {
-         "puae_ntsc",
-         "NTSC chipset",
-         "",
-         {
-            { "false", NULL },
-            { "true", NULL },
-            { NULL, NULL },
-         },
-         "false"
-      },
-      {
          "puae_video_hires",
          "High resolution",
-         "",
+         "Needs restart",
          {
             { "true", NULL },
             { "false", NULL },
@@ -213,7 +202,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_video_crop_overscan",
          "Crop overscan",
-         "",
+         "Needs restart",
          {
             { "true", NULL },
             { "false", NULL },
@@ -224,7 +213,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_cpu_speed",
          "CPU speed",
-         "",
+         "Needs restart",
          {
             { "real", NULL },
             { "max", NULL },
@@ -235,7 +224,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_cpu_compatible",
          "CPU compatible",
-         "",
+         "Needs restart",
          {
             { "true", NULL },
             { "false", NULL },
@@ -246,7 +235,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_cycle_exact",
          "CPU cycle exact",
-         "A500 only",
+         "Needs restart, A500 only",
          {
             { "false", NULL },
             { "true", NULL },
@@ -347,7 +336,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_floppy_speed",
          "Floppy speed",
-         "",
+         "Needs restart",
          {
             { "100", "1x" },
             { "200", "2x" },
@@ -360,8 +349,8 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_floppy_sound",
-         "Floppy sound emulation (restart)",
-         "Needs external files in system/uae_data/",
+         "Floppy sound emulation",
+         "Needs restart and external files in system/uae_data/",
          {
             { "100", "disabled" },
             { "90", "10\% volume" },
@@ -381,7 +370,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_immediate_blits",
          "Immediate blits",
-         "",
+         "Needs restart",
          {
             { "false", NULL },
             { "true", NULL },
@@ -392,7 +381,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_gfx_center_vertical",
          "Vertical centering",
-         "",
+         "Needs restart",
          {
             { "simple", NULL },
             { "smart", NULL },
@@ -404,7 +393,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_gfx_center_horizontal",
          "Horizontal centering",
-         "",
+         "Needs restart",
          {
             { "simple", NULL },
             { "smart", NULL },
@@ -416,7 +405,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_use_whdload",
          "Use WHDLoad.hdf",
-         "",
+         "Needs restart",
          {
             { "enabled", NULL },
             { "disabled", NULL },
@@ -693,10 +682,16 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-	   if(strcmp(var.value, "PAL") == 0)
-		   video_config |= PUAE_VIDEO_PAL;
-	   else
-		   video_config |= PUAE_VIDEO_NTSC;
+      if(strcmp(var.value, "PAL") == 0)
+      {
+         video_config |= PUAE_VIDEO_PAL;
+         strcat(uae_config, "ntsc=false\n");
+      }
+      else
+      {
+         video_config |= PUAE_VIDEO_NTSC;
+         strcat(uae_config, "ntsc=true\n");
+      }
    }
 
    var.key = "puae_video_hires";
@@ -861,15 +856,6 @@ static void update_variables(void)
 		strcat(uae_config, "\n");
    }
 
-   var.key = "puae_ntsc";
-   var.value = NULL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-		strcat(uae_config, "ntsc=");
-		strcat(uae_config, var.value);
-		strcat(uae_config, "\n");
-   }
 
    var.key = "puae_gfx_autoscale";
    var.value = NULL;
@@ -1510,13 +1496,14 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
 {
    static struct retro_game_geometry geom480   = { 640, 480, EMULATOR_MAX_WIDTH, EMULATOR_MAX_HEIGHT, 4.0 / 3.0 };
    static struct retro_game_geometry geom540   = { 720, 540, EMULATOR_MAX_WIDTH, EMULATOR_MAX_HEIGHT, 4.0 / 3.0 };
-   struct retro_system_timing timing = { 50.0, 44100.0 };
 
    if      (retrow == 640 && retroh == 400) info->geometry = geom480;
    else if (retrow == 640 && retroh == 400) info->geometry = geom480;
    else if (retrow == 720 && retroh == 540) info->geometry = geom540;
    else { static struct retro_game_geometry geom; geom.base_width=retrow; geom.base_height=retroh; geom.max_width=EMULATOR_MAX_WIDTH; geom.max_height=EMULATOR_MAX_HEIGHT; geom.aspect_ratio=(float)retrow/(float)retroh; info->geometry = geom; }
-   info->timing   = timing;
+
+   info->timing.sample_rate = 44100.0;
+   info->timing.fps = (retro_get_region() == RETRO_REGION_NTSC) ? 60 : 50;
 }
 
 void retro_set_audio_sample(retro_audio_sample_t cb)
@@ -1875,7 +1862,7 @@ void retro_unload_game(void)
 
 unsigned retro_get_region(void)
 {
-   return RETRO_REGION_NTSC;
+   return (video_config & PUAE_VIDEO_NTSC) ? RETRO_REGION_NTSC : RETRO_REGION_PAL;
 }
 
 bool retro_load_game_special(unsigned type, const struct retro_game_info *info, size_t num)
