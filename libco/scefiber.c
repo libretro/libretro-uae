@@ -29,7 +29,7 @@ int32_t sceFiberSwitch(SceFiber* fiber, uint32_t argOnRunTo, uint32_t* argOnRun)
 
 int32_t sceFiberReturnToThread(uint32_t argOnReturn, uint32_t* argOnRun);
 
-static void co_thunk(uint32_t argOnInitialize, uint32_t argOnRun)
+void co_thunk(uint32_t argOnInitialize, uint32_t argOnRun)
 {
    ((void (*)(void))argOnInitialize)();
 }
@@ -37,7 +37,7 @@ static void co_thunk(uint32_t argOnInitialize, uint32_t argOnRun)
 cothread_t co_active(void)
 {
    if(!co_active_)
-   {
+   {	
 		  sceSysmoduleLoadModule(SCE_SYSMODULE_FIBER);
       co_active_ = (cothread_t)1;
    }
@@ -53,9 +53,9 @@ cothread_t co_create(unsigned int heapsize, void (*coentry)(void))
       sceSysmoduleLoadModule(SCE_SYSMODULE_FIBER);
       co_active_ = (cothread_t)1;
    }
-
+   
    //_sceFiberInitializeImpl
-   int ret = _sceFiberInitializeImpl(tailFiber, "tailFiber", co_thunk, (uint32_t)coentry, (void*) m_contextBuffer, heapsize, NULL);
+   int ret = _sceFiberInitializeImpl(tailFiber, "tailFiber", co_thunk, (uint32_t)coentry, (void*) m_contextBuffer, 10000, NULL);
    if(ret==0){
      return (cothread_t)tailFiber;
    }else{
@@ -66,15 +66,12 @@ cothread_t co_create(unsigned int heapsize, void (*coentry)(void))
 
 void co_delete(cothread_t cothread)
 {
-	 if(cothread == (cothread_t)1){
-		 return;
-	 }
    sceFiberFinalize((SceFiber*)cothread);
 }
 
 void co_switch(cothread_t cothread)
 {
-
+  
    uint32_t argOnReturn = 0;
    if(cothread == (cothread_t)1){
      co_active_ = cothread;
@@ -82,12 +79,11 @@ void co_switch(cothread_t cothread)
    }else{
 		 SceFiber* theFiber = (SceFiber*)cothread;
 		 if(co_active_ == (cothread_t)1){
-			 co_active_ = cothread;
 			 sceFiberRun(theFiber, 0, &argOnReturn);
 		 }else{
-			 co_active_ = cothread;
 			 sceFiberSwitch(theFiber, 0, &argOnReturn);
 		 }
+     co_active_ = cothread;
    }
 }
 

@@ -44,7 +44,7 @@ __asm__ (
       ".globl co_switch_arm\n"
       ".globl _co_switch_arm\n"
       "co_switch_arm:\n"
-      "_co_switch_arm:\n"
+      "_co_switch_arm:\n"      
       "  stmia r1!, {r4, r5, r6, r7, r8, r9, r10, r11, sp, lr}\n"
       "  ldmia r0!, {r4, r5, r6, r7, r8, r9, r10, r11, sp, pc}\n"
 #endif
@@ -104,3 +104,4 @@ void co_switch(cothread_t handle)
 #ifdef __cplusplus
 }
 #endif
+
