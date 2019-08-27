@@ -52,7 +52,7 @@ int gmx=320,gmy=240; //gui mouse
 
 //int al[2];//left analog1
 int ar[2];//right analog1
-unsigned char MXjoy[4]={0}; // joyports
+unsigned long MXjoy[4]={0}; // joyports
 int touch=-1; // gui mouse btn
 int fmousex,fmousey; // emu mouse
 int pauseg=0; //enter_gui
@@ -63,7 +63,7 @@ static int kbt[16]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 //   RETRO          B     Y     SLT   STA   UP    DWN   LEFT  RGT   A     X     L     R     L2    R2    L3    R3
 //   INDEX          0     1     2     3     4     5     6     7     8     9     10    11    12    13    14    15
-static int vbt[16]={0x020,0x200,0x080,0x100,0x001,0x002,0x004,0x008,0x010,0x040,0x400,0x800};
+static unsigned long vbt[16]={0x020,0x200,0x080,0x100,0x001,0x002,0x004,0x008,0x010,0x040,0x400,0x800};
 
 extern void enter_options(void);
 extern void reset_drawing(void);
@@ -72,7 +72,7 @@ extern void retro_key_down(int);
 extern void retro_mouse(int, int);
 extern void retro_mouse_but0(int);
 extern void retro_mouse_but1(int);
-extern void retro_joy(unsigned int, unsigned char);
+extern void retro_joy(unsigned int, unsigned long);
 extern unsigned uae_devices[4];
 extern int mapper_keys[30];
 extern int video_config;
@@ -922,7 +922,19 @@ void retro_poll_event()
                      else
                      {
                         if( input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, i) )
-                           MXjoy[retro_port] |= vbt[i];
+                        {
+                           /* Button switcheroo for actual physical placement */
+                           if(i==RETRO_DEVICE_ID_JOYPAD_A)
+                              MXjoy[retro_port] |= vbt[RETRO_DEVICE_ID_JOYPAD_B];
+                           else if(i==RETRO_DEVICE_ID_JOYPAD_B)
+                              MXjoy[retro_port] |= vbt[RETRO_DEVICE_ID_JOYPAD_A];
+                           else if(i==RETRO_DEVICE_ID_JOYPAD_X)
+                              MXjoy[retro_port] |= vbt[RETRO_DEVICE_ID_JOYPAD_Y];
+                           else if(i==RETRO_DEVICE_ID_JOYPAD_Y)
+                              MXjoy[retro_port] |= vbt[RETRO_DEVICE_ID_JOYPAD_X];
+                           else
+                              MXjoy[retro_port] |= vbt[i];
+                        }
                      }
 
                retro_joy(retro_port, MXjoy[retro_port]);

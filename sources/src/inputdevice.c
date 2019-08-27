@@ -228,7 +228,11 @@ static uae_s16 mouse_frame_x[MAX_JPORTS], mouse_frame_y[MAX_JPORTS];
 
 static int mouse_port[NORMAL_JPORTS];
 static int cd32_shifter[NORMAL_JPORTS];
+#ifdef __LIBRETRO__
+int cd32_pad_enabled[NORMAL_JPORTS];
+#else
 static int cd32_pad_enabled[NORMAL_JPORTS];
+#endif
 static int parport_joystick_enabled;
 static int oldmx[MAX_JPORTS], oldmy[MAX_JPORTS];
 static int oleft[MAX_JPORTS], oright[MAX_JPORTS], otop[MAX_JPORTS], obot[MAX_JPORTS];

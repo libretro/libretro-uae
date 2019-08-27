@@ -68,6 +68,7 @@ int keyId(const char *val)
 
 extern void retro_poll_event(void);
 unsigned uae_devices[4];
+extern int cd32_pad_enabled[NORMAL_JPORTS];
 
 int mapper_keys[30]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 static char buf[64][4096] = { 0 };
@@ -132,13 +133,13 @@ static char uae_config[1024];
 void retro_set_environment(retro_environment_t cb)
 {
    static const struct retro_controller_description p1_controllers[] ={
-      // FIXME { "CD32 Pad", RETRO_DEVICE_UAE_CD32PAD },
+      { "CD32 Pad", RETRO_DEVICE_UAE_CD32PAD },
       { "Joystick", RETRO_DEVICE_UAE_JOYSTICK },
       { "Keyboard", RETRO_DEVICE_UAE_KEYBOARD },
       { "None", RETRO_DEVICE_NONE },
    };
    static const struct retro_controller_description p2_controllers[] = {
-      // FIXME { "CD32 Pad", RETRO_DEVICE_UAE_CD32PAD },
+      { "CD32 Pad", RETRO_DEVICE_UAE_CD32PAD },
       { "Joystick", RETRO_DEVICE_UAE_JOYSTICK },
       { "Keyboard", RETRO_DEVICE_UAE_KEYBOARD },
       { "None", RETRO_DEVICE_NONE },
@@ -155,8 +156,8 @@ void retro_set_environment(retro_environment_t cb)
    };
 
    static const struct retro_controller_info ports[] = {
-      { p1_controllers, 3 }, // port 1
-      { p2_controllers, 3 }, // port 2
+      { p1_controllers, 4 }, // port 1
+      { p2_controllers, 4 }, // port 2
       { p3_controllers, 3 }, // port 3
       { p4_controllers, 3 }, // port 4
       { NULL, 0 }
@@ -1275,7 +1276,7 @@ static bool disk_set_image_index(unsigned index)
 		if ((index < dc->count) && (dc->files[index]))
 		{
 			dc->index = index;
-			printf("Disk (%d) inserted into drive A : %s\n", dc->index+1, dc->files[dc->index]);
+			printf("Disk (%d) inserted into drive DF0: %s\n", dc->index+1, dc->files[dc->index]);
 			return true;
 		}
 	}
@@ -1400,10 +1401,10 @@ void retro_init(void)
    { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2, "L2" },             \
    { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3, "R3" },             \
    { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3, "L3" },             \
-   { _user, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X, "Left Stick X" },               \
-   { _user, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y, "Left Stick Y" },               \
-   { _user, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X, "Right Stick X" },             \
-   { _user, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y, "Right Stick Y" }
+   { _user, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X, "Left Analog X" },               \
+   { _user, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y, "Left Analog Y" },               \
+   { _user, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X, "Right Analog X" },             \
+   { _user, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y, "Right Analog Y" }
 
    static struct retro_input_descriptor input_descriptors[] =
    {
@@ -1466,6 +1467,9 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
    if(port<4)
    {
       uae_devices[port]=device;
+      int uae_port;
+      uae_port = (port==0) ? 1 : 0;
+      cd32_pad_enabled[uae_port]=0;
       switch(device)
       {
          case RETRO_DEVICE_JOYPAD:
@@ -1474,7 +1478,11 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 
          case RETRO_DEVICE_UAE_CD32PAD:
             printf("Controller %u: CD32 Pad\n", (port+1));
-            // FIXME
+            cd32_pad_enabled[uae_port]=1;
+            break;
+
+         case RETRO_DEVICE_UAE_JOYSTICK:
+            printf("Controller %u: Joystick\n", (port+1));
             break;
 
          case RETRO_DEVICE_UAE_KEYBOARD:
@@ -1624,7 +1632,7 @@ bool retro_load_game(const struct retro_game_info *info)
   {
 	  const char *full_path = (const char*)info->path;
 			
-	  // If argument is a disk or hard drive image file file
+	  // If argument is a disk or hard drive image file
 	  if(		strendswith(full_path, ADF_FILE_EXT)
 			||	strendswith(full_path, FDI_FILE_EXT)
 			||	strendswith(full_path, DMS_FILE_EXT)
@@ -1669,7 +1677,7 @@ bool retro_load_game(const struct retro_game_info *info)
 				}
 				else
 				{
-					// No machine specified we will use the configured one
+					// No machine specified, we will use the configured one
 					printf("No machine specified in filename '%s'. We will use the default configuration.\n", full_path);
 					fprintf(configfile, uae_machine);
 					path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
@@ -1688,7 +1696,7 @@ bool retro_load_game(const struct retro_game_info *info)
 				{
 					// Kickstart rom not found
 					fprintf(stderr, "Kickstart rom '%s' not found.\n", (const char*)&kickstart);
-					fprintf(stderr, "You must have a correct kickstart file ('%s') in your RetroArch system directory to launch an disk or hard drive image file.\n", kickstart);
+					fprintf(stderr, "You must have a correct kickstart file ('%s') in your RetroArch system directory.\n", kickstart);
 					fclose(configfile);
 					return false;	  
 				}
@@ -1751,6 +1759,10 @@ bool retro_load_game(const struct retro_game_info *info)
 					        {
 					            printf("Disk (%d) inserted into drive DF%d: %s\n", dc->index+1, i, dc->files[dc->index]);
 					            fprintf(configfile, "floppy%d=%s\n", i, dc->files[i]);
+
+					            // By default only 2 drives are enabled, so floppyXtype needs to be set on the extra drives
+					            if(i > 1)
+                                    fprintf(configfile, "floppy%dtype=%d\n", i, 0); // 0 = 3.5" DD
                             }
                             else
                             {
@@ -1829,7 +1841,7 @@ bool retro_load_game(const struct retro_game_info *info)
              {
                  // Kickstart rom not found
                  fprintf(stderr, "Kickstart rom '%s' not found.\n", (const char*)&kickstart);
-                 fprintf(stderr, "You must have a correct kickstart file ('%s') in your RetroArch system directory to launch an disk or hard drive image file.\n", kickstart);
+                 fprintf(stderr, "You must have a correct kickstart file ('%s') in your RetroArch system directory.\n", kickstart);
                  fclose(configfile);
                  return false;
              }
