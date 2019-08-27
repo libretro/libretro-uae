@@ -74,7 +74,7 @@ static unsigned char co_swap_function[] = {
 
 #include <windows.h>
 
-void co_init(void)
+static void co_init(void)
 {
    DWORD old_privileges;
    VirtualProtect(co_swap_function,
@@ -105,7 +105,7 @@ static unsigned char co_swap_function[] = {
 #include <unistd.h>
 #include <sys/mman.h>
 
-void co_init(void)
+static void co_init(void)
 {
    unsigned long long addr = (unsigned long long)co_swap_function;
    unsigned long long base = addr - (addr % sysconf(_SC_PAGESIZE));
@@ -113,7 +113,7 @@ void co_init(void)
    mprotect((void*)base, size, PROT_READ | PROT_WRITE | PROT_EXEC);
 }
 #else
-void co_init(void) {}
+static void co_init(void) {}
 #endif
 #endif
 
@@ -146,6 +146,15 @@ cothread_t co_create(unsigned int size, void (*entrypoint)(void))
    size += 512; /* allocate additional space for storage */
    size &= ~15; /* align stack to 16-byte boundary */
 
+#ifdef __GENODE__
+   if((handle = (cothread_t)genode_alloc_secondary_stack(size)))
+   {
+      long long *p = (long long*)((char*)handle); /* OS returns top of stack */
+      *--p = (long long)crash;                    /* crash if entrypoint returns */
+      *--p = (long long)entrypoint;               /* start of function */
+      *(long long*)handle = (long long)p;         /* stack pointer */
+   }
+#else
    if((handle = (cothread_t)malloc(size)))
    {
       long long *p = (long long*)((char*)handle + size); /* seek to top of stack */
@@ -153,13 +162,18 @@ cothread_t co_create(unsigned int size, void (*entrypoint)(void))
       *--p = (long long)entrypoint;                      /* start of function */
       *(long long*)handle = (long long)p;                /* stack pointer */
    }
+#endif
 
    return handle;
 }
 
 void co_delete(cothread_t handle)
 {
+#ifdef __GENODE__
+   genode_free_secondary_stack(handle);
+#else
    free(handle);
+#endif
 }
 
 #ifndef CO_USE_INLINE_ASM
