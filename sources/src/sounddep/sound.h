@@ -18,7 +18,7 @@ extern int retro_renderSound(short* samples, int sampleCount);
 extern uae_u16 *paula_sndbuffer;
 extern uae_u16 *paula_sndbufpt;
 extern int paula_sndbufsize;
-
+extern void driveclick_mix (uae_s16*, int, int);
 
 extern int soundcheck;
 
