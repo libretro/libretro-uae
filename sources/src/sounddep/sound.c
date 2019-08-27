@@ -118,7 +118,6 @@ int init_sound (void)
 	return 1;
     }
 
-    int rate = 44100;
     if (sound_initialized) {
 	return 1;
     }
@@ -126,13 +125,13 @@ int init_sound (void)
     LOG_MSG(("INIT SOUND\n"));
     sndbuffer = (uae_u16*) malloc(MAX_BSIZE);
     if (sndbuffer == NULL) {
-	LOG_MSG(("sound init failed" ));
+	LOG_MSG(("sound init failed\n"));
 	return 0;
     }
    
     sound_initialized = 1;
 
-    currprefs.sound_freq = rate;
+    currprefs.sound_freq = DEFAULT_SOUND_FREQ;
     //currprefs.sound_bits = 16;
     currprefs.sound_stereo = 1;
 
@@ -140,7 +139,7 @@ int init_sound (void)
 
 
     sample_handler =  sample16s_handler;
-    //scaled_sample_evtime = (unsigned long)(MAXHPOS_PAL * MAXVPOS_PAL * VBLANK_HZ_PAL + rate - 1) / rate;
+    //scaled_sample_evtime = (unsigned long)(MAXHPOS_PAL * MAXVPOS_PAL * VBLANK_HZ_PAL + rate - 1) / DEFAULT_SOUND_FREQ;
 
     obtainedfreq = currprefs.sound_freq;
     sound_available = 1;
@@ -158,7 +157,7 @@ int init_sound (void)
 
 int setup_sound (void)
 {
-    LOG_MSG(("setup_sound" ));
+    LOG_MSG(("setup_sound\n"));
     sound_available = 1;
     have_sound = 1;
     return 1;
