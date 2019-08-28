@@ -204,11 +204,11 @@ void retro_set_environment(retro_environment_t cb)
          "Crop overscan",
          "Needs restart",
          {
-            { "true", NULL },
             { "false", NULL },
+            { "true", NULL },
             { NULL, NULL },
          },
-         "true"
+         "false"
       },
       {
          "puae_cpu_speed",
