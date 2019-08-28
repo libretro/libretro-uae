@@ -71,7 +71,7 @@ It is critical to use kickstarts with the right MD5, otherwise the core might no
 ### IPF Support
 Most full-price commercial Amiga games had some form of custom disk format and/or copy protection on them. For this reason, most commercial Amiga games cannot be stored in ADF files unaltered, but there is an alternative called Interchangeable Preservation Format (IPF) which was specifically designed for this purpose.
 
-IPF support is done through CAPSIMG library. To enable it you have to put a dynamic library called capsimg.dll (Windows) or capsimg.so (Linux, macOS) in your retroarch root directory (where retroarch executable is located).
+IPF support is done through CAPSIMG library. To enable it you have to put a dynamic library called capsimg.dll (Windows) or capsimg.so (Linux, macOS) in your retroarch system directory.
 
 Compatible CAPSIMG libraries for Windows, macOS and Linux can be found at https://fs-uae.net/download#plugins
 
@@ -98,7 +98,7 @@ When a game ask for it, you can change the current disk in the RetroArch 'Disk C
 
 Note : zip support is provided by RetroArch and is done before passing the game to the core. So, when using a m3u file, the specified disk image must be uncompressed (adf, dms, fdi, ipf file formats).
 
-You can also append "(MD)" as in "MultiDrive" to the m3u filename to insert every disk in different drive for games that support multiple drives. Only possible if there are no more than 4 disks.
+You can append "(MD)" as in "MultiDrive" to the m3u filename to insert every disk in different drive for games that support multiple drives. Only possible if there are no more than 4 disks.
 
 ### WHDLoad
 To use WHDLoad games you'll need to have a prepared WHDLoad image named 'WHDLoad.hdf' in RetroArch system directory.

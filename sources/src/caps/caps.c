@@ -27,11 +27,20 @@ static int caps_flags = DI_LOCK_DENVAR|DI_LOCK_DENNOISE|DI_LOCK_NOISE|DI_LOCK_UP
 
 #include "uae_dlopen.h"
 
+#ifdef __LIBRETRO__
+#include "retro_files.h"
+extern char *retro_system_directory;
+char CAPSLIB_PATH[RETRO_PATH_MAX];
+#endif
+
 #ifdef _WIN32
 #define CAPSLIB_NAME    "capsimg.dll"
+#define DIR_SEP_CHR     '\\'
 #else
 #define CAPSLIB_NAME    "capsimg.so"
+#define DIR_SEP_CHR     '/'
 #endif
+
 /*
  * Repository for function pointers to the CAPSLib routines
  * which gets filled when we link at run-time
@@ -63,8 +72,14 @@ struct {
 static int load_capslib (void)
 {
     /* This could be done more elegantly ;-) */
+
+#ifdef __LIBRETRO__
+    snprintf(CAPSLIB_PATH, RETRO_PATH_MAX, "%s%c%s", retro_system_directory, DIR_SEP_CHR, CAPSLIB_NAME);
+    if ((capslib.handle = uae_dlopen(CAPSLIB_PATH))) {
+#else
     if ((capslib.handle = uae_dlopen(CAPSLIB_NAME))) {
-    write_log (CAPSLIB_NAME " opened\n.");
+#endif
+    write_log (CAPSLIB_NAME " opened\n");
 	capslib.CAPSInit            = uae_dlsym (capslib.handle, "CAPSInit");            if (capslib.CAPSInit == NULL) return 0;
 	capslib.CAPSExit            = uae_dlsym (capslib.handle, "CAPSExit");            if (capslib.CAPSExit == NULL) return 0;
 	capslib.CAPSAddImage        = uae_dlsym (capslib.handle, "CAPSAddImage");        if (capslib.CAPSAddImage == NULL) return 0;
@@ -79,11 +94,11 @@ static int load_capslib (void)
 	capslib.CAPSUnlockAllTracks = uae_dlsym (capslib.handle, "CAPSUnlockAllTracks"); if (capslib.CAPSUnlockAllTracks == NULL) return 0;
 	capslib.CAPSGetPlatformName = uae_dlsym (capslib.handle, "CAPSGetPlatformName"); if (capslib.CAPSGetPlatformName == NULL) return 0;
 	capslib.CAPSGetVersionInfo  = uae_dlsym (capslib.handle, "CAPSGetVersionInfo");  if (capslib.CAPSGetVersionInfo == NULL) return 0;
-	if (capslib.CAPSInit() == imgeOk)
-		write_log ("Error while opening " CAPSLIB_NAME "\n.");
+	if (capslib.CAPSInit() != imgeOk)
+		write_log ("Error while opening " CAPSLIB_NAME "\n");
 	    return 1;
     }
-    write_log ("Unable to open " CAPSLIB_NAME "\n.");
+    write_log ("Unable to open " CAPSLIB_NAME "\n");
     return 0;
 }
 
@@ -447,9 +462,9 @@ int caps_init (void)
 		write_log ("Failed to load CAPS plug-in.\n");
 		if (noticed)
 		    return 0;
-		gui_message ("This disk image needs the C.A.P.S. plugin\n"
-			     "which is available from\n"
-			     "http//www.caps-project.org/download.shtml\n");
+		gui_message ("This disk image needs the C.A.P.S. plugin "
+			     "which is available from "
+			     "http://www.softpres.org/download");
 		noticed = 1;
 		return 0;
     }
