@@ -1,5 +1,6 @@
 #include "libretro.h"
 #include "gui-retro/dialog.h"
+#include "gui-retro/file.h"
 #include "retrodep/retroglue.h"
 #include "libretro-mapper.h"
 #include "libretro-glue.h"
@@ -1042,9 +1043,6 @@ static void update_variables(void)
     config_changed = 1;
     check_prefs_changed_audio();
 
-    /* OSD defaults to top right */
-    strcat(uae_config, "osd_position=0:-1\n");
-   
 	// Setting resolution
 	// According to PUAE configuration.txt :
 	//

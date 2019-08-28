@@ -21,6 +21,10 @@ extern int LEDON;
 
 void statusline_getpos (int *x, int *y, int width, int height)
 {
+#ifdef __LIBRETRO__
+	currprefs.osd_pos.x=0;
+	currprefs.osd_pos.y=-20;
+#endif
 	if (currprefs.osd_pos.x >= 20000) {
 		if (currprefs.osd_pos.x >= 30000)
 			*y = width * (currprefs.osd_pos.x - 30000) / 1000;
