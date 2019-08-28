@@ -36,6 +36,8 @@ int sndbufpos=0;
 char key_state[512];
 char key_state2[512];
 bool opt_use_whdload_hdf = true;
+bool opt_enhanced_statusbar = true;
+int opt_statusbar_position = -20;
 static int firstps = 0;
 
 #if defined(NATMEM_OFFSET)
@@ -210,6 +212,28 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "false"
+      },
+      {
+         "puae_statusbar_position",
+         "Statusbar position",
+         "",
+         {
+            { "bottom", NULL },
+            { "top", NULL },
+            { NULL, NULL },
+         },
+         "bottom"
+      },
+      {
+         "puae_enhanced_statusbar",
+         "Enhanced statusbar",
+         "Displays additional information in statusbar",
+         {
+            { "enabled", NULL },
+            { "disabled", NULL },
+            { NULL, NULL },
+         },
+         "enabled"
       },
       {
          "puae_cpu_speed",
@@ -689,6 +713,28 @@ static void update_variables(void)
    {
 	   if(strcmp(var.value, "true") == 0)
 		   video_config |= PUAE_VIDEO_CROP;
+   }
+
+   var.key = "puae_statusbar_position";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if(strcmp(var.value, "top") == 0)
+         opt_statusbar_position = -20;
+      else
+         opt_statusbar_position = 0;
+   }
+
+   var.key = "puae_enhanced_statusbar";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if(strcmp(var.value, "enabled") == 0)
+         opt_enhanced_statusbar = true;
+      else
+         opt_enhanced_statusbar = false;
    }
 
    var.key = "puae_cpu_speed";

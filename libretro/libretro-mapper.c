@@ -78,6 +78,8 @@ extern void retro_joy(unsigned int, unsigned long);
 extern unsigned uae_devices[4];
 extern int mapper_keys[30];
 extern int video_config;
+extern bool opt_enhanced_statusbar;
+extern int opt_statusbar_position;
 
 #define EMU_VKBD 1
 #define EMU_STATUSBAR 2
@@ -192,9 +194,15 @@ void gui_poll_events(void)
 
 void Print_Status(void)
 {
+   if (!opt_enhanced_statusbar)
+      return;
+
    if(video_config & 0x04) // PUAE_VIDEO_HIRES
    {
-      STAT_BASEY=18+BOX_PADDING;
+      if (opt_statusbar_position < 0)
+         STAT_BASEY=18+BOX_PADDING;
+      else
+         STAT_BASEY=gfxvidinfo.outheight-9;
       FONT_WIDTH=1.6;
       FONT_HEIGHT=1.6;
       BOX_Y=STAT_BASEY-BOX_PADDING+3;
@@ -202,14 +210,19 @@ void Print_Status(void)
    }
    else
    {
-      STAT_BASEY=5;
+      if (opt_statusbar_position < 0)
+         STAT_BASEY=5;
+      else
+         STAT_BASEY=gfxvidinfo.outheight-20;
       FONT_WIDTH=1;
       FONT_HEIGHT=1;
       BOX_Y=STAT_BASEY-2;
       BOX_WIDTH=CROP_WIDTH;
    }
 
-   DrawFBoxBmp(bmp,0,BOX_Y,BOX_WIDTH,BOX_HEIGHT,RGB565(0,0,0));
+   /* omit black box when statusline is at bottom in lo-res because it looks ugly otherwise */
+   if (video_config & 0x04 || opt_statusbar_position < 0)
+      DrawFBoxBmp(bmp,0,BOX_Y,BOX_WIDTH,BOX_HEIGHT,RGB565(0,0,0));
 
    Draw_text(bmp,STAT_DECX,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,((MOUSEMODE==-1) ? "Joystick" : "Mouse  "));
    Draw_text(bmp,STAT_DECX+65,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"MSpeed%d",PAS);

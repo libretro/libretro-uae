@@ -18,12 +18,14 @@ extern int LEDON;
 /*
 * Some code to put status information on the screen.
 */
-
+#ifdef __LIBRETRO__
+extern int opt_statusbar_position;
+#endif
 void statusline_getpos (int *x, int *y, int width, int height)
 {
 #ifdef __LIBRETRO__
 	currprefs.osd_pos.x=0;
-	currprefs.osd_pos.y=-20;
+	currprefs.osd_pos.y=opt_statusbar_position;
 #endif
 	if (currprefs.osd_pos.x >= 20000) {
 		if (currprefs.osd_pos.x >= 30000)
