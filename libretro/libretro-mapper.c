@@ -40,8 +40,9 @@ void gettimeofday (struct timeval *tv, void *blah)
 unsigned short int bmp[1024*1024];
 unsigned short int savebmp[1024*1024];
 
-int NPAGE=-1, KCOL=1, BKGCOLOR=0, MAXPAS=8;
-int SHIFTON=-1,TABON=-1,MOUSEMODE=-1,SHOWKEY=-1,PAS=4,STATUSON=-1,LEDON=-1;
+int NPAGE=-1,MAXPAS=8,PAS=4;
+int SHIFTON=-1,ALTON=-1;
+int MOUSEMODE=-1,SHOWKEY=-1,SHOWKEYPOS=-1,STATUSON=-1,LEDON=-1;
 
 short signed int SNDBUF[1024*2];
 int snd_sampler = 44100 / 50;
@@ -58,6 +59,7 @@ int fmousex,fmousey; // emu mouse
 int pauseg=0; //enter_gui
 int slowdown=0;
 
+int vkflag[6]={0,0,0,0,0,0};
 static int jbt[24]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 static int kbt[16]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
@@ -84,7 +86,6 @@ extern int video_config;
 #define EMU_GUI 5
 
 void emu_function(int function) {
-   //printf("EMU: %d\n", function);
    switch (function)
    {
       case EMU_VKBD:
@@ -113,13 +114,14 @@ void emu_function(int function) {
 long frame=0;
 unsigned long  Ktime=0 , LastFPSTime=0;
 
-int BOXDEC= 32+2;
 int STAT_BASEY;
+int STAT_DECX=12;
 int FONT_WIDTH;
 int FONT_HEIGHT;
+int BOX_PADDING=5;
 int BOX_Y;
 int BOX_WIDTH;
-int BOX_HEIGHT;
+int BOX_HEIGHT=11;
 
 extern char key_state[512];
 extern char key_state2[512];
@@ -192,28 +194,26 @@ void Print_Status(void)
 {
    if(video_config & 0x04) // PUAE_VIDEO_HIRES
    {
-      STAT_BASEY=9;
-      FONT_WIDTH=2;
-      FONT_HEIGHT=2;
-      BOX_Y=STAT_BASEY-3;
-      BOX_WIDTH=CROP_WIDTH-320;
-      BOX_HEIGHT=STAT_YSZ+1;
+      STAT_BASEY=18+BOX_PADDING;
+      FONT_WIDTH=1.6;
+      FONT_HEIGHT=1.6;
+      BOX_Y=STAT_BASEY-BOX_PADDING+3;
+      BOX_WIDTH=CROP_WIDTH-310;
    }
    else
    {
-      STAT_BASEY=0;
+      STAT_BASEY=5;
       FONT_WIDTH=1;
       FONT_HEIGHT=1;
-      BOX_Y=STAT_BASEY;
+      BOX_Y=STAT_BASEY-2;
       BOX_WIDTH=CROP_WIDTH;
-      BOX_HEIGHT=10;
    }
 
    DrawFBoxBmp(bmp,0,BOX_Y,BOX_WIDTH,BOX_HEIGHT,RGB565(0,0,0));
 
-   Draw_text(bmp,STAT_DECX,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,((MOUSEMODE==-1) ? "Joy  " : "Mouse"));
-   Draw_text(bmp,STAT_DECX+80,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"MSpd%d",PAS);
-   Draw_text(bmp,STAT_DECX+175,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,(SHIFTON>0?"CapsLock":""));
+   Draw_text(bmp,STAT_DECX,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,((MOUSEMODE==-1) ? "Joystick" : "Mouse  "));
+   Draw_text(bmp,STAT_DECX+65,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"MSpeed%d",PAS);
+   Draw_text(bmp,STAT_DECX+125,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,(SHIFTON>0 ? "CapsLock" : ""));
 }
 
 void Screen_SetFullUpdate(void)
@@ -243,17 +243,17 @@ void Process_key(int disable_physical_cursor_keys)
             key_state2[i]=0;
 
       }
-      else if(keyboard_translation[i]==AK_TAB)
+      else if(keyboard_translation[i]==AK_RALT)
       {
          if( key_state[i] && key_state2[i]==0 )
          {
-            TABON=1;
+            ALTON=1;
             retro_key_down(keyboard_translation[i]);
             key_state2[i]=1;
          }
          else if (!key_state[i] && key_state2[i]==1)
          {
-            TABON=-1;
+            ALTON=-1;
             retro_key_up(keyboard_translation[i]);
             key_state2[i]=0;
          }
@@ -262,6 +262,9 @@ void Process_key(int disable_physical_cursor_keys)
       else
       {
          if(disable_physical_cursor_keys && (i == RETROK_DOWN || i == RETROK_UP || i == RETROK_LEFT || i == RETROK_RIGHT))
+            continue;
+
+         if(SHOWKEY==1)
             continue;
 
          if(key_state[i] && keyboard_translation[i]!=-1 && key_state2[i] == 0)
@@ -296,7 +299,8 @@ void update_input(int disable_physical_cursor_keys)
    int LX, LY, RX, RY;
    int threshold=20000;
 
-   if(oldi!=-1)
+   /* Keyup only after button is up */
+   if(oldi!=-1 && vkflag[4]!=1)
    {
       retro_key_up(oldi);
       oldi=-1;
@@ -485,63 +489,79 @@ void update_input(int disable_physical_cursor_keys)
    /* Virtual keyboard */
    if(SHOWKEY==1)
    {
-      static int vkflag[5]={0,0,0,0,0};		
-
       if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) && vkflag[0]==0 )
+      {
          vkflag[0]=1;
+         vky -= 1; 
+      }
       else if (vkflag[0]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) )
       {
          vkflag[0]=0;
-         vky -= 1; 
       }
 
       if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN) && vkflag[1]==0 )
+      {
          vkflag[1]=1;
+         vky += 1;
+      }
       else if (vkflag[1]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN) )
       {
          vkflag[1]=0;
-         vky += 1; 
       }
 
       if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT) && vkflag[2]==0 )
+      {
          vkflag[2]=1;
+         vkx -= 1;
+      }
       else if (vkflag[2]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT) )
       {
          vkflag[2]=0;
-         vkx -= 1;
       }
 
       if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) && vkflag[3]==0 )
+      {
          vkflag[3]=1;
+         vkx += 1;
+      }
       else if (vkflag[3]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) )
       {
          vkflag[3]=0;
-         vkx += 1;
       }
 
       if(vkx < 0)
-         vkx=9;
-      if(vkx > 9)
+         vkx=NPLGN-1;
+      if(vkx > NPLGN-1)
          vkx=0;
       if(vky < 0)
-         vky=4;
-      if(vky > 4)
+         vky=NLIGN-1;
+      if(vky > NLIGN-1)
          vky=0;
 
       virtual_kbd(bmp,vkx,vky);
 
-      i=8;
-      if(input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i)  && vkflag[4]==0) 	
-         vkflag[4]=1;
-      else if( !input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i)  && vkflag[4]==1)
+      i=RETRO_DEVICE_ID_JOYPAD_B;
+      if(input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i)  && vkflag[5]==0)
       {
+         vkflag[5]=1;
+         SHOWKEYPOS=-SHOWKEYPOS;
+         Screen_SetFullUpdate();
+      }
+      else if( !input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i)  && vkflag[5]==1)
+      {
+         vkflag[5]=0;
+      }
 
-         vkflag[4]=0;
+      i=RETRO_DEVICE_ID_JOYPAD_A;
+      if(input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i)  && vkflag[4]==0)
+      {
+         vkflag[4]=1;
          i=check_vkey2(vkx,vky);
 
          if(i==-2)
          {
-            NPAGE=-NPAGE;oldi=-1;
+            NPAGE=-NPAGE;
+            oldi=-1;
             //Clear interface zone					
             Screen_SetFullUpdate();
          }
@@ -550,7 +570,7 @@ void update_input(int disable_physical_cursor_keys)
          else if(i==-3)
          {//KDB bgcolor
             Screen_SetFullUpdate();
-            KCOL=-KCOL;
+            //KCOL=-KCOL;
             oldi=-1;
          }
          else if(i==-4)
@@ -574,7 +594,11 @@ void update_input(int disable_physical_cursor_keys)
                oldi=i;
                retro_key_down(i);
             }
-         }				
+         }
+      }
+      else if( !input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i)  && vkflag[4]==1)
+      {
+         vkflag[4]=0;
       }
    }
 }
@@ -738,7 +762,7 @@ void retro_poll_event()
 {
    /* if user plays with cursor keys, then prevent up/down/left/right from generating keyboard key presses */
    if (
-      (uae_devices[0] == RETRO_DEVICE_JOYPAD) && TABON==-1 &&
+      (uae_devices[0] == RETRO_DEVICE_JOYPAD) && ALTON==-1 &&
       (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) ||
        input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN) ||
        input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT) ||
@@ -751,7 +775,7 @@ void retro_poll_event()
    //if(SHOWKEY==-1) /* retro joypad take control over keyboard joy */
    /* override keydown, but allow keyup, to prevent key sticking during keyboard use, if held down on opening keyboard */
    /* keyup allowing most likely not needed on actual keyboard presses even though they get stuck also */
-   if (TABON==-1)
+   if (ALTON==-1)
    {
       static int mbL=0,mbR=0;
       int16_t mouse_x;
