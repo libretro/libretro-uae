@@ -87,6 +87,14 @@ extern int opt_statusbar_position;
 #define EMU_MOUSE_SPEED 4
 #define EMU_GUI 5
 
+/* VKBD_MIN_HOLDING_TIME: Hold a direction longer than this and automatic movement sets in */
+/* VKBD_MOVE_DELAY: Delay between automatic movement from button to button */
+#define VKBD_MIN_HOLDING_TIME 200
+#define VKBD_MOVE_DELAY 50
+bool let_go_of_direction = true;
+long last_move_time = 0;
+long last_press_time = 0;
+
 void emu_function(int function) {
    switch (function)
    {
@@ -503,44 +511,52 @@ void update_input(int disable_physical_cursor_keys)
    if(SHOWKEY==1)
    {
       if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) && vkflag[0]==0 )
-      {
          vkflag[0]=1;
-         vky -= 1; 
-      }
       else if (vkflag[0]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) )
-      {
          vkflag[0]=0;
-      }
 
       if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN) && vkflag[1]==0 )
-      {
          vkflag[1]=1;
-         vky += 1;
-      }
       else if (vkflag[1]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN) )
-      {
          vkflag[1]=0;
-      }
 
       if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT) && vkflag[2]==0 )
-      {
          vkflag[2]=1;
-         vkx -= 1;
-      }
       else if (vkflag[2]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT) )
-      {
          vkflag[2]=0;
-      }
 
       if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) && vkflag[3]==0 )
-      {
          vkflag[3]=1;
-         vkx += 1;
-      }
       else if (vkflag[3]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) )
-      {
          vkflag[3]=0;
+
+      if (vkflag[0] || vkflag[1] || vkflag[2] || vkflag[3])
+      {
+         long now = GetTicks();
+         if (let_go_of_direction)
+            /* just pressing down */
+            last_press_time = now;
+
+         if ( (now - last_press_time > VKBD_MIN_HOLDING_TIME
+            && now - last_move_time > VKBD_MOVE_DELAY)
+           || let_go_of_direction)
+         {
+            last_move_time = now;
+
+            if (vkflag[0])
+               vky -= 1;
+            else if (vkflag[1])
+               vky += 1;
+
+            if (vkflag[2])
+               vkx -= 1;
+            else if (vkflag[3])
+               vkx += 1;
+         }
+         let_go_of_direction = false;
       }
+      else
+         let_go_of_direction = true;
 
       if(vkx < 0)
          vkx=NPLGN-1;
