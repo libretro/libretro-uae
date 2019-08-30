@@ -21,7 +21,7 @@
 #include "libretro.h"
 #include "libretro-glue.h"
 #include "libretro-mapper.h"
-extern unsigned uae_devices[2];
+extern unsigned int uae_devices[4];
 
 #define PIX_BYTES 2
 
@@ -102,13 +102,13 @@ static jflag[4][11]={0,0,0,0,0,0,0,0,0,0,0};
 void retro_joy(unsigned int port, unsigned long joy){
 // 0x001,0x002,0x004,0x008,0x010,0x020,0x040,0x200,0x400,0x800,0x100
 // UP    DWN   LFT   RGT   A  	 B     X     Y     L     R     STRT
-// 0     1	   2     3     4	 5	   6     7     8     9     10
+// 0     1     2     3     4     5     6     7     8     9     10
 // setjoybuttonstate(port, button, state)
 
 //if(joy!=0) printf("JOY: %d, PORT: %d\n", joy, port);
 
-	// A
-	if(joy&0x010){
+	// B
+	if(joy&0x020){
 		if(jflag[port][4]==0){
 			setjoybuttonstate(port, 0, 1);
 			jflag[port][4]=1;
@@ -120,8 +120,8 @@ void retro_joy(unsigned int port, unsigned long joy){
 		}
 	}
 
-	// B
-	if(joy&0x020){
+	// A
+	if(joy&0x010){
 		if(jflag[port][5]==0){
 			setjoybuttonstate(port, 1, 1);
 			jflag[port][5]=1;
@@ -133,8 +133,8 @@ void retro_joy(unsigned int port, unsigned long joy){
 		}
 	}
 
-	// X
-	if(joy&0x040){
+	// Y
+	if(joy&0x200){
 		if(jflag[port][6]==0){
 			setjoybuttonstate(port, 2, 1);
 			jflag[port][6]=1;
@@ -146,8 +146,8 @@ void retro_joy(unsigned int port, unsigned long joy){
 		}
 	}
 
-	// Y
-	if(joy&0x200){
+	// X
+	if(joy&0x040){
 		if(jflag[port][7]==0){
 			setjoybuttonstate(port, 3, 1);
 			jflag[port][7]=1;

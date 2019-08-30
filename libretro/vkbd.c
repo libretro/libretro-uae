@@ -5,6 +5,7 @@
 
 extern int NPAGE;
 extern int SHOWKEYPOS;
+extern int SHOWKEYTRANS;
 extern int SHIFTON;
 extern int vkflag[6];
 extern int video_config;
@@ -19,12 +20,13 @@ void virtual_kbd(unsigned short int *pixels,int vx,int vy)
    int BKG_COLOR;
    int BKG_COLOR_NORMAL = RGB565(24, 24, 24);
    int BKG_COLOR_ALT	= RGB565(20, 20, 20);
+   int BKG_COLOR_EXTRA  = RGB565(14, 14, 14);
    int BKG_COLOR_SEL	= RGB565(10, 10, 10);
    int BKG_COLOR_BORDER	= RGB565(1, 1, 1);
    int BKG_PADDING_X	= 0;
    int BKG_PADDING_Y	= 4;
    int FONT_WIDTH		= 1;
-   int FONT_HEIGHT		= 1.6;
+   int FONT_HEIGHT		= 1;
    int FONT_COLOR  		= RGB565(1,1,1);
    int FONT_COLOR_SEL	= RGB565(254,254,254);
 
@@ -59,10 +61,14 @@ void virtual_kbd(unsigned short int *pixels,int vx,int vy)
          /* Default key color */
          BKG_COLOR = BKG_COLOR_NORMAL;
 
+         /* Extra key color */
+         if(!strcmp("NUMPAD", MVk[(y*NPLGN)+x].norml))
+            BKG_COLOR = BKG_COLOR_EXTRA;
+         else
          /* Alternate key color */
-         for(int alt_key = 0; alt_key < alt_keys_len; ++alt_key)
-             if(!strcmp(alt_keys[alt_key], MVk[(y*NPLGN)+x].norml))
-                 BKG_COLOR = BKG_COLOR_ALT;
+            for(int alt_key = 0; alt_key < alt_keys_len; ++alt_key)
+                if(!strcmp(alt_keys[alt_key], MVk[(y*NPLGN)+x].norml))
+                    BKG_COLOR = BKG_COLOR_ALT;
 
          /* Key positions */
          XKEY  = XBASE3+x*XSIDE;
@@ -76,7 +82,10 @@ void virtual_kbd(unsigned short int *pixels,int vx,int vy)
          }
 
          /* Key background */
-         DrawFBoxBmp(pix, XKEY,YKEY, XSIDE,YSIDE, BKG_COLOR);
+         if(SHOWKEYTRANS==1)
+            DrawBoxBmp(pix, XKEY,YKEY, XSIDE,YSIDE, BKG_COLOR);
+         else
+            DrawFBoxBmp(pix, XKEY,YKEY, XSIDE,YSIDE, BKG_COLOR);
 
          /* Key border */
          DrawBoxBmp(pix, XKEY,YKEY, XSIDE,YSIDE, BKG_COLOR_BORDER);
