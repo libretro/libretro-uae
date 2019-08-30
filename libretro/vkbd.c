@@ -64,6 +64,9 @@ void virtual_kbd(unsigned short int *pixels,int vx,int vy)
    };
    int alt_keys_len = sizeof(alt_keys)/sizeof(alt_keys[0]);
 
+   if(SHOWKEYTRANS==1)
+       BKG_COLOR_BORDER = RGB565(8, 8, 8);
+
    for(x=0;x<NPLGN;x++)
    {
       for(y=0;y<NLIGN;y++)

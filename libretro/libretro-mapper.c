@@ -406,7 +406,7 @@ void update_input(int disable_physical_cursor_keys)
             if(i > 0 && (i<4 || i>7) && i < 16) /* remappable retropad buttons (all apart from DPAD and B) */
             {
                 /* Skip the vkbd extra buttons if vkbd is visible */
-                if(SHOWKEY==1 && i==RETRO_DEVICE_ID_JOYPAD_A)
+                if(SHOWKEY==1 && (i==RETRO_DEVICE_ID_JOYPAD_A || i==RETRO_DEVICE_ID_JOYPAD_X))
                     continue;
 
                 if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && jbt[i]==0/* && i!=turbo_fire_button*/)
@@ -579,7 +579,7 @@ void update_input(int disable_physical_cursor_keys)
       virtual_kbd(bmp,vkx,vky);
 
       /* Position toggle */
-      i=RETRO_DEVICE_ID_JOYPAD_Y;
+      i=RETRO_DEVICE_ID_JOYPAD_X;
       if(input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i)  && vkflag[6]==0)
       {
          vkflag[6]=1;
@@ -591,7 +591,7 @@ void update_input(int disable_physical_cursor_keys)
          vkflag[6]=0;
       }
 
-      /* Transparenct toggle */
+      /* Transparency toggle */
       i=RETRO_DEVICE_ID_JOYPAD_A;
       if(input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i)  && vkflag[5]==0)
       {
