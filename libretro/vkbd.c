@@ -16,7 +16,7 @@ void virtual_kbd(unsigned short int *pixels,int vx,int vy)
    uint16_t  *pix = &pixels[0];
 
    int maxchr			= 8;
-   int XKEY, YKEY, XTEXT, YTEXT, YOFFSET;
+   int XKEY, YKEY, XTEXT, YTEXT;
    int BKG_COLOR;
    int BKG_COLOR_NORMAL = RGB565(24, 24, 24);
    int BKG_COLOR_ALT	= RGB565(20, 20, 20);
@@ -30,21 +30,31 @@ void virtual_kbd(unsigned short int *pixels,int vx,int vy)
    int FONT_COLOR  		= RGB565(1,1,1);
    int FONT_COLOR_SEL	= RGB565(254,254,254);
 
+   int YOFFSET          = 0;
+   int YPADDING         = 240;
+
    if(video_config & 0x04) // PUAE_VIDEO_HIRES
-      YOFFSET			= 200;
+      ;
    else
    {
-      YOFFSET			= 100;
-      FONT_WIDTH		= 1;
-      FONT_HEIGHT		= 1;
-      BKG_PADDING_X		= -2;
-      BKG_PADDING_Y		= 1;
-      maxchr			= 4;
+      if (video_config & 0x02) // PUAE_VIDEO_NTSC
+      {
+         YPADDING       = 60;
+         YOFFSET        = 20;
+      }
+      else
+      {
+         YPADDING       = 80;
+         YOFFSET        = 20;
+      }
+
+      BKG_PADDING_X     = -2;
+      BKG_PADDING_Y     = 1;
+      maxchr            = 4;
    }
 
-   int XSIDE			= ((CROP_WIDTH-XOFFSET)/NPLGN);
-   int YSIDE  			= ((CROP_HEIGHT-YOFFSET)/NLIGN);
-
+   int XSIDE			= ((CROP_WIDTH-XPADDING)/NPLGN);
+   int YSIDE  			= ((CROP_HEIGHT-YPADDING)/NLIGN);
 
    /* Alternate color keys */
    char *alt_keys[] = {
@@ -74,11 +84,11 @@ void virtual_kbd(unsigned short int *pixels,int vx,int vy)
          XKEY  = XBASE3+x*XSIDE;
          XTEXT = XBASE0+BKG_PADDING_X+x*XSIDE;
          if(SHOWKEYPOS==-1) {
-            YKEY  = YBASE3+y*YSIDE;
-            YTEXT = YBASE0+BKG_PADDING_Y+YSIDE*y;
+            YKEY  = YOFFSET+YBASE3+y*YSIDE;
+            YTEXT = YOFFSET+YBASE0+BKG_PADDING_Y+YSIDE*y;
          } else {
-            YKEY  = YBASE3A+y*YSIDE;
-            YTEXT = YBASE0A+BKG_PADDING_Y+YSIDE*y;
+            YKEY  = YOFFSET+YBASE3A+y*YSIDE;
+            YTEXT = YOFFSET+YBASE0A+BKG_PADDING_Y+YSIDE*y;
          }
 
          /* Key background */
@@ -100,11 +110,11 @@ void virtual_kbd(unsigned short int *pixels,int vx,int vy)
    XKEY  = XBASE3+1+vx*XSIDE;
    XTEXT = XBASE0+BKG_PADDING_X+vx*XSIDE;
    if(SHOWKEYPOS==-1) {
-      YKEY  = YBASE3+1+vy*YSIDE;
-      YTEXT = YBASE0+BKG_PADDING_Y+YSIDE*vy;
+      YKEY  = YOFFSET+YBASE3+1+vy*YSIDE;
+      YTEXT = YOFFSET+YBASE0+BKG_PADDING_Y+YSIDE*vy;
    } else {
-      YKEY  = YBASE3A+1+vy*YSIDE;
-      YTEXT = YBASE0A+BKG_PADDING_Y+YSIDE*vy;
+      YKEY  = YOFFSET+YBASE3A+1+vy*YSIDE;
+      YTEXT = YOFFSET+YBASE0A+BKG_PADDING_Y+YSIDE*vy;
    }
 
    /* Pressed key background */
