@@ -37,7 +37,8 @@ char key_state[512];
 char key_state2[512];
 bool opt_use_whdload_hdf = true;
 bool opt_enhanced_statusbar = true;
-int opt_statusbar_position = -20;
+int opt_statusbar_position = 0;
+int opt_statusbar_position_old = 0;
 static int firstps = 0;
 
 #if defined(NATMEM_OFFSET)
@@ -236,7 +237,13 @@ void retro_set_environment(retro_environment_t cb)
          "",
          {
             { "bottom", NULL },
+            { "bottom1", "bottom + 1" },
+            { "bottom2", "bottom + 2" },
+            { "bottom3", "bottom + 3" },
             { "top", NULL },
+            { "top1", "top + 1" },
+            { "top2", "top + 2" },
+            { "top3", "top + 3" },
             { NULL, NULL },
          },
          "bottom"
@@ -753,17 +760,6 @@ static void update_variables(void)
 		   video_config |= PUAE_VIDEO_CROP;
    }
 
-   var.key = "puae_statusbar_position";
-   var.value = NULL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-      if(strcmp(var.value, "top") == 0)
-         opt_statusbar_position = -20;
-      else
-         opt_statusbar_position = 0;
-   }
-
    var.key = "puae_enhanced_statusbar";
    var.value = NULL;
 
@@ -772,7 +768,42 @@ static void update_variables(void)
       if(strcmp(var.value, "enabled") == 0)
          opt_enhanced_statusbar = true;
       else
+      {
          opt_enhanced_statusbar = false;
+
+         /* Screen refresh required */
+         Screen_SetFullUpdate();
+      }
+   }
+
+   var.key = "puae_statusbar_position";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if(strcmp(var.value, "top") == 0) opt_statusbar_position = -1;
+      else if(strcmp(var.value, "top1") == 0) opt_statusbar_position = -10;
+      else if(strcmp(var.value, "top2") == 0) opt_statusbar_position = -20;
+      else if(strcmp(var.value, "top3") == 0) opt_statusbar_position = -30;
+      else if(strcmp(var.value, "bottom") == 0) opt_statusbar_position = 0;
+      else if(strcmp(var.value, "bottom1") == 0) opt_statusbar_position = 10;
+      else if(strcmp(var.value, "bottom2") == 0) opt_statusbar_position = 20;
+      else if(strcmp(var.value, "bottom3") == 0) opt_statusbar_position = 30;
+
+      /* Exceptions for lo-res and enhanced statusbar */
+      if(video_config & 0x04) // PUAE_VIDEO_HIRES
+         ;
+      else
+         if(opt_enhanced_statusbar)
+            opt_statusbar_position = (opt_statusbar_position < 0) ? ((opt_statusbar_position==-1) ? -10 : opt_statusbar_position-10) : opt_statusbar_position+12;
+         else
+            opt_statusbar_position = (opt_statusbar_position < 0) ? ((opt_statusbar_position==-1) ? -2 : opt_statusbar_position-2) : opt_statusbar_position+2;
+
+      /* Screen refresh required */
+      if(opt_statusbar_position_old != opt_statusbar_position)
+         Screen_SetFullUpdate();
+
+      opt_statusbar_position_old = opt_statusbar_position;
    }
 
    var.key = "puae_cpu_speed";

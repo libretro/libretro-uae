@@ -25,7 +25,7 @@ void statusline_getpos (int *x, int *y, int width, int height)
 {
 #ifdef __LIBRETRO__
 	currprefs.osd_pos.x=0;
-	currprefs.osd_pos.y=opt_statusbar_position;
+	currprefs.osd_pos.y=(opt_statusbar_position == -1) ? 30000 : opt_statusbar_position; // Have to fake -1 to get -0 as top position
 #endif
 	if (currprefs.osd_pos.x >= 20000) {
 		if (currprefs.osd_pos.x >= 30000)
