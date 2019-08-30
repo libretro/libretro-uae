@@ -33,14 +33,14 @@ extern int CROP_HEIGHT;
 #define NLIGN 7
 #define NLETT 9
 
-#define XOFFSET 20
+#define XPADDING 20
 #define YDELTA 110
 
-#define XBASE0 4+(XOFFSET/2)
+#define XBASE0 4+(XPADDING/2)
 #define YBASE0 (CROP_HEIGHT - NLIGN*YSIDE) -60
 #define YBASE0A YBASE0 + YDELTA
 
-#define XBASE3 (XOFFSET/2)
+#define XBASE3 (XPADDING/2)
 #define YBASE3 YBASE0 -4
 #define YBASE3A YBASE3 + YDELTA
 

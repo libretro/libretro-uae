@@ -126,9 +126,9 @@ unsigned long  Ktime=0 , LastFPSTime=0;
 
 int STAT_BASEY;
 int STAT_DECX=12;
-int FONT_WIDTH;
-int FONT_HEIGHT;
-int BOX_PADDING=5;
+int FONT_WIDTH=1;
+int FONT_HEIGHT=1;
+int BOX_PADDING=2;
 int BOX_Y;
 int BOX_WIDTH;
 int BOX_HEIGHT=11;
@@ -208,30 +208,31 @@ void Print_Status(void)
    if(video_config & 0x04) // PUAE_VIDEO_HIRES
    {
       if (opt_statusbar_position < 0)
-         STAT_BASEY=18+BOX_PADDING;
+         if (opt_statusbar_position == -1)
+             STAT_BASEY=2;
+         else
+             STAT_BASEY=-opt_statusbar_position+1+BOX_PADDING;
       else
-         STAT_BASEY=gfxvidinfo.outheight-9;
-      FONT_WIDTH=1.6;
-      FONT_HEIGHT=1.6;
-      BOX_Y=STAT_BASEY-BOX_PADDING+3;
+         STAT_BASEY=gfxvidinfo.outheight-BOX_HEIGHT-opt_statusbar_position+2;
+
       BOX_WIDTH=CROP_WIDTH-310;
    }
    else
    {
       if (opt_statusbar_position < 0)
-         STAT_BASEY=5;
+         if (opt_statusbar_position == -1)
+             STAT_BASEY=0;
+         else
+             STAT_BASEY=-opt_statusbar_position-BOX_HEIGHT+2;
       else
-         STAT_BASEY=gfxvidinfo.outheight-20;
-      FONT_WIDTH=1;
-      FONT_HEIGHT=1;
-      BOX_Y=STAT_BASEY-2;
+         STAT_BASEY=gfxvidinfo.outheight-opt_statusbar_position+3;
+
       BOX_WIDTH=CROP_WIDTH;
    }
 
-   /* omit black box when statusline is at bottom in lo-res because it looks ugly otherwise */
-   if (video_config & 0x04 || opt_statusbar_position < 0)
-      DrawFBoxBmp(bmp,0,BOX_Y,BOX_WIDTH,BOX_HEIGHT,RGB565(0,0,0));
+   BOX_Y=STAT_BASEY-BOX_PADDING;
 
+   DrawFBoxBmp(bmp,0,BOX_Y,BOX_WIDTH,BOX_HEIGHT,RGB565(0,0,0));
    Draw_text(bmp,STAT_DECX,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,((MOUSEMODE==-1) ? "Joystick" : "Mouse  "));
    Draw_text(bmp,STAT_DECX+65,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"MSpeed%d",PAS);
    Draw_text(bmp,STAT_DECX+125,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,(SHIFTON>0 ? "CapsLock" : ""));
