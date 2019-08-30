@@ -47,12 +47,14 @@ To generate the temporary uae configuration file the core will use the core opti
 
 The most important option is the model.
 
-Three models are provided (hardcoded configuration) :
+The following models are provided (hardcoded configuration):
 
 |Model|Description|
 |---|---|
-|A500|Simulate an Amiga 500 with OCS chipset, 1MB of RAM and 1.8MB of slow memory expansion (bogomem).|
-|A600|Simulate an Amiga 600 with ECS chipset, 1MB of RAM and 4MB of fast memory expansion.|
+|A500|Simulate an Amiga 500 with OCS chipset, 0.5MB of RAM and 0.5MB of slow memory expansion.|
+|A500OG|Simulate an Amiga 500 with OCS chipset, 0.5MB of RAM.|
+|A500+|Simulate an Amiga 500+ with ECS chipset, 1MB of RAM and 1MB of slow memory expansion.|
+|A600|Simulate an Amiga 600 with ECS chipset, 2MB of RAM and 8MB of fast memory expansion.|
 |A1200|Simulate an Amiga 1200 with AGA chipset, 2MB of RAM and 8MB of fast memory expansion.|
 
 As the configuration file is only generated when launching a game you must restart RetroArch for the changes to take effects.
@@ -65,7 +67,8 @@ It is critical to use kickstarts with the right MD5, otherwise the core might no
 |Name|Description|System|MD5|
 |---|---|---|---|
 |kick34005.A500|Kickstart v1.3 (Rev. 34.005)|Amiga 500|82a21c1890cae844b3df741f2762d48d|
-|kick40063.A600|Kickstart v3.1 (Rev. 40.063)|Amiga 600|e40a5dfb3d017ba8779faba30cbd1c8e|
+|kick37175.A500|Kickstart v2.04 (Rev. 37.175)|Amiga 500+|dc10d7bdd1b6f450773dfb558477c230|
+|kick37300.A600|Kickstart v2.05 (Rev. 37.300)|Amiga 600|fa4acc75b49e880679fe02716af24d71|
 |kick40068.A1200|Kickstart v3.1 (Rev. 40.068)|Amiga 1200|646773759326fbac3b2311fd8c8793ee|
 
 ### IPF Support
