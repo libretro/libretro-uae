@@ -399,6 +399,17 @@ void retro_set_environment(retro_environment_t cb)
          "false"
       },
       {
+         "puae_gfx_framerate",
+         "Frameskip",
+         "Cycle exact needs to be false for this to come into effect at startup",
+         {
+            { "false", NULL },
+            { "1", NULL },
+            { "2", NULL },
+         },
+         "false"
+      },
+      {
          "puae_gfx_center_vertical",
          "Vertical centering",
          "Needs restart",
@@ -888,15 +899,24 @@ static void update_variables(void)
 		strcat(uae_config, "\n");
    }
 
-
-   var.key = "puae_gfx_autoscale";
+   var.key = "puae_gfx_framerate";
    var.value = NULL;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-		strcat(uae_config, "gfx_autoscale=");
-		strcat(uae_config, var.value);
-		strcat(uae_config, "\n");
+      int val;
+
+      if (strcmp(var.value, "false") == 0) val=1;
+      else if (strcmp(var.value, "1") == 0) val=2;
+      else if (strcmp(var.value, "2") == 0) val=4;
+
+      changed_prefs.gfx_framerate=val;
+      char buf2[50];
+      snprintf(buf2, 50, "%d", val);
+
+      strcat(uae_config, "gfx_framerate=");
+      strcat(uae_config, buf2);
+      strcat(uae_config, "\n");
    }
 
    var.key = "puae_gfx_center_vertical";
