@@ -70,7 +70,7 @@ int keyId(const char *val)
 }
 
 extern void retro_poll_event(void);
-unsigned uae_devices[4];
+unsigned int uae_devices[4];
 extern int cd32_pad_enabled[NORMAL_JPORTS];
 
 int mapper_keys[30]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -432,6 +432,13 @@ void retro_set_environment(retro_environment_t cb)
          "---"
       },
       {
+         "puae_mapper_a",
+         "RetroPad A",
+         "",
+         {{ NULL, NULL }},
+         "---"
+      },
+      {
          "puae_mapper_y",
          "RetroPad Y",
          "",
@@ -441,13 +448,6 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapper_x",
          "RetroPad X",
-         "",
-         {{ NULL, NULL }},
-         "---"
-      },
-      {
-         "puae_mapper_b",
-         "RetroPad B",
          "",
          {{ NULL, NULL }},
          "---"
@@ -917,77 +917,77 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[2] = keyId(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_SELECT] = keyId(var.value);
    }
 
    var.key = "puae_mapper_start";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[3] = keyId(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_START] = keyId(var.value);
+   }
+
+   var.key = "puae_mapper_a";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_A] = keyId(var.value);
    }
 
    var.key = "puae_mapper_y";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[1] = keyId(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_Y] = keyId(var.value);
    }
 
    var.key = "puae_mapper_x";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[9] = keyId(var.value);
-   }
-
-   var.key = "puae_mapper_b";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-      mapper_keys[0] = keyId(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_X] = keyId(var.value);
    }
 
    var.key = "puae_mapper_l";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[10] = keyId(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_L] = keyId(var.value);
    }
 
    var.key = "puae_mapper_r";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[11] = keyId(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_R] = keyId(var.value);
    }
 
    var.key = "puae_mapper_l2";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[12] = keyId(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_L2] = keyId(var.value);
    }
 
    var.key = "puae_mapper_r2";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[13] = keyId(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_R2] = keyId(var.value);
    }
 
    var.key = "puae_mapper_l3";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[14] = keyId(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_L3] = keyId(var.value);
    }
 
    var.key = "puae_mapper_r3";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[15] = keyId(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_R3] = keyId(var.value);
    }
 
    var.key = "puae_mapper_lr";
@@ -1373,18 +1373,18 @@ void retro_init(void)
 
 	// Inputs
 #define RETRO_DESCRIPTOR_BLOCK( _user )                                            \
-   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "A" },               \
-   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "B" },               \
-   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "X" },               \
-   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "Y" },               \
+   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "A / 2nd fire / Blue" },\
+   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "B / Fire / Red" },  \
+   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "X / Yellow" },      \
+   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "Y / Green" },       \
    { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Select" },     \
-   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Start" },       \
+   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Start / Play" },\
    { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "Right" },       \
    { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT, "Left" },         \
    { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP, "Up" },             \
    { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN, "Down" },         \
-   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R, "R" },               \
-   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L, "L" },               \
+   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R, "R / Forward" },         \
+   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L, "L / Rewind" },         \
    { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2, "R2" },             \
    { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2, "L2" },             \
    { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3, "R3" },             \
