@@ -27,29 +27,14 @@ Credits to Mustafa 'GnoStiC' TUFAN
 
 And of course for the RetroArch/Libretro team : "http://www.libretro.org/"
 
-It's a quick hack.
-At this time , works the basis but buggy on win/linux/android.
-
-Remember ,Everything not working well, It's a debug release , so expect to more bug.
 
 Default Control :
 
-L2  Show/Hide statut
-R2  Sound on/off
-L   Toggle Num Joy .
-R   Change Mouse speed 1 to 6 . (for gui and emu)
-SEL Toggle Mouse/Joy mode .
-STR Show/Hide vkbd . 
-A   Fire/Mouse btn A / Valid key in vkbd
-B   Mouse btn B
-X    
-Y   E-UAE GUI
+L   Toggle virtual keyboard
+R   Toggle statusbar
+A   Button 2 / RMB
+B   Button 1 / LMB
 
-
-
-Usage without configuration file:
-	Launch retroarch , select a startup dsk , and e-uae sould boot.
-	
 
 Using a configuration file for your games:
   You can pass a uae configuration file as a rom and the core will load the

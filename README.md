@@ -28,8 +28,8 @@ And of course for the RetroArch/Libretro team : "http://www.libretro.com/"
 ```
 L   Toggle virtual keyboard
 R   Toggle statusbar
-A   Button 1
-B   Button 2
+A   Button 2 / RMB
+B   Button 1 / LMB
 ```
 
 ## Disk images, WHDLoad and M3U support
