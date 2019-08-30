@@ -90,12 +90,25 @@ static dc_storage* dc;
 
 // Amiga default models
 // chipmem_size 1 = 0.5MB, 2 = 1MB, 4 = 2MB
+// bogomem_size 2 = 0.5MB, 4 = 1MB, 6 = 1.5MB, 7 = 1.8MB
 
 #define A500 "\
 cpu_type=68000\n\
 chipmem_size=1\n\
 bogomem_size=2\n\
 chipset=ocs\n"
+
+#define A500OG "\
+cpu_type=68000\n\
+chipmem_size=1\n\
+bogomem_size=0\n\
+chipset=ocs\n"
+
+#define A500PLUS "\
+cpu_type=68000\n\
+chipmem_size=2\n\
+bogomem_size=4\n\
+chipset=ecs\n"
 
 #define A600 "\
 cpu_type=68000\n\
@@ -111,9 +124,11 @@ chipset=aga\n"
 
 // Amiga default kickstarts
 
-#define A500_ROM 	"kick34005.A500"
-#define A600_ROM 	"kick40063.A600"
-#define A1200_ROM 	"kick40068.A1200"
+#define A500_ROM    "kick34005.A500"
+#define A500KS2_ROM "kick37175.A500"
+#define A600_ROM    "kick37300.A600"
+#define A600KS3_ROM "kick40063.A600"
+#define A1200_ROM   "kick40068.A1200"
 
 #define PUAE_VIDEO_PAL 		0x01
 #define PUAE_VIDEO_NTSC 	0x02
@@ -173,9 +188,11 @@ void retro_set_environment(retro_environment_t cb)
          "Model",
          "Needs restart",
          {
-            { "A500", NULL },
-            { "A600", NULL },
-            { "A1200", NULL },
+            { "A500", "A500 (512KB Chip + 512KB Slow)" },
+            { "A500OG", "A500 (512KB Chip)" },
+            { "A500PLUS", "A500+ (1MB Chip + 1MB Slow)" },
+            { "A600", "A600 (2MB Chip + 8MB Fast)" },
+            { "A1200", "A1200 (2MB Chip + 8MB Fast)" },
             { NULL, NULL },
          },
          "A500"
@@ -378,6 +395,17 @@ void retro_set_environment(retro_environment_t cb)
             { "false", NULL },
             { "true", NULL },
             { NULL, NULL },
+         },
+         "false"
+      },
+      {
+         "puae_gfx_framerate",
+         "Frameskip",
+         "Cycle exact needs to be false for this to come into effect at startup",
+         {
+            { "false", NULL },
+            { "1", NULL },
+            { "2", NULL },
          },
          "false"
       },
@@ -668,6 +696,16 @@ static void update_variables(void)
 			strcat(uae_machine, A500);
 			strcpy(uae_kickstart, A500_ROM);
 		}
+		if (strcmp(var.value, "A500OG") == 0)
+		{
+			strcat(uae_machine, A500OG);
+			strcpy(uae_kickstart, A500_ROM);
+		}
+		if (strcmp(var.value, "A500PLUS") == 0)
+		{
+			strcat(uae_machine, A500PLUS);
+			strcpy(uae_kickstart, A500KS2_ROM);
+		}
 		if (strcmp(var.value, "A600") == 0)
 		{
 			strcat(uae_machine, A600);
@@ -861,15 +899,24 @@ static void update_variables(void)
 		strcat(uae_config, "\n");
    }
 
-
-   var.key = "puae_gfx_autoscale";
+   var.key = "puae_gfx_framerate";
    var.value = NULL;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-		strcat(uae_config, "gfx_autoscale=");
-		strcat(uae_config, var.value);
-		strcat(uae_config, "\n");
+      int val;
+
+      if (strcmp(var.value, "false") == 0) val=1;
+      else if (strcmp(var.value, "1") == 0) val=2;
+      else if (strcmp(var.value, "2") == 0) val=4;
+
+      changed_prefs.gfx_framerate=val;
+      char buf2[50];
+      snprintf(buf2, 50, "%d", val);
+
+      strcat(uae_config, "gfx_framerate=");
+      strcat(uae_config, buf2);
+      strcat(uae_config, "\n");
    }
 
    var.key = "puae_gfx_center_vertical";
@@ -1643,31 +1690,45 @@ bool retro_load_game(const struct retro_game_info *info)
 				char kickstart[RETRO_PATH_MAX];
 
 				// If a machine was specified in the name of the game
-				if((strstr(full_path, "(A500)") != NULL) || (strstr(full_path, "(OCS)") != NULL))
+				if((strstr(full_path, "(A500+)") != NULL) || (strstr(full_path, "(A500PLUS)") != NULL))
+				{
+					// Use A500+
+					printf("Found '(A500+)' or '(A500PLUS)' in filename '%s'. Booting A500+ with Kickstart 2.04 r37.175.\n", full_path);
+					fprintf(configfile, A500PLUS);
+					path_join((char*)&kickstart, retro_system_directory, A500KS2_ROM);
+				}
+				else if((strstr(full_path, "(A500OG)") != NULL) || (strstr(full_path, "(512K)") != NULL))
+				{
+					// Use A500 barebone
+					printf("Found '(A500OG)' or '(512K)' in filename '%s'. Booting A500 512K with Kickstart 1.3 r34.005.\n", full_path);
+					fprintf(configfile, A500OG);
+					path_join((char*)&kickstart, retro_system_directory, A500_ROM);
+				}
+				else if((strstr(full_path, "(A500)") != NULL) || (strstr(full_path, "(OCS)") != NULL))
 				{
 					// Use A500
-					printf("Found '(A500)' or '(OCS)' in filename '%s'. We will use a A500 with kickstart 1.3 r34.005 rom configuration.\n", full_path);
+					printf("Found '(A500)' or '(OCS)' in filename '%s'. Booting A500 with Kickstart 1.3 r34.005.\n", full_path);
 					fprintf(configfile, A500);
 					path_join((char*)&kickstart, retro_system_directory, A500_ROM);
 				}
 				else if((strstr(full_path, "(A600)") != NULL) || (strstr(full_path, "(ECS)") != NULL))
 				{
 					// Use A600
-					printf("Found '(A600)' or '(ECS)' in filename '%s'. We will use a A600 with kickstart 3.1 r40.063 rom configuration.\n", full_path);
+					printf("Found '(A600)' or '(ECS)' in filename '%s'. Booting A600 with Kickstart 2.05 r37.300 rom.\n", full_path);
 					fprintf(configfile, A600);
 					path_join((char*)&kickstart, retro_system_directory, A600_ROM);
 				}
 				else if((strstr(full_path, "(A1200)") != NULL) || (strstr(full_path, "(AGA)") != NULL))
 				{
 					// Use A1200
-					printf("Found '(A1200)' or '(AGA)' in filename '%s'. We will use a A1200 with kickstart 3.1 r40.068 rom configuration.\n", full_path);
+					printf("Found '(A1200)' or '(AGA)' in filename '%s'. Booting A1200 with Kickstart 3.1 r40.068 rom.\n", full_path);
 					fprintf(configfile, A1200);
 					path_join((char*)&kickstart, retro_system_directory, A1200_ROM);
 				}
 				else
 				{
 					// No machine specified, we will use the configured one
-					printf("No machine specified in filename '%s'. We will use the default configuration.\n", full_path);
+					printf("No machine specified in filename '%s'. Booting default configuration.\n", full_path);
 					fprintf(configfile, uae_machine);
 					path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
 				}
@@ -1813,7 +1874,7 @@ bool retro_load_game(const struct retro_game_info *info)
              char kickstart[RETRO_PATH_MAX];
 
              // No machine specified we will use the configured one
-             printf("No machine specified. We will use the default configuration.\n");
+             printf("No machine specified. Booting default configuration.\n");
              fprintf(configfile, uae_machine);
              path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
 
