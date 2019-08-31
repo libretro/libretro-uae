@@ -214,8 +214,8 @@ void retro_set_environment(retro_environment_t cb)
          "High resolution",
          "Needs restart",
          {
-            { "true", NULL },
-            { "false", NULL },
+            { "true", "enabled" },
+            { "false", "disabled" },
             { NULL, NULL },
          },
          "true"
@@ -225,8 +225,8 @@ void retro_set_environment(retro_environment_t cb)
          "Crop overscan",
          "Needs restart",
          {
-            { "false", NULL },
-            { "true", NULL },
+            { "false", "disabled" },
+            { "true", "enabled" },
             { NULL, NULL },
          },
          "false"
@@ -236,14 +236,14 @@ void retro_set_environment(retro_environment_t cb)
          "Statusbar position",
          "",
          {
-            { "bottom", NULL },
-            { "bottom1", "bottom + 1" },
-            { "bottom2", "bottom + 2" },
-            { "bottom3", "bottom + 3" },
-            { "top", NULL },
-            { "top1", "top + 1" },
-            { "top2", "top + 2" },
-            { "top3", "top + 3" },
+            { "bottom", "Bottom" },
+            { "bottom1", "Bottom + 1" },
+            { "bottom2", "Bottom + 2" },
+            { "bottom3", "Bottom + 3" },
+            { "top", "Top" },
+            { "top1", "Top + 1" },
+            { "top2", "Top + 2" },
+            { "top3", "Top + 3" },
             { NULL, NULL },
          },
          "bottom"
@@ -264,8 +264,8 @@ void retro_set_environment(retro_environment_t cb)
          "CPU speed",
          "Needs restart",
          {
-            { "real", NULL },
-            { "max", NULL },
+            { "real", "Real" },
+            { "max", "Max" },
             { NULL, NULL },
          },
          "real"
@@ -275,19 +275,19 @@ void retro_set_environment(retro_environment_t cb)
          "CPU compatible",
          "Needs restart",
          {
-            { "true", NULL },
-            { "false", NULL },
+            { "true", "enabled" },
+            { "false", "disabled" },
             { NULL, NULL },
          },
          "true"
       },
       {
          "puae_cycle_exact",
-         "CPU cycle exact",
-         "Needs restart, A500 only",
+         "Cycle exact",
+         "Combined CPU + Blitter cycle exact. Needs restart",
          {
-            { "false", NULL },
-            { "true", NULL },
+            { "false", "disabled" },
+            { "true", "enabled" },
             { NULL, NULL },
          },
          "false"
@@ -297,10 +297,10 @@ void retro_set_environment(retro_environment_t cb)
          "Sound output",
          "",
          {
-            { "normal", NULL },
-            { "exact", NULL },
-            { "interrupts", NULL },
-            { "none", NULL },
+            { "normal", "Normal" },
+            { "exact", "Exact" },
+            { "interrupts", "Interrupts" },
+            { "none", "None" },
             { NULL, NULL },
          },
          "normal"
@@ -330,11 +330,11 @@ void retro_set_environment(retro_environment_t cb)
          "Sound interpolation",
          "",
          {
-            { "none", NULL },
-            { "anti", NULL },
-            { "sinc", NULL },
-            { "rh", NULL },
-            { "crux", NULL },
+            { "none", "None" },
+            { "anti", "Anti" },
+            { "sinc", "Sinc" },
+            { "rh", "RH" },
+            { "crux", "Crux" },
             { NULL, NULL },
          },
          "none"
@@ -344,9 +344,9 @@ void retro_set_environment(retro_environment_t cb)
          "Sound filter",
          "",
          {
-            { "emulated", NULL },
-            { "off", NULL },
-            { "on", NULL },
+            { "emulated", "Emulated" },
+            { "off", "Always off" },
+            { "on", "Always on" },
          },
          "emulated"
       },
@@ -369,7 +369,7 @@ void retro_set_environment(retro_environment_t cb)
             { "200", "2x" },
             { "400", "4x" },
             { "800", "8x" },
-            { "0", "turbo" },
+            { "0", "Turbo" },
             { NULL, NULL },
          },
          "100"
@@ -399,8 +399,8 @@ void retro_set_environment(retro_environment_t cb)
          "Immediate blits",
          "Needs restart",
          {
-            { "false", NULL },
-            { "true", NULL },
+            { "false", "disabled" },
+            { "true", "enabled" },
             { NULL, NULL },
          },
          "false"
@@ -410,9 +410,9 @@ void retro_set_environment(retro_environment_t cb)
          "Collision level",
          "Playfields is recommended default. Needs restart",
          {
-            { "playfields", "Playfields" },
+            { "playfields", "Sprites and Playfields" },
+            { "sprites", "Sprites only" },
             { "full", "Full" },
-            { "sprites", "Sprites" },
             { "none", "None" },
             { NULL, NULL },
          },
@@ -423,20 +423,20 @@ void retro_set_environment(retro_environment_t cb)
          "Frameskip",
          "Cycle exact needs to be false for this to come into effect at startup",
          {
-            { "false", NULL },
+            { "disabled", NULL },
             { "1", NULL },
             { "2", NULL },
          },
-         "false"
+         "disabled"
       },
       {
          "puae_gfx_center_vertical",
          "Vertical centering",
          "Needs restart",
          {
-            { "simple", NULL },
-            { "smart", NULL },
-            { "none", NULL },
+            { "simple", "Simple" },
+            { "smart", "Smart" },
+            { "none", "disabled" },
             { NULL, NULL },
          },
          "simple"
@@ -446,9 +446,9 @@ void retro_set_environment(retro_environment_t cb)
          "Horizontal centering",
          "Needs restart",
          {
-            { "simple", NULL },
-            { "smart", NULL },
-            { "none", NULL },
+            { "simple", "Simple" },
+            { "smart", "Smart" },
+            { "none", "disabled" },
             { NULL, NULL },
          },
          "simple"
@@ -960,7 +960,7 @@ static void update_variables(void)
    {
       int val;
 
-      if (strcmp(var.value, "false") == 0) val=1;
+      if (strcmp(var.value, "disabled") == 0) val=1;
       else if (strcmp(var.value, "1") == 0) val=2;
       else if (strcmp(var.value, "2") == 0) val=4;
 
@@ -968,9 +968,11 @@ static void update_variables(void)
       char buf2[50];
       snprintf(buf2, 50, "%d", val);
 
-      strcat(uae_config, "gfx_framerate=");
-      strcat(uae_config, buf2);
-      strcat(uae_config, "\n");
+      if(val>1) {
+         strcat(uae_config, "gfx_framerate=");
+         strcat(uae_config, buf2);
+         strcat(uae_config, "\n");
+      }
    }
 
    var.key = "puae_gfx_center_vertical";
