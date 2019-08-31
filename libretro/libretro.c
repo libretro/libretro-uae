@@ -406,6 +406,19 @@ void retro_set_environment(retro_environment_t cb)
          "false"
       },
       {
+         "puae_collision_level",
+         "Collision level",
+         "Playfields is recommended default. Needs restart",
+         {
+            { "playfields", "Playfields" },
+            { "full", "Full" },
+            { "sprites", "Sprites" },
+            { "none", "None" },
+            { NULL, NULL },
+         },
+         "playfields"
+      },
+      {
          "puae_gfx_framerate",
          "Frameskip",
          "Cycle exact needs to be false for this to come into effect at startup",
@@ -926,6 +939,16 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
 		strcat(uae_config, "immediate_blits=");
+		strcat(uae_config, var.value);
+		strcat(uae_config, "\n");
+   }
+
+   var.key = "puae_collision_level";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+		strcat(uae_config, "collision_level=");
 		strcat(uae_config, var.value);
 		strcat(uae_config, "\n");
    }
