@@ -4914,10 +4914,10 @@ void default_prefs (struct uae_prefs *p, int type)
 	p->custom_memory_sizes[1] = 0;
 	p->fastmem_autoconfig = true;
 
-	p->nr_floppies = 2;
+	p->nr_floppies = 1;
 	p->floppy_read_only = false;
 	p->floppyslots[0].dfxtype = DRV_35_DD;
-	p->floppyslots[1].dfxtype = DRV_35_DD;
+	p->floppyslots[1].dfxtype = DRV_NONE;
 	p->floppyslots[2].dfxtype = DRV_NONE;
 	p->floppyslots[3].dfxtype = DRV_NONE;
 	p->floppy_speed = 100;

@@ -1841,8 +1841,8 @@ bool retro_load_game(const struct retro_game_info *info)
 					            printf("Disk (%d) inserted into drive DF%d: %s\n", dc->index+1, i, dc->files[dc->index]);
 					            fprintf(configfile, "floppy%d=%s\n", i, dc->files[i]);
 
-					            // By default only 2 drives are enabled, so floppyXtype needs to be set on the extra drives
-					            if(i > 1)
+					            // By default only DF0: is enabled, so floppyXtype needs to be set on the extra drives
+					            if(i > 0)
                                     fprintf(configfile, "floppy%dtype=%d\n", i, 0); // 0 = 3.5" DD
                             }
                             else
