@@ -53,6 +53,8 @@ int gmx=320,gmy=240; //gui mouse
 
 //int al[2];//left analog1
 int ar[2];//right analog1
+int ar_deadzone=6144;
+unsigned int ar_sensitivity=2048;
 unsigned long MXjoy[4]={0}; // joyports
 int touch=-1; // gui mouse btn
 int fmousex,fmousey; // emu mouse
@@ -908,19 +910,20 @@ void retro_poll_event()
                         fmousey -= PAS;
                   }
 
-                  if(!fmousex && !fmousey) {
+                  // No keymappings and mousing at the same time
+                  if(!fmousex && !fmousey && (!mapper_keys[20] && !mapper_keys[21] && !mapper_keys[22] && !mapper_keys[23])) {
                      // Right Analog
                      ar[0] = (input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X));
                      ar[1] = (input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y));
 
-                     if(ar[0]<=-4096)
-                        fmousex-=(-ar[0])/2048;
-                     if(ar[0]>= 4096)
-                        fmousex+=( ar[0])/2048;
-                     if(ar[1]<=-4096)
-                        fmousey-=(-ar[1])/2048;
-                     if(ar[1]>= 4096)
-                        fmousey+=( ar[1])/2048;
+                     if(ar[0]<=-ar_deadzone)
+                        fmousex-=(-ar[0])/ar_sensitivity;
+                     if(ar[0]>= ar_deadzone)
+                        fmousex+=( ar[0])/ar_sensitivity;
+                     if(ar[1]<=-ar_deadzone)
+                        fmousey-=(-ar[1])/ar_sensitivity;
+                     if(ar[1]>= ar_deadzone)
+                        fmousey+=( ar[1])/ar_sensitivity;
                   }
 
                   if(!fmousex && !fmousey) {
