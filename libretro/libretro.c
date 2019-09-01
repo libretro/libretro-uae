@@ -40,6 +40,7 @@ bool opt_enhanced_statusbar = true;
 int opt_statusbar_position = 0;
 int opt_statusbar_position_old = 0;
 static int firstps = 0;
+unsigned int inputdevice_finalized = 0;
 
 #if defined(NATMEM_OFFSET)
 extern uae_u8 *natmem_offset;
@@ -1582,6 +1583,12 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
          case RETRO_DEVICE_NONE:
             printf("Controller %u: Unplugged\n", (port+1));
             break;
+      }
+
+      /* After startup input_get_default_joystick will need to be refreshed for cd32<>joystick change to work.
+         Doing updateconfig straight from boot will crash, hence inputdevice_finalized */
+      if(inputdevice_finalized) {
+         inputdevice_updateconfig(&currprefs, &currprefs);
       }
    }
 }
