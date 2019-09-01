@@ -3,7 +3,7 @@
 Based on P-UAE 2.6.1 https://github.com/GnoStiC/PUAE 
 Git Commit: 0186c1b16f7181ffa02d73e6920d3180ce457c46
 
-All credits to :
+All credits to:
 
 Richard Drummond "http://www.rcdrummond.net/uae/"
 
@@ -33,14 +33,14 @@ B   Button 1 / LMB
 ```
 
 ## Disk images, WHDLoad and M3U support
-You can pass a disk or hdd image (WHDLoad) as a rom.
+You can pass a disk or a hard drive image as a rom.
 
-Supported format are :
-- adf, dms, fdi, ipf, zip files for disk images.
-- hdf, hdz for hdd images.
-- m3u for multiple disk images.
+Supported formats are:
+- adf, dms, fdi, ipf, zip files for disk images
+- hdf, hdz for hard drive images
+- m3u for multiple disk images
 
-When passing a disk image, a hdd image or a m3u file as parameter the core will generate a temporary uae configuration file in RetroArch saves directory and use it to automatically launch the game.
+When passing these files as parameter the core will generate a temporary uae configuration file in RetroArch saves directory and use it to automatically launch the game.
 
 ### Configuration
 To generate the temporary uae configuration file the core will use the core options configured in RetroArch.
@@ -68,24 +68,24 @@ It is critical to use kickstarts with the right MD5, otherwise the core might no
 |---|---|---|---|
 |kick34005.A500|Kickstart v1.3 (Rev. 34.005)|Amiga 500|82a21c1890cae844b3df741f2762d48d|
 |kick37175.A500|Kickstart v2.04 (Rev. 37.175)|Amiga 500+|dc10d7bdd1b6f450773dfb558477c230|
-|kick37300.A600|Kickstart v2.05 (Rev. 37.300)|Amiga 600|fa4acc75b49e880679fe02716af24d71|
+|kick40063.A600|Kickstart v3.1 (Rev. 40.063)|Amiga 600|e40a5dfb3d017ba8779faba30cbd1c8e|
 |kick40068.A1200|Kickstart v3.1 (Rev. 40.068)|Amiga 1200|646773759326fbac3b2311fd8c8793ee|
 
 ### IPF Support
 Most full-price commercial Amiga games had some form of custom disk format and/or copy protection on them. For this reason, most commercial Amiga games cannot be stored in ADF files unaltered, but there is an alternative called Interchangeable Preservation Format (IPF) which was specifically designed for this purpose.
 
-IPF support is done through CAPSIMG library. To enable it you have to put a dynamic library called capsimg.dll (Windows) or capsimg.so (Linux, macOS) in your retroarch system directory.
+IPF support is done through CAPSIMG library. To enable it you have to put a dynamic library called capsimg.dll (Windows) or capsimg.so (Linux, macOS) in your RetroArch system directory.
 
 Compatible CAPSIMG libraries for Windows, macOS and Linux can be found at https://fs-uae.net/download#plugins
 
 Please be aware that there are 32-bits and 64-bits versions of the library. Choose the one corresponding to your RetroArch executable.
 
 ### M3U Support
-When you have a multi disk game, you can use a m3u file to specify each disk of the game and change them from the RetroArch Disk control interface.
+When you have a multi disk game, you can use a M3U file to specify each disk of the game and change them from the RetroArch Disk control interface.
 
 A M3U file is a simple text file with one disk per line (see https://en.wikipedia.org/wiki/M3U).
 
-Example :
+Example:
 
 Simpsons, The - Bart vs. The Space Mutants.m3u
 ```
@@ -94,14 +94,14 @@ Simpsons, The - Bart vs. The Space Mutants_Disk2.adf
 ```
 Path can be absolute or relative to the location of the M3U file.
 
-When a game ask for it, you can change the current disk in the RetroArch 'Disk Control' menu :
+When a game ask for it, you can change the current disk in the RetroArch 'Disk Control' menu:
 - Eject the current disk with 'Disk Cycle Tray Status'.
 - Select the right disk index.
 - Insert the new disk with 'Disk Cycle Tray Status'.
 
-Note : zip support is provided by RetroArch and is done before passing the game to the core. So, when using a m3u file, the specified disk image must be uncompressed (adf, dms, fdi, ipf file formats).
+Note: ZIP support is provided by RetroArch and is done before passing the game to the core. So, when using a M3U file, the specified disk image must be uncompressed (adf, dms, fdi, ipf file formats).
 
-You can append "(MD)" as in "MultiDrive" to the m3u filename to insert every disk in different drive for games that support multiple drives. Only possible if there are no more than 4 disks.
+Append "(MD)" as in "MultiDrive" to the M3U filename to insert each disk in different drive for games that support multiple drives. Only possible if there are no more than 4 disks.
 
 ### WHDLoad
 To use WHDLoad games you'll need to have a prepared WHDLoad image named 'WHDLoad.hdf' in RetroArch system directory.
@@ -133,14 +133,16 @@ xdftool -f <NAME_OF_HDF> pack <GAME_DIRECTORY> size=<SIZE_OF_HDF>
 Note the size of the HDF specified by SIZE_OF_HDF must be greater than size of the directory to store the additional filesystem informations (I use a 1.25 ratio).
 
 ### Game that needs a specific Amiga model (AGA games for instance)
-If a game needs a specific Amiga model (AGA games for instance), you can specify which amiga model to use.
+If a game needs a specific Amiga model (AGA games for instance), you can specify which model to use.
 
-To do this just add these strings to your adf, hdf or m3u filename :
-- "(A500)" or "(OCS)" to use an Amiga 500 model.
-- "(A600)" or "(ECS)" to use an Amiga 600 model.
-- "(A1200)" or "(AGA)" to use an Amiga 1200 model.
+To do this just add these strings to your adf, hdf or m3u filename:
+- "(A500)" or "(OCS)" to use Amiga 500
+- "(A500OG)" or "(512K)" to use Amiga 500 without memory expansion
+- "(A500+)" or "(A500PLUS)" to use Amiga 500+
+- "(A600)" or "(ECS)" to use Amiga 600
+- "(A1200)" or "(AGA)" to use Amiga 1200
 
-Example : When launching "Alien Breed 2 (AGA).hdf" file the core will use an Amiga 1200 model.
+Example: When launching "Alien Breed 2 (AGA).hdf" file the core will use an Amiga 1200 model.
 
 If no special string is found the core will use the model configured in core options.
 
@@ -192,4 +194,4 @@ You can find the whole documentation in [configuration.txt](configuration.txt).
 - It's a debug release, so expect bug.
 
 
-We plan to use the core of winuae in the future, but no release date for now.
+We plan to use the core of WinUAE in the future, but no release date for now.

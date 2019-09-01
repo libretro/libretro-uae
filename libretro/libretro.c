@@ -127,8 +127,7 @@ chipset=aga\n"
 
 #define A500_ROM    "kick34005.A500"
 #define A500KS2_ROM "kick37175.A500"
-#define A600_ROM    "kick37300.A600"
-#define A600KS3_ROM "kick40063.A600"
+#define A600_ROM    "kick40063.A600"
 #define A1200_ROM   "kick40068.A1200"
 
 #define PUAE_VIDEO_PAL 		0x01
@@ -1770,7 +1769,7 @@ bool retro_load_game(const struct retro_game_info *info)
 				else if((strstr(full_path, "(A600)") != NULL) || (strstr(full_path, "(ECS)") != NULL))
 				{
 					// Use A600
-					printf("Found '(A600)' or '(ECS)' in filename '%s'. Booting A600 with Kickstart 2.05 r37.300 rom.\n", full_path);
+					printf("Found '(A600)' or '(ECS)' in filename '%s'. Booting A600 with Kickstart 3.1 r40.063 rom.\n", full_path);
 					fprintf(configfile, A600);
 					path_join((char*)&kickstart, retro_system_directory, A600_ROM);
 				}
