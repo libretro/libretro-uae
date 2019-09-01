@@ -68,7 +68,7 @@ It is critical to use kickstarts with the right MD5, otherwise the core might no
 |---|---|---|---|
 |kick34005.A500|Kickstart v1.3 (Rev. 34.005)|Amiga 500|82a21c1890cae844b3df741f2762d48d|
 |kick37175.A500|Kickstart v2.04 (Rev. 37.175)|Amiga 500+|dc10d7bdd1b6f450773dfb558477c230|
-|kick37300.A600|Kickstart v2.05 (Rev. 37.300)|Amiga 600|fa4acc75b49e880679fe02716af24d71|
+|kick40063.A600|Kickstart v3.1 (Rev. 40.063)|Amiga 600|e40a5dfb3d017ba8779faba30cbd1c8e|
 |kick40068.A1200|Kickstart v3.1 (Rev. 40.068)|Amiga 1200|646773759326fbac3b2311fd8c8793ee|
 
 ### IPF Support
