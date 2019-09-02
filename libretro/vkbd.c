@@ -22,12 +22,14 @@ void virtual_kbd(unsigned short int *pixels,int vx,int vy)
    int BKG_COLOR_ALT	= RGB565(20, 20, 20);
    int BKG_COLOR_EXTRA  = RGB565(14, 14, 14);
    int BKG_COLOR_SEL	= RGB565(10, 10, 10);
+   int BKG_COLOR_DARK   = RGB565(4, 4, 4);
    int BKG_COLOR_BORDER	= RGB565(1, 1, 1);
    int BKG_PADDING_X	= 0;
    int BKG_PADDING_Y	= 4;
    int FONT_WIDTH		= 1;
    int FONT_HEIGHT		= 1;
-   int FONT_COLOR  		= RGB565(1,1,1);
+   int FONT_COLOR;
+   int FONT_COLOR_NORMAL= RGB565(1,1,1);
    int FONT_COLOR_SEL	= RGB565(254,254,254);
 
    int YOFFSET          = 0;
@@ -96,9 +98,19 @@ void virtual_kbd(unsigned short int *pixels,int vx,int vy)
 
          /* Key background */
          if(SHOWKEYTRANS==1)
-            DrawBoxBmp(pix, XKEY,YKEY, XSIDE,YSIDE, BKG_COLOR);
+            DrawBoxBmp(pix, XKEY,YKEY, XSIDE,YSIDE, 0);
          else
             DrawFBoxBmp(pix, XKEY,YKEY, XSIDE,YSIDE, BKG_COLOR);
+
+         /* Default font color */
+         FONT_COLOR = FONT_COLOR_NORMAL;
+
+         /* Better readability with transparency */
+         if(SHOWKEYTRANS==1) {
+             BKG_COLOR = BKG_COLOR_SEL;
+             BKG_COLOR_BORDER = BKG_COLOR_NORMAL;
+             FONT_COLOR = FONT_COLOR_SEL;
+         }
 
          /* Key border */
          DrawBoxBmp(pix, XKEY,YKEY, XSIDE,YSIDE, BKG_COLOR_BORDER);
@@ -122,14 +134,14 @@ void virtual_kbd(unsigned short int *pixels,int vx,int vy)
 
    /* Pressed key background */
    if(vkflag[4]==1) {
-      BKG_COLOR_SEL = RGB565(4,4,4);
+      BKG_COLOR_SEL = BKG_COLOR_DARK;
    }
 
    /* Selected key background */
    DrawFBoxBmp(pix, XKEY,YKEY, XSIDE-1,YSIDE-1, BKG_COLOR_SEL);
 
    /* Selected key border */
-   //DrawBoxBmp(pix, XBASE3+vx*XSIDE,YBASE3+vy*YSIDE, XSIDE,YSIDE, BKG_COLOR);
+   DrawBoxBmp(pix, XBASE3+vx*XSIDE,YBASE3+vy*YSIDE, XSIDE,YSIDE, BKG_COLOR_DARK);
 
    /* Selected key text */
    Draw_text(pix, XTEXT,YTEXT, FONT_COLOR_SEL,BKG_COLOR_SEL, FONT_WIDTH,FONT_HEIGHT, maxchr,

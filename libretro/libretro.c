@@ -39,7 +39,12 @@ bool opt_use_whdload_hdf = true;
 bool opt_enhanced_statusbar = true;
 int opt_statusbar_position = 0;
 int opt_statusbar_position_old = 0;
+unsigned int opt_analogmouse = 0;
+int analog_deadzone = 6144;
+unsigned int analog_sensitivity = 2048;
+
 static int firstps = 0;
+unsigned int inputdevice_finalized = 0;
 
 #if defined(NATMEM_OFFSET)
 extern uae_u8 *natmem_offset;
@@ -462,6 +467,56 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "enabled"
+      },
+      {
+         "puae_analogmouse",
+         "Analog mouse",
+         "",
+         {
+            { "disabled", NULL },
+            { "left", "Left analog" },
+            { "right", "Right analog" },
+            { "both", "Both analogs" },
+            { NULL, NULL },
+         },
+         "disabled"
+      },
+      {
+         "puae_analogmouse_deadzone",
+         "Analog deadzone",
+         "",
+         {
+            { "15", "15\%" },
+            { "20", "20\%" },
+            { "25", "25\%" },
+            { "30", "30\%" },
+            { "35", "35\%" },
+            { "0", "0\%" },
+            { "5", "5\%" },
+            { "10", "10\%" },
+            { NULL, NULL },
+         },
+         "15"
+      },
+      {
+         "puae_analogmouse_sensitivity",
+         "Analog sensitivity",
+         "",
+         {
+            { "1.0", "100\%" },
+            { "1.1", "110\%" },
+            { "1.2", "120\%" },
+            { "1.3", "130\%" },
+            { "1.4", "140\%" },
+            { "1.5", "150\%" },
+            { "0.5", "50\%" },
+            { "0.6", "60\%" },
+            { "0.7", "70\%" },
+            { "0.8", "80\%" },
+            { "0.9", "90\%" },
+            { NULL, NULL },
+         },
+         "10"
       },
       /* Button mappings */
       {
@@ -1013,6 +1068,33 @@ static void update_variables(void)
         opt_use_whdload_hdf = true;
       if (strcmp(var.value, "disabled") == 0)
         opt_use_whdload_hdf = false;
+   }
+
+   var.key = "puae_analogmouse";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "disabled") == 0) opt_analogmouse = 0;
+      else if (strcmp(var.value, "left") == 0) opt_analogmouse = 1;
+      else if (strcmp(var.value, "right") == 0) opt_analogmouse = 2;
+      else if (strcmp(var.value, "both") == 0) opt_analogmouse = 3;
+   }
+
+   var.key = "puae_analogmouse_deadzone";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      analog_deadzone = 328 * atoi(var.value);
+   }
+
+   var.key = "puae_analogmouse_sensitivity";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      analog_sensitivity = 2048 / atof(var.value);
    }
 
    var.key = "puae_mapper_select";
@@ -1582,6 +1664,12 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
          case RETRO_DEVICE_NONE:
             printf("Controller %u: Unplugged\n", (port+1));
             break;
+      }
+
+      /* After startup input_get_default_joystick will need to be refreshed for cd32<>joystick change to work.
+         Doing updateconfig straight from boot will crash, hence inputdevice_finalized */
+      if(inputdevice_finalized) {
+         inputdevice_updateconfig(&currprefs, &currprefs);
       }
    }
 }

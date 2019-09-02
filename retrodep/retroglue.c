@@ -17,11 +17,16 @@
 #include "hrtimer.h"
 
 #include "inputdevice.h"
+void inputdevice_release_all_keys (void);
+
+#include "drawing.h"
+#include "hotkeys.h"
 
 #include "libretro.h"
 #include "libretro-glue.h"
 #include "libretro-mapper.h"
 extern unsigned int uae_devices[4];
+extern unsigned int inputdevice_finalized;
 
 #define PIX_BYTES 2
 
@@ -45,7 +50,9 @@ unsigned short int* pixbuf = NULL;
 extern unsigned short int  bmp[1024*1024];
 extern short signed int SNDBUF[1024*2];
 extern int  sndbufpos;
+void retro_audio_cb(short l, short r);
 
+void pause_select(void);
 int pause_emulation;
 int prefs_changed = 0;
 
@@ -86,18 +93,17 @@ void retro_mouse(int dx, int dy)
     setmousestate (0, 1, dy, 0);	
 }
 
-void retro_mouse_but0(int down){
-
+void retro_mouse_but0(int down)
+{
 	setmousebuttonstate (0, 0, down);
-
 }
 
-void retro_mouse_but1(int down){
-
+void retro_mouse_but1(int down)
+{
 	setmousebuttonstate (0, 1, down);
 }
 
-static jflag[4][11]={0,0,0,0,0,0,0,0,0,0,0};
+static unsigned int jflag[4][11]={0,0,0,0,0,0,0,0,0,0,0};
 
 void retro_joy(unsigned int port, unsigned long joy){
 // 0x001,0x002,0x004,0x008,0x010,0x020,0x040,0x200,0x400,0x800,0x100
@@ -259,16 +265,14 @@ void retro_joy(unsigned int port, unsigned long joy){
 
 /* --- keyboard input --- */
 
-void retro_key_down(int key){
-
+void retro_key_down(int key)
+{
 	inputdevice_do_keyboard (key, 1);
-
 }
 
-void retro_key_up(int key){
-
+void retro_key_up(int key)
+{
 	inputdevice_do_keyboard (key, 0);
-	
 }
 
 extern int pauseg;
@@ -384,9 +388,9 @@ int graphics_init(void) {
 	gfxvidinfo.flush_line = retro_flush_line;
 
 	prefs_changed = 1;
-  inputdevice_release_all_keys ();
+    inputdevice_release_all_keys ();
     reset_hotkeys ();
- reset_drawing ();
+    reset_drawing ();
 	return 1;
 }
 
@@ -595,7 +599,6 @@ int input_get_default_joystick (struct uae_input_device *uid, int num, int port,
         uid[0].eventid[ID_AXIS_OFFSET + 1][0]   =  INPUTEVENT_JOY2_VERT;
         uid[0].eventid[ID_BUTTON_OFFSET + 0][0] =  INPUTEVENT_JOY2_FIRE_BUTTON;
         uid[0].eventid[ID_BUTTON_OFFSET + 1][0] =  INPUTEVENT_JOY2_2ND_BUTTON;
-        uid[0].eventid[ID_BUTTON_OFFSET + 2][0] =  INPUTEVENT_JOY2_3RD_BUTTON;
     }
 
     if(uae_devices[1] == RETRO_DEVICE_UAE_CD32PAD)
@@ -616,7 +619,6 @@ int input_get_default_joystick (struct uae_input_device *uid, int num, int port,
         uid[1].eventid[ID_AXIS_OFFSET + 1][0]   =  INPUTEVENT_JOY1_VERT;
         uid[1].eventid[ID_BUTTON_OFFSET + 0][0] =  INPUTEVENT_JOY1_FIRE_BUTTON;
         uid[1].eventid[ID_BUTTON_OFFSET + 1][0] =  INPUTEVENT_JOY1_2ND_BUTTON;
-        uid[1].eventid[ID_BUTTON_OFFSET + 2][0] =  INPUTEVENT_JOY1_3RD_BUTTON;
     }
 
     uid[2].eventid[ID_AXIS_OFFSET + 0][0]   =  INPUTEVENT_PAR_JOY1_HORIZ;
@@ -634,6 +636,7 @@ int input_get_default_joystick (struct uae_input_device *uid, int num, int port,
     uid[2].enabled = 1;
     uid[3].enabled = 1;
 
+    inputdevice_finalized = 1;
     return 1;
 }
 
@@ -687,7 +690,7 @@ static TCHAR *get_mouse_friendlyname (int mouse)
 
 static TCHAR *get_mouse_uniquename (int mouse)
 {
-	return "DEFMOUSE1";
+	return "RetroMouse";
 }
 
 static int get_mouse_widget_num (int mouse)
