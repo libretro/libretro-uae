@@ -39,6 +39,7 @@ bool opt_use_whdload_hdf = true;
 bool opt_enhanced_statusbar = true;
 int opt_statusbar_position = 0;
 int opt_statusbar_position_old = 0;
+unsigned int opt_keyrahkeypad = 0;
 unsigned int opt_analogmouse = 0;
 int analog_deadzone = 6144;
 unsigned int analog_sensitivity = 2048;
@@ -517,6 +518,17 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "10"
+      },
+      {
+         "puae_keyrah_keypad_mappings",
+         "Keyrah keypad mappings",
+         "Hardcoded keypad to joy mappings for Keyrah hardware",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "disabled"
       },
       /* Button mappings */
       {
@@ -1095,6 +1107,15 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       analog_sensitivity = 2048 / atof(var.value);
+   }
+
+   var.key = "puae_keyrah_keypad_mappings";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "disabled") == 0) opt_keyrahkeypad=0;
+      else if (strcmp(var.value, "enabled") == 0) opt_keyrahkeypad=1;
    }
 
    var.key = "puae_mapper_select";
