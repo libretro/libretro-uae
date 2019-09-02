@@ -78,6 +78,8 @@ IPF support is done through CAPSIMG library. To enable it you have to put a dyna
 
 Compatible CAPSIMG libraries for Windows, macOS and Linux can be found at https://fs-uae.net/download#plugins
 
+Compatible CAPSIMG libraries for Android can be found at https://github.com/rsn8887/capsimg/releases/latest
+
 Please be aware that there are 32-bits and 64-bits versions of the library. Choose the one corresponding to your RetroArch executable.
 
 ### M3U Support
