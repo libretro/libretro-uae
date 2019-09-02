@@ -195,6 +195,7 @@ else ifneq (,$(findstring ios,$(platform)))
    ifeq ($(platform),ios-arm64)
       CC = cc -arch arm64 -isysroot $(IOSSDK)
       CXX = c++ -arch arm64 -isysroot $(IOSSDK)
+      PLATFLAGS += -Wno-error=implicit-function-declaration
    else
       CC = cc -arch armv7 -isysroot $(IOSSDK)
       CXX = c++ -arch armv7 -isysroot $(IOSSDK)
