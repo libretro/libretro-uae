@@ -490,6 +490,12 @@ void update_input(int disable_physical_cursor_keys)
                     emu_function(EMU_MOUSE_SPEED);
                 else if(mapper_keys[i] == mapper_keys[28]) /* Enter GUI */
                     emu_function(EMU_GUI);
+                else if(mapper_keys[i] == -2) /* Mouse left */
+                    setmousebuttonstate (0, 0, 1);
+                else if(mapper_keys[i] == -3) /* Mouse right */
+                    setmousebuttonstate (0, 1, 1);
+                else if(mapper_keys[i] == -4) /* Mouse middle */
+                    setmousebuttonstate (0, 2, 1);
                 else
                     retro_key_down(keyboard_translation[mapper_keys[i]]);
             }
@@ -509,6 +515,12 @@ void update_input(int disable_physical_cursor_keys)
                     ; /* nop */
                 else if(mapper_keys[i] == mapper_keys[28])
                     ; /* nop */
+                else if(mapper_keys[i] == -2)
+                    setmousebuttonstate (0, 0, 0);
+                else if(mapper_keys[i] == -3)
+                    setmousebuttonstate (0, 1, 0);
+                else if(mapper_keys[i] == -4)
+                    setmousebuttonstate (0, 2, 0);
                 else
                     retro_key_up(keyboard_translation[mapper_keys[i]]);
             }
