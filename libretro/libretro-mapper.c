@@ -84,6 +84,10 @@ extern bool opt_enhanced_statusbar;
 extern int opt_statusbar_position;
 extern unsigned int opt_analogmouse;
 extern unsigned int opt_keyrahkeypad;
+int turbo_fire_button=-1;
+unsigned int turbo_pulse=2;
+unsigned int turbo_state[5]={0,0,0,0,0};
+unsigned int turbo_toggle[5]={0,0,0,0,0};
 
 #define EMU_VKBD 1
 #define EMU_STATUSBAR 2
@@ -296,12 +300,12 @@ void Process_Keyrah()
          setjoystickstate(1, 1, 1, 1);
    else
    if (!input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) &&
-       !input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN))
+       !input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN))
          setjoystickstate(1, 1, 0, 1);
 
    /* Left / Right */
    if ( input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP7) &&
-      !input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP1))
+       !input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP1))
          setjoystickstate(1, 0, -1, 1);
    else
    if ( input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP1) &&
@@ -309,7 +313,7 @@ void Process_Keyrah()
          setjoystickstate(1, 0, 1, 1);
    else
    if (!input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT) &&
-       !input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT))
+       !input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT))
          setjoystickstate(1, 0, 0, 1);
 
    /* Fire */
@@ -506,7 +510,7 @@ void update_input(int disable_physical_cursor_keys)
                 if(SHOWKEY==1 && (i==RETRO_DEVICE_ID_JOYPAD_A || i==RETRO_DEVICE_ID_JOYPAD_X))
                     continue;
 
-                if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && jbt[i]==0/* && i!=turbo_fire_button*/)
+                if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && jbt[i]==0 && i!=turbo_fire_button)
                     just_pressed = 1;
                 else if (jbt[i]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i))
                     just_released = 1;
@@ -949,8 +953,10 @@ void retro_poll_event()
                if(MOUSEMODE==-1) {
                   MXjoy[retro_port]=0;
                   if(SHOWKEY==-1)
-                     for (i=0;i<9;i++)
-                        if(i==0 || (i>3 && i<9))
+                     for (i=0;i<23;i++)
+                     {
+                        if(i==0 || (i>3 && i<9)) // Dpad + B + A
+                        {
                            // Need to fight around presses on the same axis
                            if(i>3 && i<8)
                            {
@@ -976,11 +982,36 @@ void retro_poll_event()
                                        MXjoy[retro_port] |= vbt[i];
                               }
                            }
-                           else
+                           else if(i!=turbo_fire_button)
                            {
-                              if( input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, i) )
-                                 MXjoy[retro_port] |= vbt[i];
+                                 if( input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, i) )
+                                    MXjoy[retro_port] |= vbt[i];
                            }
+                        }
+
+                        /* Turbo fire */
+                        if(turbo_fire_button != -1 && i==turbo_fire_button) {
+                            if(input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, turbo_fire_button)) {
+                                if(turbo_state[retro_port]) {
+                                    if((turbo_toggle[retro_port]) == (turbo_pulse))
+                                        turbo_toggle[retro_port] = 1;
+                                    else
+                                        turbo_toggle[retro_port]++;
+
+                                    if(turbo_toggle[retro_port] > (turbo_pulse / 2))
+                                        setjoybuttonstate(retro_port, 0, 0);
+                                    else
+                                        setjoybuttonstate(retro_port, 0, 1);
+                                } else {
+                                    turbo_state[retro_port] = 1;
+                                    setjoybuttonstate(retro_port, 0, 1);
+                                }
+                            } else {
+                                turbo_state[retro_port] = 0;
+                                turbo_toggle[retro_port] = 1;
+                            }
+                        }
+                     }
 
                   retro_joy(retro_port, MXjoy[retro_port]);
                }
