@@ -39,9 +39,12 @@ bool opt_use_whdload_hdf = true;
 bool opt_enhanced_statusbar = true;
 int opt_statusbar_position = 0;
 int opt_statusbar_position_old = 0;
+unsigned int opt_keyrahkeypad = 0;
 unsigned int opt_analogmouse = 0;
 int analog_deadzone = 6144;
 unsigned int analog_sensitivity = 2048;
+extern int turbo_fire_button;
+extern unsigned int turbo_pulse;
 
 static int firstps = 0;
 unsigned int inputdevice_finalized = 0;
@@ -518,6 +521,17 @@ void retro_set_environment(retro_environment_t cb)
          },
          "10"
       },
+      {
+         "puae_keyrah_keypad_mappings",
+         "Keyrah keypad mappings",
+         "Hardcoded keypad to joy mappings for Keyrah hardware",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "disabled"
+      },
       /* Button mappings */
       {
          "puae_mapper_select",
@@ -675,7 +689,7 @@ void retro_set_environment(retro_environment_t cb)
          "Hotkey: Toggle mouse",
          "Pressing a button mapped to this key toggles between joystick and mouse",
          {{ NULL, NULL }},
-         "RETROK_END"
+         "RETROK_RCTRL"
       },
       {
          "puae_mapper_mouse_speed",
@@ -689,7 +703,37 @@ void retro_set_environment(retro_environment_t cb)
          "Hotkey: Enter GUI",
          "",
          {{ NULL, NULL }},
-         "RETROK_HOME"
+         "---"
+      },
+      {
+         "puae_turbo_fire_button",
+         "RetroPad turbo fire",
+         "Replaces mapped key with a turbo fire button",
+         {
+            { "disabled", NULL },
+            { "A", "RetroPad A" },
+            { "Y", "RetroPad Y" },
+            { "X", "RetroPad X" },
+            { "L", "RetroPad L" },
+            { "R", "RetroPad R" },
+            { "L2", "RetroPad L2" },
+            { "R2", "RetroPad R2" },
+         },
+         "disabled"
+      },
+      {
+         "puae_turbo_pulse",
+         "RetroPad turbo pulse",
+         "Frames in a button cycle. 2 equals button press and release on every other frame",
+         {
+            { "2", NULL },
+            { "4", NULL },
+            { "6", NULL },
+            { "8", NULL },
+            { "10", NULL },
+            { "12", NULL },
+         },
+         "4"
       },
 
       { NULL, NULL, NULL, {{0}}, NULL },
@@ -1095,6 +1139,45 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       analog_sensitivity = 2048 / atof(var.value);
+   }
+
+   var.key = "puae_keyrah_keypad_mappings";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "disabled") == 0) opt_keyrahkeypad=0;
+      else if (strcmp(var.value, "enabled") == 0) opt_keyrahkeypad=1;
+   }
+
+   var.key = "puae_turbo_fire_button";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "disabled") == 0) turbo_fire_button=-1;
+      else if (strcmp(var.value, "A") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_A;
+      else if (strcmp(var.value, "Y") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_Y;
+      else if (strcmp(var.value, "X") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_X;
+      else if (strcmp(var.value, "L") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_L;
+      else if (strcmp(var.value, "R") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_R;
+      else if (strcmp(var.value, "L2") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_L2;
+      else if (strcmp(var.value, "R2") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_R2;
+      else if (strcmp(var.value, "L3") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_L3;
+      else if (strcmp(var.value, "R3") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_R3;
+   }
+
+   var.key = "puae_turbo_pulse";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "2") == 0) turbo_pulse=2;
+      else if (strcmp(var.value, "4") == 0) turbo_pulse=4;
+      else if (strcmp(var.value, "6") == 0) turbo_pulse=6;
+      else if (strcmp(var.value, "8") == 0) turbo_pulse=8;
+      else if (strcmp(var.value, "10") == 0) turbo_pulse=10;
+      else if (strcmp(var.value, "12") == 0) turbo_pulse=12;
    }
 
    var.key = "puae_mapper_select";
