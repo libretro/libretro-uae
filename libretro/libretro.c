@@ -60,7 +60,6 @@ extern int snd_sampler;
 extern short signed int SNDBUF[1024*2];
 extern char RPATH[512];
 extern void Print_Status(void);
-int ledtype=1;
 unsigned int video_config = 0;
 
 #include "libretro-keyboard.i"
@@ -121,12 +120,14 @@ chipset=ecs\n"
 cpu_type=68000\n\
 chipmem_size=4\n\
 fastmem_size=8\n\
+cia_overlay=false\n\
 chipset=ecs\n"
 
 #define A1200 "\
 cpu_type=68ec020\n\
 chipmem_size=4\n\
 fastmem_size=8\n\
+cia_overlay=false\n\
 chipset=aga\n"
 
 // Amiga default kickstarts
@@ -1986,11 +1987,6 @@ bool retro_load_game(const struct retro_game_info *info)
 				// Write common config
 				fprintf(configfile, uae_config);
 				
-				// FIXME : Bug if show_leds is set to false
-				// If this parameter is set to false or not specified (default false) Rick Dangerous 2 (adf or whd version) hang when selecting level.
-				// But no impact since the parameter in RetroArch configuration overload this setting : If Leds is set to none, the led won't be drawn on screen and it works...
-				fprintf(configfile, "show_leds=true\n");
-								
 				// Verify kickstart
 				if(!file_exists(kickstart))
 				{
@@ -2013,7 +2009,7 @@ bool retro_load_game(const struct retro_game_info *info)
 						char whdload[RETRO_PATH_MAX];
 						path_join((char*)&whdload, retro_system_directory, WHDLOAD_HDF);
 
-						// Verifiy WHDLoad
+						// Verify WHDLoad
 						if(file_exists(whdload))
 							fprintf(configfile, "hardfile=read-write,32,1,2,512,%s\n", (const char*)&whdload);
 						else
@@ -2106,11 +2102,6 @@ bool retro_load_game(const struct retro_game_info *info)
                 // Write common config
                 fprintf(configfile, uae_config);
 
-                // FIXME : Bug if show_leds is set to false
-                // If this parameter is set to false or not specified (default false) Rick Dangerous 2 (adf or whd version) hang when selecting level.
-                // But no impact since the parameter in RetroArch configuration overload this setting : If Leds is set to none, the led won't be drawn on screen and it works...
-                fprintf(configfile, "show_leds=true\n");
-
 				// Verify kickstart
 				//if(!file_exists(kickstart))
 				//{
@@ -2174,12 +2165,7 @@ bool retro_load_game(const struct retro_game_info *info)
              // Write common config
              fprintf(configfile, uae_config);
 
-             // FIXME : Bug if show_leds is set to false
-             // If this parameter is set to false or not specified (default false) Rick Dangerous 2 (adf or whd version) hang when selecting level.
-             // But no impact since the parameter in RetroArch configuration overload this setting : If Leds is set to none, the led won't be drawn on screen and it works...
-             fprintf(configfile, "show_leds=true\n");
-
-             // Verifiy kickstart
+             // Verify kickstart
              if(!file_exists(kickstart))
              {
                  // Kickstart rom not found

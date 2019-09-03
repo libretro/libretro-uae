@@ -4791,7 +4791,11 @@ void default_prefs (struct uae_prefs *p, int type)
 	p->immediate_blits = 0;
 	p->waiting_blits = 0;
 	p->collision_level = 2;
+#ifdef __LIBRETRO__
+	p->leds_on_screen = 1;
+#else
 	p->leds_on_screen = 0;
+#endif
 	p->leds_on_screen_mask[0] = p->leds_on_screen_mask[1] = (1 << LED_MAX) - 1;
 	p->keyboard_leds_in_use = 0;
 	p->keyboard_leds[0] = p->keyboard_leds[1] = p->keyboard_leds[2] = 0;
@@ -4914,10 +4918,18 @@ void default_prefs (struct uae_prefs *p, int type)
 	p->custom_memory_sizes[1] = 0;
 	p->fastmem_autoconfig = true;
 
+#ifdef __LIBRETRO__
 	p->nr_floppies = 1;
+#else
+	p->nr_floppies = 2;
+#endif
 	p->floppy_read_only = false;
 	p->floppyslots[0].dfxtype = DRV_35_DD;
+#ifdef __LIBRETRO__
 	p->floppyslots[1].dfxtype = DRV_NONE;
+#else
+	p->floppyslots[1].dfxtype = DRV_35_DD;
+#endif
 	p->floppyslots[2].dfxtype = DRV_NONE;
 	p->floppyslots[3].dfxtype = DRV_NONE;
 	p->floppy_speed = 100;
