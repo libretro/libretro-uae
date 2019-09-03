@@ -140,8 +140,8 @@ void virtual_kbd(unsigned short int *pixels,int vx,int vy)
    /* Selected key background */
    DrawFBoxBmp(pix, XKEY,YKEY, XSIDE-1,YSIDE-1, BKG_COLOR_SEL);
 
-   /* Selected key border */
-   DrawBoxBmp(pix, XBASE3+vx*XSIDE,YBASE3+vy*YSIDE, XSIDE,YSIDE, BKG_COLOR_DARK);
+   /* Selected key border, NO */
+   //DrawBoxBmp(pix, XBASE3+vx*XSIDE,YBASE3+vy*YSIDE, XSIDE,YSIDE, BKG_COLOR_DARK);
 
    /* Selected key text */
    Draw_text(pix, XTEXT,YTEXT, FONT_COLOR_SEL,BKG_COLOR_SEL, FONT_WIDTH,FONT_HEIGHT, maxchr,
