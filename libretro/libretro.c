@@ -532,6 +532,42 @@ void retro_set_environment(retro_environment_t cb)
          },
          "disabled"
       },
+      /* Hotkeys */
+      {
+         "puae_mapper_vkbd",
+         "Hotkey: Toggle virtual keyboard",
+         "Pressing a button mapped to this key opens the keyboard",
+         {{ NULL, NULL }},
+         "RETROK_F11"
+      },
+      {
+         "puae_mapper_statusbar",
+         "Hotkey: Toggle statusbar",
+         "Pressing a button mapped to this key toggles statusbar",
+         {{ NULL, NULL }},
+         "RETROK_F10"
+      },
+      {
+         "puae_mapper_mouse_toggle",
+         "Hotkey: Toggle mouse",
+         "Pressing a button mapped to this key toggles between joystick and mouse",
+         {{ NULL, NULL }},
+         "RETROK_RCTRL"
+      },
+      {
+         "puae_mapper_mouse_speed",
+         "Hotkey: Change mouse speed",
+         "Pressing a button mapped to this key alters the mouse speed",
+         {{ NULL, NULL }},
+         "---"
+      },
+      {
+         "puae_mapper_gui",
+         "Hotkey: Enter GUI",
+         "",
+         {{ NULL, NULL }},
+         "---"
+      },
       /* Button mappings */
       {
          "puae_mapper_select",
@@ -666,42 +702,6 @@ void retro_set_environment(retro_environment_t cb)
          "puae_mapper_rr",
          "RetroPad R-Right",
          "Mapping for right analog stick right",
-         {{ NULL, NULL }},
-         "---"
-      },
-      /* Hotkeys */
-      {
-         "puae_mapper_vkbd",
-         "Hotkey: Toggle virtual keyboard",
-         "Pressing a button mapped to this key opens the keyboard",
-         {{ NULL, NULL }},
-         "RETROK_F11"
-      },
-      {
-         "puae_mapper_statusbar",
-         "Hotkey: Toggle statusbar",
-         "Pressing a button mapped to this key toggles statusbar",
-         {{ NULL, NULL }},
-         "RETROK_F10"
-      },
-      {
-         "puae_mapper_mouse_toggle",
-         "Hotkey: Toggle mouse",
-         "Pressing a button mapped to this key toggles between joystick and mouse",
-         {{ NULL, NULL }},
-         "RETROK_RCTRL"
-      },
-      {
-         "puae_mapper_mouse_speed",
-         "Hotkey: Change mouse speed",
-         "Pressing a button mapped to this key alters the mouse speed",
-         {{ NULL, NULL }},
-         "---"
-      },
-      {
-         "puae_mapper_gui",
-         "Hotkey: Enter GUI",
-         "",
          {{ NULL, NULL }},
          "---"
       },
