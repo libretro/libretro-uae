@@ -1793,13 +1793,18 @@ void retro_get_system_info(struct retro_system_info *info)
 
 void retro_get_system_av_info(struct retro_system_av_info *info)
 {
-   static struct retro_game_geometry geom480   = { 640, 480, EMULATOR_MAX_WIDTH, EMULATOR_MAX_HEIGHT, 4.0 / 3.0 };
-   static struct retro_game_geometry geom540   = { 720, 540, EMULATOR_MAX_WIDTH, EMULATOR_MAX_HEIGHT, 4.0 / 3.0 };
+   static struct retro_game_geometry geom;
+   geom.base_width=retrow;
+   geom.base_height=retroh;
+   geom.max_width=EMULATOR_MAX_WIDTH;
+   geom.max_height=EMULATOR_MAX_HEIGHT;
 
-   if      (retrow == 640 && retroh == 400) info->geometry = geom480;
-   else if (retrow == 640 && retroh == 400) info->geometry = geom480;
-   else if (retrow == 720 && retroh == 540) info->geometry = geom540;
-   else { static struct retro_game_geometry geom; geom.base_width=retrow; geom.base_height=retroh; geom.max_width=EMULATOR_MAX_WIDTH; geom.max_height=EMULATOR_MAX_HEIGHT; geom.aspect_ratio=(float)retrow/(float)retroh; info->geometry = geom; }
+   if (retro_get_region() == RETRO_REGION_NTSC)
+      geom.aspect_ratio=(float)retrow/(float)retroh * 44.0/52.0;
+   else
+      geom.aspect_ratio=(float)retrow/(float)retroh;
+
+   info->geometry = geom;
 
    info->timing.sample_rate = 44100.0;
    info->timing.fps = (retro_get_region() == RETRO_REGION_NTSC) ? 60 : 50;
