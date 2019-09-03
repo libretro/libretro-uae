@@ -12,7 +12,6 @@
 #include "drawing.h"
 #include "statusline.h"
 
-extern int ledtype;
 extern int LEDON;
 
 /*
@@ -75,31 +74,12 @@ static void write_tdnumber (uae_u8 *buf, int bpp, int x, int y, int num, uae_u32
 	const char *numptr;
 
 	numptr = numbers + num * TD_NUM_WIDTH + NUMBERS_NUM * TD_NUM_WIDTH * y;
-	
-	if(ledtype == 1)
-	{
-		for (j = 0; j < TD_NUM_WIDTH; j++)
-		{
-			if (*numptr == 'x')
-				putpixel (buf, bpp, x + j, c1, 1);
-			else if (*numptr == '+')
-				putpixel (buf, bpp, x + j, c2, 0);
-			numptr++;
-		}
-	}
-	else if(ledtype == 2)
-	{
-		for (j = 0; j < TD_NUM_WIDTH; j++)
-		{
-			if (*numptr == 'x')
-				putpixel (buf, bpp, x + j, c1, 1);
-			else if (*numptr == '+')
-				putpixel (buf, bpp, x + j, c2, 0);
-			else
-				putpixel (buf, bpp, x + j, 0, 0);
-			numptr++;
-		}
-		
+	for (j = 0; j < TD_NUM_WIDTH; j++) {
+		if (*numptr == 'x')
+			putpixel (buf, bpp, x + j, c1, 1);
+		else if (*numptr == '+')
+			putpixel (buf, bpp, x + j, c2, 0);
+		numptr++;
 	}
 }
 
@@ -120,16 +100,8 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
 	else
 		x_start = TD_PADX;
 		
-	if(ledtype == 1)
-	{
 	for (led = 0; led < LED_MAX; led++) {
-/* REMOVEME:
- * nowhere used
- */
-#if 0
-		int side;
-#endif
-		int pos, num1 = -1, num2 = -1, num3 = -1, num4 = -1;
+		int side, pos, num1 = -1, num2 = -1, num3 = -1, num4 = -1;
 		int x, c, on = 0, am = 2;
 		xcolnr on_rgb = 0, on_rgb2 = 0, off_rgb = 0, pen_rgb = 0;
 		int half = 0;
@@ -158,12 +130,7 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
 				if (gui_data.df[pled][0] == 0)
 					pen_rgb = ledcolor (0x00aaaaaa, rc, gc, bc, alpha);
 			}
-/* REMOVEME:
- * nowhere used
- */
-#if 0
 			side = gui_data.drive_side;
-#endif
 		} else if (led == LED_POWER) {
 			pos = 3;
 			on_rgb = ((gui_data.powerled_brightness * 10 / 16) + 0x33) << 16;
@@ -194,18 +161,26 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
 			num3 = 12;
 			}
 		} else if (led == LED_FPS) {
-			int fps = (gui_data.fps + 5) / 10;
 			pos = 2;
+			int fps = (gui_data.fps + 5) / 10;
 			on_rgb = 0x000000;
 			off_rgb = gui_data.fps_color ? 0xcccc00 : 0x000000;
-			if (fps > 999)
-				fps = 999;
-			num1 = fps / 100;
-			num2 = (fps - num1 * 100) / 10;
-			num3 = fps % 10;
 			am = 3;
-			if (num1 == 0)
-				am = 2;
+            if (fps > 999) {
+                 fps += 50;
+                 fps /= 10;
+                 if (fps > 999)
+                     fps = 999;
+                 num1 = fps / 100;
+                 num2 = 18;
+                 num3 = (fps - num1 * 100) / 10;
+             } else {
+                 num1 = fps / 100;
+                 num2 = (fps - num1 * 100) / 10;
+                 num3 = fps % 10;
+                 if (num1 == 0)
+                     am = 2;
+             }
 		} else if (led == LED_CPU) {
 			int idle = (gui_data.idle + 5) / 10;
 			pos = 1;
@@ -299,79 +274,5 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
 					write_tdnumber (buf, bpp, x, y - TD_PADY, num4, pen_rgb, c2);
 			}
 		}
-	}
-	}
-	else if(ledtype == 2)
-	{
-		for (led = 1; led < LED_MAX; led++) {
-
-	int pos, num1 = -1, num2 = -1, num3 = -1, num4 = -1;
-	int x, c, on = 0, am = 2;
-	xcolnr on_rgb = 0, on_rgb2 = 0, off_rgb = 0, pen_rgb = 0;
-	int half = 0;
-
-	if (!(currprefs.leds_on_screen_mask[picasso_on ? 1 : 0] & (1 << led)))
-		continue;
-
-	pen_rgb = c1;
-	if (led >= LED_DF0 && led <= LED_DF3) {
-		int pled = led - LED_DF0;
-		int track = gui_data.drive_track[pled];
-		pos = 6 + pled;
-		on_rgb = 0x00cc00;
-		on_rgb2 = 0x006600;
-		off_rgb = 0x003300;
-		if (!gui_data.drive_disabled[pled]) {
-			num1 = -1;
-			num2 = track / 10;
-			num3 = track % 10;
-			on = gui_data.drive_motor[pled];
-			if (gui_data.drive_writing[pled]) {
-				on_rgb = 0xcc0000;
-				on_rgb2 = 0x880000;
-			}
-
-			if (gui_data.df[pled][0] == 0)
-				pen_rgb = ledcolor (0x00aaaaaa, rc, gc, bc, alpha);
-		}
-
-	} else
-		return;
-	on_rgb |= 0x33000000;
-	off_rgb |= 0x33000000;
-
-	if (half > 0) {
-		c = ledcolor (on ? (y >= TD_TOTAL_HEIGHT / 2 ? on_rgb2 : on_rgb) : off_rgb, rc, gc, bc, alpha);
-	} else if (half < 0) {
-		c = ledcolor (on ? (y < TD_TOTAL_HEIGHT / 2 ? on_rgb2 : on_rgb) : off_rgb, rc, gc, bc, alpha);
-	} else {
-		c = ledcolor (on ? on_rgb : off_rgb, rc, gc, bc, alpha);
-	}
-	border = 0;
-	if (y == 0 || y == TD_TOTAL_HEIGHT - 1) {
-		c = ledcolor (TD_BORDER, rc, gc, bc, alpha);
-		border = 1;
-	}
-
-	x = x_start + pos * TD_WIDTH;
-
-	if (y >= TD_PADY && y - TD_PADY < TD_NUM_HEIGHT && on){
-		if (num3 >= 0) {
-			x += (TD_LED_WIDTH - am * TD_NUM_WIDTH) / 2;
-			if (num1 > 0) {
-				write_tdnumber (buf, bpp, x, y - TD_PADY, num1, pen_rgb, c2);
-				x += TD_NUM_WIDTH;
-			}
-			if (num2 >= 0) {
-				write_tdnumber (buf, bpp, x, y - TD_PADY, num2, pen_rgb, c2);
-				x += TD_NUM_WIDTH;
-			}
-			write_tdnumber (buf, bpp, x, y - TD_PADY, num3, pen_rgb, c2);
-			x += TD_NUM_WIDTH;
-			if (num4 > 0)
-				write_tdnumber (buf, bpp, x, y - TD_PADY, num4, pen_rgb, c2);
-		}
-	}
-	}
 	}
 }

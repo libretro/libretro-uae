@@ -30,8 +30,6 @@ int defaultw = EMULATOR_DEF_WIDTH;
 int defaulth = EMULATOR_DEF_HEIGHT;
 int retrow = 0;
 int retroh = 0;
-int CROP_WIDTH;
-int CROP_HEIGHT;
 int sndbufpos=0;
 char key_state[512];
 char key_state2[512];
@@ -62,7 +60,6 @@ extern int snd_sampler;
 extern short signed int SNDBUF[1024*2];
 extern char RPATH[512];
 extern void Print_Status(void);
-int ledtype=1;
 unsigned int video_config = 0;
 
 #include "libretro-keyboard.i"
@@ -123,12 +120,14 @@ chipset=ecs\n"
 cpu_type=68000\n\
 chipmem_size=4\n\
 fastmem_size=8\n\
+cia_overlay=false\n\
 chipset=ecs\n"
 
 #define A1200 "\
 cpu_type=68ec020\n\
 chipmem_size=4\n\
 fastmem_size=8\n\
+cia_overlay=false\n\
 chipset=aga\n"
 
 // Amiga default kickstarts
@@ -1713,9 +1712,6 @@ void retro_init(void)
 
    update_variables();
 
-   CROP_WIDTH    = retrow;
-   CROP_HEIGHT   = (retroh - 80);
-
    if(!emuThread && !mainThread)
    {
       mainThread = co_active();
@@ -1793,13 +1789,18 @@ void retro_get_system_info(struct retro_system_info *info)
 
 void retro_get_system_av_info(struct retro_system_av_info *info)
 {
-   static struct retro_game_geometry geom480   = { 640, 480, EMULATOR_MAX_WIDTH, EMULATOR_MAX_HEIGHT, 4.0 / 3.0 };
-   static struct retro_game_geometry geom540   = { 720, 540, EMULATOR_MAX_WIDTH, EMULATOR_MAX_HEIGHT, 4.0 / 3.0 };
+   static struct retro_game_geometry geom;
+   geom.base_width=retrow;
+   geom.base_height=retroh;
+   geom.max_width=EMULATOR_MAX_WIDTH;
+   geom.max_height=EMULATOR_MAX_HEIGHT;
 
-   if      (retrow == 640 && retroh == 400) info->geometry = geom480;
-   else if (retrow == 640 && retroh == 400) info->geometry = geom480;
-   else if (retrow == 720 && retroh == 540) info->geometry = geom540;
-   else { static struct retro_game_geometry geom; geom.base_width=retrow; geom.base_height=retroh; geom.max_width=EMULATOR_MAX_WIDTH; geom.max_height=EMULATOR_MAX_HEIGHT; geom.aspect_ratio=(float)retrow/(float)retroh; info->geometry = geom; }
+   if (retro_get_region() == RETRO_REGION_NTSC)
+      geom.aspect_ratio=(float)retrow/(float)retroh * 44.0/52.0;
+   else
+      geom.aspect_ratio=(float)retrow/(float)retroh;
+
+   info->geometry = geom;
 
    info->timing.sample_rate = 44100.0;
    info->timing.fps = (retro_get_region() == RETRO_REGION_NTSC) ? 60 : 50;
@@ -1986,11 +1987,6 @@ bool retro_load_game(const struct retro_game_info *info)
 				// Write common config
 				fprintf(configfile, uae_config);
 				
-				// FIXME : Bug if show_leds is set to false
-				// If this parameter is set to false or not specified (default false) Rick Dangerous 2 (adf or whd version) hang when selecting level.
-				// But no impact since the parameter in RetroArch configuration overload this setting : If Leds is set to none, the led won't be drawn on screen and it works...
-				fprintf(configfile, "show_leds=true\n");
-								
 				// Verify kickstart
 				if(!file_exists(kickstart))
 				{
@@ -2013,7 +2009,7 @@ bool retro_load_game(const struct retro_game_info *info)
 						char whdload[RETRO_PATH_MAX];
 						path_join((char*)&whdload, retro_system_directory, WHDLOAD_HDF);
 
-						// Verifiy WHDLoad
+						// Verify WHDLoad
 						if(file_exists(whdload))
 							fprintf(configfile, "hardfile=read-write,32,1,2,512,%s\n", (const char*)&whdload);
 						else
@@ -2106,11 +2102,6 @@ bool retro_load_game(const struct retro_game_info *info)
                 // Write common config
                 fprintf(configfile, uae_config);
 
-                // FIXME : Bug if show_leds is set to false
-                // If this parameter is set to false or not specified (default false) Rick Dangerous 2 (adf or whd version) hang when selecting level.
-                // But no impact since the parameter in RetroArch configuration overload this setting : If Leds is set to none, the led won't be drawn on screen and it works...
-                fprintf(configfile, "show_leds=true\n");
-
 				// Verify kickstart
 				//if(!file_exists(kickstart))
 				//{
@@ -2174,12 +2165,7 @@ bool retro_load_game(const struct retro_game_info *info)
              // Write common config
              fprintf(configfile, uae_config);
 
-             // FIXME : Bug if show_leds is set to false
-             // If this parameter is set to false or not specified (default false) Rick Dangerous 2 (adf or whd version) hang when selecting level.
-             // But no impact since the parameter in RetroArch configuration overload this setting : If Leds is set to none, the led won't be drawn on screen and it works...
-             fprintf(configfile, "show_leds=true\n");
-
-             // Verifiy kickstart
+             // Verify kickstart
              if(!file_exists(kickstart))
              {
                  // Kickstart rom not found
@@ -2204,8 +2190,6 @@ bool retro_load_game(const struct retro_game_info *info)
 
   retrow = w;
   retroh = h;
-  CROP_WIDTH = retrow;
-  CROP_HEIGHT = (retroh-80);
   memset(bmp, 0, sizeof(bmp));
   Screen_SetFullUpdate();
   return true;
