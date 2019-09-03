@@ -26,23 +26,10 @@ extern cothread_t emuThread;
 
 extern int retrow; 
 extern int retroh;
-extern int CROP_WIDTH;
-extern int CROP_HEIGHT;
 
 #define NPLGN 11
 #define NLIGN 7
 #define NLETT 9
-
-#define XPADDING 20
-#define YDELTA 110
-
-#define XBASE0 4+(XPADDING/2)
-#define YBASE0 (CROP_HEIGHT - NLIGN*YSIDE) -60
-#define YBASE0A YBASE0 + YDELTA
-
-#define XBASE3 (XPADDING/2)
-#define YBASE3 YBASE0 -4
-#define YBASE3A YBASE3 + YDELTA
 
 #define RGB565(r, g, b)  (((r) << (5+6)) | ((g) << 6) | (b))
 

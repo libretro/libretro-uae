@@ -316,13 +316,13 @@ char *filebrowser(const char *path_and_name)
    if(i!=-1 && i!=1)
       pad_held_down = 0;
 
-   DrawFBoxBmp(bmp,CROP_WIDTH/4,CROP_HEIGHT/10,CROP_WIDTH/2,CROP_HEIGHT-20,RGB565(3,3,3));
-   DrawFBoxBmp(bmp,2+CROP_WIDTH/4,1+CROP_HEIGHT/10,-4+CROP_WIDTH/2,-2+CROP_HEIGHT-20,RGB565(22,23,26));
+   DrawFBoxBmp(bmp,retrow/4,retroh/10,retrow/2,retroh-20,RGB565(3,3,3));
+   DrawFBoxBmp(bmp,2+retrow/4,1+retroh/10,-4+retrow/2,-2+retroh-20,RGB565(22,23,26));
 
    for(i = pselect; i < (pselect + LIMSEL); i++)
    {
       Draw_text(bmp,
-            20 + CROP_WIDTH / 4,
+            20 + retrow / 4,
             30 + (i-pselect) * 16,
             RGB565((fselect == (i-pselect)) ? 25 : 5, 5, 5),
             0x0, 1, 1, 40,

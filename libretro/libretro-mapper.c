@@ -223,7 +223,7 @@ void Print_Status(void)
       else
          STAT_BASEY=gfxvidinfo.outheight-BOX_HEIGHT-opt_statusbar_position+2;
 
-      BOX_WIDTH=CROP_WIDTH-310;
+      BOX_WIDTH=retrow-310;
    }
    else
    {
@@ -235,7 +235,7 @@ void Print_Status(void)
       else
          STAT_BASEY=gfxvidinfo.outheight-opt_statusbar_position+3;
 
-      BOX_WIDTH=CROP_WIDTH;
+      BOX_WIDTH=retrow;
    }
 
    BOX_Y=STAT_BASEY-BOX_PADDING;

@@ -30,8 +30,6 @@ int defaultw = EMULATOR_DEF_WIDTH;
 int defaulth = EMULATOR_DEF_HEIGHT;
 int retrow = 0;
 int retroh = 0;
-int CROP_WIDTH;
-int CROP_HEIGHT;
 int sndbufpos=0;
 char key_state[512];
 char key_state2[512];
@@ -1713,9 +1711,6 @@ void retro_init(void)
 
    update_variables();
 
-   CROP_WIDTH    = retrow;
-   CROP_HEIGHT   = (retroh - 80);
-
    if(!emuThread && !mainThread)
    {
       mainThread = co_active();
@@ -2209,8 +2204,6 @@ bool retro_load_game(const struct retro_game_info *info)
 
   retrow = w;
   retroh = h;
-  CROP_WIDTH = retrow;
-  CROP_HEIGHT = (retroh-80);
   memset(bmp, 0, sizeof(bmp));
   Screen_SetFullUpdate();
   return true;
