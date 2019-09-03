@@ -742,17 +742,41 @@ void retro_set_environment(retro_environment_t cb)
    /* fill in the values for all the mappers */
    int i = 0;
    int j = 0;
+   int hotkey = 0;
    while(core_options[i].key)
    {
       if (strstr(core_options[i].key, "puae_mapper_"))
       {
+         /* Show different key list for hotkeys (special negatives removed) */
+         if(strstr(core_options[i].key, "puae_mapper_vkbd")
+         || strstr(core_options[i].key, "puae_mapper_statusbar")
+         || strstr(core_options[i].key, "puae_mapper_mouse_toggle")
+         || strstr(core_options[i].key, "puae_mapper_mouse_speed")
+         || strstr(core_options[i].key, "puae_mapper_gui")
+         )
+            hotkey = 1;
+         else
+            hotkey = 0;
+
          j = 0;
-         while(keyDesc[j] && j < RETRO_NUM_CORE_OPTION_VALUES_MAX - 1)
+         if(hotkey)
          {
-            core_options[i].values[j].value = keyDesc[j];
-            core_options[i].values[j].label = NULL;
-            ++j;
-         };
+             while(keyDescHotkeys[j] && j < RETRO_NUM_CORE_OPTION_VALUES_MAX - 1)
+             {
+                core_options[i].values[j].value = keyDescHotkeys[j];
+                core_options[i].values[j].label = NULL;
+                ++j;
+             };
+         }
+         else
+         {
+             while(keyDesc[j] && j < RETRO_NUM_CORE_OPTION_VALUES_MAX - 1)
+             {
+                core_options[i].values[j].value = keyDesc[j];
+                core_options[i].values[j].label = NULL;
+                ++j;
+             };
+         }
          core_options[i].values[j].value = NULL;
          core_options[i].values[j].label = NULL;
       };
