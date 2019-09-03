@@ -1991,7 +1991,7 @@ bool retro_load_game(const struct retro_game_info *info)
 				// But no impact since the parameter in RetroArch configuration overload this setting : If Leds is set to none, the led won't be drawn on screen and it works...
 				fprintf(configfile, "show_leds=true\n");
 								
-				// Verifiy kickstart
+				// Verify kickstart
 				if(!file_exists(kickstart))
 				{
 					// Kickstart rom not found
@@ -2086,21 +2086,64 @@ bool retro_load_game(const struct retro_game_info *info)
 	  else if(strendswith(full_path, UAE_FILE_EXT))
 	  {
 			printf("Game '%s' is an UAE config file.\n", full_path);
-		  
-			strncpy(RPATH, full_path, sizeof(RPATH));
 
-			// checking parsed file for custom resolution
+			// Prepend default config
+			path_join((char*)&RPATH, retro_save_directory, LIBRETRO_PUAE_CONF);
+			printf("Generating temporary uae config file '%s'.\n", (const char*)&RPATH);
+
+			// Open tmp config file
 			FILE * configfile;
 
-			char filebuf[4096];
-			if((configfile = fopen (RPATH, "r")))
+			if((configfile = fopen(RPATH, "w")))
 			{
-				while(fgets(filebuf, sizeof(filebuf), configfile))
-				{
-				  sscanf(filebuf,"gfx_width = %d",&w);
-				  sscanf(filebuf,"gfx_height = %d",&h);
-				}
-				fclose(configfile);
+                char kickstart[RETRO_PATH_MAX];
+
+                // No machine specified, we will use the configured one
+                //printf("No machine specified in filename '%s'. Booting default configuration.\n", full_path);
+                fprintf(configfile, uae_machine);
+                path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
+
+                // Write common config
+                fprintf(configfile, uae_config);
+
+                // FIXME : Bug if show_leds is set to false
+                // If this parameter is set to false or not specified (default false) Rick Dangerous 2 (adf or whd version) hang when selecting level.
+                // But no impact since the parameter in RetroArch configuration overload this setting : If Leds is set to none, the led won't be drawn on screen and it works...
+                fprintf(configfile, "show_leds=true\n");
+
+				// Verify kickstart
+				//if(!file_exists(kickstart))
+				//{
+				//	// Kickstart rom not found
+				//	fprintf(stderr, "Kickstart rom '%s' not found.\n", (const char*)&kickstart);
+				//	fprintf(stderr, "You must have a correct kickstart file ('%s') in your RetroArch system directory.\n", kickstart);
+				//	fclose(configfile);
+				//	return false;
+				//}
+
+				fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
+
+                //strncpy(RPATH, full_path, sizeof(RPATH));
+
+                // Iterate parsed file and append all rows to the temporary config
+                FILE * configfile_custom;
+
+                char filebuf[4096];
+                if((configfile_custom = fopen (full_path, "r")))
+                {
+                    while(fgets(filebuf, sizeof(filebuf), configfile_custom))
+                    {
+                      fprintf(configfile, filebuf);
+                    }
+                    fclose(configfile_custom);
+                }
+                fclose(configfile);
+            }
+			else
+			{
+				// Error
+				fprintf(stderr, "Error while writing '%s' file.\n", (const char*)&RPATH);
+				return false;
 			}
 	  }
 	  // Other extensions
