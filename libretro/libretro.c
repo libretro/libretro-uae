@@ -1,6 +1,4 @@
 #include "libretro.h"
-#include "gui-retro/dialog.h"
-#include "gui-retro/file.h"
 #include "retrodep/retroglue.h"
 #include "libretro-mapper.h"
 #include "libretro-glue.h"
@@ -30,7 +28,6 @@ int defaultw = EMULATOR_DEF_WIDTH;
 int defaulth = EMULATOR_DEF_HEIGHT;
 int retrow = 0;
 int retroh = 0;
-int sndbufpos=0;
 char key_state[512];
 char key_state2[512];
 bool opt_use_whdload_hdf = true;
@@ -44,23 +41,21 @@ unsigned int analog_sensitivity = 2048;
 extern int turbo_fire_button;
 extern unsigned int turbo_pulse;
 
-static int firstps = 0;
-unsigned int inputdevice_finalized = 0;
-
 #if defined(NATMEM_OFFSET)
 extern uae_u8 *natmem_offset;
 extern uae_u32 natmem_size;
 #endif
 extern unsigned short int  bmp[EMULATOR_MAX_WIDTH*EMULATOR_MAX_HEIGHT];
 extern unsigned short int  savebmp[EMULATOR_MAX_WIDTH*EMULATOR_MAX_HEIGHT];
-extern int pauseg;
 extern int SHIFTON;
 extern int STATUSON;
-extern int snd_sampler;
-extern short signed int SNDBUF[1024*2];
 extern char RPATH[512];
 extern void Print_Status(void);
+extern unsigned short * sndbuffer;
+extern int sndbufsize;
+static int firstpass = 1;
 unsigned int video_config = 0;
+unsigned int inputdevice_finalized = 0;
 
 #include "libretro-keyboard.i"
 int keyId(const char *val)
@@ -561,9 +556,9 @@ void retro_set_environment(retro_environment_t cb)
          "---"
       },
       {
-         "puae_mapper_gui",
-         "Hotkey: Enter GUI",
-         "",
+         "puae_mapper_reset",
+         "Hotkey: Reset",
+         "Ctrl-Amiga-Amiga",
          {{ NULL, NULL }},
          "---"
       },
@@ -751,7 +746,7 @@ void retro_set_environment(retro_environment_t cb)
          || strstr(core_options[i].key, "puae_mapper_statusbar")
          || strstr(core_options[i].key, "puae_mapper_mouse_toggle")
          || strstr(core_options[i].key, "puae_mapper_mouse_speed")
-         || strstr(core_options[i].key, "puae_mapper_gui")
+         || strstr(core_options[i].key, "puae_mapper_reset")
          )
             hotkey = 1;
          else
@@ -1366,7 +1361,7 @@ static void update_variables(void)
       mapper_keys[27] = keyId(var.value);
    }
 
-   var.key = "puae_mapper_gui";
+   var.key = "puae_mapper_reset";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
@@ -1457,8 +1452,6 @@ static void retro_wrap_emulator(void)
    static char *argv[] = { "puae", RPATH };
    umain(sizeof(argv)/sizeof(*argv), argv);
 
-   pauseg = -1;
-
    environ_cb(RETRO_ENVIRONMENT_SHUTDOWN, 0); 
 
    /* We're done here */
@@ -1477,8 +1470,6 @@ static void retro_wrap_emulator(void)
 //*****************************************************************************
 // Disk control
 extern void DISK_check_change(void);
-extern const char* Floppy_SetDiskFileNameNone(int Drive);
-extern const char* Floppy_SetDiskFileName(int Drive, const char *pszFileName, const char *pszZipPath);
 extern void disk_eject (int num);
 
 static bool disk_set_eject_state(bool ejected)
@@ -1492,7 +1483,6 @@ static bool disk_set_eject_state(bool ejected)
 		
 		if (dc->eject_state)
 		{
-			Floppy_SetDiskFileNameNone(0);
 			changed_prefs.floppyslots[0].df[0] = 0;
 			DISK_check_change();
 			disk_eject(0);
@@ -1501,11 +1491,8 @@ static bool disk_set_eject_state(bool ejected)
 		{
 			if (strlen(dc->files[dc->index]) > 0)
 			{
-				if (File_Exists(dc->files[dc->index]))
+				if (file_exists(dc->files[dc->index]))
 				{
-					// This sets szDiskFileName[0]
-					Floppy_SetDiskFileName(0, dc->files[dc->index], 0);
-
 					if (currprefs.nr_floppies-1 < 0 )
 						currprefs.nr_floppies = 1;
 
@@ -1707,7 +1694,6 @@ void retro_init(void)
       exit(0);//return false;
    }
 
-   InitOSGLU();
    memset(bmp, 0, sizeof(bmp));
 
    update_variables();
@@ -1721,8 +1707,6 @@ void retro_init(void)
 
 void retro_deinit(void)
 {	
-   UnInitOSGLU();	
-
    if(emuThread)
       co_delete(emuThread);
    emuThread = 0;
@@ -1836,42 +1820,6 @@ void retro_audio_cb( short l, short r)
    audio_cb(l,r);
 }
 
-extern unsigned short * sndbuffer;
-extern int sndbufsize;
-signed short rsnd=0;
-
-static int firstpass = 1;
-
-void save_bkg(void)
-{
-   memcpy(savebmp, bmp,sizeof(bmp));
-}
-
-void restore_bkg(void)
-{
-   memcpy(bmp,savebmp,sizeof(bmp));
-}
-
-void enter_gui0(void)
-{
-   save_bkg();
-
-   Dialog_DoProperty();
-   pauseg = 0;
-
-   restore_bkg();
-}
-
-void pause_select(void)
-{
-   if(pauseg==1 && firstps==0)
-   {
-      firstps=1;
-      enter_gui0();
-      firstps=0;
-   }
-}
-
 void retro_run(void)
 {
    bool updated = false;
@@ -1879,16 +1827,13 @@ void retro_run(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
       update_variables();
 
-   if(pauseg==0)
+   if(firstpass)
    {
-      if(firstpass)
-      {
-         firstpass=0;
-         goto sortie;
-      }
-      retro_poll_event();
-      if(STATUSON==1) Print_Status();
+      firstpass=0;
+      goto sortie;
    }
+   retro_poll_event();
+   if(STATUSON==1) Print_Status();
 
 sortie:
 
@@ -2197,7 +2142,6 @@ bool retro_load_game(const struct retro_game_info *info)
 
 void retro_unload_game(void)
 {
-   pauseg = 0;
 }
 
 unsigned retro_get_region(void)

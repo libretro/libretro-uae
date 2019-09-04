@@ -48,21 +48,14 @@ unsigned short int clut[] = {
 unsigned short int* pixbuf = NULL;
 
 extern unsigned short int  bmp[1024*1024];
-extern short signed int SNDBUF[1024*2];
-extern int  sndbufpos;
 void retro_audio_cb(short l, short r);
 
-void pause_select(void);
-int pause_emulation;
 int prefs_changed = 0;
-
 int vsync_enabled = 0;
 //int stat_count;
 int opt_scrw = 0;
 int opt_scrh = 0;
 unsigned long stat_value = 0;
-
-int opt_scanline = 0;
 
 void gui_init (int argc, char **argv)
 {
@@ -275,14 +268,13 @@ void retro_key_up(int key)
 	inputdevice_do_keyboard (key, 0);
 }
 
-extern int pauseg;
 int RLOOP=1;
 
 int retro_renderSound(short* samples, int sampleCount)
 {
    int i; 
 
-   if (sampleCount < 1 || pauseg==1)
+   if (sampleCount < 1)
       return 0;
 
    for(i=0;i<sampleCount;i+=2)
@@ -291,24 +283,12 @@ int retro_renderSound(short* samples, int sampleCount)
    }
 }
 
-void InitOSGLU(void)
-{
-
-}
-
-void  UnInitOSGLU(void)
-{
-
-}
-
 void ScreenUpdate ()
 {
 }
 
 void retro_flush_screen (struct vidbuf_description *gfxinfo, int ystart, int yend)
 {
-	if(pauseg==1)
-      pause_select();
 	co_switch(mainThread);
 }
 

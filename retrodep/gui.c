@@ -18,7 +18,6 @@ void gui_disk_image_change (int unitnum, const TCHAR *name, bool writeprotected)
 
 int gui_open (void)
 {
-    enter_options();
     return 1;
 }
 
@@ -104,8 +103,6 @@ void gui_message (const char *format,...)
        va_start (parms,format);
        vsprintf ( msg, format, parms);
        va_end (parms);
-
-       show_gui_message(msg);
 }
 
 

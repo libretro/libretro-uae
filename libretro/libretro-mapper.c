@@ -44,10 +44,7 @@ int NPAGE=-1,MAXPAS=8,PAS=4;
 int SHIFTON=-1,ALTON=-1;
 int MOUSEMODE=-1,SHOWKEY=-1,SHOWKEYPOS=-1,SHOWKEYTRANS=-1,STATUSON=-1,LEDON=-1;
 
-short signed int SNDBUF[1024*2];
-int snd_sampler = 44100 / 50;
 char RPATH[512];
-char DSKNAME[512];
 
 int gmx=320,gmy=240; //gui mouse
 
@@ -58,7 +55,6 @@ extern unsigned int analog_sensitivity;
 unsigned long MXjoy[4]={0}; // joyports
 int touch=-1; // gui mouse btn
 int fmousex,fmousey; // emu mouse
-int pauseg=0; //enter_gui
 int slowdown=0;
 
 int vkflag[7]={0,0,0,0,0,0,0};
@@ -69,7 +65,6 @@ static int kbt[16]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 //   INDEX                    0     1     2     3     4     5     6     7     8     9     10    11    12    13    14    15
 static unsigned long vbt[16]={0x020,0x200,0x080,0x100,0x001,0x002,0x004,0x008,0x010,0x040,0x400,0x800};
 
-extern void enter_options(void);
 extern void reset_drawing(void);
 extern void retro_key_up(int);
 extern void retro_key_down(int);
@@ -93,7 +88,7 @@ unsigned int turbo_toggle[5]={0,0,0,0,0};
 #define EMU_STATUSBAR 2
 #define EMU_MOUSE_TOGGLE 3
 #define EMU_MOUSE_SPEED 4
-#define EMU_GUI 5
+#define EMU_RESET 5
 
 /* VKBD_MIN_HOLDING_TIME: Hold a direction longer than this and automatic movement sets in */
 /* VKBD_MOVE_DELAY: Delay between automatic movement from button to button */
@@ -122,8 +117,8 @@ void emu_function(int function) {
          PAS=PAS+2;
          if(PAS>MAXPAS)PAS=2;
          break;
-      case EMU_GUI:
-         pauseg=1;
+      case EMU_RESET:
+         uae_reset(0, 1); /* hardreset, keyboardreset */
          break;
    }
 }
@@ -165,11 +160,6 @@ void retro_set_input_poll(retro_input_poll_t cb)
 #else
 #define mprintf(...) 
 #endif
-
-void enter_gui(void)
-{	
-   enter_options();
-}
 
 #ifdef WIIU
 #include <features_cpu.h>
@@ -451,7 +441,7 @@ void update_input(int disable_physical_cursor_keys)
                emu_function(EMU_MOUSE_SPEED);
                break;
             case 28:
-               emu_function(EMU_GUI);
+               emu_function(EMU_RESET);
                break;
          }
       }
@@ -586,8 +576,8 @@ void update_input(int disable_physical_cursor_keys)
                     emu_function(EMU_MOUSE_TOGGLE);
                 else if(mapper_keys[i] == mapper_keys[27]) /* Alter mouse speed */
                     emu_function(EMU_MOUSE_SPEED);
-                else if(mapper_keys[i] == mapper_keys[28]) /* Enter GUI */
-                    emu_function(EMU_GUI);
+                else if(mapper_keys[i] == mapper_keys[28]) /* Reset */
+                    emu_function(EMU_RESET);
                 else if(mapper_keys[i] == -2) /* Mouse left */
                     setmousebuttonstate (0, 0, 1);
                 else if(mapper_keys[i] == -3) /* Mouse right */
@@ -768,154 +758,6 @@ void update_input(int disable_physical_cursor_keys)
       }
    }
 }
-
-int input_gui(void)
-{
-   int SAVPAS=PAS;	
-   int ret=0;
-
-   input_poll_cb();
-
-   int mouse_l;
-   int mouse_r;
-   int16_t mouse_x,mouse_y;
-   mouse_x=mouse_y=0;
-
-   if(slowdown>0)return 0;
-
-   /* Always automatic mouse mode. First check joypad, then mouse */
-   if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT))mouse_x += PAS;
-   if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT))mouse_x -= PAS;
-   if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN))mouse_y += PAS;
-   if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP))mouse_y -= PAS;
-
-   if(!mouse_x && !mouse_y) {
-      mouse_x = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_X);
-      mouse_y = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_Y);
-   }
-
-   /* Mouse buttons */
-   mouse_l=input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B);
-   mouse_r=input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A);
-
-   if(!mouse_l && !mouse_r) {
-      mouse_l = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_LEFT);
-      mouse_r = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_RIGHT);
-   }
-   
-   PAS=SAVPAS;
-   slowdown=1;
-   static int mmbL=0,mmbR=0;
-
-   if(mmbL==0 && mouse_l)
-   {
-      mmbL=1;		
-      touch=1;
-
-   }
-   else if(mmbL==1 && !mouse_l)
-   {
-      mmbL=0;
-      touch=-1;
-   }
-
-   if(mmbR==0 && mouse_r)
-      mmbR=1;		
-   else if(mmbR==1 && !mouse_r)
-      mmbR=0;
-
-   gmx+=mouse_x;
-   gmy+=mouse_y;
-   if(gmx<0)
-      gmx=0;
-   if(gmx>retrow-1)
-      gmx=retrow-1;
-   if(gmy<0)
-      gmy=0;
-   if(gmy>retroh-1)
-      gmy=retroh-1;
-   
-   return 0;
-}
-
-int update_input_gui(void)
-{
-   int ret=0;	
-   static int dskflag[7]={0,0,0,0,0,0,0};// UP -1 DW 1 A 2 B 3 LFT -10 RGT 10 X 4	
-
-   input_poll_cb();	
-
-   if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) && dskflag[0]==0 )
-   {
-      dskflag[0]=1;
-      ret= -1; 
-   }
-   else /*if (dskflag[0]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) ){
-          dskflag[0]=0;
-          ret= -1; 
-          }*/dskflag[0]=0;
-
-      if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN) && dskflag[1]==0 ){
-         dskflag[1]=1;
-         ret= 1;
-      } 
-      else/* if (dskflag[1]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN) ){
-             dskflag[1]=0;
-             ret= 1; 
-             }*/dskflag[1]=0;
-
-         if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT) && dskflag[4]==0 )
-            dskflag[4]=1;
-         else if (dskflag[4]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT) )
-         {
-            dskflag[4]=0;
-            ret= -10; 
-         }
-
-   if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) && dskflag[5]==0 )
-      dskflag[5]=1;
-   else if (dskflag[5]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) )
-   {
-      dskflag[5]=0;
-      ret= 10; 
-   }
-
-   if ( ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B) || \
-            input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_LCTRL) ) && dskflag[2]==0 ){
-      dskflag[2]=1;
-
-   }
-   else if (dskflag[2]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B)\
-         && !input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_LCTRL) )
-   {
-      dskflag[2]=0;
-      ret= 2;
-   }
-
-   if ( ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A) || \
-            input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_LALT) ) && dskflag[3]==0 ){
-      dskflag[3]=1;
-   }
-   else if (dskflag[3]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A) &&\
-         !input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_LALT) ){
-
-      dskflag[3]=0;
-      ret= 3;
-   }
-
-   if ( input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X) && dskflag[6]==0 )
-      dskflag[6]=1;
-   else if (dskflag[6]==1 && ! input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X) )
-   {
-      dskflag[6]=0;
-      ret= 4; 
-   }
-
-   return ret;
-
-}
-
-
 
 void retro_poll_event()
 {
