@@ -97,32 +97,35 @@ static dc_storage* dc;
 cpu_type=68000\n\
 chipmem_size=1\n\
 bogomem_size=2\n\
+chipset_compatible=A500\n\
 chipset=ocs\n"
 
 #define A500OG "\
 cpu_type=68000\n\
 chipmem_size=1\n\
 bogomem_size=0\n\
+chipset_compatible=A500\n\
 chipset=ocs\n"
 
 #define A500PLUS "\
 cpu_type=68000\n\
 chipmem_size=2\n\
 bogomem_size=4\n\
+chipset_compatible=A500+\n\
 chipset=ecs\n"
 
 #define A600 "\
 cpu_type=68000\n\
 chipmem_size=4\n\
 fastmem_size=8\n\
-cia_overlay=false\n\
+chipset_compatible=A600\n\
 chipset=ecs\n"
 
 #define A1200 "\
 cpu_type=68ec020\n\
 chipmem_size=4\n\
 fastmem_size=8\n\
-cia_overlay=false\n\
+chipset_compatible=A1200\n\
 chipset=aga\n"
 
 // Amiga default kickstarts

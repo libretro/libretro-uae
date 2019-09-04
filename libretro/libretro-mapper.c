@@ -46,8 +46,6 @@ int MOUSEMODE=-1,SHOWKEY=-1,SHOWKEYPOS=-1,SHOWKEYTRANS=-1,STATUSON=-1,LEDON=-1;
 
 char RPATH[512];
 
-int gmx=320,gmy=240; //gui mouse
-
 int analog_left[2];
 int analog_right[2];
 extern int analog_deadzone;
