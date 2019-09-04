@@ -1,6 +1,5 @@
 EMU      = $(CORE_DIR)/sources/src
 LIBUTILS = $(CORE_DIR)/sources/utils
-GUI      = $(CORE_DIR)/gui-retro
 LIBRETRO = $(CORE_DIR)/libretro
 DEPS_DIR = $(CORE_DIR)/deps
 RETRODEP = $(CORE_DIR)/retrodep
@@ -121,37 +120,13 @@ SOURCES_C += $(EMU)/machdep/support.c \
 				 $(RETRODEP)/gui.c \
 				 $(RETRODEP)/retroglue.c \
 				 $(EMU)/sounddep/sound.c \
-				 $(RETRODEP)/retromenu.c \
 				 $(EMU)/threaddep/thread.c
-
-SOURCES_C += $(GUI)/dialog.c\
-				 $(GUI)/paths.c \
-				 $(GUI)/file.c \
-				 $(GUI)/unzip.c \
-				 $(GUI)/thumb.c \
-				 $(GUI)/zip.c \
-				 $(GUI)/str.c \
-				 $(GUI)/dlgFloppy.c \
-				 $(GUI)/dlgHardDisk.c \
-				 $(GUI)/dlgFileSelect.c \
-				 $(GUI)/dlgMemory.c \
-				 $(GUI)/dlgJoystick.c \
-				 $(GUI)/dlgAbout.c \
-				 $(GUI)/dlgSound.c \
-				 $(GUI)/dlgAlert.c \
-				 $(GUI)/dlgMain.c \
-				 $(GUI)/dlgMisc.c \
-				 $(GUI)/dlgVideo.c \
-				 $(GUI)/dlgRom.c \
-				 $(GUI)/dlgSystem.c \
-				 $(GUI)/sdlgui.c
 
 SOURCES_C += $(LIBRETRO)/libretro.c \
 				 $(CORE_DIR)/libco/libco.c \
 				 $(LIBRETRO)/libretro-mapper.c \
 				 $(LIBRETRO)/vkbd.c \
 				 $(LIBRETRO)/graph.c \
-				 $(LIBRETRO)/diskutils.c \
 				 $(LIBRETRO)/fontmsx.c \
 				 $(LIBRETRO)/retro_files.c \
 				 $(LIBRETRO)/retro_strings.c \

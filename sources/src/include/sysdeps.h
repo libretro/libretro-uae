@@ -486,7 +486,9 @@ extern int gui_message_multibutton (int flags, const char *format,...);
 #define _wunlink unlink
 #define _tfopen fopen
 #define _vsntprintf vsnprintf
+#ifndef max
 #define max(a,b) ((a) > (b) ? (a) : (b))
+#endif
 #define _tcstod strtod
 #define _T
 #define sleep_millis uae_msleep
