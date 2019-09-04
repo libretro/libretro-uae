@@ -72,17 +72,17 @@ else ifeq ($(platform), classic_armv7_a7)
 	  endif
 	endif
 #######################################
-
 # (armv8 a35, hard point, neon based) ###
 # PlayStation Classic
 else ifeq ($(platform), classic_armv8_a35)
    TARGET := $(TARGET_NAME)_libretro.so
    fpic := -fPIC
    SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T  -Wl,--no-undefined
-   CFLAGS += -Ofast \
-	   -fmerge-all-constants -fno-math-errno -march=armv8-a \
-	   -marm -mcpu=cortex-a35 -mtune=cortex-a35 -mfpu=neon-fp-armv8 -mfloat-abi=hard
-   LDFLAGS += -static-libgcc -static-libstdc++ -fPIC
+   LDFLAGS += -lm -lrt -lpthread -ldl
+   CFLAGS += -Ofast -DARM -flto=4 \
+           -fmerge-all-constants -fno-math-errno -march=armv8-a \
+           -marm -mtune=cortex-a35 -mfpu=neon-fp-armv8 -mfloat-abi=hard
+   LDFLAGS += -static-libgcc -static-libstdc++
 
 else ifeq ($(platform), osx)
    TARGET := $(TARGET_NAME)_libretro.dylib
@@ -264,13 +264,12 @@ INCDIRS := $(EXTRA_INCLUDES) $(INCFLAGS)
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
-	@echo "** BUILDING $(TARGET) FOR PLATFORM $(platform) **"
+
 ifeq ($(STATIC_LINKING_LINK),1)
 	$(AR) rcs $@ $(OBJECTS)
 else
 	$(CC) $(fpic) $(SHARED) $(INCDIRS) -o $@ $(OBJECTS) $(LDFLAGS)
 endif
-	@echo "** BUILD SUCCESSFUL! GG NO RE **"
 
 %.o: %.c
 	$(CC) $(fpic) $(CFLAGS) $(PLATFLAGS) $(INCDIRS) -c -o $@ $<
