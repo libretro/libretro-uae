@@ -518,7 +518,7 @@ void retro_set_environment(retro_environment_t cb)
             { "0.9", "90\%" },
             { NULL, NULL },
          },
-         "10"
+         "1.0"
       },
       {
          "puae_keyrah_keypad_mappings",
