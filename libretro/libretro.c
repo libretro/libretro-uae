@@ -481,7 +481,7 @@ void retro_set_environment(retro_environment_t cb)
             { "both", "Both analogs" },
             { NULL, NULL },
          },
-         "disabled"
+         "right"
       },
       {
          "puae_analogmouse_deadzone",
