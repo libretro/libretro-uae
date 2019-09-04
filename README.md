@@ -191,6 +191,19 @@ Look at the sample configuration file "RickDangerous.uae" for help. You can use 
 
 You can find the whole documentation in [configuration.txt](configuration.txt).
 
+Example 1: You want to mount four non-rdb .hdf files. You have one bootable 1000 MB file called `System.hdf` created with surfaces=1, and three non-bootable 2000 MB files called `WHDGamesA.hdf`, `WHDGamesB.hdf`, `WHDGamesC.hdf` created with surfaces=2. Your hdf files are located in the folder with absolute path `/emuroms/amiga/hdf/`. For that scenario, you should create a .uae text file with the following content:
+```
+hardfile=read-write,32,1,2,512,/emuroms/amiga/hdf/System.hdf
+hardfile=read-write,32,2,2,512,/emuroms/amiga/hdf/WHDGamesA.hdf
+hardfile=read-write,32,2,2,512,/emuroms/amiga/hdf/WHDGamesB.hdf
+hardfile=read-write,32,2,2,512,/emuroms/amiga/hdf/WHDGamesC.hdf
+```
+You can then load your .uae file via Load Content.
+
+Note that for most hdf files, the model has to be set to A1200 in Quickmenu->Options. This requires a restart to take effect.
+
+If you are using rdb hdf files, please use 0,0,0,0 instead of geometry numbers like 32,1,2,512. The geometry will then be read from the file. This only works for rdb hdf files.
+
 ## Knows Bugs
 - When load savesate, exiting GUI without reset. You have to re-enter GUI and do the reset.
 - It's a debug release, so expect bug.
