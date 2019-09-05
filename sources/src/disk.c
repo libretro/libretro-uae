@@ -1012,7 +1012,11 @@ static int drive_insert (drive * drv, struct uae_prefs *p, int dnum, const TCHAR
 	_tcsncpy (changed_prefs.floppyslots[dnum].df, fname, 255);
 	changed_prefs.floppyslots[dnum].df[255] = 0;
 	changed_prefs.floppyslots[dnum].forcedwriteprotect = forcedwriteprotect;
+#ifndef __MACOSX__
+	//FIXME: this following statement causes crash "Abort Trap: 6" on osx Retroarch
+	//when selecting quickmenu->disk control->append disk, no clue why.
 	_tcscpy (drv->newname, fname);
+#endif
 	drv->newnamewriteprotected = forcedwriteprotect;
 	gui_filename (dnum, fname);
 
