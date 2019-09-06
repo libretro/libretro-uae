@@ -89,7 +89,7 @@ else ifeq ($(platform), osx)
    fpic := -fPIC -mmacosx-version-min=10.6
    LDFLAGS :=
    SHARED := -dynamiclib
-   PLATFLAGS +=  -DRETRO -DALIGN_DWORD -D__MACOSX__
+   PLATFLAGS +=  -DRETRO -DALIGN_DWORD
 
 else ifeq ($(platform), android-armv7)
    CC = arm-linux-androideabi-gcc
