@@ -28,7 +28,7 @@ void inputdevice_release_all_keys (void);
 extern unsigned int uae_devices[4];
 extern unsigned int inputdevice_finalized;
 
-#define PIX_BYTES 2
+extern int pix_bytes;
 
 #define TD_POSY 30
 
@@ -342,7 +342,7 @@ int graphics_init(void) {
 	LOG_MSG2("screen h=%i", currprefs.gfx_size_win.height);
 
 #ifdef ENABLE_LOG_SCREEN
-	pixbuf = (unsigned int*) malloc(currprefs.gfx_size_win.width * 576 * PIX_BYTES);
+	pixbuf = (unsigned int*) malloc(currprefs.gfx_size_win.width * 576 * pix_bytes);
 #else
 	pixbuf = (unsigned short int*) &bmp[0];
 #endif
@@ -352,12 +352,12 @@ int graphics_init(void) {
 		printf("Error: not enough memory to initialize screen buffer!\n");
 		return -1;
 	}
-	memset(pixbuf, 0x80, currprefs.gfx_size_win.width * currprefs.gfx_size_win.height * PIX_BYTES);
+	memset(pixbuf, 0x80, currprefs.gfx_size_win.width * currprefs.gfx_size_win.height * pix_bytes);
 
 	gfxvidinfo.width_allocated = currprefs.gfx_size_win.width;
 	gfxvidinfo.height_allocated = currprefs.gfx_size_win.height;
 	gfxvidinfo.maxblocklines = 1000;
-	gfxvidinfo.pixbytes = PIX_BYTES;
+	gfxvidinfo.pixbytes = pix_bytes;
 	gfxvidinfo.rowbytes = gfxvidinfo.width_allocated * gfxvidinfo.pixbytes ;
 	gfxvidinfo.bufmem = (unsigned char*)pixbuf;
 	gfxvidinfo.emergmem = 0;
@@ -397,7 +397,10 @@ int mousehack_allowed (void)
 int graphics_setup(void) {
 	//32bit mode
 	//Rw, Gw, Bw,   Rs, Gs, Bs,   Aw, As, Avalue, swap
-	alloc_colors64k (5, 6, 5, 11, 5, 0, 0, 0, 0, 0); 
+	if (pix_bytes == 2)
+		alloc_colors64k (5, 6, 5, 11, 5, 0, 0, 0, 0, 0); 
+	else
+		alloc_colors64k (8, 8, 8, 16, 8, 0, 0, 0, 0, 0);
 
 	return 1;
 }

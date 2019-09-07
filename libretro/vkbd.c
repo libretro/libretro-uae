@@ -9,6 +9,7 @@ extern int SHOWKEYTRANS;
 extern int SHIFTON;
 extern int vkflag[6];
 extern int video_config;
+extern int pix_bytes;
 
 void virtual_kbd(unsigned short int *pixels,int vx,int vy)
 {
@@ -19,19 +20,41 @@ void virtual_kbd(unsigned short int *pixels,int vx,int vy)
    int XPADDING         = 20;
    int XKEY, YKEY, XTEXT, YTEXT, YOFFSET, YPADDING;
    int BKG_COLOR;
-   int BKG_COLOR_NORMAL = RGB565(24, 24, 24);
-   int BKG_COLOR_ALT	= RGB565(20, 20, 20);
-   int BKG_COLOR_EXTRA  = RGB565(14, 14, 14);
-   int BKG_COLOR_SEL	= RGB565(10, 10, 10);
-   int BKG_COLOR_DARK   = RGB565(4, 4, 4);
-   int BKG_COLOR_BORDER	= RGB565(1, 1, 1);
+   int BKG_COLOR_NORMAL;
+   int BKG_COLOR_ALT;
+   int BKG_COLOR_EXTRA;
+   int BKG_COLOR_SEL;
+   int BKG_COLOR_DARK;
+   int BKG_COLOR_BORDER;
+   int FONT_COLOR_NORMAL;
+   int FONT_COLOR_SEL;
+   if (pix_bytes == 4)
+   {
+      BKG_COLOR_NORMAL = RGB888(24 * 255 / 31, 24 * 255 / 31, 24 * 255 / 31);
+      BKG_COLOR_ALT	= RGB888(20 * 255 / 31, 20 * 255 / 31, 20 * 255 / 31);
+      BKG_COLOR_EXTRA  = RGB888(14 * 255 / 31, 14 * 255 / 31, 14 * 255 / 31);
+      BKG_COLOR_SEL	= RGB888(10 * 255 / 31, 10 * 255 / 31, 10 * 255 / 31);
+      BKG_COLOR_DARK   = RGB888(4 * 255 / 31, 4 * 255 / 31, 4 * 255 / 31);
+      BKG_COLOR_BORDER	= RGB888(1 * 255 / 31, 1 * 255 / 31, 1 * 255 / 31);
+      FONT_COLOR_NORMAL= RGB888(1 * 255 / 31,1 * 255 / 31,1 * 255 / 31);
+      FONT_COLOR_SEL	= RGB888(254,254,254);
+   }
+   else
+   {
+      BKG_COLOR_NORMAL = RGB565(24, 24, 24);
+      BKG_COLOR_ALT	= RGB565(20, 20, 20);
+      BKG_COLOR_EXTRA  = RGB565(14, 14, 14);
+      BKG_COLOR_SEL	= RGB565(10, 10, 10);
+      BKG_COLOR_DARK   = RGB565(4, 4, 4);
+      BKG_COLOR_BORDER	= RGB565(1, 1, 1);
+      FONT_COLOR_NORMAL= RGB565(1,1,1);
+      FONT_COLOR_SEL	= RGB565(254,254,254);
+   }
    int BKG_PADDING_X	= 0;
    int BKG_PADDING_Y	= 4;
    int FONT_WIDTH		= 1;
    int FONT_HEIGHT		= 1;
    int FONT_COLOR;
-   int FONT_COLOR_NORMAL= RGB565(1,1,1);
-   int FONT_COLOR_SEL	= RGB565(254,254,254);
 
    if(video_config & 0x04)      // PUAE_VIDEO_HIRES
    {
@@ -98,7 +121,12 @@ void virtual_kbd(unsigned short int *pixels,int vx,int vy)
 
    /* Border color in transparency mode */
    if(SHOWKEYTRANS==1)
-       BKG_COLOR_BORDER = RGB565(8, 8, 8);
+   {
+       if (pix_bytes == 4)
+         BKG_COLOR_BORDER = RGB565(8, 8, 8);
+       else
+         BKG_COLOR_BORDER = RGB888(8 * 255 / 31, 8 * 255 / 31, 8 * 255 / 31);
+   }
 
    /* Key layout */
    for(x=0;x<NPLGN;x++)
@@ -125,10 +153,19 @@ void virtual_kbd(unsigned short int *pixels,int vx,int vy)
 
          /* Key background */
          if(SHOWKEYTRANS==1)
-            DrawBoxBmp(pix, XKEY,YKEY, XSIDE,YSIDE, 0);
+         {
+            if (pix_bytes == 4)
+               DrawBoxBmp32((uint32_t *)pix, XKEY,YKEY, XSIDE,YSIDE, 0);
+            else
+               DrawBoxBmp(pix, XKEY,YKEY, XSIDE,YSIDE, 0);
+         }
          else
-            DrawFBoxBmp(pix, XKEY,YKEY, XSIDE,YSIDE, BKG_COLOR);
-
+         {
+            if (pix_bytes == 4)
+               DrawFBoxBmp32((uint32_t *)pix, XKEY,YKEY, XSIDE,YSIDE, BKG_COLOR);
+            else
+               DrawFBoxBmp(pix, XKEY,YKEY, XSIDE,YSIDE, BKG_COLOR);
+         }
          /* Default font color */
          FONT_COLOR = FONT_COLOR_NORMAL;
 
@@ -140,10 +177,17 @@ void virtual_kbd(unsigned short int *pixels,int vx,int vy)
          }
 
          /* Key border */
-         DrawBoxBmp(pix, XKEY,YKEY, XSIDE,YSIDE, BKG_COLOR_BORDER);
+         if (pix_bytes == 4)
+            DrawBoxBmp32((uint32_t *)pix, XKEY,YKEY, XSIDE,YSIDE, BKG_COLOR_BORDER);
+         else
+            DrawBoxBmp(pix, XKEY,YKEY, XSIDE,YSIDE, BKG_COLOR_BORDER);
 
          /* Key text */
-         Draw_text(pix, XTEXT, YTEXT, FONT_COLOR,BKG_COLOR, FONT_WIDTH,FONT_HEIGHT, maxchr,
+         if (pix_bytes == 4)
+            Draw_text32((uint32_t *)pix, XTEXT, YTEXT, FONT_COLOR,BKG_COLOR, FONT_WIDTH,FONT_HEIGHT, maxchr,
+               SHIFTON==-1?MVk[(y*NPLGN)+x+page].norml:MVk[(y*NPLGN)+x+page].shift);	
+         else
+            Draw_text(pix, XTEXT, YTEXT, FONT_COLOR,BKG_COLOR, FONT_WIDTH,FONT_HEIGHT, maxchr,
                SHIFTON==-1?MVk[(y*NPLGN)+x+page].norml:MVk[(y*NPLGN)+x+page].shift);	
       }
    }
@@ -160,13 +204,20 @@ void virtual_kbd(unsigned short int *pixels,int vx,int vy)
    }
 
    /* Selected key background */
-   DrawFBoxBmp(pix, XKEY,YKEY, XSIDE-1,YSIDE-1, BKG_COLOR_SEL);
+   if (pix_bytes == 4)
+      DrawFBoxBmp32((uint32_t *)pix, XKEY,YKEY, XSIDE-1,YSIDE-1, BKG_COLOR_SEL);
+   else
+      DrawFBoxBmp(pix, XKEY,YKEY, XSIDE-1,YSIDE-1, BKG_COLOR_SEL);
 
    /* Selected key border, NO */
    //DrawBoxBmp(pix, XBASEKEY+vx*XSIDE,YBASEKEY+vy*YSIDE, XSIDE,YSIDE, BKG_COLOR_DARK);
 
    /* Selected key text */
-   Draw_text(pix, XTEXT,YTEXT, FONT_COLOR_SEL,BKG_COLOR_SEL, FONT_WIDTH,FONT_HEIGHT, maxchr,
+   if (pix_bytes == 4)
+      Draw_text32((uint32_t *)pix, XTEXT,YTEXT, FONT_COLOR_SEL,BKG_COLOR_SEL, FONT_WIDTH,FONT_HEIGHT, maxchr,
+         (SHIFTON == -1) ? MVk[(vy*NPLGN)+vx+page].norml : MVk[(vy*NPLGN)+vx+page].shift);	
+   else
+      Draw_text(pix, XTEXT,YTEXT, FONT_COLOR_SEL,BKG_COLOR_SEL, FONT_WIDTH,FONT_HEIGHT, maxchr,
          (SHIFTON == -1) ? MVk[(vy*NPLGN)+vx+page].norml : MVk[(vy*NPLGN)+vx+page].shift);	
 }
 

@@ -32,6 +32,7 @@ extern int retroh;
 #define NLETT 9
 
 #define RGB565(r, g, b)  (((r) << (5+6)) | ((g) << 6) | (b))
+#define RGB888(r, g, b)  (((r) << (16)) | ((g) << 8) | (b))
 
 #ifndef _WIN32
 #define TCHAR char /* from sysdeps.h */

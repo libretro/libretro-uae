@@ -40,6 +40,8 @@ int analog_deadzone = 6144;
 unsigned int analog_sensitivity = 2048;
 extern int turbo_fire_button;
 extern unsigned int turbo_pulse;
+int pix_bytes = 2;
+static bool pix_bytes_initialized = false;
 
 #if defined(NATMEM_OFFSET)
 extern uae_u8 *natmem_offset;
@@ -430,8 +432,20 @@ void retro_set_environment(retro_environment_t cb)
             { "disabled", NULL },
             { "1", NULL },
             { "2", NULL },
+            { NULL, NULL },
          },
          "disabled"
+      },
+      {
+         "puae_gfx_colors",
+         "Color depth",
+         "24bit is slower and not available on all platforms. Need restart",
+         {
+            { "16bit", "Thousands (16bit)" },
+            { "24bit", "Millions (24bit)" },
+            { NULL, NULL },
+         },
+         "16bit"
       },
       {
          "puae_gfx_center_vertical",
@@ -1091,6 +1105,20 @@ static void update_variables(void)
          strcat(uae_config, "gfx_framerate=");
          strcat(uae_config, buf2);
          strcat(uae_config, "\n");
+      }
+   }
+
+   var.key = "puae_gfx_colors";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      // Only allow screenmode change after restart
+      if (!pix_bytes_initialized)
+      {
+         if (strcmp(var.value, "16bit") == 0) pix_bytes=2;
+         else if (strcmp(var.value, "24bit") == 0) pix_bytes=4;
+         pix_bytes_initialized = true;
       }
    }
 
@@ -1776,6 +1804,23 @@ void retro_get_system_info(struct retro_system_info *info)
 
 void retro_get_system_av_info(struct retro_system_av_info *info)
 {
+   /* need to do this here because core option values are not available in retro_init */
+   if (pix_bytes == 4)
+   {
+      enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_XRGB8888;
+      if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
+      {
+         fprintf(stderr, "[libretro-uae]: XRGB8888 is not supported. Trying RGB565\n");
+         fmt = RETRO_PIXEL_FORMAT_RGB565;
+         pix_bytes = 2;
+         if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
+         {
+            fprintf(stderr, "[libretro-uae]: RGB565 is not supported.\n");
+            exit(0);//return false;
+         }
+      }
+   }
+
    static struct retro_game_geometry geom;
    geom.base_width=retrow;
    geom.base_height=retroh;
@@ -1840,7 +1885,7 @@ void retro_run(void)
 
 sortie:
 
-   video_cb(bmp,retrow,retroh , retrow << 1);
+   video_cb(bmp,retrow,retroh , retrow << (pix_bytes / 2));
 
    co_switch(emuThread);
 }
