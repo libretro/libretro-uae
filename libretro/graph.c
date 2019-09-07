@@ -3,6 +3,8 @@
 #include <stdarg.h>
 #include <math.h>
 
+#include "libretro.h"
+
 #include "graph.h"
 #include "libretro-glue.h"
 
