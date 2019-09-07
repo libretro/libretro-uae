@@ -789,8 +789,8 @@ void retro_poll_event()
          switch(uae_devices[retro_port])
          {
             case RETRO_DEVICE_JOYPAD:
-               // Joystick control
-               if(MOUSEMODE==-1) {
+               // Joystick control (user 0 disabled if MOUSEMODE is on)
+               if(MOUSEMODE==-1 || retro_port != 0) {
                   MXjoy[retro_port]=0;
                   if(SHOWKEY==-1)
                      for (i=0;i<23;i++)
@@ -854,107 +854,6 @@ void retro_poll_event()
                      }
 
                   retro_joy(retro_port, MXjoy[retro_port]);
-               }
-
-               // Mouse control only for the first RetroPad
-               if(retro_port==0 && SHOWKEY==-1)
-               {
-
-                  mouse_l=mouse_r=0;
-                  fmousex=fmousey=0;
-
-                  if(MOUSEMODE==1) {
-                     // Joypad buttons
-                     mouse_l = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B);
-                     mouse_r = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A);
-                  }
-
-                  if(!mouse_l && !mouse_r) {
-                     // Mouse buttons
-                     mouse_l = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_LEFT);
-                     mouse_r = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_RIGHT);
-                  }
-
-                  if(MOUSEMODE==1) {
-                     // D-pad
-                     if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT))
-                        fmousex += PAS;
-                     if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT))
-                        fmousex -= PAS;
-                     if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN))
-                        fmousey += PAS;
-                     if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP))
-                        fmousey -= PAS;
-                  }
-
-                  if(opt_analogmouse == 1 || opt_analogmouse == 3) 
-                      if(!fmousex && !fmousey && (!mapper_keys[16] && !mapper_keys[17] && !mapper_keys[18] && !mapper_keys[19])) {
-                         // Left Analog
-                         analog_left[0] = (input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X));
-                         analog_left[1] = (input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y));
-
-                         if(analog_left[0]<=-analog_deadzone)
-                            fmousex-=(-analog_left[0])/analog_sensitivity;
-                         if(analog_left[0]>= analog_deadzone)
-                            fmousex+=( analog_left[0])/analog_sensitivity;
-                         if(analog_left[1]<=-analog_deadzone)
-                            fmousey-=(-analog_left[1])/analog_sensitivity;
-                         if(analog_left[1]>= analog_deadzone)
-                            fmousey+=( analog_left[1])/analog_sensitivity;
-                  }
-
-                  if(opt_analogmouse == 2 || opt_analogmouse == 3)
-                      // No keymappings and mousing at the same time
-                      if(!fmousex && !fmousey && (!mapper_keys[20] && !mapper_keys[21] && !mapper_keys[22] && !mapper_keys[23])) {
-                         // Right Analog
-                         analog_right[0] = (input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X));
-                         analog_right[1] = (input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y));
-
-                         if(analog_right[0]<=-analog_deadzone)
-                            fmousex-=(-analog_right[0])/analog_sensitivity;
-                         if(analog_right[0]>= analog_deadzone)
-                            fmousex+=( analog_right[0])/analog_sensitivity;
-                         if(analog_right[1]<=-analog_deadzone)
-                            fmousey-=(-analog_right[1])/analog_sensitivity;
-                         if(analog_right[1]>= analog_deadzone)
-                            fmousey+=( analog_right[1])/analog_sensitivity;
-                  }
-
-                  if(!fmousex && !fmousey) {
-                     // Real mouse
-                     mouse_x = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_X);
-                     mouse_y = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_Y);
-
-                     if(mouse_x || mouse_y) {
-                        fmousex = mouse_x;
-                        fmousey = mouse_y;
-                     }
-                  }
-
-                  if(mbL==0 && mouse_l)
-                  {
-                     mbL=1;
-                     retro_mouse_but0(1);
-                  }
-                  else if(mbL==1 && !mouse_l)
-                  {
-                     retro_mouse_but0(0);
-                     mbL=0;
-                  }
-
-                  if(mbR==0 && mouse_r)
-                  {
-                     mbR=1;
-                     retro_mouse_but1(1);
-                  }
-                  else if(mbR==1 && !mouse_r)
-                  {
-                     retro_mouse_but1(0);
-                     mbR=0;
-                  }
-
-                  if(fmousex || fmousey)
-                     retro_mouse(fmousex, fmousey);
                }
                break;
 
@@ -1037,6 +936,106 @@ void retro_poll_event()
                retro_joy(retro_port, MXjoy[retro_port]);
                break;
          }
+      }
+   
+      // Mouse control
+      if(SHOWKEY==-1)
+      {
+         mouse_l=mouse_r=0;
+         fmousex=fmousey=0;
+
+         if(MOUSEMODE==1 && uae_devices[0] == RETRO_DEVICE_JOYPAD) {
+            // Joypad buttons
+            mouse_l = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B);
+            mouse_r = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A);
+         }
+
+         if(!mouse_l && !mouse_r) {
+            // Mouse buttons
+            mouse_l = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_LEFT);
+            mouse_r = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_RIGHT);
+         }
+
+         if(MOUSEMODE==1 && uae_devices[0] == RETRO_DEVICE_JOYPAD) {
+            // D-pad
+            if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT))
+               fmousex += PAS;
+            if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT))
+               fmousex -= PAS;
+            if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN))
+               fmousey += PAS;
+            if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP))
+               fmousey -= PAS;
+         }
+
+         if(opt_analogmouse == 1 || opt_analogmouse == 3) 
+             if(!fmousex && !fmousey && (!mapper_keys[16] && !mapper_keys[17] && !mapper_keys[18] && !mapper_keys[19])) {
+                // Left Analog
+                analog_left[0] = (input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X));
+                analog_left[1] = (input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y));
+
+                if(analog_left[0]<=-analog_deadzone)
+                   fmousex-=(-analog_left[0])/analog_sensitivity;
+                if(analog_left[0]>= analog_deadzone)
+                   fmousex+=( analog_left[0])/analog_sensitivity;
+                if(analog_left[1]<=-analog_deadzone)
+                   fmousey-=(-analog_left[1])/analog_sensitivity;
+                if(analog_left[1]>= analog_deadzone)
+                   fmousey+=( analog_left[1])/analog_sensitivity;
+         }
+
+         if(opt_analogmouse == 2 || opt_analogmouse == 3)
+             // No keymappings and mousing at the same time
+             if(!fmousex && !fmousey && (!mapper_keys[20] && !mapper_keys[21] && !mapper_keys[22] && !mapper_keys[23])) {
+                // Right Analog
+                analog_right[0] = (input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X));
+                analog_right[1] = (input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y));
+
+                if(analog_right[0]<=-analog_deadzone)
+                   fmousex-=(-analog_right[0])/analog_sensitivity;
+                if(analog_right[0]>= analog_deadzone)
+                   fmousex+=( analog_right[0])/analog_sensitivity;
+                if(analog_right[1]<=-analog_deadzone)
+                   fmousey-=(-analog_right[1])/analog_sensitivity;
+                if(analog_right[1]>= analog_deadzone)
+                   fmousey+=( analog_right[1])/analog_sensitivity;
+         }
+
+         if(!fmousex && !fmousey) {
+            // Real mouse
+            mouse_x = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_X);
+            mouse_y = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_Y);
+
+            if(mouse_x || mouse_y) {
+               fmousex = mouse_x;
+               fmousey = mouse_y;
+            }
+         }
+
+         if(mbL==0 && mouse_l)
+         {
+            mbL=1;
+            retro_mouse_but0(1);
+         }
+         else if(mbL==1 && !mouse_l)
+         {
+            retro_mouse_but0(0);
+            mbL=0;
+         }
+
+         if(mbR==0 && mouse_r)
+         {
+            mbR=1;
+            retro_mouse_but1(1);
+         }
+         else if(mbR==1 && !mouse_r)
+         {
+            retro_mouse_but1(0);
+            mbR=0;
+         }
+
+         if(fmousex || fmousey)
+            retro_mouse(fmousex, fmousey);
       }
    }
 }

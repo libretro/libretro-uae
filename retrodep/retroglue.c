@@ -82,17 +82,20 @@ void target_default_options (struct uae_prefs *p, int type)
 
 void retro_mouse(int dx, int dy)
 {
+   changed_prefs.jports[0].id = JSEM_MICE;
 	setmousestate (0, 0, dx, 0);
-    setmousestate (0, 1, dy, 0);	
+    setmousestate (0, 1, dy, 0);
 }
 
 void retro_mouse_but0(int down)
 {
+   changed_prefs.jports[0].id = JSEM_MICE;
 	setmousebuttonstate (0, 0, down);
 }
 
 void retro_mouse_but1(int down)
 {
+   changed_prefs.jports[0].id = JSEM_MICE;
 	setmousebuttonstate (0, 1, down);
 }
 
