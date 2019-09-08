@@ -12,7 +12,6 @@
 #ifndef ANDROID
 
 #if defined(__CELLOS_LV2__) || defined(_WIN32) || defined(__x86_64__) || defined(ARM) || defined(WIIU)
-#warning "TEST TESTFLAGS no opt"
 
 #ifdef WIIU
 #define FLAGBIT_N	31
@@ -463,9 +462,6 @@ N  Z  C  V
 */
 #if ARM_OPT_TEST
 
-#warning "TEST TESTFLAGS ARM opt2"
-//FIXME
-
 #define optflag_testl(v) \
          __asm__ __volatile__ (  \
 		"adds %1,%1,#0 \n"\
@@ -522,7 +518,6 @@ N  Z  C  V
 
 
 #else
-#warning "TEST TESTFLAGS no opt"
 
 #define FLAGBIT_N	15
 #define FLAGBIT_Z	14
