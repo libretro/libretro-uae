@@ -4909,7 +4909,11 @@ void default_prefs (struct uae_prefs *p, int type)
 	p->z3fastmem2_size = 0x00000000;
 	p->z3fastmem_start = 0x10000000;
 	p->chipmem_size = 0x00080000;
+#ifdef __LIBRETRO__
+	p->bogomem_size = 0x00000000;
+#else
 	p->bogomem_size = 0x00080000;
+#endif
 	p->rtgmem_size = 0x00000000;
 	p->rtgmem_type = 1;
 	p->custom_memory_addrs[0] = 0;
