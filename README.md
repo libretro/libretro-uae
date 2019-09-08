@@ -51,11 +51,12 @@ The following models are provided (hardcoded configuration):
 
 |Model|Description|
 |---|---|
-|A500|Simulate an Amiga 500 with OCS chipset, 0.5MB of RAM and 0.5MB of slow memory expansion.|
-|A500OG|Simulate an Amiga 500 with OCS chipset, 0.5MB of RAM.|
-|A500+|Simulate an Amiga 500+ with ECS chipset, 1MB of RAM and 1MB of slow memory expansion.|
-|A600|Simulate an Amiga 600 with ECS chipset, 2MB of RAM and 8MB of fast memory expansion.|
-|A1200|Simulate an Amiga 1200 with AGA chipset, 2MB of RAM and 8MB of fast memory expansion.|
+|A500|Amiga 500 with OCS chipset, 0.5MB of RAM and 0.5MB of slow memory expansion|
+|A500OG|Amiga 500 with OCS chipset, 0.5MB of RAM|
+|A500+|Amiga 500+ with ECS chipset, 1MB of RAM and 1MB of slow memory expansion|
+|A600|Amiga 600 with ECS chipset, 2MB of RAM and 8MB of fast memory expansion|
+|A1200|Amiga 1200 with AGA chipset, 2MB of RAM and 8MB of fast memory expansion|
+|A1200OG|Amiga 1200 with AGA chipset, 2MB of RAM|
 
 As the configuration file is only generated when launching a game you must restart RetroArch for the changes to take effects.
 
@@ -143,6 +144,7 @@ To do this just add these strings to your adf, hdf or m3u filename:
 - "(A500+)" or "(A500PLUS)" to use Amiga 500+
 - "(A600)" or "(ECS)" to use Amiga 600
 - "(A1200)" or "(AGA)" to use Amiga 1200
+- "(A1200OG)" or "(A1200NF)" to use Amiga 1200 without memory expansion
 
 Example: When launching "Alien Breed 2 (AGA).hdf" file the core will use an Amiga 1200 model.
 

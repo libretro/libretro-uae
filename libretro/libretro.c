@@ -130,6 +130,14 @@ fastmem_size=8\n\
 chipset_compatible=A1200\n\
 chipset=aga\n"
 
+#define A1200OG "\
+cpu_type=68ec020\n\
+chipmem_size=4\n\
+fastmem_size=0\n\
+chipset_compatible=A1200\n\
+chipset=aga\n"
+
+
 // Amiga default kickstarts
 
 #define A500_ROM    "kick34005.A500"
@@ -200,6 +208,7 @@ void retro_set_environment(retro_environment_t cb)
             { "A500PLUS", "A500+ (1MB Chip + 1MB Slow)" },
             { "A600", "A600 (2MB Chip + 8MB Fast)" },
             { "A1200", "A1200 (2MB Chip + 8MB Fast)" },
+            { "A1200OG", "A1200 (2MB Chip)" },
             { NULL, NULL },
          },
          "A500"
@@ -867,6 +876,11 @@ static void update_variables(void)
 		if (strcmp(var.value, "A1200") == 0)
 		{
 			strcat(uae_machine, A1200);
+			strcpy(uae_kickstart, A1200_ROM);
+		}
+		if (strcmp(var.value, "A1200OG") == 0)
+		{
+			strcat(uae_machine, A1200OG);
 			strcpy(uae_kickstart, A1200_ROM);
 		}
    }
@@ -1934,7 +1948,28 @@ bool retro_load_game(const struct retro_game_info *info)
 				char kickstart[RETRO_PATH_MAX];
 
 				// If a machine was specified in the name of the game
-				if((strstr(full_path, "(A500+)") != NULL) || (strstr(full_path, "(A500PLUS)") != NULL))
+				if((strstr(full_path, "(A1200OG)") != NULL) || (strstr(full_path, "(A1200NF)") != NULL))
+				{
+					// Use A1200 barebone
+					printf("Found '(A1200OG)' or '(A1200NF)' in filename '%s'. Booting A1200 NoFast with Kickstart 3.1 r40.068 rom.\n", full_path);
+					fprintf(configfile, A1200OG);
+					path_join((char*)&kickstart, retro_system_directory, A1200_ROM);
+				}
+				else if((strstr(full_path, "(A1200)") != NULL) || (strstr(full_path, "(AGA)") != NULL))
+				{
+					// Use A1200
+					printf("Found '(A1200)' or '(AGA)' in filename '%s'. Booting A1200 with Kickstart 3.1 r40.068 rom.\n", full_path);
+					fprintf(configfile, A1200);
+					path_join((char*)&kickstart, retro_system_directory, A1200_ROM);
+				}
+				else if((strstr(full_path, "(A600)") != NULL) || (strstr(full_path, "(ECS)") != NULL))
+				{
+					// Use A600
+					printf("Found '(A600)' or '(ECS)' in filename '%s'. Booting A600 with Kickstart 3.1 r40.063 rom.\n", full_path);
+					fprintf(configfile, A600);
+					path_join((char*)&kickstart, retro_system_directory, A600_ROM);
+				}
+				else if((strstr(full_path, "(A500+)") != NULL) || (strstr(full_path, "(A500PLUS)") != NULL))
 				{
 					// Use A500+
 					printf("Found '(A500+)' or '(A500PLUS)' in filename '%s'. Booting A500+ with Kickstart 2.04 r37.175.\n", full_path);
@@ -1954,20 +1989,6 @@ bool retro_load_game(const struct retro_game_info *info)
 					printf("Found '(A500)' or '(OCS)' in filename '%s'. Booting A500 with Kickstart 1.3 r34.005.\n", full_path);
 					fprintf(configfile, A500);
 					path_join((char*)&kickstart, retro_system_directory, A500_ROM);
-				}
-				else if((strstr(full_path, "(A600)") != NULL) || (strstr(full_path, "(ECS)") != NULL))
-				{
-					// Use A600
-					printf("Found '(A600)' or '(ECS)' in filename '%s'. Booting A600 with Kickstart 3.1 r40.063 rom.\n", full_path);
-					fprintf(configfile, A600);
-					path_join((char*)&kickstart, retro_system_directory, A600_ROM);
-				}
-				else if((strstr(full_path, "(A1200)") != NULL) || (strstr(full_path, "(AGA)") != NULL))
-				{
-					// Use A1200
-					printf("Found '(A1200)' or '(AGA)' in filename '%s'. Booting A1200 with Kickstart 3.1 r40.068 rom.\n", full_path);
-					fprintf(configfile, A1200);
-					path_join((char*)&kickstart, retro_system_directory, A1200_ROM);
 				}
 				else
 				{
