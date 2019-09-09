@@ -42,6 +42,7 @@ extern int turbo_fire_button;
 extern unsigned int turbo_pulse;
 int pix_bytes = 2;
 static bool pix_bytes_initialized = false;
+bool fake_ntsc = false;
 
 #if defined(NATMEM_OFFSET)
 extern uae_u8 *natmem_offset;
@@ -1816,6 +1817,110 @@ void retro_get_system_info(struct retro_system_info *info)
    info->valid_extensions = "adf|dms|fdi|ipf|zip|hdf|hdz|uae|m3u";
 }
 
+void retro_update_geometry(bool isntsc)
+{
+   /* Change PAL/NTSC with a twist, thanks to Dyna Blaster
+
+      Early Startup switch looks proper:
+         PAL mode V=49.9201Hz H=15625.0881Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
+         NTSC mode V=59.8859Hz H=15590.7473Hz (227x262+1) IDX=11 (NTSC) D=0 RTG=0/0
+         PAL mode V=49.9201Hz H=15625.0881Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
+
+      Dyna Blaster switch looks unorthodox:
+         PAL mode V=49.9201Hz H=15625.0881Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
+         PAL mode V=59.4106Hz H=15625.0881Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
+         PAL mode V=49.9201Hz H=15625.0881Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
+   */
+
+   int hz = currprefs.chipset_refreshrate;
+   int video_config_old = video_config;
+
+   /* Change to NTSC if not NTSC */
+   if (isntsc && (video_config & PUAE_VIDEO_PAL) && !fake_ntsc)
+   {
+      video_config |= PUAE_VIDEO_NTSC;
+      video_config &= ~PUAE_VIDEO_PAL;
+   }
+   /* Change to PAL if not PAL */
+   else if (!isntsc && (video_config & PUAE_VIDEO_NTSC) && !fake_ntsc)
+   {
+      video_config |= PUAE_VIDEO_PAL;
+      video_config &= ~PUAE_VIDEO_NTSC;
+   }
+
+   /* Do nothing if config has not changed, unless Hz switched without isntsc */
+   if(video_config_old == video_config)
+   {
+      /* Dyna Blaster and the like stays at fake NTSC to prevent pointless switching back and forth */
+      if (!isntsc && (video_config & PUAE_VIDEO_PAL) && hz > 55)
+      {
+         video_config |= PUAE_VIDEO_NTSC;
+         video_config &= ~PUAE_VIDEO_PAL;
+         fake_ntsc=true;
+      }
+      else
+      {
+         return;
+      }
+   }
+
+   switch(video_config)
+   {
+      case PUAE_VIDEO_PAL_OV_LO:
+         retrow = 360;
+         retroh = 284;
+         break;
+      case PUAE_VIDEO_PAL_CR_LO:
+         retrow = 320;
+         retroh = 256;
+         break;
+      case PUAE_VIDEO_NTSC_OV_LO:
+         retrow = 360;
+         retroh = 240;
+         break;
+      case PUAE_VIDEO_NTSC_CR_LO:
+         retrow = 320;
+         retroh = 200;
+         break;
+      case PUAE_VIDEO_PAL_OV_HI:
+         retrow = 720;
+         retroh = 568;
+         break;
+      case PUAE_VIDEO_PAL_CR_HI:
+         retrow = 640;
+         retroh = 512;
+         break;
+      case PUAE_VIDEO_NTSC_OV_HI:
+         retrow = 720;
+         retroh = 480;
+         break;
+      case PUAE_VIDEO_NTSC_CR_HI:
+         retrow = 640;
+         retroh = 400;
+         break;
+   }
+
+   static struct retro_system_av_info new_av_info;
+   new_av_info.geometry.base_width = retrow;
+   new_av_info.geometry.base_height = retroh;
+
+   if(video_config & PUAE_VIDEO_NTSC) {
+      new_av_info.geometry.aspect_ratio=(float)retrow/(float)retroh * 44.0/52.0;
+      hz = 60;
+   } else {
+      new_av_info.geometry.aspect_ratio=(float)retrow/(float)retroh;
+      hz = 50;
+   }
+
+   struct retro_system_av_info new_timing;
+   retro_get_system_av_info(&new_timing);
+   new_timing.timing.fps = hz;
+
+   fprintf(stderr, "[libretro-uae]: Update retro geometry: %dx%d %dHz, video_config:%d\n", retrow, retroh, hz, video_config);
+   environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
+   environ_cb(RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO, &new_timing);
+}
+
 void retro_get_system_av_info(struct retro_system_av_info *info)
 {
    /* need to do this here because core option values are not available in retro_init */
@@ -1845,7 +1950,6 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
       geom.aspect_ratio=(float)retrow/(float)retroh * 44.0/52.0;
    else
       geom.aspect_ratio=(float)retrow/(float)retroh;
-
    info->geometry = geom;
 
    info->timing.sample_rate = 44100.0;
@@ -1875,6 +1979,7 @@ void retro_shutdown_uae(void)
 void retro_reset(void)
 {
    uae_reset(1, 1); /* hardreset, keyboardreset */
+   fake_ntsc=false;
 }
 
 void retro_audio_cb( short l, short r)

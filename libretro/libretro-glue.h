@@ -18,6 +18,7 @@
 extern cothread_t mainThread;
 extern cothread_t emuThread;
 
+void retro_update_geometry(bool);
 
 #define LOGI printf
 
