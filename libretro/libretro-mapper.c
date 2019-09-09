@@ -183,22 +183,6 @@ return (cpu_features_get_time_usec())/1000;
 
 } 
 
-void gui_poll_events(void)
-{
-   //NO SURE FIND BETTER WAY TO COME BACK IN MAIN THREAD IN HATARI GUI
-
-   Ktime = GetTicks();
-
-   if(Ktime - LastFPSTime >= 1000/50)
-   {
-      slowdown=0;
-      frame++; 
-      LastFPSTime = Ktime;		
-      co_switch(mainThread);
-      //retro_run();
-   }
-}
-
 void Print_Status(void)
 {
    if (!opt_enhanced_statusbar)
