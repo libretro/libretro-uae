@@ -168,7 +168,7 @@ return false;
 }
 
 //win32.cpp
-int extraframewait = 5;
+int extraframewait = 0;
 
 void sleep_millis_main (int ms)
 {

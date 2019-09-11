@@ -5534,12 +5534,17 @@ static void do_savestate(void);
 
 static int rpt_vsync (int adjust)
 {
+#ifdef __LIBRETRO__
+	frame_time_t curr_time = read_processor_time ();
+	int v = curr_time;
+#else
 	frame_time_t curr_time = read_processor_time ();
 	int v = curr_time - vsyncwaittime + adjust;
 	if (v > syncbase || v < -syncbase) {
 		vsyncmintime = vsyncmaxtime = vsyncwaittime = curr_time;
 		v = 0;
 	}
+#endif
 	return v;
 }
 
@@ -5914,7 +5919,11 @@ static void fpscounter (bool frameok)
 
 	if ((timeframes & 7) == 0) {
 		double idle = 1000 - (idle_mavg.mavg == 0 ? 0.0 : (double)idle_mavg.mavg * 1000.0 / vsynctimebase);
+#ifdef __LIBRETRO__
+		int fps = fake_vblank_hz * 10;
+#else
 		int fps = fps_mavg.mavg == 0 ? 0 : syncbase * 10 / fps_mavg.mavg;
+#endif
 		if (fps > 9999)
 			fps = 9999;
 		if (idle < 0)
@@ -5942,15 +5951,6 @@ static void vsync_handler_pre (void)
 	if (bogusframe > 0)
 		bogusframe--;
 
-	while (handle_events ()) {
-		// we are paused, do all config checks but don't do any emulation
-		if (vsync_handle_check ()) {
-			redraw_frame ();
-			render_screen (true);
-			show_screen (0);
-		}
-		config_check_vsync ();
-	}
 
 #ifdef PICASSO96
 	if (isvsync_rtg () >= 0)
@@ -5963,12 +5963,6 @@ static void vsync_handler_pre (void)
 #endif
 	CIA_vsync_prehandler ();
 
-	if (quit_program > 0) {
-		/* prevent possible infinite loop at wait_cycles().. */
-		framecnt = 0;
-		reset_decisions ();
-		return;
-	}
 
 	config_check_vsync ();
 	if (timehack_alive > 0)
@@ -6005,6 +5999,23 @@ static void vsync_handler_pre (void)
 	}
 
 	fpscounter (frameok);
+
+	while (handle_events ()) {
+		// we are paused, do all config checks but don't do any emulation
+		if (vsync_handle_check ()) {
+			redraw_frame ();
+			render_screen (true);
+			show_screen (0);
+		}
+		config_check_vsync ();
+	}
+
+	if (quit_program > 0) {
+		/* prevent possible infinite loop at wait_cycles().. */
+		framecnt = 0;
+		reset_decisions ();
+		return;
+	}
 
 	vsync_rendered = false;
 	frame_shown = false;

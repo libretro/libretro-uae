@@ -10,16 +10,18 @@
 #include "gui.h"
 #include "custom.h"
 #include "drawing.h"
+#include "inputdevice.h"
 #include "statusline.h"
 
+#ifdef __LIBRETRO__
+extern int opt_statusbar_position;
 extern int LEDON;
+#endif
 
 /*
 * Some code to put status information on the screen.
 */
-#ifdef __LIBRETRO__
-extern int opt_statusbar_position;
-#endif
+
 void statusline_getpos (int *x, int *y, int width, int height)
 {
 #ifdef __LIBRETRO__
@@ -50,14 +52,14 @@ void statusline_getpos (int *x, int *y, int width, int height)
 	}
 }
 
-static const char *numbers = { /* ugly  0123456789CHD%+- */
-	"+++++++--++++-+++++++++++++++++-++++++++++++++++++++++++++++++++++++++++++++-++++++-++++----++---+--------------"
-	"+xxxxx+--+xx+-+xxxxx++xxxxx++x+-+x++xxxxx++xxxxx++xxxxx++xxxxx++xxxxx++xxxx+-+x++x+-+xxx++-+xx+-+x---+----------"
-	"+x+++x+--++x+-+++++x++++++x++x+++x++x++++++x++++++++++x++x+++x++x+++x++x++++-+x++x+-+x++x+--+x++x+--+x+----+++--"
-	"+x+-+x+---+x+-+xxxxx++xxxxx++xxxxx++xxxxx++xxxxx+--++x+-+xxxxx++xxxxx++x+----+xxxx+-+x++x+----+x+--+xxx+--+xxx+-"
-	"+x+++x+---+x+-+x++++++++++x++++++x++++++x++x+++x+--+x+--+x+++x++++++x++x++++-+x++x+-+x++x+---+x+x+--+x+----+++--"
-	"+xxxxx+---+x+-+xxxxx++xxxxx+----+x++xxxxx++xxxxx+--+x+--+xxxxx++xxxxx++xxxx+-+x++x+-+xxx+---+x++xx--------------"
-	"+++++++---+++-++++++++++++++----+++++++++++++++++--+++--++++++++++++++++++++-++++++-++++------------------------"
+static const char *numbers = { /* ugly  0123456789CHD%+-PNK */
+	"+++++++--++++-+++++++++++++++++-++++++++++++++++++++++++++++++++++++++++++++-++++++-++++----++---+--------------+++++++++++++++++++++"
+	"+xxxxx+--+xx+-+xxxxx++xxxxx++x+-+x++xxxxx++xxxxx++xxxxx++xxxxx++xxxxx++xxxx+-+x++x+-+xxx++-+xx+-+x---+----------+xxxxx++x+++x++x++x++"
+	"+x+++x+--++x+-+++++x++++++x++x+++x++x++++++x++++++++++x++x+++x++x+++x++x++++-+x++x+-+x++x+--+x++x+--+x+----+++--+x---x++xx++x++x+x+++"
+	"+x+-+x+---+x+-+xxxxx++xxxxx++xxxxx++xxxxx++xxxxx+--++x+-+xxxxx++xxxxx++x+----+xxxx+-+x++x+----+x+--+xxx+--+xxx+-+xxxxx++x+x+x++xx++++"
+	"+x+++x+---+x+-+x++++++++++x++++++x++++++x++x+++x+--+x+--+x+++x++++++x++x++++-+x++x+-+x++x+---+x+x+--+x+----+++--+x++++++x+x+x++x+x+++"
+	"+xxxxx+---+x+-+xxxxx++xxxxx+----+x++xxxxx++xxxxx+--+x+--+xxxxx++xxxxx++xxxx+-+x++x+-+xxx+---+x++xx--------------+x+----+x++xx++x++x++"
+	"+++++++---+++-++++++++++++++----+++++++++++++++++--+++--++++++++++++++++++++-++++++-++++------------------------+++----++++++++++++++"
 };
 
 STATIC_INLINE uae_u32 ledcolor (uae_u32 c, uae_u32 *rc, uae_u32 *gc, uae_u32 *bc, uae_u32 *a)
@@ -85,8 +87,10 @@ static void write_tdnumber (uae_u8 *buf, int bpp, int x, int y, int num, uae_u32
 
 void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u32 *rc, uae_u32 *gc, uae_u32 *bc, uae_u32 *alpha)
 {
+#ifdef __LIBRETRO__
 	if(LEDON==-1)
 		return;
+#endif
 
 	int x_start, j, led, border;
 	uae_u32 c1, c2, cb;
@@ -113,7 +117,11 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
 		if (led >= LED_DF0 && led <= LED_DF3) {
 			int pled = led - LED_DF0;
 			int track = gui_data.drive_track[pled];
-			pos = 6 + pled;
+#ifdef __LIBRETRO__
+            pos = 6 + pled;
+#else
+			pos = 7 + pled;
+#endif
 			on_rgb = 0x00cc00;
 			on_rgb2 = 0x006600;
 			off_rgb = 0x003300;
@@ -139,49 +147,75 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
 		} else if (led == LED_CD) {
 			pos = 5;
 			if (gui_data.cd >= 0) {
-			on = gui_data.cd & (LED_CD_AUDIO | LED_CD_ACTIVE);
-			on_rgb = (on & LED_CD_AUDIO) ? 0x00cc00 : 0x0000cc;
-			if ((gui_data.cd & LED_CD_ACTIVE2) && !(gui_data.cd & LED_CD_AUDIO)) {
-				on_rgb &= 0xfefefe;
-				on_rgb >>= 1;
-			}
-			off_rgb = 0x000033;
-			num1 = -1;
-			num2 = 10;
-			num3 = 12;
-			}
+			    on = gui_data.cd & (LED_CD_AUDIO | LED_CD_ACTIVE);
+#ifdef __LIBRETRO__
+                on_rgb = (on & LED_CD_AUDIO) ? 0x333300 : 0xcccc00;
+                off_rgb = 0x333300;
+#else
+			    on_rgb = (on & LED_CD_AUDIO) ? 0x00cc00 : 0x0000cc;
+			    off_rgb = 0x000033;
+#endif
+			    if ((gui_data.cd & LED_CD_ACTIVE2) && !(gui_data.cd & LED_CD_AUDIO)) {
+			        on_rgb &= 0xfefefe;
+			        on_rgb >>= 1;
+                }
+                num1 = -1;
+                num2 = 10;
+                num3 = 12;
+            }
 		} else if (led == LED_HD) {
 			pos = 4;
 			if (gui_data.hd >= 0) {
-			on = gui_data.hd;
-			on_rgb = on == 2 ? 0xcc0000 : 0x0000cc;
-			off_rgb = 0x000033;
-			num1 = -1;
-			num2 = 11;
-			num3 = 12;
+			    on = gui_data.hd;
+#ifdef __LIBRETRO__
+			    on_rgb = on == 2 ? 0x333300 : 0xcccc00;
+			    off_rgb = 0x333300;
+#else
+			    on_rgb = on == 2 ? 0xcc0000 : 0x0000cc;
+			    off_rgb = 0x000033;
+#endif
+			    num1 = -1;
+			    num2 = 11;
+			    num3 = 12;
 			}
 		} else if (led == LED_FPS) {
-			pos = 2;
-			int fps = (gui_data.fps + 5) / 10;
-			on_rgb = 0x000000;
-			off_rgb = gui_data.fps_color ? 0xcccc00 : 0x000000;
-			am = 3;
-            if (fps > 999) {
-                 fps += 50;
-                 fps /= 10;
-                 if (fps > 999)
-                     fps = 999;
-                 num1 = fps / 100;
-                 num2 = 18;
-                 num3 = (fps - num1 * 100) / 10;
-             } else {
-                 num1 = fps / 100;
-                 num2 = (fps - num1 * 100) / 10;
-                 num3 = fps % 10;
-                 if (num1 == 0)
-                     am = 2;
-             }
+#ifdef __LIBRETRO__
+            pos = 10;
+#else
+		    pos = 2;
+#endif
+            if (pause_emulation) {
+                num1 = -1;
+                num2 = -1;
+                num3 = 16;
+                on_rgb = 0xcccccc;
+                off_rgb = 0x000000;
+                am = 2;
+            } else {
+                int fps = (gui_data.fps + 5) / 10;
+                on_rgb = 0x000000;
+                off_rgb = gui_data.fps_color ? 0xcccc00 : 0x000000;
+                am = 3;
+                if (fps > 999) {
+                    fps += 50;
+                    fps /= 10;
+                    if (fps > 999)
+                        fps = 999;
+                    num1 = fps / 100;
+                    num2 = 18;
+                    num3 = (fps - num1 * 100) / 10;
+                } else {
+                    num1 = fps / 100;
+                    num2 = (fps - num1 * 100) / 10;
+                    num3 = fps % 10;
+                    if (num1 == 0)
+                        am = 2;
+                }
+            }
 		} else if (led == LED_CPU) {
+#ifdef __LIBRETRO__
+			continue;
+#endif
 			int idle = (gui_data.idle + 5) / 10;
 			pos = 1;
 			on_rgb = 0xcc0000;
@@ -190,10 +224,19 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
 				on_rgb = 0xcccc00;
 				idle = 0;
 				on = 1;
-				num1 = -1;
-				num2 = 11;
-				num3 = gui_data.cpu_halted;
-				am = 2;
+                if (gui_data.cpu_halted < 0) {
+                    on_rgb = 0x000000;
+                    num1 = 16; // PPC
+                    num2 = 16;
+                    num3 = 10;
+                    am = 3;
+                } else {
+                    on_rgb = 0xcccc00;
+                    num1 = gui_data.cpu_halted >= 10 ? 11 : -1;
+                    num2 = gui_data.cpu_halted >= 10 ? gui_data.cpu_halted / 10 : 11;
+                    num3 = gui_data.cpu_halted % 10;
+                    am = 2;
+                }
 			} else {
 				num1 = idle / 100;
 				num2 = (idle - num1 * 100) / 10;
@@ -202,6 +245,9 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
 				am = 3;
 			}
 		} else if (led == LED_SND) {
+#ifdef __LIBRETRO__
+			continue;
+#endif
 			int snd = abs(gui_data.sndbuf + 5) / 10;
 			if (snd > 99)
 				snd = 99;
@@ -223,7 +269,10 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
 			am = 3;
 		} else if (led == LED_MD && gui_data.drive_disabled[3]) {
 			// DF3 reused as internal non-volatile ram led (cd32/cdtv)
-			pos = 6 + 3;
+#ifdef __LIBRETRO__
+            continue;
+#endif
+			pos = 7 + 3;
 			if (gui_data.md >= 0) {
 				on = gui_data.md;
 				on_rgb = on == 2 ? 0xcc0000 : 0x00cc00;
@@ -232,8 +281,27 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
 			num1 = -1;
 			num2 = -1;
 			num3 = -1;
-		} else
-			return;
+        } else if (led == LED_NET) {
+#ifdef __LIBRETRO__
+            continue;
+#endif
+            pos = 6;
+            if (gui_data.net >= 0) {
+                on = gui_data.net;
+                on_rgb = 0;
+                if (on & 1)
+                    on_rgb |= 0x00cc00;
+                if (on & 2)
+                    on_rgb |= 0xcc0000;
+                off_rgb = 0x000000;
+                num1 = -1;
+                num2 = -1;
+                num3 = 17;
+                am = 1;
+            }
+		} else {
+			continue;
+        }
 		on_rgb |= 0x33000000;
 		off_rgb |= 0x33000000;
 		if (half > 0) {
@@ -244,9 +312,12 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
 			c = ledcolor (on ? on_rgb : off_rgb, rc, gc, bc, alpha);
 		}
 		border = 0;
+
 		if (y == 0 || y == TD_TOTAL_HEIGHT - 1) {
 			c = ledcolor (TD_BORDER, rc, gc, bc, alpha);
+#ifndef __LIBRETRO__ // Disable rounded borders
 			border = 1;
+#endif
 		}
 
 		x = x_start + pos * TD_WIDTH;

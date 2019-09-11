@@ -283,10 +283,12 @@ void retro_set_environment(retro_environment_t cb)
             { "bottom1", "Bottom + 1" },
             { "bottom2", "Bottom + 2" },
             { "bottom3", "Bottom + 3" },
+            { "bottom4", "Bottom + 4" },
             { "top", "Top" },
             { "top1", "Top + 1" },
             { "top2", "Top + 2" },
             { "top3", "Top + 3" },
+            { "top4", "Top + 4" },
             { NULL, NULL },
          },
          "bottom"
@@ -994,19 +996,21 @@ static void update_variables(void)
       else if(strcmp(var.value, "top1") == 0) opt_statusbar_position = -10;
       else if(strcmp(var.value, "top2") == 0) opt_statusbar_position = -20;
       else if(strcmp(var.value, "top3") == 0) opt_statusbar_position = -30;
+      else if(strcmp(var.value, "top4") == 0) opt_statusbar_position = -40;
       else if(strcmp(var.value, "bottom") == 0) opt_statusbar_position = 0;
       else if(strcmp(var.value, "bottom1") == 0) opt_statusbar_position = 10;
       else if(strcmp(var.value, "bottom2") == 0) opt_statusbar_position = 20;
       else if(strcmp(var.value, "bottom3") == 0) opt_statusbar_position = 30;
+      else if(strcmp(var.value, "bottom4") == 0) opt_statusbar_position = 40;
 
       /* Exceptions for lo-res and enhanced statusbar */
       if(video_config & 0x04) // PUAE_VIDEO_HIRES
          ;
       else
          if(opt_enhanced_statusbar)
-            opt_statusbar_position = (opt_statusbar_position < 0) ? ((opt_statusbar_position==-1) ? -10 : opt_statusbar_position-10) : opt_statusbar_position+12;
+            opt_statusbar_position = (opt_statusbar_position < 0) ? ((opt_statusbar_position==-1) ? -10 : opt_statusbar_position-10) : opt_statusbar_position+10;
          else
-            opt_statusbar_position = (opt_statusbar_position < 0) ? ((opt_statusbar_position==-1) ? -2 : opt_statusbar_position-2) : opt_statusbar_position+2;
+            opt_statusbar_position = (opt_statusbar_position < 0) ? ((opt_statusbar_position==-1) ? -1 : opt_statusbar_position-2) : opt_statusbar_position;
 
       /* Screen refresh required */
       if(opt_statusbar_position_old != opt_statusbar_position)
