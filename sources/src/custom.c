@@ -3222,7 +3222,7 @@ void compute_framesync (void)
 	);
 
 #ifdef __LIBRETRO__
-	retro_update_geometry(isntsc);
+	retro_update_av_info(1, 1, isntsc);
 #endif
 
 	config_changed = 1;

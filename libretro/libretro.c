@@ -58,6 +58,10 @@ extern unsigned short * sndbuffer;
 extern int sndbufsize;
 static int firstpass = 1;
 unsigned int video_config = 0;
+unsigned int video_config_old = 0;
+unsigned int video_config_aspect = 0;
+unsigned int video_config_geometry = 0;
+unsigned int video_config_allow_hz_change = 0;
 unsigned int inputdevice_finalized = 0;
 
 #include "libretro-keyboard.i"
@@ -224,6 +228,29 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "PAL"
+      },
+      {
+         "puae_video_aspect",
+         "Aspect ratio",
+         "",
+         {
+            { "Auto", "Automatic" },
+            { "PAL", NULL },
+            { "NTSC", NULL },
+            { NULL, NULL },
+         },
+         "Auto"
+      },
+      {
+         "puae_video_allow_hz_change",
+         "Allow PAL/NTSC Hz change",
+         "",
+         {
+            { "enabled", NULL },
+            { "disabled", NULL },
+            { NULL, NULL },
+         },
+         "enabled"
       },
       {
          "puae_video_hires",
@@ -891,16 +918,37 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if(strcmp(var.value, "PAL") == 0)
-      {
-         video_config |= PUAE_VIDEO_PAL;
-         strcat(uae_config, "ntsc=false\n");
-      }
-      else
-      {
-         video_config |= PUAE_VIDEO_NTSC;
-         strcat(uae_config, "ntsc=true\n");
-      }
+      /* video_config change only at start */
+      if(video_config_old == 0)
+         if(strcmp(var.value, "PAL") == 0)
+         {
+            video_config |= PUAE_VIDEO_PAL;
+            strcat(uae_config, "ntsc=false\n");
+         }
+         else
+         {
+            video_config |= PUAE_VIDEO_NTSC;
+            strcat(uae_config, "ntsc=true\n");
+         }
+   }
+
+   var.key = "puae_video_aspect";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if(strcmp(var.value, "Auto") == 0) video_config_aspect = 0;
+      else if(strcmp(var.value, "PAL") == 0) video_config_aspect = PUAE_VIDEO_PAL;
+      else if(strcmp(var.value, "NTSC") == 0) video_config_aspect = PUAE_VIDEO_NTSC;
+   }
+
+   var.key = "puae_video_allow_hz_change";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if(strcmp(var.value, "enabled") == 0) video_config_allow_hz_change = 1;
+      else if(strcmp(var.value, "disabled") == 0) video_config_allow_hz_change = 0;
    }
 
    var.key = "puae_video_hires";
@@ -1416,9 +1464,9 @@ static void update_variables(void)
 
 
 
-    /* Always trigger audio change */
-    config_changed = 1;
-    check_prefs_changed_audio();
+   /* Always trigger audio change */
+   config_changed = 1;
+   check_prefs_changed_audio();
 
 	// Setting resolution
 	// According to PUAE configuration.txt :
@@ -1491,6 +1539,10 @@ static void update_variables(void)
 			strcat(uae_config, "gfx_linemode=double\n");
 			break;
    }
+
+   /* av_info geometry update always */
+   if(retro_update_av_info(1, 0, 0))
+      Screen_SetFullUpdate();
 }
 
 static void retro_wrap_emulator(void)
@@ -1817,8 +1869,11 @@ void retro_get_system_info(struct retro_system_info *info)
    info->valid_extensions = "adf|dms|fdi|ipf|zip|hdf|hdz|uae|m3u";
 }
 
-void retro_update_geometry(bool isntsc)
+bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
 {
+   float hz = currprefs.chipset_refreshrate;
+   fprintf(stderr, "[libretro-uae]: Trying to update AV geometry:%d timing:%d, to: ntsc:%d hz:%2.2f, from video_config:%d, video_aspect:%d\n", change_geometry, change_timing, isntsc, hz, video_config, video_config_aspect);
+
    /* Change PAL/NTSC with a twist, thanks to Dyna Blaster
 
       Early Startup switch looks proper:
@@ -1832,39 +1887,65 @@ void retro_update_geometry(bool isntsc)
          PAL mode V=49.9201Hz H=15625.0881Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
    */
 
-   int hz = currprefs.chipset_refreshrate;
-   int video_config_old = video_config;
+   video_config_old = video_config;
+   video_config_geometry = video_config;
 
-   /* Change to NTSC if not NTSC */
-   if (isntsc && (video_config & PUAE_VIDEO_PAL) && !fake_ntsc)
+   /* When timing & geometry is changed */
+   if(change_timing)
    {
-      video_config |= PUAE_VIDEO_NTSC;
-      video_config &= ~PUAE_VIDEO_PAL;
-   }
-   /* Change to PAL if not PAL */
-   else if (!isntsc && (video_config & PUAE_VIDEO_NTSC) && !fake_ntsc)
-   {
-      video_config |= PUAE_VIDEO_PAL;
-      video_config &= ~PUAE_VIDEO_NTSC;
-   }
-
-   /* Do nothing if config has not changed, unless Hz switched without isntsc */
-   if(video_config_old == video_config)
-   {
-      /* Dyna Blaster and the like stays at fake NTSC to prevent pointless switching back and forth */
-      if (!isntsc && (video_config & PUAE_VIDEO_PAL) && hz > 55)
+      /* Change to NTSC if not NTSC */
+      if (isntsc && (video_config & PUAE_VIDEO_PAL) && !fake_ntsc)
       {
          video_config |= PUAE_VIDEO_NTSC;
          video_config &= ~PUAE_VIDEO_PAL;
-         fake_ntsc=true;
       }
-      else
+      /* Change to PAL if not PAL */
+      else if (!isntsc && (video_config & PUAE_VIDEO_NTSC) && !fake_ntsc)
       {
-         return;
+         video_config |= PUAE_VIDEO_PAL;
+         video_config &= ~PUAE_VIDEO_NTSC;
+      }
+
+      /* Main video config will be changed too */
+      video_config_geometry = video_config;
+   }
+   else
+   {
+      /* Plain geometry change changes only temporary video config */
+      if (video_config_aspect == PUAE_VIDEO_NTSC)
+      {
+         video_config_geometry |= PUAE_VIDEO_NTSC;
+         video_config_geometry &= ~PUAE_VIDEO_PAL;
+      }
+      else if (video_config_aspect == PUAE_VIDEO_PAL)
+      {
+         video_config_geometry |= PUAE_VIDEO_PAL;
+         video_config_geometry &= ~PUAE_VIDEO_NTSC;
       }
    }
 
-   switch(video_config)
+   /* Do nothing if timing has not changed, unless Hz switched without isntsc */
+   if(video_config_old == video_config && change_timing)
+   {
+      /* Dyna Blaster and the like stays at fake NTSC to prevent pointless switching back and forth */
+      if (!isntsc && hz > 55)
+      {
+         video_config |= PUAE_VIDEO_NTSC;
+         video_config &= ~PUAE_VIDEO_PAL;
+         video_config_geometry = video_config;
+         fake_ntsc=true;
+      }
+
+      /* If still no change */
+      if(video_config_old == video_config)
+      {
+         fprintf(stderr, "[libretro-uae]: Already at wanted AV\n");
+         return false;
+      }
+   }
+
+   /* Geometry dimensions */
+   switch(video_config_geometry)
    {
       case PUAE_VIDEO_PAL_OV_LO:
          retrow = 360;
@@ -1900,11 +1981,15 @@ void retro_update_geometry(bool isntsc)
          break;
    }
 
+   /* Need to change defaults too to get forced aspect at start */
+   defaultw = retrow;
+   defaulth = retroh;
+
    static struct retro_system_av_info new_av_info;
    new_av_info.geometry.base_width = retrow;
    new_av_info.geometry.base_height = retroh;
 
-   if(video_config & PUAE_VIDEO_NTSC) {
+   if(video_config_geometry & PUAE_VIDEO_NTSC || video_config_aspect == PUAE_VIDEO_NTSC) {
       new_av_info.geometry.aspect_ratio=(float)retrow/(float)retroh * 44.0/52.0;
       hz = 60;
    } else {
@@ -1912,13 +1997,30 @@ void retro_update_geometry(bool isntsc)
       hz = 50;
    }
 
-   struct retro_system_av_info new_timing;
-   retro_get_system_av_info(&new_timing);
-   new_timing.timing.fps = hz;
+   /* Disable Hz change if not allowed */
+   if(!video_config_allow_hz_change)
+      change_timing = 0;
 
-   fprintf(stderr, "[libretro-uae]: Update retro geometry: %dx%d %dHz, video_config:%d\n", retrow, retroh, hz, video_config);
-   environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
-   environ_cb(RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO, &new_timing);
+   /* Logging */
+   if(change_geometry && change_timing) {
+      fprintf(stderr, "[libretro-uae]: Update av_info: %dx%d %2.2fHz, video_config:%d\n", retrow, retroh, hz, video_config_geometry);
+   } else if(change_geometry && !change_timing) {
+      fprintf(stderr, "[libretro-uae]: Update geometry: %dx%d, video_config:%d\n", retrow, retroh, video_config_geometry);
+   } else if(!change_geometry && change_timing) {
+      fprintf(stderr, "[libretro-uae]: Update timing: %2.2fHz, video_config:%d\n", hz, video_config_geometry);
+   }
+
+   if(change_timing) {
+      struct retro_system_av_info new_timing;
+      retro_get_system_av_info(&new_timing);
+      new_timing.timing.fps = hz;
+      environ_cb(RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO, &new_timing);
+   }
+
+   if(change_geometry) {
+      environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
+   }
+   return true;
 }
 
 void retro_get_system_av_info(struct retro_system_av_info *info)
