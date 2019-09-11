@@ -420,7 +420,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_floppy_sound",
          "Floppy sound emulation",
-         "Needs restart and external files in system/uae_data/",
+         "Needs external files in system/uae_data/",
          {
             { "100", "disabled" },
             { "90", "10\% volume" },
@@ -1127,6 +1127,10 @@ static void update_variables(void)
         strcat(uae_config, "floppy_volume=");
         strcat(uae_config, var.value);
         strcat(uae_config, "\n");
+
+        /* Setting volume in realtime will crash on first pass */
+        if(firstpass != 1)
+           changed_prefs.dfxclickvolume=atoi(var.value);
    }
 
    var.key = "puae_immediate_blits";
