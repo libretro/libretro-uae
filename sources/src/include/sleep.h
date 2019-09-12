@@ -20,7 +20,8 @@
 #endif
 
 #ifdef __LIBRETRO__
-#define SDL_Delay GetTicks2
+#include "retro_timers.h"
+#define uae_msleep(msecs) retro_sleep(msecs)
 #endif
 
 #define ONE_THOUSAND	1000
@@ -44,6 +45,8 @@
  * Sleep for ms milliseconds using an appropriate system-dependent sleep
  * functions.
  */
+#ifndef __LIBRETRO__
+
 #ifdef __BEOS__
 # define uae_msleep(msecs) snooze (msecs * ONE_THOUSAND)
 #elif defined(WIIU)
@@ -81,4 +84,5 @@
 #      error "No system sleep function found"
 #endif // Get uae_msleep working
 
+#endif // __LIBRETRO__
 void sleep_test (void);

@@ -284,11 +284,15 @@ void retro_set_environment(retro_environment_t cb)
             { "bottom2", "Bottom + 2" },
             { "bottom3", "Bottom + 3" },
             { "bottom4", "Bottom + 4" },
+            { "bottom5", "Bottom + 5" },
+            { "bottom6", "Bottom + 6" },
             { "top", "Top" },
             { "top1", "Top + 1" },
             { "top2", "Top + 2" },
             { "top3", "Top + 3" },
             { "top4", "Top + 4" },
+            { "top5", "Top + 5" },
+            { "top6", "Top + 6" },
             { NULL, NULL },
          },
          "bottom"
@@ -307,7 +311,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_cpu_speed",
          "CPU speed",
-         "Needs restart",
+         "Needs restart. Max needs cycle exact off",
          {
             { "real", "Real" },
             { "max", "Max" },
@@ -466,7 +470,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_gfx_framerate",
          "Frameskip",
-         "Cycle exact needs to be false for this to come into effect at startup",
+         "Cycle exact needs to be off for this to come into effect at startup",
          {
             { "disabled", NULL },
             { "1", NULL },
@@ -997,11 +1001,15 @@ static void update_variables(void)
       else if(strcmp(var.value, "top2") == 0) opt_statusbar_position = -20;
       else if(strcmp(var.value, "top3") == 0) opt_statusbar_position = -30;
       else if(strcmp(var.value, "top4") == 0) opt_statusbar_position = -40;
+      else if(strcmp(var.value, "top5") == 0) opt_statusbar_position = -50;
+      else if(strcmp(var.value, "top6") == 0) opt_statusbar_position = -60;
       else if(strcmp(var.value, "bottom") == 0) opt_statusbar_position = 0;
       else if(strcmp(var.value, "bottom1") == 0) opt_statusbar_position = 10;
       else if(strcmp(var.value, "bottom2") == 0) opt_statusbar_position = 20;
       else if(strcmp(var.value, "bottom3") == 0) opt_statusbar_position = 30;
       else if(strcmp(var.value, "bottom4") == 0) opt_statusbar_position = 40;
+      else if(strcmp(var.value, "bottom5") == 0) opt_statusbar_position = 50;
+      else if(strcmp(var.value, "bottom6") == 0) opt_statusbar_position = 60;
 
       /* Exceptions for lo-res and enhanced statusbar */
       if(video_config & 0x04) // PUAE_VIDEO_HIRES
@@ -1166,7 +1174,7 @@ static void update_variables(void)
 
       if (strcmp(var.value, "disabled") == 0) val=1;
       else if (strcmp(var.value, "1") == 0) val=2;
-      else if (strcmp(var.value, "2") == 0) val=4;
+      else if (strcmp(var.value, "2") == 0) val=3;
 
       changed_prefs.gfx_framerate=val;
       char buf2[50];
