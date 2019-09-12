@@ -1,5 +1,5 @@
-#ifndef LIBRETRO_HATARI_H
-#define LIBRETRO_HATARI_H
+#ifndef LIBRETRO_GLUE_H
+#define LIBRETRO_GLUE_H
 
 #include <stdint.h>
 #include <string.h>
@@ -18,6 +18,7 @@
 extern cothread_t mainThread;
 extern cothread_t emuThread;
 
+bool retro_update_av_info(bool, bool, bool);
 
 #define LOGI printf
 

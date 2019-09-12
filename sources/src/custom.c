@@ -75,6 +75,10 @@
 #include <features_cpu.h>
 #endif
 
+#ifdef __LIBRETRO__
+#include "libretro-glue.h"
+#endif
+
 /* internal prototypes */
 void uae_abort (const TCHAR *format,...);
 int is_bitplane_dma (int hpos);
@@ -3216,6 +3220,10 @@ void compute_framesync (void)
 		cr != NULL && cr->label != NULL ? cr->label : _T("<?>"),
 		currprefs.gfx_apmode[picasso_on ? 1 : 0].gfx_display, picasso_on, picasso_requested_on
 	);
+
+#ifdef __LIBRETRO__
+	retro_update_av_info(1, 1, isntsc);
+#endif
 
 	config_changed = 1;
 }

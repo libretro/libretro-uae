@@ -1,5 +1,4 @@
 void Screen_SetFullUpdate(void);
-void gui_poll_events(void);
 
 #define RETRO_DEVICE_UAE_JOYSTICK         RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_ANALOG, 0)
 #define RETRO_DEVICE_UAE_CD32PAD          RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_ANALOG, 1)

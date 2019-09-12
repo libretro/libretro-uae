@@ -55,6 +55,7 @@ int touch=-1; // gui mouse btn
 int fmousex,fmousey; // emu mouse
 int slowdown=0;
 extern int pix_bytes;
+extern int fake_ntsc;
 
 int vkflag[7]={0,0,0,0,0,0,0};
 static int jbt[24]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -118,6 +119,7 @@ void emu_function(int function) {
          break;
       case EMU_RESET:
          uae_reset(0, 1); /* hardreset, keyboardreset */
+         fake_ntsc=false;
          break;
    }
 }
@@ -180,22 +182,6 @@ return (cpu_features_get_time_usec())/1000;
 #endif
 
 } 
-
-void gui_poll_events(void)
-{
-   //NO SURE FIND BETTER WAY TO COME BACK IN MAIN THREAD IN HATARI GUI
-
-   Ktime = GetTicks();
-
-   if(Ktime - LastFPSTime >= 1000/50)
-   {
-      slowdown=0;
-      frame++; 
-      LastFPSTime = Ktime;		
-      co_switch(mainThread);
-      //retro_run();
-   }
-}
 
 void Print_Status(void)
 {
