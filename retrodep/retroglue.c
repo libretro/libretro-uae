@@ -346,6 +346,8 @@ int graphics_init(void) {
 #else
 	pixbuf = (unsigned short int*) &bmp[0];
 #endif
+	/* Always have the maximum PAL area available in case NTSC aspect is changed to PAL */
+	currprefs.gfx_size_win.height = (retroh <= 284) ? 284 : 568;
 	
 	//printf("graphics init  pixbuf=%p color_mode=%d width=%d\n", pixbuf, currprefs.color_mode, currprefs.gfx_width_win);
 	if (pixbuf == NULL) {

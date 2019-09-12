@@ -1925,19 +1925,17 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       /* Main video config will be changed too */
       video_config_geometry = video_config;
    }
-   else
+
+   /* Aspect ratio override always changes only temporary video config */
+   if (video_config_aspect == PUAE_VIDEO_NTSC)
    {
-      /* Plain geometry change changes only temporary video config */
-      if (video_config_aspect == PUAE_VIDEO_NTSC)
-      {
-         video_config_geometry |= PUAE_VIDEO_NTSC;
-         video_config_geometry &= ~PUAE_VIDEO_PAL;
-      }
-      else if (video_config_aspect == PUAE_VIDEO_PAL)
-      {
-         video_config_geometry |= PUAE_VIDEO_PAL;
-         video_config_geometry &= ~PUAE_VIDEO_NTSC;
-      }
+      video_config_geometry |= PUAE_VIDEO_NTSC;
+      video_config_geometry &= ~PUAE_VIDEO_PAL;
+   }
+   else if (video_config_aspect == PUAE_VIDEO_PAL)
+   {
+      video_config_geometry |= PUAE_VIDEO_PAL;
+      video_config_geometry &= ~PUAE_VIDEO_NTSC;
    }
 
    /* Do nothing if timing has not changed, unless Hz switched without isntsc */
@@ -2036,6 +2034,7 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
    if(change_geometry) {
       environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
    }
+
    return true;
 }
 
