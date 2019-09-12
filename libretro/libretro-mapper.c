@@ -124,12 +124,8 @@ void emu_function(int function) {
    }
 }
 
-
-long frame=0;
-unsigned long  Ktime=0 , LastFPSTime=0;
-
 int STAT_BASEY;
-int STAT_DECX=12;
+int STAT_DECX=4;
 int FONT_WIDTH=1;
 int FONT_HEIGHT=1;
 int BOX_PADDING=2;
@@ -198,7 +194,7 @@ void Print_Status(void)
       else
          STAT_BASEY=gfxvidinfo.outheight-BOX_HEIGHT-opt_statusbar_position+2;
 
-      BOX_WIDTH=retrow-310;
+      BOX_WIDTH=retrow-194;
    }
    else
    {
@@ -206,9 +202,9 @@ void Print_Status(void)
          if (opt_statusbar_position == -1)
              STAT_BASEY=0;
          else
-             STAT_BASEY=-opt_statusbar_position-BOX_HEIGHT+2;
+             STAT_BASEY=-opt_statusbar_position-BOX_HEIGHT+3;
       else
-         STAT_BASEY=gfxvidinfo.outheight-opt_statusbar_position+3;
+         STAT_BASEY=gfxvidinfo.outheight-opt_statusbar_position+2;
 
       BOX_WIDTH=retrow;
    }

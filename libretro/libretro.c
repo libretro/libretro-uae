@@ -283,10 +283,16 @@ void retro_set_environment(retro_environment_t cb)
             { "bottom1", "Bottom + 1" },
             { "bottom2", "Bottom + 2" },
             { "bottom3", "Bottom + 3" },
+            { "bottom4", "Bottom + 4" },
+            { "bottom5", "Bottom + 5" },
+            { "bottom6", "Bottom + 6" },
             { "top", "Top" },
             { "top1", "Top + 1" },
             { "top2", "Top + 2" },
             { "top3", "Top + 3" },
+            { "top4", "Top + 4" },
+            { "top5", "Top + 5" },
+            { "top6", "Top + 6" },
             { NULL, NULL },
          },
          "bottom"
@@ -305,7 +311,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_cpu_speed",
          "CPU speed",
-         "Needs restart",
+         "Needs restart. Max needs cycle exact off",
          {
             { "real", "Real" },
             { "max", "Max" },
@@ -420,7 +426,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_floppy_sound",
          "Floppy sound emulation",
-         "Needs restart and external files in system/uae_data/",
+         "Needs external files in system/uae_data/",
          {
             { "100", "disabled" },
             { "90", "10\% volume" },
@@ -464,7 +470,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_gfx_framerate",
          "Frameskip",
-         "Cycle exact needs to be false for this to come into effect at startup",
+         "Cycle exact needs to be off for this to come into effect at startup",
          {
             { "disabled", NULL },
             { "1", NULL },
@@ -994,19 +1000,25 @@ static void update_variables(void)
       else if(strcmp(var.value, "top1") == 0) opt_statusbar_position = -10;
       else if(strcmp(var.value, "top2") == 0) opt_statusbar_position = -20;
       else if(strcmp(var.value, "top3") == 0) opt_statusbar_position = -30;
+      else if(strcmp(var.value, "top4") == 0) opt_statusbar_position = -40;
+      else if(strcmp(var.value, "top5") == 0) opt_statusbar_position = -50;
+      else if(strcmp(var.value, "top6") == 0) opt_statusbar_position = -60;
       else if(strcmp(var.value, "bottom") == 0) opt_statusbar_position = 0;
       else if(strcmp(var.value, "bottom1") == 0) opt_statusbar_position = 10;
       else if(strcmp(var.value, "bottom2") == 0) opt_statusbar_position = 20;
       else if(strcmp(var.value, "bottom3") == 0) opt_statusbar_position = 30;
+      else if(strcmp(var.value, "bottom4") == 0) opt_statusbar_position = 40;
+      else if(strcmp(var.value, "bottom5") == 0) opt_statusbar_position = 50;
+      else if(strcmp(var.value, "bottom6") == 0) opt_statusbar_position = 60;
 
       /* Exceptions for lo-res and enhanced statusbar */
       if(video_config & 0x04) // PUAE_VIDEO_HIRES
          ;
       else
          if(opt_enhanced_statusbar)
-            opt_statusbar_position = (opt_statusbar_position < 0) ? ((opt_statusbar_position==-1) ? -10 : opt_statusbar_position-10) : opt_statusbar_position+12;
+            opt_statusbar_position = (opt_statusbar_position < 0) ? ((opt_statusbar_position==-1) ? -10 : opt_statusbar_position-10) : opt_statusbar_position+10;
          else
-            opt_statusbar_position = (opt_statusbar_position < 0) ? ((opt_statusbar_position==-1) ? -2 : opt_statusbar_position-2) : opt_statusbar_position+2;
+            opt_statusbar_position = (opt_statusbar_position < 0) ? ((opt_statusbar_position==-1) ? -1 : opt_statusbar_position-2) : opt_statusbar_position;
 
       /* Screen refresh required */
       if(opt_statusbar_position_old != opt_statusbar_position)
@@ -1127,6 +1139,10 @@ static void update_variables(void)
         strcat(uae_config, "floppy_volume=");
         strcat(uae_config, var.value);
         strcat(uae_config, "\n");
+
+        /* Setting volume in realtime will crash on first pass */
+        if(firstpass != 1)
+           changed_prefs.dfxclickvolume=atoi(var.value);
    }
 
    var.key = "puae_immediate_blits";
@@ -1158,7 +1174,7 @@ static void update_variables(void)
 
       if (strcmp(var.value, "disabled") == 0) val=1;
       else if (strcmp(var.value, "1") == 0) val=2;
-      else if (strcmp(var.value, "2") == 0) val=4;
+      else if (strcmp(var.value, "2") == 0) val=3;
 
       changed_prefs.gfx_framerate=val;
       char buf2[50];
@@ -1909,19 +1925,17 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       /* Main video config will be changed too */
       video_config_geometry = video_config;
    }
-   else
+
+   /* Aspect ratio override always changes only temporary video config */
+   if (video_config_aspect == PUAE_VIDEO_NTSC)
    {
-      /* Plain geometry change changes only temporary video config */
-      if (video_config_aspect == PUAE_VIDEO_NTSC)
-      {
-         video_config_geometry |= PUAE_VIDEO_NTSC;
-         video_config_geometry &= ~PUAE_VIDEO_PAL;
-      }
-      else if (video_config_aspect == PUAE_VIDEO_PAL)
-      {
-         video_config_geometry |= PUAE_VIDEO_PAL;
-         video_config_geometry &= ~PUAE_VIDEO_NTSC;
-      }
+      video_config_geometry |= PUAE_VIDEO_NTSC;
+      video_config_geometry &= ~PUAE_VIDEO_PAL;
+   }
+   else if (video_config_aspect == PUAE_VIDEO_PAL)
+   {
+      video_config_geometry |= PUAE_VIDEO_PAL;
+      video_config_geometry &= ~PUAE_VIDEO_NTSC;
    }
 
    /* Do nothing if timing has not changed, unless Hz switched without isntsc */
@@ -2020,6 +2034,7 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
    if(change_geometry) {
       environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
    }
+
    return true;
 }
 
