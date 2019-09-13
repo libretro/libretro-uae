@@ -145,6 +145,8 @@ To do this just add these strings to your adf, hdf or m3u filename:
 - "(A600)" or "(ECS)" to use Amiga 600
 - "(A1200)" or "(AGA)" to use Amiga 1200
 - "(A1200OG)" or "(A1200NF)" to use Amiga 1200 without memory expansion
+- "(NTSC)" to use NTSC
+- "(PAL)" to use PAL
 
 Example: When launching "Alien Breed 2 (AGA).hdf" file the core will use an Amiga 1200 model.
 
@@ -169,7 +171,7 @@ Three parameters control the output resolution of the core :
 |Name|Values|Default|
 |---|---|---|
 |Video standard|PAL, NTSC|PAL|
-|High resolution|false, true|false|
+|High resolution|false, true|true|
 |Crop overscan|false, true|false|
 
 With this settings all the standards resolutions of the amiga are available :
