@@ -2222,6 +2222,18 @@ bool retro_load_game(const struct retro_game_info *info)
 
 				// Write common config
 				fprintf(configfile, uae_config);
+
+				// If region was specified in the name of the game
+				if(strstr(full_path, "(NTSC)") != NULL)
+				{
+				   printf("Found '(NTSC)' in filename '%s'\n", full_path);
+				   fprintf(configfile, "ntsc=true\n");
+				}
+				else if(strstr(full_path, "(PAL)") != NULL)
+				{
+				   printf("Found '(PAL)' in filename '%s'\n", full_path);
+				   fprintf(configfile, "ntsc=false\n");
+				}
 				
 				// Verify kickstart
 				if(!file_exists(kickstart))
