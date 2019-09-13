@@ -171,7 +171,7 @@ Three parameters control the output resolution of the core :
 |Name|Values|Default|
 |---|---|---|
 |Video standard|PAL, NTSC|PAL|
-|High resolution|false, true|false|
+|High resolution|false, true|true|
 |Crop overscan|false, true|false|
 
 With this settings all the standards resolutions of the amiga are available :
