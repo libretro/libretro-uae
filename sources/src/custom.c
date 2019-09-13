@@ -82,8 +82,7 @@
 /* internal prototypes */
 void uae_abort (const TCHAR *format,...);
 int is_bitplane_dma (int hpos);
-void init_hz_fullinit (bool fullinit);
-void init_hz (void);
+void init_hz (bool checkvposw);
 void INTREQ_nodelay (uae_u16 v);
 
 
@@ -146,14 +145,20 @@ static int rpt_did_reset;
 struct ev eventtab[ev_max];
 struct ev2 eventtab2[ev2_max];
 
+
 int vpos;
 static int vpos_count, vpos_count_diff;
 int lof_store; // real bit in custom registers
 static int lof_current; // what display device thinks
+static bool lof_lastline, lof_prev_lastline;
 static int lol;
 static int next_lineno, prev_lineno;
 static enum nln_how nextline_how;
 static int lof_changed = 0, lof_changing = 0, interlace_changed = 0;
+static int lof_changed_previous_field;
+static int vposw_change;
+static bool lof_lace;
+static bool bplcon0_interlace_seen;
 static int scandoubled_line;
 static bool vsync_rendered, frame_rendered, frame_shown;
 static int vsynctimeperline;
@@ -214,6 +219,7 @@ bool programmedmode;
 int syncbase;
 static int fmode;
 uae_u16 beamcon0, new_beamcon0;
+static bool varsync_changed;
 uae_u16 vtotal = MAXVPOS_PAL, htotal = MAXHPOS_PAL;
 static int maxvpos_stored, maxhpos_stored;
 static uae_u16 hsstop, hbstrt, hbstop, vsstop, vbstrt, vbstop, hsstrt, vsstrt, hcenter;
@@ -3229,14 +3235,14 @@ void compute_framesync (void)
 }
 
 /* set PAL/NTSC or custom timing variables */
-void init_hz_fullinit (bool fullinit)
+void init_hz (bool checkvposw)
 {
 	int isntsc, islace;
 	int odbl = doublescan, omaxvpos = maxvpos;
 	double ovblank = vblank_hz;
 	int hzc = 0;
 
-	if (fullinit)
+	if (!checkvposw)
 		vpos_count = 0;
 
 	vpos_count_diff = vpos_count;
@@ -3366,19 +3372,16 @@ void init_hz_fullinit (bool fullinit)
 #endif
 	}
 	//inputdevice_tablet_strobe ();
-	
-	if (fullinit)
-		vpos_count_diff = maxvpos_nom;
 }
 
-void init_hz (void)
+static void init_hz_vposw (void)
 {
-	init_hz_fullinit (false);
+    init_hz (true);
 }
 
-void init_hz_full (void)
+void init_hz_normal (void)
 {
-	init_hz_fullinit (true);
+    init_hz (false);
 }
 
 static void calcdiw (void)
@@ -3444,7 +3447,7 @@ void init_custom (void)
 	update_mirrors();
 	create_cycle_diagram_table ();
 	reset_drawing ();
-	init_hz ();
+	init_hz_normal ();
 	calcdiw ();
 }
 
@@ -6044,32 +6047,68 @@ static void vsync_handler_post (void)
 #endif
 	DISK_vsync ();
 
-	if ((bplcon0 & 2) && currprefs.genlock) {
-		genlockvtoggle = !genlockvtoggle;
-		//lof_store = genlockvtoggle ? 1 : 0;
-	}
-	if (bplcon0 & 4) {
-		lof_store = lof_store ? 0 : 1;
-	}
-	lof_current = lof_store;
-	if (lof_togglecnt_lace >= LOF_TOGGLES_NEEDED) {
-		interlace_changed = notice_interlace_seen (true);
-		if (interlace_changed) {
-			notice_screen_contents_lost ();
-		}
-	} else if (lof_togglecnt_nlace >= LOF_TOGGLES_NEEDED) {
-		interlace_changed = notice_interlace_seen (false);
-		if (interlace_changed) {
-			notice_screen_contents_lost ();
-		}
-	}
-	if (lof_changing) {
-		// still same? Trigger change now.
-		if ((!lof_store && lof_changing < 0) || (lof_store && lof_changing > 0)) {
-			lof_changed = 1;
-		}
-		lof_changing = 0;
-	}
+    if (bplcon0 & 4) {
+        lof_store = lof_store ? 0 : 1;
+    }
+    if ((bplcon0 & 2) && currprefs.genlock) {
+        genlockvtoggle = lof_store ? 1 : 0;
+    }
+
+    if (lof_prev_lastline != lof_lastline) {
+        if (lof_togglecnt_lace < LOF_TOGGLES_NEEDED)
+            lof_togglecnt_lace++;
+        if (lof_togglecnt_lace >= LOF_TOGGLES_NEEDED)
+            lof_togglecnt_nlace = 0;
+    } else {
+        // only 1-2 vblanks with bplcon0 lace bit set?
+        // lets check if lof has changed
+        if (!(bplcon0 & 4) && lof_togglecnt_lace > 0 && lof_togglecnt_lace < LOF_TOGGLES_NEEDED && !interlace_seen) {
+            lof_changed = 1;
+        }
+        lof_togglecnt_nlace = LOF_TOGGLES_NEEDED;
+        lof_togglecnt_lace = 0;
+#if 0
+        if (lof_togglecnt_nlace < LOF_TOGGLES_NEEDED)
+            lof_togglecnt_nlace++;
+        if (lof_togglecnt_nlace >= LOF_TOGGLES_NEEDED)
+            lof_togglecnt_lace = 0;
+#endif
+    }
+    lof_prev_lastline = lof_lastline;
+    lof_current = lof_store;
+    if (lof_togglecnt_lace >= LOF_TOGGLES_NEEDED) {
+        interlace_changed = notice_interlace_seen (true);
+        if (interlace_changed) {
+            notice_screen_contents_lost();
+        }
+    } else if (lof_togglecnt_nlace >= LOF_TOGGLES_NEEDED) {
+        interlace_changed = notice_interlace_seen (false);
+        if (interlace_changed) {
+            notice_screen_contents_lost();
+        }
+    }
+    if (lof_changing) {
+        // still same? Trigger change now.
+        if ((!lof_store && lof_changing < 0) || (lof_store && lof_changing > 0)) {
+            lof_changed_previous_field++;
+            lof_changed = 1;
+            // lof toggling? decide as interlace.
+            if (lof_changed_previous_field >= LOF_TOGGLES_NEEDED) {
+                lof_changed_previous_field = LOF_TOGGLES_NEEDED;
+                if (lof_lace == false)
+                    lof_lace = true;
+                else
+                    lof_changed = 0;
+            }
+            if (bplcon0 & 4)
+                lof_changed = 0;
+        }
+        lof_changing = 0;
+    } else {
+        lof_changed_previous_field = 0;
+        lof_lace = false;
+    }
+
 
 	if (quit_program > 0) {
 		/* prevent possible infinite loop at wait_cycles().. */
@@ -6092,13 +6131,19 @@ static void vsync_handler_post (void)
 	}
 #endif
 
-	if ((beamcon0 & (0x20 | 0x80)) != (new_beamcon0 & (0x20 | 0x80)) || (vpos_count > 0 && abs (vpos_count - vpos_count_diff) > 1) || lof_changed) {
-		init_hz ();
-	} else if (interlace_changed || changed_chipset_refresh ()) {
-		compute_framesync ();
-	}
+    //devices_vsync_post();
 
-	lof_changed = 0;
+    if (varsync_changed || (beamcon0 & (0x10 | 0x20 | 0x80 | 0x100 | 0x200)) != (new_beamcon0 & (0x10 | 0x20 | 0x80 | 0x100 | 0x200))) {
+        init_hz_normal();
+    } else if (vpos_count > 0 && abs (vpos_count - vpos_count_diff) > 1 && vposw_change < 4) {
+        init_hz_vposw();
+    } else if (interlace_changed || changed_chipset_refresh () || lof_changed) {
+        compute_framesync ();
+    }
+
+    lof_changed = 0;
+    vposw_change = 0;
+    bplcon0_interlace_seen = false;
 
 	COPJMP (1, 1);
 
@@ -6881,7 +6926,7 @@ void custom_reset (bool hardreset, bool keyboardreset)
 	diwstate = DIW_waiting_start;
 
 	dmal = 0;
-	init_hz_full ();
+	init_hz_normal ();
 	vpos_lpen = -1;
 	lof_changing = 0;
 	lof_togglecnt_nlace = lof_togglecnt_lace = 0;

@@ -758,7 +758,7 @@ void savestate_restore_finish (void)
 	restore_cia_finish ();
 	restore_debug_memwatch_finish ();
 	savestate_state = 0;
-	init_hz_full ();
+	init_hz_normal ();
 	audio_activate ();
 }
 
