@@ -2103,6 +2103,9 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
          break;
    }
 
+   if (zoomed_height > retroh)
+      zoomed_height = retroh;
+
    if (zoomed_height != retroh)
    {
       new_av_info.geometry.base_height = zoomed_height;
