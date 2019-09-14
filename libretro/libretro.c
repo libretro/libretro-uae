@@ -59,6 +59,7 @@ extern void Print_Status(void);
 extern unsigned short * sndbuffer;
 extern int sndbufsize;
 static int firstpass = 1;
+extern int prefs_changed;
 unsigned int video_config = 0;
 unsigned int video_config_old = 0;
 unsigned int video_config_aspect = 0;
@@ -414,7 +415,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_floppy_speed",
          "Floppy speed",
-         "Needs restart",
+         "",
          {
             { "100", "1x" },
             { "200", "2x" },
@@ -446,30 +447,6 @@ void retro_set_environment(retro_environment_t cb)
          "100"
       },
       {
-         "puae_immediate_blits",
-         "Immediate blits",
-         "Needs restart",
-         {
-            { "false", "disabled" },
-            { "true", "enabled" },
-            { NULL, NULL },
-         },
-         "false"
-      },
-      {
-         "puae_collision_level",
-         "Collision level",
-         "Playfields is recommended default. Needs restart",
-         {
-            { "playfields", "Sprites and Playfields" },
-            { "sprites", "Sprites only" },
-            { "full", "Full" },
-            { "none", "None" },
-            { NULL, NULL },
-         },
-         "playfields"
-      },
-      {
          "puae_gfx_framerate",
          "Frameskip",
          "Cycle exact needs to be off for this to come into effect at startup",
@@ -493,35 +470,59 @@ void retro_set_environment(retro_environment_t cb)
          "16bit"
       },
       {
-         "puae_gfx_center_vertical",
-         "Vertical centering",
-         "Needs restart",
+         "puae_collision_level",
+         "Collision level",
+         "Playfields is recommended default",
          {
-            { "simple", "Simple" },
-            { "smart", "Smart" },
-            { "none", "disabled" },
+            { "playfields", "Sprites and Playfields" },
+            { "sprites", "Sprites only" },
+            { "full", "Full" },
+            { "none", "None" },
             { NULL, NULL },
          },
-         "simple"
+         "playfields"
+      },
+      {
+         "puae_immediate_blits",
+         "Immediate blits",
+         "",
+         {
+            { "false", "disabled" },
+            { "true", "enabled" },
+            { NULL, NULL },
+         },
+         "false"
       },
       {
          "puae_gfx_center_horizontal",
          "Horizontal centering",
-         "Needs restart",
+         "Essential with crop overscan enabled",
          {
+            { "none", "disabled" },
             { "simple", "Simple" },
             { "smart", "Smart" },
-            { "none", "disabled" },
             { NULL, NULL },
          },
-         "simple"
+         "none"
+      },
+      {
+         "puae_gfx_center_vertical",
+         "Vertical centering",
+         "Essential with crop overscan enabled",
+         {
+            { "none", "disabled" },
+            { "simple", "Simple" },
+            { "smart", "Smart" },
+            { NULL, NULL },
+         },
+         "none"
       },
       {
          "puae_zoom_mode",
          "Zoom mode",
          "Zoom requires vertical centering: off,  integer scaling: off, and aspect ratio: core provided for best results",
          {
-            { "None", NULL },
+            { "None", "disabled" },
             { "Small", NULL },
             { "Medium", NULL },
             { "Large", NULL },
@@ -904,36 +905,36 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-		if (strcmp(var.value, "A500") == 0)
-		{
-			strcat(uae_machine, A500);
-			strcpy(uae_kickstart, A500_ROM);
-		}
-		if (strcmp(var.value, "A500OG") == 0)
-		{
-			strcat(uae_machine, A500OG);
-			strcpy(uae_kickstart, A500_ROM);
-		}
-		if (strcmp(var.value, "A500PLUS") == 0)
-		{
-			strcat(uae_machine, A500PLUS);
-			strcpy(uae_kickstart, A500KS2_ROM);
-		}
-		if (strcmp(var.value, "A600") == 0)
-		{
-			strcat(uae_machine, A600);
-			strcpy(uae_kickstart, A600_ROM);
-		}
-		if (strcmp(var.value, "A1200") == 0)
-		{
-			strcat(uae_machine, A1200);
-			strcpy(uae_kickstart, A1200_ROM);
-		}
-		if (strcmp(var.value, "A1200OG") == 0)
-		{
-			strcat(uae_machine, A1200OG);
-			strcpy(uae_kickstart, A1200_ROM);
-		}
+      if (strcmp(var.value, "A500") == 0)
+      {
+          strcat(uae_machine, A500);
+          strcpy(uae_kickstart, A500_ROM);
+      }
+      if (strcmp(var.value, "A500OG") == 0)
+      {
+          strcat(uae_machine, A500OG);
+          strcpy(uae_kickstart, A500_ROM);
+      }
+      if (strcmp(var.value, "A500PLUS") == 0)
+      {
+          strcat(uae_machine, A500PLUS);
+          strcpy(uae_kickstart, A500KS2_ROM);
+      }
+      if (strcmp(var.value, "A600") == 0)
+      {
+          strcat(uae_machine, A600);
+          strcpy(uae_kickstart, A600_ROM);
+      }
+      if (strcmp(var.value, "A1200") == 0)
+      {
+          strcat(uae_machine, A1200);
+          strcpy(uae_kickstart, A1200_ROM);
+      }
+      if (strcmp(var.value, "A1200OG") == 0)
+      {
+          strcat(uae_machine, A1200OG);
+          strcpy(uae_kickstart, A1200_ROM);
+      }
    }
 
    var.key = "puae_video_standard";
@@ -979,8 +980,10 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-	   if(strcmp(var.value, "true") == 0)
-		   video_config |= PUAE_VIDEO_HIRES;
+      if(strcmp(var.value, "true") == 0)
+         video_config |= PUAE_VIDEO_HIRES;
+      else
+         video_config &= ~PUAE_VIDEO_HIRES;
    }
 
    var.key = "puae_video_crop_overscan";
@@ -988,8 +991,10 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-	   if(strcmp(var.value, "true") == 0)
-		   video_config |= PUAE_VIDEO_CROP;
+      if(strcmp(var.value, "true") == 0)
+         video_config |= PUAE_VIDEO_CROP;
+      else
+         video_config &= ~PUAE_VIDEO_CROP;
    }
 
    var.key = "puae_enhanced_statusbar";
@@ -1049,9 +1054,9 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-		strcat(uae_config, "cpu_speed=");
-		strcat(uae_config, var.value);
-		strcat(uae_config, "\n");
+      strcat(uae_config, "cpu_speed=");
+      strcat(uae_config, var.value);
+      strcat(uae_config, "\n");
    }
 
    var.key = "puae_cpu_compatible";
@@ -1059,9 +1064,19 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-		strcat(uae_config, "cpu_compatible=");
-		strcat(uae_config, var.value);
-		strcat(uae_config, "\n");
+      strcat(uae_config, "cpu_compatible=");
+      strcat(uae_config, var.value);
+      strcat(uae_config, "\n");
+   }
+
+   var.key = "puae_cycle_exact";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      strcat(uae_config, "cycle_exact=");
+      strcat(uae_config, var.value);
+      strcat(uae_config, "\n");
    }
 
    var.key = "puae_sound_output";
@@ -1069,14 +1084,14 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-		strcat(uae_config, "sound_output=");
-		strcat(uae_config, var.value);
-		strcat(uae_config, "\n");
+      strcat(uae_config, "sound_output=");
+      strcat(uae_config, var.value);
+      strcat(uae_config, "\n");
 
-		if (strcmp(var.value, "none") == 0) changed_prefs.produce_sound=0;
-		else if (strcmp(var.value, "interrupts") == 0) changed_prefs.produce_sound=1;
-		else if (strcmp(var.value, "normal") == 0) changed_prefs.produce_sound=2;
-		else if (strcmp(var.value, "exact") == 0) changed_prefs.produce_sound=3;
+      if (strcmp(var.value, "none") == 0) changed_prefs.produce_sound=0;
+      else if (strcmp(var.value, "interrupts") == 0) changed_prefs.produce_sound=1;
+      else if (strcmp(var.value, "normal") == 0) changed_prefs.produce_sound=2;
+      else if (strcmp(var.value, "exact") == 0) changed_prefs.produce_sound=3;
    }
 
    var.key = "puae_sound_stereo_separation";
@@ -1084,13 +1099,14 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-		int val = atoi(var.value) / 10;
-		changed_prefs.sound_stereo_separation=val;
-		char buf[50];
-		snprintf(buf, 50, "%d", val);
-		strcat(uae_config, "sound_stereo_separation=");
-		strcat(uae_config, buf);
-		strcat(uae_config, "\n");
+      int val = atoi(var.value) / 10;
+      changed_prefs.sound_stereo_separation=val;
+
+      char valbuf[50];
+      snprintf(valbuf, 50, "%d", val);
+      strcat(uae_config, "sound_stereo_separation=");
+      strcat(uae_config, valbuf);
+      strcat(uae_config, "\n");
    }
 
    var.key = "puae_sound_interpol";
@@ -1098,15 +1114,15 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-		strcat(uae_config, "sound_interpol=");
-		strcat(uae_config, var.value);
-		strcat(uae_config, "\n");
+      strcat(uae_config, "sound_interpol=");
+      strcat(uae_config, var.value);
+      strcat(uae_config, "\n");
 
-		if (strcmp(var.value, "none") == 0) changed_prefs.sound_interpol=0;
-		else if (strcmp(var.value, "anti") == 0) changed_prefs.sound_interpol=1;
-		else if (strcmp(var.value, "sinc") == 0) changed_prefs.sound_interpol=2;
-		else if (strcmp(var.value, "rh") == 0) changed_prefs.sound_interpol=3;
-		else if (strcmp(var.value, "crux") == 0) changed_prefs.sound_interpol=4;
+      if (strcmp(var.value, "none") == 0) changed_prefs.sound_interpol=0;
+      else if (strcmp(var.value, "anti") == 0) changed_prefs.sound_interpol=1;
+      else if (strcmp(var.value, "sinc") == 0) changed_prefs.sound_interpol=2;
+      else if (strcmp(var.value, "rh") == 0) changed_prefs.sound_interpol=3;
+      else if (strcmp(var.value, "crux") == 0) changed_prefs.sound_interpol=4;
    }
 
    var.key = "puae_sound_filter";
@@ -1141,9 +1157,12 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-		strcat(uae_config, "floppy_speed=");
-		strcat(uae_config, var.value);
-		strcat(uae_config, "\n");
+      strcat(uae_config, "floppy_speed=");
+      strcat(uae_config, var.value);
+      strcat(uae_config, "\n");
+
+      if(firstpass != 1)
+         changed_prefs.floppy_speed=atoi(var.value);
    }
 
    var.key = "puae_floppy_sound";
@@ -1151,15 +1170,15 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-        /* Sound is enabled by default if files are found, so this needs to be set always */
-        /* 100 is mute, 0 is max */
-        strcat(uae_config, "floppy_volume=");
-        strcat(uae_config, var.value);
-        strcat(uae_config, "\n");
+      /* Sound is enabled by default if files are found, so this needs to be set always */
+      /* 100 is mute, 0 is max */
+      strcat(uae_config, "floppy_volume=");
+      strcat(uae_config, var.value);
+      strcat(uae_config, "\n");
 
-        /* Setting volume in realtime will crash on first pass */
-        if(firstpass != 1)
-           changed_prefs.dfxclickvolume=atoi(var.value);
+      /* Setting volume in realtime will crash on first pass */
+      if(firstpass != 1)
+         changed_prefs.dfxclickvolume=atoi(var.value);
    }
 
    var.key = "puae_immediate_blits";
@@ -1167,9 +1186,15 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-		strcat(uae_config, "immediate_blits=");
-		strcat(uae_config, var.value);
-		strcat(uae_config, "\n");
+      strcat(uae_config, "immediate_blits=");
+      strcat(uae_config, var.value);
+      strcat(uae_config, "\n");
+
+      if(firstpass != 1)
+      {
+         if (strcmp(var.value, "false") == 0) changed_prefs.immediate_blits=0;
+         else if (strcmp(var.value, "true") == 0) changed_prefs.immediate_blits=1;
+      }
    }
 
    var.key = "puae_collision_level";
@@ -1177,9 +1202,17 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-		strcat(uae_config, "collision_level=");
-		strcat(uae_config, var.value);
-		strcat(uae_config, "\n");
+      strcat(uae_config, "collision_level=");
+      strcat(uae_config, var.value);
+      strcat(uae_config, "\n");
+
+      if(firstpass != 1)
+      {
+         if (strcmp(var.value, "none") == 0) changed_prefs.collision_level=0;
+         else if (strcmp(var.value, "sprites") == 0) changed_prefs.collision_level=1;
+         else if (strcmp(var.value, "playfields") == 0) changed_prefs.collision_level=2;
+         else if (strcmp(var.value, "full") == 0) changed_prefs.collision_level=3;
+      }
    }
 
    var.key = "puae_gfx_framerate";
@@ -1188,18 +1221,17 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       int val;
-
       if (strcmp(var.value, "disabled") == 0) val=1;
       else if (strcmp(var.value, "1") == 0) val=2;
       else if (strcmp(var.value, "2") == 0) val=3;
-
       changed_prefs.gfx_framerate=val;
-      char buf2[50];
-      snprintf(buf2, 50, "%d", val);
 
-      if(val>1) {
+      if(val>1)
+      {
+         char valbuf[50];
+         snprintf(valbuf, 50, "%d", val);
          strcat(uae_config, "gfx_framerate=");
-         strcat(uae_config, buf2);
+         strcat(uae_config, valbuf);
          strcat(uae_config, "\n");
       }
    }
@@ -1218,24 +1250,42 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_gfx_center_vertical";
-   var.value = NULL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-		strcat(uae_config, "gfx_center_vertical=");
-		strcat(uae_config, var.value);
-		strcat(uae_config, "\n");
-   }
-
    var.key = "puae_gfx_center_horizontal";
    var.value = NULL;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-		strcat(uae_config, "gfx_center_horizontal=");
-		strcat(uae_config, var.value);
-		strcat(uae_config, "\n");
+      strcat(uae_config, "gfx_center_horizontal=");
+      strcat(uae_config, var.value);
+      strcat(uae_config, "\n");
+
+      if(firstpass != 1)
+      {
+         int val;
+         if (strcmp(var.value, "none") == 0) val=0;
+         else if (strcmp(var.value, "simple") == 0) val=1;
+         else if (strcmp(var.value, "smart") == 0) val=2;
+         changed_prefs.gfx_xcenter=val;
+      }
+   }
+
+   var.key = "puae_gfx_center_vertical";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      strcat(uae_config, "gfx_center_vertical=");
+      strcat(uae_config, var.value);
+      strcat(uae_config, "\n");
+
+      if(firstpass != 1)
+      {
+         int val;
+         if (strcmp(var.value, "none") == 0) val=0;
+         else if (strcmp(var.value, "simple") == 0) val=1;
+         else if (strcmp(var.value, "smart") == 0) val=2;
+         changed_prefs.gfx_ycenter=val;
+      }
    }
 
    var.key = "puae_zoom_mode";
@@ -1249,16 +1299,6 @@ static void update_variables(void)
       else if (strcmp(var.value, "Large") == 0) zoom_mode_id=3;
       else if (strcmp(var.value, "Larger") == 0) zoom_mode_id=4;
       else if (strcmp(var.value, "Maximum") == 0) zoom_mode_id=5;
-   }
-
-   var.key = "puae_cycle_exact";
-   var.value = NULL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-		strcat(uae_config, "cycle_exact=");
-		strcat(uae_config, var.value);
-		strcat(uae_config, "\n");
    }
 
    var.key = "puae_use_whdload";
@@ -1277,10 +1317,10 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_analogmouse = 0;
-      else if (strcmp(var.value, "left") == 0) opt_analogmouse = 1;
-      else if (strcmp(var.value, "right") == 0) opt_analogmouse = 2;
-      else if (strcmp(var.value, "both") == 0) opt_analogmouse = 3;
+      if (strcmp(var.value, "disabled") == 0) opt_analogmouse=0;
+      else if (strcmp(var.value, "left") == 0) opt_analogmouse=1;
+      else if (strcmp(var.value, "right") == 0) opt_analogmouse=2;
+      else if (strcmp(var.value, "both") == 0) opt_analogmouse=3;
    }
 
    var.key = "puae_analogmouse_deadzone";
@@ -1510,30 +1550,33 @@ static void update_variables(void)
 
 
 
-   /* Always trigger audio change */
+
+   /* Always trigger audio and custom change */
    config_changed = 1;
    check_prefs_changed_audio();
+   check_prefs_changed_custom();
+   config_changed = 0;
 
-	// Setting resolution
-	// According to PUAE configuration.txt :
-	//
-	// To emulate a high-resolution, fully overscanned PAL screen - either
-	// non-interlaced with line-doubling, or interlaced - you need to use a
-	// display of at least 720 by 568 pixels. If you specify a smaller size,
-	// E-UAE's display will be clipped to fit (and you can use the gfx_center_*
-	// options - see below - to centre the clipped region of the display).
-	// Similarly, to fully display an over-scanned lo-res PAL screen, you need a
-	// display of 360 by 284 pixels.
-	//
-	// So, here are the standard resolutions :
-	// - **360x284**: PAL Low resolution with overscan
-	// - **320x256**: PAL Low resolution cropped/clipped (without the "borders")
-	// - **360x240**: NTSC Low resolution with overscan
-	// - **320×200**: NTSC Low resolution cropped/clipped (without the "borders")
-	// - **720x568**: PAL High resolution with overscan
-	// - **640×512**: PAL High resolution cropped/clipped (without the "borders")
-	// - **720x480**: NTSC High resolution with overscan
-	// - **640×400**: NTSC High resolution cropped/clipped (without the "borders")
+   // Setting resolution
+   // According to PUAE configuration.txt :
+   //
+   // To emulate a high-resolution, fully overscanned PAL screen - either
+   // non-interlaced with line-doubling, or interlaced - you need to use a
+   // display of at least 720 by 568 pixels. If you specify a smaller size,
+   // E-UAE's display will be clipped to fit (and you can use the gfx_center_*
+   // options - see below - to centre the clipped region of the display).
+   // Similarly, to fully display an over-scanned lo-res PAL screen, you need a
+   // display of 360 by 284 pixels.
+   //
+   // So, here are the standard resolutions :
+   // - **360x284**: PAL Low resolution with overscan
+   // - **320x256**: PAL Low resolution cropped/clipped (without the "borders")
+   // - **360x240**: NTSC Low resolution with overscan
+   // - **320×200**: NTSC Low resolution cropped/clipped (without the "borders")
+   // - **720x568**: PAL High resolution with overscan
+   // - **640×512**: PAL High resolution cropped/clipped (without the "borders")
+   // - **720x480**: NTSC High resolution with overscan
+   // - **640×400**: NTSC High resolution cropped/clipped (without the "borders")
    switch(video_config)
    {
 		case PUAE_VIDEO_PAL_OV_LO:
@@ -1589,6 +1632,7 @@ static void update_variables(void)
    /* av_info geometry update always */
    if(retro_update_av_info(1, 0, 0))
       Screen_SetFullUpdate();
+
 }
 
 static void retro_wrap_emulator(void)
@@ -2121,6 +2165,12 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       /* ensure statusbar stays visible when it is at bottom */
       if (opt_statusbar_position >= 0 && (retroh - zoomed_height) > opt_statusbar_position)
          opt_statusbar_position = retroh - zoomed_height;
+   }
+
+   /* No need to check changed gfx at startup */
+   if(firstpass != 1) {
+      prefs_changed = 1;
+      check_prefs_changed_gfx();
    }
 
    return true;
