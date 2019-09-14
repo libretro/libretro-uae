@@ -43,6 +43,8 @@ extern unsigned int turbo_pulse;
 int pix_bytes = 2;
 static bool pix_bytes_initialized = false;
 bool fake_ntsc = false;
+int zoom_mode_id = 0;
+int zoomed_height;
 
 #if defined(NATMEM_OFFSET)
 extern uae_u8 *natmem_offset;
@@ -513,6 +515,21 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "simple"
+      },
+      {
+         "puae_zoom_mode",
+         "Zoom mode",
+         "Zoom requires vertical centering: off,  integer scaling: off, and aspect ratio: core provided for best results",
+         {
+            { "None", NULL },
+            { "Small", NULL },
+            { "Medium", NULL },
+            { "Large", NULL },
+            { "Larger", NULL },
+            { "Maximum", NULL },
+            { NULL, NULL },
+         },
+         "None"
       },
       {
          "puae_use_whdload",
@@ -1219,6 +1236,19 @@ static void update_variables(void)
 		strcat(uae_config, "gfx_center_horizontal=");
 		strcat(uae_config, var.value);
 		strcat(uae_config, "\n");
+   }
+
+   var.key = "puae_zoom_mode";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "None") == 0) zoom_mode_id=0;
+      else if (strcmp(var.value, "Small") == 0) zoom_mode_id=1;
+      else if (strcmp(var.value, "Medium") == 0) zoom_mode_id=2;
+      else if (strcmp(var.value, "Large") == 0) zoom_mode_id=3;
+      else if (strcmp(var.value, "Larger") == 0) zoom_mode_id=4;
+      else if (strcmp(var.value, "Maximum") == 0) zoom_mode_id=5;
    }
 
    var.key = "puae_cycle_exact";
@@ -2035,6 +2065,61 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
    }
 
+   /* apply zoom mode if necessary */
+   zoomed_height = retroh;
+   switch (zoom_mode_id)
+   {
+      case 1:
+         if (video_config & PUAE_VIDEO_HIRES)
+            zoomed_height = 512;
+         else
+            zoomed_height = 256;
+         break;
+      case 2:
+         if (video_config & PUAE_VIDEO_HIRES)
+            zoomed_height = 480;
+         else
+            zoomed_height = 240;
+         break;
+      case 3:
+         if (video_config & PUAE_VIDEO_HIRES)
+            zoomed_height = 448;
+         else
+            zoomed_height = 224;
+         break;
+      case 4:
+         if (video_config & PUAE_VIDEO_HIRES)
+            zoomed_height = 432;
+         else
+            zoomed_height = 216;
+         break;
+      case 5:
+         if (video_config & PUAE_VIDEO_HIRES)
+            zoomed_height = 400;
+         else
+            zoomed_height = 200;
+         break;
+      default:
+         break;
+   }
+
+   if (zoomed_height != retroh)
+   {
+      new_av_info.geometry.base_height = zoomed_height;
+      if(video_config_geometry & PUAE_VIDEO_NTSC || video_config_aspect == PUAE_VIDEO_NTSC) {
+         new_av_info.geometry.aspect_ratio=(float)retrow/(float)zoomed_height * 44.0/52.0;
+         hz = 60;
+      } else {
+         new_av_info.geometry.aspect_ratio=(float)retrow/(float)zoomed_height;
+         hz = 50;
+      }
+      environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
+
+      /* ensure statusbar stays visible when it is at bottom */
+      if (opt_statusbar_position >= 0 && (retroh - zoomed_height) > opt_statusbar_position)
+         opt_statusbar_position = retroh - zoomed_height;
+   }
+
    return true;
 }
 
@@ -2121,7 +2206,7 @@ void retro_run(void)
 
 sortie:
 
-   video_cb(bmp,retrow,retroh , retrow << (pix_bytes / 2));
+   video_cb(bmp,retrow,zoomed_height , retrow << (pix_bytes / 2));
 
    co_switch(emuThread);
 }
