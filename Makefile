@@ -210,6 +210,19 @@ else ifneq (,$(findstring ios,$(platform)))
    CFLAGS += $(COMMONFLAGS)
    PLATFLAGS += -DRETRO -DALIGN_DWORD -DARM
 
+else ifeq ($(platform), tvos-arm64)
+   TARGET := $(TARGET_NAME)_libretro_tvos.dylib
+   COMMONFLAGS += -DHAVE_POSIX_MEMALIGN=1 -marm
+   fpic := -fPIC
+   SHARED := -dynamiclib
+   COMMONFLAGS += -DIOS
+   PLATFLAGS += -Wno-error=implicit-function-declaration
+   CFLAGS += $(COMMONFLAGS)
+   PLATFLAGS += -DRETRO -DALIGN_DWORD -DARM
+   ifeq ($(IOSSDK),)
+      IOSSDK := $(shell xcodebuild -version -sdk appletvos Path)
+   endif
+
 # ARM
 else ifneq (,$(findstring armv,$(platform)))
    TARGET := $(TARGET_NAME)_libretro.so
