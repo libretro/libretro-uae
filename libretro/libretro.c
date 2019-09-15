@@ -88,7 +88,7 @@ extern void retro_poll_event(void);
 unsigned int uae_devices[4];
 extern int cd32_pad_enabled[NORMAL_JPORTS];
 
-int mapper_keys[30]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+int mapper_keys[31]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 static char buf[64][4096] = { 0 };
 
 static retro_video_refresh_t video_cb;
@@ -696,6 +696,13 @@ void retro_set_environment(retro_environment_t cb)
          {{ NULL, NULL }},
          "---"
       },
+      {
+         "puae_mapper_zoom_mode_toggle",
+         "Hotkey: Toggle zoom mode",
+         "",
+         {{ NULL, NULL }},
+         "---"
+      },
       /* Button mappings */
       {
          "puae_mapper_select",
@@ -882,6 +889,7 @@ void retro_set_environment(retro_environment_t cb)
          || strstr(core_options[i].key, "puae_mapper_mouse_speed")
          || strstr(core_options[i].key, "puae_mapper_reset")
          || strstr(core_options[i].key, "puae_mapper_aspect_ratio_toggle")
+         || strstr(core_options[i].key, "puae_mapper_zoom_mode_toggle")
          )
             hotkey = 1;
          else
@@ -1626,6 +1634,13 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       mapper_keys[29] = keyId(var.value);
+   }
+
+   var.key = "puae_mapper_zoom_mode_toggle";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      mapper_keys[30] = keyId(var.value);
    }
 
 
