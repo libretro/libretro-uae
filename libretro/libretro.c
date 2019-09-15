@@ -43,6 +43,7 @@ extern unsigned int turbo_pulse;
 int pix_bytes = 2;
 static bool pix_bytes_initialized = false;
 bool fake_ntsc = false;
+bool request_update_av_info = false;
 int zoom_mode_id = 0;
 int zoomed_height;
 
@@ -282,13 +283,13 @@ void retro_set_environment(retro_environment_t cb)
          "Statusbar position",
          "",
          {
+            { "bottom6", "Bottom - 6" },
+            { "bottom5", "Bottom - 5" },
+            { "bottom4", "Bottom - 4" },
+            { "bottom3", "Bottom - 3" },
+            { "bottom2", "Bottom - 2" },
+            { "bottom1", "Bottom - 1" },
             { "bottom", "Bottom" },
-            { "bottom1", "Bottom + 1" },
-            { "bottom2", "Bottom + 2" },
-            { "bottom3", "Bottom + 3" },
-            { "bottom4", "Bottom + 4" },
-            { "bottom5", "Bottom + 5" },
-            { "bottom6", "Bottom + 6" },
             { "top", "Top" },
             { "top1", "Top + 1" },
             { "top2", "Top + 2" },
@@ -640,6 +641,13 @@ void retro_set_environment(retro_environment_t cb)
          {{ NULL, NULL }},
          "---"
       },
+      {
+         "puae_mapper_aspect_ratio_toggle",
+         "Hotkey: Toggle aspect ratio",
+         "",
+         {{ NULL, NULL }},
+         "---"
+      },
       /* Button mappings */
       {
          "puae_mapper_select",
@@ -825,6 +833,7 @@ void retro_set_environment(retro_environment_t cb)
          || strstr(core_options[i].key, "puae_mapper_mouse_toggle")
          || strstr(core_options[i].key, "puae_mapper_mouse_speed")
          || strstr(core_options[i].key, "puae_mapper_reset")
+         || strstr(core_options[i].key, "puae_mapper_aspect_ratio_toggle")
          )
             hotkey = 1;
          else
@@ -1548,14 +1557,15 @@ static void update_variables(void)
       mapper_keys[28] = keyId(var.value);
    }
 
+   var.key = "puae_mapper_aspect_ratio_toggle";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      mapper_keys[29] = keyId(var.value);
+   }
 
 
 
-   /* Always trigger audio and custom change */
-   config_changed = 1;
-   check_prefs_changed_audio();
-   check_prefs_changed_custom();
-   config_changed = 0;
 
    // Setting resolution
    // According to PUAE configuration.txt :
@@ -1629,10 +1639,14 @@ static void update_variables(void)
 			break;
    }
 
-   /* av_info geometry update always */
-   if(retro_update_av_info(1, 0, 0))
-      Screen_SetFullUpdate();
+   /* Always update av_info geometry */
+   request_update_av_info = true;
 
+   /* Always trigger audio and custom change */
+   config_changed = 1;
+   check_prefs_changed_audio();
+   check_prefs_changed_custom();
+   config_changed = 0;
 }
 
 static void retro_wrap_emulator(void)
@@ -1961,6 +1975,9 @@ void retro_get_system_info(struct retro_system_info *info)
 
 bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
 {
+   request_update_av_info = false;
+   opt_statusbar_position = opt_statusbar_position_old;
+   int retroh_old = retroh;
    float hz = currprefs.chipset_refreshrate;
    fprintf(stderr, "[libretro-uae]: Trying to update AV geometry:%d timing:%d, to: ntsc:%d hz:%2.2f, from video_config:%d, video_aspect:%d\n", change_geometry, change_timing, isntsc, hz, video_config, video_config_aspect);
 
@@ -2113,6 +2130,11 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
 
    if(change_geometry) {
       environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
+
+      /* ensure statusbar stays visible when it is at bottom */
+      if(retroh < retroh_old)
+         if (opt_statusbar_position >= 0 && (retroh_old - retroh) > opt_statusbar_position)
+            opt_statusbar_position = retroh_old - retroh;
    }
 
    /* apply zoom mode if necessary */
@@ -2161,10 +2183,8 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       new_av_info.geometry.base_height = zoomed_height;
       if(video_config_geometry & PUAE_VIDEO_NTSC || video_config_aspect == PUAE_VIDEO_NTSC) {
          new_av_info.geometry.aspect_ratio=(float)retrow/(float)zoomed_height * 44.0/52.0;
-         hz = 60;
       } else {
          new_av_info.geometry.aspect_ratio=(float)retrow/(float)zoomed_height;
-         hz = 50;
       }
       environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
 
@@ -2253,6 +2273,9 @@ void retro_run(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
       update_variables();
+
+   if (request_update_av_info)
+      retro_update_av_info(1, 0, 0);
 
    if(firstpass)
    {

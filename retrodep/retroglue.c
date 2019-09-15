@@ -353,7 +353,7 @@ int graphics_init(void) {
 		printf("Error: not enough memory to initialize screen buffer!\n");
 		return -1;
 	}
-	memset(pixbuf, 0x80, currprefs.gfx_size_win.width * currprefs.gfx_size_win.height * pix_bytes);
+	//memset(pixbuf, 0x80, currprefs.gfx_size_win.width * currprefs.gfx_size_win.height * pix_bytes);
 
 	gfxvidinfo.width_allocated = currprefs.gfx_size_win.width;
 	gfxvidinfo.height_allocated = currprefs.gfx_size_win.height;
@@ -450,6 +450,7 @@ int check_prefs_changed_gfx (void) {
     gfxvidinfo.width_allocated      = currprefs.gfx_size_win.width;
     gfxvidinfo.height_allocated     = currprefs.gfx_size_win.height;
 
+    reset_drawing();
     //printf("check_prefs_changed_gfx: %d:%d, xcenter:%d ycenter:%d\n", changed_prefs.gfx_size_win.width, changed_prefs.gfx_size_win.height, changed_prefs.gfx_xcenter, changed_prefs.gfx_ycenter);
     return 0;
 }
