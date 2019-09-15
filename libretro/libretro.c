@@ -2069,6 +2069,12 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
          break;
    }
 
+   /* Special height for Dyna Blaster */
+   if(fake_ntsc)
+   {
+      retroh = ((video_config & PUAE_VIDEO_HIRES) ? 460 : 230);
+   }
+
    /* Need to change defaults too to get forced aspect at start */
    defaultw = retrow;
    defaulth = retroh;
@@ -2169,8 +2175,7 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
 
    /* No need to check changed gfx at startup */
    if(firstpass != 1) {
-      prefs_changed = 1;
-      check_prefs_changed_gfx();
+      prefs_changed = 1; // check_prefs_changed_gfx() will be called automatically in vsync_handle_check()
    }
 
    return true;
