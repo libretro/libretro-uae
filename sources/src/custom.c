@@ -2988,7 +2988,12 @@ void compute_vsynctime (void)
 	if (currprefs.turbo_emulation)
 		vsynctimebase = vsynctimebase_orig = 1;
 	else
+#ifdef __LIBRETRO__
+		vsynctimebase = vsynctimebase_orig = (int)(fake_vblank_hz);
+#else
 		vsynctimebase = vsynctimebase_orig = (int)(syncbase / fake_vblank_hz);
+#endif
+
 #if 0
 	if (!picasso_on) {
 #ifdef OPENGL
@@ -5537,17 +5542,12 @@ static void do_savestate(void);
 
 static int rpt_vsync (int adjust)
 {
-#ifdef __LIBRETRO__
-	frame_time_t curr_time = read_processor_time ();
-	int v = curr_time;
-#else
 	frame_time_t curr_time = read_processor_time ();
 	int v = curr_time - vsyncwaittime + adjust;
 	if (v > syncbase || v < -syncbase) {
 		vsyncmintime = vsyncmaxtime = vsyncwaittime = curr_time;
 		v = 0;
 	}
-#endif
 	return v;
 }
 
