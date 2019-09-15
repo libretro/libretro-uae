@@ -2040,7 +2040,6 @@ void retro_get_system_info(struct retro_system_info *info)
 bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
 {
    request_update_av_info = false;
-   opt_statusbar_position = opt_statusbar_position_old;
    int retroh_old = retroh;
    float hz = currprefs.chipset_refreshrate;
    fprintf(stderr, "[libretro-uae]: Trying to update AV geometry:%d timing:%d, to: ntsc:%d hz:%2.2f, from video_config:%d, video_aspect:%d\n", change_geometry, change_timing, isntsc, hz, video_config, video_config_aspect);
@@ -2196,6 +2195,7 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
 
       /* ensure statusbar stays visible when it is at bottom */
+      opt_statusbar_position = opt_statusbar_position_old;
       if(retroh < retroh_old)
          if (opt_statusbar_position >= 0 && (retroh_old - retroh) > opt_statusbar_position)
             opt_statusbar_position = retroh_old - retroh;
