@@ -61,6 +61,8 @@ extern unsigned short * sndbuffer;
 extern int sndbufsize;
 static int firstpass = 1;
 extern int prefs_changed;
+int opt_vertical_offset = 0;
+extern int minfirstline;
 unsigned int video_config = 0;
 unsigned int video_config_old = 0;
 unsigned int video_config_aspect = 0;
@@ -532,6 +534,51 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "None"
+      },
+      {
+         "puae_vertical_pos",
+         "Vertical position",
+         "Allows to shift the screen up and down, useful to manually center the screen",
+         {
+            { "0", NULL },
+            { "2", NULL },
+            { "4", NULL },
+            { "6", NULL },
+            { "8", NULL },
+            { "10", NULL },
+            { "12", NULL },
+            { "14", NULL },
+            { "16", NULL },
+            { "18", NULL },
+            { "20", NULL },
+            { "22", NULL },
+            { "24", NULL },
+            { "26", NULL },
+            { "28", NULL },
+            { "30", NULL },
+            { "32", NULL },
+            { "34", NULL },
+            { "36", NULL },
+            { "38", NULL },
+            { "40", NULL },
+            { "42", NULL },
+            { "44", NULL },
+            { "46", NULL },
+            { "48", NULL },
+            { "50", NULL },
+            { "-2", NULL },
+            { "-4", NULL },
+            { "-6", NULL },
+            { "-8", NULL },
+            { "-10", NULL },
+            { "-12", NULL },
+            { "-14", NULL },
+            { "-16", NULL },
+            { "-18", NULL },
+            { "-20", NULL },
+            { NULL, NULL },
+         },
+         "0"
       },
       {
          "puae_use_whdload",
@@ -1308,6 +1355,22 @@ static void update_variables(void)
       else if (strcmp(var.value, "Large") == 0) zoom_mode_id=3;
       else if (strcmp(var.value, "Larger") == 0) zoom_mode_id=4;
       else if (strcmp(var.value, "Maximum") == 0) zoom_mode_id=5;
+   }
+
+   var.key = "puae_vertical_pos";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      int new_vertical_offset = atoi(var.value);
+      if (new_vertical_offset >= -20 && new_vertical_offset <= 50)
+      {
+         /* this offset is used whenever minfirstline is reset on gfx mode changes in the init_hz() function */
+         opt_vertical_offset = new_vertical_offset;
+         /* we need to update the currently used minfirstline, too, for immediate effect */
+         /* 26 is the PUAE default for minfirstline */
+         minfirstline = 26 + opt_vertical_offset;
+      }
    }
 
    var.key = "puae_use_whdload";
