@@ -75,6 +75,8 @@ extern void retro_joy(unsigned int, unsigned long);
 extern unsigned int uae_devices[4];
 extern int mapper_keys[30];
 extern int video_config;
+extern int video_config_aspect;
+extern bool request_update_av_info;
 extern bool opt_enhanced_statusbar;
 extern int opt_statusbar_position;
 extern unsigned int opt_analogmouse;
@@ -84,11 +86,15 @@ unsigned int turbo_pulse=2;
 unsigned int turbo_state[5]={0,0,0,0,0};
 unsigned int turbo_toggle[5]={0,0,0,0,0};
 
-#define EMU_VKBD 1
-#define EMU_STATUSBAR 2
-#define EMU_MOUSE_TOGGLE 3
-#define EMU_MOUSE_SPEED 4
-#define EMU_RESET 5
+enum EMU_FUNCTIONS {
+   EMU_VKBD = 0,
+   EMU_STATUSBAR,
+   EMU_MOUSE_TOGGLE,
+   EMU_MOUSE_SPEED,
+   EMU_RESET,
+   EMU_ASPECT_RATIO_TOGGLE,
+   EMU_FUNCTION_COUNT
+};
 
 /* VKBD_MIN_HOLDING_TIME: Hold a direction longer than this and automatic movement sets in */
 /* VKBD_MOVE_DELAY: Delay between automatic movement from button to button */
@@ -120,6 +126,15 @@ void emu_function(int function) {
       case EMU_RESET:
          uae_reset(0, 1); /* hardreset, keyboardreset */
          fake_ntsc=false;
+         break;
+      case EMU_ASPECT_RATIO_TOGGLE:
+         if(video_config_aspect==0)
+            video_config_aspect=(video_config & 0x02) ? 1 : 2;
+         else if(video_config_aspect==1)
+            video_config_aspect=2;
+         else if(video_config_aspect==2)
+            video_config_aspect=1;
+         request_update_av_info=true;
          break;
    }
 }
@@ -410,8 +425,7 @@ void update_input(int disable_physical_cursor_keys)
    input_poll_cb();
 
    /* Keyboard hotkeys */
-   int imax = 5;
-   for(i = 0; i < imax; i++) {
+   for(i = 0; i < EMU_FUNCTION_COUNT; i++) {
       mk = i + 24;
       /* Key down */
       if (input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, mapper_keys[mk]) && kbt[i]==0 && mapper_keys[mk]!=0)
@@ -433,6 +447,9 @@ void update_input(int disable_physical_cursor_keys)
                break;
             case 28:
                emu_function(EMU_RESET);
+               break;
+            case 29:
+               emu_function(EMU_ASPECT_RATIO_TOGGLE);
                break;
          }
       }
@@ -569,6 +586,8 @@ void update_input(int disable_physical_cursor_keys)
                     emu_function(EMU_MOUSE_SPEED);
                 else if(mapper_keys[i] == mapper_keys[28]) /* Reset */
                     emu_function(EMU_RESET);
+                else if(mapper_keys[i] == mapper_keys[29]) /* Toggle aspect ratio */
+                    emu_function(EMU_ASPECT_RATIO_TOGGLE);
                 else if(mapper_keys[i] == -2) /* Mouse left */
                     setmousebuttonstate (0, 0, 1);
                 else if(mapper_keys[i] == -3) /* Mouse right */
@@ -593,6 +612,8 @@ void update_input(int disable_physical_cursor_keys)
                 else if(mapper_keys[i] == mapper_keys[27])
                     ; /* nop */
                 else if(mapper_keys[i] == mapper_keys[28])
+                    ; /* nop */
+                else if(mapper_keys[i] == mapper_keys[29])
                     ; /* nop */
                 else if(mapper_keys[i] == -2)
                     setmousebuttonstate (0, 0, 0);

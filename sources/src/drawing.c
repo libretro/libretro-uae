@@ -2975,7 +2975,7 @@ static void center_image (void)
 			visible_left_border = 0;
 		} else {
 			visible_left_border = gfxvidinfo.inxoffset - DISPLAY_LEFT_SHIFT;
-	}
+		}
 	}
 
 	if (visible_left_border > max_diwlastword - 32)

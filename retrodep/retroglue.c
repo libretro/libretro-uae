@@ -27,7 +27,6 @@ void inputdevice_release_all_keys (void);
 #include "libretro-mapper.h"
 extern unsigned int uae_devices[4];
 extern unsigned int inputdevice_finalized;
-
 extern int pix_bytes;
 
 #define TD_POSY 30
@@ -332,11 +331,11 @@ int graphics_init(void) {
 	opt_scrw = currprefs.gfx_size_win.width;
 	opt_scrh = currprefs.gfx_size_win.height;
 
-	if (currprefs.gfx_size_win.width>= 640) {
+	//if (currprefs.gfx_size_win.width>= 640) {
 	//currprefs.gfx_lores = 0;
-	} else {
+	//} else {
 	//	currprefs.gfx_lores = 1;
-	}
+	//}
 	//vsync_enabled = currprefs.gfx_vsync;
 	LOG_MSG2("screen w=%i", currprefs.gfx_size_win.width);
 	LOG_MSG2("screen h=%i", currprefs.gfx_size_win.height);
@@ -349,12 +348,12 @@ int graphics_init(void) {
 	/* Always have the maximum PAL area available in case NTSC aspect is changed to PAL */
 	currprefs.gfx_size_win.height = (retroh <= 284) ? 284 : 568;
 	
-	//printf("graphics init  pixbuf=%p color_mode=%d width=%d\n", pixbuf, currprefs.color_mode, currprefs.gfx_width_win);
+	//printf("graphics init: pixbuf=%p color_mode=%d width=%d height=%d\n", pixbuf, currprefs.color_mode, currprefs.gfx_size_win.width, currprefs.gfx_size_win.height);
 	if (pixbuf == NULL) {
 		printf("Error: not enough memory to initialize screen buffer!\n");
 		return -1;
 	}
-	memset(pixbuf, 0x80, currprefs.gfx_size_win.width * currprefs.gfx_size_win.height * pix_bytes);
+	//memset(pixbuf, 0x80, currprefs.gfx_size_win.width * currprefs.gfx_size_win.height * pix_bytes);
 
 	gfxvidinfo.width_allocated = currprefs.gfx_size_win.width;
 	gfxvidinfo.height_allocated = currprefs.gfx_size_win.height;
@@ -378,7 +377,6 @@ int graphics_init(void) {
     reset_drawing ();
 	return 1;
 }
-
 
 int is_fullscreen (void)
 {
@@ -436,11 +434,25 @@ void toggle_fullscreen(int mode) {
 }
 
 int check_prefs_changed_gfx (void) {
-	if (prefs_changed) {
-		prefs_changed = 0;
-		return 1;
-	}
-	return 0;
+    if (prefs_changed)
+        prefs_changed = 0;
+    else
+        return 0;
+
+    changed_prefs.gfx_size_win.width = retrow;
+    changed_prefs.gfx_size_win.height = retroh;
+
+    currprefs.gfx_size_win.width    = changed_prefs.gfx_size_win.width;
+    currprefs.gfx_size_win.height   = changed_prefs.gfx_size_win.height;
+    currprefs.gfx_xcenter           = changed_prefs.gfx_xcenter;
+    currprefs.gfx_ycenter           = changed_prefs.gfx_ycenter;
+
+    gfxvidinfo.width_allocated      = currprefs.gfx_size_win.width;
+    gfxvidinfo.height_allocated     = currprefs.gfx_size_win.height;
+
+    reset_drawing();
+    //printf("check_prefs_changed_gfx: %d:%d, xcenter:%d ycenter:%d\n", changed_prefs.gfx_size_win.width, changed_prefs.gfx_size_win.height, changed_prefs.gfx_xcenter, changed_prefs.gfx_ycenter);
+    return 0;
 }
 
 void clean_led_area(void) {
