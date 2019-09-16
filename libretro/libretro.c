@@ -12,8 +12,8 @@
 #include "options.h"
 #include "inputdevice.h"
 
-#define EMULATOR_DEF_WIDTH 640
-#define EMULATOR_DEF_HEIGHT 400
+#define EMULATOR_DEF_WIDTH 720
+#define EMULATOR_DEF_HEIGHT 568
 #define EMULATOR_MAX_WIDTH 1024
 #define EMULATOR_MAX_HEIGHT 1024
 
@@ -43,6 +43,7 @@ extern unsigned int turbo_pulse;
 int pix_bytes = 2;
 static bool pix_bytes_initialized = false;
 bool fake_ntsc = false;
+bool real_ntsc = false;
 bool request_update_av_info = false;
 int zoom_mode_id = 0;
 int zoomed_height;
@@ -64,6 +65,7 @@ static int firstpass = 1;
 extern int prefs_changed;
 int opt_vertical_offset = 0;
 extern int minfirstline;
+static int minfirstline_update_frame_timer = 3;
 unsigned int video_config = 0;
 unsigned int video_config_old = 0;
 unsigned int video_config_aspect = 0;
@@ -88,7 +90,7 @@ extern void retro_poll_event(void);
 unsigned int uae_devices[4];
 extern int cd32_pad_enabled[NORMAL_JPORTS];
 
-int mapper_keys[30]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+int mapper_keys[31]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 static char buf[64][4096] = { 0 };
 
 static retro_video_refresh_t video_cb;
@@ -353,13 +355,13 @@ void retro_set_environment(retro_environment_t cb)
          "Sound output",
          "",
          {
-            { "normal", "Normal" },
             { "exact", "Exact" },
+            { "normal", "Normal" },
             { "interrupts", "Interrupts" },
             { "none", "None" },
             { NULL, NULL },
          },
-         "normal"
+         "exact"
       },
       {
          "puae_sound_stereo_separation",
@@ -692,6 +694,13 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapper_aspect_ratio_toggle",
          "Hotkey: Toggle aspect ratio",
+         "Only usable with PAL video",
+         {{ NULL, NULL }},
+         "---"
+      },
+      {
+         "puae_mapper_zoom_mode_toggle",
+         "Hotkey: Toggle zoom mode",
          "",
          {{ NULL, NULL }},
          "---"
@@ -882,6 +891,7 @@ void retro_set_environment(retro_environment_t cb)
          || strstr(core_options[i].key, "puae_mapper_mouse_speed")
          || strstr(core_options[i].key, "puae_mapper_reset")
          || strstr(core_options[i].key, "puae_mapper_aspect_ratio_toggle")
+         || strstr(core_options[i].key, "puae_mapper_zoom_mode_toggle")
          )
             hotkey = 1;
          else
@@ -1010,6 +1020,7 @@ static void update_variables(void)
          {
             video_config |= PUAE_VIDEO_NTSC;
             strcat(uae_config, "ntsc=true\n");
+            real_ntsc = true;
          }
    }
 
@@ -1628,6 +1639,13 @@ static void update_variables(void)
       mapper_keys[29] = keyId(var.value);
    }
 
+   var.key = "puae_mapper_zoom_mode_toggle";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      mapper_keys[30] = keyId(var.value);
+   }
+
 
 
 
@@ -2040,8 +2058,6 @@ void retro_get_system_info(struct retro_system_info *info)
 bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
 {
    request_update_av_info = false;
-   opt_statusbar_position = opt_statusbar_position_old;
-   int retroh_old = retroh;
    float hz = currprefs.chipset_refreshrate;
    fprintf(stderr, "[libretro-uae]: Trying to update AV geometry:%d timing:%d, to: ntsc:%d hz:%2.2f, from video_config:%d, video_aspect:%d\n", change_geometry, change_timing, isntsc, hz, video_config, video_config_aspect);
 
@@ -2150,15 +2166,18 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
          break;
    }
 
-   /* Special height for Dyna Blaster */
-   if(fake_ntsc)
+   /* Special cropped height for Dyna Blaster (uncropped will leave some statusbar trails, but who cares since they will be cleaned up by itself */
+   if(fake_ntsc && video_config & PUAE_VIDEO_CROP)
    {
       retroh = ((video_config & PUAE_VIDEO_HIRES) ? 460 : 230);
    }
 
-   /* Need to change defaults too to get forced aspect at start */
-   defaultw = retrow;
-   defaulth = retroh;
+   /* When the actual dimensions change and not just the view */
+   if(change_timing || fake_ntsc)
+   {
+      defaultw = retrow;
+      defaulth = retroh;
+   }
 
    static struct retro_system_av_info new_av_info;
    new_av_info.geometry.base_width = retrow;
@@ -2196,9 +2215,13 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
 
       /* ensure statusbar stays visible when it is at bottom */
-      if(retroh < retroh_old)
-         if (opt_statusbar_position >= 0 && (retroh_old - retroh) > opt_statusbar_position)
-            opt_statusbar_position = retroh_old - retroh;
+      opt_statusbar_position = opt_statusbar_position_old;
+      if(!change_timing)
+         if(retroh < defaulth)
+            if (opt_statusbar_position >= 0 && (defaulth - retroh) > opt_statusbar_position)
+               opt_statusbar_position = defaulth - retroh;
+
+      //printf("statusbar:%d old:%d, retroh:%d defaulth:%d\n", opt_statusbar_position, opt_statusbar_position_old, retroh, defaulth);
    }
 
    /* apply zoom mode if necessary */
@@ -2341,20 +2364,49 @@ void retro_run(void)
    bool fast_forward = false;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_FASTFORWARDING, &fast_forward) && fast_forward)
+   {
       fast_forward_is_on = true;
+      if(currprefs.sound_auto == 0)
+      {
+         changed_prefs.sound_auto = 1;
+         config_changed = 1;
+         check_prefs_changed_audio();
+         config_changed = 0;
+      }
+   }
    else
+   {
       fast_forward_is_on = false;
+      if(currprefs.sound_auto == 1)
+      {
+         changed_prefs.sound_auto = 0;
+         config_changed = 1;
+         check_prefs_changed_audio();
+         config_changed = 0;
+      }
+   }
 
    if (request_update_av_info)
       retro_update_av_info(1, 0, 0);
 
-   if(firstpass)
+   if (minfirstline_update_frame_timer > 0 && opt_vertical_offset != 0)
+   {
+      minfirstline_update_frame_timer--;
+      //printf("minfirstline frame:%d\n", minfirstline_update_frame_timer);
+      if (minfirstline_update_frame_timer == 0)
+         minfirstline = 26 + opt_vertical_offset;
+   }
+
+   if (firstpass)
    {
       firstpass=0;
       goto sortie;
    }
+
+
+
    retro_poll_event();
-   if(STATUSON==1) Print_Status();
+   if (STATUSON==1) Print_Status();
 
 sortie:
 

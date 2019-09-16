@@ -55,7 +55,8 @@ int touch=-1; // gui mouse btn
 int fmousex,fmousey; // emu mouse
 int slowdown=0;
 extern int pix_bytes;
-extern int fake_ntsc;
+extern bool fake_ntsc;
+extern bool real_ntsc;
 
 int vkflag[7]={0,0,0,0,0,0,0};
 static int jbt[24]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -73,9 +74,10 @@ extern void retro_mouse_but0(int);
 extern void retro_mouse_but1(int);
 extern void retro_joy(unsigned int, unsigned long);
 extern unsigned int uae_devices[4];
-extern int mapper_keys[30];
+extern int mapper_keys[31];
 extern int video_config;
 extern int video_config_aspect;
+extern int zoom_mode_id;
 extern bool request_update_av_info;
 extern bool opt_enhanced_statusbar;
 extern int opt_statusbar_position;
@@ -93,6 +95,7 @@ enum EMU_FUNCTIONS {
    EMU_MOUSE_SPEED,
    EMU_RESET,
    EMU_ASPECT_RATIO_TOGGLE,
+   EMU_ZOOM_MODE_TOGGLE,
    EMU_FUNCTION_COUNT
 };
 
@@ -128,12 +131,19 @@ void emu_function(int function) {
          fake_ntsc=false;
          break;
       case EMU_ASPECT_RATIO_TOGGLE:
+         if(real_ntsc)
+            break;
          if(video_config_aspect==0)
             video_config_aspect=(video_config & 0x02) ? 1 : 2;
          else if(video_config_aspect==1)
             video_config_aspect=2;
          else if(video_config_aspect==2)
             video_config_aspect=1;
+         request_update_av_info=true;
+         break;
+      case EMU_ZOOM_MODE_TOGGLE:
+         zoom_mode_id++;
+         if(zoom_mode_id>5)zoom_mode_id=0;
          request_update_av_info=true;
          break;
    }
@@ -451,6 +461,9 @@ void update_input(int disable_physical_cursor_keys)
             case 29:
                emu_function(EMU_ASPECT_RATIO_TOGGLE);
                break;
+            case 30:
+               emu_function(EMU_ZOOM_MODE_TOGGLE);
+               break;
          }
       }
       /* Key up */
@@ -588,6 +601,8 @@ void update_input(int disable_physical_cursor_keys)
                     emu_function(EMU_RESET);
                 else if(mapper_keys[i] == mapper_keys[29]) /* Toggle aspect ratio */
                     emu_function(EMU_ASPECT_RATIO_TOGGLE);
+                else if(mapper_keys[i] == mapper_keys[30]) /* Toggle zoom mode */
+                    emu_function(EMU_ZOOM_MODE_TOGGLE);
                 else if(mapper_keys[i] == -2) /* Mouse left */
                     setmousebuttonstate (0, 0, 1);
                 else if(mapper_keys[i] == -3) /* Mouse right */
@@ -614,6 +629,8 @@ void update_input(int disable_physical_cursor_keys)
                 else if(mapper_keys[i] == mapper_keys[28])
                     ; /* nop */
                 else if(mapper_keys[i] == mapper_keys[29])
+                    ; /* nop */
+                else if(mapper_keys[i] == mapper_keys[30])
                     ; /* nop */
                 else if(mapper_keys[i] == -2)
                     setmousebuttonstate (0, 0, 0);

@@ -2990,7 +2990,7 @@ void compute_vsynctime (void)
 	else
 #ifdef __LIBRETRO__
 		if (fast_forward_is_on)
-			vsynctimebase = vsynctimebase_orig = (int)(fake_vblank_hz);
+			vsynctimebase = vsynctimebase_orig = 1;
 		else
 #endif
 		vsynctimebase = vsynctimebase_orig = (int)(syncbase / fake_vblank_hz);
@@ -3270,9 +3270,6 @@ void init_hz (bool checkvposw)
 		maxvpos = MAXVPOS_PAL;
 		maxhpos = MAXHPOS_PAL;
 		minfirstline = VBLANK_ENDLINE_PAL;
-#ifdef __LIBRETRO__
-		minfirstline += opt_vertical_offset;
-#endif
 		vblank_hz = VBLANK_HZ_PAL;
 		sprite_vblank_endline = VBLANK_SPRITE_PAL;
 		equ_vblank_endline = EQU_ENDLINE_PAL;
@@ -3281,9 +3278,6 @@ void init_hz (bool checkvposw)
 		maxvpos = MAXVPOS_NTSC;
 		maxhpos = MAXHPOS_NTSC;
 		minfirstline = VBLANK_ENDLINE_NTSC;
-#ifdef __LIBRETRO__
-		minfirstline += opt_vertical_offset;
-#endif
 		vblank_hz = VBLANK_HZ_NTSC;
 		sprite_vblank_endline = VBLANK_SPRITE_NTSC;
 		equ_vblank_endline = EQU_ENDLINE_NTSC;
@@ -5930,7 +5924,8 @@ static void fpscounter (bool frameok)
 	if ((timeframes & 7) == 0) {
 		double idle = 1000 - (idle_mavg.mavg == 0 ? 0.0 : (double)idle_mavg.mavg * 1000.0 / vsynctimebase);
 #ifdef __LIBRETRO__
-		int fps = fake_vblank_hz * 10;
+		int fps = fps_mavg.mavg == 0 ? 0 : (syncbase * 2) * 10 / fps_mavg.mavg;
+		//printf("SYNCBASE:%d mavg:%d now:%d last:%d fps:%d\n", syncbase, fps_mavg.mavg, now, last, fps);
 #else
 		int fps = fps_mavg.mavg == 0 ? 0 : syncbase * 10 / fps_mavg.mavg;
 #endif
@@ -7109,8 +7104,8 @@ int custom_init (void)
 
 	create_cycle_diagram_table ();
 
-        /* We have to do this somewhere... */
-        syncbase = read_processor_time ();
+	/* We have to do this somewhere... */
+	syncbase = 500000;//read_processor_time ();
 
 	return 1;
 }

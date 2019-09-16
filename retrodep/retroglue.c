@@ -34,8 +34,8 @@ extern int pix_bytes;
 #define LOG_MSG(...) 
 #define LOG_MSG2(...) 
 
-extern int retrow; 
-extern int retroh;
+extern int defaultw;
+extern int defaulth;
 
 unsigned short int clut[] = {
 	0x0000,  /* full background transparency */
@@ -270,8 +270,6 @@ void retro_key_up(int key)
 	inputdevice_do_keyboard (key, 0);
 }
 
-int RLOOP=1;
-
 int retro_renderSound(short* samples, int sampleCount)
 {
    int i; 
@@ -320,13 +318,13 @@ int graphics_init(void) {
 	if (pixbuf != NULL) {
 		return 1;
 	}
-	currprefs.gfx_size_win.width=retrow;
+	currprefs.gfx_size_win.width = defaultw;
 
 #ifdef ENABLE_LOG_SCREEN
 	currprefs.gfx_height = 256;
 	currprefs.gfx_linedbl = 0;	//disable line doubling
 #else
-	currprefs.gfx_size_win.height= retroh;
+	currprefs.gfx_size_win.height = defaulth;
 #endif	
 	opt_scrw = currprefs.gfx_size_win.width;
 	opt_scrh = currprefs.gfx_size_win.height;
@@ -345,9 +343,6 @@ int graphics_init(void) {
 #else
 	pixbuf = (unsigned short int*) &bmp[0];
 #endif
-	/* Always have the maximum PAL area available in case NTSC aspect is changed to PAL */
-	currprefs.gfx_size_win.height = (retroh <= 284) ? 284 : 568;
-	
 	//printf("graphics init: pixbuf=%p color_mode=%d width=%d height=%d\n", pixbuf, currprefs.color_mode, currprefs.gfx_size_win.width, currprefs.gfx_size_win.height);
 	if (pixbuf == NULL) {
 		printf("Error: not enough memory to initialize screen buffer!\n");
@@ -439,8 +434,8 @@ int check_prefs_changed_gfx (void) {
     else
         return 0;
 
-    changed_prefs.gfx_size_win.width = retrow;
-    changed_prefs.gfx_size_win.height = retroh;
+    changed_prefs.gfx_size_win.width = defaultw;
+    changed_prefs.gfx_size_win.height = defaulth;
 
     currprefs.gfx_size_win.width    = changed_prefs.gfx_size_win.width;
     currprefs.gfx_size_win.height   = changed_prefs.gfx_size_win.height;
@@ -456,12 +451,14 @@ int check_prefs_changed_gfx (void) {
 }
 
 void clean_led_area(void) {
-	int size = 11 * opt_scrw * gfxvidinfo.pixbytes;
-	unsigned short int* addr;
+/*
+    int size = 11 * opt_scrw * gfxvidinfo.pixbytes;
+    unsigned short int* addr;
 
-	addr = pixbuf;
-	addr+= (opt_scrh-11-TD_POSY)* opt_scrw;
-	memset(addr, 0, size);
+    addr = pixbuf;
+    addr+= (opt_scrh-11-TD_POSY)* opt_scrw;
+    memset(addr, 0, size);
+*/
 }
 
 
