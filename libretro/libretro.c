@@ -354,13 +354,13 @@ void retro_set_environment(retro_environment_t cb)
          "Sound output",
          "",
          {
-            { "normal", "Normal" },
             { "exact", "Exact" },
+            { "normal", "Normal" },
             { "interrupts", "Interrupts" },
             { "none", "None" },
             { NULL, NULL },
          },
-         "normal"
+         "exact"
       },
       {
          "puae_sound_stereo_separation",
@@ -2363,9 +2363,27 @@ void retro_run(void)
    bool fast_forward = false;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_FASTFORWARDING, &fast_forward) && fast_forward)
+   {
       fast_forward_is_on = true;
+      if(currprefs.sound_auto == 0)
+      {
+         changed_prefs.sound_auto = 1;
+         config_changed = 1;
+         check_prefs_changed_audio();
+         config_changed = 0;
+      }
+   }
    else
+   {
       fast_forward_is_on = false;
+      if(currprefs.sound_auto == 1)
+      {
+         changed_prefs.sound_auto = 0;
+         config_changed = 1;
+         check_prefs_changed_audio();
+         config_changed = 0;
+      }
+   }
 
    if (request_update_av_info)
       retro_update_av_info(1, 0, 0);
