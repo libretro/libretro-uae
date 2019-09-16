@@ -28,6 +28,7 @@ bool retro_update_av_info(bool, bool, bool);
 extern int retrow; 
 extern int retroh;
 extern int opt_vertical_offset;
+extern bool fast_forward_is_on;
 
 #define NPLGN 11
 #define NLIGN 7

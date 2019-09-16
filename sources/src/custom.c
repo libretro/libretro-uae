@@ -2989,10 +2989,11 @@ void compute_vsynctime (void)
 		vsynctimebase = vsynctimebase_orig = 1;
 	else
 #ifdef __LIBRETRO__
-		vsynctimebase = vsynctimebase_orig = (int)(fake_vblank_hz);
-#else
-		vsynctimebase = vsynctimebase_orig = (int)(syncbase / fake_vblank_hz);
+		if (fast_forward_is_on)
+			vsynctimebase = vsynctimebase_orig = (int)(fake_vblank_hz);
+		else
 #endif
+		vsynctimebase = vsynctimebase_orig = (int)(syncbase / fake_vblank_hz);
 
 #if 0
 	if (!picasso_on) {

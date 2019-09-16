@@ -46,6 +46,7 @@ bool fake_ntsc = false;
 bool request_update_av_info = false;
 int zoom_mode_id = 0;
 int zoomed_height;
+bool fast_forward_is_on = false;
 
 #if defined(NATMEM_OFFSET)
 extern uae_u8 *natmem_offset;
@@ -2336,6 +2337,13 @@ void retro_run(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
       update_variables();
+
+   bool fast_forward = false;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_FASTFORWARDING, &fast_forward) && fast_forward)
+      fast_forward_is_on = true;
+   else
+      fast_forward_is_on = false;
 
    if (request_update_av_info)
       retro_update_av_info(1, 0, 0);
