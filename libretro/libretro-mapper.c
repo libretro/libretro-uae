@@ -55,7 +55,8 @@ int touch=-1; // gui mouse btn
 int fmousex,fmousey; // emu mouse
 int slowdown=0;
 extern int pix_bytes;
-extern int fake_ntsc;
+extern bool fake_ntsc;
+extern bool real_ntsc;
 
 int vkflag[7]={0,0,0,0,0,0,0};
 static int jbt[24]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -130,6 +131,8 @@ void emu_function(int function) {
          fake_ntsc=false;
          break;
       case EMU_ASPECT_RATIO_TOGGLE:
+         if(real_ntsc)
+            break;
          if(video_config_aspect==0)
             video_config_aspect=(video_config & 0x02) ? 1 : 2;
          else if(video_config_aspect==1)

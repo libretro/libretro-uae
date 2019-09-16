@@ -12,8 +12,8 @@
 #include "options.h"
 #include "inputdevice.h"
 
-#define EMULATOR_DEF_WIDTH 640
-#define EMULATOR_DEF_HEIGHT 400
+#define EMULATOR_DEF_WIDTH 720
+#define EMULATOR_DEF_HEIGHT 568
 #define EMULATOR_MAX_WIDTH 1024
 #define EMULATOR_MAX_HEIGHT 1024
 
@@ -43,6 +43,7 @@ extern unsigned int turbo_pulse;
 int pix_bytes = 2;
 static bool pix_bytes_initialized = false;
 bool fake_ntsc = false;
+bool real_ntsc = false;
 bool request_update_av_info = false;
 int zoom_mode_id = 0;
 int zoomed_height;
@@ -692,7 +693,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapper_aspect_ratio_toggle",
          "Hotkey: Toggle aspect ratio",
-         "",
+         "Only usable with PAL video",
          {{ NULL, NULL }},
          "---"
       },
@@ -1018,6 +1019,7 @@ static void update_variables(void)
          {
             video_config |= PUAE_VIDEO_NTSC;
             strcat(uae_config, "ntsc=true\n");
+            real_ntsc = true;
          }
    }
 
@@ -2055,7 +2057,6 @@ void retro_get_system_info(struct retro_system_info *info)
 bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
 {
    request_update_av_info = false;
-   int retroh_old = retroh;
    float hz = currprefs.chipset_refreshrate;
    fprintf(stderr, "[libretro-uae]: Trying to update AV geometry:%d timing:%d, to: ntsc:%d hz:%2.2f, from video_config:%d, video_aspect:%d\n", change_geometry, change_timing, isntsc, hz, video_config, video_config_aspect);
 
@@ -2164,15 +2165,18 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
          break;
    }
 
-   /* Special height for Dyna Blaster */
-   if(fake_ntsc)
+   /* Special cropped height for Dyna Blaster (uncropped will leave some statusbar trails, but who cares since they will be cleaned up by itself */
+   if(fake_ntsc && video_config & PUAE_VIDEO_CROP)
    {
       retroh = ((video_config & PUAE_VIDEO_HIRES) ? 460 : 230);
    }
 
-   /* Need to change defaults too to get forced aspect at start */
-   defaultw = retrow;
-   defaulth = retroh;
+   /* When the actual dimensions change and not just the view */
+   if(change_timing || fake_ntsc)
+   {
+      defaultw = retrow;
+      defaulth = retroh;
+   }
 
    static struct retro_system_av_info new_av_info;
    new_av_info.geometry.base_width = retrow;
@@ -2211,9 +2215,12 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
 
       /* ensure statusbar stays visible when it is at bottom */
       opt_statusbar_position = opt_statusbar_position_old;
-      if(retroh < retroh_old)
-         if (opt_statusbar_position >= 0 && (retroh_old - retroh) > opt_statusbar_position)
-            opt_statusbar_position = retroh_old - retroh;
+      if(!change_timing)
+         if(retroh < defaulth)
+            if (opt_statusbar_position >= 0 && (defaulth - retroh) > opt_statusbar_position)
+               opt_statusbar_position = defaulth - retroh;
+
+      //printf("statusbar:%d old:%d, retroh:%d defaulth:%d\n", opt_statusbar_position, opt_statusbar_position_old, retroh, defaulth);
    }
 
    /* apply zoom mode if necessary */
