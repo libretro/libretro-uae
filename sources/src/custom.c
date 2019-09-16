@@ -3270,9 +3270,6 @@ void init_hz (bool checkvposw)
 		maxvpos = MAXVPOS_PAL;
 		maxhpos = MAXHPOS_PAL;
 		minfirstline = VBLANK_ENDLINE_PAL;
-#ifdef __LIBRETRO__
-		minfirstline += opt_vertical_offset;
-#endif
 		vblank_hz = VBLANK_HZ_PAL;
 		sprite_vblank_endline = VBLANK_SPRITE_PAL;
 		equ_vblank_endline = EQU_ENDLINE_PAL;
@@ -3281,9 +3278,6 @@ void init_hz (bool checkvposw)
 		maxvpos = MAXVPOS_NTSC;
 		maxhpos = MAXHPOS_NTSC;
 		minfirstline = VBLANK_ENDLINE_NTSC;
-#ifdef __LIBRETRO__
-		minfirstline += opt_vertical_offset;
-#endif
 		vblank_hz = VBLANK_HZ_NTSC;
 		sprite_vblank_endline = VBLANK_SPRITE_NTSC;
 		equ_vblank_endline = EQU_ENDLINE_NTSC;

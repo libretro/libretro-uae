@@ -65,6 +65,7 @@ static int firstpass = 1;
 extern int prefs_changed;
 int opt_vertical_offset = 0;
 extern int minfirstline;
+static int minfirstline_update_frame_timer = 3;
 unsigned int video_config = 0;
 unsigned int video_config_old = 0;
 unsigned int video_config_aspect = 0;
@@ -2388,13 +2389,24 @@ void retro_run(void)
    if (request_update_av_info)
       retro_update_av_info(1, 0, 0);
 
-   if(firstpass)
+   if (minfirstline_update_frame_timer > 0 && opt_vertical_offset != 0)
+   {
+      minfirstline_update_frame_timer--;
+      //printf("minfirstline frame:%d\n", minfirstline_update_frame_timer);
+      if (minfirstline_update_frame_timer == 0)
+         minfirstline = 26 + opt_vertical_offset;
+   }
+
+   if (firstpass)
    {
       firstpass=0;
       goto sortie;
    }
+
+
+
    retro_poll_event();
-   if(STATUSON==1) Print_Status();
+   if (STATUSON==1) Print_Status();
 
 sortie:
 
