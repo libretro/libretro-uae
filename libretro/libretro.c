@@ -11,6 +11,7 @@
 #include "uae.h"
 #include "options.h"
 #include "inputdevice.h"
+#include "savestate.h"
 
 #define EMULATOR_DEF_WIDTH 720
 #define EMULATOR_DEF_HEIGHT 568
@@ -92,6 +93,12 @@ extern int cd32_pad_enabled[NORMAL_JPORTS];
 
 int mapper_keys[31]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 static char buf[64][4096] = { 0 };
+
+#ifdef WIN32
+#define DIR_SEP_STR "\\"
+#else
+#define DIR_SEP_STR "/"
+#endif
 
 static retro_video_refresh_t video_cb;
 static retro_audio_sample_t audio_cb;
@@ -1932,6 +1939,10 @@ void retro_init(void)
 	dc = dc_create();
 	environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &disk_interface);
 
+   // Savestates
+   static uint32_t quirks = RETRO_SERIALIZATION_QUIRK_INCOMPLETE | RETRO_SERIALIZATION_QUIRK_MUST_INITIALIZE | RETRO_SERIALIZATION_QUIRK_CORE_VARIABLE_SIZE;
+   environ_cb(RETRO_ENVIRONMENT_SET_SERIALIZATION_QUIRKS, &quirks);
+
 	// Inputs
 #define RETRO_DESCRIPTOR_BLOCK( _user )                                            \
    { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "A / 2nd fire / Blue" },\
@@ -2751,16 +2762,65 @@ bool retro_load_game_special(unsigned type, const struct retro_game_info *info, 
 
 size_t retro_serialize_size(void)
 {
+   if (firstpass != 1)
+   {
+      snprintf(savestate_fname, sizeof(savestate_fname), "%s%suae_tempsave.uss", retro_save_directory, DIR_SEP_STR);
+      if (save_state(savestate_fname, "retro") >= 0)
+      {
+         FILE *file = fopen(savestate_fname, "rb");
+         if (file)
+         {
+            size_t size = 0;
+            fseek(file, 0L, SEEK_END);
+            size = ftell(file);
+            fclose(file);
+            return size;
+         }
+      }
+   }
    return 0;
 }
 
 bool retro_serialize(void *data_, size_t size)
 {
+   if (firstpass != 1)
+   {
+      snprintf(savestate_fname, sizeof(savestate_fname), "%s%suae_tempsave.uss", retro_save_directory, DIR_SEP_STR);
+      if (save_state(savestate_fname, "retro") >= 0)
+      {
+         FILE *file = fopen(savestate_fname, "rb");
+         if (file)
+         {
+            if (fread(data_, size, 1, file) == 1)
+            {
+               fclose(file);
+               return true;
+            }
+            fclose(file);
+         }
+      }
+   }
    return false;
 }
 
 bool retro_unserialize(const void *data_, size_t size)
 {
+   if (firstpass != 1)
+   {
+      snprintf(savestate_fname, sizeof(savestate_fname), "%s%suae_tempsave.uss", retro_save_directory, DIR_SEP_STR);
+      FILE *file = fopen(savestate_fname, "wb");
+      if (file)
+      {
+         if (fwrite(data_, size, 1, file) == 1)
+         {
+            fclose(file);
+            savestate_state = STATE_DORESTORE;
+            return true;
+         }
+         else
+            fclose(file);
+      }
+   }
    return false;
 }
 
