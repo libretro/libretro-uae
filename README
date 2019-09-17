@@ -6,7 +6,7 @@ based on P-UAE 2.6.1 https://github.com/GnoStiC/PUAE
 Git Commit: 0186c1b16f7181ffa02d73e6920d3180ce457c46
 
 
-All credits to :
+All credits to:
 
 Richard Drummond "http://www.rcdrummond.net/uae/"
 
@@ -15,8 +15,8 @@ Schmidt (the original author and maintainer of UAE), Bernie Meyer (the
 author of the x86 JIT compiler), Toni Wilen (the current maintainer of
 WinUAE), and many more.
 
-This RETRO port was  based at start on PS3 version E-UAE 0.8.29-WIP4 release 8
-(so aslo credits to Ole.)
+This RETRO port was based at start on PS3 version E-UAE 0.8.29-WIP4 release 8
+(so also credits to Ole.)
 
 For now we use the UEA core provide by P-UAE 2.6.1 :
 Git Commit: 0186c1b16f7181ffa02d73e6920d3180ce457c46
@@ -28,7 +28,7 @@ Credits to Mustafa 'GnoStiC' TUFAN
 And of course for the RetroArch/Libretro team : "http://www.libretro.org/"
 
 
-Default Control :
+Default Control:
 
 L   Toggle virtual keyboard
 R   Toggle statusbar
@@ -37,24 +37,18 @@ B   Button 1 / LMB
 
 
 Using a configuration file for your games:
-  You can pass a uae configuration file as a rom and the core will load the
-	settings and start emulation without first showing the gui. Look at the sample
-	configuration file "RickDangerous.uae" for help. You can use that sample as a
-	starting point for making your own configuration files for each of your games.
+    You can pass a uae configuration file as a rom and the core will load the
+    settings and start emulation. Look at the sample configuration file
+    "RickDangerous.uae" for help. You can use that sample as a starting point
+    for making your own configuration files for each of your games.
 
 
 Recommended settings and information for Raspberry Pi 2:
-  - use CPU type 68000 and kickstart 1.3 for stability
-	- set floppy speed to 1x speed to avoid sound stuttering when loading games
-	- 640x400 is suitable for widescreen gaming and fits perfectly for most games
-	- you can use the config settings gfx_width and gfx_height to specify resolution
-	- study the settings in the sample file "RickDangerous.uae"
-	- whdload does not work
-	- overall the core performs very well with adf files
+    - use CPU type 68000 and kickstart 1.3 for stability
+    - set floppy speed to 1x speed to avoid sound stuttering when loading games
+    - 640x400 is suitable for widescreen gaming and fits perfectly for most games
+    - you can use the config settings gfx_width and gfx_height to specify resolution
+    - study the settings in the sample file "RickDangerous.uae"
+    - whdload does not work
+    - overall the core performs very well with adf files
 
-Knows Bugs:
-	- When load savesate , exiting GUI without reset . You have to re-enter GUI and do the reset .
-	- Everything not working well, It's a debug release , so expect to more bug.
-
-
-We plan to use the core of winuae in the future, but no release date for now.

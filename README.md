@@ -13,9 +13,9 @@ author of the x86 JIT compiler), Toni Wilen (the current maintainer of
 WinUAE), and many more.
 
 This RETRO port was  based at start on PS3 version E-UAE 0.8.29-WIP4 release 8
-(so aslo credits to Ole.)
+(so also credits to Ole.)
 
-For now we use the UAE core provided by P-UAE 2.6.1 :
+For now we use the UAE core provided by P-UAE 2.6.1:
 Git Commit: 0186c1b16f7181ffa02d73e6920d3180ce457c46
 https://github.com/GnoStiC/PUAE 
 
@@ -147,6 +147,7 @@ To do this just add these strings to your adf, hdf or m3u filename:
 - "(A1200OG)" or "(A1200NF)" to use Amiga 1200 without memory expansion
 - "(NTSC)" to use NTSC
 - "(PAL)" to use PAL
+- "(MD)" to insert each disk in different drive (Maximum 4 disks)
 
 Example: When launching "Alien Breed 2 (AGA).hdf" file the core will use an Amiga 1200 model.
 
@@ -208,9 +209,3 @@ Note that for most hdf files, the model has to be set to A1200 in Quickmenu->Opt
 
 If you are using rdb hdf files, please use 0,0,0,0 instead of geometry numbers like 32,1,2,512. The geometry will then be read from the file. This only works for rdb hdf files.
 
-## Knows Bugs
-- When load savesate, exiting GUI without reset. You have to re-enter GUI and do the reset.
-- It's a debug release, so expect bug.
-
-
-We plan to use the core of WinUAE in the future, but no release date for now.
