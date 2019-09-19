@@ -18,6 +18,9 @@
 #define EMULATOR_MAX_WIDTH 1024
 #define EMULATOR_MAX_HEIGHT 1024
 
+#define UAE_HZ_PAL 49.9201
+#define UAE_HZ_NTSC 59.8859
+
 #if EMULATOR_DEF_WIDTH < 0 || EMULATOR_DEF_WIDTH > EMULATOR_MAX_WIDTH || EMULATOR_DEF_HEIGHT < 0 || EMULATOR_DEF_HEIGHT > EMULATOR_MAX_HEIGHT
 #error EMULATOR_DEF_WIDTH || EMULATOR_DEF_HEIGHT
 #endif
@@ -54,14 +57,12 @@ bool fast_forward_is_on = false;
 extern uae_u8 *natmem_offset;
 extern uae_u32 natmem_size;
 #endif
-extern unsigned short int  bmp[EMULATOR_MAX_WIDTH*EMULATOR_MAX_HEIGHT];
-extern unsigned short int  savebmp[EMULATOR_MAX_WIDTH*EMULATOR_MAX_HEIGHT];
+extern unsigned short int bmp[EMULATOR_MAX_WIDTH*EMULATOR_MAX_HEIGHT];
+extern unsigned short int savebmp[EMULATOR_MAX_WIDTH*EMULATOR_MAX_HEIGHT];
 extern int SHIFTON;
 extern int STATUSON;
 extern char RPATH[512];
 extern void Print_Status(void);
-extern unsigned short * sndbuffer;
-extern int sndbufsize;
 static int firstpass = 1;
 extern int prefs_changed;
 int opt_vertical_offset = 0;
@@ -402,7 +403,7 @@ void retro_set_environment(retro_environment_t cb)
             { "crux", "Crux" },
             { NULL, NULL },
          },
-         "none"
+         "anti"
       },
       {
          "puae_sound_filter",
@@ -1902,48 +1903,48 @@ void retro_init(void)
 {
    enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
 
-	const char *system_dir = NULL;
+   const char *system_dir = NULL;
 
-	if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &system_dir) && system_dir)
-	{
-	  // if defined, use the system directory			
-	  retro_system_directory=system_dir;		
-	}		   
+   if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &system_dir) && system_dir)
+   {
+     // if defined, use the system directory
+     retro_system_directory=system_dir;
+   }
 
-	const char *content_dir = NULL;
+   const char *content_dir = NULL;
 
-	if (environ_cb(RETRO_ENVIRONMENT_GET_CONTENT_DIRECTORY, &content_dir) && content_dir)
-	{
-	  // if defined, use the system directory			
-	  retro_content_directory=content_dir;		
-	}			
+   if (environ_cb(RETRO_ENVIRONMENT_GET_CONTENT_DIRECTORY, &content_dir) && content_dir)
+   {
+     // if defined, use the system directory
+     retro_content_directory=content_dir;
+   }
 
-	const char *save_dir = NULL;
+   const char *save_dir = NULL;
 
-	if (environ_cb(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &save_dir) && save_dir)
-	{
-	  // If save directory is defined use it, otherwise use system directory
-	  retro_save_directory = *save_dir ? save_dir : retro_system_directory;      
-	}
-	else
-	{
-	  // make retro_save_directory the same in case RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY is not implemented by the frontend
-	  retro_save_directory=retro_system_directory;
-	}
+   if (environ_cb(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &save_dir) && save_dir)
+   {
+     // If save directory is defined use it, otherwise use system directory
+     retro_save_directory = *save_dir ? save_dir : retro_system_directory;
+   }
+   else
+   {
+     // make retro_save_directory the same in case RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY is not implemented by the frontend
+     retro_save_directory=retro_system_directory;
+   }
 
    printf("Retro SYSTEM_DIRECTORY %s\n",retro_system_directory);
    printf("Retro SAVE_DIRECTORY %s\n",retro_save_directory);
    printf("Retro CONTENT_DIRECTORY %s\n",retro_content_directory);
 
- 	// Disk control interface
-	dc = dc_create();
-	environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &disk_interface);
+   // Disk control interface
+   dc = dc_create();
+   environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &disk_interface);
 
    // Savestates
    static uint32_t quirks = RETRO_SERIALIZATION_QUIRK_INCOMPLETE | RETRO_SERIALIZATION_QUIRK_MUST_INITIALIZE | RETRO_SERIALIZATION_QUIRK_CORE_VARIABLE_SIZE;
    environ_cb(RETRO_ENVIRONMENT_SET_SERIALIZATION_QUIRKS, &quirks);
 
-	// Inputs
+   // Inputs
 #define RETRO_DESCRIPTOR_BLOCK( _user )                                            \
    { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "A / 2nd fire / Blue" },\
    { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "B / Fire / Red" },  \
@@ -2070,7 +2071,7 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
 {
    request_update_av_info = false;
    float hz = currprefs.chipset_refreshrate;
-   fprintf(stderr, "[libretro-uae]: Trying to update AV geometry:%d timing:%d, to: ntsc:%d hz:%2.2f, from video_config:%d, video_aspect:%d\n", change_geometry, change_timing, isntsc, hz, video_config, video_config_aspect);
+   fprintf(stderr, "[libretro-uae]: Trying to update AV geometry:%d timing:%d, to: ntsc:%d hz:%0.4f, from video_config:%d, video_aspect:%d\n", change_geometry, change_timing, isntsc, hz, video_config, video_config_aspect);
 
    /* Change PAL/NTSC with a twist, thanks to Dyna Blaster
 
@@ -2196,10 +2197,8 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
 
    if(video_config_geometry & PUAE_VIDEO_NTSC || video_config_aspect == PUAE_VIDEO_NTSC) {
       new_av_info.geometry.aspect_ratio=(float)retrow/(float)retroh * 44.0/52.0;
-      hz = 60;
    } else {
       new_av_info.geometry.aspect_ratio=(float)retrow/(float)retroh;
-      hz = 50;
    }
 
    /* Disable Hz change if not allowed */
@@ -2208,11 +2207,11 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
 
    /* Logging */
    if(change_geometry && change_timing) {
-      fprintf(stderr, "[libretro-uae]: Update av_info: %dx%d %2.2fHz, video_config:%d\n", retrow, retroh, hz, video_config_geometry);
+      fprintf(stderr, "[libretro-uae]: Update av_info: %dx%d %0.4fHz, video_config:%d\n", retrow, retroh, hz, video_config_geometry);
    } else if(change_geometry && !change_timing) {
       fprintf(stderr, "[libretro-uae]: Update geometry: %dx%d, video_config:%d\n", retrow, retroh, video_config_geometry);
    } else if(!change_geometry && change_timing) {
-      fprintf(stderr, "[libretro-uae]: Update timing: %2.2fHz, video_config:%d\n", hz, video_config_geometry);
+      fprintf(stderr, "[libretro-uae]: Update timing: %0.4fHz, video_config:%d\n", hz, video_config_geometry);
    }
 
    if(change_timing) {
@@ -2331,7 +2330,7 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
    info->geometry = geom;
 
    info->timing.sample_rate = 44100.0;
-   info->timing.fps = (retro_get_region() == RETRO_REGION_NTSC) ? 60 : 50;
+   info->timing.fps = (retro_get_region() == RETRO_REGION_NTSC) ? UAE_HZ_NTSC : UAE_HZ_PAL;
 }
 
 void retro_set_audio_sample(retro_audio_sample_t cb)
@@ -2356,24 +2355,24 @@ void retro_shutdown_uae(void)
 
 void retro_reset(void)
 {
-   uae_reset(1, 1); /* hardreset, keyboardreset */
    fake_ntsc=false;
+   uae_reset(1, 1); /* hardreset, keyboardreset */
 }
 
-void retro_audio_cb( short l, short r)
+void retro_audio_cb(short l, short r)
 {
    audio_cb(l,r);
 }
 
 void retro_run(void)
 {
+   // Core options
    bool updated = false;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
       update_variables();
 
+   // Fastforwarding mimicks currprefs.turbo_emulation and enables sound_auto
    bool fast_forward = false;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_FASTFORWARDING, &fast_forward) && fast_forward)
    {
       fast_forward_is_on = true;
@@ -2397,13 +2396,14 @@ void retro_run(void)
       }
    }
 
+   // AV info change is requested
    if (request_update_av_info)
       retro_update_av_info(1, 0, 0);
 
+   // Vertical offset must not be set too early
    if (minfirstline_update_frame_timer > 0 && opt_vertical_offset != 0)
    {
       minfirstline_update_frame_timer--;
-      //printf("minfirstline frame:%d\n", minfirstline_update_frame_timer);
       if (minfirstline_update_frame_timer == 0)
          minfirstline = 26 + opt_vertical_offset;
    }
@@ -2414,15 +2414,11 @@ void retro_run(void)
       goto sortie;
    }
 
-
-
    retro_poll_event();
    if (STATUSON==1) Print_Status();
 
 sortie:
-
-   video_cb(bmp,retrow,zoomed_height , retrow << (pix_bytes / 2));
-
+   video_cb(bmp, retrow, zoomed_height, retrow << (pix_bytes / 2));
    co_switch(emuThread);
 }
 

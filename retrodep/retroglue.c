@@ -46,7 +46,7 @@ unsigned short int clut[] = {
 
 unsigned short int* pixbuf = NULL;
 
-extern unsigned short int  bmp[1024*1024];
+extern unsigned short int bmp[1024*1024];
 void retro_audio_cb(short l, short r);
 
 int prefs_changed = 0;
@@ -56,9 +56,8 @@ int opt_scrw = 0;
 int opt_scrh = 0;
 unsigned long stat_value = 0;
 
-void gui_init (int argc, char **argv)
+int gui_init (void)
 {
-	
 }
 
 /*

@@ -27,12 +27,12 @@ static __inline__ void check_sound_buffers (void)
     unsigned int size = (char *)sndbufpt - (char *)sndbuffer;
 
     if (size >= sndbufsize) {
-	//LOG_MSG2("render sound %i   ",soundcheck++ );
+        //LOG_MSG2("render sound %i   ",soundcheck++ );
 #ifdef DRIVESOUND
-	driveclick_mix ((uae_s16*)sndbuffer, sndbufsize >> 1,currprefs.dfxclickchannelmask);
+        driveclick_mix ((uae_s16*)sndbuffer, sndbufsize >> 1,currprefs.dfxclickchannelmask);
 #endif	
-	retro_renderSound((short*) sndbuffer, sndbufsize >> 1);	
-	sndbufpt = sndbuffer;
+        retro_renderSound((short*) sndbuffer, sndbufsize >> 1);
+        sndbufpt = sndbuffer;
     }
 }
 STATIC_INLINE void set_sound_buffers (void)
@@ -63,8 +63,8 @@ STATIC_INLINE void clear_sound_buffers (void)
 #define SOUND8_BASE_VAL 128
 
 #define DMULTIPLICATION_PROFITABLE
-#define DEFAULT_SOUND_MAXB 8192
-#define DEFAULT_SOUND_MINB 8192
+#define DEFAULT_SOUND_MAXB 2048
+#define DEFAULT_SOUND_MINB 2048
 #define DEFAULT_SOUND_BITS 16
 #define DEFAULT_SOUND_FREQ 44100
 
