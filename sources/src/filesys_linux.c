@@ -655,23 +655,21 @@ uae_s64 my_fsize (struct my_openfile_s *mos) {
 }
 
 int my_read (struct my_openfile_s *mos, void *b, unsigned int size) {
-#ifdef _WIN32
     DWORD read = 0;
+#ifdef _WIN32
     ReadFile (mos->h, b, size, &read, NULL);
 	//ssize_t bytesRead = read(mos->h, b, size);
 	write_log (_T("read <%d> | FS: %x | size: %d | ERR: %s\n"), read, mos->h, size, strerror(errno));
-
-	return read;
 #endif
+	return read;
 }
 
 int my_write (struct my_openfile_s *mos, void *b, unsigned int size) {
-#ifdef _WIN32
     DWORD written = 0;
+#ifdef _WIN32
     WriteFile (mos->h, b, size, &written, NULL);
 	//ssize_t written = write (mos->h, b, size);
 	write_log (_T("wrote <%d> | FS: %x | ERR: %s\n"), written, mos->h, strerror(errno));
-
-	return written;
 #endif
+	return written;
 }

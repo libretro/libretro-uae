@@ -58,6 +58,7 @@ unsigned long stat_value = 0;
 
 int gui_init (void)
 {
+    return 0;
 }
 
 /*
