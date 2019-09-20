@@ -219,7 +219,7 @@ void Print_Status(void)
       else
          STAT_BASEY=gfxvidinfo.outheight-BOX_HEIGHT-opt_statusbar_position+2;
 
-      BOX_WIDTH=retrow-194;
+      BOX_WIDTH=retrow-146;
    }
    else
    {
