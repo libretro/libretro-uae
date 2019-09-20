@@ -55,8 +55,8 @@ typedef int BOOL;
 #define FILE_FLAG_POSIX_SEMANTICS	0x01000000
 #define FILE_FLAG_OPEN_REPARSE_POINT	0x00200000
 #define FILE_FLAG_OPEN_NO_RECALL	0x00100000
-#endif
 #define FILE_FLAG_FIRST_PIPE_INSTANCE	0x00080000
+#endif
 
 #define CREATE_NEW		1
 #define CREATE_ALWAYS		2
@@ -74,8 +74,6 @@ typedef int BOOL;
 #define FILE_READ_DATA		0x0001
 #define FILE_WRITE_DATA		0x0002
 #define FILE_APPEND_DATA	0x0004
-#endif
-#ifndef _WIN32
 #define GENERIC_READ		FILE_READ_DATA
 #define GENERIC_WRITE		FILE_WRITE_DATA
 #endif
@@ -101,31 +99,31 @@ typedef struct {
 /* fsdb_mywin32 */
 bool my_stat (const TCHAR *name, struct mystat *statbuf)
 {
-	struct _stat64 st;
-	uae_s64 foo_size;
+    struct stat st;
+    uae_s64 foo_size;
 
-	if (stat (name, &st) != -1) {
-		foo_size = st.st_size;
-		statbuf->size = foo_size;
+    if (stat (name, &st) != -1) {
+        foo_size = st.st_size;
+        statbuf->size = foo_size;
 
-		if (st.st_mode & (S_IWGRP | S_IWOTH)) {
-			statbuf->mode = FILEFLAG_READ | FILEFLAG_WRITE;
-		} else {
-			statbuf->mode = FILEFLAG_READ;
-		}
+        if (st.st_mode & (S_IWGRP | S_IWOTH)) {
+            statbuf->mode = FILEFLAG_READ | FILEFLAG_WRITE;
+        } else {
+            statbuf->mode = FILEFLAG_READ;
+        }
 
 //S_IFREG: regular file
-		if ((st.st_mode & S_IFMT) == S_IFDIR) {
-			statbuf->mode |= FILEFLAG_DIR;
-		}
+        if ((st.st_mode & S_IFMT) == S_IFDIR) {
+            statbuf->mode |= FILEFLAG_DIR;
+        }
 
-/*		statbuf->mode = st->st_mode;
-		uae_u64 t = (*(uae_s64 *)&st->st_mtime-((uae_s64)(369*365+89)*(uae_s64)(24*60*60)*(uae_s64)10000000));
-		statbuf->mtime.tv_sec = t / 10000000;
-		statbuf->mtime.tv_usec = (t / 10) % 1000000;
-		return true;*/
-	}
-	return false;
+/*      statbuf->mode = st->st_mode;
+        uae_u64 t = (*(uae_s64 *)&st->st_mtime-((uae_s64)(369*365+89)*(uae_s64)(24*60*60)*(uae_s64)10000000));
+        statbuf->mtime.tv_sec = t / 10000000;
+        statbuf->mtime.tv_usec = (t / 10) % 1000000;
+*/        return true;
+    }
+    return false;
 }
 
 static int setfiletime (const TCHAR *name, int days, int minute, int tick, int tolocal)
@@ -135,7 +133,7 @@ static int setfiletime (const TCHAR *name, int days, int minute, int tick, int t
 }
 
 #if defined(__CELLOS_LV2__) || defined(_WIN32) || defined(WIIU) || defined(VITA)
-#warning LSTAT STAT
+//#warning LSTAT STAT
 #define lstat stat
 #endif
 
@@ -257,37 +255,37 @@ FILE *my_opentext (const TCHAR *name)
         return _tfopen (name, "r");
 }
 
-struct my_opendir_s *my_opendir (const TCHAR *name)
+struct my_opendir_s *my_opendir (const TCHAR *name, const TCHAR *mask)
 {
 /*
-	struct my_opendir_s *mod;
-	TCHAR tmp[MAX_DPATH];
+    struct my_opendir_s *mod;
+    TCHAR tmp[MAX_DPATH];
 
-	tmp[0] = 0;
-	if (currprefs.win32_filesystem_mangle_reserved_names == false)
-		_tcscpy (tmp, PATHPREFIX);
-	_tcscat (tmp, name);
-	_tcscat (tmp, _T("\\"));
-	_tcscat (tmp, mask);
-	mod = xmalloc (struct my_opendir_s, 1);
-	if (!mod)
-		return NULL;
-	mod->h = FindFirstFile(tmp, &mod->fd);
-	if (mod->h == INVALID_HANDLE_VALUE) {
-		xfree (mod);
-		return NULL;
-	}
-	mod->first = 1;
-	return mod;
+    tmp[0] = 0;
+    //if (currprefs.win32_filesystem_mangle_reserved_names == false)
+    //    _tcscpy (tmp, PATHPREFIX);
+    _tcscat (tmp, name);
+    _tcscat (tmp, _T("\\"));
+    _tcscat (tmp, mask);
+    mod = xmalloc (struct my_opendir_s, 1);
+    if (!mod)
+        return NULL;
+    mod->h = FindFirstFile(tmp, &mod->fd);
+    if (mod->h == INVALID_HANDLE_VALUE) {
+        xfree (mod);
+        return NULL;
+    }
+    mod->first = 1;
+    return mod;
 */
-	/// FIXME: opendir returns struct DIR*, please translate instead of casting.
-	return (struct my_opendir_s*)opendir(name);
+    /// FIXME: opendir returns struct DIR*, please translate instead of casting.
+    return (struct my_opendir_s*)opendir(name);
 }
 
 void my_closedir (struct my_opendir_s *mod) {
 	if (mod)
 		/// FIXME: closedir needs struct DIR*, please translate instead of casting.
-		closedir((struct DIR*)mod);
+		closedir((DIR*)mod);
 //	xfree (mod);
 }
 
@@ -303,7 +301,7 @@ struct dirent* my_readdir (struct my_opendir_s *mod, TCHAR *name) {
 	_tcscpy (name, mod->fd.cFileName);
 */
 	///FIXME: readdir needs struct DIR*, please translate instead of casting.
-	return readdir((struct DIR*)mod);
+	return readdir((DIR*)mod);
 }
 
 #if 0
@@ -384,7 +382,7 @@ int my_rmdir (const TCHAR *name)
         memset(tname, 0, sizeof(TCHAR) * MAX_DPATH);
 
         /* SHFileOperation() ignores FOF_NORECURSION when deleting directories.. */
-        od = my_opendir (name);
+        od = my_opendir (name, 0);
         if (!od) {
 //                SetLastError (ERROR_FILE_NOT_FOUND);
                 return -1;
@@ -445,7 +443,7 @@ static bool CloseHandle(HANDLE hObject) {
 #endif
 void my_close (struct my_openfile_s *mos)
 {
-	close (mos->h);
+	CloseHandle(mos->h);
 	xfree (mos);
 }
 #ifndef _WIN32
@@ -468,7 +466,7 @@ static DWORD SetFilePointer(HANDLE hFile, int32_t lDistanceToMove, int32_t *lpDi
 		nMode = SEEK_END;
 
 	off64_t currOff;
-	currOff = lseek(hFile, offset, nMode);
+	currOff = my_lseek(hFile, offset, nMode);
 
 	if (lpDistanceToMoveHigh) {
 		*lpDistanceToMoveHigh = (int32_t)(currOff >> 32);
@@ -478,8 +476,8 @@ static DWORD SetFilePointer(HANDLE hFile, int32_t lDistanceToMove, int32_t *lpDi
 }
 #endif
 uae_s64 my_lseek (struct my_openfile_s *mos, uae_s64 offset, int whence) {
-	off_t result = lseek(mos->h, offset, whence);
-	return result;
+	//off_t result = lseek(mos->h, offset, whence);
+	//return result;
     
 	LARGE_INTEGER li, old;
 
@@ -615,7 +613,7 @@ err:
 #ifndef _WIN32
 static BOOL SetEndOfFile(HANDLE hFile) {
 	if (hFile) {
-		off64_t currOff = lseek(hFile, 0, SEEK_CUR);
+		off64_t currOff = my_lseek(hFile, 0, SEEK_CUR);
 		if (currOff >= 0)
 			return (ftruncate(hFile, currOff) == 0);
 	}
@@ -649,27 +647,31 @@ int my_truncate (const TCHAR *name, uae_u64 len) {
 uae_s64 my_fsize (struct my_openfile_s *mos) {
 	uae_s64 cur, filesize;
 
-	cur = lseek (mos->h, 0, SEEK_CUR);
-	filesize = lseek (mos->h, 0, SEEK_END);
-	lseek (mos->h, cur, SEEK_SET);
-//	write_log (_T("FS: filesize <%d>\n"), filesize);
+	cur = my_lseek (mos->h, 0, SEEK_CUR);
+	filesize = my_lseek (mos->h, 0, SEEK_END);
+	my_lseek (mos->h, cur, SEEK_SET);
+	write_log (_T("FS: filesize <%d>\n"), filesize);
 	return filesize;
 }
 
 int my_read (struct my_openfile_s *mos, void *b, unsigned int size) {
-//        DWORD read = 0;
-//        ReadFile (mos->h, b, size, &read, NULL);
-	ssize_t bytesRead = read(mos->h, b, size);
-//	write_log (_T("read <%d> | FS: %x | size: %d | ERR: %s\n"), bytesRead, mos->h, size, strerror(errno));
+#ifdef _WIN32
+    DWORD read = 0;
+    ReadFile (mos->h, b, size, &read, NULL);
+	//ssize_t bytesRead = read(mos->h, b, size);
+	write_log (_T("read <%d> | FS: %x | size: %d | ERR: %s\n"), read, mos->h, size, strerror(errno));
 
-	return bytesRead;
+	return read;
+#endif
 }
 
 int my_write (struct my_openfile_s *mos, void *b, unsigned int size) {
-//        DWORD written = 0;
-//        WriteFile (mos->h, b, size, &written, NULL);
-	ssize_t written = write (mos->h, b, size);
-//	write_log (_T("wrote <%d> | FS: %x | ERR: %s\n"), written, mos->h, strerror(errno));
+#ifdef _WIN32
+    DWORD written = 0;
+    WriteFile (mos->h, b, size, &written, NULL);
+	//ssize_t written = write (mos->h, b, size);
+	write_log (_T("wrote <%d> | FS: %x | ERR: %s\n"), written, mos->h, strerror(errno));
 
 	return written;
+#endif
 }

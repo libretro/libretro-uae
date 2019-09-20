@@ -44,9 +44,9 @@ STATIC_INLINE void clear_sound_buffers (void)
 	memset (sndbuffer, 0, sndbufsize);
 	sndbufpt = sndbuffer;
 }
+void restart_sound_buffer (void);
 
 #define AUDIO_NAME "retroaudio"
-
 
 #define PUT_SOUND_BYTE(b) do { *(uae_u8 *)sndbufpt = b; sndbufpt = (uae_u16 *)(((uae_u8 *)sndbufpt) + 1); } while (0)
 #define PUT_SOUND_WORD(b) do { *(uae_u16 *)sndbufpt = b; sndbufpt = (uae_u16 *)(((uae_u8 *)sndbufpt) + 2); } while (0)
