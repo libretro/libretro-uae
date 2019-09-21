@@ -219,7 +219,7 @@ void Print_Status(void)
       else
          STAT_BASEY=gfxvidinfo.outheight-BOX_HEIGHT-opt_statusbar_position+2;
 
-      BOX_WIDTH=retrow-194;
+      BOX_WIDTH=retrow-146;
    }
    else
    {
@@ -429,6 +429,10 @@ void update_input(int disable_physical_cursor_keys)
    if(oldi!=-1 && vkflag[4]!=1)
    {
       retro_key_up(oldi);
+
+      if(SHIFTON==1)
+         retro_key_up(keyboard_translation[RETROK_LSHIFT]);
+
       oldi=-1;
    }
 
@@ -743,26 +747,13 @@ void update_input(int disable_physical_cursor_keys)
          vkflag[4]=1;
          i=check_vkey2(vkx,vky);
 
-         if(i==-2)
+         if(i==-1)
+            oldi=-1;
+         else if(i==-2)
          {
+            oldi=-1;
             NPAGE=-NPAGE;
-            oldi=-1;
-            //Clear interface zone					
             Screen_SetFullUpdate();
-         }
-         else if(i==-1)
-            oldi=-1;
-         else if(i==-3)
-         {//KDB bgcolor
-            Screen_SetFullUpdate();
-            //KCOL=-KCOL;
-            oldi=-1;
-         }
-         else if(i==-4)
-         {//VKbd show/hide 			
-            oldi=-1;
-            Screen_SetFullUpdate();
-            SHOWKEY=-SHOWKEY;
          }
          else
          {
@@ -777,6 +768,9 @@ void update_input(int disable_physical_cursor_keys)
             else
             {
                oldi=i;
+               if(SHIFTON==1)
+                  retro_key_down(keyboard_translation[RETROK_LSHIFT]);
+
                retro_key_down(i);
             }
          }

@@ -2839,7 +2839,7 @@ struct zvolume *zfile_fopen_directory (const TCHAR *dirname)
 	struct my_opendir_s *dir;
 	TCHAR fname[MAX_DPATH];
 
-	dir = my_opendir (dirname);
+	dir = my_opendir (dirname, 0);
 	if (!dir)
 		return NULL;
 	zv = zvolume_alloc_nofile (dirname, ArchiveFormatDIR, NULL, NULL);

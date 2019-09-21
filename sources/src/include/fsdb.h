@@ -160,10 +160,10 @@ extern int fsdb_mode_representable_p (const a_inode *, int);
 extern int fsdb_mode_supported (const a_inode *);
 extern TCHAR *fsdb_create_unique_nname (a_inode *base, const TCHAR *);
 
-struct my_opendir_s;
-struct my_openfile_s;
+//struct my_opendir_s;
+//struct my_openfile_s;
 
-extern struct my_opendir_s *my_opendir (const TCHAR*);
+extern struct my_opendir_s *my_opendir (const TCHAR*, const TCHAR*);
 extern void my_closedir (struct my_opendir_s*);
 extern struct dirent* my_readdir (struct my_opendir_s*, TCHAR*);
 

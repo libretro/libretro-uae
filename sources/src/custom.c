@@ -5924,7 +5924,7 @@ static void fpscounter (bool frameok)
 	if ((timeframes & 7) == 0) {
 		double idle = 1000 - (idle_mavg.mavg == 0 ? 0.0 : (double)idle_mavg.mavg * 1000.0 / vsynctimebase);
 #ifdef __LIBRETRO__
-		int fps = fps_mavg.mavg == 0 ? 0 : (syncbase * 2) * 10 / fps_mavg.mavg;
+		int fps = fps_mavg.mavg == 0 ? 0 : (syncbase * 50) * 10 / fps_mavg.mavg;
 		//printf("SYNCBASE:%d mavg:%d now:%d last:%d fps:%d\n", syncbase, fps_mavg.mavg, now, last, fps);
 #else
 		int fps = fps_mavg.mavg == 0 ? 0 : syncbase * 10 / fps_mavg.mavg;
@@ -7105,7 +7105,7 @@ int custom_init (void)
 	create_cycle_diagram_table ();
 
 	/* We have to do this somewhere... */
-	syncbase = 500000;//read_processor_time ();
+	syncbase = 20000;//read_processor_time ();
 
 	return 1;
 }

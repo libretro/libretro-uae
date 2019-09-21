@@ -1255,7 +1255,7 @@ static struct fs_dirhandle *fs_opendir (Unit *u, a_inode *aino)
 		if (fsd->zd)
 			return fsd;
 	} else if (fsd->fstype == FS_DIRECTORY) {
-		fsd->od = my_opendir (aino->nname);
+		fsd->od = my_opendir (aino->nname, 0);
 		if (fsd->od)
 			return fsd;
 	/*} else if (fsd->fstype == FS_CDFS) {
@@ -3376,7 +3376,7 @@ static void action_make_link (Unit *unit, dpacket packet)
 		for (Unit *u = units; u; u = u->next) {
 			if (u->volflags & (MYVOLUMEINFO_ARCHIVE | MYVOLUMEINFO_CDFS))
 				continue;
-			a3 = find_aino (u, NULL, link, &err);
+			a3 = find_aino (u, 0, link, &err);
 			if (err || !a3)
 				continue;
 			_tcscpy (tmp2, a1->nname);
@@ -4122,9 +4122,9 @@ static int action_examine_all_do (Unit *unit, uaecptr lock, ExAllKey *eak, uaecp
 		if (!eak->fn) {
 			do {
 				if (d->fstype == FS_ARCHIVE)
-					/*fixme*/ ok = zfile_readdir_archive (d->zd, fn);
+					;///*fixme*/ ok = zfile_readdir_archive (d->zd, fn);
 				else if (d->fstype == FS_DIRECTORY)
-					ok = readdir (d->od);
+					ok = my_readdir (d->od, 0);
 				/*else if (d->fstype == FS_CDFS)
 					ok = isofs_readdir (d->isod, fn, &uniq);*/
 				else
@@ -4396,9 +4396,9 @@ static void populate_directory (Unit *unit, a_inode *base)
 		like "..", "." etc.  */
 		do {
 			if (d->fstype == FS_ARCHIVE)
-				/*fixme*/ok = zfile_readdir_archive (d->zd, fn);
+				;///*fixme*/ok = zfile_readdir_archive (d->zd, fn);
 			else if (d->fstype == FS_DIRECTORY)
-				ok = readdir (d->od);
+				ok = my_readdir (d->od, 0);
 			else if (d->fstype == FS_CDFS)
 			;//	ok = isofs_readdir (d->isod, fn, &uniq);
 			else

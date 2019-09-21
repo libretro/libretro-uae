@@ -7,7 +7,7 @@ extern int NPAGE;
 extern int SHOWKEYPOS;
 extern int SHOWKEYTRANS;
 extern int SHIFTON;
-extern int vkflag[6];
+extern int vkflag[7];
 extern int video_config;
 extern int pix_bytes;
 
