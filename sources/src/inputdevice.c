@@ -63,7 +63,7 @@ extern void master_sound_volume (int);
 extern void sound_mute (int);
 extern void sound_volume (int dir);
 extern uae_u32 uaerand (void);
-
+extern TCHAR *my_strdup_trim (const TCHAR *s);
 
 // 01 = host events
 // 02 = joystick
@@ -1609,7 +1609,7 @@ static void mousehack_helper (uae_u32 buttonmask)
 {
 #ifdef FILESYS /* Internal mousehack depends on filesys boot-rom */
 	int x, y;
-	float fdy, fdx, fmx, fmy;
+	int fdy, fdx, fmx, fmy;
 
 	if (currprefs.input_magic_mouse == 0 && currprefs.input_tablet < TABLET_MOUSEHACK)
 		return;
@@ -6715,7 +6715,7 @@ void setjoystickstate (int joy, int axis, int state, int max)
 	v1 = state;
 	v2 = id2->states[axis][MAX_INPUT_SUB_EVENT];
 
-	//write_log (_T("new=%d old=%d state=%d max=%d\n"), v1, v2, state, max);
+	//write_log (_T("new=%d old=%d axis=%d state=%d max=%d\n"), v1, v2, axis, state, max);
 
 	if (v1 < deadzone && v1 > -deadzone)
 		v1 = 0;
