@@ -40,7 +40,7 @@ void gettimeofday (struct timeval *tv, void *blah)
 unsigned short int bmp[1024*1024];
 unsigned short int savebmp[1024*1024];
 
-int NPAGE=-1,MAXPAS=8,PAS=4;
+int NPAGE=-1,PAS=4;
 int SHIFTON=-1,ALTON=-1;
 int MOUSEMODE=-1,SHOWKEY=-1,SHOWKEYPOS=-1,SHOWKEYTRANS=-1,STATUSON=-1,LEDON=-1;
 
@@ -50,6 +50,7 @@ int analog_left[2];
 int analog_right[2];
 extern int analog_deadzone;
 extern unsigned int analog_sensitivity;
+extern unsigned int opt_dpadmouse_speed;
 int fmousex,fmousey; // emu mouse
 int slowdown=0;
 extern int pix_bytes;
@@ -87,7 +88,8 @@ enum EMU_FUNCTIONS {
    EMU_VKBD = 0,
    EMU_STATUSBAR,
    EMU_MOUSE_TOGGLE,
-   EMU_MOUSE_SPEED,
+   EMU_MOUSE_SPEED_DOWN,
+   EMU_MOUSE_SPEED_UP,
    EMU_RESET,
    EMU_ASPECT_RATIO_TOGGLE,
    EMU_ZOOM_MODE_TOGGLE,
@@ -117,9 +119,25 @@ void emu_function(int function) {
       case EMU_MOUSE_TOGGLE:
          MOUSEMODE=-MOUSEMODE;
          break;
-      case EMU_MOUSE_SPEED:
-         PAS=PAS+2;
-         if(PAS>MAXPAS)PAS=2;
+      case EMU_MOUSE_SPEED_DOWN:
+         switch(PAS)
+         {
+            case 4:
+               PAS=8;
+               break;
+            case 6:
+               PAS=10;
+               break;
+            case 8:
+               PAS=4;
+               break;
+            case 10:
+               PAS=6;
+               break;
+         }
+         break;
+      case EMU_MOUSE_SPEED_UP:
+         PAS=opt_dpadmouse_speed;
          break;
       case EMU_RESET:
          uae_reset(0, 1); /* hardreset, keyboardreset */
@@ -627,7 +645,7 @@ void update_input(int disable_physical_cursor_keys)
                emu_function(EMU_MOUSE_TOGGLE);
                break;
             case 27:
-               emu_function(EMU_MOUSE_SPEED);
+               emu_function(EMU_MOUSE_SPEED_DOWN);
                break;
             case 28:
                emu_function(EMU_RESET);
@@ -652,6 +670,9 @@ void update_input(int disable_physical_cursor_keys)
                   retro_mouse_but0(1);
                   retro_mouse_but0(0);
                }
+               break;
+            case 27:
+               emu_function(EMU_MOUSE_SPEED_UP);
                break;
          }
       }
@@ -770,7 +791,7 @@ void update_input(int disable_physical_cursor_keys)
                 else if(mapper_keys[i] == mapper_keys[26]) /* Toggle mouse control */
                     emu_function(EMU_MOUSE_TOGGLE);
                 else if(mapper_keys[i] == mapper_keys[27]) /* Alter mouse speed */
-                    emu_function(EMU_MOUSE_SPEED);
+                    emu_function(EMU_MOUSE_SPEED_DOWN);
                 else if(mapper_keys[i] == mapper_keys[28]) /* Reset */
                     emu_function(EMU_RESET);
                 else if(mapper_keys[i] == mapper_keys[29]) /* Toggle aspect ratio */
@@ -799,7 +820,7 @@ void update_input(int disable_physical_cursor_keys)
                 else if(mapper_keys[i] == mapper_keys[26])
                     ; /* nop */
                 else if(mapper_keys[i] == mapper_keys[27])
-                    ; /* nop */
+                    emu_function(EMU_MOUSE_SPEED_UP);
                 else if(mapper_keys[i] == mapper_keys[28])
                     ; /* nop */
                 else if(mapper_keys[i] == mapper_keys[29])

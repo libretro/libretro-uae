@@ -39,6 +39,8 @@ bool opt_enhanced_statusbar = true;
 int opt_statusbar_position = 0;
 int opt_statusbar_position_old = 0;
 unsigned int opt_keyrahkeypad = 0;
+unsigned int opt_dpadmouse_speed = 4;
+extern int PAS;
 unsigned int opt_analogmouse = 0;
 int analog_deadzone = 6144;
 unsigned int analog_sensitivity = 2048;
@@ -617,7 +619,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_analogmouse_deadzone",
-         "Analog deadzone",
+         "Analog mouse deadzone",
          "",
          {
             { "15", "15\%" },
@@ -634,7 +636,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_analogmouse_sensitivity",
-         "Analog sensitivity",
+         "Analog mouse sensitivity",
          "",
          {
             { "1.0", "100\%" },
@@ -651,6 +653,19 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "1.0"
+      },
+      {
+         "puae_dpadmouse_speed",
+         "D-Pad mouse speed",
+         "",
+         {
+            { "4", "Slow" },
+            { "6", "Medium" },
+            { "8", "Fast" },
+            { "10", "Very fast" },
+            { NULL, NULL },
+         },
+         "6"
       },
       {
          "puae_keyrah_keypad_mappings",
@@ -687,8 +702,8 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_mapper_mouse_speed",
-         "Hotkey: Change mouse speed",
-         "Pressing a button mapped to this key alters the mouse speed",
+         "Hotkey: D-Pad mouse speed modifier",
+         "Pressing a button mapped to this key alters the mouse speed temporarily",
          {{ NULL, NULL }},
          "---"
       },
@@ -1429,6 +1444,15 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       analog_sensitivity = 2048 / atof(var.value);
+   }
+
+   var.key = "puae_dpadmouse_speed";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      opt_dpadmouse_speed = atoi(var.value);
+      PAS = opt_dpadmouse_speed;
    }
 
    var.key = "puae_keyrah_keypad_mappings";
