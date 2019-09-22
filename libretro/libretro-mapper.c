@@ -217,6 +217,36 @@ return (cpu_features_get_time_usec())/1000;
 
 } 
 
+char* joystick_value_human(int val[16])
+{
+    static char str[4];
+    sprintf(str, "%3s", "   ");
+
+    if(val[RETRO_DEVICE_ID_JOYPAD_UP])
+        str[1] = '^';
+
+    if(val[RETRO_DEVICE_ID_JOYPAD_DOWN])
+        str[1] = 'v';
+
+    if(val[RETRO_DEVICE_ID_JOYPAD_LEFT])
+        str[0] = '<';
+
+    if(val[RETRO_DEVICE_ID_JOYPAD_RIGHT])
+        str[2] = '>';
+
+    if(val[RETRO_DEVICE_ID_JOYPAD_B])
+        str[1] = '1';
+
+    if(val[RETRO_DEVICE_ID_JOYPAD_A])
+        str[1] = '2';
+
+    if(val[RETRO_DEVICE_ID_JOYPAD_B] && val[RETRO_DEVICE_ID_JOYPAD_A])
+        str[1] = '3';
+
+    str[1] = (val[RETRO_DEVICE_ID_JOYPAD_B] || val[RETRO_DEVICE_ID_JOYPAD_A]) ? (str[1] | 0x80) : str[1];
+    return str;
+}
+
 void Print_Status(void)
 {
    if (!opt_enhanced_statusbar)
@@ -249,19 +279,56 @@ void Print_Status(void)
 
    BOX_Y=STAT_BASEY-BOX_PADDING;
 
+   char JOYPORT1[10];
+   sprintf(JOYPORT1, "J1%3s ", joystick_value_human(jflag[0]));
+   char JOYPORT2[10];
+   sprintf(JOYPORT2, "J2%3s ", joystick_value_human(jflag[1]));
+   char JOYPORT3[10];
+   sprintf(JOYPORT3, "J3%3s ", joystick_value_human(jflag[2]));
+   char JOYPORT4[10];
+   sprintf(JOYPORT4, "J4%3s ", joystick_value_human(jflag[3]));
+
+   char PASSTR[2];
+   switch(PAS) {
+      case 4:
+         PASSTR[0]='S';
+         break;
+      case 6:
+         PASSTR[0]='M';
+         break;
+      case 8:
+         PASSTR[0]='F';
+         break;
+      case 10:
+         PASSTR[0]='V';
+         break;
+   }
+
    if (pix_bytes == 4)
    {
       DrawFBoxBmp32((uint32_t *)bmp,0,BOX_Y,BOX_WIDTH,BOX_HEIGHT,RGB888(0,0,0));
-      Draw_text32((uint32_t *)bmp,STAT_DECX,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,((MOUSEMODE==-1) ? "Joystick" : "Mouse  "));
-      Draw_text32((uint32_t *)bmp,STAT_DECX+65,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"MSpeed%d",PAS);
-      Draw_text32((uint32_t *)bmp,STAT_DECX+125,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,(SHIFTON>0 ? "CapsLock" : ""));
+
+      Draw_text32((uint32_t *)bmp,STAT_DECX+0,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT1);
+      Draw_text32((uint32_t *)bmp,STAT_DECX+40,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT2);
+      Draw_text32((uint32_t *)bmp,STAT_DECX+80,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT3);
+      Draw_text32((uint32_t *)bmp,STAT_DECX+120,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT4);
+
+      Draw_text32((uint32_t *)bmp,STAT_DECX+160,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,((MOUSEMODE==-1) ? "Joystick" : " Mouse "));
+      Draw_text32((uint32_t *)bmp,STAT_DECX+230,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"MSpeed%s",PASSTR);
+      Draw_text32((uint32_t *)bmp,STAT_DECX+290,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,(SHIFTON>0 ? "CapsLock" : ""));
    }
    else
    {
       DrawFBoxBmp(bmp,0,BOX_Y,BOX_WIDTH,BOX_HEIGHT,RGB565(0,0,0));
-      Draw_text(bmp,STAT_DECX,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,((MOUSEMODE==-1) ? "Joystick" : "Mouse  "));
-      Draw_text(bmp,STAT_DECX+65,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"MSpeed%d",PAS);
-      Draw_text(bmp,STAT_DECX+125,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,(SHIFTON>0 ? "CapsLock" : ""));
+
+      Draw_text(bmp,STAT_DECX+0,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT1);
+      Draw_text(bmp,STAT_DECX+40,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT2);
+      Draw_text(bmp,STAT_DECX+80,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT3);
+      Draw_text(bmp,STAT_DECX+120,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT4);
+
+      Draw_text(bmp,STAT_DECX+160,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,((MOUSEMODE==-1) ? "Joystick" : " Mouse "));
+      Draw_text(bmp,STAT_DECX+230,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"MSpeed%s",PASSTR);
+      Draw_text(bmp,STAT_DECX+290,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,(SHIFTON>0 ? "CapsLock" : ""));
    }
 }
 
