@@ -57,11 +57,12 @@ extern int pix_bytes;
 extern bool fake_ntsc;
 extern bool real_ntsc;
 
-int vkflag[7]={0,0,0,0,0,0,0};
-static int jflag[4][16]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-static int kflag[2][1]={0};
-static int jbt[24]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-static int kbt[16]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+int vkflag[7]={0};
+static int jflag[4][16]={0};
+static int kjflag[2][16]={0};
+static int mflag[16]={0};
+static int jbt[24]={0};
+static int kbt[16]={0};
 
 extern void reset_drawing(void);
 extern void retro_key_up(int);
@@ -81,8 +82,8 @@ extern unsigned int opt_analogmouse;
 extern unsigned int opt_keyrahkeypad;
 int turbo_fire_button=-1;
 unsigned int turbo_pulse=2;
-unsigned int turbo_state[5]={0,0,0,0,0};
-unsigned int turbo_toggle[5]={0,0,0,0,0};
+unsigned int turbo_state[5]={0};
+unsigned int turbo_toggle[5]={0};
 
 enum EMU_FUNCTIONS {
    EMU_VKBD = 0,
@@ -252,6 +253,7 @@ void Print_Status(void)
    if (!opt_enhanced_statusbar)
       return;
 
+   // Statusbar location
    if(video_config & 0x04) // PUAE_VIDEO_HIRES
    {
       if (opt_statusbar_position < 0)
@@ -264,7 +266,7 @@ void Print_Status(void)
 
       BOX_WIDTH=retrow-146;
    }
-   else
+   else // PUAE_VIDEO_LORES
    {
       if (opt_statusbar_position < 0)
          if (opt_statusbar_position == -1)
@@ -279,15 +281,32 @@ void Print_Status(void)
 
    BOX_Y=STAT_BASEY-BOX_PADDING;
 
+   // Joy port indicators
    char JOYPORT1[10];
-   sprintf(JOYPORT1, "J1%3s ", joystick_value_human(jflag[0]));
    char JOYPORT2[10];
-   sprintf(JOYPORT2, "J2%3s ", joystick_value_human(jflag[1]));
    char JOYPORT3[10];
-   sprintf(JOYPORT3, "J3%3s ", joystick_value_human(jflag[2]));
    char JOYPORT4[10];
-   sprintf(JOYPORT4, "J4%3s ", joystick_value_human(jflag[3]));
 
+   // Regular joyflags
+   sprintf(JOYPORT1, "J1%3s", joystick_value_human(jflag[0]));
+   sprintf(JOYPORT2, "J2%3s", joystick_value_human(jflag[1]));
+   sprintf(JOYPORT3, "J3%3s", joystick_value_human(jflag[2]));
+   sprintf(JOYPORT4, "J4%3s", joystick_value_human(jflag[3]));
+
+   // Mouse flag
+   if(strcmp(JOYPORT2, "J2   ") == 0)
+      sprintf(JOYPORT2, "J2%3s", joystick_value_human(mflag));
+
+   // Keyrah joyflags
+   if(opt_keyrahkeypad)
+   {
+      if(strcmp(JOYPORT1, "J1   ") == 0)
+         sprintf(JOYPORT1, "J1%3s", joystick_value_human(kjflag[0]));
+      if(strcmp(JOYPORT2, "J2   ") == 0)
+         sprintf(JOYPORT2, "J2%3s", joystick_value_human(kjflag[1]));
+   }
+
+   // Emulated mouse speed
    char PASSTR[2];
    switch(PAS) {
       case 4:
@@ -304,6 +323,7 @@ void Print_Status(void)
          break;
    }
 
+   // Statusbar output
    if (pix_bytes == 4)
    {
       DrawFBoxBmp32((uint32_t *)bmp,0,BOX_Y,BOX_WIDTH,BOX_HEIGHT,RGB888(0,0,0));
@@ -313,9 +333,7 @@ void Print_Status(void)
       Draw_text32((uint32_t *)bmp,STAT_DECX+80,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT3);
       Draw_text32((uint32_t *)bmp,STAT_DECX+120,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT4);
 
-      Draw_text32((uint32_t *)bmp,STAT_DECX+160,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,((MOUSEMODE==-1) ? "Joystick" : " Mouse "));
-      Draw_text32((uint32_t *)bmp,STAT_DECX+230,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"MSpeed%s",PASSTR);
-      Draw_text32((uint32_t *)bmp,STAT_DECX+290,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,(SHIFTON>0 ? "CapsLock" : ""));
+      Draw_text32((uint32_t *)bmp,STAT_DECX+160,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,((MOUSEMODE==-1) ? "Joystick" : "Mouse(%s)"), PASSTR);
    }
    else
    {
@@ -326,9 +344,7 @@ void Print_Status(void)
       Draw_text(bmp,STAT_DECX+80,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT3);
       Draw_text(bmp,STAT_DECX+120,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT4);
 
-      Draw_text(bmp,STAT_DECX+160,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,((MOUSEMODE==-1) ? "Joystick" : " Mouse "));
-      Draw_text(bmp,STAT_DECX+230,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"MSpeed%s",PASSTR);
-      Draw_text(bmp,STAT_DECX+290,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,(SHIFTON>0 ? "CapsLock" : ""));
+      Draw_text(bmp,STAT_DECX+160,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,((MOUSEMODE==-1) ? "Joystick" : "Mouse(%s)"), PASSTR);
    }
 }
 
@@ -344,40 +360,60 @@ void ProcessKeyrah()
    /* Up / Down */
    if ( input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP8) &&
        !input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP2))
+      {
          setjoystickstate(0, 1, -1, 1);
+         kjflag[0][RETRO_DEVICE_ID_JOYPAD_UP]=1;
+      }
    else
    if ( input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP2) &&
        !input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP8))
+      {
          setjoystickstate(0, 1, 1, 1);
+         kjflag[0][RETRO_DEVICE_ID_JOYPAD_DOWN]=1;
+      }
    else
    if (!input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) &&
-       !input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN) )
+       !input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN))
+      {
          setjoystickstate(0, 1, 0, 1);
+         kjflag[0][RETRO_DEVICE_ID_JOYPAD_UP]=0;
+         kjflag[0][RETRO_DEVICE_ID_JOYPAD_DOWN]=0;
+      }
 
    /* Left / Right */
    if ( input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP4) &&
        !input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP6))
+      {
          setjoystickstate(0, 0, -1, 1);
+         kjflag[0][RETRO_DEVICE_ID_JOYPAD_LEFT]=1;
+      }
    else
    if ( input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP6) &&
        !input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP4))
+      {
          setjoystickstate(0, 0, 1, 1);
+         kjflag[0][RETRO_DEVICE_ID_JOYPAD_RIGHT]=1;
+      }
    else
    if (!input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT) &&
        !input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT))
+      {
          setjoystickstate(0, 0, 0, 1);
+         kjflag[0][RETRO_DEVICE_ID_JOYPAD_LEFT]=0;
+         kjflag[0][RETRO_DEVICE_ID_JOYPAD_RIGHT]=0;
+      }
 
    /* Fire */
-   if ( input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP5) && kflag[0][0]==0)
+   if ( input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP5) && kjflag[0][RETRO_DEVICE_ID_JOYPAD_B]==0)
    {
       setjoybuttonstate(0, 0, 1);
-      kflag[0][0]=1;
+      kjflag[0][RETRO_DEVICE_ID_JOYPAD_B]=1;
    }
    else
-   if (!input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP5) && kflag[0][0]==1)
+   if (!input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP5) && kjflag[0][RETRO_DEVICE_ID_JOYPAD_B]==1)
    {
       setjoybuttonstate(0, 0, 0);
-      kflag[0][0]=0;
+      kjflag[0][RETRO_DEVICE_ID_JOYPAD_B]=0;
    }
 
 
@@ -385,40 +421,60 @@ void ProcessKeyrah()
    /* Up / Down */
    if ( input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP9) &&
        !input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP3))
+      {
          setjoystickstate(1, 1, -1, 1);
+         kjflag[1][RETRO_DEVICE_ID_JOYPAD_UP]=1;
+      }
    else
    if ( input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP3) &&
        !input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP9))
+      {
          setjoystickstate(1, 1, 1, 1);
+         kjflag[1][RETRO_DEVICE_ID_JOYPAD_DOWN]=1;
+      }
    else
    if (!input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) &&
        !input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN))
+      {
          setjoystickstate(1, 1, 0, 1);
+         kjflag[1][RETRO_DEVICE_ID_JOYPAD_UP]=0;
+         kjflag[1][RETRO_DEVICE_ID_JOYPAD_DOWN]=0;
+      }
 
    /* Left / Right */
    if ( input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP7) &&
        !input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP1))
+      {
          setjoystickstate(1, 0, -1, 1);
+         kjflag[1][RETRO_DEVICE_ID_JOYPAD_LEFT]=1;
+      }
    else
    if ( input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP1) &&
        !input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP7))
+      {
          setjoystickstate(1, 0, 1, 1);
+         kjflag[1][RETRO_DEVICE_ID_JOYPAD_RIGHT]=1;
+      }
    else
    if (!input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT) &&
        !input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT))
+      {
          setjoystickstate(1, 0, 0, 1);
+         kjflag[1][RETRO_DEVICE_ID_JOYPAD_LEFT]=0;
+         kjflag[1][RETRO_DEVICE_ID_JOYPAD_RIGHT]=0;
+      }
 
    /* Fire */
-   if ( input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP0) && kflag[1][0]==0)
+   if ( input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP0) && kjflag[1][RETRO_DEVICE_ID_JOYPAD_B]==0)
    {
       setjoybuttonstate(1, 0, 1);
-      kflag[1][0]=1;
+      kjflag[1][RETRO_DEVICE_ID_JOYPAD_B]=1;
    }
    else
-   if (!input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP0) && kflag[1][0]==1)
+   if (!input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP0) && kjflag[1][RETRO_DEVICE_ID_JOYPAD_B]==1)
    {
       setjoybuttonstate(1, 0, 0);
-      kflag[1][0]=0;
+      kjflag[1][RETRO_DEVICE_ID_JOYPAD_B]=0;
    }
 }
 
@@ -1066,10 +1122,9 @@ void retro_poll_event()
    /* keyup allowing most likely not needed on actual keyboard presses even though they get stuck also */
    {
       static int mbL=0,mbR=0;
-      int16_t mouse_x=0,mouse_y=0;
-      int mouse_l=0;
-      int mouse_r=0;
-      int i=0;
+      static int mouse_l=0,mouse_r=0;
+      static int16_t mouse_x=0,mouse_y=0;
+      static int i=0;
 
       int retro_port;
       for (retro_port = 0; retro_port <= 3; retro_port++)
@@ -1200,27 +1255,51 @@ void retro_poll_event()
          if(mbL==0 && mouse_l)
          {
             mbL=1;
+            mflag[RETRO_DEVICE_ID_JOYPAD_B]=1;
             retro_mouse_but0(1);
          }
          else if(mbL==1 && !mouse_l)
          {
-            retro_mouse_but0(0);
             mbL=0;
+            mflag[RETRO_DEVICE_ID_JOYPAD_B]=0;
+            retro_mouse_but0(0);
          }
 
          if(mbR==0 && mouse_r)
          {
             mbR=1;
+            mflag[RETRO_DEVICE_ID_JOYPAD_A]=1;
             retro_mouse_but1(1);
          }
          else if(mbR==1 && !mouse_r)
          {
-            retro_mouse_but1(0);
             mbR=0;
+            mflag[RETRO_DEVICE_ID_JOYPAD_A]=0;
+            retro_mouse_but1(0);
          }
 
          // Mouse movement to UAE
          if(fmousex || fmousey)
+            if(fmousey<0 && mflag[RETRO_DEVICE_ID_JOYPAD_UP]==0)
+               mflag[RETRO_DEVICE_ID_JOYPAD_UP]=1;
+            if (fmousey==0 && mflag[RETRO_DEVICE_ID_JOYPAD_UP]==1)
+               mflag[RETRO_DEVICE_ID_JOYPAD_UP]=0;
+
+            if(fmousey>0 && mflag[RETRO_DEVICE_ID_JOYPAD_DOWN]==0)
+               mflag[RETRO_DEVICE_ID_JOYPAD_DOWN]=1;
+            if (fmousey==0 && mflag[RETRO_DEVICE_ID_JOYPAD_DOWN]==1)
+               mflag[RETRO_DEVICE_ID_JOYPAD_DOWN]=0;
+
+            if(fmousex<0 && mflag[RETRO_DEVICE_ID_JOYPAD_LEFT]==0)
+               mflag[RETRO_DEVICE_ID_JOYPAD_LEFT]=1;
+            if (fmousex==0 && mflag[RETRO_DEVICE_ID_JOYPAD_LEFT]==1)
+               mflag[RETRO_DEVICE_ID_JOYPAD_LEFT]=0;
+
+            if(fmousex>0 && mflag[RETRO_DEVICE_ID_JOYPAD_RIGHT]==0)
+               mflag[RETRO_DEVICE_ID_JOYPAD_RIGHT]=1;
+            if (fmousex==0 && mflag[RETRO_DEVICE_ID_JOYPAD_RIGHT]==1)
+               mflag[RETRO_DEVICE_ID_JOYPAD_RIGHT]=0;
+
             retro_mouse(fmousex, fmousey);
       }
    }
