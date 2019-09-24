@@ -4691,7 +4691,11 @@ void default_prefs (struct uae_prefs *p, int type)
 	memset (&p->jports[2], 0, sizeof (struct jport));
 	memset (&p->jports[3], 0, sizeof (struct jport));
 	p->jports[0].id = JSEM_MICE;
+#ifdef __LIBRETRO__
+	p->jports[1].id = JSEM_JOYS;
+#else
 	p->jports[1].id = JSEM_KBDLAYOUT;
+#endif
 	p->jports[2].id = -1;
 	p->jports[3].id = -1;
 	p->keyboard_lang = KBD_LANG_US;
