@@ -19,7 +19,7 @@
 #define EMULATOR_MAX_HEIGHT 1024
 
 #define UAE_HZ_PAL 49.9201
-#define UAE_HZ_NTSC 59.8859
+#define UAE_HZ_NTSC 59.8251
 
 #if EMULATOR_DEF_WIDTH < 0 || EMULATOR_DEF_WIDTH > EMULATOR_MAX_WIDTH || EMULATOR_DEF_HEIGHT < 0 || EMULATOR_DEF_HEIGHT > EMULATOR_MAX_HEIGHT
 #error EMULATOR_DEF_WIDTH || EMULATOR_DEF_HEIGHT
@@ -122,7 +122,7 @@ const char *retro_content_directory;
 // Disk control context
 static dc_storage* dc;
 
-// Amiga default models
+// Amiga models
 // chipmem_size 1 = 0.5MB, 2 = 1MB, 4 = 2MB
 // bogomem_size 2 = 0.5MB, 4 = 1MB, 6 = 1.5MB, 7 = 1.8MB
 
@@ -169,8 +169,7 @@ chipset_compatible=A1200\n\
 chipset=aga\n"
 
 
-// Amiga default kickstarts
-
+// Amiga kickstarts
 #define A500_ROM    "kick34005.A500"
 #define A500KS2_ROM "kick37175.A500"
 #define A600_ROM    "kick40063.A600"
@@ -183,10 +182,11 @@ chipset=aga\n"
 
 #define PUAE_VIDEO_PAL_OV_LO 	PUAE_VIDEO_PAL
 #define PUAE_VIDEO_PAL_CR_LO 	PUAE_VIDEO_PAL|PUAE_VIDEO_CROP
-#define PUAE_VIDEO_NTSC_OV_LO 	PUAE_VIDEO_NTSC
-#define PUAE_VIDEO_NTSC_CR_LO 	PUAE_VIDEO_NTSC|PUAE_VIDEO_CROP
 #define PUAE_VIDEO_PAL_OV_HI 	PUAE_VIDEO_PAL|PUAE_VIDEO_HIRES
 #define PUAE_VIDEO_PAL_CR_HI 	PUAE_VIDEO_PAL|PUAE_VIDEO_CROP|PUAE_VIDEO_HIRES
+
+#define PUAE_VIDEO_NTSC_OV_LO 	PUAE_VIDEO_NTSC
+#define PUAE_VIDEO_NTSC_CR_LO 	PUAE_VIDEO_NTSC|PUAE_VIDEO_CROP
 #define PUAE_VIDEO_NTSC_OV_HI 	PUAE_VIDEO_NTSC|PUAE_VIDEO_HIRES
 #define PUAE_VIDEO_NTSC_CR_HI 	PUAE_VIDEO_NTSC|PUAE_VIDEO_CROP|PUAE_VIDEO_HIRES
 
@@ -247,7 +247,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_video_standard",
          "Video standard",
-         "Needs restart",
+         "",
          {
             { "PAL", NULL },
             { "NTSC", NULL },
@@ -1053,6 +1053,13 @@ static void update_variables(void)
             strcat(uae_config, "ntsc=true\n");
             real_ntsc = true;
          }
+      else
+      {
+         if(strcmp(var.value, "PAL") == 0)
+            changed_prefs.ntscmode=0;
+         else
+            changed_prefs.ntscmode=1;
+      }
    }
 
    var.key = "puae_video_aspect";
@@ -1721,30 +1728,6 @@ static void update_variables(void)
    // - **640×400**: NTSC High resolution cropped/clipped (without the "borders")
    switch(video_config)
    {
-		case PUAE_VIDEO_PAL_OV_LO:
-			defaultw = 360;
-			defaulth = 284;
-			strcat(uae_config, "gfx_lores=true\n");
-			strcat(uae_config, "gfx_linemode=none\n");
-			break;
-		case PUAE_VIDEO_PAL_CR_LO:
-			defaultw = 320;
-			defaulth = 256;
-			strcat(uae_config, "gfx_lores=true\n");
-			strcat(uae_config, "gfx_linemode=none\n");
-			break;
-		case PUAE_VIDEO_NTSC_OV_LO:
-			defaultw = 360;
-			defaulth = 240;
-			strcat(uae_config, "gfx_lores=true\n");
-			strcat(uae_config, "gfx_linemode=none\n");
-			break;
-		case PUAE_VIDEO_NTSC_CR_LO:
-			defaultw = 320;
-			defaulth = 200;
-			strcat(uae_config, "gfx_lores=true\n");
-			strcat(uae_config, "gfx_linemode=none\n");
-			break;
 		case PUAE_VIDEO_PAL_OV_HI:
 			defaultw = 720;
 			defaulth = 568;
@@ -1757,9 +1740,22 @@ static void update_variables(void)
 			strcat(uae_config, "gfx_lores=false\n");
 			strcat(uae_config, "gfx_linemode=double\n");
 			break;
+		case PUAE_VIDEO_PAL_OV_LO:
+			defaultw = 360;
+			defaulth = 284;
+			strcat(uae_config, "gfx_lores=true\n");
+			strcat(uae_config, "gfx_linemode=none\n");
+			break;
+		case PUAE_VIDEO_PAL_CR_LO:
+			defaultw = 320;
+			defaulth = 256;
+			strcat(uae_config, "gfx_lores=true\n");
+			strcat(uae_config, "gfx_linemode=none\n");
+			break;
+
 		case PUAE_VIDEO_NTSC_OV_HI:
 			defaultw = 720;
-			defaulth = 480;
+			defaulth = 480 - 5; // UAE output correction
 			strcat(uae_config, "gfx_lores=false\n");
 			strcat(uae_config, "gfx_linemode=double\n");
 			break;
@@ -1768,6 +1764,18 @@ static void update_variables(void)
 			defaulth = 400;
 			strcat(uae_config, "gfx_lores=false\n");
 			strcat(uae_config, "gfx_linemode=double\n");
+			break;
+		case PUAE_VIDEO_NTSC_OV_LO:
+			defaultw = 360;
+			defaulth = 240 - 3; // As above
+			strcat(uae_config, "gfx_lores=true\n");
+			strcat(uae_config, "gfx_linemode=none\n");
+			break;
+		case PUAE_VIDEO_NTSC_CR_LO:
+			defaultw = 320;
+			defaulth = 200;
+			strcat(uae_config, "gfx_lores=true\n");
+			strcat(uae_config, "gfx_linemode=none\n");
 			break;
    }
 
@@ -2186,22 +2194,6 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
    /* Geometry dimensions */
    switch(video_config_geometry)
    {
-      case PUAE_VIDEO_PAL_OV_LO:
-         retrow = 360;
-         retroh = 284;
-         break;
-      case PUAE_VIDEO_PAL_CR_LO:
-         retrow = 320;
-         retroh = 256;
-         break;
-      case PUAE_VIDEO_NTSC_OV_LO:
-         retrow = 360;
-         retroh = 240;
-         break;
-      case PUAE_VIDEO_NTSC_CR_LO:
-         retrow = 320;
-         retroh = 200;
-         break;
       case PUAE_VIDEO_PAL_OV_HI:
          retrow = 720;
          retroh = 568;
@@ -2210,13 +2202,30 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
          retrow = 640;
          retroh = 512;
          break;
+      case PUAE_VIDEO_PAL_OV_LO:
+         retrow = 360;
+         retroh = 284;
+         break;
+      case PUAE_VIDEO_PAL_CR_LO:
+         retrow = 320;
+         retroh = 256;
+         break;
+
       case PUAE_VIDEO_NTSC_OV_HI:
          retrow = 720;
-         retroh = 480;
+         retroh = 480 - 5; // UAE does not actually output full 480 height in real NTSC mode, and statusbar will leave trails without the correction
          break;
       case PUAE_VIDEO_NTSC_CR_HI:
          retrow = 640;
          retroh = 400;
+         break;
+      case PUAE_VIDEO_NTSC_OV_LO:
+         retrow = 360;
+         retroh = 240 - 3; // As above
+         break;
+      case PUAE_VIDEO_NTSC_CR_LO:
+         retrow = 320;
+         retroh = 200;
          break;
    }
 
