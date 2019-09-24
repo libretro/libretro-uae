@@ -2,12 +2,11 @@
 
 
 
-based on P-UAE 2.6.1 https://github.com/GnoStiC/PUAE 
+based on P-UAE 2.6.1
 Git Commit: 0186c1b16f7181ffa02d73e6920d3180ce457c46
-
+Credits to Mustafa 'GnoStiC' TUFAN
 
 All credits to:
-
 Richard Drummond "http://www.rcdrummond.net/uae/"
 
 E-UAE is based on the work of dozens of contributors including Bernd
@@ -18,14 +17,7 @@ WinUAE), and many more.
 This RETRO port was based at start on PS3 version E-UAE 0.8.29-WIP4 release 8
 (so also credits to Ole.)
 
-For now we use the UEA core provide by P-UAE 2.6.1 :
-Git Commit: 0186c1b16f7181ffa02d73e6920d3180ce457c46
-https://github.com/GnoStiC/PUAE 
-
-Credits to Mustafa 'GnoStiC' TUFAN
-
-
-And of course for the RetroArch/Libretro team : "http://www.libretro.org/"
+And of course for the RetroArch/Libretro team: "http://www.libretro.org/"
 
 
 Default Control:
