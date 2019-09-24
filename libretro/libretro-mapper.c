@@ -175,8 +175,6 @@ int BOX_HEIGHT=11;
 extern char key_state[512];
 extern char key_state2[512];
 
-extern char * filebrowser(const char *path_and_name);
-
 static retro_input_state_t input_state_cb;
 static retro_input_poll_t input_poll_cb;
 
@@ -209,13 +207,12 @@ long GetTicks(void)
    clock_gettime(CLOCK_MONOTONIC, &now);
    return (now.tv_sec*1000000 + now.tv_nsec/1000)/1000;
 #elif defined(WIIU)
-return (cpu_features_get_time_usec())/1000;
+   return (cpu_features_get_time_usec())/1000;
 #else
    struct timeval tv;
    gettimeofday (&tv, NULL);
    return (tv.tv_sec*1000000 + tv.tv_usec)/1000;
 #endif
-
 } 
 
 char* joystick_value_human(int val[16])
@@ -223,25 +220,25 @@ char* joystick_value_human(int val[16])
     static char str[4];
     sprintf(str, "%3s", "   ");
 
-    if(val[RETRO_DEVICE_ID_JOYPAD_UP])
+    if (val[RETRO_DEVICE_ID_JOYPAD_UP])
         str[1] = '^';
 
-    if(val[RETRO_DEVICE_ID_JOYPAD_DOWN])
+    if (val[RETRO_DEVICE_ID_JOYPAD_DOWN])
         str[1] = 'v';
 
-    if(val[RETRO_DEVICE_ID_JOYPAD_LEFT])
+    if (val[RETRO_DEVICE_ID_JOYPAD_LEFT])
         str[0] = '<';
 
-    if(val[RETRO_DEVICE_ID_JOYPAD_RIGHT])
+    if (val[RETRO_DEVICE_ID_JOYPAD_RIGHT])
         str[2] = '>';
 
-    if(val[RETRO_DEVICE_ID_JOYPAD_B])
+    if (val[RETRO_DEVICE_ID_JOYPAD_B])
         str[1] = '1';
 
-    if(val[RETRO_DEVICE_ID_JOYPAD_A])
+    if (val[RETRO_DEVICE_ID_JOYPAD_A])
         str[1] = '2';
 
-    if(val[RETRO_DEVICE_ID_JOYPAD_B] && val[RETRO_DEVICE_ID_JOYPAD_A])
+    if (val[RETRO_DEVICE_ID_JOYPAD_B] && val[RETRO_DEVICE_ID_JOYPAD_A])
         str[1] = '3';
 
     str[1] = (val[RETRO_DEVICE_ID_JOYPAD_B] || val[RETRO_DEVICE_ID_JOYPAD_A]) ? (str[1] | 0x80) : str[1];
@@ -254,7 +251,7 @@ void Print_Status(void)
       return;
 
    // Statusbar location
-   if(video_config & 0x04) // PUAE_VIDEO_HIRES
+   if (video_config & 0x04) // PUAE_VIDEO_HIRES
    {
       if (opt_statusbar_position < 0)
          if (opt_statusbar_position == -1)
@@ -294,21 +291,22 @@ void Print_Status(void)
    sprintf(JOYPORT4, "J4%3s", joystick_value_human(jflag[3]));
 
    // Mouse flag
-   if(strcmp(JOYPORT2, "J2   ") == 0)
+   if (strcmp(JOYPORT2, "J2   ") == 0)
       sprintf(JOYPORT2, "J2%3s", joystick_value_human(mflag));
 
    // Keyrah joyflags
-   if(opt_keyrahkeypad)
+   if (opt_keyrahkeypad)
    {
-      if(strcmp(JOYPORT1, "J1   ") == 0)
+      if (strcmp(JOYPORT1, "J1   ") == 0)
          sprintf(JOYPORT1, "J1%3s", joystick_value_human(kjflag[0]));
-      if(strcmp(JOYPORT2, "J2   ") == 0)
+      if (strcmp(JOYPORT2, "J2   ") == 0)
          sprintf(JOYPORT2, "J2%3s", joystick_value_human(kjflag[1]));
    }
 
    // Emulated mouse speed
    char PASSTR[2];
-   switch(PAS) {
+   switch (PAS)
+   {
       case 4:
          PASSTR[0]='S';
          break;
@@ -323,6 +321,31 @@ void Print_Status(void)
          break;
    }
 
+   // Zoom mode
+   char ZOOM_MODE[10];
+   switch (zoom_mode_id)
+   {
+      default:
+      case 0:
+         sprintf(ZOOM_MODE, "%s", "None");
+         break;
+      case 1:
+         sprintf(ZOOM_MODE, "%s", "Small");
+         break;
+      case 2:
+         sprintf(ZOOM_MODE, "%s", "Medium");
+         break;
+      case 3:
+         sprintf(ZOOM_MODE, "%s", "Large");
+         break;
+      case 4:
+         sprintf(ZOOM_MODE, "%s", "Larger");
+         break;
+      case 5:
+         sprintf(ZOOM_MODE, "%s", "Maximum");
+         break;
+   }
+
    // Statusbar output
    if (pix_bytes == 4)
    {
@@ -333,7 +356,8 @@ void Print_Status(void)
       Draw_text32((uint32_t *)bmp,STAT_DECX+80,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT3);
       Draw_text32((uint32_t *)bmp,STAT_DECX+120,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT4);
 
-      Draw_text32((uint32_t *)bmp,STAT_DECX+160,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,((MOUSEMODE==-1) ? "Joystick" : "Mouse(%s)"), PASSTR);
+      Draw_text32((uint32_t *)bmp,STAT_DECX+160,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,((MOUSEMODE==-1) ? "Joystick" : "Mouse:%s "), PASSTR);
+      Draw_text32((uint32_t *)bmp,STAT_DECX+240,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Zoom:%s", ZOOM_MODE);
    }
    else
    {
@@ -344,7 +368,8 @@ void Print_Status(void)
       Draw_text(bmp,STAT_DECX+80,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT3);
       Draw_text(bmp,STAT_DECX+120,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT4);
 
-      Draw_text(bmp,STAT_DECX+160,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,((MOUSEMODE==-1) ? "Joystick" : "Mouse(%s)"), PASSTR);
+      Draw_text(bmp,STAT_DECX+160,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,((MOUSEMODE==-1) ? "Joystick" : "Mouse:%s "), PASSTR);
+      Draw_text(bmp,STAT_DECX+240,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Zoom:%s", ZOOM_MODE);
    }
 }
 
@@ -618,14 +643,21 @@ void ProcessTurbofire(int retro_port, int i)
                turbo_toggle[retro_port]++;
 
             if(turbo_toggle[retro_port] > (turbo_pulse / 2))
+            {
                setjoybuttonstate(retro_port, 0, 0);
+               jflag[retro_port][RETRO_DEVICE_ID_JOYPAD_B]=0;
+            }
             else
+            {
                setjoybuttonstate(retro_port, 0, 1);
+               jflag[retro_port][RETRO_DEVICE_ID_JOYPAD_B]=1;
+            }
          }
          else
          {
             turbo_state[retro_port] = 1;
             setjoybuttonstate(retro_port, 0, 1);
+            jflag[retro_port][RETRO_DEVICE_ID_JOYPAD_B]=1;
          }
       }
       else if(!input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, turbo_fire_button) && turbo_state[retro_port]==1)
@@ -633,6 +665,7 @@ void ProcessTurbofire(int retro_port, int i)
          turbo_state[retro_port] = 0;
          turbo_toggle[retro_port] = 1;
          setjoybuttonstate(retro_port, 0, 0);
+         jflag[retro_port][RETRO_DEVICE_ID_JOYPAD_B]=0;
       }
    }
 }
@@ -922,9 +955,15 @@ void update_input(int disable_physical_cursor_keys)
                 else if(mapper_keys[i] == mapper_keys[30]) /* Toggle zoom mode */
                     emu_function(EMU_ZOOM_MODE_TOGGLE);
                 else if(mapper_keys[i] == -2) /* Mouse left */
+                {
                     setmousebuttonstate (0, 0, 1);
+                    mflag[RETRO_DEVICE_ID_JOYPAD_B]=1;
+                }
                 else if(mapper_keys[i] == -3) /* Mouse right */
+                {
                     setmousebuttonstate (0, 1, 1);
+                    mflag[RETRO_DEVICE_ID_JOYPAD_A]=1;
+                }
                 else if(mapper_keys[i] == -4) /* Mouse middle */
                     setmousebuttonstate (0, 2, 1);
                 else
@@ -951,9 +990,15 @@ void update_input(int disable_physical_cursor_keys)
                 else if(mapper_keys[i] == mapper_keys[30])
                     ; /* nop */
                 else if(mapper_keys[i] == -2)
+                {
                     setmousebuttonstate (0, 0, 0);
+                    mflag[RETRO_DEVICE_ID_JOYPAD_B]=0;
+                }
                 else if(mapper_keys[i] == -3)
+                {
                     setmousebuttonstate (0, 1, 0);
+                    mflag[RETRO_DEVICE_ID_JOYPAD_A]=0;
+                }
                 else if(mapper_keys[i] == -4)
                     setmousebuttonstate (0, 2, 0);
                 else
@@ -1129,16 +1174,16 @@ void retro_poll_event()
       int retro_port;
       for (retro_port = 0; retro_port <= 3; retro_port++)
       {
-         switch(uae_devices[retro_port])
+         switch (uae_devices[retro_port])
          {
             case RETRO_DEVICE_JOYPAD:
                // RetroPad control (user 0 disabled if MOUSEMODE is on)
-               if(MOUSEMODE==1 && retro_port==0)
+               if (MOUSEMODE==1 && retro_port==0)
                   break;
 
                for (i=0;i<16;i++) // All buttons
                {
-                  if(i==0 || (i>3 && i<9)) // DPAD + B + A
+                  if (i==0 || (i>3 && i<9)) // DPAD + B + A
                   {
                      ProcessController(retro_port, i);
                   }
@@ -1149,7 +1194,7 @@ void retro_poll_event()
             case RETRO_DEVICE_UAE_CD32PAD:
                for (i=0;i<16;i++) // All buttons
                {
-                  if(i<2 || (i>2 && i<12)) // Only skip Select (2)
+                  if (i<2 || (i>2 && i<12)) // Only skip Select (2)
                   {
                      ProcessController(retro_port, i);
                   }
@@ -1160,7 +1205,7 @@ void retro_poll_event()
             case RETRO_DEVICE_UAE_JOYSTICK:
                for (i=0;i<9;i++) // All buttons up to A
                {
-                  if(i==0 || (i>3 && i<9)) // DPAD + B + A
+                  if (i==0 || (i>3 && i<9)) // DPAD + B + A
                   {
                      ProcessController(retro_port, i);
                   }
@@ -1170,27 +1215,27 @@ void retro_poll_event()
       }
    
       // Mouse control
-      if(SHOWKEY==-1)
+      if (SHOWKEY==-1)
       {
          mouse_l=mouse_r=0;
          fmousex=fmousey=0;
 
          // Joypad buttons
-         if(MOUSEMODE==1 && uae_devices[0] == RETRO_DEVICE_JOYPAD)
+         if (MOUSEMODE==1 && uae_devices[0] == RETRO_DEVICE_JOYPAD)
          {
             mouse_l = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B);
             mouse_r = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A);
          }
 
          // Real mouse buttons
-         if(!mouse_l && !mouse_r)
+         if (!mouse_l && !mouse_r)
          {
             mouse_l = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_LEFT);
             mouse_r = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_RIGHT);
          }
 
          // Joypad movement
-         if(MOUSEMODE==1 && uae_devices[0] == RETRO_DEVICE_JOYPAD)
+         if (MOUSEMODE==1 && uae_devices[0] == RETRO_DEVICE_JOYPAD)
          {
             if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT))
                fmousex += PAS;
@@ -1203,48 +1248,48 @@ void retro_poll_event()
          }
 
          // Left analog movement
-         if(opt_analogmouse == 1 || opt_analogmouse == 3) 
+         if (opt_analogmouse == 1 || opt_analogmouse == 3) 
             // No keymappings and mousing at the same time
-            if(!fmousex && !fmousey && (!mapper_keys[16] && !mapper_keys[17] && !mapper_keys[18] && !mapper_keys[19]))
+            if (!fmousex && !fmousey && (!mapper_keys[16] && !mapper_keys[17] && !mapper_keys[18] && !mapper_keys[19]))
             {
                analog_left[0] = (input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X));
                analog_left[1] = (input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y));
 
-               if(analog_left[0]<=-analog_deadzone)
+               if (analog_left[0]<=-analog_deadzone)
                   fmousex-=(-analog_left[0])/analog_sensitivity;
-               if(analog_left[0]>= analog_deadzone)
+               if (analog_left[0]>= analog_deadzone)
                   fmousex+=( analog_left[0])/analog_sensitivity;
-               if(analog_left[1]<=-analog_deadzone)
+               if (analog_left[1]<=-analog_deadzone)
                   fmousey-=(-analog_left[1])/analog_sensitivity;
-               if(analog_left[1]>= analog_deadzone)
+               if (analog_left[1]>= analog_deadzone)
                   fmousey+=( analog_left[1])/analog_sensitivity;
             }
 
          // Right analog movement
-         if(opt_analogmouse == 2 || opt_analogmouse == 3)
+         if (opt_analogmouse == 2 || opt_analogmouse == 3)
             // No keymappings and mousing at the same time
-            if(!fmousex && !fmousey && (!mapper_keys[20] && !mapper_keys[21] && !mapper_keys[22] && !mapper_keys[23]))
+            if (!fmousex && !fmousey && (!mapper_keys[20] && !mapper_keys[21] && !mapper_keys[22] && !mapper_keys[23]))
             {
                analog_right[0] = (input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X));
                analog_right[1] = (input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y));
 
-               if(analog_right[0]<=-analog_deadzone)
+               if (analog_right[0]<=-analog_deadzone)
                   fmousex-=(-analog_right[0])/analog_sensitivity;
-               if(analog_right[0]>= analog_deadzone)
+               if (analog_right[0]>= analog_deadzone)
                   fmousex+=( analog_right[0])/analog_sensitivity;
-               if(analog_right[1]<=-analog_deadzone)
+               if (analog_right[1]<=-analog_deadzone)
                   fmousey-=(-analog_right[1])/analog_sensitivity;
-               if(analog_right[1]>= analog_deadzone)
+               if (analog_right[1]>= analog_deadzone)
                   fmousey+=( analog_right[1])/analog_sensitivity;
             }
 
          // Real mouse movement
-         if(!fmousex && !fmousey)
+         if (!fmousex && !fmousey)
          {
             mouse_x = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_X);
             mouse_y = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_Y);
 
-            if(mouse_x || mouse_y)
+            if (mouse_x || mouse_y)
             {
                fmousex = mouse_x;
                fmousey = mouse_y;
@@ -1252,26 +1297,26 @@ void retro_poll_event()
          }
 
          // Mouse buttons to UAE
-         if(mbL==0 && mouse_l)
+         if (mbL==0 && mouse_l)
          {
             mbL=1;
             mflag[RETRO_DEVICE_ID_JOYPAD_B]=1;
             retro_mouse_but0(1);
          }
-         else if(mbL==1 && !mouse_l)
+         else if (mbL==1 && !mouse_l)
          {
             mbL=0;
             mflag[RETRO_DEVICE_ID_JOYPAD_B]=0;
             retro_mouse_but0(0);
          }
 
-         if(mbR==0 && mouse_r)
+         if (mbR==0 && mouse_r)
          {
             mbR=1;
             mflag[RETRO_DEVICE_ID_JOYPAD_A]=1;
             retro_mouse_but1(1);
          }
-         else if(mbR==1 && !mouse_r)
+         else if (mbR==1 && !mouse_r)
          {
             mbR=0;
             mflag[RETRO_DEVICE_ID_JOYPAD_A]=0;
@@ -1279,25 +1324,25 @@ void retro_poll_event()
          }
 
          // Mouse movement to UAE
-         if(fmousex || fmousey)
-            if(fmousey<0 && mflag[RETRO_DEVICE_ID_JOYPAD_UP]==0)
+         if (fmousex || fmousey)
+            if (fmousey<0 && mflag[RETRO_DEVICE_ID_JOYPAD_UP]==0)
                mflag[RETRO_DEVICE_ID_JOYPAD_UP]=1;
-            if (fmousey==0 && mflag[RETRO_DEVICE_ID_JOYPAD_UP]==1)
+            if (fmousey>-1 && mflag[RETRO_DEVICE_ID_JOYPAD_UP]==1)
                mflag[RETRO_DEVICE_ID_JOYPAD_UP]=0;
 
-            if(fmousey>0 && mflag[RETRO_DEVICE_ID_JOYPAD_DOWN]==0)
+            if (fmousey>0 && mflag[RETRO_DEVICE_ID_JOYPAD_DOWN]==0)
                mflag[RETRO_DEVICE_ID_JOYPAD_DOWN]=1;
-            if (fmousey==0 && mflag[RETRO_DEVICE_ID_JOYPAD_DOWN]==1)
+            if (fmousey<1 && mflag[RETRO_DEVICE_ID_JOYPAD_DOWN]==1)
                mflag[RETRO_DEVICE_ID_JOYPAD_DOWN]=0;
 
-            if(fmousex<0 && mflag[RETRO_DEVICE_ID_JOYPAD_LEFT]==0)
+            if (fmousex<0 && mflag[RETRO_DEVICE_ID_JOYPAD_LEFT]==0)
                mflag[RETRO_DEVICE_ID_JOYPAD_LEFT]=1;
-            if (fmousex==0 && mflag[RETRO_DEVICE_ID_JOYPAD_LEFT]==1)
+            if (fmousex>-1 && mflag[RETRO_DEVICE_ID_JOYPAD_LEFT]==1)
                mflag[RETRO_DEVICE_ID_JOYPAD_LEFT]=0;
 
-            if(fmousex>0 && mflag[RETRO_DEVICE_ID_JOYPAD_RIGHT]==0)
+            if (fmousex>0 && mflag[RETRO_DEVICE_ID_JOYPAD_RIGHT]==0)
                mflag[RETRO_DEVICE_ID_JOYPAD_RIGHT]=1;
-            if (fmousex==0 && mflag[RETRO_DEVICE_ID_JOYPAD_RIGHT]==1)
+            if (fmousex<1 && mflag[RETRO_DEVICE_ID_JOYPAD_RIGHT]==1)
                mflag[RETRO_DEVICE_ID_JOYPAD_RIGHT]=0;
 
             retro_mouse(fmousex, fmousey);

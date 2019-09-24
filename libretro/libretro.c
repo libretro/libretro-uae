@@ -38,6 +38,7 @@ bool opt_use_whdload_hdf = true;
 bool opt_enhanced_statusbar = true;
 int opt_statusbar_position = 0;
 int opt_statusbar_position_old = 0;
+int opt_statusbar_position_offset = 0;
 unsigned int opt_keyrahkeypad = 0;
 unsigned int opt_dpadmouse_speed = 4;
 extern int PAS;
@@ -68,7 +69,13 @@ extern void Print_Status(void);
 static int firstpass = 1;
 extern int prefs_changed;
 int opt_vertical_offset = 0;
+bool opt_vertical_offset_auto = true;
 extern int minfirstline;
+static int minfirstline_old = -1;
+extern int thisframe_first_drawn_line;
+static int thisframe_first_drawn_line_old = -1;
+extern int thisframe_last_drawn_line;
+static int minfirstline_default = 26;
 static int minfirstline_update_frame_timer = 3;
 unsigned int video_config = 0;
 unsigned int video_config_old = 0;
@@ -253,12 +260,12 @@ void retro_set_environment(retro_environment_t cb)
          "Aspect ratio",
          "",
          {
-            { "Auto", "Automatic" },
+            { "auto", "Automatic" },
             { "PAL", NULL },
             { "NTSC", NULL },
             { NULL, NULL },
          },
-         "Auto"
+         "auto"
       },
       {
          "puae_video_allow_hz_change",
@@ -330,7 +337,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_cpu_speed",
          "CPU speed",
-         "Needs restart. Max needs cycle exact off",
+         "Needs restart. Max requires Cycle exact: off",
          {
             { "real", "Real" },
             { "max", "Max" },
@@ -536,23 +543,24 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_zoom_mode",
          "Zoom mode",
-         "Zoom requires vertical centering: off,  integer scaling: off, and aspect ratio: core provided for best results",
+         "For best results: Vertical centering: Off\n& in RetroArch\nAspect Ratio: Core provided\nInteger Scale: Off",
          {
-            { "None", "disabled" },
-            { "Small", NULL },
-            { "Medium", NULL },
-            { "Large", NULL },
-            { "Larger", NULL },
-            { "Maximum", NULL },
+            { "none", "disabled" },
+            { "small", "Small" },
+            { "medium", "Medium" },
+            { "large", "Large" },
+            { "larger", "Larger" },
+            { "maximum", "Maximum" },
             { NULL, NULL },
          },
-         "None"
+         "none"
       },
       {
          "puae_vertical_pos",
          "Vertical position",
-         "Allows to shift the screen up and down, useful to manually center the screen",
+         "Allows to shift the screen up and down, useful to manually center the screen. Automatic tries to keep zoom modes centered",
          {
+            { "auto", "Automatic" },
             { "0", NULL },
             { "2", NULL },
             { "4", NULL },
@@ -579,19 +587,19 @@ void retro_set_environment(retro_environment_t cb)
             { "46", NULL },
             { "48", NULL },
             { "50", NULL },
-            { "-2", NULL },
-            { "-4", NULL },
-            { "-6", NULL },
-            { "-8", NULL },
-            { "-10", NULL },
-            { "-12", NULL },
-            { "-14", NULL },
-            { "-16", NULL },
-            { "-18", NULL },
             { "-20", NULL },
+            { "-18", NULL },
+            { "-16", NULL },
+            { "-14", NULL },
+            { "-12", NULL },
+            { "-10", NULL },
+            { "-8", NULL },
+            { "-6", NULL },
+            { "-4", NULL },
+            { "-2", NULL },
             { NULL, NULL },
          },
-         "0"
+         "auto"
       },
       {
          "puae_use_whdload",
@@ -1052,9 +1060,9 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if(strcmp(var.value, "Auto") == 0) video_config_aspect = 0;
-      else if(strcmp(var.value, "PAL") == 0) video_config_aspect = PUAE_VIDEO_PAL;
+      if(strcmp(var.value, "PAL") == 0) video_config_aspect = PUAE_VIDEO_PAL;
       else if(strcmp(var.value, "NTSC") == 0) video_config_aspect = PUAE_VIDEO_NTSC;
+      else video_config_aspect = 0;
    }
 
    var.key = "puae_video_allow_hz_change";
@@ -1384,12 +1392,12 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "None") == 0) zoom_mode_id=0;
-      else if (strcmp(var.value, "Small") == 0) zoom_mode_id=1;
-      else if (strcmp(var.value, "Medium") == 0) zoom_mode_id=2;
-      else if (strcmp(var.value, "Large") == 0) zoom_mode_id=3;
-      else if (strcmp(var.value, "Larger") == 0) zoom_mode_id=4;
-      else if (strcmp(var.value, "Maximum") == 0) zoom_mode_id=5;
+      if (strcmp(var.value, "none") == 0) zoom_mode_id=0;
+      else if (strcmp(var.value, "small") == 0) zoom_mode_id=1;
+      else if (strcmp(var.value, "medium") == 0) zoom_mode_id=2;
+      else if (strcmp(var.value, "large") == 0) zoom_mode_id=3;
+      else if (strcmp(var.value, "larger") == 0) zoom_mode_id=4;
+      else if (strcmp(var.value, "maximum") == 0) zoom_mode_id=5;
    }
 
    var.key = "puae_vertical_pos";
@@ -1397,14 +1405,24 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      int new_vertical_offset = atoi(var.value);
-      if (new_vertical_offset >= -20 && new_vertical_offset <= 50)
+      if (strcmp(var.value, "auto") == 0)
       {
-         /* this offset is used whenever minfirstline is reset on gfx mode changes in the init_hz() function */
-         opt_vertical_offset = new_vertical_offset;
-         /* we need to update the currently used minfirstline, too, for immediate effect */
-         /* 26 is the PUAE default for minfirstline */
-         minfirstline = 26 + opt_vertical_offset;
+         opt_vertical_offset_auto = true;
+         minfirstline = minfirstline_default;
+      }
+      else
+      {
+         opt_vertical_offset_auto = false;
+         int new_vertical_offset = atoi(var.value);
+         if (new_vertical_offset >= -20 && new_vertical_offset <= 50)
+         {
+            /* this offset is used whenever minfirstline is reset on gfx mode changes in the init_hz() function */
+            opt_vertical_offset = new_vertical_offset;
+
+            /* we need to update the currently used minfirstline, too, for immediate effect */
+            /* 26 is the PUAE default for minfirstline */
+            minfirstline = minfirstline_default + opt_vertical_offset;
+         }
       }
    }
 
@@ -2114,7 +2132,7 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
    video_config_geometry = video_config;
 
    /* When timing & geometry is changed */
-   if(change_timing)
+   if (change_timing)
    {
       /* Change to NTSC if not NTSC */
       if (isntsc && (video_config & PUAE_VIDEO_PAL) && !fake_ntsc)
@@ -2146,7 +2164,7 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
    }
 
    /* Do nothing if timing has not changed, unless Hz switched without isntsc */
-   if(video_config_old == video_config && change_timing)
+   if (video_config_old == video_config && change_timing)
    {
       /* Dyna Blaster and the like stays at fake NTSC to prevent pointless switching back and forth */
       if (!isntsc && hz > 55)
@@ -2158,10 +2176,10 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       }
 
       /* If still no change */
-      if(video_config_old == video_config)
+      if (video_config_old == video_config)
       {
          fprintf(stderr, "[libretro-uae]: Already at wanted AV\n");
-         return false;
+         change_timing = false; // Allow other calculations but don't alter timing
       }
    }
 
@@ -2203,13 +2221,13 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
    }
 
    /* Special cropped height for Dyna Blaster (uncropped will leave some statusbar trails, but who cares since they will be cleaned up by itself */
-   if(fake_ntsc && video_config & PUAE_VIDEO_CROP)
+   if (fake_ntsc && video_config & PUAE_VIDEO_CROP)
    {
       retroh = ((video_config & PUAE_VIDEO_HIRES) ? 460 : 230);
    }
 
    /* When the actual dimensions change and not just the view */
-   if(change_timing || fake_ntsc)
+   if (change_timing || fake_ntsc)
    {
       defaultw = retrow;
       defaulth = retroh;
@@ -2219,60 +2237,63 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
    new_av_info.geometry.base_width = retrow;
    new_av_info.geometry.base_height = retroh;
 
-   if(video_config_geometry & PUAE_VIDEO_NTSC || video_config_aspect == PUAE_VIDEO_NTSC) {
+   if (video_config_geometry & PUAE_VIDEO_NTSC || video_config_aspect == PUAE_VIDEO_NTSC) {
       new_av_info.geometry.aspect_ratio=(float)retrow/(float)retroh * 44.0/52.0;
    } else {
       new_av_info.geometry.aspect_ratio=(float)retrow/(float)retroh;
    }
 
    /* Disable Hz change if not allowed */
-   if(!video_config_allow_hz_change)
+   if (!video_config_allow_hz_change)
       change_timing = 0;
 
    /* Logging */
-   if(change_geometry && change_timing) {
+   if (change_geometry && change_timing) {
       fprintf(stderr, "[libretro-uae]: Update av_info: %dx%d %0.4fHz, video_config:%d\n", retrow, retroh, hz, video_config_geometry);
-   } else if(change_geometry && !change_timing) {
+   } else if (change_geometry && !change_timing) {
       fprintf(stderr, "[libretro-uae]: Update geometry: %dx%d, video_config:%d\n", retrow, retroh, video_config_geometry);
-   } else if(!change_geometry && change_timing) {
+   } else if (!change_geometry && change_timing) {
       fprintf(stderr, "[libretro-uae]: Update timing: %0.4fHz, video_config:%d\n", hz, video_config_geometry);
    }
 
-   if(change_timing) {
+   if (change_timing) {
       struct retro_system_av_info new_timing;
       retro_get_system_av_info(&new_timing);
       new_timing.timing.fps = hz;
       environ_cb(RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO, &new_timing);
    }
 
-   if(change_geometry) {
+   if (change_geometry) {
       environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
 
-      /* ensure statusbar stays visible when it is at bottom */
+      /* Ensure statusbar stays visible at the bottom */
+      opt_statusbar_position_offset = 0;
       opt_statusbar_position = opt_statusbar_position_old;
-      if(!change_timing)
-         if(retroh < defaulth)
+      if (!change_timing)
+         if (retroh < defaulth)
             if (opt_statusbar_position >= 0 && (defaulth - retroh) > opt_statusbar_position)
                opt_statusbar_position = defaulth - retroh;
 
-      //printf("statusbar:%d old:%d, retroh:%d defaulth:%d\n", opt_statusbar_position, opt_statusbar_position_old, retroh, defaulth);
+      /* Aspect offset for zoom mode */
+      opt_statusbar_position_offset = opt_statusbar_position_old - opt_statusbar_position;
+      //printf("statusbar:%d old:%d offset:%d, retroh:%d defaulth:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, retroh, defaulth);
    }
 
-   /* apply zoom mode if necessary */
+   /* Apply zoom mode if necessary */
    zoomed_height = retroh;
    switch (zoom_mode_id)
    {
       case 1:
          if (video_config & PUAE_VIDEO_HIRES)
-            zoomed_height = 512;
+            zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 460 : 512;
          else
-            zoomed_height = 256;
+            zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 230 : 256;
          break;
       case 2:
          if (video_config & PUAE_VIDEO_HIRES)
-            zoomed_height = 480;
+            zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 420 : 480;
          else
-            zoomed_height = 240;
+            zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 210 : 240;
          break;
       case 3:
          if (video_config & PUAE_VIDEO_HIRES)
@@ -2302,20 +2323,58 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
    if (zoomed_height != retroh)
    {
       new_av_info.geometry.base_height = zoomed_height;
-      if(video_config_geometry & PUAE_VIDEO_NTSC || video_config_aspect == PUAE_VIDEO_NTSC) {
+      if (video_config_geometry & PUAE_VIDEO_NTSC || video_config_aspect == PUAE_VIDEO_NTSC) {
          new_av_info.geometry.aspect_ratio=(float)retrow/(float)zoomed_height * 44.0/52.0;
       } else {
          new_av_info.geometry.aspect_ratio=(float)retrow/(float)zoomed_height;
       }
       environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
 
-      /* ensure statusbar stays visible when it is at bottom */
-      if (opt_statusbar_position >= 0 && (retroh - zoomed_height) > opt_statusbar_position)
-         opt_statusbar_position = retroh - zoomed_height;
+      /* Ensure statusbar stays visible at the bottom */
+      if (opt_statusbar_position >= 0 && (retroh - zoomed_height - opt_statusbar_position_offset) > opt_statusbar_position)
+         opt_statusbar_position = retroh - zoomed_height - opt_statusbar_position_offset;
    }
 
+   /* If zoom mode should be centered automagically */
+   if (opt_vertical_offset_auto && zoom_mode_id != 0 && firstpass != 1)
+   {
+      int zoomed_height_normal = (video_config & PUAE_VIDEO_HIRES) ? zoomed_height / 2 : zoomed_height;
+      int minfirstline_new = minfirstline;
+      /* Need proper values for calculations */
+      if (thisframe_first_drawn_line != thisframe_last_drawn_line
+      && thisframe_first_drawn_line > 0 && thisframe_last_drawn_line > 0 
+      && thisframe_first_drawn_line < 100 && thisframe_last_drawn_line > 200
+      )
+         minfirstline_new = (thisframe_last_drawn_line - thisframe_first_drawn_line - zoomed_height_normal) / 2 + thisframe_first_drawn_line;
+      /* After restoring a savestate for the second time UAE assumes we are still at the correct minfirstline, even though we are not */
+      else if (thisframe_first_drawn_line == -1 && thisframe_last_drawn_line == -1 && minfirstline_old != -1)
+         minfirstline_new = minfirstline_old;
+      else
+         minfirstline_new = minfirstline_default;
+
+      /* Small last drawn lines will crash if minfirstline goes too far */
+      if (thisframe_last_drawn_line < 200)
+         minfirstline_new = (minfirstline_new < 0) ? 0 : minfirstline_new;
+      else
+         minfirstline_new = (minfirstline_new < -20) ? -20 : minfirstline_new;
+      minfirstline_new = (minfirstline_new > 80) ? 80 : minfirstline_new;
+
+      /* Change value only if altered */
+      if (minfirstline_new != minfirstline)
+         minfirstline = minfirstline_new;
+
+      //printf("FIRST:%d LAST:%d minfirstline:%d old:%d\n", thisframe_first_drawn_line, thisframe_last_drawn_line, minfirstline, minfirstline_old);
+
+      /* Remember the previous value */
+      minfirstline_old = minfirstline;
+   }
+   else
+      minfirstline = minfirstline_default + opt_vertical_offset;
+
+
+
    /* No need to check changed gfx at startup */
-   if(firstpass != 1) {
+   if (firstpass != 1) {
       prefs_changed = 1; // check_prefs_changed_gfx() will be called automatically in vsync_handle_check()
    }
 
@@ -2400,7 +2459,7 @@ void retro_run(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_FASTFORWARDING, &fast_forward) && fast_forward)
    {
       fast_forward_is_on = true;
-      if(currprefs.sound_auto == 0)
+      if (currprefs.sound_auto == 0)
       {
          changed_prefs.sound_auto = 1;
          config_changed = 1;
@@ -2411,7 +2470,7 @@ void retro_run(void)
    else
    {
       fast_forward_is_on = false;
-      if(currprefs.sound_auto == 1)
+      if (currprefs.sound_auto == 1)
       {
          changed_prefs.sound_auto = 0;
          config_changed = 1;
@@ -2420,17 +2479,34 @@ void retro_run(void)
       }
    }
 
+   // Automatic vertical offset
+   if (opt_vertical_offset_auto && zoom_mode_id != 0)
+   {
+      if (thisframe_first_drawn_line != thisframe_first_drawn_line_old)
+      {
+         //int thisframe_first_drawn_line_delta = thisframe_first_drawn_line - thisframe_first_drawn_line_old;
+         //printf("FIRST:%d OLD:%d DELTA:%d\n", thisframe_first_drawn_line, thisframe_first_drawn_line_old, thisframe_first_drawn_line_delta);
+         thisframe_first_drawn_line_old = thisframe_first_drawn_line;
+
+         if (thisframe_first_drawn_line < 100)
+            request_update_av_info = true;
+      }
+   }
+   else
+   {
+      // Vertical offset must not be set too early
+      if (minfirstline_update_frame_timer > 0)
+      {
+         minfirstline_update_frame_timer--;
+         if (minfirstline_update_frame_timer == 0)
+            if (opt_vertical_offset != 0)
+               minfirstline = minfirstline_default + opt_vertical_offset;
+      }
+   }
+
    // AV info change is requested
    if (request_update_av_info)
       retro_update_av_info(1, 0, 0);
-
-   // Vertical offset must not be set too early
-   if (minfirstline_update_frame_timer > 0 && opt_vertical_offset != 0)
-   {
-      minfirstline_update_frame_timer--;
-      if (minfirstline_update_frame_timer == 0)
-         minfirstline = 26 + opt_vertical_offset;
-   }
 
    if (firstpass)
    {
