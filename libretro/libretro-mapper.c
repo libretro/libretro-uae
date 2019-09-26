@@ -71,7 +71,7 @@ extern void retro_mouse(int, int);
 extern void retro_mouse_but0(int);
 extern void retro_mouse_but1(int);
 extern unsigned int uae_devices[4];
-extern int mapper_keys[31];
+extern int mapper_keys[32];
 extern int video_config;
 extern int video_config_aspect;
 extern int zoom_mode_id;
