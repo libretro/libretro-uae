@@ -12,6 +12,7 @@
 #include "options.h"
 #include "inputdevice.h"
 #include "savestate.h"
+#include "custom.h"
 
 #define EMULATOR_DEF_WIDTH 720
 #define EMULATOR_DEF_HEIGHT 568
@@ -75,7 +76,7 @@ static int minfirstline_old = -1;
 extern int thisframe_first_drawn_line;
 static int thisframe_first_drawn_line_old = -1;
 extern int thisframe_last_drawn_line;
-static int minfirstline_default = 26;
+static int minfirstline_default = VBLANK_ENDLINE_PAL;
 static int minfirstline_update_frame_timer = 3;
 unsigned int video_config = 0;
 unsigned int video_config_old = 0;
@@ -1412,6 +1413,8 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
+      minfirstline_default = (video_config & PUAE_VIDEO_NTSC) ? VBLANK_ENDLINE_NTSC : VBLANK_ENDLINE_PAL;
+
       if (strcmp(var.value, "auto") == 0)
       {
          opt_vertical_offset_auto = true;
@@ -1427,7 +1430,6 @@ static void update_variables(void)
             opt_vertical_offset = new_vertical_offset;
 
             /* we need to update the currently used minfirstline, too, for immediate effect */
-            /* 26 is the PUAE default for minfirstline */
             minfirstline = minfirstline_default + opt_vertical_offset;
          }
       }
@@ -1755,7 +1757,7 @@ static void update_variables(void)
 
 		case PUAE_VIDEO_NTSC_OV_HI:
 			defaultw = 720;
-			defaulth = 480 - 5; // UAE output correction
+			defaulth = 480;
 			strcat(uae_config, "gfx_lores=false\n");
 			strcat(uae_config, "gfx_linemode=double\n");
 			break;
@@ -1767,7 +1769,7 @@ static void update_variables(void)
 			break;
 		case PUAE_VIDEO_NTSC_OV_LO:
 			defaultw = 360;
-			defaulth = 240 - 3; // As above
+			defaulth = 240;
 			strcat(uae_config, "gfx_lores=true\n");
 			strcat(uae_config, "gfx_linemode=none\n");
 			break;
@@ -2213,7 +2215,7 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
 
       case PUAE_VIDEO_NTSC_OV_HI:
          retrow = 720;
-         retroh = 480 - 5; // UAE does not actually output full 480 height in real NTSC mode, and statusbar will leave trails without the correction
+         retroh = 480;
          break;
       case PUAE_VIDEO_NTSC_CR_HI:
          retrow = 640;
@@ -2221,7 +2223,7 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
          break;
       case PUAE_VIDEO_NTSC_OV_LO:
          retrow = 360;
-         retroh = 240 - 3; // As above
+         retroh = 240;
          break;
       case PUAE_VIDEO_NTSC_CR_LO:
          retrow = 320;
@@ -2270,6 +2272,7 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       retro_get_system_av_info(&new_timing);
       new_timing.timing.fps = hz;
       environ_cb(RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO, &new_timing);
+      minfirstline_default = (video_config & PUAE_VIDEO_NTSC) ? VBLANK_ENDLINE_NTSC : VBLANK_ENDLINE_PAL;
    }
 
    if (change_geometry) {
@@ -2355,24 +2358,22 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       && thisframe_first_drawn_line < 100 && thisframe_last_drawn_line > 200
       )
          minfirstline_new = (thisframe_last_drawn_line - thisframe_first_drawn_line - zoomed_height_normal) / 2 + thisframe_first_drawn_line;
+         //minfirstline_new = thisframe_first_drawn_line + ((thisframe_last_drawn_line - thisframe_first_drawn_line) - zoomed_height_normal) / 2;
       /* After restoring a savestate for the second time UAE assumes we are still at the correct minfirstline, even though we are not */
-      else if (thisframe_first_drawn_line == -1 && thisframe_last_drawn_line == -1 && minfirstline_old != -1)
+      else if (thisframe_first_drawn_line == -1 && thisframe_last_drawn_line == -1 && minfirstline_old != -1 && minfirstline_old != minfirstline)
          minfirstline_new = minfirstline_old;
       else
          minfirstline_new = minfirstline_default;
 
-      /* Small last drawn lines will crash if minfirstline goes too far */
-      if (thisframe_last_drawn_line < 200)
-         minfirstline_new = (minfirstline_new < 0) ? 0 : minfirstline_new;
-      else
-         minfirstline_new = (minfirstline_new < -20) ? -20 : minfirstline_new;
+      /* Sensible limits */
+      minfirstline_new = (minfirstline_new < 0) ? 0 : minfirstline_new;
       minfirstline_new = (minfirstline_new > 80) ? 80 : minfirstline_new;
 
       /* Change value only if altered */
       if (minfirstline_new != minfirstline)
          minfirstline = minfirstline_new;
 
-      //printf("FIRST:%d LAST:%d minfirstline:%d old:%d\n", thisframe_first_drawn_line, thisframe_last_drawn_line, minfirstline, minfirstline_old);
+      //printf("FIRSTDRAWN:%3d LASTDRAWN:%3d minfirstline:%2d old:%2d\n", thisframe_first_drawn_line, thisframe_last_drawn_line, minfirstline, minfirstline_old);
 
       /* Remember the previous value */
       minfirstline_old = minfirstline;
@@ -2493,12 +2494,22 @@ void retro_run(void)
    {
       if (thisframe_first_drawn_line != thisframe_first_drawn_line_old)
       {
-         //int thisframe_first_drawn_line_delta = thisframe_first_drawn_line - thisframe_first_drawn_line_old;
-         //printf("FIRST:%d OLD:%d DELTA:%d\n", thisframe_first_drawn_line, thisframe_first_drawn_line_old, thisframe_first_drawn_line_delta);
          thisframe_first_drawn_line_old = thisframe_first_drawn_line;
 
          if (thisframe_first_drawn_line < 100)
             request_update_av_info = true;
+      }
+      // Assume stuck offset when minfirstline & first_drawn_line match, therefore moderately forced recovery needed
+      else if (thisframe_first_drawn_line == thisframe_first_drawn_line_old && thisframe_first_drawn_line == minfirstline)
+      {
+         if (minfirstline_update_frame_timer > 0)
+         {
+            minfirstline_update_frame_timer--;
+            if (minfirstline_update_frame_timer == 0)
+               request_update_av_info = true;
+         }
+         else
+            minfirstline_update_frame_timer = 100;
       }
    }
    else
