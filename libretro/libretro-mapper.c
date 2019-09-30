@@ -48,8 +48,8 @@ char RPATH[512];
 
 int analog_left[2];
 int analog_right[2];
-extern int analog_deadzone;
-extern unsigned int analog_sensitivity;
+extern unsigned int analog_deadzone;
+extern float analog_sensitivity;
 extern unsigned int opt_dpadmouse_speed;
 int fmousex,fmousey; // emu mouse
 int slowdown=0;
@@ -1291,14 +1291,13 @@ void retro_poll_event()
                analog_left[0] = (input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X));
                analog_left[1] = (input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y));
 
-               if (analog_left[0]<=-analog_deadzone)
-                  fmousex-=(-analog_left[0])/analog_sensitivity;
-               if (analog_left[0]>= analog_deadzone)
-                  fmousex+=( analog_left[0])/analog_sensitivity;
-               if (analog_left[1]<=-analog_deadzone)
-                  fmousey-=(-analog_left[1])/analog_sensitivity;
-               if (analog_left[1]>= analog_deadzone)
-                  fmousey+=( analog_left[1])/analog_sensitivity;
+               if (abs(analog_left[0]) <= analog_deadzone * 32768 / 100)
+                  analog_left[0] = 0;
+               if (abs(analog_left[1]) <= analog_deadzone * 32768 / 100)
+                  analog_left[1] = 0;
+
+               fmousex = analog_left[0] * (analog_sensitivity * analog_sensitivity * 0.7) / (32768 / 20);
+               fmousey = analog_left[1] * (analog_sensitivity * analog_sensitivity * 0.7) / (32768 / 20);
             }
 
          // Right analog movement
@@ -1309,14 +1308,13 @@ void retro_poll_event()
                analog_right[0] = (input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X));
                analog_right[1] = (input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y));
 
-               if (analog_right[0]<=-analog_deadzone)
-                  fmousex-=(-analog_right[0])/analog_sensitivity;
-               if (analog_right[0]>= analog_deadzone)
-                  fmousex+=( analog_right[0])/analog_sensitivity;
-               if (analog_right[1]<=-analog_deadzone)
-                  fmousey-=(-analog_right[1])/analog_sensitivity;
-               if (analog_right[1]>= analog_deadzone)
-                  fmousey+=( analog_right[1])/analog_sensitivity;
+               if (abs(analog_right[0]) <= analog_deadzone * 32768 / 100)
+                  analog_right[0] = 0;
+               if (abs(analog_right[1]) <= analog_deadzone * 32768 / 100)
+                  analog_right[1] = 0;
+
+               fmousex = analog_right[0] * (analog_sensitivity * analog_sensitivity * 0.7) / (32768 / 20);
+               fmousey = analog_right[1] * (analog_sensitivity * analog_sensitivity * 0.7) / (32768 / 20);
             }
 
          // Real mouse movement
