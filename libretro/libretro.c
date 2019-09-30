@@ -44,8 +44,8 @@ unsigned int opt_keyrahkeypad = 0;
 unsigned int opt_dpadmouse_speed = 4;
 extern int PAS;
 unsigned int opt_analogmouse = 0;
-int analog_deadzone = 6144;
-unsigned int analog_sensitivity = 2048;
+unsigned int analog_deadzone = 15;
+float analog_sensitivity = 1.0;
 extern int turbo_fire_button;
 extern unsigned int turbo_pulse;
 int pix_bytes = 2;
@@ -1462,7 +1462,7 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      analog_deadzone = 328 * atoi(var.value);
+      analog_deadzone = atoi(var.value);
    }
 
    var.key = "puae_analogmouse_sensitivity";
@@ -1470,7 +1470,7 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      analog_sensitivity = 2048 / atof(var.value);
+      analog_sensitivity = atof(var.value);
    }
 
    var.key = "puae_dpadmouse_speed";
