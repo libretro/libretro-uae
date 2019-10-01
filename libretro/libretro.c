@@ -338,31 +338,21 @@ void retro_set_environment(retro_environment_t cb)
          "enabled"
       },
       {
-         "puae_cycle_exact",
-         "Cycle exact",
-         "Combined CPU + Blitter cycle exact",
-         {
-            { "false", "disabled" },
-            { "true", "enabled" },
-            { NULL, NULL },
-         },
-         "false"
-      },
-      {
-         "puae_cpu_compatible",
-         "CPU compatible",
+         "puae_cpu_compatibility",
+         "CPU compatibility",
          "",
          {
-            { "true", "enabled" },
-            { "false", "disabled" },
+            { "normal", "Normal" },
+            { "compatible", "More compatible" },
+            { "exact", "Cycle exact" },
             { NULL, NULL },
          },
-         "true"
+         "normal"
       },
       {
          "puae_cpu_throttle",
          "CPU speed",
-         "Requires Cycle exact: Off",
+         "Unavailable with Cycle exact",
          {
             { "-900.0", "-90\%" },
             { "-800.0", "-80\%" },
@@ -373,7 +363,7 @@ void retro_set_environment(retro_environment_t cb)
             { "-300.0", "-30\%" },
             { "-200.0", "-20\%" },
             { "-100.0", "-10\%" },
-            { "0.0", "disabled" },
+            { "0.0", "Normal" },
             { "500.0", "+50\%" },
             { "1000.0", "+100\%" },
             { "1500.0", "+150\%" },
@@ -559,7 +549,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_immediate_blits",
          "Immediate blits",
-         "Requires Cycle exact: Off",
+         "Unavailable with Cycle exact",
          {
             { "false", "disabled" },
             { "true", "enabled" },
@@ -1218,45 +1208,49 @@ static void update_variables(void)
       opt_statusbar_position_old = opt_statusbar_position;
    }
 
-   var.key = "puae_cycle_exact";
+   var.key = "puae_cpu_compatibility";
    var.value = NULL;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      strcat(uae_config, "cycle_exact=");
-      strcat(uae_config, var.value);
-      strcat(uae_config, "\n");
-
       if(firstpass != 1)
       {
-         if (strcmp(var.value, "false") == 0)
+         if (strcmp(var.value, "normal") == 0)
          {
+            changed_prefs.cpu_compatible=0;
             changed_prefs.cpu_cycle_exact=0;
             changed_prefs.blitter_cycle_exact=0;
          }
-         else
+         else if (strcmp(var.value, "compatible") == 0)
          {
+            changed_prefs.cpu_compatible=1;
+            changed_prefs.cpu_cycle_exact=0;
+            changed_prefs.blitter_cycle_exact=0;
+         }
+         else if (strcmp(var.value, "exact") == 0)
+         {
+            changed_prefs.cpu_compatible=1;
             changed_prefs.cpu_cycle_exact=1;
             changed_prefs.blitter_cycle_exact=1;
          }
       }
-   }
-
-   var.key = "puae_cpu_compatible";
-   var.value = NULL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-      strcat(uae_config, "cpu_compatible=");
-      strcat(uae_config, var.value);
-      strcat(uae_config, "\n");
-
-      if(firstpass != 1)
+      else
       {
-         if (strcmp(var.value, "false") == 0)
-            changed_prefs.cpu_compatible=0;
-         else
-            changed_prefs.cpu_compatible=1;
+         if (strcmp(var.value, "normal") == 0)
+         {
+            strcat(uae_config, "cpu_compatible=false\n");
+            strcat(uae_config, "cycle_exact=false\n");
+         }
+         else if (strcmp(var.value, "compatible") == 0)
+         {
+            strcat(uae_config, "cpu_compatible=true\n");
+            strcat(uae_config, "cycle_exact=false\n");
+         }
+         else if (strcmp(var.value, "exact") == 0)
+         {
+            strcat(uae_config, "cpu_compatible=true\n");
+            strcat(uae_config, "cycle_exact=true\n");
+         }
       }
    }
 
