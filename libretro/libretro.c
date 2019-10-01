@@ -336,20 +336,20 @@ void retro_set_environment(retro_environment_t cb)
          "enabled"
       },
       {
-         "puae_cpu_speed",
-         "CPU speed",
-         "Needs restart. Max requires Cycle exact: off",
+         "puae_cycle_exact",
+         "Cycle exact",
+         "Combined CPU + Blitter cycle exact",
          {
-            { "real", "Real" },
-            { "max", "Max" },
+            { "false", "disabled" },
+            { "true", "enabled" },
             { NULL, NULL },
          },
-         "real"
+         "false"
       },
       {
          "puae_cpu_compatible",
          "CPU compatible",
-         "Needs restart",
+         "",
          {
             { "true", "enabled" },
             { "false", "disabled" },
@@ -358,15 +358,43 @@ void retro_set_environment(retro_environment_t cb)
          "true"
       },
       {
-         "puae_cycle_exact",
-         "Cycle exact",
-         "Combined CPU + Blitter cycle exact. Needs restart",
+         "puae_cpu_throttle",
+         "CPU throttle",
+         "Requires Cycle exact: Off",
          {
-            { "false", "disabled" },
-            { "true", "enabled" },
+            { "-900.0", "-90\%" },
+            { "-800.0", "-80\%" },
+            { "-700.0", "-70\%" },
+            { "-600.0", "-60\%" },
+            { "-500.0", "-50\%" },
+            { "-400.0", "-40\%" },
+            { "-300.0", "-30\%" },
+            { "-200.0", "-20\%" },
+            { "-100.0", "-10\%" },
+            { "0.0", "disabled" },
+            { "100.0", "+10\%" },
+            { "200.0", "+20\%" },
+            { "300.0", "+30\%" },
+            { "400.0", "+40\%" },
+            { "500.0", "+50\%" },
+            { "600.0", "+60\%" },
+            { "700.0", "+70\%" },
+            { "800.0", "+80\%" },
+            { "900.0", "+90\%" },
+            { "1000.0", "+100\%" },
+            { "1100.0", "+110\%" },
+            { "1200.0", "+120\%" },
+            { "1300.0", "+130\%" },
+            { "1400.0", "+140\%" },
+            { "1500.0", "+150\%" },
+            { "1600.0", "+160\%" },
+            { "1700.0", "+170\%" },
+            { "1800.0", "+180\%" },
+            { "1900.0", "+190\%" },
+            { "2000.0", "+200\%" },
             { NULL, NULL },
          },
-         "false"
+         "0.0"
       },
       {
          "puae_sound_output",
@@ -485,7 +513,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_gfx_colors",
          "Color depth",
-         "24bit is slower and not available on all platforms. Need restart",
+         "24bit is slower and not available on all platforms. Needs restart",
          {
             { "16bit", "Thousands (16bit)" },
             { "24bit", "Millions (24bit)" },
@@ -496,7 +524,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_collision_level",
          "Collision level",
-         "Playfields is recommended default",
+         "Sprites and Playfields is recommended",
          {
             { "playfields", "Sprites and Playfields" },
             { "sprites", "Sprites only" },
@@ -509,7 +537,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_immediate_blits",
          "Immediate blits",
-         "",
+         "Requires Cycle exact: Off",
          {
             { "false", "disabled" },
             { "true", "enabled" },
@@ -1156,14 +1184,28 @@ static void update_variables(void)
       opt_statusbar_position_old = opt_statusbar_position;
    }
 
-   var.key = "puae_cpu_speed";
+   var.key = "puae_cycle_exact";
    var.value = NULL;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      strcat(uae_config, "cpu_speed=");
+      strcat(uae_config, "cycle_exact=");
       strcat(uae_config, var.value);
       strcat(uae_config, "\n");
+
+      if(firstpass != 1)
+      {
+         if (strcmp(var.value, "false") == 0)
+         {
+            changed_prefs.cpu_cycle_exact=0;
+            changed_prefs.blitter_cycle_exact=0;
+         }
+         else
+         {
+            changed_prefs.cpu_cycle_exact=1;
+            changed_prefs.blitter_cycle_exact=1;
+         }
+      }
    }
 
    var.key = "puae_cpu_compatible";
@@ -1174,16 +1216,27 @@ static void update_variables(void)
       strcat(uae_config, "cpu_compatible=");
       strcat(uae_config, var.value);
       strcat(uae_config, "\n");
+
+      if(firstpass != 1)
+      {
+         if (strcmp(var.value, "false") == 0)
+            changed_prefs.cpu_compatible=0;
+         else
+            changed_prefs.cpu_compatible=1;
+      }
    }
 
-   var.key = "puae_cycle_exact";
+   var.key = "puae_cpu_throttle";
    var.value = NULL;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      strcat(uae_config, "cycle_exact=");
+      strcat(uae_config, "cpu_throttle=");
       strcat(uae_config, var.value);
       strcat(uae_config, "\n");
+
+      if(firstpass != 1)
+         changed_prefs.m68k_speed_throttle=atof(var.value);
    }
 
    var.key = "puae_sound_output";
@@ -1293,14 +1346,29 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      strcat(uae_config, "immediate_blits=");
-      strcat(uae_config, var.value);
-      strcat(uae_config, "\n");
+      if (strcmp(var.value, "false") == 0)
+      {
+         strcat(uae_config, "immediate_blits=false\n");
+         strcat(uae_config, "waiting_blits=automatic\n");
+      }
+      else
+      {
+         strcat(uae_config, "immediate_blits=true\n");
+         strcat(uae_config, "waiting_blits=disabled\n");
+      }
 
       if(firstpass != 1)
       {
-         if (strcmp(var.value, "false") == 0) changed_prefs.immediate_blits=0;
-         else if (strcmp(var.value, "true") == 0) changed_prefs.immediate_blits=1;
+         if (strcmp(var.value, "false") == 0)
+         {
+            changed_prefs.immediate_blits=0;
+            changed_prefs.waiting_blits=1;
+         }
+         else
+         {
+            changed_prefs.immediate_blits=1;
+            changed_prefs.waiting_blits=0;
+         }
       }
    }
 
@@ -1788,6 +1856,7 @@ static void update_variables(void)
    config_changed = 1;
    check_prefs_changed_audio();
    check_prefs_changed_custom();
+   check_prefs_changed_cpu();
    config_changed = 0;
 }
 
