@@ -40,6 +40,7 @@ bool opt_enhanced_statusbar = true;
 int opt_statusbar_position = 0;
 int opt_statusbar_position_old = 0;
 int opt_statusbar_position_offset = 0;
+int opt_statusbar_position_offset_lores = 0;
 unsigned int opt_keyrahkeypad = 0;
 unsigned int opt_dpadmouse_speed = 4;
 extern int PAS;
@@ -1159,13 +1160,25 @@ static void update_variables(void)
       else if(strcmp(var.value, "bottom6") == 0) opt_statusbar_position = 60;
 
       /* Exceptions for lo-res and enhanced statusbar */
-      if(video_config & 0x04) // PUAE_VIDEO_HIRES
+      if(video_config & PUAE_VIDEO_HIRES)
          ;
       else
          if(opt_enhanced_statusbar)
-            opt_statusbar_position = (opt_statusbar_position < 0) ? ((opt_statusbar_position==-1) ? -10 : opt_statusbar_position-10) : opt_statusbar_position+10;
+         {
+            opt_statusbar_position_offset_lores = 10;
+            if (opt_statusbar_position < 0) // Top
+               opt_statusbar_position = (opt_statusbar_position==-1) ? -opt_statusbar_position_offset_lores : opt_statusbar_position-opt_statusbar_position_offset_lores;
+            else // Bottom
+               opt_statusbar_position = opt_statusbar_position + opt_statusbar_position_offset_lores;
+         }
          else
-            opt_statusbar_position = (opt_statusbar_position < 0) ? ((opt_statusbar_position==-1) ? -1 : opt_statusbar_position-2) : opt_statusbar_position;
+         {
+            opt_statusbar_position_offset_lores = 0;
+            if (opt_statusbar_position < 0) // Top
+               opt_statusbar_position = (opt_statusbar_position==-1) ? -1 : opt_statusbar_position-2;
+            else // Bottom
+               opt_statusbar_position = opt_statusbar_position;
+         }
 
       /* Screen refresh required */
       if(opt_statusbar_position_old != opt_statusbar_position)
@@ -2290,14 +2303,14 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
          break;
    }
 
-   /* Special cropped height for Dyna Blaster (uncropped will leave some statusbar trails, but who cares since they will be cleaned up by itself */
+   /* Special cropped height for Dyna Blaster */
    if (fake_ntsc && video_config & PUAE_VIDEO_CROP)
    {
       retroh = ((video_config & PUAE_VIDEO_HIRES) ? 460 : 230);
    }
 
    /* When the actual dimensions change and not just the view */
-   if (change_timing || fake_ntsc)
+   if (change_timing)
    {
       defaultw = retrow;
       defaulth = retroh;
@@ -2307,11 +2320,10 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
    new_av_info.geometry.base_width = retrow;
    new_av_info.geometry.base_height = retroh;
 
-   if (video_config_geometry & PUAE_VIDEO_NTSC || video_config_aspect == PUAE_VIDEO_NTSC) {
+   if (video_config_geometry & PUAE_VIDEO_NTSC)
       new_av_info.geometry.aspect_ratio=(float)retrow/(float)retroh * 44.0/52.0;
-   } else {
+   else
       new_av_info.geometry.aspect_ratio=(float)retrow/(float)retroh;
-   }
 
    /* Disable Hz change if not allowed */
    if (!video_config_allow_hz_change)
@@ -2342,11 +2354,18 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       opt_statusbar_position = opt_statusbar_position_old;
       if (!change_timing)
          if (retroh < defaulth)
-            if (opt_statusbar_position >= 0 && (defaulth - retroh) > opt_statusbar_position)
-               opt_statusbar_position = defaulth - retroh;
+            if (opt_statusbar_position >= 0 && (defaulth - retroh + opt_statusbar_position_offset_lores) > opt_statusbar_position)
+               opt_statusbar_position = defaulth - retroh + opt_statusbar_position_offset_lores;
 
       /* Aspect offset for zoom mode */
       opt_statusbar_position_offset = opt_statusbar_position_old - opt_statusbar_position;
+
+      /* Lores exception offset bonus */
+      if (video_config & PUAE_VIDEO_HIRES)
+         ;
+      else
+         opt_statusbar_position_offset = opt_statusbar_position_offset - opt_statusbar_position_offset_lores;
+
       //printf("statusbar:%d old:%d offset:%d, retroh:%d defaulth:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, retroh, defaulth);
    }
 
@@ -2356,15 +2375,15 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
    {
       case 1:
          if (video_config & PUAE_VIDEO_HIRES)
-            zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 460 : 512;
+            zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 470 : 512;
          else
-            zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 230 : 256;
+            zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 235 : 256;
          break;
       case 2:
          if (video_config & PUAE_VIDEO_HIRES)
-            zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 420 : 480;
+            zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 460 : 480;
          else
-            zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 210 : 240;
+            zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 230 : 240;
          break;
       case 3:
          if (video_config & PUAE_VIDEO_HIRES)
@@ -2394,16 +2413,17 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
    if (zoomed_height != retroh)
    {
       new_av_info.geometry.base_height = zoomed_height;
-      if (video_config_geometry & PUAE_VIDEO_NTSC || video_config_aspect == PUAE_VIDEO_NTSC) {
+      if (video_config_geometry & PUAE_VIDEO_NTSC)
          new_av_info.geometry.aspect_ratio=(float)retrow/(float)zoomed_height * 44.0/52.0;
-      } else {
+      else
          new_av_info.geometry.aspect_ratio=(float)retrow/(float)zoomed_height;
-      }
       environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
 
       /* Ensure statusbar stays visible at the bottom */
       if (opt_statusbar_position >= 0 && (retroh - zoomed_height - opt_statusbar_position_offset) > opt_statusbar_position)
          opt_statusbar_position = retroh - zoomed_height - opt_statusbar_position_offset;
+
+      //printf("ztatusbar:%d old:%d offset:%d, retroh:%d defaulth:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, retroh, defaulth);
    }
 
    /* If zoom mode should be centered automagically */
