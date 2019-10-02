@@ -1105,7 +1105,7 @@ void update_input(int disable_physical_cursor_keys)
 
       virtual_kbd(bmp,vkx,vky);
 
-      /* Position toggle */
+      /* Position toggle, RetroPad X */
       i=RETRO_DEVICE_ID_JOYPAD_X;
       if(input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && vkflag[6]==0)
       {
@@ -1118,7 +1118,7 @@ void update_input(int disable_physical_cursor_keys)
          vkflag[6]=0;
       }
 
-      /* Transparency toggle */
+      /* Transparency toggle, RetroPad A */
       i=RETRO_DEVICE_ID_JOYPAD_A;
       if(input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && vkflag[5]==0)
       {
@@ -1131,9 +1131,9 @@ void update_input(int disable_physical_cursor_keys)
          vkflag[5]=0;
       }
 
-      /* Key press */
+      /* Key press, RetroPad B or Keyboard Enter */
       i=RETRO_DEVICE_ID_JOYPAD_B;
-      if(input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && vkflag[4]==0)
+      if((input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_RETURN)) && vkflag[4]==0)
       {
          vkflag[4]=1;
          i=check_vkey2(vkx,vky);
@@ -1166,7 +1166,7 @@ void update_input(int disable_physical_cursor_keys)
             }
          }
       }
-      else if(!input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && vkflag[4]==1)
+      else if((!input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && !input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_RETURN)) && vkflag[4]==1)
       {
          vkflag[4]=0;
       }

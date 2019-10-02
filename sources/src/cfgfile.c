@@ -4669,7 +4669,11 @@ void default_prefs (struct uae_prefs *p, int type)
 	 * to behave identically on all platforms if possible.
 	 * (TW says: maybe it is time to update default config..) */
 	p->illegal_mem = 0;
+#ifdef __LIBRETRO__
+	p->use_serial = 1;
+#else
 	p->use_serial = 0;
+#endif
 	p->serial_demand = 0;
 	p->serial_hwctsrts = 1;
 	p->serial_stopbits = 0;
