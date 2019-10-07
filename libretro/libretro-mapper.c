@@ -40,7 +40,14 @@ void gettimeofday (struct timeval *tv, void *blah)
 unsigned short int bmp[1024*1024];
 unsigned short int savebmp[1024*1024];
 
-int NPAGE=-1,PAS=4;
+// Mouse speed flags
+#define MOUSE_SPEED_SLOWER 1
+#define MOUSE_SPEED_FASTER 2
+// Mouse speed multipliers
+#define MOUSE_SPEED_SLOW 5
+#define MOUSE_SPEED_FAST 2
+
+int NPAGE=-1;
 int SHIFTON=-1,ALTON=-1;
 int MOUSEMODE=-1,SHOWKEY=-1,SHOWKEYPOS=-1,SHOWKEYTRANS=-1,STATUSON=-1,LEDON=-1;
 
@@ -48,9 +55,11 @@ char RPATH[512];
 
 int analog_left[2];
 int analog_right[2];
-extern unsigned int analog_deadzone;
-extern float analog_sensitivity;
+extern unsigned int opt_analogmouse_deadzone;
+extern float opt_analogmouse_speed;
 extern unsigned int opt_dpadmouse_speed;
+int analogmouse_speed=0;
+int dpadmouse_speed=4;
 int fmousex,fmousey; // emu mouse
 int slowdown=0;
 extern int pix_bytes;
@@ -89,8 +98,10 @@ enum EMU_FUNCTIONS {
    EMU_VKBD = 0,
    EMU_STATUSBAR,
    EMU_MOUSE_TOGGLE,
-   EMU_MOUSE_SPEED_DOWN,
-   EMU_MOUSE_SPEED_UP,
+   EMU_MOUSE_SPEED_SLOWER_DOWN,
+   EMU_MOUSE_SPEED_SLOWER_UP,
+   EMU_MOUSE_SPEED_FASTER_DOWN,
+   EMU_MOUSE_SPEED_FASTER_UP,
    EMU_RESET,
    EMU_ASPECT_RATIO_TOGGLE,
    EMU_ZOOM_MODE_TOGGLE,
@@ -109,56 +120,54 @@ void emu_function(int function) {
    switch (function)
    {
       case EMU_VKBD:
-         SHOWKEY=-SHOWKEY;
+         SHOWKEY = -SHOWKEY;
          Screen_SetFullUpdate();
          break;
       case EMU_STATUSBAR:
-         STATUSON=-STATUSON;
-         LEDON=-LEDON;
+         STATUSON = -STATUSON;
+         LEDON = -LEDON;
          Screen_SetFullUpdate();
          break;
       case EMU_MOUSE_TOGGLE:
-         MOUSEMODE=-MOUSEMODE;
+         MOUSEMODE = -MOUSEMODE;
          break;
-      case EMU_MOUSE_SPEED_DOWN:
-         switch(PAS)
-         {
-            case 4:
-               PAS=8;
-               break;
-            case 6:
-               PAS=10;
-               break;
-            case 8:
-               PAS=4;
-               break;
-            case 10:
-               PAS=6;
-               break;
-         }
+      case EMU_MOUSE_SPEED_SLOWER_DOWN:
+         dpadmouse_speed = dpadmouse_speed - 4;
+         if (dpadmouse_speed<4) dpadmouse_speed = 2;
+         analogmouse_speed |= MOUSE_SPEED_SLOWER;
          break;
-      case EMU_MOUSE_SPEED_UP:
-         PAS=opt_dpadmouse_speed;
+      case EMU_MOUSE_SPEED_SLOWER_UP:
+         dpadmouse_speed = opt_dpadmouse_speed;
+         analogmouse_speed &= ~MOUSE_SPEED_SLOWER;
+         break;
+      case EMU_MOUSE_SPEED_FASTER_DOWN:
+         dpadmouse_speed = dpadmouse_speed + 4;
+         if (dpadmouse_speed>10) dpadmouse_speed = 12;
+         analogmouse_speed |= MOUSE_SPEED_FASTER;
+         break;
+      case EMU_MOUSE_SPEED_FASTER_UP:
+         dpadmouse_speed = opt_dpadmouse_speed;
+         analogmouse_speed &= ~MOUSE_SPEED_FASTER;
          break;
       case EMU_RESET:
          uae_reset(0, 1); /* hardreset, keyboardreset */
-         fake_ntsc=false;
+         fake_ntsc = false;
          break;
       case EMU_ASPECT_RATIO_TOGGLE:
-         if(real_ntsc)
+         if (real_ntsc)
             break;
-         if(video_config_aspect==0)
-            video_config_aspect=(video_config & 0x02) ? 1 : 2;
-         else if(video_config_aspect==1)
-            video_config_aspect=2;
-         else if(video_config_aspect==2)
-            video_config_aspect=1;
-         request_update_av_info=true;
+         if (video_config_aspect==0)
+            video_config_aspect = (video_config & 0x02) ? 1 : 2;
+         else if (video_config_aspect==1)
+            video_config_aspect = 2;
+         else if (video_config_aspect==2)
+            video_config_aspect = 1;
+         request_update_av_info = true;
          break;
       case EMU_ZOOM_MODE_TOGGLE:
          zoom_mode_id++;
-         if(zoom_mode_id>5)zoom_mode_id=0;
-         request_update_av_info=true;
+         if (zoom_mode_id>5) zoom_mode_id = 0;
+         request_update_av_info = true;
          break;
    }
 }
@@ -304,20 +313,22 @@ void Print_Status(void)
    }
 
    // Emulated mouse speed
-   char PASSTR[2] = { 0 };
-   switch (PAS)
+   char MSPD_STR[2] = { 0 };
+   switch (dpadmouse_speed)
    {
+      case 2:
       case 4:
-         PASSTR[0]='S';
+         MSPD_STR[0]='S';
          break;
       case 6:
-         PASSTR[0]='M';
+         MSPD_STR[0]='M';
          break;
       case 8:
-         PASSTR[0]='F';
+         MSPD_STR[0]='F';
          break;
       case 10:
-         PASSTR[0]='V';
+      case 12:
+         MSPD_STR[0]='V';
          break;
    }
 
@@ -358,7 +369,7 @@ void Print_Status(void)
       if (MOUSEMODE==-1)
          Draw_text32((uint32_t *)bmp,STAT_DECX+160,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Joystick");
       else
-         Draw_text32((uint32_t *)bmp,STAT_DECX+160,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Mouse:%s ", PASSTR);
+         Draw_text32((uint32_t *)bmp,STAT_DECX+160,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Mouse:%s ", MSPD_STR);
       Draw_text32((uint32_t *)bmp,STAT_DECX+240,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Zoom:%s", ZOOM_MODE);
    }
    else
@@ -372,7 +383,7 @@ void Print_Status(void)
       if (MOUSEMODE==-1)
          Draw_text(bmp,STAT_DECX+160,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Joystick");
       else
-         Draw_text(bmp,STAT_DECX+160,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Mouse:%s ", PASSTR);
+         Draw_text(bmp,STAT_DECX+160,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Mouse:%s ", MSPD_STR);
       Draw_text(bmp,STAT_DECX+240,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Zoom:%s", ZOOM_MODE);
    }
 }
@@ -834,15 +845,12 @@ void update_input(int disable_physical_cursor_keys)
                emu_function(EMU_MOUSE_TOGGLE);
                break;
             case 27:
-               emu_function(EMU_MOUSE_SPEED_DOWN);
-               break;
-            case 28:
                emu_function(EMU_RESET);
                break;
-            case 29:
+            case 28:
                emu_function(EMU_ASPECT_RATIO_TOGGLE);
                break;
-            case 30:
+            case 29:
                emu_function(EMU_ZOOM_MODE_TOGGLE);
                break;
          }
@@ -852,12 +860,6 @@ void update_input(int disable_physical_cursor_keys)
       {
          //printf("KEYUP: %d\n", mk);
          kbt[i]=0;
-         switch (mk)
-         {
-            case 27:
-               emu_function(EMU_MOUSE_SPEED_UP);
-               break;
-         }
       }
    }
 
@@ -959,13 +961,11 @@ void update_input(int disable_physical_cursor_keys)
                   emu_function(EMU_STATUSBAR);
                else if (mapper_keys[i] == mapper_keys[26]) /* Toggle mouse control */
                   emu_function(EMU_MOUSE_TOGGLE);
-               else if (mapper_keys[i] == mapper_keys[27]) /* Alter mouse speed */
-                  emu_function(EMU_MOUSE_SPEED_DOWN);
-               else if (mapper_keys[i] == mapper_keys[28]) /* Reset */
+               else if (mapper_keys[i] == mapper_keys[27]) /* Reset */
                   emu_function(EMU_RESET);
-               else if (mapper_keys[i] == mapper_keys[29]) /* Toggle aspect ratio */
+               else if (mapper_keys[i] == mapper_keys[28]) /* Toggle aspect ratio */
                   emu_function(EMU_ASPECT_RATIO_TOGGLE);
-               else if (mapper_keys[i] == mapper_keys[30]) /* Toggle zoom mode */
+               else if (mapper_keys[i] == mapper_keys[29]) /* Toggle zoom mode */
                   emu_function(EMU_ZOOM_MODE_TOGGLE);
                else if (mapper_keys[i] == -2) /* Mouse left */
                {
@@ -979,6 +979,10 @@ void update_input(int disable_physical_cursor_keys)
                }
                else if (mapper_keys[i] == -4) /* Mouse middle */
                   setmousebuttonstate (0, 2, 1);
+               else if (mapper_keys[i] == -5) /* Mouse speed slower */
+                  emu_function(EMU_MOUSE_SPEED_SLOWER_DOWN);
+               else if (mapper_keys[i] == -6) /* Mouse speed faster */
+                  emu_function(EMU_MOUSE_SPEED_FASTER_DOWN);
                else
                   retro_key_down(keyboard_translation[mapper_keys[i]]);
             }
@@ -995,12 +999,10 @@ void update_input(int disable_physical_cursor_keys)
                else if (mapper_keys[i] == mapper_keys[26])
                   ; /* nop */
                else if (mapper_keys[i] == mapper_keys[27])
-                  emu_function(EMU_MOUSE_SPEED_UP);
+                  ; /* nop */
                else if (mapper_keys[i] == mapper_keys[28])
                   ; /* nop */
                else if (mapper_keys[i] == mapper_keys[29])
-                  ; /* nop */
-               else if (mapper_keys[i] == mapper_keys[30])
                   ; /* nop */
                else if (mapper_keys[i] == -2)
                {
@@ -1014,6 +1016,10 @@ void update_input(int disable_physical_cursor_keys)
                }
                else if (mapper_keys[i] == -4)
                   setmousebuttonstate (0, 2, 0);
+               else if (mapper_keys[i] == -5)
+                  emu_function(EMU_MOUSE_SPEED_SLOWER_UP);
+               else if (mapper_keys[i] == -6)
+                  emu_function(EMU_MOUSE_SPEED_FASTER_UP);
                else
                   retro_key_up(keyboard_translation[mapper_keys[i]]);
             }
@@ -1192,6 +1198,7 @@ void retro_poll_event()
    {
       static int mbL=0,mbR=0;
       static int mouse_l=0,mouse_r=0;
+      static float mouse_multiplier=1;
       static int16_t mouse_x=0,mouse_y=0;
       static int i=0;
 
@@ -1266,14 +1273,21 @@ void retro_poll_event()
          if (MOUSEMODE==1 && uae_devices[0] == RETRO_DEVICE_JOYPAD)
          {
             if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT))
-               fmousex += PAS;
+               fmousex += dpadmouse_speed;
             if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT))
-               fmousex -= PAS;
+               fmousex -= dpadmouse_speed;
             if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN))
-               fmousey += PAS;
+               fmousey += dpadmouse_speed;
             if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP))
-               fmousey -= PAS;
+               fmousey -= dpadmouse_speed;
          }
+
+         // Analog stick speed modifiers
+         mouse_multiplier = 1;
+         if (analogmouse_speed & MOUSE_SPEED_FASTER)
+            mouse_multiplier = mouse_multiplier * MOUSE_SPEED_FAST;
+         if (analogmouse_speed & MOUSE_SPEED_SLOWER)
+            mouse_multiplier = mouse_multiplier / MOUSE_SPEED_SLOW;
 
          // Left analog movement
          if (opt_analogmouse == 1 || opt_analogmouse == 3) 
@@ -1283,13 +1297,24 @@ void retro_poll_event()
                analog_left[0] = (input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X));
                analog_left[1] = (input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y));
 
-               if (abs(analog_left[0]) <= analog_deadzone * 32768 / 100)
+               if (abs(analog_left[0]) <= opt_analogmouse_deadzone * 32768 / 100)
                   analog_left[0] = 0;
-               if (abs(analog_left[1]) <= analog_deadzone * 32768 / 100)
+               if (abs(analog_left[1]) <= opt_analogmouse_deadzone * 32768 / 100)
                   analog_left[1] = 0;
 
-               fmousex = analog_left[0] * (analog_sensitivity * analog_sensitivity * 0.7) / (32768 / 20);
-               fmousey = analog_left[1] * (analog_sensitivity * analog_sensitivity * 0.7) / (32768 / 20);
+               if (abs(analog_left[0]) > 0)
+               {
+                  fmousex = analog_left[0] * 10 * (opt_analogmouse_speed * opt_analogmouse_speed * 0.7) / (32768 / mouse_multiplier);
+                  if (fmousex == 0)
+                     fmousex = (analog_left[0] > 0) ? 1 : -1;
+               }
+
+               if (abs(analog_left[1]) > 0)
+               {
+                  fmousey = analog_left[1] * 10 * (opt_analogmouse_speed * opt_analogmouse_speed * 0.7) / (32768 / mouse_multiplier);
+                  if (fmousey == 0)
+                     fmousey = (analog_left[1] > 0) ? 1 : -1;
+               }
             }
 
          // Right analog movement
@@ -1300,13 +1325,24 @@ void retro_poll_event()
                analog_right[0] = (input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X));
                analog_right[1] = (input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y));
 
-               if (abs(analog_right[0]) <= analog_deadzone * 32768 / 100)
+               if (abs(analog_right[0]) <= opt_analogmouse_deadzone * 32768 / 100)
                   analog_right[0] = 0;
-               if (abs(analog_right[1]) <= analog_deadzone * 32768 / 100)
+               if (abs(analog_right[1]) <= opt_analogmouse_deadzone * 32768 / 100)
                   analog_right[1] = 0;
 
-               fmousex = analog_right[0] * (analog_sensitivity * analog_sensitivity * 0.7) / (32768 / 20);
-               fmousey = analog_right[1] * (analog_sensitivity * analog_sensitivity * 0.7) / (32768 / 20);
+               if (abs(analog_right[0]) > 0)
+               {
+                  fmousex = analog_right[0] * 10 * (opt_analogmouse_speed * opt_analogmouse_speed * 0.7) / (32768 / mouse_multiplier);
+                  if (fmousex == 0)
+                     fmousex = (analog_right[0] > 0) ? 1 : -1;
+               }
+
+               if (abs(analog_right[1]) > 0)
+               {
+                  fmousey = analog_right[1] * 10 * (opt_analogmouse_speed * opt_analogmouse_speed * 0.7) / (32768 / mouse_multiplier);
+                  if (fmousey == 0)
+                     fmousey = (analog_right[1] > 0) ? 1 : -1;
+               }
             }
 
          // Real mouse movement

@@ -44,10 +44,10 @@ int opt_statusbar_position_offset = 0;
 int opt_statusbar_position_offset_lores = 0;
 unsigned int opt_keyrahkeypad = 0;
 unsigned int opt_dpadmouse_speed = 4;
-extern int PAS;
+extern int dpadmouse_speed;
 unsigned int opt_analogmouse = 0;
-unsigned int analog_deadzone = 15;
-float analog_sensitivity = 1.0;
+unsigned int opt_analogmouse_deadzone = 15;
+float opt_analogmouse_speed = 1.0;
 extern int turbo_fire_button;
 extern unsigned int turbo_pulse;
 int pix_bytes = 2;
@@ -684,8 +684,8 @@ void retro_set_environment(retro_environment_t cb)
          "15"
       },
       {
-         "puae_analogmouse_sensitivity",
-         "Analog mouse sensitivity",
+         "puae_analogmouse_speed",
+         "Analog mouse speed",
          "",
          {
             { "1.0", "100\%" },
@@ -748,13 +748,6 @@ void retro_set_environment(retro_environment_t cb)
          "Pressing a button mapped to this key toggles between joystick and mouse",
          {{ NULL, NULL }},
          "RETROK_RCTRL"
-      },
-      {
-         "puae_mapper_mouse_speed",
-         "Hotkey: D-Pad mouse speed modifier",
-         "Pressing a button mapped to this key alters the mouse speed temporarily",
-         {{ NULL, NULL }},
-         "---"
       },
       {
          "puae_mapper_reset",
@@ -960,7 +953,6 @@ void retro_set_environment(retro_environment_t cb)
          if(strstr(core_options[i].key, "puae_mapper_vkbd")
          || strstr(core_options[i].key, "puae_mapper_statusbar")
          || strstr(core_options[i].key, "puae_mapper_mouse_toggle")
-         || strstr(core_options[i].key, "puae_mapper_mouse_speed")
          || strstr(core_options[i].key, "puae_mapper_reset")
          || strstr(core_options[i].key, "puae_mapper_aspect_ratio_toggle")
          || strstr(core_options[i].key, "puae_mapper_zoom_mode_toggle")
@@ -1575,15 +1567,15 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      analog_deadzone = atoi(var.value);
+      opt_analogmouse_deadzone = atoi(var.value);
    }
 
-   var.key = "puae_analogmouse_sensitivity";
+   var.key = "puae_analogmouse_speed";
    var.value = NULL;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      analog_sensitivity = atof(var.value);
+      opt_analogmouse_speed = atof(var.value);
    }
 
    var.key = "puae_dpadmouse_speed";
@@ -1592,7 +1584,7 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       opt_dpadmouse_speed = atoi(var.value);
-      PAS = opt_dpadmouse_speed;
+      dpadmouse_speed = opt_dpadmouse_speed;
    }
 
    var.key = "puae_keyrah_keypad_mappings";
@@ -1790,32 +1782,25 @@ static void update_variables(void)
       mapper_keys[26] = keyId(var.value);
    }
 
-   var.key = "puae_mapper_mouse_speed";
+   var.key = "puae_mapper_reset";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       mapper_keys[27] = keyId(var.value);
    }
 
-   var.key = "puae_mapper_reset";
+   var.key = "puae_mapper_aspect_ratio_toggle";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       mapper_keys[28] = keyId(var.value);
    }
 
-   var.key = "puae_mapper_aspect_ratio_toggle";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-      mapper_keys[29] = keyId(var.value);
-   }
-
    var.key = "puae_mapper_zoom_mode_toggle";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[30] = keyId(var.value);
+      mapper_keys[29] = keyId(var.value);
    }
 
 
