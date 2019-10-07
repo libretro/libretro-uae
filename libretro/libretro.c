@@ -2570,31 +2570,6 @@ void retro_run(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
       update_variables();
 
-   // Fastforwarding mimicks currprefs.turbo_emulation and enables sound_auto
-   bool fast_forward = false;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_FASTFORWARDING, &fast_forward) && fast_forward)
-   {
-      fast_forward_is_on = true;
-      if (currprefs.sound_auto == 0)
-      {
-         changed_prefs.sound_auto = 1;
-         config_changed = 1;
-         check_prefs_changed_audio();
-         config_changed = 0;
-      }
-   }
-   else
-   {
-      fast_forward_is_on = false;
-      if (currprefs.sound_auto == 1)
-      {
-         changed_prefs.sound_auto = 0;
-         config_changed = 1;
-         check_prefs_changed_audio();
-         config_changed = 0;
-      }
-   }
-
    // Automatic vertical offset
    if (opt_vertical_offset_auto && zoom_mode_id != 0)
    {
