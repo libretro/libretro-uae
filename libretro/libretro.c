@@ -44,7 +44,6 @@ int opt_statusbar_position_offset = 0;
 int opt_statusbar_position_offset_lores = 0;
 unsigned int opt_keyrahkeypad = 0;
 unsigned int opt_dpadmouse_speed = 4;
-extern int dpadmouse_speed;
 unsigned int opt_analogmouse = 0;
 unsigned int opt_analogmouse_deadzone = 15;
 float opt_analogmouse_speed = 1.0;
@@ -655,7 +654,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_analogmouse",
-         "Analog mouse",
+         "Analog stick mouse",
          "",
          {
             { "disabled", NULL },
@@ -668,7 +667,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_analogmouse_deadzone",
-         "Analog mouse deadzone",
+         "Analog stick mouse deadzone",
          "",
          {
             { "15", "15\%" },
@@ -685,7 +684,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_analogmouse_speed",
-         "Analog mouse speed",
+         "Analog stick mouse speed",
          "",
          {
             { "1.0", "100\%" },
@@ -715,6 +714,35 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "6"
+      },
+      {
+         "puae_mouse_speed",
+         "Mouse speed",
+         "Affects mouse speed globally",
+         {
+            { "100", "100\%" },
+            { "110", "110\%" },
+            { "120", "120\%" },
+            { "130", "130\%" },
+            { "140", "140\%" },
+            { "150", "150\%" },
+            { "160", "160\%" },
+            { "170", "170\%" },
+            { "180", "180\%" },
+            { "190", "190\%" },
+            { "200", "200\%" },
+            { "10", "10\%" },
+            { "20", "20\%" },
+            { "30", "30\%" },
+            { "40", "40\%" },
+            { "50", "50\%" },
+            { "60", "60\%" },
+            { "70", "70\%" },
+            { "80", "80\%" },
+            { "90", "90\%" },
+            { NULL, NULL },
+         },
+         "100"
       },
       {
          "puae_keyrah_keypad_mappings",
@@ -1378,6 +1406,23 @@ static void update_variables(void)
          changed_prefs.dfxclickvolume=atoi(var.value);
    }
 
+   var.key = "puae_mouse_speed";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      strcat(uae_config, "input.mouse_speed=");
+      strcat(uae_config, var.value);
+      strcat(uae_config, "\n");
+
+      if(firstpass != 1)
+      {
+         int val;
+         val = atoi(var.value);
+         changed_prefs.input_mouse_speed=val;
+      }
+   }
+
    var.key = "puae_immediate_blits";
    var.value = NULL;
 
@@ -1584,7 +1629,6 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       opt_dpadmouse_speed = atoi(var.value);
-      dpadmouse_speed = opt_dpadmouse_speed;
    }
 
    var.key = "puae_keyrah_keypad_mappings";
