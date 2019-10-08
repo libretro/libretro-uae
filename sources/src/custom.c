@@ -2988,11 +2988,6 @@ void compute_vsynctime (void)
 	if (currprefs.turbo_emulation)
 		vsynctimebase = vsynctimebase_orig = 1;
 	else
-#ifdef __LIBRETRO__
-		if (fast_forward_is_on)
-			vsynctimebase = vsynctimebase_orig = 1;
-		else
-#endif
 		vsynctimebase = vsynctimebase_orig = (int)(syncbase / fake_vblank_hz);
 
 #if 0
