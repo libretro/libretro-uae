@@ -226,7 +226,11 @@ static int joydir[MAX_JPORTS];
 static int joydirpot[MAX_JPORTS][2];
 static uae_s16 mouse_frame_x[MAX_JPORTS], mouse_frame_y[MAX_JPORTS];
 
+#ifdef __LIBRETRO__
+int mouse_port[NORMAL_JPORTS];
+#else
 static int mouse_port[NORMAL_JPORTS];
+#endif
 static int cd32_shifter[NORMAL_JPORTS];
 #ifdef __LIBRETRO__
 int cd32_pad_enabled[NORMAL_JPORTS];
