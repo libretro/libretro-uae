@@ -1176,8 +1176,8 @@ void retro_poll_event()
       static float mouse_multiplier=1;
       static int dpadmouse_speed;
       static int uae_mouse_x[2],uae_mouse_y[2];
-      static int uae_mouse_l[2]={0},uae_mouse_r[2]={0};
-      static int mouse_lmb[2]={0},mouse_rmb[2]={0};
+      static int uae_mouse_l[2]={0},uae_mouse_r[2]={0},uae_mouse_m[2]={0};
+      static int mouse_lmb[2]={0},mouse_rmb[2]={0},mouse_mmb[2]={0};
       static int16_t mouse_x[2]={0},mouse_y[2]={0};
       static int i=0,j=0;
 
@@ -1229,8 +1229,8 @@ void retro_poll_event()
       }
    
       // Mouse control
-      uae_mouse_l[0]=uae_mouse_r[0]=0;
-      uae_mouse_l[1]=uae_mouse_r[1]=0;
+      uae_mouse_l[0]=uae_mouse_r[0]=uae_mouse_m[0]=0;
+      uae_mouse_l[1]=uae_mouse_r[1]=uae_mouse_m[0]=0;
       uae_mouse_x[0]=uae_mouse_y[0]=0;
       uae_mouse_x[1]=uae_mouse_y[1]=0;
 
@@ -1244,11 +1244,18 @@ void retro_poll_event()
          }
       }
 
-      // Real mouse buttons always to port 0
+      // Real mouse buttons
       if (!uae_mouse_l[0] && !uae_mouse_r[0])
       {
          uae_mouse_l[0] = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_LEFT);
          uae_mouse_r[0] = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_RIGHT);
+         uae_mouse_m[0] = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_MIDDLE);
+      }
+      if (!uae_mouse_l[1] && !uae_mouse_r[1])
+      {
+         uae_mouse_l[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_LEFT);
+         uae_mouse_r[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_RIGHT);
+         uae_mouse_m[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_MIDDLE);
       }
 
       // Joypad movement only with digital mouse mode and virtual keyboard hidden
@@ -1354,7 +1361,7 @@ void retro_poll_event()
             }
          }
 
-      // Real mouse movement always to port 0
+      // Real mouse movement
       if (!uae_mouse_x[0] && !uae_mouse_y[0])
       {
          mouse_x[0] = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_X);
@@ -1364,6 +1371,17 @@ void retro_poll_event()
          {
             uae_mouse_x[0] = mouse_x[0];
             uae_mouse_y[0] = mouse_y[0];
+         }
+      }
+      if (!uae_mouse_x[1] && !uae_mouse_y[1])
+      {
+         mouse_x[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_X);
+         mouse_y[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_Y);
+
+         if (mouse_x[1] || mouse_y[1])
+         {
+            uae_mouse_x[1] = mouse_x[1];
+            uae_mouse_y[1] = mouse_y[1];
          }
       }
 
@@ -1395,6 +1413,19 @@ void retro_poll_event()
             mouse_rmb[j]=0;
             mflag[j][RETRO_DEVICE_ID_JOYPAD_A]=0;
             retro_mouse_button(j, 1, 0);
+         }
+
+         if (mouse_mmb[j]==0 && uae_mouse_m[j])
+         {
+            mouse_mmb[j]=1;
+            mflag[j][RETRO_DEVICE_ID_JOYPAD_Y]=1;
+            retro_mouse_button(j, 2, 1);
+         }
+         else if (mouse_mmb[j]==1 && !uae_mouse_m[j])
+         {
+            mouse_mmb[j]=0;
+            mflag[j][RETRO_DEVICE_ID_JOYPAD_Y]=0;
+            retro_mouse_button(j, 2, 0);
          }
 
          // Mouse movements to UAE
