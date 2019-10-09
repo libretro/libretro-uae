@@ -42,7 +42,8 @@ int opt_statusbar_position = 0;
 int opt_statusbar_position_old = 0;
 int opt_statusbar_position_offset = 0;
 int opt_statusbar_position_offset_lores = 0;
-unsigned int opt_keyrahkeypad = 0;
+bool opt_keyrahkeypad = false;
+bool opt_multimouse = false;
 unsigned int opt_dpadmouse_speed = 4;
 unsigned int opt_analogmouse = 0;
 unsigned int opt_analogmouse_deadzone = 15;
@@ -743,6 +744,17 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "100"
+      },
+      {
+         "puae_multimouse",
+         "Multiple mouse",
+         "Requirements: raw/udev input driver and proper mouse index in RA input configs",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "disabled"
       },
       {
          "puae_keyrah_keypad_mappings",
@@ -1631,13 +1643,22 @@ static void update_variables(void)
       opt_dpadmouse_speed = atoi(var.value);
    }
 
+   var.key = "puae_multimouse";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "disabled") == 0) opt_multimouse=false;
+      else if (strcmp(var.value, "enabled") == 0) opt_multimouse=true;
+   }
+
    var.key = "puae_keyrah_keypad_mappings";
    var.value = NULL;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_keyrahkeypad=0;
-      else if (strcmp(var.value, "enabled") == 0) opt_keyrahkeypad=1;
+      if (strcmp(var.value, "disabled") == 0) opt_keyrahkeypad=false;
+      else if (strcmp(var.value, "enabled") == 0) opt_keyrahkeypad=true;
    }
 
    var.key = "puae_turbo_fire_button";
