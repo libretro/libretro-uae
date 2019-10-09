@@ -55,9 +55,6 @@ char RPATH[512];
 
 int analog_left[2];
 int analog_right[2];
-extern unsigned int opt_analogmouse_deadzone;
-extern float opt_analogmouse_speed;
-extern unsigned int opt_dpadmouse_speed;
 unsigned int mouse_speed[2]={0};
 int slowdown=0;
 extern int pix_bytes;
@@ -85,7 +82,11 @@ extern bool request_update_av_info;
 extern bool opt_enhanced_statusbar;
 extern int opt_statusbar_position;
 extern unsigned int opt_analogmouse;
-extern unsigned int opt_keyrahkeypad;
+extern unsigned int opt_analogmouse_deadzone;
+extern float opt_analogmouse_speed;
+extern unsigned int opt_dpadmouse_speed;
+extern bool opt_multimouse;
+extern bool opt_keyrahkeypad;
 int turbo_fire_button=-1;
 unsigned int turbo_pulse=2;
 unsigned int turbo_state[5]={0};
@@ -1251,12 +1252,15 @@ void retro_poll_event()
          uae_mouse_r[0] = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_RIGHT);
          uae_mouse_m[0] = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_MIDDLE);
       }
-      if (!uae_mouse_l[1] && !uae_mouse_r[1])
-      {
-         uae_mouse_l[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_LEFT);
-         uae_mouse_r[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_RIGHT);
-         uae_mouse_m[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_MIDDLE);
-      }
+
+      // Second mouse buttons only when enabled
+      if(opt_multimouse)
+          if (!uae_mouse_l[1] && !uae_mouse_r[1])
+          {
+             uae_mouse_l[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_LEFT);
+             uae_mouse_r[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_RIGHT);
+             uae_mouse_m[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_MIDDLE);
+          }
 
       // Joypad movement only with digital mouse mode and virtual keyboard hidden
       if (MOUSEMODE==1 && SHOWKEY==-1 && (uae_devices[0] == RETRO_DEVICE_JOYPAD || uae_devices[1] == RETRO_DEVICE_JOYPAD))
@@ -1373,17 +1377,20 @@ void retro_poll_event()
             uae_mouse_y[0] = mouse_y[0];
          }
       }
-      if (!uae_mouse_x[1] && !uae_mouse_y[1])
-      {
-         mouse_x[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_X);
-         mouse_y[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_Y);
 
-         if (mouse_x[1] || mouse_y[1])
-         {
-            uae_mouse_x[1] = mouse_x[1];
-            uae_mouse_y[1] = mouse_y[1];
-         }
-      }
+      // Second mouse movement only when enabled
+      if(opt_multimouse)
+          if (!uae_mouse_x[1] && !uae_mouse_y[1])
+          {
+             mouse_x[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_X);
+             mouse_y[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_Y);
+
+             if (mouse_x[1] || mouse_y[1])
+             {
+                uae_mouse_x[1] = mouse_x[1];
+                uae_mouse_y[1] = mouse_y[1];
+             }
+          }
 
       // Ports 1 & 2
       for (j = 0; j < 2; j++)
