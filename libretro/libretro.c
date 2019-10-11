@@ -2296,7 +2296,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
       /* After startup input_get_default_joystick will need to be refreshed for cd32<>joystick change to work.
          Doing updateconfig straight from boot will crash, hence inputdevice_finalized */
       if(inputdevice_finalized) {
-         inputdevice_updateconfig(&currprefs, &currprefs);
+         inputdevice_updateconfig(NULL, &currprefs);
       }
    }
 }
