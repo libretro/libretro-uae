@@ -43,6 +43,7 @@ int opt_statusbar_position_old = 0;
 int opt_statusbar_position_offset = 0;
 int opt_statusbar_position_offset_lores = 0;
 bool opt_keyrahkeypad = false;
+bool opt_keyboard_pass_through = false;
 bool opt_multimouse = false;
 unsigned int opt_dpadmouse_speed = 4;
 unsigned int opt_analogmouse = 0;
@@ -760,6 +761,17 @@ void retro_set_environment(retro_environment_t cb)
          "puae_keyrah_keypad_mappings",
          "Keyrah keypad mappings",
          "Hardcoded keypad to joy mappings for Keyrah hardware",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "disabled"
+      },
+      {
+         "puae_physical_keyboard_pass_through",
+         "Physical keyboard pass-through",
+         "Pass all physical keyboard events to the core. Disable this to prevent cursor keys and fire key from generating Amiga key events.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -1659,6 +1671,15 @@ static void update_variables(void)
    {
       if (strcmp(var.value, "disabled") == 0) opt_keyrahkeypad=false;
       else if (strcmp(var.value, "enabled") == 0) opt_keyrahkeypad=true;
+   }
+
+   var.key = "puae_physical_keyboard_pass_through";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "disabled") == 0) opt_keyboard_pass_through=false;
+      else if (strcmp(var.value, "enabled") == 0) opt_keyboard_pass_through=true;
    }
 
    var.key = "puae_turbo_fire_button";

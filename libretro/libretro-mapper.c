@@ -87,6 +87,7 @@ extern float opt_analogmouse_speed;
 extern unsigned int opt_dpadmouse_speed;
 extern bool opt_multimouse;
 extern bool opt_keyrahkeypad;
+extern bool opt_keyboard_pass_through;
 int turbo_fire_button=-1;
 unsigned int turbo_pulse=2;
 unsigned int turbo_state[5]={0};
@@ -1155,7 +1156,8 @@ void retro_poll_event()
    if (uae_devices[0] == RETRO_DEVICE_JOYPAD && ALTON==-1 && 
       (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B) ||
        input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A)
-       )
+       ) &&
+       !opt_keyboard_pass_through
    )
       update_input(2); /* Skip all keyboard input when fire/fire2 is pressed */
    else if (
@@ -1164,7 +1166,8 @@ void retro_poll_event()
        input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN) ||
        input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT) ||
        input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT)
-       )
+       ) &&
+       !opt_keyboard_pass_through
    )
       update_input(1); /* Process all inputs but disable cursor keys */
    else
