@@ -588,6 +588,8 @@ void retro_set_environment(retro_environment_t cb)
          "For best results: Vertical centering: Off\n& in RetroArch\nAspect Ratio: Core provided\nInteger Scale: Off",
          {
             { "none", "disabled" },
+            { "minimum", "Minimum" },
+            { "smaller", "Smaller" },
             { "small", "Small" },
             { "medium", "Medium" },
             { "large", "Large" },
@@ -1575,11 +1577,13 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (strcmp(var.value, "none") == 0) zoom_mode_id=0;
-      else if (strcmp(var.value, "small") == 0) zoom_mode_id=1;
-      else if (strcmp(var.value, "medium") == 0) zoom_mode_id=2;
-      else if (strcmp(var.value, "large") == 0) zoom_mode_id=3;
-      else if (strcmp(var.value, "larger") == 0) zoom_mode_id=4;
-      else if (strcmp(var.value, "maximum") == 0) zoom_mode_id=5;
+      else if (strcmp(var.value, "minimum") == 0) zoom_mode_id=1;
+      else if (strcmp(var.value, "smaller") == 0) zoom_mode_id=2;
+      else if (strcmp(var.value, "small") == 0) zoom_mode_id=3;
+      else if (strcmp(var.value, "medium") == 0) zoom_mode_id=4;
+      else if (strcmp(var.value, "large") == 0) zoom_mode_id=5;
+      else if (strcmp(var.value, "larger") == 0) zoom_mode_id=6;
+      else if (strcmp(var.value, "maximum") == 0) zoom_mode_id=7;
    }
 
    var.key = "puae_vertical_pos";
@@ -2488,29 +2492,41 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
    {
       case 1:
          if (video_config & PUAE_VIDEO_HIRES)
+            zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 480 : 540;
+         else
+            zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 240 : 270;
+         break;
+      case 2:
+         if (video_config & PUAE_VIDEO_HIRES)
+            zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 474 : 524;
+         else
+            zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 237 : 262;
+         break;
+      case 3:
+         if (video_config & PUAE_VIDEO_HIRES)
             zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 470 : 512;
          else
             zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 235 : 256;
          break;
-      case 2:
+      case 4:
          if (video_config & PUAE_VIDEO_HIRES)
             zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 460 : 480;
          else
             zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 230 : 240;
          break;
-      case 3:
+      case 5:
          if (video_config & PUAE_VIDEO_HIRES)
             zoomed_height = 448;
          else
             zoomed_height = 224;
          break;
-      case 4:
+      case 6:
          if (video_config & PUAE_VIDEO_HIRES)
             zoomed_height = 432;
          else
             zoomed_height = 216;
          break;
-      case 5:
+      case 7:
          if (video_config & PUAE_VIDEO_HIRES)
             zoomed_height = 400;
          else

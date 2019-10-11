@@ -143,7 +143,7 @@ void emu_function(int function) {
          break;
       case EMU_ZOOM_MODE_TOGGLE:
          zoom_mode_id++;
-         if (zoom_mode_id>5) zoom_mode_id = 0;
+         if (zoom_mode_id>7) zoom_mode_id = 0;
          request_update_av_info = true;
          break;
    }
@@ -320,18 +320,24 @@ void Print_Status(void)
          sprintf(ZOOM_MODE, "%s", "None");
          break;
       case 1:
-         sprintf(ZOOM_MODE, "%s", "Small");
+         sprintf(ZOOM_MODE, "%s", "Minimum");
          break;
       case 2:
-         sprintf(ZOOM_MODE, "%s", "Medium");
+         sprintf(ZOOM_MODE, "%s", "Smaller");
          break;
       case 3:
-         sprintf(ZOOM_MODE, "%s", "Large");
+         sprintf(ZOOM_MODE, "%s", "Small");
          break;
       case 4:
-         sprintf(ZOOM_MODE, "%s", "Larger");
+         sprintf(ZOOM_MODE, "%s", "Medium");
          break;
       case 5:
+         sprintf(ZOOM_MODE, "%s", "Large");
+         break;
+      case 6:
+         sprintf(ZOOM_MODE, "%s", "Larger");
+         break;
+      case 7:
          sprintf(ZOOM_MODE, "%s", "Maximum");
          break;
    }
