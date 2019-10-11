@@ -464,6 +464,7 @@ void retro_set_environment(retro_environment_t cb)
             { "emulated", "Emulated" },
             { "off", "Always off" },
             { "on", "Always on" },
+            { NULL, NULL },
          },
          "emulated"
       },
@@ -474,6 +475,7 @@ void retro_set_environment(retro_environment_t cb)
          {
             { "standard", "A500" },
             { "enhanced", "A1200" },
+            { NULL, NULL },
          },
          "standard",
       },
@@ -974,6 +976,7 @@ void retro_set_environment(retro_environment_t cb)
             { "R", "RetroPad R" },
             { "L2", "RetroPad L2" },
             { "R2", "RetroPad R2" },
+            { NULL, NULL },
          },
          "disabled"
       },
@@ -988,10 +991,10 @@ void retro_set_environment(retro_environment_t cb)
             { "8", NULL },
             { "10", NULL },
             { "12", NULL },
+            { NULL, NULL },
          },
          "4"
       },
-
       { NULL, NULL, NULL, {{0}}, NULL },
    };
 
