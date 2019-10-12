@@ -436,7 +436,7 @@ void ProcessKeyrah()
    if (!input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP6)
    && kjflag[0][RETRO_DEVICE_ID_JOYPAD_RIGHT]==1)
    {
-      setjoystickstate(0, 1, 0, 1);
+      setjoystickstate(0, 0, 0, 1);
       kjflag[0][RETRO_DEVICE_ID_JOYPAD_RIGHT]=0;
    }
 
