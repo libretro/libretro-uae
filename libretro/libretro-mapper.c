@@ -1468,7 +1468,8 @@ void retro_poll_event()
          if (uae_mouse_x[j]<1 && mflag[j][RETRO_DEVICE_ID_JOYPAD_RIGHT]==1)
             mflag[j][RETRO_DEVICE_ID_JOYPAD_RIGHT]=0;
 
-         retro_mouse(j, uae_mouse_x[j], uae_mouse_y[j]);
+         if (uae_mouse_x[j] || uae_mouse_y[j])
+            retro_mouse(j, uae_mouse_x[j], uae_mouse_y[j]);
       }
    }
 }
