@@ -9,7 +9,7 @@ Schmidt (the original author and maintainer of UAE), Bernie Meyer (the
 author of the x86 JIT compiler), Toni Wilen (the current maintainer of
 WinUAE), and many more.
 
-This RETRO port was  based at start on PS3 version E-UAE 0.8.29-WIP4 release 8
+This port was based at start on PS3 version E-UAE 0.8.29-WIP4 release 8
 (so also credits to Ole.)
 
 And of course for the RetroArch/Libretro team: "http://www.libretro.com/"
@@ -168,29 +168,22 @@ Three parameters control the output resolution of the core:
 |---|---|---|
 |Video standard|PAL, NTSC|PAL|
 |High resolution|false, true|true|
-|Crop overscan|false, true|false|
 
 With these settings all the standards resolutions of the amiga are available:
 
-- **720x568** PAL High resolution with overscan
-- **640×512** PAL High resolution cropped/clipped
-- **360x284** PAL Low resolution with overscan
-- **320x256** PAL Low resolution cropped/clipped
-- **720x480** NTSC High resolution with overscan
-- **640×400** NTSC High resolution cropped/clipped
-- **360x240** NTSC Low resolution with overscan
-- **320×200** NTSC Low resolution cropped/clipped
+- **720x568** PAL High resolution
+- **360x284** PAL Low resolution
+- **720x480** NTSC High resolution
+- **360x240** NTSC Low resolution
 
 When using a high resolution mode, rendering will be doubled horizontally and vertically. It's compatible with high resolution games and the Workbench but scaling shaders will look ugly.
 
 When using a low resolution mode, scaling shaders looks greats but high resolution games and the Workbench are badly rendered, but still usable.
 
 ## Using a configuration file for your games
-You can pass an '.uae' configuration file as a rom and the core will load the settings and start emulation. 
+You can pass an '.uae' configuration file as a rom and the core will load the settings and start emulation.
 
-Look at the sample configuration file "RickDangerous.uae" for help. You can use that sample as a starting point for making your own configuration files.
-
-You can find the whole documentation in [configuration.txt](configuration.txt). (Notice: many options are outdated and obsolete)
+Look at the temporary configuration file "puae_libretro.uae" in RetroArch saves as a starting point for your own configuration files.
 
 Example 1: You want to mount four non-RDB HDF files. You have one bootable 1000 MB file called `System.hdf` created with surfaces=1, and three non-bootable 2000 MB files called `WHDGamesA.hdf`, `WHDGamesB.hdf`, `WHDGamesC.hdf` created with surfaces=2. Your hdf files are located in the folder with absolute path `/emuroms/amiga/hdf/`. For that scenario, you should create a .uae text file with the following content:
 ```
