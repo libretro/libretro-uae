@@ -83,10 +83,33 @@ void retro_mouse(int port, int dx, int dy)
     setmousestate(port, 1, dy, 0);
 }
 
-void retro_mouse_button(int port, int button, int down)
+void retro_mouse_button(int port, int button, int state)
 {
     mouse_port[port] = 1;
-    setmousebuttonstate(port, button, down);
+    setmousebuttonstate(port, button, state);
+}
+
+/* --- joystick input --- */
+void retro_joystick(int port, int axis, int state)
+{
+    // disable mouse in normal ports, joystick/mouse inverted
+    if(port < 2)
+    {
+        int m_port = (port == 0) ? 1 : 0;
+        mouse_port[m_port] = 0;
+    }
+    setjoystickstate(port, axis, state, 1);
+}
+
+void retro_joystick_button(int port, int button, int state)
+{
+    // disable mouse in normal ports, joystick/mouse inverted
+    if(port < 2)
+    {
+        int m_port = (port == 0) ? 1 : 0;
+        mouse_port[m_port] = 0;
+    }
+    setjoybuttonstate(port, button, state);
 }
 
 /* --- keyboard input --- */
