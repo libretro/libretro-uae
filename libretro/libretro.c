@@ -301,6 +301,7 @@ void retro_set_environment(retro_environment_t cb)
             { "large", "Large" },
             { "larger", "Larger" },
             { "maximum", "Maximum" },
+            { "auto", "Automatic" },
             { NULL, NULL },
          },
          "none"
@@ -1499,6 +1500,7 @@ static void update_variables(void)
       else if (strcmp(var.value, "large") == 0) zoom_mode_id=5;
       else if (strcmp(var.value, "larger") == 0) zoom_mode_id=6;
       else if (strcmp(var.value, "maximum") == 0) zoom_mode_id=7;
+      else if (strcmp(var.value, "auto") == 0) zoom_mode_id=8;
    }
 
    var.key = "puae_vertical_pos";
@@ -2396,6 +2398,22 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
          else
             zoomed_height = 200;
          break;
+      case 8:
+         if (thisframe_first_drawn_line != thisframe_last_drawn_line
+         && thisframe_first_drawn_line > 0 && thisframe_last_drawn_line > 0
+         )
+         {
+            zoomed_height = thisframe_last_drawn_line - thisframe_first_drawn_line;
+            zoomed_height = (video_config & PUAE_VIDEO_HIRES) ? zoomed_height * 2 : zoomed_height;
+         }
+
+         if (video_config & PUAE_VIDEO_HIRES)
+            if (zoomed_height < 400)
+               zoomed_height = 400;
+         else
+            if (zoomed_height < 200)
+               zoomed_height = 200;
+         break;
       default:
          break;
    }
@@ -2439,13 +2457,13 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
 
       /* Sensible limits */
       minfirstline_new = (minfirstline_new < 0) ? 0 : minfirstline_new;
-      minfirstline_new = (minfirstline_new > 80) ? 80 : minfirstline_new;
+      minfirstline_new = (minfirstline_new > (minfirstline_default + 50)) ? (minfirstline_default + 50) : minfirstline_new;
 
       /* Change value only if altered */
       if (minfirstline_new != minfirstline)
          minfirstline = minfirstline_new;
 
-      //printf("FIRSTDRAWN:%3d LASTDRAWN:%3d minfirstline:%2d old:%2d\n", thisframe_first_drawn_line, thisframe_last_drawn_line, minfirstline, minfirstline_old);
+      //printf("FIRSTDRAWN:%3d LASTDRAWN:%3d minfirstline:%2d old:%2d zoomed_height:%d\n", thisframe_first_drawn_line, thisframe_last_drawn_line, minfirstline, minfirstline_old, zoomed_height);
 
       /* Remember the previous value */
       minfirstline_old = minfirstline;
