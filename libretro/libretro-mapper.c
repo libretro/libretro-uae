@@ -145,7 +145,7 @@ void emu_function(int function) {
          break;
       case EMU_ZOOM_MODE_TOGGLE:
          zoom_mode_id++;
-         if (zoom_mode_id>7) zoom_mode_id = 0;
+         if (zoom_mode_id>8) zoom_mode_id = 0;
          request_update_av_info = true;
          break;
    }
@@ -341,6 +341,9 @@ void Print_Status(void)
          break;
       case 7:
          sprintf(ZOOM_MODE, "%s", "Maximum");
+         break;
+      case 8:
+         sprintf(ZOOM_MODE, "%s", "Automatic");
          break;
    }
 
