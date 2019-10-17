@@ -2549,11 +2549,10 @@ void retro_run(void)
       if (thisframe_first_drawn_line != thisframe_first_drawn_line_old)
       {
          thisframe_first_drawn_line_old = thisframe_first_drawn_line;
-
          if (thisframe_first_drawn_line < 100)
             request_update_av_info = true;
       }
-      // Timer check for adjustment needs
+      // Timer required for unserialize recovery
       else if (thisframe_first_drawn_line == thisframe_first_drawn_line_old)
       {
          if (thisframe_y_adjust_update_frame_timer > 0)
@@ -2562,8 +2561,6 @@ void retro_run(void)
             if (thisframe_y_adjust_update_frame_timer == 0)
                request_update_av_info = true;
          }
-         else
-            thisframe_y_adjust_update_frame_timer = 100;
       }
    }
    else
@@ -2958,6 +2955,7 @@ bool retro_serialize(void *data_, size_t size)
 
 bool retro_unserialize(const void *data_, size_t size)
 {
+   thisframe_y_adjust_update_frame_timer = 3;
    if (firstpass != 1)
    {
       snprintf(savestate_fname, sizeof(savestate_fname), "%s%suae_tempsave.uss", retro_save_directory, DIR_SEP_STR);
