@@ -2175,7 +2175,11 @@ static void cap_check (void)
 					charge = 2;
 			}
 			// CD32 pad in 2-button mode: blue button is not floating
+#ifdef __LIBRETRO__
+			if (i == 1 && charge == 0)
+#else
 			if (cd32_pad_enabled[joy] && i == 1 && charge == 0)
+#endif
 				charge = 2;
 		
 			/* official Commodore mouse has pull-up resistors in button lines
