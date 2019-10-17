@@ -75,12 +75,12 @@ extern int prefs_changed;
 int opt_vertical_offset = 0;
 bool opt_vertical_offset_auto = true;
 extern int minfirstline;
-static int minfirstline_old = -1;
 extern int thisframe_first_drawn_line;
 static int thisframe_first_drawn_line_old = -1;
 extern int thisframe_last_drawn_line;
-static int minfirstline_default = VBLANK_ENDLINE_PAL;
-static int minfirstline_update_frame_timer = 3;
+extern int thisframe_y_adjust;
+static int thisframe_y_adjust_old = 0;
+static int thisframe_y_adjust_update_frame_timer = 3;
 unsigned int video_config = 0;
 unsigned int video_config_old = 0;
 unsigned int video_config_aspect = 0;
@@ -105,8 +105,8 @@ extern void retro_poll_event(void);
 unsigned int uae_devices[4];
 extern int cd32_pad_enabled[NORMAL_JPORTS];
 
-int mapper_keys[31]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-static char buf[64][4096] = { 0 };
+int mapper_keys[31]={0};
+static char buf[64][4096]={0};
 
 #ifdef WIN32
 #define DIR_SEP_STR "\\"
@@ -390,7 +390,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_gfx_framerate",
          "Frameskip",
-         "Cycle exact needs to be off for this to come into effect at startup",
+         "Not compatible with Cycle exact",
          {
             { "disabled", NULL },
             { "1", NULL },
@@ -1508,12 +1508,10 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      minfirstline_default = (video_config & PUAE_VIDEO_NTSC) ? VBLANK_ENDLINE_NTSC : VBLANK_ENDLINE_PAL;
-
       if (strcmp(var.value, "auto") == 0)
       {
          opt_vertical_offset_auto = true;
-         minfirstline = minfirstline_default;
+         thisframe_y_adjust = minfirstline;
       }
       else
       {
@@ -1521,11 +1519,9 @@ static void update_variables(void)
          int new_vertical_offset = atoi(var.value);
          if (new_vertical_offset >= -20 && new_vertical_offset <= 50)
          {
-            /* this offset is used whenever minfirstline is reset on gfx mode changes in the init_hz() function */
+            /* This offset is used whenever minfirstline is reset on gfx mode changes in the init_hz() function */
             opt_vertical_offset = new_vertical_offset;
-
-            /* we need to update the currently used minfirstline, too, for immediate effect */
-            minfirstline = minfirstline_default + opt_vertical_offset;
+            thisframe_y_adjust = minfirstline + opt_vertical_offset;
          }
       }
    }
@@ -2326,7 +2322,6 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       retro_get_system_av_info(&new_timing);
       new_timing.timing.fps = hz;
       environ_cb(RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO, &new_timing);
-      minfirstline_default = (video_config & PUAE_VIDEO_NTSC) ? VBLANK_ENDLINE_NTSC : VBLANK_ENDLINE_PAL;
    }
 
    if (change_geometry) {
@@ -2441,41 +2436,35 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
    if (opt_vertical_offset_auto && zoom_mode_id != 0 && firstpass != 1)
    {
       int zoomed_height_normal = (video_config & PUAE_VIDEO_HIRES) ? zoomed_height / 2 : zoomed_height;
-      int minfirstline_new = minfirstline;
+      int thisframe_y_adjust_new = minfirstline;
+
       /* Need proper values for calculations */
       if (thisframe_first_drawn_line != thisframe_last_drawn_line
       && thisframe_first_drawn_line > 0 && thisframe_last_drawn_line > 0 
       && thisframe_first_drawn_line < 100 && thisframe_last_drawn_line > 200
       )
-         minfirstline_new = (thisframe_last_drawn_line - thisframe_first_drawn_line - zoomed_height_normal) / 2 + thisframe_first_drawn_line;
-         //minfirstline_new = thisframe_first_drawn_line + ((thisframe_last_drawn_line - thisframe_first_drawn_line) - zoomed_height_normal) / 2;
-      /* After restoring a savestate for the second time UAE assumes we are still at the correct minfirstline, even though we are not */
-      else if (thisframe_first_drawn_line == -1 && thisframe_last_drawn_line == -1 && minfirstline_old != -1 && minfirstline_old != minfirstline)
-         minfirstline_new = minfirstline_old;
-      else
-         minfirstline_new = minfirstline_default;
+         thisframe_y_adjust_new = (thisframe_last_drawn_line - thisframe_first_drawn_line - zoomed_height_normal) / 2 + thisframe_first_drawn_line; // Smart
+         //thisframe_y_adjust_new = thisframe_first_drawn_line + ((thisframe_last_drawn_line - thisframe_first_drawn_line) - zoomed_height_normal) / 2; // Simple
 
       /* Sensible limits */
-      minfirstline_new = (minfirstline_new < 0) ? 0 : minfirstline_new;
-      minfirstline_new = (minfirstline_new > (minfirstline_default + 50)) ? (minfirstline_default + 50) : minfirstline_new;
+      thisframe_y_adjust_new = (thisframe_y_adjust_new < 0) ? 0 : thisframe_y_adjust_new;
+      thisframe_y_adjust_new = (thisframe_y_adjust_new > (minfirstline + 50)) ? (minfirstline + 50) : thisframe_y_adjust_new;
 
       /* Change value only if altered */
-      if (minfirstline_new != minfirstline)
-         minfirstline = minfirstline_new;
+      if (thisframe_y_adjust != thisframe_y_adjust_new)
+         thisframe_y_adjust = thisframe_y_adjust_new;
 
-      //printf("FIRSTDRAWN:%3d LASTDRAWN:%3d minfirstline:%2d old:%2d zoomed_height:%d\n", thisframe_first_drawn_line, thisframe_last_drawn_line, minfirstline, minfirstline_old, zoomed_height);
+      //printf("FIRSTDRAWN:%3d LASTDRAWN:%3d yadjust:%2d old:%2d zoomed_height:%d\n", thisframe_first_drawn_line, thisframe_last_drawn_line, thisframe_y_adjust, thisframe_y_adjust_old, zoomed_height);
 
       /* Remember the previous value */
-      minfirstline_old = minfirstline;
+      thisframe_y_adjust_old = thisframe_y_adjust;
    }
    else
-      minfirstline = minfirstline_default + opt_vertical_offset;
-
-
+      thisframe_y_adjust = minfirstline + opt_vertical_offset;
 
    /* No need to check changed gfx at startup */
    if (firstpass != 1) {
-      prefs_changed = 1; // check_prefs_changed_gfx() will be called automatically in vsync_handle_check()
+      prefs_changed = 1; // Triggers check_prefs_changed_gfx() in vsync_handle_check()
    }
 
    return true;
@@ -2564,28 +2553,28 @@ void retro_run(void)
          if (thisframe_first_drawn_line < 100)
             request_update_av_info = true;
       }
-      // Assume stuck offset when minfirstline & first_drawn_line match, therefore moderately forced recovery needed
-      else if (thisframe_first_drawn_line == thisframe_first_drawn_line_old && thisframe_first_drawn_line == minfirstline)
+      // Timer check for adjustment needs
+      else if (thisframe_first_drawn_line == thisframe_first_drawn_line_old)
       {
-         if (minfirstline_update_frame_timer > 0)
+         if (thisframe_y_adjust_update_frame_timer > 0)
          {
-            minfirstline_update_frame_timer--;
-            if (minfirstline_update_frame_timer == 0)
+            thisframe_y_adjust_update_frame_timer--;
+            if (thisframe_y_adjust_update_frame_timer == 0)
                request_update_av_info = true;
          }
          else
-            minfirstline_update_frame_timer = 100;
+            thisframe_y_adjust_update_frame_timer = 100;
       }
    }
    else
    {
       // Vertical offset must not be set too early
-      if (minfirstline_update_frame_timer > 0)
+      if (thisframe_y_adjust_update_frame_timer > 0)
       {
-         minfirstline_update_frame_timer--;
-         if (minfirstline_update_frame_timer == 0)
+         thisframe_y_adjust_update_frame_timer--;
+         if (thisframe_y_adjust_update_frame_timer == 0)
             if (opt_vertical_offset != 0)
-               minfirstline = minfirstline_default + opt_vertical_offset;
+               thisframe_y_adjust = minfirstline + opt_vertical_offset;
       }
    }
 

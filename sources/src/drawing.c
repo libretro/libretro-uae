@@ -209,7 +209,11 @@ static int visible_top_start, visible_bottom_stop;
 static int hblank_left_start, hblank_right_stop;
 
 static int linetoscr_x_adjust_bytes;
+#ifdef __LIBRETRO__
+int thisframe_y_adjust;
+#else
 static int thisframe_y_adjust;
+#endif
 static int thisframe_y_adjust_real, max_ypos_thisframe, min_ypos_for_screen;
 static int extra_y_adjust;
 int thisframe_first_drawn_line, thisframe_last_drawn_line;
@@ -2992,6 +2996,7 @@ static void center_image (void)
 	if (visible_right_border > max_diwlastword)
 		visible_right_border = max_diwlastword;
 
+#ifndef __LIBRETRO__
 	thisframe_y_adjust = minfirstline;
 	if (currprefs.gfx_ycenter && thisframe_first_drawn_line >= 0 && !currprefs.gfx_filter_autoscale) {
 
@@ -3013,6 +3018,7 @@ static void center_image (void)
 		thisframe_y_adjust = maxvpos_nom - max_drawn_amiga_line;
 	if (thisframe_y_adjust < minfirstline)
 		thisframe_y_adjust = minfirstline;
+#endif
 
 	thisframe_y_adjust_real = thisframe_y_adjust << linedbl;
 	tmp = (maxvpos_nom - thisframe_y_adjust + 1) << linedbl;
