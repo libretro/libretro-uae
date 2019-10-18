@@ -78,6 +78,7 @@ extern int minfirstline;
 extern int thisframe_first_drawn_line;
 static int thisframe_first_drawn_line_old = -1;
 extern int thisframe_last_drawn_line;
+static int thisframe_last_drawn_line_old = -1;
 extern int thisframe_y_adjust;
 static int thisframe_y_adjust_old = 0;
 static int thisframe_y_adjust_update_frame_timer = 3;
@@ -2546,10 +2547,11 @@ void retro_run(void)
    // Automatic vertical offset
    if (opt_vertical_offset_auto && zoom_mode_id != 0)
    {
-      if (thisframe_first_drawn_line != thisframe_first_drawn_line_old)
+      if (thisframe_first_drawn_line != thisframe_first_drawn_line_old || thisframe_last_drawn_line != thisframe_last_drawn_line_old)
       {
          thisframe_first_drawn_line_old = thisframe_first_drawn_line;
-         if (thisframe_first_drawn_line < 100)
+         thisframe_last_drawn_line_old = thisframe_last_drawn_line;
+         if (thisframe_first_drawn_line < 100 && thisframe_last_drawn_line > 200)
             request_update_av_info = true;
       }
       // Timer required for unserialize recovery
