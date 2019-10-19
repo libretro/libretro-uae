@@ -2362,7 +2362,7 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
          && thisframe_first_drawn_line > 0 && thisframe_last_drawn_line > 0
          )
          {
-            zoomed_height = thisframe_last_drawn_line - thisframe_first_drawn_line;
+            zoomed_height = thisframe_last_drawn_line - thisframe_first_drawn_line + 1;
             zoomed_height = (video_config & PUAE_VIDEO_HIRES) ? zoomed_height * 2 : zoomed_height;
          }
 
