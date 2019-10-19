@@ -13,7 +13,6 @@
 #include "inputdevice.h"
 #include "savestate.h"
 #include "custom.h"
-#include "events.h"
 
 #define EMULATOR_DEF_WIDTH 720
 #define EMULATOR_DEF_HEIGHT 568
@@ -453,36 +452,6 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "0.0"
-      },
-      {
-         "puae_cpu_timing",
-         "CPU vs. chipset timing ratio",
-         "Manually adjust how much time is spent emulating CPU vs. custom chipset. Approximate real timing is recommended.",
-         {
-            { "real", "Approximate real timing" },
-            { "max", "Fastest possible CPU, but maintain chipset timing" },
-            { "1", "95\% CPU, 5\% chipset" },
-            { "2", "90\% CPU, 10\% chipset" },
-            { "3", "85\% CPU, 15\% chipset" },
-            { "4", "80\% CPU, 20\% chipset" },
-            { "5", "75\% CPU, 25\% chipset" },
-            { "6", "70\% CPU, 30\% chipset" },
-            { "7", "65\% CPU, 35\% chipset" },
-            { "8", "60\% CPU, 40\% chipset" },
-            { "9", "55\% CPU, 45\% chipset" },
-            { "10", "50\% CPU, 50\% chipset" },
-            { "11", "45\% CPU, 55\% chipset" },
-            { "12", "40\% CPU, 60\% chipset" },
-            { "13", "35\% CPU, 65\% chipset" },
-            { "14", "30\% CPU, 70\% chipset" },
-            { "15", "25\% CPU, 75\% chipset" },
-            { "16", "20\% CPU, 80\% chipset" },
-            { "17", "15\% CPU, 85\% chipset" },
-            { "18", "10\% CPU, 90\% chipset" },
-            { "19", "5\% CPU, 95\% chipset" },
-            { NULL, NULL },
-         },
-         "real"
       },
       {
          "puae_sound_output",
@@ -1228,23 +1197,6 @@ static void update_variables(void)
 
       if (firstpass != 1)
          changed_prefs.m68k_speed_throttle=atof(var.value);
-   }
-
-   var.key = "puae_cpu_timing";
-   var.value = NULL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-      strcat(uae_config, "cpu_speed=");
-      strcat(uae_config, var.value);
-      strcat(uae_config, "\n");
-
-      if (firstpass != 1)
-      {
-         if (strcmp(var.value, "max") == 0) changed_prefs.m68k_speed=-1;
-         else if (strcmp(var.value, "real") == 0) changed_prefs.m68k_speed=0;
-         else changed_prefs.m68k_speed=atoi(var.value) * CYCLE_UNIT;
-      }
    }
 
    var.key = "puae_sound_output";
