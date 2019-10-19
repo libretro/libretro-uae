@@ -379,11 +379,12 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_immediate_blits",
-         "Immediate blits",
+         "Immediate/Waiting blits",
          "Ignored with Cycle exact",
          {
             { "false", "disabled" },
-            { "true", "enabled" },
+            { "immediate", "Immediate" },
+            { "waiting", "Waiting" },
             { NULL, NULL },
          },
          "false"
@@ -1374,12 +1375,17 @@ static void update_variables(void)
       if (strcmp(var.value, "false") == 0)
       {
          strcat(uae_config, "immediate_blits=false\n");
-         strcat(uae_config, "waiting_blits=automatic\n");
+         strcat(uae_config, "waiting_blits=false\n");
       }
-      else
+      else if (strcmp(var.value, "immediate") == 0)
       {
          strcat(uae_config, "immediate_blits=true\n");
          strcat(uae_config, "waiting_blits=disabled\n");
+      }
+      else if (strcmp(var.value, "waiting") == 0)
+      {
+         strcat(uae_config, "immediate_blits=false\n");
+         strcat(uae_config, "waiting_blits=automatic\n");
       }
 
       if (firstpass != 1)
@@ -1387,12 +1393,17 @@ static void update_variables(void)
          if (strcmp(var.value, "false") == 0)
          {
             changed_prefs.immediate_blits=0;
-            changed_prefs.waiting_blits=1;
+            changed_prefs.waiting_blits=0;
          }
-         else
+         else if (strcmp(var.value, "immediate") == 0)
          {
             changed_prefs.immediate_blits=1;
             changed_prefs.waiting_blits=0;
+         }
+         else if (strcmp(var.value, "waiting") == 0)
+         {
+            changed_prefs.immediate_blits=0;
+            changed_prefs.waiting_blits=1;
          }
       }
    }
