@@ -57,7 +57,6 @@ bool real_ntsc = false;
 bool request_update_av_info = false;
 int zoom_mode_id = 0;
 int zoomed_height;
-bool fast_forward_is_on = false;
 
 #if defined(NATMEM_OFFSET)
 extern uae_u8 *natmem_offset;

@@ -1126,7 +1126,7 @@ void update_input(int disable_physical_cursor_keys)
       if (vkflag[4]==0 && (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_RETURN)))
       {
          vkflag[4]=1;
-         i=check_vkey2(vkx,vky);
+         i=check_vkey(vkx,vky);
 
          if (i==-1)
             oldi=-1;
