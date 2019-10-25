@@ -9,7 +9,7 @@ typedef struct {
 	int val;	
 } Mvk;
 
-Mvk MVk[NPLGN*NLIGN*2]= {
+Mvk MVk[NPLGN * NLIGN * 2] = {
 
    // 0 PG1
    { "Esc","Esc",AK_ESC },
@@ -27,8 +27,8 @@ Mvk MVk[NPLGN*NLIGN*2]= {
    // 11
    { "`"  ,"~"  ,AK_BACKQUOTE },
    { "1"  ,"!"  ,AK_1 },
-   { "2"  ,"\"" ,AK_2 },
-   { "3"  ,"Pnd",AK_3 },
+   { "2"  ,"@"  ,AK_2 },
+   { "3"  ,"#"  ,AK_3 },
    { "4"  ,"$"  ,AK_4 },
    { "5"  ,"Prc",AK_5 },
    { "6"  ,"^"  ,AK_6 },
@@ -83,7 +83,7 @@ Mvk MVk[NPLGN*NLIGN*2]= {
    { "\\" ,"|"  ,AK_BACKSLASH },
    { "["  ,"{"  ,AK_LBRACKET },
    { "]"  ,"}"  ,AK_RBRACKET },
-   { "#"  ,"@" ,AK_QUOTE },
+   { "'"  ,"\"" ,AK_QUOTE },
    { "RShift","RShift" ,AK_RSH },
    { "Del","Del",AK_DEL },
    { "Up" ,"Up" ,AK_UP },
