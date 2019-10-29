@@ -58,6 +58,20 @@ static long adjust_blocks (long blocks, int fromsize, int tosize)
 		return (blocks + (blocks < 0 ? -1 : 1)) / (tosize / fromsize);
 }
 
+#ifdef __LIBRETRO__
+static int get_fs_usage_fake (const TCHAR *path, const TCHAR *disk, struct fs_usage *fsp)
+{
+    fsp->fsu_blocks = 0x7fffff;
+    fsp->fsu_bavail = 0x3fffff;
+    return 0;
+}
+
+int get_fs_usage (const TCHAR *path, const TCHAR *disk, struct fs_usage *fsp)
+{
+    return get_fs_usage_fake(path, disk, fsp);
+}
+#else
+
 #if defined TARGET_AMIGAOS
 
 #include <dos/dos.h>
@@ -330,7 +344,7 @@ int get_fs_usage (const TCHAR *path, const TCHAR *disk, struct fs_usage *fsp)
 
 #endif /* STAT_STATVFS */
 
-#if defined(__PS3__) || defined(__LIBRETRO__)
+#if defined(__PS3__)
  return -1;
 #else
 #if !defined(STAT_STATFS2_FS_DATA) && !defined(STAT_READ_FILSYS) && !defined(ANDROID)
@@ -380,3 +394,5 @@ int
 
 #endif /* ! __BEOS__ */
 #endif /* ! TARGET_AMIGAOS */
+
+#endif /* __LIBRETRO__ */

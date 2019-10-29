@@ -89,12 +89,16 @@ static int fsdb_name_invalid_2 (const TCHAR *n, int dir)
         if (_tcscmp (n, FSDB_FILE) == 0)
                 return -1;
 
+#ifndef __LIBRETRO__
         if (dir) {
+#endif
                 if (n[0] == '.' && l == 1)
                         return -1;
                 if (n[0] == '.' && n[1] == '.' && l == 2)
                         return -1;
+#ifndef __LIBRETRO__
         }
+#endif
 
         if (a >= 'a' && a <= 'z')
                 a -= 32;
@@ -156,7 +160,7 @@ int fsdb_fill_file_attrs (a_inode *base, a_inode *aino)
     aino->amigaos_mode = ((S_IXUSR & statbuf.st_mode ? 0 : A_FIBF_EXECUTE)
 			  | (S_IWUSR & statbuf.st_mode ? 0 : A_FIBF_WRITE)
 			  | (S_IRUSR & statbuf.st_mode ? 0 : A_FIBF_READ));
-#ifdef ANDROID
+#if defined (ANDROID) || defined (__LIBRETRO__)
     // Always give execute & read permission
     aino->amigaos_mode &= ~A_FIBF_EXECUTE;
     aino->amigaos_mode &= ~A_FIBF_READ;
