@@ -64,17 +64,8 @@ It is critical to use Kickstarts with the correct MD5, otherwise the core might 
 |kick40063.A600|Kickstart v3.1 (Rev. 40.063)|Amiga 600|e40a5dfb3d017ba8779faba30cbd1c8e|
 |kick40068.A1200|Kickstart v3.1 (Rev. 40.068)|Amiga 1200|646773759326fbac3b2311fd8c8793ee|
 
-### Floppy drive sounds
-
-For Floppy drive sounds to work, copy the following files from https://github.com/libretro/libretro-uae/tree/master/sources/uae_data into a subdirectory called `uae_data` in your Retroarch system directory:
-
-```
-drive_click_LOUD.wav
-drive_snatch_LOUD.wav
-drive_spin_LOUD.wav
-drive_spinnd_LOUD.wav
-drive_startup_LOUD.wav
-```
+### Floppy drive sound
+For external floppy drive sounds to work, copy the files from https://github.com/libretro/libretro-uae/tree/master/sources/uae_data into a subdirectory called `uae_data` in your RetroArch system directory.
 
 ### IPF Support
 Most full-price commercial Amiga games had some form of custom disk format and/or copy protection on them. For this reason, most commercial Amiga games cannot be stored in ADF files unaltered, but there is an alternative called Interchangeable Preservation Format (IPF) which was specifically designed for this purpose.
