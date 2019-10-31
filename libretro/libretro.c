@@ -417,12 +417,12 @@ void retro_set_environment(retro_environment_t cb)
          "CPU compatibility",
          "",
          {
-            { "normal", "Normal" },
-            { "compatible", "More compatible" },
             { "exact", "Cycle exact" },
+            { "compatible", "More compatible" },
+            { "normal", "Normal" },
             { NULL, NULL },
          },
-         "normal"
+         "exact"
       },
       {
          "puae_cpu_throttle",
