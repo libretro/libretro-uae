@@ -29,6 +29,7 @@ extern int ftime(struct timeb*  timebuf);
 #endif
 
 typedef int BOOL;
+extern int log_filesys;
 
 #ifndef _WIN32
 
@@ -89,12 +90,12 @@ typedef struct {
 } LARGE_INTEGER;
 #endif
 
-#ifdef _WIN32
+/*#ifdef _WIN32
  #define S_IRGRP 00040
  #define S_IWGRP 00020
  #define S_IROTH 00004
  #define S_IWOTH 00002
-#endif
+#endif*/
 
 /* fsdb_mywin32 */
 bool my_stat (const TCHAR *name, struct mystat *statbuf)
@@ -645,31 +646,36 @@ int my_truncate (const TCHAR *name, uae_u64 len) {
 }
 
 uae_s64 my_fsize (struct my_openfile_s *mos) {
-	uae_s64 cur, filesize;
+    uae_s64 cur, filesize;
 
-	cur = my_lseek (mos->h, 0, SEEK_CUR);
-	filesize = my_lseek (mos->h, 0, SEEK_END);
-	my_lseek (mos->h, cur, SEEK_SET);
-	write_log (_T("FS: filesize <%d>\n"), filesize);
-	return filesize;
+#ifndef __LIBRETRO__
+    cur = my_lseek (mos->h, 0, SEEK_CUR);
+    filesize = my_lseek (mos->h, 0, SEEK_END);
+    my_lseek (mos->h, cur, SEEK_SET);
+#endif
+    if (log_filesys)
+        write_log (_T("FS: filesize <%d>\n"), filesize);
+    return filesize;
 }
 
 int my_read (struct my_openfile_s *mos, void *b, unsigned int size) {
     DWORD read = 0;
 #ifdef _WIN32
     ReadFile (mos->h, b, size, &read, NULL);
-	//ssize_t bytesRead = read(mos->h, b, size);
-	write_log (_T("read <%d> | FS: %x | size: %d | ERR: %s\n"), read, mos->h, size, strerror(errno));
+    //ssize_t bytesRead = read(mos->h, b, size);
+    if (log_filesys)
+        write_log (_T("read <%d> | FS: %x | size: %d | ERR: %s\n"), read, mos->h, size, strerror(errno));
 #endif
-	return read;
+    return read;
 }
 
 int my_write (struct my_openfile_s *mos, void *b, unsigned int size) {
     DWORD written = 0;
 #ifdef _WIN32
     WriteFile (mos->h, b, size, &written, NULL);
-	//ssize_t written = write (mos->h, b, size);
-	write_log (_T("wrote <%d> | FS: %x | ERR: %s\n"), written, mos->h, strerror(errno));
+    //ssize_t written = write (mos->h, b, size);
+    if (log_filesys)
+        write_log (_T("wrote <%d> | FS: %x | ERR: %s\n"), written, mos->h, strerror(errno));
 #endif
-	return written;
+    return written;
 }
