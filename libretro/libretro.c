@@ -417,12 +417,12 @@ void retro_set_environment(retro_environment_t cb)
          "CPU compatibility",
          "",
          {
-            { "normal", "Normal" },
-            { "compatible", "More compatible" },
             { "exact", "Cycle exact" },
+            { "compatible", "More compatible" },
+            { "normal", "Normal" },
             { NULL, NULL },
          },
-         "normal"
+         "exact"
       },
       {
          "puae_cpu_throttle",
@@ -526,7 +526,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_floppy_sound",
          "Floppy sound emulation",
-         "External files required in 'system/uae_data/'",
+         "",
          {
             { "100", "disabled" },
             { "90", "10\% volume" },
@@ -542,6 +542,18 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "100"
+      },
+      {
+         "puae_floppy_sound_type",
+         "Floppy sound emulation type",
+         "External file location is 'system/uae_data/'",
+         {
+            { "internal", "Internal" },
+            { "A500", "External: A500" },
+            { "LOUD", "External: LOUD" },
+            { NULL, NULL },
+         },
+         "internal"
       },
       {
          "puae_floppy_speed",
@@ -1299,6 +1311,59 @@ static void update_variables(void)
       /* Setting volume in realtime will crash on first pass */
       if (firstpass != 1)
          changed_prefs.dfxclickvolume=atoi(var.value);
+   }
+
+   var.key = "puae_floppy_sound_type";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (firstpass != 1)
+      {
+         if (strcmp(var.value, "internal") == 0)
+         {
+            for (int i = 0; i < 4; i++)
+               changed_prefs.floppyslots[i].dfxclick=1;
+         }
+         else
+         {
+            for (int i = 0; i < 4; i++)
+            {
+               changed_prefs.floppyslots[i].dfxclick=-1;
+               _tcscpy(changed_prefs.floppyslots[i].dfxclickexternal, var.value);
+            }
+         }
+      }
+      else
+      {
+         if (strcmp(var.value, "internal") == 0)
+         {
+            strcat(uae_config, "floppy0sound=1\n");
+            strcat(uae_config, "floppy1sound=1\n");
+            strcat(uae_config, "floppy2sound=1\n");
+            strcat(uae_config, "floppy3sound=1\n");
+         }
+         else
+         {
+            strcat(uae_config, "floppy0sound=-1\n");
+            strcat(uae_config, "floppy1sound=-1\n");
+            strcat(uae_config, "floppy2sound=-1\n");
+            strcat(uae_config, "floppy3sound=-1\n");
+
+            strcat(uae_config, "floppy0soundext=");
+            strcat(uae_config, var.value);
+            strcat(uae_config, "\n");
+            strcat(uae_config, "floppy1soundext=");
+            strcat(uae_config, var.value);
+            strcat(uae_config, "\n");
+            strcat(uae_config, "floppy2soundext=");
+            strcat(uae_config, var.value);
+            strcat(uae_config, "\n");
+            strcat(uae_config, "floppy3soundext=");
+            strcat(uae_config, var.value);
+            strcat(uae_config, "\n");
+         }
+      }
    }
 
    var.key = "puae_mouse_speed";

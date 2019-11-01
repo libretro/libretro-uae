@@ -28,8 +28,8 @@ static int drv_starting[4], drv_spinning[4], drv_has_spun[4], drv_has_disk[4];
 static int click_initialized, wave_initialized;
 #define DS_SHIFT 10
 static int sample_step;
-
 static uae_s16 *clickbuffer;
+static int clickcnt;
 
 uae_s16 *decodewav (uae_u8 *s, int *lenp)
 {
@@ -50,7 +50,15 @@ uae_s16 *decodewav (uae_u8 *s, int *lenp)
 			s += 4;
 			len = s[0] | (s[1] << 8) | (s[2] << 16) | (s[3] << 24);
 			dst = xmalloc (uae_s16, len / 2);
+#ifdef WORDS_BIGENDIAN
+			int8_t *dst8 = (int8_t *) dst;
+			for (int i = 0; i < len; i += 2) {
+				dst8[i] = s[i + 1];
+				dst8[i + 1] = s[i];
+			}
+#else
 			memcpy (dst, s + 4, len);
+#endif
 			*lenp = len / 2;
 			return dst;
 		}
@@ -96,16 +104,15 @@ static void freesample (struct drvsample *s)
 
 static void processclicks (struct drvsample *ds)
 {
-	int n = 0;
 	unsigned int nClick = 0;
 
-	for (n = 0; n < CLICK_TRACKS; n++)  {
+	for (int n = 0; n < CLICK_TRACKS; n++) {
 		ds->indexes[n] = 0;
 		ds->lengths[n] = 0;
 	}
-	for(n = 0; n < ds->len; n++) {
+	for(int n = 0; n < ds->len; n++) {
 		uae_s16 smp = ds->p[n];
-		if (smp > 0x6ff0 && nClick < CLICK_TRACKS)  {
+		if (smp > 0x6ff0 && nClick < CLICK_TRACKS) {
 			ds->indexes[nClick] = n - 128;
 			ds->lengths[nClick] = 2800;
 			nClick ++;
@@ -113,50 +120,68 @@ static void processclicks (struct drvsample *ds)
 		}
 	}
 	if (nClick == 0) {
-		for(n = 0; n < CLICK_TRACKS; n++) {
+		for(int n = 0; n < CLICK_TRACKS; n++) {
 			ds->indexes[n] = 0;
 			ds->lengths[n] = ds->len;
 		}
 	} else {
 		if (nClick == 1) {
 			ds->lengths[0] = ds->len - ds->indexes[0];
-			for(n = 1; n < CLICK_TRACKS; n++) {
+			for(int n = 1; n < CLICK_TRACKS; n++) {
 				ds->indexes[n] = ds->indexes[0];
 				ds->lengths[n] = ds->lengths[0];
 			}
-		} else  {
-			for(n = nClick; n < CLICK_TRACKS; n++) {
+		} else {
+			for(int n = nClick; n < CLICK_TRACKS; n++) {
 				ds->indexes[n] = ds->indexes[nClick-1];
 				ds->lengths[n] = ds->lengths[nClick-1];
 			}
 		}
 	}
 }
+
+static void driveclick_close(void)
+{
+	driveclick_fdrawcmd_close (0);
+	driveclick_fdrawcmd_close (1);
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < DS_END; j++)
+			freesample (&drvs[i][j]);
+	}
+	memset (drvs, 0, sizeof (drvs));
+	click_initialized = 0;
+	wave_initialized = 0;
+	driveclick_reset ();
+}
+
+void driveclick_free(void)
+{
+	driveclick_close();
+}
+
 void driveclick_init (void)
 {
-	int v, vv, i, j;
+	int v, vv;
 	TCHAR tmp[MAX_DPATH];
 
 	driveclick_fdrawcmd_detect ();
-	driveclick_free ();
+	driveclick_close();
 	vv = 0;
-	for (i = 0; i < 4; i++) {
+	for (int i = 0; i < 4; i++) {
 		struct floppyslot *fs = &currprefs.floppyslots[i];
-		for (j = 0; j < CLICK_TRACKS; j++)  {
+		for (int j = 0; j < CLICK_TRACKS; j++) {
 			drvs[i][DS_CLICK].indexes[j] = 0;
 			drvs[i][DS_CLICK].lengths[j] = 0;
 		}
-
-		fs->dfxclick = -1;
 		if (fs->dfxclick) {
-			/*if (fs->dfxclick > 0) {
-				v = 0;
+		    v = 0;
+			if (fs->dfxclick > 0) {
 				switch(fs->dfxclick)
 				{
 				case 1:
 					if (driveclick_loadresource (drvs[i], fs->dfxclick))
 						v = 3;
-					for (j = 0; j < CLICK_TRACKS; j++)
+					for (int j = 0; j < CLICK_TRACKS; j++)
 						drvs[i][DS_CLICK].lengths[j] = drvs[i][DS_CLICK].len;
 					wave_initialized = 1;
 					break;
@@ -165,90 +190,77 @@ void driveclick_init (void)
 						v = 1;
 					break;
 				}
-			} else*/ if (fs->dfxclick == -1) {
+			} else if (fs->dfxclick == -1) {
 				TCHAR path2[MAX_DPATH];
 				wave_initialized = 1;
-				for (j = 0; j < CLICK_TRACKS; j++)
+				for (int j = 0; j < CLICK_TRACKS; j++)
 					drvs[i][DS_CLICK].lengths[j] = drvs[i][DS_CLICK].len;
-//				get_plugin_path (path2, sizeof path2 / sizeof (TCHAR), _T("floppysounds"));
 #ifdef __LIBRETRO__
 				extern char *retro_system_directory;
 				_stprintf (path2, "%s%cuae_data%c", retro_system_directory, FSDB_DIR_SEPARATOR, FSDB_DIR_SEPARATOR);
 #else
+				get_plugin_path (path2, sizeof path2 / sizeof (TCHAR), _T("floppysounds"));
 				_stprintf (path2, "%suae_data%c", "./", FSDB_DIR_SEPARATOR);
 #endif
-				_stprintf (tmp, _T("%sdrive_click_LOUD%s"),
+				_stprintf (tmp, _T("%sdrive_click_%s"),
 					path2, fs->dfxclickexternal);
 				v = loadsample (tmp, &drvs[i][DS_CLICK]);
 				if (v)
 					processclicks (&drvs[i][DS_CLICK]);
-				_stprintf (tmp, _T("%sdrive_spin_LOUD%s"),
+				_stprintf (tmp, _T("%sdrive_spin_%s"),
 					path2, fs->dfxclickexternal);
 				v += loadsample (tmp, &drvs[i][DS_SPIN]);
-				_stprintf (tmp, _T("%sdrive_spinnd_LOUD%s"),
+				_stprintf (tmp, _T("%sdrive_spinnd_%s"),
 					path2, fs->dfxclickexternal);
 				v += loadsample (tmp, &drvs[i][DS_SPINND]);
-				_stprintf (tmp, _T("%sdrive_startup_LOUD%s"),
+				_stprintf (tmp, _T("%sdrive_startup_%s"),
 					path2, fs->dfxclickexternal);
 				v += loadsample (tmp, &drvs[i][DS_START]);
-				_stprintf (tmp, _T("%sdrive_snatch_LOUD%s"),
+				_stprintf (tmp, _T("%sdrive_snatch_%s"),
 					path2, fs->dfxclickexternal);
 				v += loadsample (tmp, &drvs[i][DS_SNATCH]);
 			}
 			if (v == 0) {
-				int j;
-				for (j = 0; j < DS_END; j++)
+				for (int j = 0; j < DS_END; j++)
 					freesample (&drvs[i][j]);
 				fs->dfxclick = changed_prefs.floppyslots[i].dfxclick = 0;
 			} else {
 				vv++;
 			}
-			for (j = 0; j < DS_END; j++)
+			for (int j = 0; j < DS_END; j++)
 				drvs[i][j].len <<= DS_SHIFT;
 			drvs[i][DS_CLICK].pos = drvs[i][DS_CLICK].len;
 			drvs[i][DS_SNATCH].pos = drvs[i][DS_SNATCH].len;
 		}
 	}
-	driveclick_reset ();
-	if (vv > 0)
+	if (vv > 0) {
 		click_initialized = 1;
-	if (v != 5) { click_initialized= 0; wave_initialized = 0;}
+	}
+	driveclick_reset();
 }
 
 void driveclick_reset (void)
 {
 	xfree (clickbuffer);
 	clickbuffer = NULL;
+	clickcnt = 0;
+	for (int i = 0; i < 4; i++) {
+		drv_starting[i] = 0;
+		drv_spinning[i] = 0;
+		drv_has_spun[i] = 0;
+		drv_has_disk[i] = 0;
+		if (currprefs.floppyslots[i].df[0])
+			driveclick_insert(i, 0);
+	}
 	if (!wave_initialized)
 		return;
 	clickbuffer = xmalloc (uae_s16, paula_sndbufsize / 2);
 	sample_step = (freq << DS_SHIFT) / currprefs.sound_freq;
 }
 
-void driveclick_free (void)
-{
-	int i, j;
-
-	driveclick_fdrawcmd_close (0);
-	driveclick_fdrawcmd_close (1);
-	for (i = 0; i < 4; i++) {
-		for (j = 0; j < DS_END; j++)
-			freesample (&drvs[i][j]);
-		drv_starting[i] = 0;
-		drv_spinning[i] = 0;
-		drv_has_spun[i] = 0;
-		drv_has_disk[i] = 0;
-	}
-	memset (drvs, 0, sizeof (drvs));
-	click_initialized = 0;
-	wave_initialized = 0;
-	driveclick_reset ();
-}
-
 static int driveclick_active (void)
 {
-	int i;
-	for (i = 0; i < 4; i++) {
+	for (int i = 0; i < 4; i++) {
 		if (currprefs.floppyslots[i].dfxclick) {
 			if (drv_spinning[i] || drv_starting[i])
 				return 1;
@@ -257,13 +269,15 @@ static int driveclick_active (void)
 	return 0;
 }
 
-STATIC_INLINE uae_s16 getsample (void)
+static uae_s16 getsample (void)
 {
-	uae_s32 smp = 0;
-	int div = 0, i;
+	uae_s32 total_sample = 0;
+	int total_div = 0;
 
-	for (i = 0; i < 4; i++) {
+	for (int i = 0; i < 4; i++) {
+		int div = 0;
 		if (currprefs.floppyslots[i].dfxclick) {
+			uae_s32 smp = 0;
 			struct drvsample *ds_start = &drvs[i][DS_START];
 			struct drvsample *ds_spin = drv_has_disk[i] ? &drvs[i][DS_SPIN] : &drvs[i][DS_SPINND];
 			struct drvsample *ds_click = &drvs[i][DS_CLICK];
@@ -299,27 +313,24 @@ STATIC_INLINE uae_s16 getsample (void)
 				div++;
 				ds_click->pos += sample_step;
 			}
+			if (div) {
+				int vol;
+				vol = currprefs.dfxclickvolume;
+				total_sample += (smp * (100 - vol) / 100) / div;
+				total_div++;
+			}
 		}
 	}
-	if (!div)
+	if (!total_div)
 		return 0;
-	return smp / div;
+	return total_sample / total_div;
 }
-
-static int clickcnt;
 
 static void mix (void)
 {
-	int total = ((uae_u8*)paula_sndbufpt - (uae_u8*)paula_sndbuffer) / (currprefs.sound_stereo ? 4 : 2);
-
-	if (currprefs.dfxclickvolume > 0) {
-		while (clickcnt < total) {
-			clickbuffer[clickcnt++] = getsample () * (100 - currprefs.dfxclickvolume) / 100;
-		}
-	} else {
-		while (clickcnt < total) {
-			clickbuffer[clickcnt++] = getsample ();
-		}
+	int total = ((uae_u8*)paula_sndbufpt - (uae_u8*)paula_sndbuffer) / (get_audio_nativechannels (currprefs.sound_stereo) * 2);
+	while (clickcnt < total) {
+		clickbuffer[clickcnt++] = getsample ();
 	}
 }
 
@@ -334,8 +345,6 @@ STATIC_INLINE uae_s16 limit (uae_s32 v)
 
 void driveclick_mix (uae_s16 *sndbuffer, int size, int channelmask)
 {
-	int i;
-
 	if (!wave_initialized)
 		return;
 	mix ();
@@ -343,7 +352,7 @@ void driveclick_mix (uae_s16 *sndbuffer, int size, int channelmask)
 	switch (get_audio_nativechannels (currprefs.sound_stereo))
 	{
 	case 6:
-		for (i = 0; i < size / 6; i++) {
+		for (int i = 0; i < size / 6; i++) {
 			uae_s16 s = clickbuffer[i];
 			if (channelmask & 1)
 				sndbuffer[0] = limit (((sndbuffer[0] + s) * 2) / 3);
@@ -373,7 +382,7 @@ void driveclick_mix (uae_s16 *sndbuffer, int size, int channelmask)
 		}
 		break;
 	case 4:
-		for (i = 0; i < size / 4; i++) {
+		for (int i = 0; i < size / 4; i++) {
 			uae_s16 s = clickbuffer[i];
 			if (channelmask & 1)
 				sndbuffer[0] = limit (((sndbuffer[0] + s) * 2) / 3);
@@ -395,7 +404,7 @@ void driveclick_mix (uae_s16 *sndbuffer, int size, int channelmask)
 		}
 		break;
 	case 2:
-		for (i = 0; i < size / 2; i++) {
+		for (int i = 0; i < size / 2; i++) {
 			uae_s16 s = clickbuffer[i];
 			if (channelmask & 1)
 				sndbuffer[0] = limit (((sndbuffer[0] + s) * 2) / 3);
@@ -409,7 +418,7 @@ void driveclick_mix (uae_s16 *sndbuffer, int size, int channelmask)
 		}
 		break;
 	case 1:
-		for (i = 0; i < size; i++) {
+		for (int i = 0; i < size; i++) {
 			uae_s16 s = clickbuffer[i];
 			if (channelmask & 1)
 				sndbuffer[0] = limit (((sndbuffer[0] + s) * 2) / 3);
@@ -493,8 +502,6 @@ void driveclick_insert (int drive, int eject)
 
 void driveclick_check_prefs (void)
 {
-	int i;
-
 	if (!config_changed)
 		return;
 	driveclick_fdrawcmd_vsync ();
@@ -511,7 +518,7 @@ void driveclick_check_prefs (void)
 		_tcscmp (currprefs.floppyslots[3].dfxclickexternal, changed_prefs.floppyslots[3].dfxclickexternal))
 	{
 		currprefs.dfxclickvolume = changed_prefs.dfxclickvolume;
-		for (i = 0; i < 4; i++) {
+		for (int i = 0; i < 4; i++) {
 			currprefs.floppyslots[i].dfxclick = changed_prefs.floppyslots[i].dfxclick;
 			_tcscpy (currprefs.floppyslots[i].dfxclickexternal, changed_prefs.floppyslots[i].dfxclickexternal);
 		}
@@ -519,4 +526,54 @@ void driveclick_check_prefs (void)
 	}
 }
 
-#endif
+
+#ifdef __LIBRETRO__
+#include "retrodep/driveclick_wav.c"
+
+int driveclick_loadresource (struct drvsample *sp, int drivetype)
+{
+    for (int type = 0; type < DS_END; type++) {
+        const char *name = NULL;
+        char *data = NULL;
+        int size = 0;
+        switch (type) {
+        case 0:
+            data = drive_click_wav;
+            size = drive_click_wav_len;
+            break;
+        case 1:
+            data = drive_spin_wav;
+            size = drive_spin_wav_len;
+            break;
+        case 2:
+            data = drive_spinnd_wav;
+            size = drive_spinnd_wav_len;
+            break;
+        case 3:
+            data = drive_startup_wav;
+            size = drive_startup_wav_len;
+            break;
+        case 4:
+            data = drive_snatch_wav;
+            size = drive_snatch_wav_len;
+            break;
+        default:
+            continue;
+        }
+        int len = (int) size;
+        struct drvsample* s = sp + type;
+        uae_u8 *p = (uae_u8*)data;
+        s->p = decodewav(data, &len);
+        s->len = len;
+    }
+    return 1;
+}
+
+int driveclick_fdrawcmd_open(int drive)
+{
+    return 0;
+}
+
+#endif // __LIBRETRO__
+
+#endif // DRIVESOUND
