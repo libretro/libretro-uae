@@ -230,7 +230,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_model",
          "Model",
-         "Needs restart",
+         "Restart required.",
          {
             { "A500", "A500 (512KB Chip + 512KB Slow)" },
             { "A500OG", "A500 (512KB Chip)" },
@@ -243,8 +243,19 @@ void retro_set_environment(retro_environment_t cb)
          "A500"
       },
       {
+         "puae_video_hires",
+         "High Resolution",
+         "Restart required.",
+         {
+            { "false", "disabled" },
+            { "true", "enabled" },
+            { NULL, NULL },
+         },
+         "true"
+      },
+      {
          "puae_video_standard",
-         "Video standard",
+         "Video Standard",
          "",
          {
             { "PAL", NULL },
@@ -255,7 +266,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_video_aspect",
-         "Aspect ratio",
+         "Aspect Ratio",
          "",
          {
             { "auto", "Automatic" },
@@ -267,7 +278,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_video_allow_hz_change",
-         "Allow PAL/NTSC Hz change",
+         "Allow PAL/NTSC Hz Change",
          "",
          {
             { "enabled", NULL },
@@ -277,20 +288,9 @@ void retro_set_environment(retro_environment_t cb)
          "enabled"
       },
       {
-         "puae_video_hires",
-         "High resolution",
-         "Needs restart",
-         {
-            { "true", "enabled" },
-            { "false", "disabled" },
-            { NULL, NULL },
-         },
-         "true"
-      },
-      {
          "puae_zoom_mode",
-         "Zoom mode",
-         "Requirements in RetroArch settings:\nAspect Ratio: Core provided\nInteger Scale: Off",
+         "Zoom Mode",
+         "Requirements in RetroArch settings:\nAspect Ratio: Core provided,\nInteger Scale: Off.",
          {
             { "none", "disabled" },
             { "minimum", "Minimum" },
@@ -307,8 +307,8 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_vertical_pos",
-         "Vertical position",
-         "Automatic keeps zoom modes centered. Positive values force the screen upward and negative values downward",
+         "Vertical Position",
+         "Automatic keeps zoom modes centered. Positive values force the screen upward and negative values downward.",
          {
             { "auto", "Automatic" },
             { "0", NULL },
@@ -353,19 +353,19 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_gfx_colors",
-         "Color depth",
-         "24bit is slower and not available on all platforms. Needs restart",
+         "Color Depth",
+         "24-bit is slower and not available on all platforms. Restart required.",
          {
-            { "16bit", "Thousands (16bit)" },
-            { "24bit", "Millions (24bit)" },
+            { "16bit", "Thousands (16-bit)" },
+            { "24bit", "Millions (24-bit)" },
             { NULL, NULL },
          },
          "16bit"
       },
       {
          "puae_collision_level",
-         "Collision level",
-         "Sprites and Playfields is recommended",
+         "Collision Level",
+         "'Sprites and Playfields' is recommended.",
          {
             { "playfields", "Sprites and Playfields" },
             { "sprites", "Sprites only" },
@@ -377,12 +377,12 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_immediate_blits",
-         "Immediate/Waiting blits",
-         "Ignored with Cycle exact",
+         "Immediate/Waiting Blits",
+         "'Immediate Blitter' ignored with 'Cycle-exact'.",
          {
             { "false", "disabled" },
-            { "immediate", "Immediate" },
-            { "waiting", "Waiting" },
+            { "immediate", "Immediate Blitter" },
+            { "waiting", "Wait for Blitter" },
             { NULL, NULL },
          },
          "false"
@@ -390,7 +390,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_gfx_framerate",
          "Frameskip",
-         "Not compatible with Cycle exact",
+         "Not compatible with 'Cycle-exact'.",
          {
             { "disabled", NULL },
             { "1", NULL },
@@ -401,33 +401,33 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_statusbar",
-         "Statusbar position and mode",
+         "Statusbar Position & Mode",
          "",
          {
-            { "bottom", "Bottom full" },
-            { "bottom_basic", "Bottom basic" },
-            { "top", "Top full" },
-            { "top_basic", "Top basic" },
+            { "bottom", "Bottom Full" },
+            { "bottom_basic", "Bottom Basic" },
+            { "top", "Top Full" },
+            { "top_basic", "Top Basic" },
             { NULL, NULL },
          },
          "bottom"
       },
       {
          "puae_cpu_compatibility",
-         "CPU compatibility",
+         "CPU Compatibility",
          "",
          {
-            { "exact", "Cycle exact" },
-            { "compatible", "More compatible" },
             { "normal", "Normal" },
+            { "compatible", "More compatible" },
+            { "exact", "Cycle-exact" },
             { NULL, NULL },
          },
          "exact"
       },
       {
          "puae_cpu_throttle",
-         "CPU speed",
-         "Ignored with Cycle exact",
+         "CPU Speed",
+         "Ignored with 'Cycle-exact'.",
          {
             { "-900.0", "-90\%" },
             { "-800.0", "-80\%" },
@@ -455,40 +455,40 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_sound_output",
-         "Sound output",
+         "Sound Output",
          "",
          {
-            { "exact", "Exact" },
-            { "normal", "Normal" },
-            { "interrupts", "Interrupts" },
             { "none", "None" },
+            { "interrupts", "Interrupts" },
+            { "normal", "Normal" },
+            { "exact", "Exact" },
             { NULL, NULL },
          },
          "exact"
       },
       {
          "puae_sound_stereo_separation",
-         "Sound stereo separation",
+         "Sound Stereo Separation",
          "",
          {
-            { "100\%", NULL },
-            { "90\%", NULL },
-            { "80\%", NULL },
-            { "70\%", NULL },
-            { "60\%", NULL },
-            { "50\%", NULL },
-            { "40\%", NULL },
-            { "30\%", NULL },
-            { "20\%", NULL },
-            { "10\%", NULL },
             { "0\%", NULL },
+            { "10\%", NULL },
+            { "20\%", NULL },
+            { "30\%", NULL },
+            { "40\%", NULL },
+            { "50\%", NULL },
+            { "60\%", NULL },
+            { "70\%", NULL },
+            { "80\%", NULL },
+            { "90\%", NULL },
+            { "100\%", NULL },
             { NULL, NULL },
          },
          "100\%"
       },
       {
          "puae_sound_interpol",
-         "Sound interpolation",
+         "Sound Interpolation",
          "",
          {
             { "none", "None" },
@@ -502,7 +502,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_sound_filter",
-         "Sound filter",
+         "Sound Filter",
          "",
          {
             { "emulated", "Emulated" },
@@ -514,7 +514,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_sound_filter_type",
-         "Sound filter type",
+         "Sound Filter Type",
          "",
          {
             { "standard", "A500" },
@@ -525,7 +525,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_floppy_sound",
-         "Floppy sound emulation",
+         "Floppy Sound Emulation",
          "",
          {
             { "100", "disabled" },
@@ -545,8 +545,8 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_floppy_sound_type",
-         "Floppy sound emulation type",
-         "External file location is 'system/uae_data/'",
+         "Floppy Sound Emulation Type",
+         "External file location is 'system/uae_data/'.",
          {
             { "internal", "Internal" },
             { "A500", "External: A500" },
@@ -557,7 +557,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_floppy_speed",
-         "Floppy speed",
+         "Floppy Speed",
          "",
          {
             { "100", "1x" },
@@ -572,7 +572,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_use_whdload",
          "Use WHDLoad.hdf",
-         "Needs restart",
+         "Restart required.",
          {
             { "enabled", NULL },
             { "disabled", NULL },
@@ -582,7 +582,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_analogmouse",
-         "Analog stick mouse",
+         "Analog Stick Mouse",
          "",
          {
             { "disabled", NULL },
@@ -595,44 +595,44 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_analogmouse_deadzone",
-         "Analog stick mouse deadzone",
+         "Analog Stick Mouse Deadzone",
          "",
          {
+            { "0", "0\%" },
+            { "5", "5\%" },
+            { "10", "10\%" },
             { "15", "15\%" },
             { "20", "20\%" },
             { "25", "25\%" },
             { "30", "30\%" },
             { "35", "35\%" },
-            { "0", "0\%" },
-            { "5", "5\%" },
-            { "10", "10\%" },
             { NULL, NULL },
          },
          "15"
       },
       {
          "puae_analogmouse_speed",
-         "Analog stick mouse speed",
+         "Analog Stick Mouse Speed",
          "",
          {
+            { "0.5", "50\%" },
+            { "0.6", "60\%" },
+            { "0.7", "70\%" },
+            { "0.8", "80\%" },
+            { "0.9", "90\%" },
             { "1.0", "100\%" },
             { "1.1", "110\%" },
             { "1.2", "120\%" },
             { "1.3", "130\%" },
             { "1.4", "140\%" },
             { "1.5", "150\%" },
-            { "0.5", "50\%" },
-            { "0.6", "60\%" },
-            { "0.7", "70\%" },
-            { "0.8", "80\%" },
-            { "0.9", "90\%" },
             { NULL, NULL },
          },
          "1.0"
       },
       {
          "puae_dpadmouse_speed",
-         "D-Pad mouse speed",
+         "D-Pad Mouse Speed",
          "",
          {
             { "4", "Slow" },
@@ -645,9 +645,18 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_mouse_speed",
-         "Mouse speed",
-         "Affects mouse speed globally",
+         "Mouse Speed",
+         "Affects mouse speed globally.",
          {
+            { "10", "10\%" },
+            { "20", "20\%" },
+            { "30", "30\%" },
+            { "40", "40\%" },
+            { "50", "50\%" },
+            { "60", "60\%" },
+            { "70", "70\%" },
+            { "80", "80\%" },
+            { "90", "90\%" },
             { "100", "100\%" },
             { "110", "110\%" },
             { "120", "120\%" },
@@ -659,23 +668,14 @@ void retro_set_environment(retro_environment_t cb)
             { "180", "180\%" },
             { "190", "190\%" },
             { "200", "200\%" },
-            { "10", "10\%" },
-            { "20", "20\%" },
-            { "30", "30\%" },
-            { "40", "40\%" },
-            { "50", "50\%" },
-            { "60", "60\%" },
-            { "70", "70\%" },
-            { "80", "80\%" },
-            { "90", "90\%" },
             { NULL, NULL },
          },
          "100"
       },
       {
          "puae_multimouse",
-         "Multiple mouse",
-         "Requirements: raw/udev input driver and proper mouse index in RA input configs.\nOnly for real mice, not RetroPad emulated",
+         "Multiple Mouse",
+         "Requirements: raw/udev input driver and proper mouse index in RA input configs.\nOnly for real mice, not RetroPad emulated.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -685,8 +685,8 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_keyrah_keypad_mappings",
-         "Keyrah keypad mappings",
-         "Hardcoded keypad to joy mappings for Keyrah hardware",
+         "Keyrah Keypad Mappings",
+         "Hardcoded keypad to joy mappings for Keyrah hardware.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -696,7 +696,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_physical_keyboard_pass_through",
-         "Physical keyboard pass-through",
+         "Physical Keyboard Pass-through",
          "Pass all physical keyboard events to the core. Disable this to prevent cursor keys and fire key from generating Amiga key events.",
          {
             { "disabled", NULL },
@@ -708,42 +708,42 @@ void retro_set_environment(retro_environment_t cb)
       /* Hotkeys */
       {
          "puae_mapper_vkbd",
-         "Hotkey: Toggle virtual keyboard",
-         "Pressing a button mapped to this key opens the keyboard",
+         "Hotkey: Toggle Virtual Keyboard",
+         "Pressing a button mapped to this key opens the keyboard.",
          {{ NULL, NULL }},
          "RETROK_F11"
       },
       {
          "puae_mapper_statusbar",
-         "Hotkey: Toggle statusbar",
-         "Pressing a button mapped to this key toggles statusbar",
+         "Hotkey: Toggle Statusbar",
+         "Pressing a button mapped to this key toggles the statusbar.",
          {{ NULL, NULL }},
          "RETROK_F10"
       },
       {
          "puae_mapper_mouse_toggle",
-         "Hotkey: Toggle mouse",
-         "Pressing a button mapped to this key toggles between joystick and mouse",
+         "Hotkey: Toggle Mouse",
+         "Pressing a button mapped to this key toggles between joystick and mouse control.",
          {{ NULL, NULL }},
          "RETROK_RCTRL"
       },
       {
          "puae_mapper_reset",
          "Hotkey: Reset",
-         "Ctrl-Amiga-Amiga",
+         "Ctrl-Amiga-Amiga combination.",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_aspect_ratio_toggle",
-         "Hotkey: Toggle aspect ratio",
-         "Only usable with PAL video",
+         "Hotkey: Toggle Aspect Ratio",
+         "Only usable with PAL video.",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_zoom_mode_toggle",
-         "Hotkey: Toggle zoom mode",
+         "Hotkey: Toggle Zoom Mode.",
          "",
          {{ NULL, NULL }},
          "---"
@@ -830,28 +830,28 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapper_lu",
          "RetroPad L-Up",
-         "Mapping for left analog stick up",
+         "Mapping for left analog stick up.",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_ld",
          "RetroPad L-Down",
-         "Mapping for left analog stick down",
+         "Mapping for left analog stick down.",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_ll",
          "RetroPad L-Left",
-         "Mapping for left analog stick left",
+         "Mapping for left analog stick left.",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_lr",
          "RetroPad L-Right",
-         "Mapping for left analog stick right",
+         "Mapping for left analog stick right.",
          {{ NULL, NULL }},
          "---"
       },
@@ -860,35 +860,35 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapper_ru",
          "RetroPad R-Up",
-         "Mapping for right analog stick up",
+         "Mapping for right analog stick up.",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_rd",
          "RetroPad R-Down",
-         "Mapping for right analog stick down",
+         "Mapping for right analog stick down.",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_rl",
          "RetroPad R-Left",
-         "Mapping for right analog stick left",
+         "Mapping for right analog stick left.",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_rr",
          "RetroPad R-Right",
-         "Mapping for right analog stick right",
+         "Mapping for right analog stick right.",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_turbo_fire_button",
-         "RetroPad turbo fire",
-         "Replaces mapped key with a turbo fire button",
+         "RetroPad Turbo Fire",
+         "Replaces the mapped key with a turbo fire button.",
          {
             { "disabled", NULL },
             { "A", "RetroPad A" },
@@ -904,8 +904,8 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_turbo_pulse",
-         "RetroPad turbo pulse",
-         "Frames in a button cycle. 2 equals button press and release on every other frame",
+         "RetroPad Turbo Pulse",
+         "Frames in a button cycle. 2 equals button press on a frame and release on the next frame.",
          {
             { "2", NULL },
             { "4", NULL },
@@ -976,7 +976,7 @@ void retro_set_environment(retro_environment_t cb)
       /* Fallback for older API */
       static struct retro_variable variables[64] = { 0 };
       i = 0;
-      while(core_options[i].key)
+      while (core_options[i].key)
       {
          buf[i][0] = 0;
          variables[i].key = core_options[i].key;
@@ -984,7 +984,7 @@ void retro_set_environment(retro_environment_t cb)
          strcat(buf[i], "; ");
          strcat(buf[i], core_options[i].default_value);
          j = 0;
-         while(core_options[i].values[j].value && j < RETRO_NUM_CORE_OPTION_VALUES_MAX)
+         while (core_options[i].values[j].value && j < RETRO_NUM_CORE_OPTION_VALUES_MAX)
          {
             strcat(buf[i], "|");
             strcat(buf[i], core_options[i].values[j].value);
@@ -1905,7 +1905,7 @@ static void retro_wrap_emulator(void)
 
    /* Dead emulator, 
     * but libco says not to return. */
-   while(true)
+   while (true)
    {
       LOGI("Running a dead emulator.");
       co_switch(mainThread);
