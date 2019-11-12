@@ -18,15 +18,15 @@ And of course for the RetroArch/Libretro team: "http://www.libretro.com/"
 
 |Key|Action|
 |---|---|
+|B|Button 1 / LMB|
+|A|Button 2 / RMB|
 |L|Toggle virtual keyboard|
 |R|Toggle statusbar|
-|A|Button 2 / RMB|
-|B|Button 1 / LMB|
 
 ## Virtual Keyboard Controls
 |Key|Action|
 |---|---|
-|B/Enter|Keypress|
+|B / Enter|Keypress|
 |A|Toggle transparency|
 |X|Toggle position|
 
