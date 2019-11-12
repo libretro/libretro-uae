@@ -19,6 +19,7 @@ extern cothread_t mainThread;
 extern cothread_t emuThread;
 extern int retrow; 
 extern int retroh;
+extern int zoomed_height;
 extern bool retro_update_av_info(bool, bool, bool);
 
 #define LOGI printf

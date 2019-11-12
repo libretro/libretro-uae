@@ -60,43 +60,29 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
 
    if (video_config_geometry & 0x04)    // PUAE_VIDEO_HIRES
    {
-      if (video_config_geometry & 0x02) // PUAE_VIDEO_NTSC
-         YPADDING       = 270;
-      else                              // PUAE_VIDEO_PAL
-         YPADDING       = 320;
-
-      YOFFSET = (SHOWKEYPOS == 1) ? (YPADDING / 2) : 0;
+      YPADDING = 10;
+      YOFFSET = (SHOWKEYPOS == 1) ? (-zoomed_height + YPADDING + (zoomed_height / 2)) : -(YPADDING);
    }
    else                                 // PUAE_VIDEO_LORES
    {
-      if (video_config_geometry & 0x02) // PUAE_VIDEO_NTSC
-         YPADDING       = 120;
-      else                              // PUAE_VIDEO_PAL
-         YPADDING       = 140;
-
       XPADDING          = 6;
 
       BKG_PADDING_X     = -2;
       BKG_PADDING_Y     = 1;
       FONT_MAX          = 4;
 
-      YOFFSET = (SHOWKEYPOS == 1) ? (YPADDING / 2) : 0;
+      YPADDING = 5;
+      YOFFSET = (SHOWKEYPOS == 1) ? (-zoomed_height - YPADDING + (zoomed_height / 2)) : -(YPADDING * 2);
    }
 
    int XSIDE = (retrow - XPADDING) / NPLGN;
-   int YSIDE = (retroh - YPADDING) / NLIGN;
+   int YSIDE = ((zoomed_height / 2) - YPADDING) / NLIGN;
 
    int XBASEKEY = (XPADDING / 2);
-   int YBASEKEY = (retroh - (NLIGN * YSIDE)) - (YPADDING / 2);
+   int YBASEKEY = (zoomed_height - (NLIGN * YSIDE)) - (YPADDING / 2);
 
    int XBASETEXT = (XPADDING / 2) + 4;
    int YBASETEXT = YBASEKEY + 4;
-
-   if ((video_config_geometry & ~0x04) && (video_config_geometry & ~0x08))  // PUAE_VIDEO_LORES
-      YOFFSET = YOFFSET - 8;
-
-   if ((video_config_geometry & 0x04) && (video_config_geometry & ~0x08))   // PUAE_VIDEO_HIRES
-      YOFFSET = YOFFSET - 10;
 
    /* Alternate color keys */
    char *alt_keys[] =
