@@ -454,6 +454,20 @@ void retro_set_environment(retro_environment_t cb)
          "0.0"
       },
       {
+         "puae_cpu_multiplier",
+         "CPU Cycle-exact Speed",
+         "Applies only with 'Cycle-exact'.",
+         {
+            { "0", "Normal" },
+            { "1", "1x (3.546895 MHz)" },
+            { "2", "2x (7.093790 MHz) A500" },
+            { "4", "4x (14.187580 MHz) A1200" },
+            { "8", "8x (28.375160 MHz)" },
+            { NULL, NULL },
+         },
+         "0"
+      },
+      {
          "puae_sound_output",
          "Sound Output",
          "",
@@ -1209,6 +1223,19 @@ static void update_variables(void)
 
       if (firstpass != 1)
          changed_prefs.m68k_speed_throttle=atof(var.value);
+   }
+
+   var.key = "puae_cpu_multiplier";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      strcat(uae_config, "cpu_multiplier=");
+      strcat(uae_config, var.value);
+      strcat(uae_config, "\n");
+
+      if (firstpass != 1)
+         changed_prefs.cpu_clock_multiplier=atoi(var.value) * 256;
    }
 
    var.key = "puae_sound_output";
