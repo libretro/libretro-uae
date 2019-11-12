@@ -201,3 +201,11 @@ Note that for most HDF files, the model has to be set to A1200 in Quickmenu->Opt
 
 If you are using RDB HDF files, please use 0,0,0,0 instead of geometry numbers like 32,1,2,512. The geometry will then be read from the file. This only works for RDB HDF files.
 
+### Features
+- Savestate support (using temp files)
+- Parallel port four player joystick adapter is emulated (always on)
+- Autozoom and autocentering options for large game display without borders or distortion
+- Mappable hotkeys to bring up statusbar and on-screen keyboard 
+- Analog stick mouse control
+- On screen keyboard with joystick/dpad control
+- ...
