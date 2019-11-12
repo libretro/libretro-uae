@@ -233,6 +233,16 @@ char* joystick_value_human(int val[16])
     return str;
 }
 
+bool flag_empty(int val[16])
+{
+   for (int x=0; x<16; x++)
+   {
+      if (val[x])
+         return false;
+   }
+   return true;
+}
+
 void Print_Status(void)
 {
    if (!opt_enhanced_statusbar)
@@ -272,45 +282,48 @@ void Print_Status(void)
    char JOYPORT3[10];
    char JOYPORT4[10];
 
+   char JOYMODE1[3];
+   char JOYMODE2[3];
+
    // Regular joyflags
-   sprintf(JOYPORT1, "J1%3s", joystick_value_human(jflag[0]));
-   sprintf(JOYPORT2, "J2%3s", joystick_value_human(jflag[1]));
-   sprintf(JOYPORT3, "J3%3s", joystick_value_human(jflag[2]));
-   sprintf(JOYPORT4, "J4%3s", joystick_value_human(jflag[3]));
+   if (MOUSEMODE==-1)
+   {
+       sprintf(JOYMODE1, "%2s", "J1");
+       sprintf(JOYMODE2, "%2s", "J2");
+   }
+   else
+   {
+       sprintf(JOYMODE1, "%2s", "M1");
+       sprintf(JOYMODE2, "%2s", "M2");
+   }
+
+   // Normal ports
+   sprintf(JOYPORT1, "%s%3s", JOYMODE1, joystick_value_human(jflag[0]));
+   sprintf(JOYPORT2, "%s%3s", JOYMODE2, joystick_value_human(jflag[1]));
+
+   // Parallel ports, hidden if not connected
+   if (uae_devices[2])
+      sprintf(JOYPORT3, "J3%3s", joystick_value_human(jflag[2]));
+   else
+      sprintf(JOYPORT3, "%5s", "");
+   if (uae_devices[3])
+      sprintf(JOYPORT4, "J4%3s", joystick_value_human(jflag[3]));
+   else
+      sprintf(JOYPORT4, "%5s", "");
 
    // Mouse flags
-   if (strcmp(JOYPORT1, "J1   ") == 0)
-      sprintf(JOYPORT1, "J1%3s", joystick_value_human(mflag[1]));
-   if (strcmp(JOYPORT2, "J2   ") == 0)
-      sprintf(JOYPORT2, "J2%3s", joystick_value_human(mflag[0]));
+   if (!flag_empty(mflag[1]))
+      sprintf(JOYPORT1, "%2s%3s", "M1", joystick_value_human(mflag[1]));
+   if (!flag_empty(mflag[0]))
+      sprintf(JOYPORT2, "%2s%3s", "M2", joystick_value_human(mflag[0]));
 
    // Keyrah joyflags
    if (opt_keyrahkeypad)
    {
-      if (strcmp(JOYPORT1, "J1   ") == 0)
-         sprintf(JOYPORT1, "J1%3s", joystick_value_human(kjflag[0]));
-      if (strcmp(JOYPORT2, "J2   ") == 0)
-         sprintf(JOYPORT2, "J2%3s", joystick_value_human(kjflag[1]));
-   }
-
-   // Emulated mouse speed
-   char MSPD_STR[2] = { 0 };
-   switch (opt_dpadmouse_speed)
-   {
-      case 2:
-      case 4:
-         MSPD_STR[0]='S';
-         break;
-      case 6:
-         MSPD_STR[0]='M';
-         break;
-      case 8:
-         MSPD_STR[0]='F';
-         break;
-      case 10:
-      case 12:
-         MSPD_STR[0]='V';
-         break;
+      if (!flag_empty(kjflag[0]))
+         sprintf(JOYPORT1, "%2s%3s", "K1", joystick_value_human(kjflag[0]));
+      if (!flag_empty(kjflag[1]))
+         sprintf(JOYPORT2, "%2s%3s", "K2", joystick_value_human(kjflag[1]));
    }
 
    // Zoom mode
@@ -356,11 +369,7 @@ void Print_Status(void)
       Draw_text32((uint32_t *)bmp,STAT_DECX+40,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT2);
       Draw_text32((uint32_t *)bmp,STAT_DECX+80,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT3);
       Draw_text32((uint32_t *)bmp,STAT_DECX+120,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT4);
-      if (MOUSEMODE==-1)
-         Draw_text32((uint32_t *)bmp,STAT_DECX+160,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Joystick");
-      else
-         Draw_text32((uint32_t *)bmp,STAT_DECX+160,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Mouse:%s ", MSPD_STR);
-      Draw_text32((uint32_t *)bmp,STAT_DECX+240,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Zoom:%s", ZOOM_MODE);
+      Draw_text32((uint32_t *)bmp,STAT_DECX+160,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Zoom:%s", ZOOM_MODE);
    }
    else
    {
@@ -370,11 +379,7 @@ void Print_Status(void)
       Draw_text(bmp,STAT_DECX+40,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT2);
       Draw_text(bmp,STAT_DECX+80,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT3);
       Draw_text(bmp,STAT_DECX+120,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT4);
-      if (MOUSEMODE==-1)
-         Draw_text(bmp,STAT_DECX+160,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Joystick");
-      else
-         Draw_text(bmp,STAT_DECX+160,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Mouse:%s ", MSPD_STR);
-      Draw_text(bmp,STAT_DECX+240,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Zoom:%s", ZOOM_MODE);
+      Draw_text(bmp,STAT_DECX+160,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Zoom:%s", ZOOM_MODE);
    }
 }
 
