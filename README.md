@@ -209,10 +209,20 @@ Note that for most HDF files, the model has to be set to A1200 in Quickmenu->Opt
 If you are using RDB HDF files, please use 0,0,0,0 instead of geometry numbers like 32,1,2,512. The geometry will then be read from the file. This only works for RDB HDF files.
 
 ### Features
-- Savestate support (using temp files)
-- Parallel port four player joystick adapter is emulated (always on)
-- Autozoom and autocentering options for large game display without borders or distortion
-- Mappable hotkeys to bring up statusbar and on-screen keyboard 
-- Analog stick mouse control
-- On screen keyboard with joystick/dpad control
+- Savestate support (sonninnos)
+- Parallel port four player joystick adapter is emulated with working two, three and four-player controls (sonninnos and rsn8887)
+- Autozoom and autocentering options for large game display without borders or distortion (sonninnos)
+- Mappable hotkeys to bring up statusbar and on-screen keyboard (sonninos)
+- Analog stick mouse control (sonninnos and rsn8887)
+- On screen keyboard with easy joystick/dpad control (sonninnos and rsn8887)
+- Implement new core options with some small print explanations (sonninnos)
+- Implement hotkeys for status bar and virtual keyboard that can be remapped instead of using hardcoded buttons (sonninnos)
+- Combining mouse speed indicator and other status bar indicators (sonninnos)
+- Allow starting the emulated Amiga without content (sonninnos)
+- Add many core options, such as a cycle exact option (sonninnos and rsn8887)
+- Allow to load any single, bootable .hdf hard drive file directly via load content (rsn8887)
+- Allow disabling the use of system/WHDLoad.hdf (rsn8887)
+- Fix quickmenu->disk control options for swapping disks on the fly (rsn8887)
+- Change option defaults to more sensible values (sonninnos)
+- Add Switch version of the core (rsn8887)
 - ...
