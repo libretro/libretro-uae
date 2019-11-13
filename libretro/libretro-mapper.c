@@ -1170,14 +1170,16 @@ void update_input(int disable_physical_cursor_keys)
 
 void retro_poll_event()
 {
-   /* If RetroPad is controlled with keyboard keys, then prevent up/down/left/right/fire/fire2 from generating keyboard key presses */
+   /* If RetroPad is controlled with keyboard keys, then prevent up/down/left/right/b/a/x/y from generating keyboard key presses */
    if (uae_devices[0] == RETRO_DEVICE_JOYPAD && ALTON==-1 && 
       (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B) ||
-       input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A)
+       input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A) ||
+       input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X) ||
+       input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y)
        ) &&
        !opt_keyboard_pass_through
    )
-      update_input(2); /* Skip all keyboard input when fire/fire2 is pressed */
+      update_input(2); /* Skip all keyboard input when b/a/x/y is pressed */
    else if (
       (uae_devices[0] == RETRO_DEVICE_JOYPAD) && ALTON==-1 &&
       (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) ||
