@@ -817,10 +817,31 @@ void update_input(int disable_physical_cursor_keys)
    /* Keyup only after button is up */
    if (oldi!=-1 && vkflag[4]!=1)
    {
-      retro_key_up(oldi);
+      if (oldi < -10)
+      {
+         if (oldi==-15)
+         {
+            retro_mouse_button(0, 0, 0);
+            mflag[0][RETRO_DEVICE_ID_JOYPAD_B]=0;
+         }
+         if (oldi==-16)
+         {
+            retro_mouse_button(0, 1, 0);
+            mflag[0][RETRO_DEVICE_ID_JOYPAD_A]=0;
+         }
+         if (oldi==-17)
+         {
+            retro_mouse_button(0, 2, 0);
+            mflag[0][RETRO_DEVICE_ID_JOYPAD_Y]=0;
+         }
+      }
+      else
+      {
+         retro_key_up(oldi);
 
-      if (SHIFTON==1)
-         retro_key_up(keyboard_translation[RETROK_LSHIFT]);
+         if (SHIFTON==1)
+            retro_key_up(keyboard_translation[RETROK_LSHIFT]);
+      }
 
       oldi=-1;
    }
@@ -1136,8 +1157,12 @@ void update_input(int disable_physical_cursor_keys)
       i=RETRO_DEVICE_ID_JOYPAD_B;
       if (vkflag[4]==0 && (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_RETURN)))
       {
-         vkflag[4]=1;
          i=check_vkey(vkx,vky);
+
+         if (i < -10 && i > -15)
+            ; // Allow mouse movement hold
+         else
+            vkflag[4]=1;
 
          if (i==-1)
             oldi=-1;
@@ -1146,6 +1171,34 @@ void update_input(int disable_physical_cursor_keys)
             oldi=-1;
             NPAGE=-NPAGE;
             Screen_SetFullUpdate();
+         }
+         else if (i < -10)
+         {
+            oldi=i;
+
+            if (i==-11) // Mouse up
+               retro_mouse(0, 0, -3);
+            if (i==-12) // Mouse down
+               retro_mouse(0, 0, 3);
+            if (i==-13) // Mouse left
+               retro_mouse(0, -3, 0);
+            if (i==-14) // Mouse right
+               retro_mouse(0, 3, 0);
+            if (i==-15) // LMB
+            {
+               retro_mouse_button(0, 0, 1);
+               mflag[0][RETRO_DEVICE_ID_JOYPAD_B]=1;
+            }
+            if (i==-16) // RMB
+            {
+               retro_mouse_button(0, 1, 1);
+               mflag[0][RETRO_DEVICE_ID_JOYPAD_A]=1;
+            }
+            if (i==-17) // MMB
+            {
+               retro_mouse_button(0, 2, 1);
+               mflag[0][RETRO_DEVICE_ID_JOYPAD_Y]=1;
+            }
          }
          else
          {

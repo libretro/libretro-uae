@@ -165,9 +165,9 @@ Mvk MVk[NPLGN * NLIGN * 2] = {
    { "b"  ,"B"  ,AK_B },
    { "n"  ,"N"  ,AK_N },
    { "m"  ,"M"  ,AK_M },
-   { ","  ,"<"  ,AK_COMMA },
-   { "."  ,">"  ,AK_PERIOD },
-   { "/"  ,"?"  ,AK_SLASH },
+   { "LMB","LMB",-15 },
+   { "MMB","MMB",-17 },
+   { "RMB","RMB",-16 },
 
    // 55
    { "LShift","LShift" ,AK_LSH },
@@ -179,7 +179,7 @@ Mvk MVk[NPLGN * NLIGN * 2] = {
    { "NP*","NP*",AK_NPMUL },
    { "RShift","RShift",AK_RSH },
    { "NPDel","NPDel",AK_NPDEL },
-   { "Up" ,"Up" ,AK_UP },
+   { "MUp" ,"MUp" ,-11 },
    { "Help","Help" ,AK_HELP },
 
    // 66
@@ -191,9 +191,9 @@ Mvk MVk[NPLGN * NLIGN * 2] = {
    { "NUMPAD","NUMPAD",-2 },
    { "<-" ,"<-" ,AK_BS },
    { "Enter","Enter",AK_ENT },
-   { "Left","Left",AK_LF },
-   { "Down","Down",AK_DN },
-   { "Right","Right",AK_RT },
+   { "MLeft","MLeft",-13 },
+   { "MDown","MDown",-12 },
+   { "MRight","MRight",-14 },
 
 };
 
