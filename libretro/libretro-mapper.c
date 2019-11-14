@@ -1352,13 +1352,13 @@ void retro_poll_event()
             // Digital mouse speed modifiers
             dpadmouse_speed = opt_dpadmouse_speed;
             if (mouse_speed[j] & MOUSE_SPEED_FASTER)
-               dpadmouse_speed = dpadmouse_speed + 4;
+               dpadmouse_speed = dpadmouse_speed + 3;
             if (mouse_speed[j] & MOUSE_SPEED_SLOWER)
                dpadmouse_speed = dpadmouse_speed - 4;
 
             // Digital mouse speed limits
-            if (dpadmouse_speed<4) dpadmouse_speed = 2;
-            if (dpadmouse_speed>10) dpadmouse_speed = 12;
+            if (dpadmouse_speed<3) dpadmouse_speed = 2;
+            if (dpadmouse_speed>12) dpadmouse_speed = 13;
 
             if (input_state_cb(j, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT))
                uae_mouse_x[j] += dpadmouse_speed;
