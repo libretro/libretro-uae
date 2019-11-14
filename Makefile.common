@@ -127,7 +127,6 @@ SOURCES_C += $(LIBRETRO)/libretro.c \
 				 $(LIBRETRO)/libretro-mapper.c \
 				 $(LIBRETRO)/vkbd.c \
 				 $(LIBRETRO)/graph.c \
-				 $(LIBRETRO)/fontmsx.c \
 				 $(LIBRETRO)/retro_files.c \
 				 $(LIBRETRO)/retro_strings.c \
 				 $(LIBRETRO)/retro_disk_control.c 

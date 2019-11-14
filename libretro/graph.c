@@ -8,201 +8,85 @@
 #include "graph.h"
 #include "libretro-glue.h"
 
-extern unsigned char  msx[];
-
-void printch(unsigned short *buffer,int x, int y, unsigned  short color,unsigned char ch,int taille,int pl,int zde)
+void DrawFBoxBmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color)
 {
-   int i,j;
-   unsigned char *font;
-   int rectx,recty;
+   int i,j,idx;
 
-   font=&msx[(int)ch * 8];
-
-   for(i = 0;i < 8; i++, font++)
+   for(i=x;i<x+dx;i++)
    {
-      for(j = 0;j < 8; j++)
+      for(j=y;j<y+dy;j++)
       {
-         if ((*font &(128>>j)))
-         {
-            rectx = x+(j<<0);
-            if(taille==1)
-               recty = y+(i<<1);
-            else
-               recty = y+(i<<0);
-
-            buffer[recty* retrow  + rectx] = color; 
-
-            if(pl==1)
-               buffer[(recty+1)* retrow  + rectx] = color; 				
-
-         }
+         idx= i + j * retrow;
+         buffer[idx]=color;	
       }
    }
 }
 
-void textpixel(unsigned  short *buffer,int x,int y,unsigned  short  color,int tail,int plein,int zdep, char *string,...)
+void DrawFBoxBmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t color)
 {
-   int boucle;
-   char	text[256];
-   va_list	ap;
+   int i,j,idx;
 
-   boucle = 0;
-
-   if (string == NULL)
-      return;		
-
-   va_start(ap, string);		
-   vsnprintf(text, sizeof(text), string, ap);	
-   va_end(ap);	
-
-   while(text[boucle]!=0)
+   for(i=x;i<x+dx;i++)
    {
-      printch(buffer,x,y,color,text[boucle],tail,plein,zdep);
-      boucle++;x+=8;//6;
+      for(j=y;j<y+dy;j++)
+      {
+         idx= i + j * retrow;
+         buffer[idx]=color;	
+      }
    }
-
 }
 
-void textCLpixel(unsigned  short  *buffer,int lim,int x,int x2,int y,unsigned  short color,int tail,int plein,int zdep,char *string,...)
+void DrawBoxBmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color)
 {
-   int boucle;
-   char	text[256];	   	
-   va_list	ap;			
+   int i,j,idx;
 
-   boucle = 0;
-
-   if (string == NULL)
-      return;
-
-   va_start(ap, string);		
-   vsnprintf(text, sizeof(text), string, ap);	
-   va_end(ap);
-
-   while(text[boucle]!=0 && boucle<lim)boucle++;   
-   boucle=(x2-x)/2 -(boucle*3);
-   x=boucle;
-
-   boucle=0;
-   while(text[boucle]!=0 && boucle<lim)
+   for(i=x;i<x+dx;i++)
    {
-      printch(buffer,x,y,color,text[boucle],tail,plein,zdep);
-      boucle++;x+=8;//6;
+      idx=i+y*retrow;
+      buffer[idx]=color;
+      idx=i+(y+dy)*retrow;
+      buffer[idx]=color;
    }
 
+   for(j=y;j<y+dy;j++)
+   {
+      idx=x+j*retrow;
+      buffer[idx]=color;	
+      idx=(x+dx)+j*retrow;
+      buffer[idx]=color;	
+   }
 }
 
-void textCpixel(unsigned  short *buffer,int x,int x2,int y,unsigned  short  color,int tail,int plein,int zdep,char *string,...)
+void DrawBoxBmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t color)
 {
-   int boucle;
-   char	text[256];	   	
-   va_list	ap;			
+   int i,j,idx;
 
-   boucle = 0;
-
-   if (string == NULL)
-      return;		
-
-   va_start(ap, string);		
-   vsnprintf(text, sizeof(text), string, ap);	
-   va_end(ap);
-
-   while(text[boucle] != 0)
-      boucle++;   
-   boucle=(x2-x)/2 -(boucle*3);
-   x=boucle;
-
-   boucle=0;
-   while(text[boucle]!=0)
+   for(i=x;i<x+dx;i++)
    {
-      printch(buffer,x,y,color,text[boucle],tail,plein,zdep);
-      boucle++;x+=8;//6;
+      idx=i+y*retrow;
+      buffer[idx]=color;
+      idx=i+(y+dy)*retrow;
+      buffer[idx]=color;
    }
 
+   for(j=y;j<y+dy;j++)
+   {
+      idx=x+j*retrow;
+      buffer[idx]=color;	
+      idx=(x+dx)+j*retrow;
+      buffer[idx]=color;	
+   }
 }
 
-void DrawPointBmp(unsigned  short  *buffer,int x,int y,unsigned  short color)
+void DrawPointBmp(unsigned short *buffer, int x, int y, unsigned short color)
 {
    int idx;
 
    idx = x + y * retrow;
-   buffer[idx]=color;	
+   buffer[idx]=color;
 }
 
-void DrawFBoxBmp(unsigned  short  *buffer,int x,int y,int dx,int dy,unsigned  short color)
-{
-   int i,j,idx;
-
-   for(i=x;i<x+dx;i++)
-   {
-      for(j=y;j<y+dy;j++)
-      {
-         idx= i + j * retrow;
-         buffer[idx]=color;	
-      }
-   }
-
-}
-
-void DrawFBoxBmp32(uint32_t  *buffer,int x,int y,int dx,int dy, uint32_t color)
-{
-   int i,j,idx;
-
-   for(i=x;i<x+dx;i++)
-   {
-      for(j=y;j<y+dy;j++)
-      {
-         idx= i + j * retrow;
-         buffer[idx]=color;	
-      }
-   }
-
-}
-
-void DrawBoxBmp(unsigned  short  *buffer,int x,int y,int dx,int dy,unsigned  short  color)
-{
-   int i,j,idx;
-
-   for(i=x;i<x+dx;i++)
-   {
-      idx=i+y*retrow;
-      buffer[idx]=color;
-      idx=i+(y+dy)*retrow;
-      buffer[idx]=color;
-   }
-
-   for(j=y;j<y+dy;j++)
-   {
-      idx=x+j*retrow;
-      buffer[idx]=color;	
-      idx=(x+dx)+j*retrow;
-      buffer[idx]=color;	
-   }
-
-}
-
-void DrawBoxBmp32(uint32_t  *buffer,int x,int y,int dx,int dy,uint32_t  color)
-{
-   int i,j,idx;
-
-   for(i=x;i<x+dx;i++)
-   {
-      idx=i+y*retrow;
-      buffer[idx]=color;
-      idx=i+(y+dy)*retrow;
-      buffer[idx]=color;
-   }
-
-   for(j=y;j<y+dy;j++)
-   {
-      idx=x+j*retrow;
-      buffer[idx]=color;	
-      idx=(x+dx)+j*retrow;
-      buffer[idx]=color;	
-   }
-
-}
-
-void DrawHlineBmp(unsigned  short  *buffer,int x,int y,int dx,int dy,unsigned  short  color)
+void DrawHlineBmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color)
 {
    int i,j,idx;
 
@@ -215,7 +99,7 @@ void DrawHlineBmp(unsigned  short  *buffer,int x,int y,int dx,int dy,unsigned  s
    }
 }
 
-void DrawVlineBmp(unsigned  short *buffer,int x,int y,int dx,int dy,unsigned  short  color)
+void DrawVlineBmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color)
 {
    int i,j,idx;
 
@@ -228,7 +112,7 @@ void DrawVlineBmp(unsigned  short *buffer,int x,int y,int dx,int dy,unsigned  sh
    }	
 }
 
-void DrawlineBmp(unsigned  short  *buffer,int x1,int y1,int x2,int y2,unsigned  short  color)
+void DrawlineBmp(unsigned short *buffer, int x1, int y1, int x2, int y2, unsigned short color)
 {
    int pixx, pixy, x, y, dx, dy, sx, sy, swaptmp, idx;
 
@@ -241,30 +125,30 @@ void DrawlineBmp(unsigned  short  *buffer,int x1,int y1,int x2,int y2,unsigned  
    {
       if (dy > 0)
       {
-         DrawVlineBmp(buffer, x1, y1,0, dy, color);
+         DrawVlineBmp(buffer, x1, y1, 0, dy, color);
          return;
       }
       else if (dy < 0)
       {
-         DrawVlineBmp(buffer, x1, y2,0, -dy, color);
+         DrawVlineBmp(buffer, x1, y2, 0, -dy, color);
          return;
       }
       else
       {
          idx=x1+y1*retrow;
          buffer[idx]=color;
-         return ;
+         return;
       }
    }
 
    if (dy == 0)
    {
-      if (dx>0)
+      if (dx > 0)
       {
          DrawHlineBmp(buffer, x1, y1, dx, 0, color);
          return;
       }
-      else if (dx<0)
+      else if (dx < 0)
       {
          DrawHlineBmp(buffer, x2, y1, -dx,0, color);
          return;
@@ -305,87 +189,14 @@ void DrawlineBmp(unsigned  short  *buffer,int x1,int y1,int x2,int y2,unsigned  
          idx += pixy;
       }
    }
-
-}
-
-void DrawBox(unsigned  short  *buf,box b,char t[],unsigned  short  color){
-
-   DrawBoxBmp(buf,b.x,b.y,b.dx,b.dy,color); 	
-   textCpixel(buf,b.x, 3*b.x + b.dx ,b.y+2,color,1,1,4,"%s",t);
-
-}
-
-void DrawBoxF(unsigned  short  *buf,box b,char t[],unsigned short  color,unsigned  short  border){
-
-   int ydec=b.y+(b.dy/2)-4;
-
-   if(ydec<b.y+2)ydec=b.y+2;
-
-   DrawBoxBmp(buf,b.x,b.y,b.dx,b.dy,border);
-   DrawFBoxBmp(buf,b.x+1,b.y+1,b.dx-2,b.dy-2,color);
-
-   textCpixel(buf,b.x, 3*b.x + b.dx , ydec ,border,1,1,4,"%s",t);
-
-}
-
-
-const float DEG2RAD = 3.14159/180;
-
-void DrawCircle(unsigned short *buf,int x, int y, int radius,unsigned short rgba,int full)
-{ 
-   int i;
-   float degInRad; 
-   int x1,y1;
-
-   for ( i=0; i < 360; i++)
-   {
-      degInRad = i*DEG2RAD;
-      x1=x+cos(degInRad)*radius;
-      y1=y+sin(degInRad)*radius;
-
-      if (full)
-         DrawlineBmp(buf,x,y, x1,y1,rgba); 
-      else
-         buf[x1+y1*retrow]=rgba;
-   }
-
-}
-
-//UINT16
-void filter_scale2x(unsigned char *srcPtr, unsigned srcPitch, 
-      unsigned char *dstPtr, unsigned dstPitch,
-      int width, int height)
-{
-   unsigned int nextlineSrc = srcPitch / sizeof(short);
-   short *p = (short *)srcPtr;
-
-   unsigned int nextlineDst = dstPitch / sizeof(short);
-   short *q = (short *)dstPtr;
-
-   while(height--)
-   {
-      int i = 0, j = 0;
-      for(i = 0; i < width; ++i, j += 2)
-      {
-         short B = *(p + i - nextlineSrc);
-         short D = *(p + i - 1);
-         short E = *(p + i);
-         short F = *(p + i + 1);
-         short H = *(p + i + nextlineSrc);
-
-         *(q + j) = D == B && B != F && D != H ? D : E;
-         *(q + j + 1) = B == F && B != D && F != H ? F : E;
-         *(q + j + nextlineDst) = D == H && D != B && H != F ? D : E;
-         *(q + j + nextlineDst + 1) = H == F && D != H && B != F ? F : E;
-      }
-      p += nextlineSrc;
-      q += nextlineDst << 1;
-   }
 }
 
 #include "font2.c"
 
-void Draw_string(unsigned short *surf, signed short int x, signed short int y, const char *string,unsigned short maxstrlen,unsigned short xscale, unsigned short yscale, unsigned short fg, unsigned short bg)
+void Draw_string(unsigned short *surf, signed short int x, signed short int y,
+      const char *string, unsigned short maxstrlen,
+      unsigned short xscale, unsigned short yscale,
+      unsigned short fg, unsigned short bg)
 {
    int k,strlen;
    int xrepeat, yrepeat;
@@ -400,22 +211,22 @@ void Draw_string(unsigned short *surf, signed short int x, signed short int y, c
    if(!string)
       return;
 
-   for(strlen = 0; strlen<maxstrlen && string[strlen]; strlen++) {}
+   for(strlen = 0; strlen < maxstrlen && string[strlen]; strlen++) {}
 
-   int surfw=strlen * 7 * xscale;
-   int surfh=8 * yscale;
+   int surfw = strlen * 7 * xscale;
+   int surfh = 8 * yscale;
 
-   linesurf =(unsigned char*)malloc(sizeof(unsigned short)*surfw*surfh );
+   linesurf = (unsigned char*)malloc(sizeof(unsigned short)*surfw*surfh);
 
    yptr = (unsigned short *)&linesurf[0];
 
-   for(ypixel = 0; ypixel<8; ypixel++)
+   for(ypixel = 0; ypixel < 8; ypixel++)
    {
-      for(col=0; col<strlen; col++)
+      for(col = 0; col < strlen; col++)
       {
-	 b = font_array[(((unsigned char)string[col])^0x80)*8 + ypixel];
+         b = font_array[(((unsigned char)string[col])^0x80)*8 + ypixel];
 
-         for(bit=0; bit<7; bit++, yptr++)
+         for(bit = 0; bit < 7; bit++, yptr++)
          {
             *yptr = (b & (1<<(7-bit))) ? fg : bg;
             for(xrepeat = 1; xrepeat < xscale; xrepeat++, yptr++)
@@ -423,28 +234,30 @@ void Draw_string(unsigned short *surf, signed short int x, signed short int y, c
          }
       }
 
-      for(yrepeat = 1; yrepeat < yscale; yrepeat++) 
-         for(xrepeat = 0; xrepeat<surfw; xrepeat++, yptr++)
+      for(yrepeat = 1; yrepeat < yscale; yrepeat++)
+         for(xrepeat = 0; xrepeat < surfw; xrepeat++, yptr++)
             *yptr = yptr[-surfw];
-
    }
 
    yptr = (unsigned short*)&linesurf[0];
 
-   for(yrepeat = y; yrepeat < y+ surfh; yrepeat++) 
-      for(xrepeat = x; xrepeat< x+surfw; xrepeat++,yptr++)
-         if(*yptr!=0)surf[xrepeat+yrepeat*retrow] = *yptr;
+   for(yrepeat = y; yrepeat < y+surfh; yrepeat++)
+      for(xrepeat = x; xrepeat < x+surfw; xrepeat++, yptr++)
+         if(*yptr != 0) surf[xrepeat+yrepeat*retrow] = *yptr;
 
    free(linesurf);
 }
 
-void Draw_string32(uint32_t *surf, signed short int x, signed short int y, const char *string,unsigned short maxstrlen,unsigned short xscale, unsigned short yscale, uint32_t fg, uint32_t bg)
+void Draw_string32(uint32_t *surf, signed short int x, signed short int y,
+      const char *string, unsigned short maxstrlen,
+      unsigned short xscale, unsigned short yscale,
+      uint32_t fg, uint32_t bg)
 {
    int k,strlen;
    int xrepeat, yrepeat;
    uint32_t *linesurf;
    signed short int ypixel;
-   uint32_t *yptr; 
+   uint32_t *yptr;
    int col, bit;
    unsigned char b;
 
@@ -453,22 +266,22 @@ void Draw_string32(uint32_t *surf, signed short int x, signed short int y, const
    if(!string)
       return;
 
-   for(strlen = 0; strlen<maxstrlen && string[strlen]; strlen++) {}
+   for(strlen = 0; strlen < maxstrlen && string[strlen]; strlen++) {}
 
-   int surfw=strlen * 7 * xscale;
-   int surfh=8 * yscale;
+   int surfw = strlen * 7 * xscale;
+   int surfh = 8 * yscale;
 
-   linesurf =(uint32_t *)malloc(sizeof(uint32_t)*surfw*surfh );
+   linesurf = (uint32_t *)malloc(sizeof(uint32_t)*surfw*surfh);
 
    yptr = (uint32_t *)&linesurf[0];
 
-   for(ypixel = 0; ypixel<8; ypixel++)
+   for(ypixel = 0; ypixel < 8; ypixel++)
    {
-      for(col=0; col<strlen; col++)
+      for(col = 0; col < strlen; col++)
       {
-	 b = font_array[(((unsigned char)string[col])^0x80)*8 + ypixel];
+         b = font_array[(((unsigned char)string[col])^0x80)*8 + ypixel];
 
-         for(bit=0; bit<7; bit++, yptr++)
+         for(bit = 0; bit < 7; bit++, yptr++)
          {
             *yptr = (b & (1<<(7-bit))) ? fg : bg;
             for(xrepeat = 1; xrepeat < xscale; xrepeat++, yptr++)
@@ -476,27 +289,28 @@ void Draw_string32(uint32_t *surf, signed short int x, signed short int y, const
          }
       }
 
-      for(yrepeat = 1; yrepeat < yscale; yrepeat++) 
-         for(xrepeat = 0; xrepeat<surfw; xrepeat++, yptr++)
+      for(yrepeat = 1; yrepeat < yscale; yrepeat++)
+         for(xrepeat = 0; xrepeat < surfw; xrepeat++, yptr++)
             *yptr = yptr[-surfw];
 
    }
 
    yptr = (uint32_t *)&linesurf[0];
 
-   for(yrepeat = y; yrepeat < y+ surfh; yrepeat++) 
-      for(xrepeat = x; xrepeat< x+surfw; xrepeat++,yptr++)
-         if(*yptr!=0)surf[xrepeat+yrepeat*retrow] = *yptr;
+   for(yrepeat = y; yrepeat < y+surfh; yrepeat++)
+      for(xrepeat = x; xrepeat < x+surfw; xrepeat++, yptr++)
+         if(*yptr != 0) surf[xrepeat+yrepeat*retrow] = *yptr;
 
    free(linesurf);
 }
 
-
-void Draw_text(unsigned  short *buffer,int x,int y,unsigned  short  fgcol,unsigned  short int bgcol ,int scalex,int scaley , int max, char *string,...)
+void Draw_text(unsigned short *buffer, int x, int y,
+      unsigned short fgcol, unsigned short bgcol,
+      int scalex, int scaley, int max, char *string, ...)
 {
-   int boucle=0;  
-   char text[256];	   	
-   va_list	ap;			
+   int boucle=0;
+   char text[256];
+   va_list ap;
 
    (void)boucle;
 
@@ -507,14 +321,16 @@ void Draw_text(unsigned  short *buffer,int x,int y,unsigned  short  fgcol,unsign
    vsnprintf(text, sizeof(text), string, ap);
    va_end(ap);
 
-   Draw_string(buffer, x,y, text,max, scalex, scaley,fgcol,bgcol);	
+   Draw_string(buffer, x, y, text, max, scalex, scaley, fgcol, bgcol);
 }
 
-void Draw_text32(uint32_t *buffer,int x,int y,uint32_t  fgcol,uint32_t bgcol ,int scalex,int scaley , int max, char *string,...)
+void Draw_text32(uint32_t *buffer, int x, int y,
+      uint32_t fgcol, uint32_t bgcol,
+      int scalex, int scaley, int max, char *string,...)
 {
-   int boucle=0;  
-   char text[256];	   	
-   va_list	ap;			
+   int boucle=0;
+   char text[256];
+   va_list ap;
 
    (void)boucle;
 
@@ -525,5 +341,5 @@ void Draw_text32(uint32_t *buffer,int x,int y,uint32_t  fgcol,uint32_t bgcol ,in
    vsnprintf(text, sizeof(text), string, ap);
    va_end(ap);
 
-   Draw_string32(buffer, x,y, text,max, scalex, scaley,fgcol,bgcol);	
+   Draw_string32(buffer, x, y, text, max, scalex, scaley, fgcol, bgcol);
 }
