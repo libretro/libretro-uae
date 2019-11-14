@@ -248,6 +248,8 @@ void Print_Status(void)
    if (!opt_enhanced_statusbar)
       return;
 
+   int ZOOM_POSX;
+
    // Statusbar location
    if (video_config & 0x04) // PUAE_VIDEO_HIRES
    {
@@ -260,6 +262,7 @@ void Print_Status(void)
          STAT_BASEY=gfxvidinfo.outheight-BOX_HEIGHT-opt_statusbar_position+2;
 
       BOX_WIDTH=retrow-146;
+      ZOOM_POSX=300;
    }
    else // PUAE_VIDEO_LORES
    {
@@ -272,6 +275,7 @@ void Print_Status(void)
          STAT_BASEY=gfxvidinfo.outheight-opt_statusbar_position+2;
 
       BOX_WIDTH=retrow;
+      ZOOM_POSX=251;
    }
 
    BOX_Y=STAT_BASEY-BOX_PADDING;
@@ -365,21 +369,23 @@ void Print_Status(void)
    {
       DrawFBoxBmp32((uint32_t *)bmp,0,BOX_Y,BOX_WIDTH,BOX_HEIGHT,RGB888(0,0,0));
 
-      Draw_text32((uint32_t *)bmp,STAT_DECX+0,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT1);
-      Draw_text32((uint32_t *)bmp,STAT_DECX+40,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT2);
-      Draw_text32((uint32_t *)bmp,STAT_DECX+80,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT3);
-      Draw_text32((uint32_t *)bmp,STAT_DECX+120,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT4);
-      Draw_text32((uint32_t *)bmp,STAT_DECX+160,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Zoom:%s", ZOOM_MODE);
+      Draw_text32((uint32_t *)bmp,STAT_DECX+0,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT1);
+      Draw_text32((uint32_t *)bmp,STAT_DECX+40,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT2);
+      Draw_text32((uint32_t *)bmp,STAT_DECX+80,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT3);
+      Draw_text32((uint32_t *)bmp,STAT_DECX+120,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT4);
+      if (zoom_mode_id > 0)
+         Draw_text32((uint32_t *)bmp,STAT_DECX+ZOOM_POSX,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Zoom:%s", ZOOM_MODE);
    }
    else
    {
       DrawFBoxBmp(bmp,0,BOX_Y,BOX_WIDTH,BOX_HEIGHT,RGB565(0,0,0));
 
-      Draw_text(bmp,STAT_DECX+0,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT1);
-      Draw_text(bmp,STAT_DECX+40,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT2);
-      Draw_text(bmp,STAT_DECX+80,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT3);
-      Draw_text(bmp,STAT_DECX+120,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT4);
-      Draw_text(bmp,STAT_DECX+160,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Zoom:%s", ZOOM_MODE);
+      Draw_text(bmp,STAT_DECX+0,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT1);
+      Draw_text(bmp,STAT_DECX+40,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT2);
+      Draw_text(bmp,STAT_DECX+80,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT3);
+      Draw_text(bmp,STAT_DECX+120,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT4);
+      if (zoom_mode_id > 0)
+         Draw_text(bmp,STAT_DECX+ZOOM_POSX,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Zoom:%s", ZOOM_MODE);
    }
 }
 
@@ -811,10 +817,31 @@ void update_input(int disable_physical_cursor_keys)
    /* Keyup only after button is up */
    if (oldi!=-1 && vkflag[4]!=1)
    {
-      retro_key_up(oldi);
+      if (oldi < -10)
+      {
+         if (oldi==-15)
+         {
+            retro_mouse_button(0, 0, 0);
+            mflag[0][RETRO_DEVICE_ID_JOYPAD_B]=0;
+         }
+         if (oldi==-16)
+         {
+            retro_mouse_button(0, 1, 0);
+            mflag[0][RETRO_DEVICE_ID_JOYPAD_A]=0;
+         }
+         if (oldi==-17)
+         {
+            retro_mouse_button(0, 2, 0);
+            mflag[0][RETRO_DEVICE_ID_JOYPAD_Y]=0;
+         }
+      }
+      else
+      {
+         retro_key_up(oldi);
 
-      if (SHIFTON==1)
-         retro_key_up(keyboard_translation[RETROK_LSHIFT]);
+         if (SHIFTON==1)
+            retro_key_up(keyboard_translation[RETROK_LSHIFT]);
+      }
 
       oldi=-1;
    }
@@ -1130,8 +1157,12 @@ void update_input(int disable_physical_cursor_keys)
       i=RETRO_DEVICE_ID_JOYPAD_B;
       if (vkflag[4]==0 && (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_RETURN)))
       {
-         vkflag[4]=1;
          i=check_vkey(vkx,vky);
+
+         if (i < -10 && i > -15)
+            ; // Allow mouse movement hold
+         else
+            vkflag[4]=1;
 
          if (i==-1)
             oldi=-1;
@@ -1140,6 +1171,34 @@ void update_input(int disable_physical_cursor_keys)
             oldi=-1;
             NPAGE=-NPAGE;
             Screen_SetFullUpdate();
+         }
+         else if (i < -10)
+         {
+            oldi=i;
+
+            if (i==-11) // Mouse up
+               retro_mouse(0, 0, -3);
+            if (i==-12) // Mouse down
+               retro_mouse(0, 0, 3);
+            if (i==-13) // Mouse left
+               retro_mouse(0, -3, 0);
+            if (i==-14) // Mouse right
+               retro_mouse(0, 3, 0);
+            if (i==-15) // LMB
+            {
+               retro_mouse_button(0, 0, 1);
+               mflag[0][RETRO_DEVICE_ID_JOYPAD_B]=1;
+            }
+            if (i==-16) // RMB
+            {
+               retro_mouse_button(0, 1, 1);
+               mflag[0][RETRO_DEVICE_ID_JOYPAD_A]=1;
+            }
+            if (i==-17) // MMB
+            {
+               retro_mouse_button(0, 2, 1);
+               mflag[0][RETRO_DEVICE_ID_JOYPAD_Y]=1;
+            }
          }
          else
          {
@@ -1170,14 +1229,16 @@ void update_input(int disable_physical_cursor_keys)
 
 void retro_poll_event()
 {
-   /* If RetroPad is controlled with keyboard keys, then prevent up/down/left/right/fire/fire2 from generating keyboard key presses */
+   /* If RetroPad is controlled with keyboard keys, then prevent up/down/left/right/b/a/x/y from generating keyboard key presses */
    if (uae_devices[0] == RETRO_DEVICE_JOYPAD && ALTON==-1 && 
       (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B) ||
-       input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A)
+       input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A) ||
+       input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X) ||
+       input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y)
        ) &&
        !opt_keyboard_pass_through
    )
-      update_input(2); /* Skip all keyboard input when fire/fire2 is pressed */
+      update_input(2); /* Skip all keyboard input when b/a/x/y is pressed */
    else if (
       (uae_devices[0] == RETRO_DEVICE_JOYPAD) && ALTON==-1 &&
       (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) ||
@@ -1291,13 +1352,13 @@ void retro_poll_event()
             // Digital mouse speed modifiers
             dpadmouse_speed = opt_dpadmouse_speed;
             if (mouse_speed[j] & MOUSE_SPEED_FASTER)
-               dpadmouse_speed = dpadmouse_speed + 4;
+               dpadmouse_speed = dpadmouse_speed + 3;
             if (mouse_speed[j] & MOUSE_SPEED_SLOWER)
                dpadmouse_speed = dpadmouse_speed - 4;
 
             // Digital mouse speed limits
-            if (dpadmouse_speed<4) dpadmouse_speed = 2;
-            if (dpadmouse_speed>10) dpadmouse_speed = 12;
+            if (dpadmouse_speed<3) dpadmouse_speed = 2;
+            if (dpadmouse_speed>12) dpadmouse_speed = 13;
 
             if (input_state_cb(j, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT))
                uae_mouse_x[j] += dpadmouse_speed;
