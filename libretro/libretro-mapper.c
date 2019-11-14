@@ -248,6 +248,8 @@ void Print_Status(void)
    if (!opt_enhanced_statusbar)
       return;
 
+   int ZOOM_POSX;
+
    // Statusbar location
    if (video_config & 0x04) // PUAE_VIDEO_HIRES
    {
@@ -260,6 +262,7 @@ void Print_Status(void)
          STAT_BASEY=gfxvidinfo.outheight-BOX_HEIGHT-opt_statusbar_position+2;
 
       BOX_WIDTH=retrow-146;
+      ZOOM_POSX=300;
    }
    else // PUAE_VIDEO_LORES
    {
@@ -272,6 +275,7 @@ void Print_Status(void)
          STAT_BASEY=gfxvidinfo.outheight-opt_statusbar_position+2;
 
       BOX_WIDTH=retrow;
+      ZOOM_POSX=251;
    }
 
    BOX_Y=STAT_BASEY-BOX_PADDING;
@@ -365,21 +369,23 @@ void Print_Status(void)
    {
       DrawFBoxBmp32((uint32_t *)bmp,0,BOX_Y,BOX_WIDTH,BOX_HEIGHT,RGB888(0,0,0));
 
-      Draw_text32((uint32_t *)bmp,STAT_DECX+0,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT1);
-      Draw_text32((uint32_t *)bmp,STAT_DECX+40,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT2);
-      Draw_text32((uint32_t *)bmp,STAT_DECX+80,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT3);
-      Draw_text32((uint32_t *)bmp,STAT_DECX+120,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT4);
-      Draw_text32((uint32_t *)bmp,STAT_DECX+160,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Zoom:%s", ZOOM_MODE);
+      Draw_text32((uint32_t *)bmp,STAT_DECX+0,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT1);
+      Draw_text32((uint32_t *)bmp,STAT_DECX+40,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT2);
+      Draw_text32((uint32_t *)bmp,STAT_DECX+80,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT3);
+      Draw_text32((uint32_t *)bmp,STAT_DECX+120,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT4);
+      if (zoom_mode_id > 0)
+         Draw_text32((uint32_t *)bmp,STAT_DECX+ZOOM_POSX,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Zoom:%s", ZOOM_MODE);
    }
    else
    {
       DrawFBoxBmp(bmp,0,BOX_Y,BOX_WIDTH,BOX_HEIGHT,RGB565(0,0,0));
 
-      Draw_text(bmp,STAT_DECX+0,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT1);
-      Draw_text(bmp,STAT_DECX+40,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT2);
-      Draw_text(bmp,STAT_DECX+80,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT3);
-      Draw_text(bmp,STAT_DECX+120,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,40,JOYPORT4);
-      Draw_text(bmp,STAT_DECX+160,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Zoom:%s", ZOOM_MODE);
+      Draw_text(bmp,STAT_DECX+0,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT1);
+      Draw_text(bmp,STAT_DECX+40,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT2);
+      Draw_text(bmp,STAT_DECX+80,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT3);
+      Draw_text(bmp,STAT_DECX+120,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT4);
+      if (zoom_mode_id > 0)
+         Draw_text(bmp,STAT_DECX+ZOOM_POSX,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Zoom:%s", ZOOM_MODE);
    }
 }
 
