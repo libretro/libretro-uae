@@ -113,7 +113,8 @@ bool let_go_of_direction = true;
 long last_move_time = 0;
 long last_press_time = 0;
 
-void emu_function(int function) {
+void emu_function(int function)
+{
    switch (function)
    {
       case EMU_VKBD:
@@ -248,36 +249,13 @@ void Print_Status(void)
    if (!opt_enhanced_statusbar)
       return;
 
-   int ZOOM_POSX;
-
    // Statusbar location
-   if (video_config & 0x04) // PUAE_VIDEO_HIRES
-   {
-      if (opt_statusbar_position < 0)
-         if (opt_statusbar_position == -1)
-             STAT_BASEY=2;
-         else
-             STAT_BASEY=-opt_statusbar_position+1+BOX_PADDING;
-      else
-         STAT_BASEY=gfxvidinfo.outheight-BOX_HEIGHT-opt_statusbar_position+2;
+   if (opt_statusbar_position < 0) // Top
+      STAT_BASEY=2;
+   else // Bottom
+      STAT_BASEY=gfxvidinfo.outheight-opt_statusbar_position-BOX_HEIGHT+2;
 
-      BOX_WIDTH=retrow-146;
-      ZOOM_POSX=300;
-   }
-   else // PUAE_VIDEO_LORES
-   {
-      if (opt_statusbar_position < 0)
-         if (opt_statusbar_position == -1)
-             STAT_BASEY=0;
-         else
-             STAT_BASEY=-opt_statusbar_position-BOX_HEIGHT+3;
-      else
-         STAT_BASEY=gfxvidinfo.outheight-opt_statusbar_position+2;
-
-      BOX_WIDTH=retrow;
-      ZOOM_POSX=251;
-   }
-
+   BOX_WIDTH=retrow-146;
    BOX_Y=STAT_BASEY-BOX_PADDING;
 
    // Joy port indicators
@@ -330,40 +308,6 @@ void Print_Status(void)
          sprintf(JOYPORT2, "%2s%3s", "K2", joystick_value_human(kjflag[1]));
    }
 
-   // Zoom mode
-   char ZOOM_MODE[10];
-   switch (zoom_mode_id)
-   {
-      default:
-      case 0:
-         sprintf(ZOOM_MODE, "%s", "None");
-         break;
-      case 1:
-         sprintf(ZOOM_MODE, "%s", "Minimum");
-         break;
-      case 2:
-         sprintf(ZOOM_MODE, "%s", "Smaller");
-         break;
-      case 3:
-         sprintf(ZOOM_MODE, "%s", "Small");
-         break;
-      case 4:
-         sprintf(ZOOM_MODE, "%s", "Medium");
-         break;
-      case 5:
-         sprintf(ZOOM_MODE, "%s", "Large");
-         break;
-      case 6:
-         sprintf(ZOOM_MODE, "%s", "Larger");
-         break;
-      case 7:
-         sprintf(ZOOM_MODE, "%s", "Maximum");
-         break;
-      case 8:
-         sprintf(ZOOM_MODE, "%s", "Automatic");
-         break;
-   }
-
    // Statusbar output
    if (pix_bytes == 4)
    {
@@ -373,8 +317,6 @@ void Print_Status(void)
       Draw_text32((uint32_t *)bmp,STAT_DECX+40,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT2);
       Draw_text32((uint32_t *)bmp,STAT_DECX+80,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT3);
       Draw_text32((uint32_t *)bmp,STAT_DECX+120,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT4);
-      if (zoom_mode_id > 0)
-         Draw_text32((uint32_t *)bmp,STAT_DECX+ZOOM_POSX,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Zoom:%s", ZOOM_MODE);
    }
    else
    {
@@ -384,8 +326,6 @@ void Print_Status(void)
       Draw_text(bmp,STAT_DECX+40,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT2);
       Draw_text(bmp,STAT_DECX+80,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT3);
       Draw_text(bmp,STAT_DECX+120,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT4);
-      if (zoom_mode_id > 0)
-         Draw_text(bmp,STAT_DECX+ZOOM_POSX,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,20,"Zoom:%s", ZOOM_MODE);
    }
 }
 

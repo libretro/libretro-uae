@@ -40,7 +40,6 @@ bool opt_enhanced_statusbar = true;
 int opt_statusbar_position = 0;
 int opt_statusbar_position_old = 0;
 int opt_statusbar_position_offset = 0;
-int opt_statusbar_position_offset_lores = 0;
 bool opt_keyrahkeypad = false;
 bool opt_keyboard_pass_through = false;
 bool opt_multimouse = false;
@@ -694,7 +693,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_multimouse",
-         "Multiple Mouse",
+         "Multiple Physical Mouse",
          "Requirements: raw/udev input driver and proper mouse index in RA input configs.\nOnly for real mice, not RetroPad emulated.",
          {
             { "disabled", NULL },
@@ -717,7 +716,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_physical_keyboard_pass_through",
          "Physical Keyboard Pass-through",
-         "Pass all physical keyboard events to the core. Disable this to prevent cursor keys and fire key from generating Amiga key events.",
+         "Pass all physical keyboard events to the core. Disable this to prevent cursor keys and fire key from generating key events.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -729,42 +728,42 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapper_vkbd",
          "Hotkey: Toggle Virtual Keyboard",
-         "Pressing a button mapped to this key opens the keyboard.",
+         "Press the mapped key to toggle the virtual keyboard.",
          {{ NULL, NULL }},
          "RETROK_F11"
       },
       {
          "puae_mapper_statusbar",
          "Hotkey: Toggle Statusbar",
-         "Pressing a button mapped to this key toggles the statusbar.",
+         "Press the mapped key to toggle the statusbar.",
          {{ NULL, NULL }},
          "RETROK_F10"
       },
       {
          "puae_mapper_mouse_toggle",
-         "Hotkey: Toggle Mouse",
-         "Pressing a button mapped to this key toggles between joystick and mouse control.",
+         "Hotkey: Toggle Joystick/Mouse",
+         "Press the mapped key to toggle between joystick and mouse control.",
          {{ NULL, NULL }},
          "RETROK_RCTRL"
       },
       {
          "puae_mapper_reset",
          "Hotkey: Reset",
-         "Ctrl-Amiga-Amiga combination.",
+         "Press the mapped key to trigger reset (Ctrl-Amiga-Amiga).",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_aspect_ratio_toggle",
          "Hotkey: Toggle Aspect Ratio",
-         "Only usable with PAL video.",
+         "Press the mapped key to toggle between PAL/NTSC aspect ratio.",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_zoom_mode_toggle",
          "Hotkey: Toggle Zoom Mode",
-         "",
+         "Press the mapped key to switch to the next zoom mode.",
          {{ NULL, NULL }},
          "---"
       },
@@ -795,7 +794,7 @@ void retro_set_environment(retro_environment_t cb)
          "RetroPad Y",
          "",
          {{ NULL, NULL }},
-         "RETROK_SPACE"
+         "---"
       },
       {
          "puae_mapper_x",
@@ -875,7 +874,6 @@ void retro_set_environment(retro_environment_t cb)
          {{ NULL, NULL }},
          "---"
       },
-
       /* Right Stick */
       {
          "puae_mapper_ru",
@@ -908,7 +906,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_turbo_fire_button",
          "RetroPad Turbo Fire",
-         "Replaces the mapped key with a turbo fire button.",
+         "Replaces the mapped button with a turbo fire button.",
          {
             { "disabled", NULL },
             { "A", "RetroPad A" },
@@ -1149,21 +1147,6 @@ static void update_variables(void)
          opt_statusbar_position = 0;
          opt_enhanced_statusbar = false;
       }
-
-      /* Exceptions for lo-res and enhanced statusbar */
-      if (video_config & PUAE_VIDEO_HIRES)
-         ;
-      else
-         if (opt_enhanced_statusbar)
-         {
-            opt_statusbar_position_offset_lores = 10;
-            if (opt_statusbar_position < 0) // Top
-               opt_statusbar_position = -opt_statusbar_position_offset_lores;
-            else // Bottom
-               opt_statusbar_position = opt_statusbar_position_offset_lores;
-         }
-         else
-            opt_statusbar_position_offset_lores = 0;
 
       /* Screen refresh required */
       if (opt_statusbar_position_old != opt_statusbar_position || !opt_enhanced_statusbar)
@@ -2393,17 +2376,11 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       opt_statusbar_position = opt_statusbar_position_old;
       if (!change_timing)
          if (retroh < defaulth)
-            if (opt_statusbar_position >= 0 && (defaulth - retroh + opt_statusbar_position_offset_lores) > opt_statusbar_position)
-               opt_statusbar_position = defaulth - retroh + opt_statusbar_position_offset_lores;
+            if (opt_statusbar_position >= 0 && (defaulth - retroh) > opt_statusbar_position)
+               opt_statusbar_position = defaulth - retroh;
 
       /* Aspect offset for zoom mode */
       opt_statusbar_position_offset = opt_statusbar_position_old - opt_statusbar_position;
-
-      /* Lores exception offset bonus */
-      if (video_config & PUAE_VIDEO_HIRES)
-         ;
-      else
-         opt_statusbar_position_offset = opt_statusbar_position_offset - opt_statusbar_position_offset_lores;
 
       //printf("statusbar:%d old:%d offset:%d, retroh:%d defaulth:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, retroh, defaulth);
    }
