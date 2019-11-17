@@ -40,7 +40,6 @@ bool opt_enhanced_statusbar = true;
 int opt_statusbar_position = 0;
 int opt_statusbar_position_old = 0;
 int opt_statusbar_position_offset = 0;
-int opt_statusbar_position_offset_lores = 0;
 bool opt_keyrahkeypad = false;
 bool opt_keyboard_pass_through = false;
 bool opt_multimouse = false;
@@ -70,6 +69,7 @@ extern char RPATH[512];
 extern void Print_Status(void);
 static int firstpass = 1;
 extern int prefs_changed;
+
 int opt_vertical_offset = 0;
 bool opt_vertical_offset_auto = true;
 extern int minfirstline;
@@ -80,6 +80,18 @@ static int thisframe_last_drawn_line_old = -1;
 extern int thisframe_y_adjust;
 static int thisframe_y_adjust_old = 0;
 static int thisframe_y_adjust_update_frame_timer = 3;
+
+int opt_horizontal_offset = 0;
+bool opt_horizontal_offset_auto = true;
+static int max_diwlastword = 824;
+extern int min_diwstart;
+static int min_diwstart_old = -1;
+extern int max_diwstop;
+static int max_diwstop_old = -1;
+extern int visible_left_border;
+static int visible_left_border_old = 0;
+static int visible_left_border_update_frame_timer = 3;
+
 unsigned int video_config = 0;
 unsigned int video_config_old = 0;
 unsigned int video_config_aspect = 0;
@@ -337,6 +349,47 @@ void retro_set_environment(retro_environment_t cb)
             { "46", NULL },
             { "48", NULL },
             { "50", NULL },
+            { "-20", NULL },
+            { "-18", NULL },
+            { "-16", NULL },
+            { "-14", NULL },
+            { "-12", NULL },
+            { "-10", NULL },
+            { "-8", NULL },
+            { "-6", NULL },
+            { "-4", NULL },
+            { "-2", NULL },
+            { NULL, NULL },
+         },
+         "auto"
+      },
+      {
+         "puae_horizontal_pos",
+         "Horizontal Position",
+         "Automatic keeps screen centered. Positive values force the screen right and negative values left.",
+         {
+            { "auto", "Automatic" },
+            { "0", NULL },
+            { "2", NULL },
+            { "4", NULL },
+            { "6", NULL },
+            { "8", NULL },
+            { "10", NULL },
+            { "12", NULL },
+            { "14", NULL },
+            { "16", NULL },
+            { "18", NULL },
+            { "20", NULL },
+            { "22", NULL },
+            { "24", NULL },
+            { "26", NULL },
+            { "28", NULL },
+            { "30", NULL },
+            { "-30", NULL },
+            { "-28", NULL },
+            { "-26", NULL },
+            { "-24", NULL },
+            { "-22", NULL },
             { "-20", NULL },
             { "-18", NULL },
             { "-16", NULL },
@@ -694,7 +747,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_multimouse",
-         "Multiple Mouse",
+         "Multiple Physical Mouse",
          "Requirements: raw/udev input driver and proper mouse index in RA input configs.\nOnly for real mice, not RetroPad emulated.",
          {
             { "disabled", NULL },
@@ -717,7 +770,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_physical_keyboard_pass_through",
          "Physical Keyboard Pass-through",
-         "Pass all physical keyboard events to the core. Disable this to prevent cursor keys and fire key from generating Amiga key events.",
+         "Pass all physical keyboard events to the core. Disable this to prevent cursor keys and fire key from generating key events.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -729,42 +782,42 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapper_vkbd",
          "Hotkey: Toggle Virtual Keyboard",
-         "Pressing a button mapped to this key opens the keyboard.",
+         "Press the mapped key to toggle the virtual keyboard.",
          {{ NULL, NULL }},
          "RETROK_F11"
       },
       {
          "puae_mapper_statusbar",
          "Hotkey: Toggle Statusbar",
-         "Pressing a button mapped to this key toggles the statusbar.",
+         "Press the mapped key to toggle the statusbar.",
          {{ NULL, NULL }},
          "RETROK_F10"
       },
       {
          "puae_mapper_mouse_toggle",
-         "Hotkey: Toggle Mouse",
-         "Pressing a button mapped to this key toggles between joystick and mouse control.",
+         "Hotkey: Toggle Joystick/Mouse",
+         "Press the mapped key to toggle between joystick and mouse control.",
          {{ NULL, NULL }},
          "RETROK_RCTRL"
       },
       {
          "puae_mapper_reset",
          "Hotkey: Reset",
-         "Ctrl-Amiga-Amiga combination.",
+         "Press the mapped key to trigger reset (Ctrl-Amiga-Amiga).",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_aspect_ratio_toggle",
          "Hotkey: Toggle Aspect Ratio",
-         "Only usable with PAL video.",
+         "Press the mapped key to toggle between PAL/NTSC aspect ratio.",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_zoom_mode_toggle",
          "Hotkey: Toggle Zoom Mode",
-         "",
+         "Press the mapped key to toggle zoom mode.",
          {{ NULL, NULL }},
          "---"
       },
@@ -795,7 +848,7 @@ void retro_set_environment(retro_environment_t cb)
          "RetroPad Y",
          "",
          {{ NULL, NULL }},
-         "RETROK_SPACE"
+         "---"
       },
       {
          "puae_mapper_x",
@@ -875,7 +928,6 @@ void retro_set_environment(retro_environment_t cb)
          {{ NULL, NULL }},
          "---"
       },
-
       /* Right Stick */
       {
          "puae_mapper_ru",
@@ -908,7 +960,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_turbo_fire_button",
          "RetroPad Turbo Fire",
-         "Replaces the mapped key with a turbo fire button.",
+         "Replaces the mapped button with a turbo fire button.",
          {
             { "disabled", NULL },
             { "A", "RetroPad A" },
@@ -1149,21 +1201,6 @@ static void update_variables(void)
          opt_statusbar_position = 0;
          opt_enhanced_statusbar = false;
       }
-
-      /* Exceptions for lo-res and enhanced statusbar */
-      if (video_config & PUAE_VIDEO_HIRES)
-         ;
-      else
-         if (opt_enhanced_statusbar)
-         {
-            opt_statusbar_position_offset_lores = 10;
-            if (opt_statusbar_position < 0) // Top
-               opt_statusbar_position = -opt_statusbar_position_offset_lores;
-            else // Bottom
-               opt_statusbar_position = opt_statusbar_position_offset_lores;
-         }
-         else
-            opt_statusbar_position_offset_lores = 0;
 
       /* Screen refresh required */
       if (opt_statusbar_position_old != opt_statusbar_position || !opt_enhanced_statusbar)
@@ -1583,6 +1620,27 @@ static void update_variables(void)
             /* This offset is used whenever minfirstline is reset on gfx mode changes in the init_hz() function */
             opt_vertical_offset = new_vertical_offset;
             thisframe_y_adjust = minfirstline + opt_vertical_offset;
+         }
+      }
+   }
+
+   var.key = "puae_horizontal_pos";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "auto") == 0)
+      {
+         opt_horizontal_offset_auto = true;
+      }
+      else
+      {
+         opt_horizontal_offset_auto = false;
+         int new_horizontal_offset = atoi(var.value);
+         if (new_horizontal_offset >= -30 && new_horizontal_offset <= 30)
+         {
+            opt_horizontal_offset = new_horizontal_offset;
+            visible_left_border = max_diwlastword - retrow - opt_horizontal_offset;
          }
       }
    }
@@ -2393,17 +2451,11 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       opt_statusbar_position = opt_statusbar_position_old;
       if (!change_timing)
          if (retroh < defaulth)
-            if (opt_statusbar_position >= 0 && (defaulth - retroh + opt_statusbar_position_offset_lores) > opt_statusbar_position)
-               opt_statusbar_position = defaulth - retroh + opt_statusbar_position_offset_lores;
+            if (opt_statusbar_position >= 0 && (defaulth - retroh) > opt_statusbar_position)
+               opt_statusbar_position = defaulth - retroh;
 
       /* Aspect offset for zoom mode */
       opt_statusbar_position_offset = opt_statusbar_position_old - opt_statusbar_position;
-
-      /* Lores exception offset bonus */
-      if (video_config & PUAE_VIDEO_HIRES)
-         ;
-      else
-         opt_statusbar_position_offset = opt_statusbar_position_offset - opt_statusbar_position_offset_lores;
 
       //printf("statusbar:%d old:%d offset:%d, retroh:%d defaulth:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, retroh, defaulth);
    }
@@ -2523,10 +2575,33 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
    else
       thisframe_y_adjust = minfirstline + opt_vertical_offset;
 
-   /* No need to check changed gfx at startup */
-   if (firstpass != 1) {
-      prefs_changed = 1; // Triggers check_prefs_changed_gfx() in vsync_handle_check()
+   if (opt_horizontal_offset_auto && firstpass != 1)
+   {
+      int visible_left_border_new = max_diwlastword - retrow;
+
+      /* Need proper values for calculations */
+      if (min_diwstart != max_diwstop
+      && min_diwstart > 0 && max_diwstop > 0
+      && min_diwstart < 200 && max_diwstop > 600
+      )
+      {
+         visible_left_border_new = (max_diwstop - min_diwstart - retrow) / 2 + min_diwstart; // Smart
+         //visible_left_border_new = max_diwstop - retrow - (max_diwstop - min_diwstart - retrow) / 2; // Simple
+      }
+
+      /* Change value only if altered */
+      if (visible_left_border != visible_left_border_new)
+         visible_left_border = visible_left_border_new;
+
+      //printf("DIWSTART:%3d DIWSTOP:%3d left_border:%2d old:%2d\n", min_diwstart, max_diwstop, visible_left_border, visible_left_border_old);
+
+      /* Remember the previous value */
+      visible_left_border_old = visible_left_border;
    }
+
+   /* No need to check changed gfx at startup */
+   if (firstpass != 1)
+      prefs_changed = 1; // Triggers check_prefs_changed_gfx() in vsync_handle_check()
 
    return true;
 }
@@ -2634,6 +2709,27 @@ void retro_run(void)
          if (thisframe_y_adjust_update_frame_timer == 0)
             if (opt_vertical_offset != 0)
                thisframe_y_adjust = minfirstline + opt_vertical_offset;
+      }
+   }
+
+   // Automatic horizontal offset
+   if (opt_horizontal_offset_auto)
+   {
+      if (min_diwstart != min_diwstart_old || max_diwstop != max_diwstop_old)
+      {
+         min_diwstart_old = min_diwstart;
+         max_diwstop_old = max_diwstop;
+         request_update_av_info = true;
+      }
+   }
+   else
+   {
+      // Horizontal offset must not be set too early
+      if (visible_left_border_update_frame_timer > 0)
+      {
+         visible_left_border_update_frame_timer--;
+         if (visible_left_border_update_frame_timer == 0)
+            visible_left_border = max_diwlastword - retrow - opt_horizontal_offset;
       }
    }
 
