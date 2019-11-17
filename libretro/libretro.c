@@ -817,7 +817,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapper_zoom_mode_toggle",
          "Hotkey: Toggle Zoom Mode",
-         "Press the mapped key to switch to the next zoom mode.",
+         "Press the mapped key to toggle zoom mode.",
          {{ NULL, NULL }},
          "---"
       },

@@ -80,6 +80,7 @@ extern int mapper_keys[32];
 extern int video_config;
 extern int video_config_aspect;
 extern int zoom_mode_id;
+static int opt_zoom_mode_id;
 extern bool request_update_av_info;
 extern bool opt_enhanced_statusbar;
 extern int opt_statusbar_position;
@@ -145,8 +146,18 @@ void emu_function(int function)
          request_update_av_info = true;
          break;
       case EMU_ZOOM_MODE_TOGGLE:
-         zoom_mode_id++;
-         if (zoom_mode_id>8) zoom_mode_id = 0;
+         if (zoom_mode_id == 0 && opt_zoom_mode_id == 0)
+            break;
+         if (zoom_mode_id > 0)
+         {
+            opt_zoom_mode_id = zoom_mode_id;
+            zoom_mode_id = 0;
+         }
+         else
+         {
+            zoom_mode_id = opt_zoom_mode_id;
+            opt_zoom_mode_id = 0;
+         }
          request_update_av_info = true;
          break;
    }
