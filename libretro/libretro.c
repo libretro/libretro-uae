@@ -69,6 +69,7 @@ extern char RPATH[512];
 extern void Print_Status(void);
 static int firstpass = 1;
 extern int prefs_changed;
+
 int opt_vertical_offset = 0;
 bool opt_vertical_offset_auto = true;
 extern int minfirstline;
@@ -79,6 +80,18 @@ static int thisframe_last_drawn_line_old = -1;
 extern int thisframe_y_adjust;
 static int thisframe_y_adjust_old = 0;
 static int thisframe_y_adjust_update_frame_timer = 3;
+
+int opt_horizontal_offset = 0;
+bool opt_horizontal_offset_auto = true;
+static int max_diwlastword = 824;
+extern int min_diwstart;
+static int min_diwstart_old = -1;
+extern int max_diwstop;
+static int max_diwstop_old = -1;
+extern int visible_left_border;
+static int visible_left_border_old = 0;
+static int visible_left_border_update_frame_timer = 3;
+
 unsigned int video_config = 0;
 unsigned int video_config_old = 0;
 unsigned int video_config_aspect = 0;
@@ -336,6 +349,47 @@ void retro_set_environment(retro_environment_t cb)
             { "46", NULL },
             { "48", NULL },
             { "50", NULL },
+            { "-20", NULL },
+            { "-18", NULL },
+            { "-16", NULL },
+            { "-14", NULL },
+            { "-12", NULL },
+            { "-10", NULL },
+            { "-8", NULL },
+            { "-6", NULL },
+            { "-4", NULL },
+            { "-2", NULL },
+            { NULL, NULL },
+         },
+         "auto"
+      },
+      {
+         "puae_horizontal_pos",
+         "Horizontal Position",
+         "Automatic keeps screen centered. Positive values force the screen right and negative values left.",
+         {
+            { "auto", "Automatic" },
+            { "0", NULL },
+            { "2", NULL },
+            { "4", NULL },
+            { "6", NULL },
+            { "8", NULL },
+            { "10", NULL },
+            { "12", NULL },
+            { "14", NULL },
+            { "16", NULL },
+            { "18", NULL },
+            { "20", NULL },
+            { "22", NULL },
+            { "24", NULL },
+            { "26", NULL },
+            { "28", NULL },
+            { "30", NULL },
+            { "-30", NULL },
+            { "-28", NULL },
+            { "-26", NULL },
+            { "-24", NULL },
+            { "-22", NULL },
             { "-20", NULL },
             { "-18", NULL },
             { "-16", NULL },
@@ -1570,6 +1624,27 @@ static void update_variables(void)
       }
    }
 
+   var.key = "puae_horizontal_pos";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "auto") == 0)
+      {
+         opt_horizontal_offset_auto = true;
+      }
+      else
+      {
+         opt_horizontal_offset_auto = false;
+         int new_horizontal_offset = atoi(var.value);
+         if (new_horizontal_offset >= -30 && new_horizontal_offset <= 30)
+         {
+            opt_horizontal_offset = new_horizontal_offset;
+            visible_left_border = max_diwlastword - retrow - opt_horizontal_offset;
+         }
+      }
+   }
+
    var.key = "puae_use_whdload";
    var.value = NULL;
 
@@ -2500,10 +2575,33 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
    else
       thisframe_y_adjust = minfirstline + opt_vertical_offset;
 
-   /* No need to check changed gfx at startup */
-   if (firstpass != 1) {
-      prefs_changed = 1; // Triggers check_prefs_changed_gfx() in vsync_handle_check()
+   if (opt_horizontal_offset_auto && firstpass != 1)
+   {
+      int visible_left_border_new = max_diwlastword - retrow;
+
+      /* Need proper values for calculations */
+      if (min_diwstart != max_diwstop
+      && min_diwstart > 0 && max_diwstop > 0
+      && min_diwstart < 200 && max_diwstop > 600
+      )
+      {
+         visible_left_border_new = (max_diwstop - min_diwstart - retrow) / 2 + min_diwstart; // Smart
+         //visible_left_border_new = max_diwstop - retrow - (max_diwstop - min_diwstart - retrow) / 2; // Simple
+      }
+
+      /* Change value only if altered */
+      if (visible_left_border != visible_left_border_new)
+         visible_left_border = visible_left_border_new;
+
+      //printf("DIWSTART:%3d DIWSTOP:%3d left_border:%2d old:%2d\n", min_diwstart, max_diwstop, visible_left_border, visible_left_border_old);
+
+      /* Remember the previous value */
+      visible_left_border_old = visible_left_border;
    }
+
+   /* No need to check changed gfx at startup */
+   if (firstpass != 1)
+      prefs_changed = 1; // Triggers check_prefs_changed_gfx() in vsync_handle_check()
 
    return true;
 }
@@ -2611,6 +2709,27 @@ void retro_run(void)
          if (thisframe_y_adjust_update_frame_timer == 0)
             if (opt_vertical_offset != 0)
                thisframe_y_adjust = minfirstline + opt_vertical_offset;
+      }
+   }
+
+   // Automatic horizontal offset
+   if (opt_horizontal_offset_auto)
+   {
+      if (min_diwstart != min_diwstart_old || max_diwstop != max_diwstop_old)
+      {
+         min_diwstart_old = min_diwstart;
+         max_diwstop_old = max_diwstop;
+         request_update_av_info = true;
+      }
+   }
+   else
+   {
+      // Horizontal offset must not be set too early
+      if (visible_left_border_update_frame_timer > 0)
+      {
+         visible_left_border_update_frame_timer--;
+         if (visible_left_border_update_frame_timer == 0)
+            visible_left_border = max_diwlastword - retrow - opt_horizontal_offset;
       }
    }
 

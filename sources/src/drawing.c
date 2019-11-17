@@ -198,7 +198,11 @@ static uae_u8 linestate[LINESTATE_SIZE];
 uae_u8 line_data[(MAXVPOS + 2) * 2][MAX_PLANES * MAX_WORDS_PER_LINE * 2];
 
 /* Centering variables.  */
+#ifdef __LIBRETRO__
+int min_diwstart, max_diwstop;
+#else
 static int min_diwstart, max_diwstop;
+#endif
 /* The visible window: VISIBLE_LEFT_BORDER contains the left border of the visible
    area, VISIBLE_RIGHT_BORDER the right border.  These are in window coordinates.  */
 int visible_left_border, visible_right_border;
@@ -2955,6 +2959,7 @@ static void center_image (void)
 	int tmp;
 
 	int w = gfxvidinfo.inwidth;
+#ifndef __LIBRETRO__
 	if (currprefs.gfx_xcenter && !currprefs.gfx_filter_autoscale && max_diwstop > 0) {
 
 		if (max_diwstop - min_diwstart < w && currprefs.gfx_xcenter == 2)
@@ -2987,8 +2992,8 @@ static void center_image (void)
 	if (visible_left_border < 0)
 		visible_left_border = 0;
 	visible_left_border &= ~((xshift (1, lores_shift)) - 1);
-
-	//write_log (_T("%d %d %d %d %d\n"), max_diwlastword, gfxvidinfo.drawbuffer.width, lores_shift, currprefs.gfx_resolution, visible_left_border);
+#endif
+	//write_log (_T("%d %d %d %d %d\n"), max_diwlastword, w, lores_shift, currprefs.gfx_resolution, visible_left_border);
 
 	linetoscr_x_adjust_bytes = visible_left_border * gfxvidinfo.pixbytes;
 
