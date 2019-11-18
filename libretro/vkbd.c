@@ -60,19 +60,24 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
 
    if (video_config_geometry & 0x04)    // PUAE_VIDEO_HIRES
    {
-      YPADDING = 10;
-      YOFFSET = (SHOWKEYPOS == 1) ? (-zoomed_height + YPADDING + (zoomed_height / 2)) : -(YPADDING);
+      YPADDING          = 10;
+      YOFFSET           = (SHOWKEYPOS == 1) ? (-zoomed_height + YPADDING + (zoomed_height / 2)) : -(YPADDING);
+   }
+   else if (video_config_geometry & 0x08)    // PUAE_VIDEO_HIRES_SINGLE
+   {
+      YPADDING          = 5;
+      BKG_PADDING_Y     = -1;
+      YOFFSET           = (SHOWKEYPOS == 1) ? (-zoomed_height - YPADDING + (zoomed_height / 2)) : -(YPADDING * 2);
    }
    else                                 // PUAE_VIDEO_LORES
    {
-      XPADDING          = 6;
-
       BKG_PADDING_X     = -2;
-      BKG_PADDING_Y     = 1;
+      BKG_PADDING_Y     = -1;
       FONT_MAX          = 4;
 
-      YPADDING = 5;
-      YOFFSET = (SHOWKEYPOS == 1) ? (-zoomed_height - YPADDING + (zoomed_height / 2)) : -(YPADDING * 2);
+      XPADDING          = 6;
+      YPADDING          = 5;
+      YOFFSET           = (SHOWKEYPOS == 1) ? (-zoomed_height - YPADDING + (zoomed_height / 2)) : -(YPADDING * 2);
    }
 
    int XSIDE = (retrow - XPADDING) / NPLGN;

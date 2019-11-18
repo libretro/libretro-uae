@@ -15,7 +15,7 @@
 #include "custom.h"
 
 #define EMULATOR_DEF_WIDTH 720
-#define EMULATOR_DEF_HEIGHT 568
+#define EMULATOR_DEF_HEIGHT 574
 #define EMULATOR_MAX_WIDTH 1024
 #define EMULATOR_MAX_HEIGHT 1024
 
@@ -190,15 +190,18 @@ chipset=aga\n"
 #define A600_ROM    "kick40063.A600"
 #define A1200_ROM   "kick40068.A1200"
 
-#define PUAE_VIDEO_PAL 		0x01
-#define PUAE_VIDEO_NTSC 	0x02
-#define PUAE_VIDEO_HIRES 	0x04
+#define PUAE_VIDEO_PAL          0x01
+#define PUAE_VIDEO_NTSC         0x02
+#define PUAE_VIDEO_HIRES        0x04
+#define PUAE_VIDEO_HIRES_SINGLE 0x08
 
-#define PUAE_VIDEO_PAL_LO 	PUAE_VIDEO_PAL
-#define PUAE_VIDEO_PAL_HI 	PUAE_VIDEO_PAL|PUAE_VIDEO_HIRES
+#define PUAE_VIDEO_PAL_LO       PUAE_VIDEO_PAL
+#define PUAE_VIDEO_PAL_HI       PUAE_VIDEO_PAL|PUAE_VIDEO_HIRES
+#define PUAE_VIDEO_PAL_HI_SL    PUAE_VIDEO_PAL|PUAE_VIDEO_HIRES_SINGLE
 
-#define PUAE_VIDEO_NTSC_LO 	PUAE_VIDEO_NTSC
-#define PUAE_VIDEO_NTSC_HI 	PUAE_VIDEO_NTSC|PUAE_VIDEO_HIRES
+#define PUAE_VIDEO_NTSC_LO      PUAE_VIDEO_NTSC
+#define PUAE_VIDEO_NTSC_HI      PUAE_VIDEO_NTSC|PUAE_VIDEO_HIRES
+#define PUAE_VIDEO_NTSC_HI_SL   PUAE_VIDEO_NTSC|PUAE_VIDEO_HIRES_SINGLE
 
 static char uae_machine[256];
 static char uae_kickstart[16];
@@ -255,15 +258,27 @@ void retro_set_environment(retro_environment_t cb)
          "A500"
       },
       {
-         "puae_video_hires",
-         "High Resolution",
+         "puae_video_resolution",
+         "Video Resolution",
          "Restart required.",
          {
-            { "false", "disabled" },
-            { "true", "enabled" },
+            { "lores", "Low" },
+            { "hires_single", "High (Single line)" },
+            { "hires_double", "High (Double line)" },
             { NULL, NULL },
          },
-         "true"
+         "hires_double"
+      },
+      {
+         "puae_video_allow_hz_change",
+         "Allow PAL/NTSC Hz Change",
+         "",
+         {
+            { "enabled", NULL },
+            { "disabled", NULL },
+            { NULL, NULL },
+         },
+         "enabled"
       },
       {
          "puae_video_standard",
@@ -287,17 +302,6 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "auto"
-      },
-      {
-         "puae_video_allow_hz_change",
-         "Allow PAL/NTSC Hz Change",
-         "",
-         {
-            { "enabled", NULL },
-            { "disabled", NULL },
-            { NULL, NULL },
-         },
-         "enabled"
       },
       {
          "puae_zoom_mode",
@@ -1165,15 +1169,27 @@ static void update_variables(void)
       else if (strcmp(var.value, "disabled") == 0) video_config_allow_hz_change = 0;
    }
 
-   var.key = "puae_video_hires";
+   var.key = "puae_video_resolution";
    var.value = NULL;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "true") == 0)
+      if (strcmp(var.value, "hires_double") == 0)
+      {
          video_config |= PUAE_VIDEO_HIRES;
-      else
+         video_config &= ~PUAE_VIDEO_HIRES_SINGLE;
+      }
+      else if (strcmp(var.value, "hires_single") == 0)
+      {
+         video_config |= PUAE_VIDEO_HIRES_SINGLE;
          video_config &= ~PUAE_VIDEO_HIRES;
+      }
+      else if (strcmp(var.value, "lores") == 0)
+      {
+         video_config &= ~PUAE_VIDEO_HIRES;
+         video_config &= ~PUAE_VIDEO_HIRES_SINGLE;
+         max_diwlastword = max_diwlastword / 2;
+      }
    }
 
    var.key = "puae_statusbar";
@@ -1928,33 +1944,24 @@ static void update_variables(void)
 
 
 
-   // Setting resolution
-   // According to PUAE configuration.txt :
-   //
-   // To emulate a high-resolution, fully overscanned PAL screen - either
-   // non-interlaced with line-doubling, or interlaced - you need to use a
-   // display of at least 720 by 568 pixels. If you specify a smaller size,
-   // E-UAE's display will be clipped to fit (and you can use the gfx_center_*
-   // options - see below - to centre the clipped region of the display).
-   // Similarly, to fully display an over-scanned lo-res PAL screen, you need a
-   // display of 360 by 284 pixels.
-   //
-   // So, here are the standard resolutions :
-   // - **360x284**: PAL Low resolution
-   // - **360x240**: NTSC Low resolution
-   // - **720x568**: PAL High resolution
-   // - **720x480**: NTSC High resolution
-   switch(video_config)
+   /* Setting resolution */
+   switch (video_config)
    {
 		case PUAE_VIDEO_PAL_HI:
 			defaultw = 720;
-			defaulth = 568;
+			defaulth = 574;
 			strcat(uae_config, "gfx_lores=false\n");
 			strcat(uae_config, "gfx_linemode=double\n");
 			break;
+		case PUAE_VIDEO_PAL_HI_SL:
+			defaultw = 720;
+			defaulth = 287;
+			strcat(uae_config, "gfx_lores=false\n");
+			strcat(uae_config, "gfx_linemode=none\n");
+			break;
 		case PUAE_VIDEO_PAL_LO:
 			defaultw = 360;
-			defaulth = 284;
+			defaulth = 287;
 			strcat(uae_config, "gfx_lores=true\n");
 			strcat(uae_config, "gfx_linemode=none\n");
 			break;
@@ -1964,6 +1971,12 @@ static void update_variables(void)
 			defaulth = 480;
 			strcat(uae_config, "gfx_lores=false\n");
 			strcat(uae_config, "gfx_linemode=double\n");
+			break;
+		case PUAE_VIDEO_NTSC_HI_SL:
+			defaultw = 720;
+			defaulth = 240;
+			strcat(uae_config, "gfx_lores=false\n");
+			strcat(uae_config, "gfx_linemode=none\n");
 			break;
 		case PUAE_VIDEO_NTSC_LO:
 			defaultw = 360;
@@ -2386,20 +2399,28 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
    }
 
    /* Geometry dimensions */
-   switch(video_config_geometry)
+   switch (video_config_geometry)
    {
       case PUAE_VIDEO_PAL_HI:
          retrow = 720;
-         retroh = 568;
+         retroh = 574;
+         break;
+      case PUAE_VIDEO_PAL_HI_SL:
+         retrow = 720;
+         retroh = 287;
          break;
       case PUAE_VIDEO_PAL_LO:
          retrow = 360;
-         retroh = 284;
+         retroh = 287;
          break;
 
       case PUAE_VIDEO_NTSC_HI:
          retrow = 720;
          retroh = 480;
+         break;
+      case PUAE_VIDEO_NTSC_HI_SL:
+         retrow = 720;
+         retroh = 240;
          break;
       case PUAE_VIDEO_NTSC_LO:
          retrow = 360;
@@ -2422,6 +2443,9 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       new_av_info.geometry.aspect_ratio=(float)retrow/(float)retroh * 44.0/52.0;
    else
       new_av_info.geometry.aspect_ratio=(float)retrow/(float)retroh;
+
+   if (video_config_geometry & PUAE_VIDEO_HIRES_SINGLE)
+      new_av_info.geometry.aspect_ratio=new_av_info.geometry.aspect_ratio / 2;
 
    /* Disable Hz change if not allowed */
    if (!video_config_allow_hz_change)
@@ -2536,6 +2560,10 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
          new_av_info.geometry.aspect_ratio=(float)retrow/(float)zoomed_height * 44.0/52.0;
       else
          new_av_info.geometry.aspect_ratio=(float)retrow/(float)zoomed_height;
+
+      if (video_config_geometry & PUAE_VIDEO_HIRES_SINGLE)
+         new_av_info.geometry.aspect_ratio=new_av_info.geometry.aspect_ratio / 2;
+
       environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
 
       /* Ensure statusbar stays visible at the bottom */
@@ -2635,8 +2663,11 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
       geom.aspect_ratio=(float)retrow/(float)retroh * 44.0/52.0;
    else
       geom.aspect_ratio=(float)retrow/(float)retroh;
-   info->geometry = geom;
 
+   if (video_config & PUAE_VIDEO_HIRES_SINGLE)
+      geom.aspect_ratio=geom.aspect_ratio / 2;
+
+   info->geometry = geom;
    info->timing.sample_rate = 44100.0;
    info->timing.fps = (retro_get_region() == RETRO_REGION_NTSC) ? UAE_HZ_NTSC : UAE_HZ_PAL;
 }
