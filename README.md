@@ -159,36 +159,27 @@ Example: When launching "Alien Breed 2 (AGA).hdf" file the core will use an Amig
 If no special string is found the core will use the model configured in core options.
 
 ### Resolution and rendering
-
-A said in P-UAE configuration.txt:
-
-```
-	To emulate a high-resolution, fully overscanned PAL screen - either
-	non-interlaced with line-doubling, or interlaced - you need to use a
-	display of at least 720 by 568 pixels. If you specify a smaller size,
-	E-UAE's display will be clipped to fit (and you can use the gfx_center_*
-	options - see below - to centre the clipped region of the display).
-	Similarly, to fully display an over-scanned lo-res PAL screen, you need a
-	display of 360 by 284 pixels.
-```
-
-Three parameters control the output resolution of the core:
+These parameters control the output resolution of the core:
 
 |Name|Values|Default|
 |---|---|---|
-|Video standard|PAL, NTSC|PAL|
-|High resolution|false, true|true|
+|Video Standard|PAL, NTSC|PAL|
+|Video Resolution|Lores, Hires (Single line), Hires (Double line)|Hires (Double line)|
 
-With these settings all the standards resolutions of the amiga are available:
+With these settings all the standard resolutions are available:
 
-- **720x568** PAL High resolution
-- **360x284** PAL Low resolution
-- **720x480** NTSC High resolution
+- **720x574** PAL High resolution double line
+- **720x287** PAL High resolution single line
+- **360x287** PAL Low resolution
+- **720x480** NTSC High resolution double line
+- **720x240** NTSC High resolution single line
 - **360x240** NTSC Low resolution
 
-When using a high resolution mode, rendering will be doubled horizontally and vertically. It's compatible with high resolution games and the Workbench but scaling shaders will look ugly.
+When using low resolution mode, rendering will be halved horizontally. Scaling shaders looks great but high resolution games and Workbench are badly rendered.
 
-When using a low resolution mode, scaling shaders looks greats but high resolution games and the Workbench are badly rendered, but still usable.
+When using high resolution double line mode, rendering will be doubled vertically. It is compatible with high resolution games and Workbench, but scaling shaders will look ugly.
+
+When using high resolution single line mode, rendering is presented as is. It delivers the best of both worlds, and looks great with high resolution games, Workbench and shaders.
 
 ## Using a configuration file for your games
 You can pass an '.uae' configuration file as a rom and the core will load the settings and start emulation.
