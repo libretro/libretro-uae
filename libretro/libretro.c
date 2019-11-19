@@ -2540,11 +2540,9 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
          }
 
          if (video_config & PUAE_VIDEO_HIRES)
-            if (zoomed_height < 400)
-               zoomed_height = 400;
+            zoomed_height = (zoomed_height < 400) ? 400 : zoomed_height;
          else
-            if (zoomed_height < 200)
-               zoomed_height = 200;
+            zoomed_height = (zoomed_height < 200) ? 200 : zoomed_height;
          break;
       default:
          break;
