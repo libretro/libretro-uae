@@ -1644,7 +1644,9 @@ int action_replay_load (void)
 
 	armodel = 0;
 	action_replay_flag = ACTION_REPLAY_INACTIVE;
+#ifndef __LIBRETRO__
 	write_log_debug (_T("Entered action_replay_load ()\n"));
+#endif
 	/* Don't load a rom if one is already loaded. Use action_replay_unload () first. */
 	if (armemory_rom || hrtmemory) {
 		write_log (_T("action_replay_load () ROM already loaded.\n"));

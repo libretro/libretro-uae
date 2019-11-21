@@ -53,8 +53,10 @@ int pix_bytes = 2;
 static bool pix_bytes_initialized = false;
 bool fake_ntsc = false;
 bool real_ntsc = false;
+bool forced_video = false;
 bool request_update_av_info = false;
-int zoom_mode_id = 0;
+unsigned int zoom_mode_id = 0;
+unsigned int opt_zoom_mode_id = 0;
 int zoomed_height;
 
 #if defined(NATMEM_OFFSET)
@@ -1141,7 +1143,7 @@ static void update_variables(void)
             strcat(uae_config, "ntsc=true\n");
             real_ntsc = true;
          }
-      else
+      else if (!forced_video)
       {
          if (strcmp(var.value, "PAL") == 0)
             changed_prefs.ntscmode=0;
@@ -1615,6 +1617,8 @@ static void update_variables(void)
       else if (strcmp(var.value, "larger") == 0) zoom_mode_id=6;
       else if (strcmp(var.value, "maximum") == 0) zoom_mode_id=7;
       else if (strcmp(var.value, "auto") == 0) zoom_mode_id=8;
+
+      opt_zoom_mode_id = zoom_mode_id;
    }
 
    var.key = "puae_vertical_pos";
@@ -2286,24 +2290,24 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
       switch(device)
       {
          case RETRO_DEVICE_JOYPAD:
-            printf("Controller %u: RetroPad\n", (port+1));
+            fprintf(stdout, "[libretro-uae]: Controller %u: RetroPad\n", (port+1));
             break;
 
          case RETRO_DEVICE_UAE_CD32PAD:
-            printf("Controller %u: CD32 Pad\n", (port+1));
+            fprintf(stdout, "[libretro-uae]: Controller %u: CD32 Pad\n", (port+1));
             cd32_pad_enabled[uae_port]=1;
             break;
 
          case RETRO_DEVICE_UAE_JOYSTICK:
-            printf("Controller %u: Joystick\n", (port+1));
+            fprintf(stdout, "[libretro-uae]: Controller %u: Joystick\n", (port+1));
             break;
 
          case RETRO_DEVICE_UAE_KEYBOARD:
-            printf("Controller %u: Keyboard\n", (port+1));
+            fprintf(stdout, "[libretro-uae]: Controller %u: Keyboard\n", (port+1));
             break;
 
          case RETRO_DEVICE_NONE:
-            printf("Controller %u: Unplugged\n", (port+1));
+            fprintf(stdout, "[libretro-uae]: Controller %u: Unplugged\n", (port+1));
             break;
       }
 
@@ -2326,9 +2330,11 @@ void retro_get_system_info(struct retro_system_info *info)
 
 bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
 {
+   bool av_log = false;
    request_update_av_info = false;
    float hz = currprefs.chipset_refreshrate;
-   fprintf(stderr, "[libretro-uae]: Trying to update AV geometry:%d timing:%d, to: ntsc:%d hz:%0.4f, from video_config:%d, video_aspect:%d\n", change_geometry, change_timing, isntsc, hz, video_config, video_config_aspect);
+   if (av_log)
+      fprintf(stdout, "[libretro-uae]: Trying to update AV geometry:%d timing:%d, to: ntsc:%d hz:%0.4f, from video_config:%d, video_aspect:%d\n", change_geometry, change_timing, isntsc, hz, video_config, video_config_aspect);
 
    /* Change PAL/NTSC with a twist, thanks to Dyna Blaster
 
@@ -2393,7 +2399,8 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       /* If still no change */
       if (video_config_old == video_config)
       {
-         fprintf(stderr, "[libretro-uae]: Already at wanted AV\n");
+         if (av_log)
+            fprintf(stdout, "[libretro-uae]: Already at wanted AV\n");
          change_timing = false; // Allow other calculations but don't alter timing
       }
    }
@@ -2452,12 +2459,15 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       change_timing = 0;
 
    /* Logging */
-   if (change_geometry && change_timing) {
-      fprintf(stderr, "[libretro-uae]: Update av_info: %dx%d %0.4fHz, video_config:%d\n", retrow, retroh, hz, video_config_geometry);
-   } else if (change_geometry && !change_timing) {
-      fprintf(stderr, "[libretro-uae]: Update geometry: %dx%d, video_config:%d\n", retrow, retroh, video_config_geometry);
-   } else if (!change_geometry && change_timing) {
-      fprintf(stderr, "[libretro-uae]: Update timing: %0.4fHz, video_config:%d\n", hz, video_config_geometry);
+   if (av_log)
+   {
+      if (change_geometry && change_timing) {
+         fprintf(stdout, "[libretro-uae]: Update av_info: %dx%d %0.4fHz, video_config:%d\n", retrow, retroh, hz, video_config_geometry);
+      } else if (change_geometry && !change_timing) {
+         fprintf(stdout, "[libretro-uae]: Update geometry: %dx%d, video_config:%d\n", retrow, retroh, video_config_geometry);
+      } else if (!change_geometry && change_timing) {
+         fprintf(stdout, "[libretro-uae]: Update timing: %0.4fHz, video_config:%d\n", hz, video_config_geometry);
+      }
    }
 
    if (change_timing) {
@@ -2481,7 +2491,7 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       /* Aspect offset for zoom mode */
       opt_statusbar_position_offset = opt_statusbar_position_old - opt_statusbar_position;
 
-      //printf("statusbar:%d old:%d offset:%d, retroh:%d defaulth:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, retroh, defaulth);
+      //fprintf(stdout, "statusbar:%3d old:%3d offset:%3d, retroh:%d defaulth:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, retroh, defaulth);
    }
 
    /* Apply zoom mode if necessary */
@@ -2568,7 +2578,7 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       if (opt_statusbar_position >= 0 && (retroh - zoomed_height - opt_statusbar_position_offset) > opt_statusbar_position)
          opt_statusbar_position = retroh - zoomed_height - opt_statusbar_position_offset;
 
-      //printf("ztatusbar:%d old:%d offset:%d, retroh:%d defaulth:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, retroh, defaulth);
+      //fprintf(stdout, "ztatusbar:%3d old:%3d offset:%3d, retroh:%d defaulth:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, retroh, defaulth);
    }
 
    /* If zoom mode should be centered automagically */
@@ -2593,7 +2603,7 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       if (thisframe_y_adjust != thisframe_y_adjust_new)
          thisframe_y_adjust = thisframe_y_adjust_new;
 
-      //printf("FIRSTDRAWN:%3d LASTDRAWN:%3d yadjust:%2d old:%2d zoomed_height:%d\n", thisframe_first_drawn_line, thisframe_last_drawn_line, thisframe_y_adjust, thisframe_y_adjust_old, zoomed_height);
+      //fprintf(stdout, "FIRSTDRAWN:%6d LASTDRAWN:%6d   yadjust:%d old:%d zoomed_height:%d\n", thisframe_first_drawn_line, thisframe_last_drawn_line, thisframe_y_adjust, thisframe_y_adjust_old, zoomed_height);
 
       /* Remember the previous value */
       thisframe_y_adjust_old = thisframe_y_adjust;
@@ -2619,7 +2629,7 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       if (visible_left_border != visible_left_border_new)
          visible_left_border = visible_left_border_new;
 
-      //printf("DIWSTART:%3d DIWSTOP:%3d left_border:%2d old:%2d\n", min_diwstart, max_diwstop, visible_left_border, visible_left_border_old);
+      //fprintf(stdout, "DIWSTART  :%6d DIWSTOP  :%6d   left_border:%d old:%d\n", min_diwstart, max_diwstop, visible_left_border, visible_left_border_old);
 
       /* Remember the previous value */
       visible_left_border_old = visible_left_border;
@@ -2794,8 +2804,6 @@ sortie:
 
 bool retro_load_game(const struct retro_game_info *info)
 {
-   int w = 0, h = 0;
-
    RPATH[0] = '\0';
   
    if (info)
@@ -2812,10 +2820,8 @@ bool retro_load_game(const struct retro_game_info *info)
          || strendswith(full_path, HDZ_FILE_EXT)
          || strendswith(full_path, M3U_FILE_EXT))
 	  {
-	     printf("Game '%s' is a disk, a hard drive image or a m3u file.\n", full_path);
-
 	     path_join((char*)&RPATH, retro_save_directory, LIBRETRO_PUAE_CONF);
-	     printf("Generating temporary uae config file '%s'.\n", (const char*)&RPATH);
+	     fprintf(stdout, "[libretro-uae]: Generating temporary config file '%s'\n", (const char*)&RPATH);
 
 	     // Open tmp config file
 	     FILE * configfile;
@@ -2827,49 +2833,56 @@ bool retro_load_game(const struct retro_game_info *info)
             if (strstr(full_path, "(A1200OG)") != NULL || strstr(full_path, "(A1200NF)") != NULL)
             {
                // Use A1200 barebone
-               printf("Found '(A1200OG)' or '(A1200NF)' in filename '%s'. Booting A1200 NoFast with Kickstart 3.1 r40.068 rom.\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Found '(A1200OG)' or '(A1200NF)' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Booting A1200 NoFast with Kickstart 3.1 r40.068\n");
                fprintf(configfile, A1200OG);
                path_join((char*)&kickstart, retro_system_directory, A1200_ROM);
             }
             else if (strstr(full_path, "(A1200)") != NULL || strstr(full_path, "(AGA)") != NULL)
             {
                // Use A1200
-               printf("Found '(A1200)' or '(AGA)' in filename '%s'. Booting A1200 with Kickstart 3.1 r40.068 rom.\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Found '(A1200)' or '(AGA)' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Booting A1200 with Kickstart 3.1 r40.068\n");
                fprintf(configfile, A1200);
                path_join((char*)&kickstart, retro_system_directory, A1200_ROM);
             }
             else if (strstr(full_path, "(A600)") != NULL || strstr(full_path, "(ECS)") != NULL)
             {
                // Use A600
-               printf("Found '(A600)' or '(ECS)' in filename '%s'. Booting A600 with Kickstart 3.1 r40.063 rom.\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Found '(A600)' or '(ECS)' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Booting A600 with Kickstart 3.1 r40.063\n");
                fprintf(configfile, A600);
                path_join((char*)&kickstart, retro_system_directory, A600_ROM);
             }
             else if (strstr(full_path, "(A500+)") != NULL || strstr(full_path, "(A500PLUS)") != NULL)
             {
                // Use A500+
-               printf("Found '(A500+)' or '(A500PLUS)' in filename '%s'. Booting A500+ with Kickstart 2.04 r37.175.\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Found '(A500+)' or '(A500PLUS)' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Booting A500+ with Kickstart 2.04 r37.175\n");
                fprintf(configfile, A500PLUS);
                path_join((char*)&kickstart, retro_system_directory, A500KS2_ROM);
             }
             else if (strstr(full_path, "(A500OG)") != NULL || strstr(full_path, "(512K)") != NULL)
             {
                // Use A500 barebone
-               printf("Found '(A500OG)' or '(512K)' in filename '%s'. Booting A500 512K with Kickstart 1.3 r34.005.\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Found '(A500OG)' or '(512K)' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Booting A500 512K with Kickstart 1.3 r34.005\n");
                fprintf(configfile, A500OG);
                path_join((char*)&kickstart, retro_system_directory, A500_ROM);
             }
             else if (strstr(full_path, "(A500)") != NULL || strstr(full_path, "(OCS)") != NULL)
             {
                // Use A500
-               printf("Found '(A500)' or '(OCS)' in filename '%s'. Booting A500 with Kickstart 1.3 r34.005.\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Found '(A500)' or '(OCS)' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Booting A500 with Kickstart 1.3 r34.005\n");
                fprintf(configfile, A500);
                path_join((char*)&kickstart, retro_system_directory, A500_ROM);
             }
             else
             {
-               // No machine specified, we will use the configured one
-               printf("No machine specified in filename '%s'. Booting default configuration.\n", full_path);
+               // No machine specified
+               fprintf(stdout, "[libretro-uae]: No machine specified in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Booting default configuration\n");
                fprintf(configfile, uae_machine);
                path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
             }
@@ -2880,21 +2893,25 @@ bool retro_load_game(const struct retro_game_info *info)
             // If region was specified in the name of the game
             if (strstr(full_path, "(NTSC)") != NULL)
             {
-               printf("Found '(NTSC)' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Found '(NTSC)' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Forcing NTSC mode\n");
                fprintf(configfile, "ntsc=true\n");
+               real_ntsc=true;
+               forced_video=true;
             }
             else if (strstr(full_path, "(PAL)") != NULL)
             {
-               printf("Found '(PAL)' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Found '(PAL)' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Forcing PAL mode\n");
                fprintf(configfile, "ntsc=false\n");
+               forced_video=true;
             }
 
             // Verify kickstart
             if (!file_exists(kickstart))
             {
                // Kickstart rom not found
-               fprintf(stderr, "Kickstart rom '%s' not found.\n", (const char*)&kickstart);
-               fprintf(stderr, "You must have a correct kickstart file ('%s') in your RetroArch system directory.\n", kickstart);
+               fprintf(stderr, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
                fclose(configfile);
                return false;
             }
@@ -2915,7 +2932,7 @@ bool retro_load_game(const struct retro_game_info *info)
                   if (file_exists(whdload))
                      fprintf(configfile, "hardfile=read-write,32,1,2,512,%s\n", (const char*)&whdload);
                   else
-                     fprintf(stderr, "WHDLoad image file '%s' not found.\n", (const char*)&whdload);
+                     fprintf(stderr, "WHDLoad image file '%s' not found!\n", (const char*)&whdload);
                }
                fprintf(configfile, "hardfile=read-write,32,1,2,512,%s\n", full_path);
             }
@@ -2928,21 +2945,20 @@ bool retro_load_game(const struct retro_game_info *info)
                   dc_parse_m3u(dc, full_path);
 
                   // Some debugging
-                  printf("M3U file parsed, %d file(s) found\n", dc->count);
-                  for (unsigned i = 0; i < dc->count; i++)
-                     printf("File %d: %s\n", i+1, dc->files[i]);
+                  fprintf(stdout, "[libretro-uae]: M3U file parsed, %d file(s) found\n", dc->count);
+                  //for (unsigned i = 0; i < dc->count; i++)
+                     //printf("File %d: %s\n", i+1, dc->files[i]);
                }
                else
                {
                   // Add the file to disk control context
-                  // Maybe, in a later version of retroarch, we could add disk on the fly (didn't find how to do this)
                   dc_add_file(dc, full_path);
                }
 
                // Init first disk
                dc->index = 0;
                dc->eject_state = false;
-               printf("Disk (%d) inserted into drive DF0: %s\n", dc->index+1, dc->files[dc->index]);
+               fprintf(stdout, "[libretro-uae]: Disk (%d) inserted into drive DF0: %s\n", dc->index+1, dc->files[dc->index]);
                fprintf(configfile, "floppy0=%s\n", dc->files[0]);
 
                // Append rest of the disks to the config if m3u is a MultiDrive-m3u
@@ -2953,7 +2969,7 @@ bool retro_load_game(const struct retro_game_info *info)
                      dc->index = i;
                      if (i <= 3)
                      {
-                        printf("Disk (%d) inserted into drive DF%d: %s\n", dc->index+1, i, dc->files[dc->index]);
+                        fprintf(stdout, "[libretro-uae]: Disk (%d) inserted into drive DF%d: %s\n", dc->index+1, i, dc->files[dc->index]);
                         fprintf(configfile, "floppy%d=%s\n", i, dc->files[i]);
 
                         // By default only DF0: is enabled, so floppyXtype needs to be set on the extra drives
@@ -2974,18 +2990,16 @@ bool retro_load_game(const struct retro_game_info *info)
          else
          {
             // Error
-            fprintf(stderr, "Error while writing '%s' file.\n", (const char*)&RPATH);
+            fprintf(stderr, "Error while writing file '%s'!\n", (const char*)&RPATH);
             return false;
          }
       }
-      // If argument is an uae file
+      // If argument is a config file
 	  else if (strendswith(full_path, UAE_FILE_EXT))
 	  {
-	     printf("Game '%s' is an UAE config file.\n", full_path);
-
 	     // Prepend default config
 	     path_join((char*)&RPATH, retro_save_directory, LIBRETRO_PUAE_CONF);
-	     printf("Generating temporary uae config file '%s'.\n", (const char*)&RPATH);
+	     fprintf(stdout, "[libretro-uae]: Generating temporary config file '%s'\n", (const char*)&RPATH);
 
 	     // Open tmp config file
 	     FILE * configfile;
@@ -3000,6 +3014,9 @@ bool retro_load_game(const struct retro_game_info *info)
 	        // Write common config
 	        fprintf(configfile, uae_config);
 	        fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
+
+	        // Separator row for clarity
+	        fprintf(configfile, "\n");
 
 	        // Iterate parsed file and append all rows to the temporary config
 	        FILE * configfile_custom;
@@ -3018,7 +3035,7 @@ bool retro_load_game(const struct retro_game_info *info)
          else
          {
             // Error
-            fprintf(stderr, "Error while writing '%s' file.\n", (const char*)&RPATH);
+            fprintf(stderr, "Error while writing file '%s'!\n", (const char*)&RPATH);
             return false;
          }
       }
@@ -3026,7 +3043,7 @@ bool retro_load_game(const struct retro_game_info *info)
 	  else
 	  {
 	     // Unsupported file format
-	     fprintf(stderr, "Content '%s'. Unsupported file format.\n", full_path);
+	     fprintf(stderr, "Unsupported file format '%s'!\n", full_path);
 	     return false;
 	  }
    }
@@ -3034,7 +3051,7 @@ bool retro_load_game(const struct retro_game_info *info)
    else
    {
       path_join((char*)&RPATH, retro_save_directory, LIBRETRO_PUAE_CONF);
-      printf("Generating temporary uae config file '%s'.\n", (const char*)&RPATH);
+      fprintf(stdout, "[libretro-uae]: Generating temporary config file '%s'\n", (const char*)&RPATH);
 
       // Open tmp config file
       FILE * configfile;
@@ -3042,8 +3059,8 @@ bool retro_load_game(const struct retro_game_info *info)
       {
          char kickstart[RETRO_PATH_MAX];
 
-         // No machine specified we will use the configured one
-         printf("No machine specified. Booting default configuration.\n");
+         // No machine specified
+         fprintf(stdout, "[libretro-uae]: Booting default configuration\n");
          fprintf(configfile, uae_machine);
          path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
 
@@ -3054,8 +3071,7 @@ bool retro_load_game(const struct retro_game_info *info)
          if (!file_exists(kickstart))
          {
             // Kickstart rom not found
-            fprintf(stderr, "Kickstart rom '%s' not found.\n", (const char*)&kickstart);
-            fprintf(stderr, "You must have a correct kickstart file ('%s') in your RetroArch system directory.\n", kickstart);
+            fprintf(stderr, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
             fclose(configfile);
             return false;
          }
@@ -3065,16 +3081,10 @@ bool retro_load_game(const struct retro_game_info *info)
       }
    }
 
-   if (w<=0 || h<=0 || w>EMULATOR_MAX_WIDTH || h>EMULATOR_MAX_HEIGHT) 
-   {
-      w = defaultw;
-      h = defaulth;
-   }
+   fprintf(stderr, "[libretro-uae]: Resolution selected: %dx%d\n", defaultw, defaulth);
 
-   fprintf(stderr, "[libretro-uae]: Resolution selected: %dx%d (default: %dx%d)\n", w, h, defaultw, defaulth);
-
-   retrow = w;
-   retroh = h;
+   retrow = defaultw;
+   retroh = defaulth;
    memset(bmp, 0, sizeof(bmp));
    Screen_SetFullUpdate();
    return true;

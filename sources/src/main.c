@@ -1161,17 +1161,16 @@ void real_main (int argc, TCHAR **argv)
 	preinit_shm ();
 #endif
 
+#ifndef __LIBRETRO__
 	write_log (_T("Enumerating display devices.. \n"));
-#ifndef __LIBRETRO__
 	enumeratedisplays ();
-#endif
 	write_log (_T("Sorting devices and modes..\n"));
-#ifndef __LIBRETRO__
 	sortdisplays ();
-#endif
-//	write_log (_T("Display buffer mode = %d\n"), ddforceram);
-//	enumerate_sound_devices ();
+
+	write_log (_T("Display buffer mode = %d\n"), ddforceram);
+	enumerate_sound_devices ();
 	write_log (_T("done\n"));
+#endif
 
 	keyboard_settrans ();
 #ifdef CATWEASEL
