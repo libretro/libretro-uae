@@ -261,7 +261,7 @@ void Print_Status(void)
    else // Bottom
       STAT_BASEY=gfxvidinfo.outheight-opt_statusbar_position-BOX_HEIGHT+2;
 
-   BOX_WIDTH=retrow-146;
+   BOX_WIDTH=retrow-122;
    BOX_Y=STAT_BASEY-BOX_PADDING;
 
    // Joy port indicators

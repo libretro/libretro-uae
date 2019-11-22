@@ -120,18 +120,22 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
             on_rgb = 0x00cc00;
             on_rgb2 = 0x006600;
             off_rgb = 0x003300;
-        if (!gui_data.drive_disabled[pled]) {
-            num1 = -1;
-            num2 = track / 10;
-            num3 = track % 10;
-            on = gui_data.drive_motor[pled];
-            if (gui_data.drive_writing[pled]) {
-                on_rgb = 0xcc0000;
-                on_rgb2 = 0x880000;
-            }
-            half = gui_data.drive_side ? 1 : -1;
-            if (gui_data.df[pled][0] == 0)
-                pen_rgb = ledcolor (0x00aaaaaa, rc, gc, bc, alpha);
+            if (!gui_data.drive_disabled[pled]) {
+                num1 = -1;
+                num2 = track / 10;
+                num3 = track % 10;
+                on = gui_data.drive_motor[pled];
+                if (gui_data.drive_writing[pled]) {
+                    on_rgb = 0xcc0000;
+                    on_rgb2 = 0x880000;
+                }
+                half = gui_data.drive_side ? 1 : -1;
+                if (gui_data.df[pled][0] == 0)
+                {
+                    pen_rgb = ledcolor (0x00aaaaaa, rc, gc, bc, alpha);
+                    num2 = -1;
+                    num3 = -1;
+                }
             }
             side = gui_data.drive_side;
         } else if (led == LED_POWER) {
@@ -155,15 +159,15 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
                 num2 = 10;
                 num3 = 12;
             }
-        } else if (led == LED_HD) {
-            pos = 5;
+        } else if (led == LED_HD && gui_data.hd >= 0) {
+            pos = 9;
             if (gui_data.hd >= 0) {
                 on = gui_data.hd;
                 on_rgb = on == 2 ? 0x333300 : 0xcccc00;
                 off_rgb = 0x333300;
                 num1 = -1;
-                num2 = 11;
-                num3 = 12;
+                num2 = -1;//11;
+                num3 = -1;//12;
             }
         } else if (led == LED_FPS) {
             pos = 10;
