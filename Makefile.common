@@ -148,4 +148,4 @@ SOURCES_C += $(DEPS_DIR)/zlib/adler32.c \
 				 $(DEPS_DIR)/zlib/zutil.c
 endif
 
-CFLAGS += -DLIBRETRO_PUAE -DCAPS
+CFLAGS += -DLIBRETRO_PUAE -DCAPS -DA_DMS
