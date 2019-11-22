@@ -2317,7 +2317,7 @@ void retro_get_system_info(struct retro_system_info *info)
    info->library_version  = "2.6.1" GIT_VERSION;
    info->need_fullpath    = true;
    info->block_extract    = false;	
-   info->valid_extensions = "adf|dms|fdi|ipf|zip|hdf|hdz|uae|m3u";
+   info->valid_extensions = "adf|adz|dms|fdi|ipf|hdf|hdz|uae|m3u|zip";
 }
 
 bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
@@ -2783,10 +2783,10 @@ sortie:
 }
 
 #define ADF_FILE_EXT "adf"
+#define ADZ_FILE_EXT "adz"
 #define FDI_FILE_EXT "fdi"
 #define DMS_FILE_EXT "dms"
 #define IPF_FILE_EXT "ipf"
-#define ZIP_FILE_EXT "zip"
 #define HDF_FILE_EXT "hdf"
 #define HDZ_FILE_EXT "hdz"
 #define UAE_FILE_EXT "uae"
@@ -2804,14 +2804,14 @@ bool retro_load_game(const struct retro_game_info *info)
 			
 	  // If argument is a disk or hard drive image file
 	  if (  strendswith(full_path, ADF_FILE_EXT)
-         || strendswith(full_path, FDI_FILE_EXT)
-         || strendswith(full_path, DMS_FILE_EXT)
-         || strendswith(full_path, IPF_FILE_EXT)
-         || strendswith(full_path, ZIP_FILE_EXT)
-         || strendswith(full_path, HDF_FILE_EXT)
-         || strendswith(full_path, HDZ_FILE_EXT)
-         || strendswith(full_path, M3U_FILE_EXT))
-	  {
+	     || strendswith(full_path, ADZ_FILE_EXT)
+	     || strendswith(full_path, FDI_FILE_EXT)
+	     || strendswith(full_path, DMS_FILE_EXT)
+	     || strendswith(full_path, IPF_FILE_EXT)
+	     || strendswith(full_path, HDF_FILE_EXT)
+	     || strendswith(full_path, HDZ_FILE_EXT)
+	     || strendswith(full_path, M3U_FILE_EXT))
+      {
 	     path_join((char*)&RPATH, retro_save_directory, LIBRETRO_PUAE_CONF);
 	     fprintf(stdout, "[libretro-uae]: Generating temporary config file '%s'\n", (const char*)&RPATH);
 
