@@ -2028,124 +2028,116 @@ extern void disk_eject (int num);
 
 static bool disk_set_eject_state(bool ejected)
 {
-	if (dc)
-	{
-		if (dc->eject_state == ejected)
-			return true;
-		else
-			dc->eject_state = ejected;
-		
-		if (dc->eject_state)
-		{
-			changed_prefs.floppyslots[0].df[0] = 0;
-			DISK_check_change();
-			disk_eject(0);
-		}
-		else
-		{
-			if (strlen(dc->files[dc->index]) > 0)
-			{
-				if (file_exists(dc->files[dc->index]))
-				{
-					if (currprefs.nr_floppies-1 < 0 )
-						currprefs.nr_floppies = 1;
+   if (dc)
+   {
+      if (dc->eject_state == ejected)
+         return true;
+      else
+         dc->eject_state = ejected;
 
-					//check whether drive is enabled
-					if (currprefs.floppyslots[0].dfxtype < 0)
-					{
-						changed_prefs.floppyslots[0].dfxtype = 0;
-						DISK_check_change();
-					}
-					changed_prefs = currprefs;
-					strcpy (changed_prefs.floppyslots[0].df,dc->files[dc->index]);
-					DISK_check_change();
-				}
-			}
-		}
-	}
-	return true;
+      if (dc->eject_state)
+      {
+         if (dc->files[dc->index] > 0)
+         {
+            changed_prefs.floppyslots[0].df[0] = 0;
+            DISK_check_change();
+            disk_eject(0);
+         }
+      }
+      else
+      {
+         if (dc->files[dc->index] > 0)
+         {
+            if (file_exists(dc->files[dc->index]))
+            {
+               strcpy (changed_prefs.floppyslots[0].df, dc->files[dc->index]);
+               DISK_check_change();
+            }
+         }
+      }
+   }
+   return true;
 }
 
 static bool disk_get_eject_state(void)
 {
-	if (dc)
-		return dc->eject_state;
-	
-	return true;
+   if (dc)
+      return dc->eject_state;
+
+   return true;
 }
 
 static unsigned disk_get_image_index(void)
 {
-	if (dc)
-		return dc->index;
-	
-	return 0;
+   if (dc)
+      return dc->index;
+
+   return 0;
 }
 
 static bool disk_set_image_index(unsigned index)
 {
-	// Insert disk
-	if (dc)
-	{
-		// Same disk...
-		// This can mess things in the emu
-		if (index == dc->index)
-			return true;
+   // Insert disk
+   if (dc)
+   {
+      // Same disk...
+      // This can mess things in the emu
+      if (index == dc->index)
+         return true;
 
-		if ((index < dc->count) && (dc->files[index]))
-		{
-			dc->index = index;
-			printf("Disk (%d) inserted into drive DF0: %s\n", dc->index+1, dc->files[dc->index]);
-			return true;
-		}
-	}
+      if ((index < dc->count) && (dc->files[index]))
+      {
+         dc->index = index;
+         fprintf(stdout, "[libretro-uae]: Disk (%d) inserted into drive DF0: '%s'\n", dc->index+1, dc->files[dc->index]);
+         return true;
+      }
+   }
 
-	return false;
+   return false;
 }
 
 static unsigned disk_get_num_images(void)
 {
-	if (dc)
-		return dc->count;
+   if (dc)
+      return dc->count;
 
-	return 0;
+   return 0;
 }
 
 static bool disk_replace_image_index(unsigned index, const struct retro_game_info *info)
 {
-	if (dc)
-	{
-		if (index >= dc->count)
-			return false;
+   if (dc)
+   {
+      if (index >= dc->count)
+         return false;
 
-		if (dc->files[index])
-		{
-			free(dc->files[index]);
-			dc->files[index] = NULL;
-		}
+      if (dc->files[index])
+      {
+         free(dc->files[index]);
+         dc->files[index] = NULL;
+      }
 
-		// TODO : Handling removing of a disk image when info = NULL
+      // TODO : Handling removing of a disk image when info = NULL
+      if (info != NULL)
+         dc->files[index] = strdup(info->path);
+   }
 
-		if (info != NULL)
-			dc->files[index] = strdup(info->path);
-	}
-
-    return false;
+   return false;
 }
 
 static bool disk_add_image_index(void)
 {
-	if (dc)
-	{
-		if (dc->count <= DC_MAX_SIZE)
-		{
-			dc->files[dc->count] = NULL;
-			dc->count++;
-			return true;
-		}
-	}
+   if (dc)
+   {
+      if (dc->count <= DC_MAX_SIZE)
+      {
+         dc->files[dc->count] = NULL;
+         dc->count++;
+         return true;
+      }
+   }
 
-    return false;
+   return false;
 }
 
 static struct retro_disk_control_callback disk_interface = {
@@ -2958,7 +2950,7 @@ bool retro_load_game(const struct retro_game_info *info)
                // Init first disk
                dc->index = 0;
                dc->eject_state = false;
-               fprintf(stdout, "[libretro-uae]: Disk (%d) inserted into drive DF0: %s\n", dc->index+1, dc->files[dc->index]);
+               fprintf(stdout, "[libretro-uae]: Disk (%d) inserted into drive DF0: '%s'\n", dc->index+1, dc->files[dc->index]);
                fprintf(configfile, "floppy0=%s\n", dc->files[0]);
 
                // Append rest of the disks to the config if m3u is a MultiDrive-m3u
@@ -2969,7 +2961,7 @@ bool retro_load_game(const struct retro_game_info *info)
                      dc->index = i;
                      if (i <= 3)
                      {
-                        fprintf(stdout, "[libretro-uae]: Disk (%d) inserted into drive DF%d: %s\n", dc->index+1, i, dc->files[dc->index]);
+                        fprintf(stdout, "[libretro-uae]: Disk (%d) inserted into drive DF%d: '%s'\n", dc->index+1, i, dc->files[dc->index]);
                         fprintf(configfile, "floppy%d=%s\n", i, dc->files[i]);
 
                         // By default only DF0: is enabled, so floppyXtype needs to be set on the extra drives
