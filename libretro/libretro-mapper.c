@@ -77,10 +77,10 @@ extern void retro_joystick(int, int, int);
 extern void retro_joystick_button(int, int, int);
 extern unsigned int uae_devices[4];
 extern int mapper_keys[32];
-extern int video_config;
-extern int video_config_aspect;
-extern int zoom_mode_id;
-static int opt_zoom_mode_id;
+extern unsigned int video_config;
+extern unsigned int video_config_aspect;
+extern unsigned int zoom_mode_id;
+extern unsigned int opt_zoom_mode_id;
 extern bool request_update_av_info;
 extern bool opt_enhanced_statusbar;
 extern int opt_statusbar_position;
@@ -137,11 +137,11 @@ void emu_function(int function)
       case EMU_ASPECT_RATIO_TOGGLE:
          if (real_ntsc)
             break;
-         if (video_config_aspect==0)
+         if (video_config_aspect == 0)
             video_config_aspect = (video_config & 0x02) ? 1 : 2;
-         else if (video_config_aspect==1)
+         else if (video_config_aspect == 1)
             video_config_aspect = 2;
-         else if (video_config_aspect==2)
+         else if (video_config_aspect == 2)
             video_config_aspect = 1;
          request_update_av_info = true;
          break;
@@ -149,15 +149,10 @@ void emu_function(int function)
          if (zoom_mode_id == 0 && opt_zoom_mode_id == 0)
             break;
          if (zoom_mode_id > 0)
-         {
-            opt_zoom_mode_id = zoom_mode_id;
             zoom_mode_id = 0;
-         }
-         else
-         {
+         else if (zoom_mode_id == 0)
             zoom_mode_id = opt_zoom_mode_id;
-            opt_zoom_mode_id = 0;
-         }
+
          request_update_av_info = true;
          break;
    }
@@ -266,7 +261,7 @@ void Print_Status(void)
    else // Bottom
       STAT_BASEY=gfxvidinfo.outheight-opt_statusbar_position-BOX_HEIGHT+2;
 
-   BOX_WIDTH=retrow-146;
+   BOX_WIDTH=retrow-122;
    BOX_Y=STAT_BASEY-BOX_PADDING;
 
    // Joy port indicators

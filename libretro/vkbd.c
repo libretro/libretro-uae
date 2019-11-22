@@ -7,9 +7,9 @@ extern int NPAGE;
 extern int SHOWKEYPOS;
 extern int SHOWKEYTRANS;
 extern int SHIFTON;
-extern int vkflag[7];
-extern int video_config_geometry;
 extern int pix_bytes;
+extern int vkflag[7];
+extern unsigned int video_config_geometry;
 
 void virtual_kbd(unsigned short int *pixels, int vx, int vy)
 {

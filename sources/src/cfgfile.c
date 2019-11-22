@@ -3748,7 +3748,9 @@ int cfgfile_load (struct uae_prefs *p, const TCHAR *filename, int *type, int ign
 	if (recursive > 1)
 		return 0;
 	recursive++;
+#ifndef __LIBRETRO__
 	write_log (_T("load config '%s':%d\n"), filename, type ? *type : -1);
+#endif
 	v = cfgfile_load_2 (p, filename, 1, type);
 	if (!v) {
 		write_log (_T("load failed\n"));

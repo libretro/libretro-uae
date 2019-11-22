@@ -2554,10 +2554,6 @@ void memory_clear (void)
 	expansion_clear ();
 }
 
-#ifdef __LIBRETRO__
-int romnotfound=0;
-#endif
-
 void memory_reset (void)
 {
 	int bnk, bnk_end;
@@ -2601,7 +2597,9 @@ void memory_reset (void)
 #ifdef NATMEM_OFFSET
 		protect_roms (false);
 #endif
+#ifndef __LIBRETRO__
 		write_log (_T("ROM loader.. (%s)\n"), currprefs.romfile);
+#endif
 		kickstart_rom = 1;
 		a1000_handle_kickstart (0);
 		xfree (a1000_bootrom);
@@ -2624,9 +2622,6 @@ void memory_reset (void)
 			if (_tcslen (currprefs.romfile) > 0) {
 				write_log (_T("Failed to open '%s'\n"), currprefs.romfile);
 				notify_user (NUMSG_NOROM);
-#ifdef __LIBRETRO__
-				romnotfound=1;
-#endif
 			}
 			load_kickstart_replacement ();
 		} else {
@@ -2664,7 +2659,9 @@ void memory_reset (void)
 			}
 		}
 		patch_kick ();
+#ifndef __LIBRETRO__
 		write_log (_T("ROM loader end\n"));
+#endif
 #ifdef NATMEM_OFFSET
 		protect_roms (true);
 #endif
@@ -2862,7 +2859,9 @@ void memory_reset (void)
 	if (mem_hardreset) {
 		memory_clear ();
 	}
+#ifndef __LIBRETRO__
 	write_log (_T("memory init end\n"));
+#endif
 }
 
 
