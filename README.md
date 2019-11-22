@@ -34,7 +34,7 @@ And of course for the RetroArch/Libretro team: "http://www.libretro.com/"
 You can pass a disk or a hard drive image as a rom.
 
 Supported formats are:
-- **ADF**, **DMS**, **FDI**, **IPF** files for disk images
+- **ADF**, **ADZ**, **IPF**, **DMS**, **FDI** files for disk images
 - **HDF**, **HDZ** for hard drive images
 - **M3U** for multiple disk images
 
@@ -104,7 +104,7 @@ When a game ask for it, you can change the current disk in the RetroArch 'Disk C
 - Select the right disk index
 - Insert the new disk with 'Disk Cycle Tray Status'
 
-Note: ZIP support is provided by RetroArch and is done before passing the game to the core. So, when using a M3U file, the specified disk image must be uncompressed (ADF, DMS, FDI, IPF file formats).
+Note: ZIP support is provided by RetroArch and is done before passing the game to the core. So, when using a M3U file, the specified disk image must be uncompressed (ADF, DMS, FDI, IPF file formats). ADZ (gzipped ADF) will work though.
 
 Append "(MD)" as in "MultiDrive" to the M3U filename to insert each disk in a different drive for games that support multiple drives. Only possible if there are no more than 4 disks.
 
@@ -140,7 +140,7 @@ Note the size of the HDF specified by SIZE_OF_HDF must be greater than size of t
 ### Game that needs a specific Amiga model (AGA games for instance)
 If a game needs a specific Amiga model (AGA games for instance), you can specify which model to use.
 
-To do this just add these strings to your ADF, HDF or M3U filename:
+To do this just add these strings to the filename:
 
 |String|Result|
 |---|---|
@@ -204,7 +204,7 @@ If you are using RDB HDF files, please use 0,0,0,0 instead of geometry numbers l
 - Parallel port four player joystick adapter is emulated with working two, three and four-player controls (sonninnos and rsn8887)
 - Multiple mice support using raw input driver on Windows (sonninnos)
 - Autozoom and autocentering options for large game display without borders or distortion (sonninnos)
-- Mappable hotkeys to bring up statusbar and on-screen keyboard (sonninos)
+- Mappable hotkeys to bring up statusbar and on-screen keyboard (sonninnos)
 - Analog stick mouse control (sonninnos and rsn8887)
 - On screen keyboard with easy joystick/dpad control (sonninnos and rsn8887)
 - Implement new core options with some small print explanations (sonninnos)
