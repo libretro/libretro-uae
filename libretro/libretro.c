@@ -35,6 +35,7 @@ int retrow = 0;
 int retroh = 0;
 char key_state[512];
 char key_state2[512];
+unsigned int opt_mapping_options_display;
 bool opt_use_whdload_hdf = true;
 bool opt_enhanced_statusbar = true;
 int opt_statusbar_position = 0;
@@ -63,6 +64,7 @@ int zoomed_height;
 extern uae_u8 *natmem_offset;
 extern uae_u32 natmem_size;
 #endif
+
 extern unsigned short int bmp[EMULATOR_MAX_WIDTH*EMULATOR_MAX_HEIGHT];
 extern unsigned short int savebmp[EMULATOR_MAX_WIDTH*EMULATOR_MAX_HEIGHT];
 extern int SHIFTON;
@@ -784,6 +786,17 @@ void retro_set_environment(retro_environment_t cb)
          },
          "disabled"
       },
+      {
+         "puae_mapping_options_display",
+         "Show Mapping Options",
+         "Show options for hotkeys & RetroPad mappings.\nCore option page refresh required.",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "disabled"
+      },
       /* Hotkeys */
       {
          "puae_mapper_vkbd",
@@ -1087,10 +1100,10 @@ static void update_variables(void)
    uae_config[0] = '\0';
 
    struct retro_variable var = {0};
+   struct retro_core_option_display option_display;
 
    var.key = "puae_model";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (strcmp(var.value, "A500") == 0)
@@ -1127,7 +1140,6 @@ static void update_variables(void)
 
    var.key = "puae_video_standard";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       /* video_config change only at start */
@@ -1154,7 +1166,6 @@ static void update_variables(void)
 
    var.key = "puae_video_aspect";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (strcmp(var.value, "PAL") == 0) video_config_aspect = PUAE_VIDEO_PAL;
@@ -1164,7 +1175,6 @@ static void update_variables(void)
 
    var.key = "puae_video_allow_hz_change";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (strcmp(var.value, "enabled") == 0) video_config_allow_hz_change = 1;
@@ -1173,7 +1183,6 @@ static void update_variables(void)
 
    var.key = "puae_video_resolution";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (strcmp(var.value, "hires_double") == 0)
@@ -1196,7 +1205,6 @@ static void update_variables(void)
 
    var.key = "puae_statusbar";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (strcmp(var.value, "top") == 0)
@@ -1229,7 +1237,6 @@ static void update_variables(void)
 
    var.key = "puae_cpu_compatibility";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (firstpass != 1)
@@ -1275,7 +1282,6 @@ static void update_variables(void)
 
    var.key = "puae_cpu_throttle";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       strcat(uae_config, "cpu_throttle=");
@@ -1288,7 +1294,6 @@ static void update_variables(void)
 
    var.key = "puae_cpu_multiplier";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       strcat(uae_config, "cpu_multiplier=");
@@ -1301,7 +1306,6 @@ static void update_variables(void)
 
    var.key = "puae_sound_output";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       strcat(uae_config, "sound_output=");
@@ -1316,7 +1320,6 @@ static void update_variables(void)
 
    var.key = "puae_sound_stereo_separation";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       int val = atoi(var.value) / 10;
@@ -1331,7 +1334,6 @@ static void update_variables(void)
 
    var.key = "puae_sound_interpol";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       strcat(uae_config, "sound_interpol=");
@@ -1347,7 +1349,6 @@ static void update_variables(void)
 
    var.key = "puae_sound_filter";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       strcat(uae_config, "sound_filter=");
@@ -1361,7 +1362,6 @@ static void update_variables(void)
 
    var.key = "puae_sound_filter_type";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       strcat(uae_config, "sound_filter_type=");
@@ -1374,7 +1374,6 @@ static void update_variables(void)
 
    var.key = "puae_floppy_speed";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       strcat(uae_config, "floppy_speed=");
@@ -1387,7 +1386,6 @@ static void update_variables(void)
 
    var.key = "puae_floppy_sound";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       /* Sound is enabled by default if files are found, so this needs to be set always */
@@ -1403,7 +1401,6 @@ static void update_variables(void)
 
    var.key = "puae_floppy_sound_type";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (firstpass != 1)
@@ -1456,7 +1453,6 @@ static void update_variables(void)
 
    var.key = "puae_mouse_speed";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       strcat(uae_config, "input.mouse_speed=");
@@ -1473,7 +1469,6 @@ static void update_variables(void)
 
    var.key = "puae_immediate_blits";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (strcmp(var.value, "false") == 0)
@@ -1514,7 +1509,6 @@ static void update_variables(void)
 
    var.key = "puae_collision_level";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       strcat(uae_config, "collision_level=");
@@ -1532,7 +1526,6 @@ static void update_variables(void)
 
    var.key = "puae_gfx_framerate";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       int val;
@@ -1553,7 +1546,6 @@ static void update_variables(void)
 
    var.key = "puae_gfx_colors";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       // Only allow screenmode change after restart
@@ -1565,47 +1557,8 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_gfx_center_horizontal";
-   var.value = NULL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-      strcat(uae_config, "gfx_center_horizontal=");
-      strcat(uae_config, var.value);
-      strcat(uae_config, "\n");
-
-      if (firstpass != 1)
-      {
-         int val;
-         if (strcmp(var.value, "none") == 0) val=0;
-         else if (strcmp(var.value, "simple") == 0) val=1;
-         else if (strcmp(var.value, "smart") == 0) val=2;
-         changed_prefs.gfx_xcenter=val;
-      }
-   }
-
-   var.key = "puae_gfx_center_vertical";
-   var.value = NULL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-      strcat(uae_config, "gfx_center_vertical=");
-      strcat(uae_config, var.value);
-      strcat(uae_config, "\n");
-
-      if (firstpass != 1)
-      {
-         int val;
-         if (strcmp(var.value, "none") == 0) val=0;
-         else if (strcmp(var.value, "simple") == 0) val=1;
-         else if (strcmp(var.value, "smart") == 0) val=2;
-         changed_prefs.gfx_ycenter=val;
-      }
-   }
-
    var.key = "puae_zoom_mode";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (strcmp(var.value, "none") == 0) zoom_mode_id=0;
@@ -1623,7 +1576,6 @@ static void update_variables(void)
 
    var.key = "puae_vertical_pos";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (strcmp(var.value, "auto") == 0)
@@ -1646,7 +1598,6 @@ static void update_variables(void)
 
    var.key = "puae_horizontal_pos";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (strcmp(var.value, "auto") == 0)
@@ -1667,7 +1618,6 @@ static void update_variables(void)
 
    var.key = "puae_use_whdload";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (strcmp(var.value, "enabled") == 0)
@@ -1678,7 +1628,6 @@ static void update_variables(void)
 
    var.key = "puae_analogmouse";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (strcmp(var.value, "disabled") == 0) opt_analogmouse=0;
@@ -1689,7 +1638,6 @@ static void update_variables(void)
 
    var.key = "puae_analogmouse_deadzone";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       opt_analogmouse_deadzone = atoi(var.value);
@@ -1697,7 +1645,6 @@ static void update_variables(void)
 
    var.key = "puae_analogmouse_speed";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       opt_analogmouse_speed = atof(var.value);
@@ -1705,7 +1652,6 @@ static void update_variables(void)
 
    var.key = "puae_dpadmouse_speed";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       opt_dpadmouse_speed = atoi(var.value);
@@ -1713,7 +1659,6 @@ static void update_variables(void)
 
    var.key = "puae_multimouse";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (strcmp(var.value, "disabled") == 0) opt_multimouse=false;
@@ -1722,7 +1667,6 @@ static void update_variables(void)
 
    var.key = "puae_keyrah_keypad_mappings";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (strcmp(var.value, "disabled") == 0) opt_keyrahkeypad=false;
@@ -1731,16 +1675,22 @@ static void update_variables(void)
 
    var.key = "puae_physical_keyboard_pass_through";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (strcmp(var.value, "disabled") == 0) opt_keyboard_pass_through=false;
       else if (strcmp(var.value, "enabled") == 0) opt_keyboard_pass_through=true;
    }
 
+   var.key = "puae_mapping_options_display";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "disabled") == 0) opt_mapping_options_display=0;
+      else if (strcmp(var.value, "enabled") == 0) opt_mapping_options_display=1;
+   }
+
    var.key = "puae_turbo_fire_button";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (strcmp(var.value, "disabled") == 0) turbo_fire_button=-1;
@@ -1757,7 +1707,6 @@ static void update_variables(void)
 
    var.key = "puae_turbo_pulse";
    var.value = NULL;
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (strcmp(var.value, "2") == 0) turbo_pulse=2;
@@ -1768,6 +1717,7 @@ static void update_variables(void)
       else if (strcmp(var.value, "12") == 0) turbo_pulse=12;
    }
 
+   /* Mapper */
    var.key = "puae_mapper_select";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -1901,7 +1851,6 @@ static void update_variables(void)
       mapper_keys[23] = keyId(var.value);
    }
 
-
    /* Mapper hotkeys */
    var.key = "puae_mapper_vkbd";
    var.value = NULL;
@@ -1945,8 +1894,59 @@ static void update_variables(void)
       mapper_keys[29] = keyId(var.value);
    }
 
+   /* Options display */
+   option_display.visible = opt_mapping_options_display;
 
-
+   option_display.key = "puae_mapper_select";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_mapper_start";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_mapper_a";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_mapper_y";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_mapper_x";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_mapper_l";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_mapper_r";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_mapper_l2";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_mapper_r2";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_mapper_l3";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_mapper_r3";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_mapper_lu";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_mapper_ld";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_mapper_ll";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_mapper_lr";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_mapper_ru";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_mapper_rd";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_mapper_rl";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_mapper_rr";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_mapper_vkbd";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_mapper_statusbar";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_mapper_mouse_toggle";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_mapper_reset";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_mapper_aspect_ratio_toggle";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_mapper_zoom_mode_toggle";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
 
    /* Setting resolution */
    switch (video_config)
