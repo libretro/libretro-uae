@@ -2582,7 +2582,7 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       /* Need proper values for calculations */
       if (thisframe_first_drawn_line != thisframe_last_drawn_line
       && thisframe_first_drawn_line > 0 && thisframe_last_drawn_line > 0 
-      && thisframe_first_drawn_line < 110 && thisframe_last_drawn_line > 200
+      && thisframe_first_drawn_line < 150 && thisframe_last_drawn_line > 150
       )
          thisframe_y_adjust_new = (thisframe_last_drawn_line - thisframe_first_drawn_line - zoomed_height_normal) / 2 + thisframe_first_drawn_line; // Smart
          //thisframe_y_adjust_new = thisframe_first_drawn_line + ((thisframe_last_drawn_line - thisframe_first_drawn_line) - zoomed_height_normal) / 2; // Simple
@@ -2717,8 +2717,7 @@ void retro_run(void)
       {
          thisframe_first_drawn_line_old = thisframe_first_drawn_line;
          thisframe_last_drawn_line_old = thisframe_last_drawn_line;
-         if (thisframe_first_drawn_line < 110 && thisframe_last_drawn_line > 200)
-            request_update_av_info = true;
+         request_update_av_info = true;
       }
       // Timer required for unserialize recovery
       else if (thisframe_first_drawn_line == thisframe_first_drawn_line_old)
