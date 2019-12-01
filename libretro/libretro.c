@@ -37,6 +37,7 @@ int retroh = 0;
 char key_state[512];
 char key_state2[512];
 unsigned int opt_mapping_options_display;
+char opt_model[10];
 bool opt_use_whdload_hdf = true;
 bool opt_enhanced_statusbar = true;
 int opt_statusbar_position = 0;
@@ -53,6 +54,7 @@ extern int turbo_fire_button;
 extern unsigned int turbo_pulse;
 int pix_bytes = 2;
 static bool pix_bytes_initialized = false;
+bool filter_type_update = true;
 bool fake_ntsc = false;
 bool real_ntsc = false;
 bool forced_video = false;
@@ -163,7 +165,7 @@ chipset=ocs\n"
 #define A500PLUS "\
 cpu_type=68000\n\
 chipmem_size=2\n\
-bogomem_size=4\n\
+bogomem_size=0\n\
 chipset_compatible=A500+\n\
 chipset=ecs\n"
 
@@ -190,10 +192,10 @@ chipset=aga\n"
 
 
 // Amiga kickstarts
-#define A500_ROM    "kick34005.A500"
-#define A500KS2_ROM "kick37175.A500"
-#define A600_ROM    "kick40063.A600"
-#define A1200_ROM   "kick40068.A1200"
+#define A500_ROM                "kick34005.A500"
+#define A500KS2_ROM             "kick37175.A500"
+#define A600_ROM                "kick40063.A600"
+#define A1200_ROM               "kick40068.A1200"
 
 #define PUAE_VIDEO_PAL          0x01
 #define PUAE_VIDEO_NTSC         0x02
@@ -250,17 +252,18 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_model",
          "Model",
-         "Restart required.",
+         "Automatic defaults to A500 when booting floppy disks and to A600 when booting hard drives.\nRestart required.",
          {
+            { "auto", "Automatic" },
             { "A500", "A500 (512KB Chip + 512KB Slow)" },
             { "A500OG", "A500 (512KB Chip)" },
-            { "A500PLUS", "A500+ (1MB Chip + 1MB Slow)" },
+            { "A500PLUS", "A500+ (1MB Chip)" },
             { "A600", "A600 (2MB Chip + 8MB Fast)" },
             { "A1200", "A1200 (2MB Chip + 8MB Fast)" },
             { "A1200OG", "A1200 (2MB Chip)" },
             { NULL, NULL },
          },
-         "A500"
+         "auto"
       },
       {
          "puae_video_resolution",
@@ -593,11 +596,12 @@ void retro_set_environment(retro_environment_t cb)
          "Sound Filter Type",
          "",
          {
+            { "auto", "Automatic" },
             { "standard", "A500" },
             { "enhanced", "A1200" },
             { NULL, NULL },
          },
-         "standard",
+         "auto",
       },
       {
          "puae_floppy_sound",
@@ -1107,36 +1111,8 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "A500") == 0)
-      {
-         strcat(uae_machine, A500);
-         strcpy(uae_kickstart, A500_ROM);
-      }
-      if (strcmp(var.value, "A500OG") == 0)
-      {
-         strcat(uae_machine, A500OG);
-         strcpy(uae_kickstart, A500_ROM);
-      }
-      if (strcmp(var.value, "A500PLUS") == 0)
-      {
-         strcat(uae_machine, A500PLUS);
-         strcpy(uae_kickstart, A500KS2_ROM);
-      }
-      if (strcmp(var.value, "A600") == 0)
-      {
-         strcat(uae_machine, A600);
-         strcpy(uae_kickstart, A600_ROM);
-      }
-      if (strcmp(var.value, "A1200") == 0)
-      {
-         strcat(uae_machine, A1200);
-         strcpy(uae_kickstart, A1200_ROM);
-      }
-      if (strcmp(var.value, "A1200OG") == 0)
-      {
-         strcat(uae_machine, A1200OG);
-         strcpy(uae_kickstart, A1200_ROM);
-      }
+      if (firstpass)
+         _tcscpy(opt_model, var.value);
    }
 
    var.key = "puae_video_standard";
@@ -1365,12 +1341,27 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      strcat(uae_config, "sound_filter_type=");
-      strcat(uae_config, var.value);
-      strcat(uae_config, "\n");
-
-      if (strcmp(var.value, "standard") == 0) changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A500;
-      else if (strcmp(var.value, "enhanced") == 0) changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A1200;
+      if (firstpass != 1)
+      {
+         if (strcmp(var.value, "standard") == 0) changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A500;
+         else if (strcmp(var.value, "enhanced") == 0) changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A1200;
+         else if (strcmp(var.value, "auto") == 0)
+         {
+            if (currprefs.cpu_model == 68020)
+               changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A1200;
+            else
+               changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A500;
+         }
+      }
+      else
+      {
+         if (strcmp(var.value, "auto"))
+         {
+            strcat(uae_config, "sound_filter_type=");
+            strcat(uae_config, var.value);
+            strcat(uae_config, "\n");
+         }
+      }
    }
 
    var.key = "puae_floppy_speed";
@@ -2775,6 +2766,15 @@ void retro_run(void)
       video_cb(bmp, retrow, zoomed_height, retrow << (pix_bytes / 2));
       return;
    }
+   else if (!firstpass && filter_type_update)
+   {
+      filter_type_update = false;
+      if (currprefs.cpu_model == 68020)
+         changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A1200;
+      else
+         changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A500;
+      config_changed = 0;
+   }
 
    retro_poll_event();
    co_switch(emuThread);
@@ -2801,6 +2801,42 @@ bool retro_load_game(const struct retro_game_info *info)
 {
    RPATH[0] = '\0';
   
+   if (strcmp(opt_model, "A500") == 0)
+   {
+      strcat(uae_machine, A500);
+      strcpy(uae_kickstart, A500_ROM);
+   }
+   else if (strcmp(opt_model, "A500OG") == 0)
+   {
+      strcat(uae_machine, A500OG);
+      strcpy(uae_kickstart, A500_ROM);
+   }
+   else if (strcmp(opt_model, "A500PLUS") == 0)
+   {
+      strcat(uae_machine, A500PLUS);
+      strcpy(uae_kickstart, A500KS2_ROM);
+   }
+   else if (strcmp(opt_model, "A600") == 0)
+   {
+      strcat(uae_machine, A600);
+      strcpy(uae_kickstart, A600_ROM);
+   }
+   else if (strcmp(opt_model, "A1200") == 0)
+   {
+      strcat(uae_machine, A1200);
+      strcpy(uae_kickstart, A1200_ROM);
+   }
+   else if (strcmp(opt_model, "A1200OG") == 0)
+   {
+      strcat(uae_machine, A1200OG);
+      strcpy(uae_kickstart, A1200_ROM);
+   }
+   else if (strcmp(opt_model, "auto") == 0)
+   {
+      strcat(uae_machine, A500);
+      strcpy(uae_kickstart, A500_ROM);
+   }
+
    if (info)
    {
       const char *full_path = (const char*)info->path;
@@ -2833,18 +2869,18 @@ bool retro_load_game(const struct retro_game_info *info)
                fprintf(configfile, A1200OG);
                path_join((char*)&kickstart, retro_system_directory, A1200_ROM);
             }
-            else if (strstr(full_path, "(A1200)") != NULL || strstr(full_path, "(AGA)") != NULL)
+            else if (strstr(full_path, "(A1200)") != NULL || strstr(full_path, "AGA") != NULL)
             {
                // Use A1200
-               fprintf(stdout, "[libretro-uae]: Found '(A1200)' or '(AGA)' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Found '(A1200)' or 'AGA' in filename '%s'\n", full_path);
                fprintf(stdout, "[libretro-uae]: Booting A1200 with Kickstart 3.1 r40.068\n");
                fprintf(configfile, A1200);
                path_join((char*)&kickstart, retro_system_directory, A1200_ROM);
             }
-            else if (strstr(full_path, "(A600)") != NULL || strstr(full_path, "(ECS)") != NULL)
+            else if (strstr(full_path, "(A600)") != NULL || strstr(full_path, "ECS") != NULL)
             {
                // Use A600
-               fprintf(stdout, "[libretro-uae]: Found '(A600)' or '(ECS)' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Found '(A600)' or 'ECS' in filename '%s'\n", full_path);
                fprintf(stdout, "[libretro-uae]: Booting A600 with Kickstart 3.1 r40.063\n");
                fprintf(configfile, A600);
                path_join((char*)&kickstart, retro_system_directory, A600_ROM);
@@ -2865,16 +2901,33 @@ bool retro_load_game(const struct retro_game_info *info)
                fprintf(configfile, A500OG);
                path_join((char*)&kickstart, retro_system_directory, A500_ROM);
             }
-            else if (strstr(full_path, "(A500)") != NULL || strstr(full_path, "(OCS)") != NULL)
+            else if (strstr(full_path, "(A500)") != NULL || strstr(full_path, "OCS") != NULL)
             {
                // Use A500
-               fprintf(stdout, "[libretro-uae]: Found '(A500)' or '(OCS)' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Found '(A500)' or 'OCS' in filename '%s'\n", full_path);
                fprintf(stdout, "[libretro-uae]: Booting A500 with Kickstart 1.3 r34.005\n");
                fprintf(configfile, A500);
                path_join((char*)&kickstart, retro_system_directory, A500_ROM);
             }
             else
             {
+               if (strcmp(opt_model, "auto") == 0)
+               {
+                  // Hard disk defaults to A600
+                  if (  strendswith(full_path, HDF_FILE_EXT)
+                     || strendswith(full_path, HDZ_FILE_EXT))
+                  {
+                     strcat(uae_machine, A600);
+                     strcpy(uae_kickstart, A600_ROM);
+                  }
+                  // Floppy disk defaults to A500
+                  else
+                  {
+                     strcat(uae_machine, A500);
+                     strcpy(uae_kickstart, A500_ROM);
+                  }
+               }
+
                // No machine specified
                fprintf(stdout, "[libretro-uae]: No machine specified in filename '%s'\n", full_path);
                fprintf(stdout, "[libretro-uae]: Booting default configuration\n");

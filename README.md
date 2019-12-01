@@ -52,7 +52,7 @@ The following models are provided (hardcoded configuration):
 |---|---|
 |A500|Amiga 500 with OCS chipset, 0.5MB Chip RAM + 0.5MB Slow RAM|
 |A500OG|Amiga 500 with OCS chipset, 0.5MB Chip RAM|
-|A500+|Amiga 500+ with ECS chipset, 1MB Chip RAM + 1MB Slow RAM|
+|A500+|Amiga 500+ with ECS chipset, 1MB Chip RAM|
 |A600|Amiga 600 with ECS chipset, 2MB Chip RAM + 8MB Fast RAM|
 |A1200|Amiga 1200 with AGA chipset, 2MB Chip RAM + 8MB Fast RAM|
 |A1200OG|Amiga 1200 with AGA chipset, 2MB Chip RAM|
@@ -140,23 +140,23 @@ Note the size of the HDF specified by SIZE_OF_HDF must be greater than size of t
 ### Game that needs a specific Amiga model (AGA games for instance)
 If a game needs a specific Amiga model (AGA games for instance), you can specify which model to use.
 
-To do this just add these strings to the filename:
+To do this just add the particular string to the filename:
 
 |String|Result|
 |---|---|
-|(A500) or (OCS)|Amiga 500|
-|(A500OG) or (512K)|Amiga 500 without memory expansion|
-|(A500+) or (A500PLUS)|Amiga 500+|
-|(A600) or (ECS)|Amiga 600|
-|(A1200) or (AGA)|Amiga 1200|
-|(A1200OG) or (A1200NF)|Amiga 1200 without memory expansion|
-|(NTSC)|NTSC|
-|(PAL)|PAL|
-|(MD)|Insert each disk in a different drive (Maximum 4 disks)|
+|**(A500)** or **OCS**|Amiga 500|
+|**(A500OG)** or **(512K)**|Amiga 500 without memory expansion|
+|**(A500+)** or **(A500PLUS)**|Amiga 500+|
+|**(A600)** or **ECS**|Amiga 600|
+|**(A1200)** or **AGA**|Amiga 1200|
+|**(A1200OG)** or **(A1200NF)**|Amiga 1200 without memory expansion|
+|**(NTSC)**|NTSC 60Hz|
+|**(PAL)**|PAL 50Hz|
+|**(MD)**|Insert each disk in a different drive (Maximum 4 disks)|
 
-Example: When launching "Alien Breed 2 (AGA).hdf" file the core will use an Amiga 1200 model.
+Example: When launching "Alien Breed 2 (AGA).hdf" file the core will use the Amiga 1200 model.
 
-If no special string is found the core will use the model configured in core options.
+If no special string is found the core will use the model configured in the core options. The model core option at 'Automatic' will select A500 when booting floppy disks and A600 when booting hard drives.
 
 ### Resolution and rendering
 These parameters control the output resolution of the core:
