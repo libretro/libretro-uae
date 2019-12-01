@@ -1,3 +1,7 @@
+extern int SHOWKEY;
+extern int vkb_pos_x;
+extern int vkb_pos_y;
+
 void Screen_SetFullUpdate(void);
 
 #define RETRO_DEVICE_UAE_JOYSTICK         RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_ANALOG, 0)
