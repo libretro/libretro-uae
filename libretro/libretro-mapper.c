@@ -1175,7 +1175,7 @@ void update_input(int disable_physical_cursor_keys)
 void retro_poll_event()
 {
    /* If RetroPad is controlled with keyboard keys, then prevent RetroPad from generating keyboard key presses */
-   if (!opt_keyboard_pass_through && ALTON==-1 &&
+   if (!opt_keyboard_pass_through && ALTON==-1 && uae_devices[0] != RETRO_DEVICE_UAE_KEYBOARD &&
       (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B) ||
        input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y) ||
        input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A) ||
@@ -1192,7 +1192,7 @@ void retro_poll_event()
    )
       update_input(2); /* Skip all keyboard input when RetroPad buttons are pressed */
 
-   else if (!opt_keyboard_pass_through && ALTON==-1 &&
+   else if (!opt_keyboard_pass_through && ALTON==-1 && uae_devices[0] != RETRO_DEVICE_UAE_KEYBOARD &&
       (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) ||
        input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN) ||
        input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT) ||
@@ -1201,7 +1201,7 @@ void retro_poll_event()
    )
       update_input(1); /* Process all inputs but disable cursor keys */
 
-   else if (!opt_keyboard_pass_through && ALTON==-1 &&
+   else if (!opt_keyboard_pass_through && ALTON==-1 && uae_devices[1] != RETRO_DEVICE_UAE_KEYBOARD &&
       (input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B) ||
        input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y) ||
        input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A) ||
@@ -1252,7 +1252,7 @@ void retro_poll_event()
                   if (i==0 || (i>3 && i<9)) // DPAD + B + A
                   {
                      // Skip 2nd fire if keymapped
-                     if(retro_port==0 && i==RETRO_DEVICE_ID_JOYPAD_A && mapper_keys[RETRO_DEVICE_ID_JOYPAD_A]!=0)
+                     if (retro_port==0 && i==RETRO_DEVICE_ID_JOYPAD_A && mapper_keys[RETRO_DEVICE_ID_JOYPAD_A]!=0)
                         continue;
 
                      ProcessController(retro_port, i);
@@ -1309,13 +1309,13 @@ void retro_poll_event()
       }
 
       // Second mouse buttons only when enabled
-      if(opt_multimouse)
-          if (!uae_mouse_l[1] && !uae_mouse_r[1])
-          {
-             uae_mouse_l[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_LEFT);
-             uae_mouse_r[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_RIGHT);
-             uae_mouse_m[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_MIDDLE);
-          }
+      if (opt_multimouse)
+         if (!uae_mouse_l[1] && !uae_mouse_r[1])
+         {
+            uae_mouse_l[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_LEFT);
+            uae_mouse_r[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_RIGHT);
+            uae_mouse_m[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_MIDDLE);
+         }
 
       // Joypad movement only with digital mouse mode and virtual keyboard hidden
       if (MOUSEMODE==1 && SHOWKEY==-1 && (uae_devices[0] == RETRO_DEVICE_JOYPAD || uae_devices[1] == RETRO_DEVICE_JOYPAD))
@@ -1434,18 +1434,18 @@ void retro_poll_event()
       }
 
       // Second mouse movement only when enabled
-      if(opt_multimouse)
-          if (!uae_mouse_x[1] && !uae_mouse_y[1])
-          {
-             mouse_x[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_X);
-             mouse_y[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_Y);
+      if (opt_multimouse)
+         if (!uae_mouse_x[1] && !uae_mouse_y[1])
+         {
+            mouse_x[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_X);
+            mouse_y[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_Y);
 
-             if (mouse_x[1] || mouse_y[1])
-             {
-                uae_mouse_x[1] = mouse_x[1];
-                uae_mouse_y[1] = mouse_y[1];
-             }
-          }
+            if (mouse_x[1] || mouse_y[1])
+            {
+               uae_mouse_x[1] = mouse_x[1];
+               uae_mouse_y[1] = mouse_y[1];
+            }
+         }
 
       // Ports 1 & 2
       for (j = 0; j < 2; j++)
