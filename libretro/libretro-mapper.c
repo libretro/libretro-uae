@@ -61,6 +61,8 @@ extern int pix_bytes;
 extern bool fake_ntsc;
 extern bool real_ntsc;
 
+int vkb_pos_x = 0;
+int vkb_pos_y = 0;
 int vkflag[7]={0};
 static int jflag[4][16]={0};
 static int kjflag[2][16]={0};
@@ -755,7 +757,6 @@ void update_input(int disable_physical_cursor_keys)
 
    static int i, j, mk;
    static int oldi=-1;
-   static int vkx=0,vky=0;
 
    static int LX, LY, RX, RY;
    static int threshold=20000;
@@ -1048,30 +1049,28 @@ void update_input(int disable_physical_cursor_keys)
             last_move_time = now;
 
             if (vkflag[0])
-               vky -= 1;
+               vkb_pos_y -= 1;
             else if (vkflag[1])
-               vky += 1;
+               vkb_pos_y += 1;
 
             if (vkflag[2])
-               vkx -= 1;
+               vkb_pos_x -= 1;
             else if (vkflag[3])
-               vkx += 1;
+               vkb_pos_x += 1;
          }
          let_go_of_direction = false;
       }
       else
          let_go_of_direction = true;
 
-      if (vkx < 0)
-         vkx=NPLGN-1;
-      else if (vkx > NPLGN-1)
-         vkx=0;
-      if (vky < 0)
-         vky=NLIGN-1;
-      else if (vky > NLIGN-1)
-         vky=0;
-
-      virtual_kbd(bmp,vkx,vky);
+      if (vkb_pos_x < 0)
+         vkb_pos_x=NPLGN-1;
+      else if (vkb_pos_x > NPLGN-1)
+         vkb_pos_x=0;
+      if (vkb_pos_y < 0)
+         vkb_pos_y=NLIGN-1;
+      else if (vkb_pos_y > NLIGN-1)
+         vkb_pos_y=0;
 
       /* Position toggle, RetroPad X */
       i=RETRO_DEVICE_ID_JOYPAD_X;
@@ -1103,7 +1102,7 @@ void update_input(int disable_physical_cursor_keys)
       i=RETRO_DEVICE_ID_JOYPAD_B;
       if (vkflag[4]==0 && (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_RETURN)))
       {
-         i=check_vkey(vkx,vky);
+         i=check_vkey(vkb_pos_x,vkb_pos_y);
 
          if (i < -10 && i > -15)
             ; // Allow mouse movement hold

@@ -13,6 +13,7 @@
 #include "inputdevice.h"
 #include "savestate.h"
 #include "custom.h"
+#include "vkbd.h"
 
 #define EMULATOR_DEF_WIDTH 720
 #define EMULATOR_DEF_HEIGHT 574
@@ -2770,15 +2771,18 @@ void retro_run(void)
    if (firstpass)
    {
       firstpass=0;
-      goto sortie;
+      co_switch(emuThread);
+      video_cb(bmp, retrow, zoomed_height, retrow << (pix_bytes / 2));
+      return;
    }
 
    retro_poll_event();
-   if (STATUSON==1) Print_Status();
-
-sortie:
-   video_cb(bmp, retrow, zoomed_height, retrow << (pix_bytes / 2));
    co_switch(emuThread);
+   if (SHOWKEY == 1)
+      virtual_kbd(bmp, vkb_pos_x, vkb_pos_y);
+   if (STATUSON == 1)
+      Print_Status();
+   video_cb(bmp, retrow, zoomed_height, retrow << (pix_bytes / 2));
 }
 
 #define ADF_FILE_EXT "adf"
