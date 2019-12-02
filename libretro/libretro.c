@@ -2917,12 +2917,14 @@ bool retro_load_game(const struct retro_game_info *info)
                   if (  strendswith(full_path, HDF_FILE_EXT)
                      || strendswith(full_path, HDZ_FILE_EXT))
                   {
+                     uae_machine[0] = '\0';
                      strcat(uae_machine, A600);
                      strcpy(uae_kickstart, A600_ROM);
                   }
                   // Floppy disk defaults to A500
                   else
                   {
+                     uae_machine[0]= '\0';
                      strcat(uae_machine, A500);
                      strcpy(uae_kickstart, A500_ROM);
                   }
