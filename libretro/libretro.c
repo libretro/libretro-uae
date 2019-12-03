@@ -39,6 +39,7 @@ char key_state2[512];
 unsigned int opt_mapping_options_display;
 char opt_model[10];
 bool opt_use_whdload_hdf = true;
+unsigned int opt_use_whdload_prefs = 0;
 bool opt_enhanced_statusbar = true;
 int opt_statusbar_position = 0;
 int opt_statusbar_position_old = 0;
@@ -652,13 +653,26 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_use_whdload",
          "Use WHDLoad.hdf",
-         "Restart required.",
+         "Enables the use of WHDLoad hard drive images which only have the game files. Restart required.",
          {
             { "enabled", NULL },
             { "disabled", NULL },
             { NULL, NULL },
          },
          "enabled"
+      },
+      {
+         "puae_use_whdload_prefs",
+         "Use WHDLoad.prefs",
+         "WHDLoad.prefs in 'system/' required.\n'Config' shows the config screen only if the slave supports it. 'Splash' shows the splash screen always. Space/Enter/Fire work as a start button in 'Config'.\nRestart required. Will not work with the old WHDLoad.hdf!",
+         {
+            { "disabled", NULL },
+            { "config", "Config" },
+            { "splash", "Splash" },
+            { "both", "Config + Splash" },
+            { NULL, NULL },
+         },
+         "disabled"
       },
       {
          "puae_analogmouse",
@@ -1612,10 +1626,18 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "enabled") == 0)
-        opt_use_whdload_hdf = true;
-      if (strcmp(var.value, "disabled") == 0)
-        opt_use_whdload_hdf = false;
+      if (strcmp(var.value, "enabled") == 0) opt_use_whdload_hdf = true;
+      if (strcmp(var.value, "disabled") == 0) opt_use_whdload_hdf = false;
+   }
+
+   var.key = "puae_use_whdload_prefs";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "disabled") == 0) opt_use_whdload_prefs = 0;
+      if (strcmp(var.value, "config") == 0) opt_use_whdload_prefs = 1;
+      if (strcmp(var.value, "splash") == 0) opt_use_whdload_prefs = 2;
+      if (strcmp(var.value, "both") == 0) opt_use_whdload_prefs = 3;
    }
 
    var.key = "puae_analogmouse";
@@ -2924,7 +2946,7 @@ bool retro_load_game(const struct retro_game_info *info)
                   // Floppy disk defaults to A500
                   else
                   {
-                     uae_machine[0]= '\0';
+                     uae_machine[0] = '\0';
                      strcat(uae_machine, A500);
                      strcpy(uae_kickstart, A500_ROM);
                   }
@@ -2980,11 +3002,80 @@ bool retro_load_game(const struct retro_game_info *info)
 
                   // Verify WHDLoad
                   if (file_exists(whdload))
-                     fprintf(configfile, "hardfile=read-write,32,1,2,512,%s\n", (const char*)&whdload);
+                     fprintf(configfile, "hardfile2=rw,DH0:%s,32,1,2,512,0,,uae0\n", (const char*)&whdload);
                   else
                      fprintf(stderr, "WHDLoad image file '%s' not found!\n", (const char*)&whdload);
+
+                  fprintf(configfile, "hardfile2=rw,DH1:%s,32,1,2,512,0,,uae0\n", full_path);
+                  // Attach retro_system_directory as a read only hard drive for WHDLoad kickstarts/prefs/key
+                  fprintf(configfile, "filesystem2=ro,DH2:System:%s,0\n", retro_system_directory);
+
+                  // Manipulate WHDLoad.prefs
+                  int WHDLoad_ConfigDelay = 0;
+                  int WHDLoad_SplashDelay = 0;
+
+                  switch (opt_use_whdload_prefs)
+                  {
+                     case 1:
+                        WHDLoad_ConfigDelay = -1;
+                        break;
+                     case 2:
+                        WHDLoad_SplashDelay = 150;
+                        break;
+                     case 3:
+                        WHDLoad_ConfigDelay = -1;
+                        WHDLoad_SplashDelay = -1;
+                        break;
+                  }
+
+                  FILE * whdload_prefs;
+                  char whdload_prefs_path[RETRO_PATH_MAX];
+                  path_join((char*)&whdload_prefs_path, retro_system_directory, "WHDLoad.prefs");
+
+                  FILE * whdload_prefs_new;
+                  char whdload_prefs_new_path[RETRO_PATH_MAX];
+                  path_join((char*)&whdload_prefs_new_path, retro_system_directory, "WHDLoad.prefs_new");
+
+                  char whdload_prefs_backup_path[RETRO_PATH_MAX];
+                  path_join((char*)&whdload_prefs_backup_path, retro_system_directory, "WHDLoad.prefs_backup");
+
+                  char whdload_filebuf[4096];
+                  if (whdload_prefs = fopen(whdload_prefs_path, "r"))
+                  {
+                     if (whdload_prefs_new = fopen(whdload_prefs_new_path, "w"))
+                     {
+                        while (fgets(whdload_filebuf, sizeof(whdload_filebuf), whdload_prefs))
+                        {
+                           if (strstr(whdload_filebuf, ";ConfigDelay=") || strstr(whdload_filebuf, ";SplashDelay="))
+                              fprintf(whdload_prefs_new, whdload_filebuf);
+                           else if (strstr(whdload_filebuf, "ConfigDelay="))
+                              fprintf(whdload_prefs_new, "%s%d\n", "ConfigDelay=", WHDLoad_ConfigDelay);
+                           else if (strstr(whdload_filebuf, "SplashDelay="))
+                              fprintf(whdload_prefs_new, "%s%d\n", "SplashDelay=", WHDLoad_SplashDelay);
+                           else
+                              fprintf(whdload_prefs_new, whdload_filebuf);
+                        }
+                        fclose(whdload_prefs_new);
+                        fclose(whdload_prefs);
+
+                        // Remove backup config
+                        remove(whdload_prefs_backup_path);
+
+                        // Replace old and new config
+                        rename(whdload_prefs_path, whdload_prefs_backup_path);
+                        rename(whdload_prefs_new_path, whdload_prefs_path);
+                     }
+                     else
+                     {
+                        fprintf(stderr, "Error creating new WHDLoad.prefs '%s'!\n", (const char*)&whdload_prefs_new_path);
+                        fclose(whdload_prefs);
+                     }
+                  }
+                  else
+                     fprintf(stderr, "WHDLoad.prefs '%s' not found!\n", (const char*)&whdload_prefs_path);
                }
-               fprintf(configfile, "hardfile=read-write,32,1,2,512,%s\n", full_path);
+               else
+                  fprintf(configfile, "hardfile2=rw,DH0:%s,32,1,2,512,0,,uae0\n", full_path);
             }
             else
             {
