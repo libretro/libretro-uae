@@ -404,3 +404,39 @@ void fsdb_dir_writeback (a_inode *dir)
 	fclose (f);
 	xfree (tmpbuf);
 }
+
+#define STUB(format, ...) \
+{ \
+    printf(" -- stub -- %s " format "\n", __func__, ##__VA_ARGS__); \
+}
+
+int my_setcurrentdir (const TCHAR *curdir, TCHAR *oldcur)
+{
+    int ret = 0;
+    if (oldcur)
+        ret = getcwd (oldcur, MAX_DPATH);
+    if (curdir) {
+        const TCHAR *namep;
+        TCHAR path[MAX_DPATH];
+        namep = curdir;
+        ret = chdir (namep);
+    }
+    //write_log("curdir=\"%s\" oldcur=\"%s\"\n", curdir, oldcur);
+    return ret;
+}
+
+bool my_isfilehidden (const TCHAR *path)
+{
+    STUB("path=\"%s\"", path);
+    return 0;
+}
+
+void my_setfilehidden (const TCHAR *path, bool hidden)
+{
+    STUB("path=\"%s\" hidden=%d", path, hidden);
+}
+
+TCHAR *target_expand_environment (const TCHAR *path, TCHAR *out, int maxlen)
+{
+}
+

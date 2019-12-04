@@ -69,16 +69,18 @@ SOURCES_C +=  $(EMU)/main.c \
 				  $(RETRODEP)/memory.c \
 				  $(RETRODEP)/parser.c \
 				  $(RETRODEP)/main.c \
+				  $(EMU)/picasso96.c \
 				  $(EMU)/blkdev.c \
-				  $(EMU)/blkdev_cdimage.c
-
-#SOURCES_C += $(EMU)/picasso96.c \
-				 $(EMU)/cdtv.c \
-				 $(EMU)/akiko.c \
-				 $(EMU)/a2091.c \
-				 $(EMU)/scsi.c \
-				 $(EMU)/ncr_scsi.c \
-				 $(EMU)/gayle.c
+				  $(EMU)/blkdev_cdimage.c \
+				  $(EMU)/gayle.c \
+				  $(EMU)/ncr_scsi.c \
+				  $(EMU)/scsi.c \
+				  $(EMU)/akiko.c \
+				  $(EMU)/cdtv.c \
+				  $(EMU)/cdrom.c \
+				  $(EMU)/cdrom-handler.c \
+				  $(EMU)/cda_play.c \
+				  $(EMU)/a2091.c
 
 SOURCES_C += $(EMU)/archivers/dms/crc_csum.c \
 				 $(EMU)/archivers/dms/getbits.c \

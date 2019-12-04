@@ -27,11 +27,10 @@ static __inline__ void check_sound_buffers (void)
     unsigned int size = (char *)sndbufpt - (char *)sndbuffer;
 
     if (size >= sndbufsize) {
-        //LOG_MSG2("render sound %i   ",soundcheck++ );
 #ifdef DRIVESOUND
-        driveclick_mix ((uae_s16*)sndbuffer, sndbufsize >> 1,currprefs.dfxclickchannelmask);
+        driveclick_mix ((uae_s16*)sndbuffer, sndbufsize >> 1, currprefs.dfxclickchannelmask);
 #endif	
-        retro_renderSound((short*) sndbuffer, sndbufsize >> 1);
+        retro_renderSound((short*)sndbuffer, sndbufsize >> 1);
         sndbufpt = sndbuffer;
     }
 }
@@ -44,6 +43,8 @@ STATIC_INLINE void clear_sound_buffers (void)
 	memset (sndbuffer, 0, sndbufsize);
 	sndbufpt = sndbuffer;
 }
+
+void pause_sound_buffer (void);
 void restart_sound_buffer (void);
 
 #define AUDIO_NAME "retroaudio"

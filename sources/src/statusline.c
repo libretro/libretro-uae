@@ -116,11 +116,18 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
         if (led >= LED_DF0 && led <= LED_DF3) {
             int pled = led - LED_DF0;
             int track = gui_data.drive_track[pled];
-            pos = 6 + pled;
-            on_rgb = 0x00cc00;
-            on_rgb2 = 0x006600;
-            off_rgb = 0x003300;
-            if (!gui_data.drive_disabled[pled]) {
+            pos = 5 + pled;
+            if (gui_data.cd >= 0)
+            {
+                on_rgb = 0x000000;
+                on_rgb2 = 0x000000;
+                off_rgb = 0x000000;
+            } else {
+            //if (!gui_data.drive_disabled[pled]) {
+                on_rgb = 0x00cc00;
+                on_rgb2 = 0x006600;
+                off_rgb = 0x003300;
+
                 num1 = -1;
                 num2 = track / 10;
                 num3 = track % 10;
@@ -144,9 +151,8 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
             on_rgb = ((gui_data.powerled_brightness * 10 / 16) + 0x33) << 16;
             on = 1;
             off_rgb = 0x330000;
-        } else if (led == LED_CD) {
-            continue;
-            pos = 5;
+        } else if (led == LED_CD && gui_data.cd >= 0) {
+            pos = 9;
             if (gui_data.cd >= 0) {
                 on = gui_data.cd & (LED_CD_AUDIO | LED_CD_ACTIVE);
                 on_rgb = (on & LED_CD_AUDIO) ? 0x333300 : 0xcccc00;
@@ -156,10 +162,10 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
                     on_rgb >>= 1;
                 }
                 num1 = -1;
-                num2 = 10;
-                num3 = 12;
+                num2 = -1;//10;
+                num3 = -1;//12;
             }
-        } else if (led == LED_HD && gui_data.hd >= 0) {
+        } else if (led == LED_HD) {
             pos = 9;
             if (gui_data.hd >= 0) {
                 on = gui_data.hd;
@@ -249,14 +255,14 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
                 on_rgb = 0x0000cc; // "normal" overflow
             off_rgb = 0x000000;
             am = 3;
-        } else if (led == LED_MD && gui_data.drive_disabled[3]) {
+        } else if (led == LED_MD && gui_data.drive_disabled[3] && gui_data.md >= 0) {
             // DF3 reused as internal non-volatile ram led (cd32/cdtv)
-            continue;
-            pos = 7 + 3;
+            //continue;
+            pos = 8;
             if (gui_data.md >= 0) {
                 on = gui_data.md;
                 on_rgb = on == 2 ? 0xcc0000 : 0x00cc00;
-                off_rgb = 0x003300;
+                off_rgb = 0x000000;
             }
             num1 = -1;
             num2 = -1;

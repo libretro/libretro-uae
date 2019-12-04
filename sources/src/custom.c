@@ -6690,7 +6690,7 @@ static void hsync_handler_post (bool onvsync)
 #endif
 
 #ifdef GAYLE
-//	gayle_hsync ();
+	gayle_hsync ();
 #endif
 #ifdef A2091
 	scsi_hsync ();
@@ -6882,7 +6882,7 @@ void custom_reset (bool hardreset, bool keyboardreset)
 	}
 
 #ifdef GAYLE
-//	gayle_reset (hardreset);
+	gayle_reset (hardreset);
 #endif
 #ifdef AUTOCONFIG
 	expamem_reset ();
@@ -6891,7 +6891,7 @@ void custom_reset (bool hardreset, bool keyboardreset)
 	DISK_reset ();
 	CIA_reset ();
 #ifdef GAYLE
-//	gayle_reset (0);
+	gayle_reset (0);
 #endif
 #ifdef A2091
 	a2091_reset ();

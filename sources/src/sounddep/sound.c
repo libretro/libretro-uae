@@ -75,6 +75,10 @@ static int get_master_volume (int *volume, int *mute)
 	return setget_master_volume_linux (0, volume, mute);
 }
 
+void sound_volume (int dir)
+{
+}
+
 void master_sound_volume (int dir)
 {
     int vol, mute, r;
@@ -91,10 +95,6 @@ void master_sound_volume (int dir)
             vol = 65535;
     set_master_volume (vol, mute);
     config_changed = 1;
-}
-
-void restart_sound_buffer (void)
-{
 }
 
 int init_sound (void)
@@ -157,7 +157,11 @@ void resume_sound (void)
 {
 }
 
-void sound_volume (int dir)
+void pause_sound_buffer (void)
+{
+}
+
+void restart_sound_buffer (void)
 {
 }
 
