@@ -25,7 +25,7 @@
 #include "rp.h"
 #endif
 
-int log_scsiemu = 1;
+int log_scsiemu = 0;
 
 #define PRE_INSERT_DELAY (3 * (currprefs.ntscmode ? 60 : 50))
 
@@ -575,7 +575,11 @@ void check_prefs_changed_cd (void)
 	currprefs.sound_volume_cd = changed_prefs.sound_volume_cd;
 }
 
+#ifdef __LIBRETRO__
+void check_changes (int unitnum)
+#else
 static void check_changes (int unitnum)
+#endif
 {
 	struct blkdevstate *st = &state[unitnum];
 	bool changed = false;

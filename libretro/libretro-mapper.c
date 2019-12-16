@@ -857,7 +857,7 @@ void update_input(int disable_physical_cursor_keys)
    /* RetroPad hotkeys for ports 1 & 2 */
    for (j = 0; j < 2; j++)
    {
-      if (uae_devices[j] == RETRO_DEVICE_JOYPAD)
+      if (uae_devices[j] == RETRO_DEVICE_JOYPAD || uae_devices[j] == RETRO_DEVICE_UAE_CD32PAD)
       {
          LX = input_state_cb(j, RETRO_DEVICE_ANALOG, 0, 0);
          LY = input_state_cb(j, RETRO_DEVICE_ANALOG, 0, 1);
@@ -870,6 +870,18 @@ void update_input(int disable_physical_cursor_keys)
             int just_released = 0;
             if (i > 0 && (i<4 || i>7) && i < 16) /* Remappable RetroPad buttons excluding D-Pad + B */
             {
+               /* Skip the rest of CD32 pad buttons */
+               if (uae_devices[j] == RETRO_DEVICE_UAE_CD32PAD)
+               {
+                  if (i==RETRO_DEVICE_ID_JOYPAD_A
+                   || i==RETRO_DEVICE_ID_JOYPAD_X
+                   || i==RETRO_DEVICE_ID_JOYPAD_Y
+                   || i==RETRO_DEVICE_ID_JOYPAD_L
+                   || i==RETRO_DEVICE_ID_JOYPAD_R
+                   || i==RETRO_DEVICE_ID_JOYPAD_START)
+                     continue;
+               }
+
                /* Skip the vkbd extra buttons if vkbd is visible */
                if (SHOWKEY==1 && (i==RETRO_DEVICE_ID_JOYPAD_A || i==RETRO_DEVICE_ID_JOYPAD_X))
                   continue;
