@@ -26,7 +26,7 @@ endif
 CORE_DIR  := .
 ROOT_DIR  := .
 
-ifeq ($(platform), unix)
+ifneq (,$(findstring unix,$(platform)))
    TARGET := $(TARGET_NAME)_libretro.so
    fpic := -fPIC
 	LDFLAGS += -lpthread
