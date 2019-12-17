@@ -11,6 +11,8 @@
  * Copyright 2010-2013 Toni Wilen
  *
  */
+#include <sys/timeb.h>
+
 #include "sysconfig.h"
 #include "sysdeps.h"
 
@@ -384,7 +386,7 @@ static void dosub (struct cdunit *cdu, uae_u8 *subbuf)
 	cdu->cdda_subfunc (subbuf2, 1);
 }
 
-static int setstate (struct cdunit *cdu, int state, int playpos)
+static int cdu_setstate (struct cdunit *cdu, int state, int playpos)
 {
 	cdu->cdda_play_state = state;
 	if (cdu->cdda_statusfunc)
@@ -506,12 +508,12 @@ static bool cdda_play_func2 (struct cdunit *cdu, int *outpos)
 		if (oldplay != cdu->cdda_play) {
 			struct cdtoc *t;
 			int sector, diff;
-			struct _timeb tb1, tb2;
+			struct timeb tb1, tb2;
 
 			idleframes = 0;
 			silentframes = 0;
 			foundsub = false;
-			_ftime (&tb1);
+			ftime (&tb1);
 			cdda_pos = cdu->cdda_start;
 			oldplay = cdu->cdda_play;
 			sector = cdu->cd_last_pos = cdda_pos;
@@ -521,7 +523,7 @@ static bool cdda_play_func2 (struct cdunit *cdu, int *outpos)
 				t = findtoc (cdu, &sector, false);
 				if (!t) {
 					write_log (_T("IMAGE CDDA: illegal sector number %d\n"), cdu->cdda_start);
-					setstate (cdu, AUDIO_STATUS_PLAY_ERROR, -1);
+					cdu_setstate (cdu, AUDIO_STATUS_PLAY_ERROR, -1);
 				} else {
 					audio_unpack (cdu, t);
 				}
@@ -566,12 +568,12 @@ static bool cdda_play_func2 (struct cdunit *cdu, int *outpos)
 			cdda_pos -= idleframes;
 
 			if (*outpos < 0) {
-				_ftime (&tb2);
+				ftime (&tb2);
 				diff = (tb2.time * (uae_s64)1000 + tb2.millitm) - (tb1.time * (uae_s64)1000 + tb1.millitm);
 				diff -= cdu->cdda_delay;
 				if (idleframes >= 0 && diff < 0 && cdu->cdda_play > 0)
 					sleep_millis(-diff);
-				setstate (cdu, AUDIO_STATUS_IN_PROGRESS, cdda_pos);
+				cdu_setstate (cdu, AUDIO_STATUS_IN_PROGRESS, cdda_pos);
 			}
 
 			sector = cdda_pos;
@@ -606,7 +608,7 @@ static bool cdda_play_func2 (struct cdunit *cdu, int *outpos)
 			goto end;
 
 		if (idleframes <= 0 && cdda_pos >= cdu->cdda_start && !isaudiotrack (&cdu->di.toc, cdda_pos)) {
-			setstate (cdu, AUDIO_STATUS_PLAY_ERROR, -1);
+			cdu_setstate (cdu, AUDIO_STATUS_PLAY_ERROR, -1);
 			write_log (_T("IMAGE CDDA: attempted to play data track %d\n"), cdda_pos);
 			goto end; // data track?
 		}
@@ -618,7 +620,7 @@ static bool cdda_play_func2 (struct cdunit *cdu, int *outpos)
 
 			gui_flicker_led (LED_CD, cdu->di.unitnum - 1, LED_CD_AUDIO);
 
-			setstate(cdu, AUDIO_STATUS_IN_PROGRESS, cdda_pos);
+			cdu_setstate(cdu, AUDIO_STATUS_IN_PROGRESS, cdda_pos);
 
 			memset (cda_audio_buffers[bufnum], 0, CDDA_BUFFERS * 2352);//memset (cdu->cda->buffers[bufnum], 0, CDDA_BUFFERS * 2352);
 
@@ -710,7 +712,7 @@ static bool cdda_play_func2 (struct cdunit *cdu, int *outpos)
 				cda_setvolume (cdu->cdda_volume[0], cdu->cdda_volume[1]);//cdu->cda->setvolume (cdu->cdda_volume[0], cdu->cdda_volume[1]);
 				if (!cda_play (bufnum)) {//if (!cdu->cda->play (bufnum)) {
 					if (cdu->cdda_play > 0)
-						setstate (cdu, AUDIO_STATUS_PLAY_ERROR, -1);
+						cdu_setstate (cdu, AUDIO_STATUS_PLAY_ERROR, -1);
 					goto end;
 				}
 			}
@@ -718,7 +720,7 @@ static bool cdda_play_func2 (struct cdunit *cdu, int *outpos)
 			if (dofinish) {
 				cdda_pos = cdu->cdda_end + 1;
 				if (cdu->cdda_play >= 0)
-					setstate (cdu, AUDIO_STATUS_PLAY_COMPLETE, cdda_pos);
+					cdu_setstate (cdu, AUDIO_STATUS_PLAY_COMPLETE, cdda_pos);
 				cdu->cdda_play = -1;
 			}
 
@@ -771,7 +773,7 @@ static void *cdda_play_func (void *v)
 		cdu->cdda_start = outpos;
 		if (cdu->cdda_start + 150 >= cdu->cdda_end) {
 			if (cdu->cdda_play >= 0)
-				setstate (cdu, AUDIO_STATUS_PLAY_COMPLETE, cdu->cdda_end + 1);
+				cdu_setstate (cdu, AUDIO_STATUS_PLAY_COMPLETE, cdu->cdda_end + 1);
 			cdu->cdda_play = -1;
 			break;
 		}
@@ -831,11 +833,11 @@ static int command_play (int unitnum, int startlsn, int endlsn, int scan, play_s
 	cdu->cdda_subfunc = subfunc;
 	cdu->cdda_statusfunc = statusfunc;
 	cdu->cdda_scan = scan > 0 ? 10 : (scan < 0 ? 10 : 0);
-	cdu->cdda_delay = setstate (cdu, -1, -1);
-	cdu->cdda_delay_frames = setstate (cdu, -2, -1);
-	setstate (cdu, cdu->cdda_delay > 0 || cdu->cdda_delay_frames ? AUDIO_STATUS_NOT_SUPPORTED : AUDIO_STATUS_IN_PROGRESS, -1);
+	cdu->cdda_delay = cdu_setstate (cdu, -1, -1);
+	cdu->cdda_delay_frames = cdu_setstate (cdu, -2, -1);
+	cdu_setstate (cdu, cdu->cdda_delay > 0 || cdu->cdda_delay_frames ? AUDIO_STATUS_NOT_SUPPORTED : AUDIO_STATUS_IN_PROGRESS, -1);
 	if (!isaudiotrack (&cdu->di.toc, startlsn)) {
-		setstate (cdu, AUDIO_STATUS_PLAY_ERROR, -1);
+		cdu_setstate (cdu, AUDIO_STATUS_PLAY_ERROR, -1);
 		return 0;
 	}
 	if (!cdu->thread_active) {

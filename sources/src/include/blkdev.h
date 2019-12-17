@@ -9,6 +9,10 @@
 #define SCSI_UNIT_IOCTL 2
 #define SCSI_UNIT_SPTI 3
 
+#ifndef WIN32
+#define DRIVE_CDROM 0
+#endif
+
 //#define device_debug write_log
 #define device_debug
 

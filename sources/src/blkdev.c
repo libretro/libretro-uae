@@ -53,6 +53,7 @@ struct blkdevstate
 
 static struct blkdevstate state[MAX_TOTAL_SCSI_DEVICES];
 
+static bool blkdevsema;
 static bool dev_init;
 
 /* convert minutes, seconds and frames -> logical sector number */
@@ -265,8 +266,10 @@ static bool getsem2 (int unitnum, bool dowait)
 static bool getsem2 (int unitnum, bool dowait)
 {
     struct blkdevstate *st = &state[unitnum];
-    if (st->sema == NULL)
+    if (!blkdevsema) {
+        blkdevsema = true;
         uae_sem_init (&st->sema, 0, 1);
+    }
     bool gotit = false;
     if (dowait) {
         uae_sem_wait (&st->sema);
@@ -307,7 +310,8 @@ static void sys_command_close_internal (int unitnum)
 	freesem (unitnum);
 	if (st->isopen == 0) {
 		uae_sem_destroy (&st->sema);
-		st->sema = NULL;
+		blkdevsema = false;
+		//st->sema = NULL;
 	}
 }
 
@@ -315,8 +319,10 @@ static int sys_command_open_internal (int unitnum, const TCHAR *ident, unsigned 
 {
 	struct blkdevstate *st = &state[unitnum];
 	int ret = 0;
-	if (st->sema == NULL)
+	if (!blkdevsema) {
+		blkdevsema = true;
 		uae_sem_init (&st->sema, 0, 1);
+	}
 	getsem2 (unitnum, true);
 	if (st->isopen)
 		write_log (_T("BUG unit %d open: opencnt=%d!\n"), unitnum, st->isopen);
@@ -325,7 +331,6 @@ static int sys_command_open_internal (int unitnum, const TCHAR *ident, unsigned 
 		if (ret)
 			st->isopen++;
 	}
-
 	freesem (unitnum);
 	return ret;
 }
@@ -375,6 +380,21 @@ static int get_standard_cd_unit2 (struct uae_prefs *p, unsigned int csu)
 	int unitnum = 0;
 	int isaudio = 0;
 
+#ifdef __LIBRETRO__
+	if (p->cdslots[unitnum].name[0] || p->cdslots[unitnum].inuse) {
+		if (p->cdslots[unitnum].name[0]) {
+			//device_func_init (SCSI_UNIT_IOCTL);
+			//if (!sys_command_open_internal (unitnum, p->cdslots[unitnum].name, csu)) {
+				device_func_init (SCSI_UNIT_IMAGE);
+				if (!sys_command_open_internal (unitnum, p->cdslots[unitnum].name, csu))
+					goto fallback;
+			//}
+		} else {
+			goto fallback;
+		}
+		return unitnum;
+	}
+#else
 	if (p->cdslots[unitnum].name[0] || p->cdslots[unitnum].inuse) {
 		if (p->cdslots[unitnum].name[0]) {
 			device_func_init (SCSI_UNIT_IOCTL);
@@ -409,6 +429,7 @@ static int get_standard_cd_unit2 (struct uae_prefs *p, unsigned int csu)
 		if (sys_command_open_internal (unitnum, vol, csu)) 
 			return unitnum;
 	}
+#endif
 
 fallback:
 	device_func_init (SCSI_UNIT_IMAGE);
@@ -602,7 +623,7 @@ static void check_changes (int unitnum)
 
 	if (changed) {
 		bool wasimage = currprefs.cdslots[unitnum].name[0] != 0;
-		if (st->sema)
+		if (blkdevsema)
 			gotsem = getsem2 (unitnum, true);
 		st->cdimagefileinuse = changed_prefs.cdslots[unitnum].inuse;
 		_tcscpy (st->newimagefile, changed_prefs.cdslots[unitnum].name);
@@ -641,7 +662,7 @@ static void check_changes (int unitnum)
 	st->imagechangetime--;
 	if (st->imagechangetime > 0)
 		return;
-	if (st->sema)
+	if (blkdevsema)
 		gotsem = getsem2 (unitnum, true);
 	_tcscpy (currprefs.cdslots[unitnum].name, st->newimagefile);
 	_tcscpy (changed_prefs.cdslots[unitnum].name, st->newimagefile);

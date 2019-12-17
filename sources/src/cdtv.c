@@ -269,7 +269,7 @@ static void subfunc (uae_u8 *data, int cnt)
 	subcodebufferoffsetw = offset;
 	uae_sem_post (&sub_sem);
 }
-static int statusfunc (int status)
+static int statusfunc (int status, int playpos)
 {
 	if (status == -1)
 		return 500;

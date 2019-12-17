@@ -1,3 +1,5 @@
+#ifndef SRC_INCLUDE_CDTV_H_INCLUDED
+#define SRC_INCLUDE_CDTV_H_INCLUDED 1
 
 #ifdef CDTV
 
@@ -24,6 +26,8 @@ extern void cdtv_scsi_int (void);
 extern void cdtv_scsi_clear_int (void);
 
 extern bool cdtv_front_panel (int);
+
+#endif //CDTV
 
 #endif
 

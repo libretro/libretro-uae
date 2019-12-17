@@ -3599,7 +3599,7 @@ void retro_cheat_set(unsigned index, bool enabled, const char *code)
    (void)code;
 }
 
-#ifdef ANDROID
+#if defined(ANDROID) || defined(__SWITCH__) || defined(WIIU)
 #include <sys/timeb.h>
 
 int ftime(struct timeb *tb)

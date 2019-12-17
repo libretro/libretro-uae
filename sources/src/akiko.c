@@ -29,8 +29,13 @@
 #include "newcpu.h"
 
 #ifdef __LIBRETRO__
+#ifndef PAGE_READONLY
+#define PAGE_READONLY           0x02
+#endif
 #define MAX_SHMID 256
+#if !defined(WIIU) && !defined(__SWITCH__)
 typedef int key_t;
+#endif
 /* One shmid data structure for each shared memory segment in the system. */
 struct shmid_ds {
     key_t  key;
@@ -606,7 +611,7 @@ static void subfunc (uae_u8 *data, int cnt)
 	uae_sem_post (&sub_sem);
 }
 
-static int statusfunc (int status)
+static int statusfunc (int status, int playpos)
 {
 	if (status == -1)
 		return 0;

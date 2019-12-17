@@ -30,6 +30,7 @@
 #include "blkdev.h"
 #include "scsi.h"
 #include "threaddep/thread.h"
+#include "sleep.h"
 
 #define PCMCIA_SRAM 1
 #define PCMCIA_IDE 2
@@ -2730,7 +2731,7 @@ void gayle_free (void)
 		gayle_thread_running = 0;
 		write_comm_pipe_u32 (&requests, 0xffffffff, 1);
 		while(gayle_thread_running == 0)
-			sleep (10);
+			sleep_millis (10);
 		gayle_thread_running = 0;
 	}
 }
