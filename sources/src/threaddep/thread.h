@@ -229,10 +229,13 @@ typedef pthread_t uae_thread_id;
 
 STATIC_INLINE int uae_start_thread (char *name, void *(*f) (void *), void *arg, uae_thread_id *foo)
 {
-	int result;
-	result = pthread_create (foo, 0, f, arg);
+    int result;
+    uae_thread_id new_foo;
+    if (!foo)
+       foo = &new_foo;
+    result = pthread_create (foo, NULL, f, arg);
 
-	return 0 == result;
+    return 0 == result;
 }
 
 STATIC_INLINE int uae_wait_thread (uae_thread_id thread)
