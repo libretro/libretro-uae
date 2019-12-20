@@ -128,34 +128,12 @@ int uae_start_thread_fast (void *(*f)(void *), void *arg, uae_thread_id *tid)
 
 DWORD_PTR cpu_affinity = 1, cpu_paffinity = 1;
 
-void uae_set_thread_priority (uae_thread_id *tid/*, int pri*/)
+void uae_set_thread_priority (int pri)
 {
-#if 0
-        int pri2;
-        HANDLE th;
-
-        if (tid)
-                th = *tid;
-        else
-                th = GetCurrentThread ();
-        pri2 = GetThreadPriority (th);
-        if (pri2 == THREAD_PRIORITY_ERROR_RETURN)
-                pri2 = 0;
-        if (pri > 0)
-                pri2 = THREAD_PRIORITY_HIGHEST;
-        else
-                pri2 = THREAD_PRIORITY_ABOVE_NORMAL;
-        pri2 += pri;
-        if (pri2 > 1)
-                pri2 = 1;
-        if (pri2 < -1)
-                pri2 = -1;
-        SetThreadPriority (th, pri2);
+#ifndef __LIBRETRO__
+    if (!SetThreadPriority (GetCurrentThread(), THREAD_PRIORITY_HIGHEST))
+        SetThreadPriority (GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
 #endif
-
-                if (!SetThreadPriority (GetCurrentThread(), THREAD_PRIORITY_HIGHEST))
-                        SetThreadPriority (GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
-
 }
 
 #else

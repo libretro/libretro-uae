@@ -34,7 +34,7 @@ static int blitter_cycle_exact;
 static int blt_statefile_type;
 
 uae_u16 bltcon0, bltcon1;
-uae_u32 bltapt, bltbpt, bltcpt, bltdpt;
+uaecptr bltapt, bltbpt, bltcpt, bltdpt;
 int blitter_nasty;
 
 static int original_ch, original_fill, original_line;

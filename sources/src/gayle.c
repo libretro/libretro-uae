@@ -31,6 +31,7 @@
 #include "scsi.h"
 #include "threaddep/thread.h"
 #include "sleep.h"
+#include "misc.h"
 
 #define PCMCIA_SRAM 1
 #define PCMCIA_IDE 2

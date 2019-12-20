@@ -1,3 +1,6 @@
+#ifndef SRC_INCLUDE_HOTKEYS_H_INCLUDED
+#define SRC_INCLUDE_HOTKEYS_H_INCLUDED 1
+
  /*
   * UAE - The Un*x Amiga Emulator
   *
@@ -39,3 +42,5 @@ static inline void handle_hotkey_event (int event, int state)
 {
     handle_input_event (event, state, 0, 0, false, false);
 }
+
+#endif /* SRC_INCLUDE_HOTKEYS_H_INCLUDED */

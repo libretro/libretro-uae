@@ -19,11 +19,6 @@
 #include "blkdev.h"
 extern void check_changes(int unitnum);
 
-#define EMULATOR_DEF_WIDTH 720
-#define EMULATOR_DEF_HEIGHT 574
-#define EMULATOR_MAX_WIDTH 1024
-#define EMULATOR_MAX_HEIGHT 1024
-
 #define UAE_HZ_PAL 49.9201
 #define UAE_HZ_NTSC 59.8251
 
@@ -75,8 +70,7 @@ extern uae_u8 *natmem_offset;
 extern uae_u32 natmem_size;
 #endif
 
-extern unsigned short int bmp[EMULATOR_MAX_WIDTH*EMULATOR_MAX_HEIGHT];
-extern unsigned short int savebmp[EMULATOR_MAX_WIDTH*EMULATOR_MAX_HEIGHT];
+extern unsigned short int retro_bmp[EMULATOR_DEF_WIDTH*EMULATOR_DEF_HEIGHT];
 extern int SHIFTON;
 extern int STATUSON;
 extern char RPATH[512];
@@ -2408,7 +2402,7 @@ void retro_init(void)
       exit(0);//return false;
    }
 
-   memset(bmp, 0, sizeof(bmp));
+   memset(retro_bmp, 0, sizeof(retro_bmp));
 
    update_variables();
 
@@ -2421,7 +2415,7 @@ void retro_init(void)
 
 void retro_deinit(void)
 {	
-   akiko_free();
+   leave_program();
 
    if (emuThread)
       co_delete(emuThread);
@@ -2937,7 +2931,7 @@ void retro_run(void)
    {
       firstpass=0;
       co_switch(emuThread);
-      video_cb(bmp, retrow, zoomed_height, retrow << (pix_bytes / 2));
+      video_cb(retro_bmp, retrow, zoomed_height, retrow << (pix_bytes / 2));
       return;
    }
    else if (!firstpass && filter_type_update)
@@ -2953,10 +2947,10 @@ void retro_run(void)
    retro_poll_event();
    co_switch(emuThread);
    if (SHOWKEY == 1)
-      virtual_kbd(bmp, vkb_pos_x, vkb_pos_y);
+      virtual_kbd(retro_bmp, vkb_pos_x, vkb_pos_y);
    if (STATUSON == 1)
       Print_Status();
-   video_cb(bmp, retrow, zoomed_height, retrow << (pix_bytes / 2));
+   video_cb(retro_bmp, retrow, zoomed_height, retrow << (pix_bytes / 2));
 }
 
 bool retro_load_game(const struct retro_game_info *info)
@@ -3485,7 +3479,7 @@ bool retro_load_game(const struct retro_game_info *info)
 
    retrow = defaultw;
    retroh = defaulth;
-   memset(bmp, 0, sizeof(bmp));
+   memset(retro_bmp, 0, sizeof(retro_bmp));
    Screen_SetFullUpdate();
    return true;
 }

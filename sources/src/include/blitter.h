@@ -1,3 +1,6 @@
+#ifndef UAE_BLITTER_H
+#define UAE_BLITTER_H
+
  /*
   * UAE - The Un*x Amiga Emulator
   *
@@ -26,7 +29,7 @@ extern int blitter_nasty, blit_interrupt;
 
 extern uae_u16 bltsize;
 extern uae_u16 bltcon0, bltcon1;
-extern uae_u32 bltapt, bltbpt, bltcpt, bltdpt;
+extern uaecptr bltapt, bltbpt, bltcpt, bltdpt;
 extern int blit_singlechannel;
 
 extern void maybe_blit (int, int);
@@ -55,3 +58,5 @@ extern uae_u32 blit_masktable[BLITTER_MAX_WORDS];
 #define BLIT_MODE_APPROXIMATE 0
 #define BLIT_MODE_COMPATIBLE 1
 #define BLIT_MODE_EXACT 2
+
+#endif // UAE_BLITTER_H

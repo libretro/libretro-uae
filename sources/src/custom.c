@@ -3302,7 +3302,7 @@ void init_hz (bool checkvposw)
 		vblank_hz = 227.0 * 312.0 * 50.0 / (maxvpos * maxhpos);
 		minfirstline = vsstop > vbstop ? vsstop : vbstop;
 		if (minfirstline > maxvpos / 2) 
-			minfirstline = vsstop > vsstop ? vbstop : vsstop;
+			minfirstline = vsstop > vbstop ? vbstop : vsstop;
 		if (minfirstline < 2)
 			minfirstline = 2;
 		if (minfirstline >= maxvpos)

@@ -1836,7 +1836,7 @@ cfgfile_path (option, value, _T("floppy0soundext"), p->floppyslots[0].dfxclickex
 		|| cfgfile_yesno (option, value, _T("gfx_black_frame_insertion"), &p->lightboost_strobo)
 		|| cfgfile_yesno (option, value, _T("gfx_flickerfixer"), &p->gfx_scandoubler)
 		|| cfgfile_yesno (option, value, _T("magic_mouse"), &p->input_magic_mouse)
-		|| cfgfile_yesno (option, value, _T("warp"), &p->turbo_emulation)
+		|| cfgfile_yesno2 (option, value, _T("warp"), &p->turbo_emulation)
 		|| cfgfile_yesno (option, value, _T("headless"), &p->headless)
 		|| cfgfile_yesno (option, value, _T("clipboard_sharing"), &p->clipboard_sharing)
 		|| cfgfile_yesno (option, value, _T("native_code"), &p->native_code)
@@ -1963,12 +1963,12 @@ cfgfile_path (option, value, _T("floppy0soundext"), p->floppyslots[0].dfxclickex
 	if (_tcscmp (option, _T("gfx_vsync")) == 0) {
 		if (cfgfile_strval (option, value, _T("gfx_vsync"), &p->gfx_apmode[APMODE_NATIVE].gfx_vsync, vsyncmodes, 0) >= 0)
 			return 1;
-		return cfgfile_yesno (option, value, _T("gfx_vsync"), &p->gfx_apmode[APMODE_NATIVE].gfx_vsync);
+		return cfgfile_yesno2 (option, value, _T("gfx_vsync"), &p->gfx_apmode[APMODE_NATIVE].gfx_vsync);
 	}
 	if (_tcscmp (option, _T("gfx_vsync_picasso")) == 0) {
 		if (cfgfile_strval (option, value, _T("gfx_vsync_picasso"), &p->gfx_apmode[APMODE_RTG].gfx_vsync, vsyncmodes, 0) >= 0)
 			return 1;
-		return cfgfile_yesno (option, value, _T("gfx_vsync_picasso"), &p->gfx_apmode[APMODE_RTG].gfx_vsync);
+		return cfgfile_yesno2 (option, value, _T("gfx_vsync_picasso"), &p->gfx_apmode[APMODE_RTG].gfx_vsync);
 	}
 	if (cfgfile_strval (option, value, _T("gfx_vsyncmode"), &p->gfx_apmode[APMODE_NATIVE].gfx_vsyncmode, vsyncmodes2, 0))
 		return 1;

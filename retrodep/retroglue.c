@@ -45,7 +45,7 @@ unsigned short int clut[] = {
 
 unsigned short int* pixbuf = NULL;
 
-extern unsigned short int bmp[1024*1024];
+extern unsigned short int retro_bmp[EMULATOR_DEF_WIDTH*EMULATOR_DEF_HEIGHT];
 void retro_audio_cb(short l, short r);
 
 int prefs_changed = 0;
@@ -125,12 +125,12 @@ void retro_key_up(int key)
 
 
 
-int retro_renderSound(short* samples, int sampleCount)
+void retro_renderSound(short* samples, int sampleCount)
 {
     int i;
 
     if (sampleCount < 1)
-        return 0;
+        return;
 
     for(i=0; i<sampleCount; i+=2)
     {
@@ -195,7 +195,7 @@ int graphics_init(void) {
 #ifdef ENABLE_LOG_SCREEN
 	pixbuf = (unsigned int*) malloc(currprefs.gfx_size_win.width * 576 * pix_bytes);
 #else
-	pixbuf = (unsigned short int*) &bmp[0];
+	pixbuf = (unsigned short int*) &retro_bmp[0];
 #endif
 	//printf("graphics init: pixbuf=%p color_mode=%d width=%d height=%d\n", pixbuf, currprefs.color_mode, currprefs.gfx_size_win.width, currprefs.gfx_size_win.height);
 	if (pixbuf == NULL) {
