@@ -37,8 +37,7 @@ void gettimeofday (struct timeval *tv, void *blah)
 #include <time.h>
 #endif
 
-unsigned short int bmp[1024*1024];
-unsigned short int savebmp[1024*1024];
+unsigned short int retro_bmp[EMULATOR_DEF_WIDTH*EMULATOR_DEF_HEIGHT];
 
 // Mouse speed flags
 #define MOUSE_SPEED_SLOWER 1
@@ -263,7 +262,7 @@ void Print_Status(void)
    else // Bottom
       STAT_BASEY=gfxvidinfo.outheight-opt_statusbar_position-BOX_HEIGHT+2;
 
-   BOX_WIDTH=retrow-122;
+   BOX_WIDTH=retrow-146;
    BOX_Y=STAT_BASEY-BOX_PADDING;
 
    // Joy port indicators
@@ -319,21 +318,21 @@ void Print_Status(void)
    // Statusbar output
    if (pix_bytes == 4)
    {
-      DrawFBoxBmp32((uint32_t *)bmp,0,BOX_Y,BOX_WIDTH,BOX_HEIGHT,RGB888(0,0,0));
+      DrawFBoxBmp32((uint32_t *)retro_bmp,0,BOX_Y,BOX_WIDTH,BOX_HEIGHT,RGB888(0,0,0));
 
-      Draw_text32((uint32_t *)bmp,STAT_DECX+0,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT1);
-      Draw_text32((uint32_t *)bmp,STAT_DECX+40,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT2);
-      Draw_text32((uint32_t *)bmp,STAT_DECX+80,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT3);
-      Draw_text32((uint32_t *)bmp,STAT_DECX+120,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT4);
+      Draw_text32((uint32_t *)retro_bmp,STAT_DECX+0,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT1);
+      Draw_text32((uint32_t *)retro_bmp,STAT_DECX+40,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT2);
+      Draw_text32((uint32_t *)retro_bmp,STAT_DECX+80,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT3);
+      Draw_text32((uint32_t *)retro_bmp,STAT_DECX+120,STAT_BASEY,0xffffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT4);
    }
    else
    {
-      DrawFBoxBmp(bmp,0,BOX_Y,BOX_WIDTH,BOX_HEIGHT,RGB565(0,0,0));
+      DrawFBoxBmp(retro_bmp,0,BOX_Y,BOX_WIDTH,BOX_HEIGHT,RGB565(0,0,0));
 
-      Draw_text(bmp,STAT_DECX+0,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT1);
-      Draw_text(bmp,STAT_DECX+40,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT2);
-      Draw_text(bmp,STAT_DECX+80,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT3);
-      Draw_text(bmp,STAT_DECX+120,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT4);
+      Draw_text(retro_bmp,STAT_DECX+0,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT1);
+      Draw_text(retro_bmp,STAT_DECX+40,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT2);
+      Draw_text(retro_bmp,STAT_DECX+80,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT3);
+      Draw_text(retro_bmp,STAT_DECX+120,STAT_BASEY,0xffff,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT4);
    }
 }
 
@@ -857,7 +856,7 @@ void update_input(int disable_physical_cursor_keys)
    /* RetroPad hotkeys for ports 1 & 2 */
    for (j = 0; j < 2; j++)
    {
-      if (uae_devices[j] == RETRO_DEVICE_JOYPAD)
+      if (uae_devices[j] == RETRO_DEVICE_JOYPAD || uae_devices[j] == RETRO_DEVICE_UAE_CD32PAD)
       {
          LX = input_state_cb(j, RETRO_DEVICE_ANALOG, 0, 0);
          LY = input_state_cb(j, RETRO_DEVICE_ANALOG, 0, 1);
@@ -870,6 +869,18 @@ void update_input(int disable_physical_cursor_keys)
             int just_released = 0;
             if (i > 0 && (i<4 || i>7) && i < 16) /* Remappable RetroPad buttons excluding D-Pad + B */
             {
+               /* Skip the rest of CD32 pad buttons */
+               if (uae_devices[j] == RETRO_DEVICE_UAE_CD32PAD)
+               {
+                  if (i==RETRO_DEVICE_ID_JOYPAD_A
+                   || i==RETRO_DEVICE_ID_JOYPAD_X
+                   || i==RETRO_DEVICE_ID_JOYPAD_Y
+                   || i==RETRO_DEVICE_ID_JOYPAD_L
+                   || i==RETRO_DEVICE_ID_JOYPAD_R
+                   || i==RETRO_DEVICE_ID_JOYPAD_START)
+                     continue;
+               }
+
                /* Skip the vkbd extra buttons if vkbd is visible */
                if (SHOWKEY==1 && (i==RETRO_DEVICE_ID_JOYPAD_A || i==RETRO_DEVICE_ID_JOYPAD_X))
                   continue;

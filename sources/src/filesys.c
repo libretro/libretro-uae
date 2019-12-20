@@ -6139,7 +6139,7 @@ static void *filesys_thread (void *unit_v)
 {
 	UnitInfo *ui = (UnitInfo *)unit_v;
 
-	uae_set_thread_priority (NULL, 1);
+	uae_set_thread_priority (1);
 	for (;;) {
 		if (!filesys_iteration (ui)) {
 			return 0;

@@ -565,6 +565,86 @@ static void cfgfile_dwrite_path (struct zfile *f, struct multipath *mp, const TC
 	xfree (s);
 }
 
+static void cfgfile_adjust_path(TCHAR *path, int maxsz, struct multipath *mp)
+{
+	if (path[0] == 0)
+		return;
+	TCHAR *s = target_expand_environment(path, NULL, 0);
+	_tcsncpy(path, s, maxsz - 1);
+	path[maxsz - 1] = 0;
+	if (mp) {
+		for (int i = 0; i < MAX_PATHS; i++) {
+			if (mp->path[i][0] && _tcscmp(mp->path[i], _T(".\\")) != 0 && _tcscmp(mp->path[i], _T("./")) != 0 && (path[0] != '/' && path[0] != '\\' && !_tcschr(path, ':'))) {
+				TCHAR np[MAX_DPATH];
+				_tcscpy(np, mp->path[i]);
+				fixtrailing(np);
+				_tcscat(np, s);
+				fullpath(np, sizeof np / sizeof(TCHAR));
+				if (zfile_exists(np)) {
+					_tcsncpy(path, np, maxsz - 1);
+					path[maxsz - 1] = 0;
+					xfree(s);
+					return;
+				}
+			}
+		}
+	}
+	fullpath(path, maxsz);
+	xfree(s);
+}
+
+static void cfgfile_resolve_path_out_all(const TCHAR *path, TCHAR *out, int size, int type, bool save)
+{
+	struct uae_prefs *p = &currprefs;
+	TCHAR *s = NULL;
+	switch (type)
+	{
+	case PATH_DIR:
+		s = cfgfile_subst_path_load(UNEXPANDED, &p->path_hardfile, path, true);
+		break;
+	case PATH_HDF:
+		s = cfgfile_subst_path_load(UNEXPANDED, &p->path_hardfile, path, false);
+		break;
+	case PATH_CD:
+		s = cfgfile_subst_path_load(UNEXPANDED, &p->path_cd, path, false);
+		break;
+	case PATH_ROM:
+		s = cfgfile_subst_path_load(UNEXPANDED, &p->path_rom, path, false);
+		break;
+	case PATH_FLOPPY:
+		_tcscpy(out, path);
+		cfgfile_adjust_path(out, MAX_DPATH, &p->path_floppy);
+		break;
+	default:
+		s = cfgfile_subst_path(NULL, NULL, path);
+		break;
+	}
+	if (s) {
+		_tcscpy(out, s);
+		xfree(s);
+	}
+	if (!save) {
+		my_resolvesoftlink(out, size);
+	}
+}
+
+void cfgfile_resolve_path_out_load(const TCHAR *path, TCHAR *out, int size, int type)
+{
+    cfgfile_resolve_path_out_all(path, out, size, type, false);
+}
+void cfgfile_resolve_path_load(TCHAR *path, int size, int type)
+{
+    cfgfile_resolve_path_out_all(path, path, size, type, false);
+}
+void cfgfile_resolve_path_out_save(const TCHAR *path, TCHAR *out, int size, int type)
+{
+    cfgfile_resolve_path_out_all(path, out, size, type, true);
+}
+void cfgfile_resolve_path_save(TCHAR *path, int size, int type)
+{
+    cfgfile_resolve_path_out_all(path, path, size, type, true);
+}
+
 static void write_filesys_config (struct uae_prefs *p, struct zfile *f)
 {
 	int i;
@@ -830,10 +910,14 @@ void cfgfile_save_options (struct zfile *f, struct uae_prefs *p, int type)
 	cfgfile_write_str (f, _T("sound_interpol"), interpolmode[p->sound_interpol]);
 	cfgfile_write_str (f, _T("sound_filter"), soundfiltermode1[p->sound_filter]);
 	cfgfile_write_str (f, _T("sound_filter_type"), soundfiltermode2[p->sound_filter_type]);
-	cfgfile_write (f, _T("sound_volume"), _T("%d"), p->sound_volume);
+	cfgfile_write (f, _T("sound_volume"), _T("%d"), p->sound_volume_master);
+	cfgfile_write (f, _T("sound_volume_paula"), _T("%d"), p->sound_volume_paula);
 	if (p->sound_volume_cd >= 0)
 		cfgfile_write (f, _T("sound_volume_cd"), _T("%d"), p->sound_volume_cd);
+	if (p->sound_volume_board >= 0)
+		cfgfile_write (f, _T("sound_volume_ahi"), _T("%d"), p->sound_volume_board);
 	cfgfile_write_bool (f, _T("sound_auto"), p->sound_auto);
+	cfgfile_write_bool (f, _T("sound_cdaudio"), p->sound_cdaudio);
 	cfgfile_write_bool (f, _T("sound_stereo_swap_paula"), p->sound_stereo_swap_paula);
 	cfgfile_write_bool (f, _T("sound_stereo_swap_ahi"), p->sound_stereo_swap_ahi);
 	cfgfile_dwrite (f, _T("sampler_frequency"), _T("%d"), p->sampler_freq);
@@ -1657,8 +1741,10 @@ static int cfgfile_parse_host (struct uae_prefs *p, TCHAR *option, TCHAR *value)
 		|| cfgfile_intval (option, value, _T("state_replay_buffers"), &p->statecapturebuffersize, 1)
 		|| cfgfile_yesno (option, value, _T("state_replay_autoplay"), &p->inprec_autoplay)
 		|| cfgfile_intval (option, value, _T("sound_frequency"), &p->sound_freq, 1)
-		|| cfgfile_intval (option, value, _T("sound_volume"), &p->sound_volume, 1)
+		|| cfgfile_intval (option, value, _T("sound_volume"), &p->sound_volume_master, 1)
+		|| cfgfile_intval (option, value, _T("sound_volume_paula"), &p->sound_volume_paula, 1)
 		|| cfgfile_intval (option, value, _T("sound_volume_cd"), &p->sound_volume_cd, 1)
+		|| cfgfile_intval (option, value, _T("sound_volume_ahi"), &p->sound_volume_board, 1)
 		|| cfgfile_intval (option, value, _T("sound_stereo_separation"), &p->sound_stereo_separation, 1)
 		|| cfgfile_intval (option, value, _T("sound_stereo_mixing_delay"), &p->sound_mixed_stereo_delay, 1)
 		|| cfgfile_intval (option, value, _T("sampler_frequency"), &p->sampler_freq, 1)
@@ -1740,6 +1826,7 @@ cfgfile_path (option, value, _T("floppy0soundext"), p->floppyslots[0].dfxclickex
 		|| cfgfile_yesno (option, value, _T("floppy3wp"), &p->floppyslots[3].forcedwriteprotect)
 		|| cfgfile_yesno (option, value, _T("sampler_stereo"), &p->sampler_stereo)
 		|| cfgfile_yesno (option, value, _T("sound_auto"), &p->sound_auto)
+		|| cfgfile_yesno (option, value, _T("sound_cdaudio"), &p->sound_cdaudio)
 		|| cfgfile_yesno (option, value, _T("sound_stereo_swap_paula"), &p->sound_stereo_swap_paula)
 		|| cfgfile_yesno (option, value, _T("sound_stereo_swap_ahi"), &p->sound_stereo_swap_ahi)
 		|| cfgfile_yesno (option, value, _T("avoid_cmov"), &p->avoid_cmov)
@@ -1749,7 +1836,7 @@ cfgfile_path (option, value, _T("floppy0soundext"), p->floppyslots[0].dfxclickex
 		|| cfgfile_yesno (option, value, _T("gfx_black_frame_insertion"), &p->lightboost_strobo)
 		|| cfgfile_yesno (option, value, _T("gfx_flickerfixer"), &p->gfx_scandoubler)
 		|| cfgfile_yesno (option, value, _T("magic_mouse"), &p->input_magic_mouse)
-		|| cfgfile_yesno (option, value, _T("warp"), &p->turbo_emulation)
+		|| cfgfile_yesno2 (option, value, _T("warp"), &p->turbo_emulation)
 		|| cfgfile_yesno (option, value, _T("headless"), &p->headless)
 		|| cfgfile_yesno (option, value, _T("clipboard_sharing"), &p->clipboard_sharing)
 		|| cfgfile_yesno (option, value, _T("native_code"), &p->native_code)
@@ -1876,12 +1963,12 @@ cfgfile_path (option, value, _T("floppy0soundext"), p->floppyslots[0].dfxclickex
 	if (_tcscmp (option, _T("gfx_vsync")) == 0) {
 		if (cfgfile_strval (option, value, _T("gfx_vsync"), &p->gfx_apmode[APMODE_NATIVE].gfx_vsync, vsyncmodes, 0) >= 0)
 			return 1;
-		return cfgfile_yesno (option, value, _T("gfx_vsync"), &p->gfx_apmode[APMODE_NATIVE].gfx_vsync);
+		return cfgfile_yesno2 (option, value, _T("gfx_vsync"), &p->gfx_apmode[APMODE_NATIVE].gfx_vsync);
 	}
 	if (_tcscmp (option, _T("gfx_vsync_picasso")) == 0) {
 		if (cfgfile_strval (option, value, _T("gfx_vsync_picasso"), &p->gfx_apmode[APMODE_RTG].gfx_vsync, vsyncmodes, 0) >= 0)
 			return 1;
-		return cfgfile_yesno (option, value, _T("gfx_vsync_picasso"), &p->gfx_apmode[APMODE_RTG].gfx_vsync);
+		return cfgfile_yesno2 (option, value, _T("gfx_vsync_picasso"), &p->gfx_apmode[APMODE_RTG].gfx_vsync);
 	}
 	if (cfgfile_strval (option, value, _T("gfx_vsyncmode"), &p->gfx_apmode[APMODE_NATIVE].gfx_vsyncmode, vsyncmodes2, 0))
 		return 1;
@@ -4661,7 +4748,11 @@ void default_prefs (struct uae_prefs *p, int type)
 	p->config_host_path[0] = 0;
 
 	p->gfx_scandoubler = 0;
+#ifdef __LIBRETRO__
+    p->start_gui = 0;
+#else
 	p->start_gui = 1;
+#endif
 #ifdef DEBUGGER
 	p->start_debugger = 0;
 #endif
@@ -4717,8 +4808,10 @@ void default_prefs (struct uae_prefs *p, int type)
 	p->sound_filter_type = 0;
 #ifdef __LIBRETRO__
 	p->sound_auto = 0;
+	p->sound_cdaudio = true;
 #else
 	p->sound_auto = 1;
+	p->sound_cdaudio = false;
 #endif
 	p->sampler_stereo = false;
 	p->sampler_buffer = 0;
@@ -5084,7 +5177,8 @@ static void buildin_default_prefs (struct uae_prefs *p)
 	p->cachesize = 0;
 #endif
 	p->socket_emu = 0;
-	p->sound_volume = 0;
+	p->sound_volume_master = 0;
+	p->sound_volume_paula = 0;
 	p->sound_volume_cd = 0;
 	p->clipboard_sharing = false;
 

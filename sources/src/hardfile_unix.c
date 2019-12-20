@@ -50,7 +50,9 @@ struct uae_driveinfo {
 //#define HDF_HANDLE_WIN32 1
 #define HDF_HANDLE_ZFILE 2
 #define HDF_HANDLE_LINUX 3
+#ifndef INVALID_HANDLE_VALUE
 #define INVALID_HANDLE_VALUE NULL
+#endif
 
 #define CACHE_SIZE 16384
 #define CACHE_FLUSH_TIME 5

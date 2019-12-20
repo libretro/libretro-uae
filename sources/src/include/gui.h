@@ -1,3 +1,6 @@
+#ifndef UAE_GUI_H
+#define UAE_GUI_H
+
  /*
   * UAE - The Un*x Amiga Emulator
   *
@@ -95,3 +98,4 @@ extern void gui_update_gfx (void);
 #define NUMSG_KS68030       "The selected system ROM requires a 68030 CPU."
 #define NUMSG_KS68030PLUS   "The selected system ROM requires a 68030 or higher CPU."
 
+#endif // UAE_GUI_H

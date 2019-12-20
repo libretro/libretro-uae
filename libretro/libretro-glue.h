@@ -31,6 +31,11 @@ extern bool retro_update_av_info(bool, bool, bool);
 #define RGB565(r, g, b) (((r) << (5+6)) | ((g) << 6) | (b))
 #define RGB888(r, g, b) (((r * 255 / 31) << (16)) | ((g * 255 / 31) << 8) | (b * 255 / 31))
 
+#define EMULATOR_DEF_WIDTH 720
+#define EMULATOR_DEF_HEIGHT 574
+#define EMULATOR_MAX_WIDTH 1024
+#define EMULATOR_MAX_HEIGHT 1024
+
 #ifndef _WIN32
 #define TCHAR char /* from sysdeps.h */
 #endif

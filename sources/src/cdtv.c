@@ -145,7 +145,7 @@ static int get_toc (void)
 
 static int get_qcode (void)
 {
-	if (!sys_command_cd_qcode (unitnum, cdrom_qcode))
+	if (!sys_command_cd_qcode (unitnum, cdrom_qcode, -1, false))
 		return 0;
 	cdrom_qcode[1] = cd_audio_status;
 	return 1;
@@ -269,7 +269,7 @@ static void subfunc (uae_u8 *data, int cnt)
 	subcodebufferoffsetw = offset;
 	uae_sem_post (&sub_sem);
 }
-static int statusfunc (int status)
+static int statusfunc (int status, int playpos)
 {
 	if (status == -1)
 		return 500;

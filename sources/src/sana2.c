@@ -1298,7 +1298,7 @@ static void *dev_thread (void *devs)
 {
 	struct s2devstruct *dev = (struct s2devstruct*)devs;
 
-	uae_set_thread_priority (NULL, 1);
+	uae_set_thread_priority (1);
 	dev->thread_running = 1;
 	uae_sem_post (&dev->sync_sem);
 	for (;;) {

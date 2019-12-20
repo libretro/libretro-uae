@@ -45,6 +45,7 @@ The following models are provided (hardcoded configuration):
 |A600|Amiga 600 with ECS chipset, 2MB Chip RAM + 8MB Fast RAM|
 |A1200|Amiga 1200 with AGA chipset, 2MB Chip RAM + 8MB Fast RAM|
 |A1200OG|Amiga 1200 with AGA chipset, 2MB Chip RAM|
+|CD32|Amiga CD32 with AGA chipset, 2MB Chip RAM|
 
 As the configuration file is only generated at launch you must restart RetroArch for the change to take effect.
 
@@ -59,6 +60,8 @@ It is critical to use Kickstarts with the correct MD5, otherwise the core might 
 |kick37175.A500|Kickstart v2.04 (Rev. 37.175)|Amiga 500+|dc10d7bdd1b6f450773dfb558477c230|
 |kick40063.A600|Kickstart v3.1 (Rev. 40.063)|Amiga 600|e40a5dfb3d017ba8779faba30cbd1c8e|
 |kick40068.A1200|Kickstart v3.1 (Rev. 40.068)|Amiga 1200|646773759326fbac3b2311fd8c8793ee|
+|kick40060.CD32|Kickstart v3.1 (Rev. 40.060)|Amiga CD32|5f8924d013dd57a89cf349f4cdedc6b1|
+|kick40060.CD32.ext|CD32 Extended ROM (Rev. 40.060)|Amiga CD32|bb72565701b1b6faece07d68ea5da639|
 
 ### Resolution and rendering
 These parameters control the output resolution of the core:
@@ -87,7 +90,8 @@ When using high resolution single line mode, rendering is presented as is. It de
 You can pass a disk image, a hard drive image, or a playlist file for disk images.
 
 Supported formats are:
-- **ADF**, **ADZ**, **IPF**, **DMS**, **FDI** files for disk images
+- **ADF**, **ADZ**, **IPF**, **DMS**, **FDI** files for floppy disk images
+- **ISO**, **CUE**, **CCD**, **NRG**, files for CD images
 - **HDF**, **HDZ** for hard drive images
 - **M3U** for multiple disk image playlist
 
@@ -198,7 +202,7 @@ To do this just add the particular string to the filename:
 
 Example: When launching "Alien Breed 2 (AGA).hdf" file the core will use the Amiga 1200 model.
 
-If no special string is found the core will use the model configured in the core options. The model core option at 'Automatic' will select A500 when booting floppy disks and A600 when booting hard drives.
+If no special string is found the core will use the model configured in the core options. The model core option at 'Automatic' will select A500 when booting floppy disks and A600 when booting hard drives. CD32 will always be selected with CD images.
 
 ## Using configuration files
 You can pass an '.uae' configuration file and the core will load the settings and start emulation.
@@ -221,6 +225,10 @@ Note that for most HDF files, the model has to be set to A1200 in Quickmenu->Opt
 If you are using RDB HDF files, please use 0,0,0,0 instead of geometry numbers like 32,1,2,512. The geometry will then be read from the file. This only works for RDB HDF files.
 
 ## Latest features
+- CD32 support (sonninnos)
+- WHDLoad.prefs override core option (sonninnos)
+- Internal+external floppy drive sounds (sonninnos)
+- Single line high resolution mode (sonninnos)
 - Savestate support (sonninnos)
 - Parallel port four player joystick adapter is emulated with working two, three and four-player controls (sonninnos and rsn8887)
 - Multiple mice support using raw input driver on Windows (sonninnos)

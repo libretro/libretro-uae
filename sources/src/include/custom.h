@@ -1,3 +1,6 @@
+#ifndef UAE_CUSTOM_H
+#define UAE_CUSTOM_H
+
 /*
  * UAE - The Un*x Amiga Emulator
  *
@@ -230,3 +233,5 @@ extern struct chipset_refresh *get_chipset_refresh (void);
 extern void compute_framesync (void);
 
 #define HSYNCTIME (maxhpos * CYCLE_UNIT);
+
+#endif // UAE_CUSTOM_H

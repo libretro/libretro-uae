@@ -2,9 +2,11 @@
 #include "retrodep/retroglue.h"
 #include "libretro-mapper.h"
 #include "libretro-glue.h"
+#include "vkbd.h"
 #include "retro_files.h"
 #include "retro_strings.h"
 #include "retro_disk_control.h"
+#include "file/file_path.h"
 #include "uae_types.h"
 
 #include "sysdeps.h"
@@ -13,12 +15,9 @@
 #include "inputdevice.h"
 #include "savestate.h"
 #include "custom.h"
-#include "vkbd.h"
-
-#define EMULATOR_DEF_WIDTH 720
-#define EMULATOR_DEF_HEIGHT 574
-#define EMULATOR_MAX_WIDTH 1024
-#define EMULATOR_MAX_HEIGHT 1024
+#include "akiko.h"
+#include "blkdev.h"
+extern void check_changes(int unitnum);
 
 #define UAE_HZ_PAL 49.9201
 #define UAE_HZ_NTSC 59.8251
@@ -37,6 +36,8 @@ int retroh = 0;
 char key_state[512];
 char key_state2[512];
 unsigned int opt_mapping_options_display;
+unsigned int opt_video_options_display;
+unsigned int opt_audio_options_display;
 char opt_model[10];
 bool opt_use_whdload_hdf = true;
 unsigned int opt_use_whdload_prefs = 0;
@@ -69,8 +70,7 @@ extern uae_u8 *natmem_offset;
 extern uae_u32 natmem_size;
 #endif
 
-extern unsigned short int bmp[EMULATOR_MAX_WIDTH*EMULATOR_MAX_HEIGHT];
-extern unsigned short int savebmp[EMULATOR_MAX_WIDTH*EMULATOR_MAX_HEIGHT];
+extern unsigned short int retro_bmp[EMULATOR_DEF_WIDTH*EMULATOR_DEF_HEIGHT];
 extern int SHIFTON;
 extern int STATUSON;
 extern char RPATH[512];
@@ -149,47 +149,55 @@ static dc_storage* dc;
 // chipmem_size 1 = 0.5MB, 2 = 1MB, 4 = 2MB
 // bogomem_size 2 = 0.5MB, 4 = 1MB, 6 = 1.5MB, 7 = 1.8MB
 
-#define A500 "\
+#define A500_CONFIG "\
 cpu_type=68000\n\
 chipmem_size=1\n\
 bogomem_size=2\n\
 chipset_compatible=A500\n\
 chipset=ocs\n"
 
-#define A500OG "\
+#define A500OG_CONFIG "\
 cpu_type=68000\n\
 chipmem_size=1\n\
 bogomem_size=0\n\
 chipset_compatible=A500\n\
 chipset=ocs\n"
 
-#define A500PLUS "\
+#define A500PLUS_CONFIG "\
 cpu_type=68000\n\
 chipmem_size=2\n\
 bogomem_size=0\n\
 chipset_compatible=A500+\n\
 chipset=ecs\n"
 
-#define A600 "\
+#define A600_CONFIG "\
 cpu_type=68000\n\
 chipmem_size=4\n\
 fastmem_size=8\n\
 chipset_compatible=A600\n\
 chipset=ecs\n"
 
-#define A1200 "\
+#define A1200_CONFIG "\
 cpu_type=68ec020\n\
 chipmem_size=4\n\
 fastmem_size=8\n\
 chipset_compatible=A1200\n\
 chipset=aga\n"
 
-#define A1200OG "\
+#define A1200OG_CONFIG "\
 cpu_type=68ec020\n\
 chipmem_size=4\n\
 fastmem_size=0\n\
 chipset_compatible=A1200\n\
 chipset=aga\n"
+
+#define CD32_CONFIG "\
+cpu_type=68ec020\n\
+chipmem_size=4\n\
+fastmem_size=0\n\
+chipset_compatible=CD32\n\
+chipset=aga\n\
+floppy0type=-1\n"
 
 
 // Amiga kickstarts
@@ -197,6 +205,8 @@ chipset=aga\n"
 #define A500KS2_ROM             "kick37175.A500"
 #define A600_ROM                "kick40063.A600"
 #define A1200_ROM               "kick40068.A1200"
+#define CD32_ROM                "kick40060.CD32"
+#define CD32_ROM_EXT            "kick40060.CD32.ext"
 
 #define PUAE_VIDEO_PAL          0x01
 #define PUAE_VIDEO_NTSC         0x02
@@ -211,8 +221,27 @@ chipset=aga\n"
 #define PUAE_VIDEO_NTSC_HI      PUAE_VIDEO_NTSC|PUAE_VIDEO_HIRES
 #define PUAE_VIDEO_NTSC_HI_SL   PUAE_VIDEO_NTSC|PUAE_VIDEO_HIRES_SINGLE
 
+// Amiga files
+#define ADF_FILE_EXT "adf"
+#define ADZ_FILE_EXT "adz"
+#define FDI_FILE_EXT "fdi"
+#define DMS_FILE_EXT "dms"
+#define IPF_FILE_EXT "ipf"
+#define HDF_FILE_EXT "hdf"
+#define HDZ_FILE_EXT "hdz"
+#define CUE_FILE_EXT "cue"
+#define CCD_FILE_EXT "ccd"
+#define NRG_FILE_EXT "nrg"
+#define ISO_FILE_EXT "iso"
+#define UAE_FILE_EXT "uae"
+#define M3U_FILE_EXT "m3u"
+#define LIBRETRO_PUAE_CONF "puae_libretro.uae"
+#define WHDLOAD_HDF "WHDLoad.hdf"
+
+// Configs
 static char uae_machine[256];
-static char uae_kickstart[16];
+static char uae_kickstart[RETRO_PATH_MAX];
+static char uae_kickstart_ext[RETRO_PATH_MAX];
 static char uae_config[1024];
 
 void retro_set_environment(retro_environment_t cb)
@@ -262,9 +291,76 @@ void retro_set_environment(retro_environment_t cb)
             { "A600", "A600 (2MB Chip + 8MB Fast)" },
             { "A1200", "A1200 (2MB Chip + 8MB Fast)" },
             { "A1200OG", "A1200 (2MB Chip)" },
+            { "CD32", "CD32 (2MB Chip)" },
             { NULL, NULL },
          },
          "auto"
+      },
+      {
+         "puae_cpu_compatibility",
+         "CPU Compatibility",
+         "",
+         {
+            { "normal", "Normal" },
+            { "compatible", "More compatible" },
+            { "exact", "Cycle-exact" },
+            { NULL, NULL },
+         },
+         "exact"
+      },
+      {
+         "puae_cpu_throttle",
+         "CPU Speed",
+         "Ignored with 'Cycle-exact'.",
+         {
+            { "-900.0", "-90\%" },
+            { "-800.0", "-80\%" },
+            { "-700.0", "-70\%" },
+            { "-600.0", "-60\%" },
+            { "-500.0", "-50\%" },
+            { "-400.0", "-40\%" },
+            { "-300.0", "-30\%" },
+            { "-200.0", "-20\%" },
+            { "-100.0", "-10\%" },
+            { "0.0", "Normal" },
+            { "500.0", "+50\%" },
+            { "1000.0", "+100\%" },
+            { "1500.0", "+150\%" },
+            { "2000.0", "+200\%" },
+            { "2500.0", "+250\%" },
+            { "3000.0", "+300\%" },
+            { "3500.0", "+350\%" },
+            { "4000.0", "+400\%" },
+            { "4500.0", "+450\%" },
+            { "5000.0", "+500\%" },
+            { NULL, NULL },
+         },
+         "0.0"
+      },
+      {
+         "puae_cpu_multiplier",
+         "CPU Cycle-exact Speed",
+         "Applies only with 'Cycle-exact'.",
+         {
+            { "0", "Normal" },
+            { "1", "1x (3.546895 MHz)" },
+            { "2", "2x (7.093790 MHz) A500" },
+            { "4", "4x (14.187580 MHz) A1200" },
+            { "8", "8x (28.375160 MHz)" },
+            { NULL, NULL },
+         },
+         "0"
+      },
+      {
+         "puae_video_options_display",
+         "Show Video Options",
+         "Core options page refresh required.",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "disabled"
       },
       {
          "puae_video_resolution",
@@ -479,59 +575,15 @@ void retro_set_environment(retro_environment_t cb)
          "bottom"
       },
       {
-         "puae_cpu_compatibility",
-         "CPU Compatibility",
-         "",
+         "puae_audio_options_display",
+         "Show Audio Options",
+         "Core options page refresh required.",
          {
-            { "normal", "Normal" },
-            { "compatible", "More compatible" },
-            { "exact", "Cycle-exact" },
+            { "disabled", NULL },
+            { "enabled", NULL },
             { NULL, NULL },
          },
-         "exact"
-      },
-      {
-         "puae_cpu_throttle",
-         "CPU Speed",
-         "Ignored with 'Cycle-exact'.",
-         {
-            { "-900.0", "-90\%" },
-            { "-800.0", "-80\%" },
-            { "-700.0", "-70\%" },
-            { "-600.0", "-60\%" },
-            { "-500.0", "-50\%" },
-            { "-400.0", "-40\%" },
-            { "-300.0", "-30\%" },
-            { "-200.0", "-20\%" },
-            { "-100.0", "-10\%" },
-            { "0.0", "Normal" },
-            { "500.0", "+50\%" },
-            { "1000.0", "+100\%" },
-            { "1500.0", "+150\%" },
-            { "2000.0", "+200\%" },
-            { "2500.0", "+250\%" },
-            { "3000.0", "+300\%" },
-            { "3500.0", "+350\%" },
-            { "4000.0", "+400\%" },
-            { "4500.0", "+450\%" },
-            { "5000.0", "+500\%" },
-            { NULL, NULL },
-         },
-         "0.0"
-      },
-      {
-         "puae_cpu_multiplier",
-         "CPU Cycle-exact Speed",
-         "Applies only with 'Cycle-exact'.",
-         {
-            { "0", "Normal" },
-            { "1", "1x (3.546895 MHz)" },
-            { "2", "2x (7.093790 MHz) A500" },
-            { "4", "4x (14.187580 MHz) A1200" },
-            { "8", "8x (28.375160 MHz)" },
-            { NULL, NULL },
-         },
-         "0"
+         "disabled"
       },
       {
          "puae_sound_output",
@@ -829,7 +881,7 @@ void retro_set_environment(retro_environment_t cb)
          "Hotkey: Toggle Statusbar",
          "Press the mapped key to toggle the statusbar.",
          {{ NULL, NULL }},
-         "RETROK_F10"
+         "RETROK_F12"
       },
       {
          "puae_mapper_mouse_toggle",
@@ -907,7 +959,7 @@ void retro_set_environment(retro_environment_t cb)
          "RetroPad R",
          "",
          {{ NULL, NULL }},
-         "RETROK_F10"
+         "RETROK_F12"
       },
       {
          "puae_mapper_l2",
@@ -1703,6 +1755,22 @@ static void update_variables(void)
       else if (strcmp(var.value, "enabled") == 0) opt_mapping_options_display=1;
    }
 
+   var.key = "puae_video_options_display";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "disabled") == 0) opt_video_options_display=0;
+      else if (strcmp(var.value, "enabled") == 0) opt_video_options_display=1;
+   }
+
+   var.key = "puae_audio_options_display";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "disabled") == 0) opt_audio_options_display=0;
+      else if (strcmp(var.value, "enabled") == 0) opt_audio_options_display=1;
+   }
+
    var.key = "puae_turbo_fire_button";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -1908,7 +1976,9 @@ static void update_variables(void)
       mapper_keys[29] = keyId(var.value);
    }
 
-   /* Options display */
+   /*** Options display ***/
+
+   /* Mapping options */
    option_display.visible = opt_mapping_options_display;
 
    option_display.key = "puae_mapper_select";
@@ -1960,6 +2030,52 @@ static void update_variables(void)
    option_display.key = "puae_mapper_aspect_ratio_toggle";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_mapper_zoom_mode_toggle";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+   /* Audio options */
+   option_display.visible = opt_audio_options_display;
+
+   option_display.key = "puae_sound_output";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_sound_stereo_separation";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_sound_interpol";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_sound_filter";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_sound_filter_type";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_floppy_sound";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_floppy_sound_type";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+   /* Video options */
+   option_display.visible = opt_video_options_display;
+
+   option_display.key = "puae_video_resolution";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_video_allow_hz_change";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_video_standard";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_video_aspect";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_zoom_mode";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_vertical_pos";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_horizontal_pos";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_gfx_colors";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_collision_level";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_immediate_blits";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_gfx_framerate";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_statusbar";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
 
    /* Setting resolution */
@@ -2053,19 +2169,47 @@ static bool disk_set_eject_state(bool ejected)
       {
          if (dc->files[dc->index] > 0)
          {
-            changed_prefs.floppyslots[0].df[0] = 0;
-            DISK_check_change();
-            disk_eject(0);
+            if (strendswith(dc->files[dc->index], ADF_FILE_EXT)
+             || strendswith(dc->files[dc->index], ADZ_FILE_EXT)
+             || strendswith(dc->files[dc->index], FDI_FILE_EXT)
+             || strendswith(dc->files[dc->index], DMS_FILE_EXT)
+             || strendswith(dc->files[dc->index], IPF_FILE_EXT))
+            {
+               changed_prefs.floppyslots[0].df[0] = 0;
+               DISK_check_change();
+               disk_eject(0);
+            }
+            else if (strendswith(dc->files[dc->index], CUE_FILE_EXT)
+                  || strendswith(dc->files[dc->index], CCD_FILE_EXT)
+                  || strendswith(dc->files[dc->index], NRG_FILE_EXT)
+                  || strendswith(dc->files[dc->index], ISO_FILE_EXT))
+            {
+               changed_prefs.cdslots[0].name[0] = 0;
+               check_changes(0);
+            }
          }
       }
       else
       {
-         if (dc->files[dc->index] > 0)
+         if (dc->files[dc->index] > 0 && file_exists(dc->files[dc->index]))
          {
-            if (file_exists(dc->files[dc->index]))
+            if (strendswith(dc->files[dc->index], ADF_FILE_EXT)
+             || strendswith(dc->files[dc->index], ADZ_FILE_EXT)
+             || strendswith(dc->files[dc->index], FDI_FILE_EXT)
+             || strendswith(dc->files[dc->index], DMS_FILE_EXT)
+             || strendswith(dc->files[dc->index], IPF_FILE_EXT))
             {
                strcpy (changed_prefs.floppyslots[0].df, dc->files[dc->index]);
                DISK_check_change();
+            }
+            else if (strendswith(dc->files[dc->index], CUE_FILE_EXT)
+                  || strendswith(dc->files[dc->index], CCD_FILE_EXT)
+                  || strendswith(dc->files[dc->index], NRG_FILE_EXT)
+                  || strendswith(dc->files[dc->index], ISO_FILE_EXT))
+            {
+               //FIXME
+               strcpy (changed_prefs.cdslots[0].name, dc->files[dc->index]);
+               check_changes(0);
             }
          }
       }
@@ -2200,9 +2344,9 @@ void retro_init(void)
      retro_save_directory=retro_system_directory;
    }
 
-   printf("Retro SYSTEM_DIRECTORY %s\n",retro_system_directory);
-   printf("Retro SAVE_DIRECTORY %s\n",retro_save_directory);
-   printf("Retro CONTENT_DIRECTORY %s\n",retro_content_directory);
+   //printf("Retro SYSTEM_DIRECTORY %s\n",retro_system_directory);
+   //printf("Retro SAVE_DIRECTORY %s\n",retro_save_directory);
+   //printf("Retro CONTENT_DIRECTORY %s\n",retro_content_directory);
 
    // Disk control interface
    dc = dc_create();
@@ -2258,7 +2402,7 @@ void retro_init(void)
       exit(0);//return false;
    }
 
-   memset(bmp, 0, sizeof(bmp));
+   memset(retro_bmp, 0, sizeof(retro_bmp));
 
    update_variables();
 
@@ -2271,6 +2415,8 @@ void retro_init(void)
 
 void retro_deinit(void)
 {	
+   leave_program();
+
    if (emuThread)
       co_delete(emuThread);
    emuThread = 0;
@@ -2293,7 +2439,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
       int uae_port;
       uae_port = (port==0) ? 1 : 0;
       cd32_pad_enabled[uae_port]=0;
-      switch(device)
+      switch (device)
       {
          case RETRO_DEVICE_JOYPAD:
             fprintf(stdout, "[libretro-uae]: Controller %u: RetroPad\n", (port+1));
@@ -2331,7 +2477,7 @@ void retro_get_system_info(struct retro_system_info *info)
    info->library_version  = "2.6.1" GIT_VERSION;
    info->need_fullpath    = true;
    info->block_extract    = false;	
-   info->valid_extensions = "adf|adz|dms|fdi|ipf|hdf|hdz|uae|m3u|zip";
+   info->valid_extensions = "adf|adz|dms|fdi|ipf|hdf|hdz|cue|ccd|nrg|iso|uae|m3u|zip";
 }
 
 bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
@@ -2785,7 +2931,7 @@ void retro_run(void)
    {
       firstpass=0;
       co_switch(emuThread);
-      video_cb(bmp, retrow, zoomed_height, retrow << (pix_bytes / 2));
+      video_cb(retro_bmp, retrow, zoomed_height, retrow << (pix_bytes / 2));
       return;
    }
    else if (!firstpass && filter_type_update)
@@ -2801,23 +2947,11 @@ void retro_run(void)
    retro_poll_event();
    co_switch(emuThread);
    if (SHOWKEY == 1)
-      virtual_kbd(bmp, vkb_pos_x, vkb_pos_y);
+      virtual_kbd(retro_bmp, vkb_pos_x, vkb_pos_y);
    if (STATUSON == 1)
       Print_Status();
-   video_cb(bmp, retrow, zoomed_height, retrow << (pix_bytes / 2));
+   video_cb(retro_bmp, retrow, zoomed_height, retrow << (pix_bytes / 2));
 }
-
-#define ADF_FILE_EXT "adf"
-#define ADZ_FILE_EXT "adz"
-#define FDI_FILE_EXT "fdi"
-#define DMS_FILE_EXT "dms"
-#define IPF_FILE_EXT "ipf"
-#define HDF_FILE_EXT "hdf"
-#define HDZ_FILE_EXT "hdz"
-#define UAE_FILE_EXT "uae"
-#define M3U_FILE_EXT "m3u"
-#define LIBRETRO_PUAE_CONF "puae_libretro.uae"
-#define WHDLOAD_HDF "WHDLoad.hdf"
 
 bool retro_load_game(const struct retro_game_info *info)
 {
@@ -2825,37 +2959,43 @@ bool retro_load_game(const struct retro_game_info *info)
   
    if (strcmp(opt_model, "A500") == 0)
    {
-      strcat(uae_machine, A500);
+      strcat(uae_machine, A500_CONFIG);
       strcpy(uae_kickstart, A500_ROM);
    }
    else if (strcmp(opt_model, "A500OG") == 0)
    {
-      strcat(uae_machine, A500OG);
+      strcat(uae_machine, A500OG_CONFIG);
       strcpy(uae_kickstart, A500_ROM);
    }
    else if (strcmp(opt_model, "A500PLUS") == 0)
    {
-      strcat(uae_machine, A500PLUS);
+      strcat(uae_machine, A500PLUS_CONFIG);
       strcpy(uae_kickstart, A500KS2_ROM);
    }
    else if (strcmp(opt_model, "A600") == 0)
    {
-      strcat(uae_machine, A600);
+      strcat(uae_machine, A600_CONFIG);
       strcpy(uae_kickstart, A600_ROM);
    }
    else if (strcmp(opt_model, "A1200") == 0)
    {
-      strcat(uae_machine, A1200);
+      strcat(uae_machine, A1200_CONFIG);
       strcpy(uae_kickstart, A1200_ROM);
    }
    else if (strcmp(opt_model, "A1200OG") == 0)
    {
-      strcat(uae_machine, A1200OG);
+      strcat(uae_machine, A1200OG_CONFIG);
       strcpy(uae_kickstart, A1200_ROM);
+   }
+   else if (strcmp(opt_model, "CD32") == 0)
+   {
+      strcat(uae_machine, CD32_CONFIG);
+      strcpy(uae_kickstart, CD32_ROM);
+      strcpy(uae_kickstart_ext, CD32_ROM_EXT);
    }
    else if (strcmp(opt_model, "auto") == 0)
    {
-      strcat(uae_machine, A500);
+      strcat(uae_machine, A500_CONFIG);
       strcpy(uae_kickstart, A500_ROM);
    }
 
@@ -2863,15 +3003,15 @@ bool retro_load_game(const struct retro_game_info *info)
    {
       const char *full_path = (const char*)info->path;
 			
-	  // If argument is a disk or hard drive image file
-	  if (  strendswith(full_path, ADF_FILE_EXT)
-	     || strendswith(full_path, ADZ_FILE_EXT)
-	     || strendswith(full_path, FDI_FILE_EXT)
-	     || strendswith(full_path, DMS_FILE_EXT)
-	     || strendswith(full_path, IPF_FILE_EXT)
-	     || strendswith(full_path, HDF_FILE_EXT)
-	     || strendswith(full_path, HDZ_FILE_EXT)
-	     || strendswith(full_path, M3U_FILE_EXT))
+      // If argument is a disk or hard drive image file
+      if (strendswith(full_path, ADF_FILE_EXT)
+       || strendswith(full_path, ADZ_FILE_EXT)
+       || strendswith(full_path, FDI_FILE_EXT)
+       || strendswith(full_path, DMS_FILE_EXT)
+       || strendswith(full_path, IPF_FILE_EXT)
+       || strendswith(full_path, HDF_FILE_EXT)
+       || strendswith(full_path, HDZ_FILE_EXT)
+       || strendswith(full_path, M3U_FILE_EXT))
       {
 	     path_join((char*)&RPATH, retro_save_directory, LIBRETRO_PUAE_CONF);
 	     fprintf(stdout, "[libretro-uae]: Generating temporary config file '%s'\n", (const char*)&RPATH);
@@ -2888,7 +3028,7 @@ bool retro_load_game(const struct retro_game_info *info)
                // Use A1200 barebone
                fprintf(stdout, "[libretro-uae]: Found '(A1200OG)' or '(A1200NF)' in filename '%s'\n", full_path);
                fprintf(stdout, "[libretro-uae]: Booting A1200 NoFast with Kickstart 3.1 r40.068\n");
-               fprintf(configfile, A1200OG);
+               fprintf(configfile, A1200OG_CONFIG);
                path_join((char*)&kickstart, retro_system_directory, A1200_ROM);
             }
             else if (strstr(full_path, "(A1200)") != NULL || strstr(full_path, "AGA") != NULL)
@@ -2896,7 +3036,7 @@ bool retro_load_game(const struct retro_game_info *info)
                // Use A1200
                fprintf(stdout, "[libretro-uae]: Found '(A1200)' or 'AGA' in filename '%s'\n", full_path);
                fprintf(stdout, "[libretro-uae]: Booting A1200 with Kickstart 3.1 r40.068\n");
-               fprintf(configfile, A1200);
+               fprintf(configfile, A1200_CONFIG);
                path_join((char*)&kickstart, retro_system_directory, A1200_ROM);
             }
             else if (strstr(full_path, "(A600)") != NULL || strstr(full_path, "ECS") != NULL)
@@ -2904,7 +3044,7 @@ bool retro_load_game(const struct retro_game_info *info)
                // Use A600
                fprintf(stdout, "[libretro-uae]: Found '(A600)' or 'ECS' in filename '%s'\n", full_path);
                fprintf(stdout, "[libretro-uae]: Booting A600 with Kickstart 3.1 r40.063\n");
-               fprintf(configfile, A600);
+               fprintf(configfile, A600_CONFIG);
                path_join((char*)&kickstart, retro_system_directory, A600_ROM);
             }
             else if (strstr(full_path, "(A500+)") != NULL || strstr(full_path, "(A500PLUS)") != NULL)
@@ -2912,7 +3052,7 @@ bool retro_load_game(const struct retro_game_info *info)
                // Use A500+
                fprintf(stdout, "[libretro-uae]: Found '(A500+)' or '(A500PLUS)' in filename '%s'\n", full_path);
                fprintf(stdout, "[libretro-uae]: Booting A500+ with Kickstart 2.04 r37.175\n");
-               fprintf(configfile, A500PLUS);
+               fprintf(configfile, A500PLUS_CONFIG);
                path_join((char*)&kickstart, retro_system_directory, A500KS2_ROM);
             }
             else if (strstr(full_path, "(A500OG)") != NULL || strstr(full_path, "(512K)") != NULL)
@@ -2920,7 +3060,7 @@ bool retro_load_game(const struct retro_game_info *info)
                // Use A500 barebone
                fprintf(stdout, "[libretro-uae]: Found '(A500OG)' or '(512K)' in filename '%s'\n", full_path);
                fprintf(stdout, "[libretro-uae]: Booting A500 512K with Kickstart 1.3 r34.005\n");
-               fprintf(configfile, A500OG);
+               fprintf(configfile, A500OG_CONFIG);
                path_join((char*)&kickstart, retro_system_directory, A500_ROM);
             }
             else if (strstr(full_path, "(A500)") != NULL || strstr(full_path, "OCS") != NULL)
@@ -2928,7 +3068,7 @@ bool retro_load_game(const struct retro_game_info *info)
                // Use A500
                fprintf(stdout, "[libretro-uae]: Found '(A500)' or 'OCS' in filename '%s'\n", full_path);
                fprintf(stdout, "[libretro-uae]: Booting A500 with Kickstart 1.3 r34.005\n");
-               fprintf(configfile, A500);
+               fprintf(configfile, A500_CONFIG);
                path_join((char*)&kickstart, retro_system_directory, A500_ROM);
             }
             else
@@ -2940,14 +3080,14 @@ bool retro_load_game(const struct retro_game_info *info)
                      || strendswith(full_path, HDZ_FILE_EXT))
                   {
                      uae_machine[0] = '\0';
-                     strcat(uae_machine, A600);
+                     strcat(uae_machine, A600_CONFIG);
                      strcpy(uae_kickstart, A600_ROM);
                   }
                   // Floppy disk defaults to A500
                   else
                   {
                      uae_machine[0] = '\0';
-                     strcat(uae_machine, A500);
+                     strcat(uae_machine, A500_CONFIG);
                      strcpy(uae_kickstart, A500_ROM);
                   }
                }
@@ -2979,10 +3119,10 @@ bool retro_load_game(const struct retro_game_info *info)
                forced_video=true;
             }
 
-            // Verify kickstart
+            // Verify Kickstart
             if (!file_exists(kickstart))
             {
-               // Kickstart rom not found
+               // Kickstart ROM not found
                fprintf(stderr, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
                fclose(configfile);
                return false;
@@ -2991,8 +3131,8 @@ bool retro_load_game(const struct retro_game_info *info)
             fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
 
             // If argument is a hard drive image file
-            if (  strendswith(full_path, HDF_FILE_EXT)
-               || strendswith(full_path, HDZ_FILE_EXT))
+            if (strendswith(full_path, HDF_FILE_EXT)
+             || strendswith(full_path, HDZ_FILE_EXT))
             {
                if (opt_use_whdload_hdf)
                {
@@ -3135,6 +3275,100 @@ bool retro_load_game(const struct retro_game_info *info)
             return false;
          }
       }
+      // If argument is a CD image
+      else if (strendswith(full_path, CUE_FILE_EXT)
+            || strendswith(full_path, CCD_FILE_EXT)
+            || strendswith(full_path, NRG_FILE_EXT)
+            || strendswith(full_path, ISO_FILE_EXT))
+      {
+         path_join((char*)&RPATH, retro_save_directory, LIBRETRO_PUAE_CONF);
+         fprintf(stdout, "[libretro-uae]: Generating temporary config file '%s'\n", (const char*)&RPATH);
+
+         // Open tmp config file
+         FILE * configfile;
+         if (configfile = fopen(RPATH, "w"))
+         {
+            char kickstart[RETRO_PATH_MAX];
+            char kickstart_ext[RETRO_PATH_MAX];
+
+            uae_machine[0] = '\0';
+            strcat(uae_machine, CD32_CONFIG);
+            strcpy(uae_kickstart, CD32_ROM);
+            strcpy(uae_kickstart_ext, CD32_ROM_EXT);
+
+            // No machine specified
+            fprintf(configfile, uae_machine);
+            path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
+            path_join((char*)&kickstart_ext, retro_system_directory, uae_kickstart_ext);
+
+            // Write common config
+            fprintf(configfile, uae_config);
+
+            // If region was specified in the name of the game
+            if (strstr(full_path, "(NTSC)") != NULL)
+            {
+               fprintf(stdout, "[libretro-uae]: Found '(NTSC)' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Forcing NTSC mode\n");
+               fprintf(configfile, "ntsc=true\n");
+               real_ntsc=true;
+               forced_video=true;
+            }
+            else if (strstr(full_path, "(PAL)") != NULL)
+            {
+               fprintf(stdout, "[libretro-uae]: Found '(PAL)' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Forcing PAL mode\n");
+               fprintf(configfile, "ntsc=false\n");
+               forced_video=true;
+            }
+
+            // Verify Kickstart
+            if (!file_exists(kickstart))
+            {
+               // Kickstart ROM not found
+               fprintf(stderr, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
+               fclose(configfile);
+               return false;
+            }
+
+            // Verify extended ROM
+            if (!file_exists(kickstart_ext))
+            {
+               // Kickstart rom not found
+               fprintf(stderr, "Kickstart extended ROM '%s' not found!\n", (const char*)&kickstart_ext);
+               fclose(configfile);
+               return false;
+            }
+
+            fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
+            fprintf(configfile, "kickstart_ext_rom_file=%s\n", (const char*)&kickstart_ext);
+
+            // NVRAM per disk
+            char flash_file[RETRO_PATH_MAX];
+            char flash_filepath[RETRO_PATH_MAX];
+            snprintf(flash_filepath, RETRO_PATH_MAX, "%s", full_path);
+            path_remove_extension((char*)flash_filepath);
+            path_join((char*)&flash_file, retro_save_directory, path_basename(flash_filepath));
+            fprintf(stdout, "[libretro-uae]: Using Flash RAM: '%s.nvr'\n", flash_file);
+            fprintf(configfile, "flash_file=%s.nvr\n", (const char*)&flash_file);
+
+            // Add the file to disk control context
+            dc_add_file(dc, full_path);
+
+            // Init first disk
+            dc->index = 0;
+            dc->eject_state = false;
+            fprintf(stdout, "[libretro-uae]: CD (%d) inserted into drive CD0: '%s'\n", dc->index+1, dc->files[dc->index]);
+            fprintf(configfile, "cdimage0=%s,\n", dc->files[0]); // ","-suffix needed if filename contains ","
+
+            fclose(configfile);
+         }
+         else
+         {
+            // Error
+            fprintf(stderr, "Error while writing file '%s'!\n", (const char*)&RPATH);
+            return false;
+         }
+      }
       // If argument is a config file
 	  else if (strendswith(full_path, UAE_FILE_EXT))
 	  {
@@ -3199,6 +3433,7 @@ bool retro_load_game(const struct retro_game_info *info)
       if (configfile = fopen(RPATH, "w"))
       {
          char kickstart[RETRO_PATH_MAX];
+         char kickstart_ext[RETRO_PATH_MAX];
 
          // No machine specified
          fprintf(stdout, "[libretro-uae]: Booting default configuration\n");
@@ -3211,13 +3446,31 @@ bool retro_load_game(const struct retro_game_info *info)
          // Verify kickstart
          if (!file_exists(kickstart))
          {
-            // Kickstart rom not found
+            // Kickstart ROM not found
             fprintf(stderr, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
             fclose(configfile);
             return false;
          }
 
          fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
+
+         // Extended ROM
+         if (strcmp(uae_kickstart_ext, ""))
+         {
+            path_join((char*)&kickstart_ext, retro_system_directory, uae_kickstart_ext);
+
+            // Verify extended ROM
+            if (!file_exists(kickstart_ext))
+            {
+               // Kickstart rom not found
+               fprintf(stderr, "Kickstart extended ROM '%s' not found!\n", (const char*)&kickstart_ext);
+               fclose(configfile);
+               return false;
+            }
+
+            fprintf(configfile, "kickstart_ext_rom_file=%s\n", (const char*)&kickstart_ext);
+         }
+
          fclose(configfile);
       }
    }
@@ -3226,7 +3479,7 @@ bool retro_load_game(const struct retro_game_info *info)
 
    retrow = defaultw;
    retroh = defaulth;
-   memset(bmp, 0, sizeof(bmp));
+   memset(retro_bmp, 0, sizeof(retro_bmp));
    Screen_SetFullUpdate();
    return true;
 }
@@ -3340,7 +3593,7 @@ void retro_cheat_set(unsigned index, bool enabled, const char *code)
    (void)code;
 }
 
-#ifdef ANDROID
+#if defined(ANDROID) || defined(__SWITCH__) || defined(WIIU)
 #include <sys/timeb.h>
 
 int ftime(struct timeb *tb)

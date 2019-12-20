@@ -1,3 +1,5 @@
+#ifndef UAE_BLKDEV_H
+#define UAE_BLKDEV_H
 
 #define DEVICE_SCSI_BUFSIZE (65536 - 1024)
 
@@ -6,6 +8,10 @@
 #define SCSI_UNIT_IMAGE 1
 #define SCSI_UNIT_IOCTL 2
 #define SCSI_UNIT_SPTI 3
+
+#ifndef WIN32
+#define DRIVE_CDROM 0
+#endif
 
 //#define device_debug write_log
 #define device_debug
@@ -63,9 +69,10 @@ struct cd_toc_head
 #define AUDIO_STATUS_NO_STATUS      0x15
 
 struct device_info {
-	bool open;
+    bool open;
     int type;
     int media_inserted;
+    int audio_playing;
     int removable;
     int write_protected;
     int cylinders;
@@ -75,12 +82,14 @@ struct device_info {
     int bus, target, lun;
     int unitnum;
     TCHAR label[MAX_DPATH];
-	TCHAR mediapath[MAX_DPATH];
-	TCHAR vendorid[10];
-	TCHAR productid[18];
-	TCHAR revision[6];
-	TCHAR *backend;
-	struct cd_toc_head toc;
+    TCHAR mediapath[MAX_DPATH];
+    TCHAR vendorid[10];
+    TCHAR productid[18];
+    TCHAR revision[6];
+    const TCHAR *backend;
+    struct cd_toc_head toc;
+    TCHAR system_id[33];
+    TCHAR volume_id[33];
 };
 
 struct amigascsi
@@ -109,13 +118,13 @@ typedef uae_u8*				(*execscsicmd_in_func)		(int, uae_u8*, int, int*);
 typedef int					(*execscsicmd_direct_func)	(int, struct amigascsi*);
 
 typedef void				(*play_subchannel_callback)	(uae_u8*, int);
-typedef int					(*play_status_callback)		(int);
+typedef int					(*play_status_callback)		(int, int);
 
 typedef int					(*pause_func)				(int, int);
 typedef int					(*stop_func)				(int);
 typedef int					(*play_func)				(int, int, int, int, play_status_callback, play_subchannel_callback);
 typedef uae_u32				(*volume_func)				(int, uae_u16, uae_u16);
-typedef int					(*qcode_func)				(int, uae_u8*, int);
+typedef int					(*qcode_func)				(int, uae_u8*, int, bool);
 typedef int					(*toc_func)					(int, struct cd_toc_head*);
 typedef int					(*read_func)				(int, uae_u8*, int, int);
 typedef int					(*rawread_func)				(int, uae_u8*, int, int, int, uae_u32);
@@ -153,6 +162,7 @@ struct device_functions {
 };
 
 int device_func_init(int flags);
+void device_func_free(void);
 void device_func_reset(void);
 int sys_command_open (int unitnum);
 void sys_command_close (int unitnum);
@@ -163,7 +173,7 @@ void sys_command_cd_stop (int unitnum);
 int sys_command_cd_play (int unitnum, int startlsn, int endlsn, int);
 int sys_command_cd_play2 (int unitnum, int startlsn, int endlsn, int scan, play_status_callback statusfunc, play_subchannel_callback subfunc);
 uae_u32 sys_command_cd_volume (int unitnum, uae_u16 volume_left, uae_u16 volume_right);
-int sys_command_cd_qcode (int unitnum, uae_u8*);
+int sys_command_cd_qcode (int unitnum, uae_u8*, int lsn, bool all);
 int sys_command_cd_toc (int unitnum, struct cd_toc_head*);
 int sys_command_cd_read (int unitnum, uae_u8 *data, int block, int size);
 int sys_command_cd_rawread (int unitnum, uae_u8 *data, int sector, int size, int sectorsize);
@@ -186,6 +196,7 @@ int scsi_cd_emulate (int unitnum, uae_u8 *cmdbuf, int scsi_cmd_len,
 	uae_u8 *scsi_data, int *data_len, uae_u8 *r, int *reply_len, uae_u8 *s, int *sense_len, bool atapi);
 
 void blkdev_vsync (void);
+extern void restore_blkdev_start(void);
 
 int msf2lsn (int msf);
 int lsn2msf (int lsn);
@@ -198,6 +209,8 @@ void blkdev_default_prefs (struct uae_prefs *p);
 void blkdev_fix_prefs (struct uae_prefs *p);
 int isdatatrack (struct cd_toc_head *th, int block);
 int isaudiotrack (struct cd_toc_head *th, int block);
+void sub_to_interleaved (const uae_u8 *s, uae_u8 *d);
+void sub_to_deinterleaved (const uae_u8 *s, uae_u8 *d);
 
 enum cd_standard_unit { CD_STANDARD_UNIT_DEFAULT, CD_STANDARD_UNIT_AUDIO, CD_STANDARD_UNIT_CDTV, CD_STANDARD_UNIT_CD32 };
 
@@ -213,3 +226,9 @@ void blkdev_entergui (void);
 void blkdev_exitgui (void);
 
 bool filesys_do_disk_change (int, bool);
+
+extern struct device_functions devicefunc_scsi_ioctl;
+extern struct device_functions devicefunc_scsi_spti;
+extern struct device_functions devicefunc_cdimage;
+
+#endif /* UAE_BLKDEV_H */

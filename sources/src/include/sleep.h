@@ -1,3 +1,6 @@
+#ifndef UAE_SLEEP_H
+#define UAE_SLEEP_H
+
  /*
   * UAE - The Un*x Amiga Emulator
   *
@@ -86,3 +89,5 @@
 
 #endif // __LIBRETRO__
 void sleep_test (void);
+
+#endif // UAE_SLEEP_H
