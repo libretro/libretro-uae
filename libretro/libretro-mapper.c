@@ -52,10 +52,7 @@ int MOUSEMODE=-1,SHOWKEY=-1,SHOWKEYPOS=-1,SHOWKEYTRANS=-1,STATUSON=-1,LEDON=-1;
 
 char RPATH[512];
 
-int analog_left[2];
-int analog_right[2];
 unsigned int mouse_speed[2]={0};
-int slowdown=0;
 extern int pix_bytes;
 extern bool fake_ntsc;
 extern bool real_ntsc;
@@ -1248,6 +1245,11 @@ void retro_poll_event()
       static int16_t mouse_x[2]={0},mouse_y[2]={0};
       static int i=0,j=0;
 
+      static int analog_left[2];
+      static int analog_right[2];
+      static double analog_left_magnitude;
+      static double analog_right_magnitude;
+
       int retro_port;
       for (retro_port = 0; retro_port <= 3; retro_port++)
       {
@@ -1364,6 +1366,12 @@ void retro_poll_event()
             {
                analog_left[0] = (input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X));
                analog_left[1] = (input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y));
+               analog_left_magnitude = sqrt((analog_left[0]*analog_left[0]) + (analog_left[1]*analog_left[1]));
+               if (analog_left_magnitude < (opt_analogmouse_deadzone * 32768 / 100))
+               {
+                  analog_left[0] = 0;
+                  analog_left[1] = 0;
+               }
 
                // Analog stick speed modifiers
                mouse_multiplier = 1;
@@ -1371,11 +1379,6 @@ void retro_poll_event()
                   mouse_multiplier = mouse_multiplier * MOUSE_SPEED_FAST;
                if (mouse_speed[j] & MOUSE_SPEED_SLOWER)
                   mouse_multiplier = mouse_multiplier / MOUSE_SPEED_SLOW;
-
-               if (abs(analog_left[0]) <= opt_analogmouse_deadzone * 32768 / 100)
-                  analog_left[0] = 0;
-               if (abs(analog_left[1]) <= opt_analogmouse_deadzone * 32768 / 100)
-                  analog_left[1] = 0;
 
                if (abs(analog_left[0]) > 0)
                {
@@ -1400,8 +1403,14 @@ void retro_poll_event()
             // No keymappings and mousing at the same time
             if (!uae_mouse_x[j] && !uae_mouse_y[j] && (!mapper_keys[20] && !mapper_keys[21] && !mapper_keys[22] && !mapper_keys[23]))
             {
-               analog_right[0] = (input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X));
-               analog_right[1] = (input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y));
+               analog_right[0] = (input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X));
+               analog_right[1] = (input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y));
+               analog_right_magnitude = sqrt((analog_right[0]*analog_right[0]) + (analog_right[1]*analog_right[1]));
+               if (analog_right_magnitude < (opt_analogmouse_deadzone * 32768 / 100))
+               {
+                  analog_right[0] = 0;
+                  analog_right[1] = 0;
+               }
 
                // Analog stick speed modifiers
                mouse_multiplier = 1;
@@ -1409,11 +1418,6 @@ void retro_poll_event()
                   mouse_multiplier = mouse_multiplier * MOUSE_SPEED_FAST;
                if (mouse_speed[j] & MOUSE_SPEED_SLOWER)
                   mouse_multiplier = mouse_multiplier / MOUSE_SPEED_SLOW;
-
-               if (abs(analog_right[0]) <= opt_analogmouse_deadzone * 32768 / 100)
-                  analog_right[0] = 0;
-               if (abs(analog_right[1]) <= opt_analogmouse_deadzone * 32768 / 100)
-                  analog_right[1] = 0;
 
                if (abs(analog_right[0]) > 0)
                {
