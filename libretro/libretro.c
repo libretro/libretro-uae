@@ -752,6 +752,9 @@ void retro_set_environment(retro_environment_t cb)
             { "25", "25\%" },
             { "30", "30\%" },
             { "35", "35\%" },
+            { "40", "40\%" },
+            { "45", "45\%" },
+            { "50", "50\%" },
             { NULL, NULL },
          },
          "15"
@@ -2153,7 +2156,7 @@ static void retro_wrap_emulator(void)
 //*****************************************************************************
 //*****************************************************************************
 // Disk control
-extern void DISK_check_change(void);
+extern void DISK_reinsert(int num);
 extern void disk_eject (int num);
 
 static bool disk_set_eject_state(bool ejected)
@@ -2176,7 +2179,6 @@ static bool disk_set_eject_state(bool ejected)
              || strendswith(dc->files[dc->index], IPF_FILE_EXT))
             {
                changed_prefs.floppyslots[0].df[0] = 0;
-               DISK_check_change();
                disk_eject(0);
             }
             else if (strendswith(dc->files[dc->index], CUE_FILE_EXT)
@@ -2200,7 +2202,7 @@ static bool disk_set_eject_state(bool ejected)
              || strendswith(dc->files[dc->index], IPF_FILE_EXT))
             {
                strcpy (changed_prefs.floppyslots[0].df, dc->files[dc->index]);
-               DISK_check_change();
+               DISK_reinsert(0);
             }
             else if (strendswith(dc->files[dc->index], CUE_FILE_EXT)
                   || strendswith(dc->files[dc->index], CCD_FILE_EXT)
