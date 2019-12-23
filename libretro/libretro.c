@@ -3331,18 +3331,26 @@ bool retro_load_game(const struct retro_game_info *info)
                fclose(configfile);
                return false;
             }
+            else
+               fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
 
-            // Verify extended ROM
-            if (!file_exists(kickstart_ext))
+            // Decide if CD32 ROM is combined based on filesize
+            struct stat kickstart_st;
+            stat(kickstart, &kickstart_st);
+
+            // Verify extended ROM if external
+            if (kickstart_st.st_size == 524288)
             {
-               // Kickstart rom not found
-               fprintf(stderr, "Kickstart extended ROM '%s' not found!\n", (const char*)&kickstart_ext);
-               fclose(configfile);
-               return false;
+               if (!file_exists(kickstart_ext))
+               {
+                  // Kickstart extended ROM not found
+                  fprintf(stderr, "Kickstart extended ROM '%s' not found!\n", (const char*)&kickstart_ext);
+                  fclose(configfile);
+                  return false;
+               }
+               else
+                  fprintf(configfile, "kickstart_ext_rom_file=%s\n", (const char*)&kickstart_ext);
             }
-
-            fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
-            fprintf(configfile, "kickstart_ext_rom_file=%s\n", (const char*)&kickstart_ext);
 
             // NVRAM per disk
             char flash_file[RETRO_PATH_MAX];
@@ -3435,7 +3443,6 @@ bool retro_load_game(const struct retro_game_info *info)
       if (configfile = fopen(RPATH, "w"))
       {
          char kickstart[RETRO_PATH_MAX];
-         char kickstart_ext[RETRO_PATH_MAX];
 
          // No machine specified
          fprintf(stdout, "[libretro-uae]: Booting default configuration\n");
@@ -3445,32 +3452,53 @@ bool retro_load_game(const struct retro_game_info *info)
          // Write common config
          fprintf(configfile, uae_config);
 
-         // Verify kickstart
-         if (!file_exists(kickstart))
+         // CD32 exception
+         if (strcmp(opt_model, "CD32") == 0)
          {
-            // Kickstart ROM not found
-            fprintf(stderr, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
-            fclose(configfile);
-            return false;
-         }
-
-         fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
-
-         // Extended ROM
-         if (strcmp(uae_kickstart_ext, ""))
-         {
+            char kickstart_ext[RETRO_PATH_MAX];
             path_join((char*)&kickstart_ext, retro_system_directory, uae_kickstart_ext);
 
-            // Verify extended ROM
-            if (!file_exists(kickstart_ext))
+            // Verify kickstart
+            if (!file_exists(kickstart))
             {
-               // Kickstart rom not found
-               fprintf(stderr, "Kickstart extended ROM '%s' not found!\n", (const char*)&kickstart_ext);
+               // Kickstart ROM not found
+               fprintf(stderr, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
                fclose(configfile);
                return false;
             }
+            else
+               fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
 
-            fprintf(configfile, "kickstart_ext_rom_file=%s\n", (const char*)&kickstart_ext);
+            // Decide if CD32 ROM is combined based on filesize
+            struct stat kickstart_st;
+            stat(kickstart, &kickstart_st);
+
+            // Verify extended ROM if external
+            if (kickstart_st.st_size == 524288)
+            {
+               if (!file_exists(kickstart_ext))
+               {
+                  // Kickstart extended ROM not found
+                  fprintf(stderr, "Kickstart extended ROM '%s' not found!\n", (const char*)&kickstart_ext);
+                  fclose(configfile);
+                  return false;
+               }
+               else
+                  fprintf(configfile, "kickstart_ext_rom_file=%s\n", (const char*)&kickstart_ext);
+            }
+         }
+         else
+         {
+            // Verify Kickstart
+            if (!file_exists(kickstart))
+            {
+               // Kickstart ROM not found
+               fprintf(stderr, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
+               fclose(configfile);
+               return false;
+            }
+            else
+               fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
          }
 
          fclose(configfile);

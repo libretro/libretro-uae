@@ -60,8 +60,16 @@ It is critical to use Kickstarts with the correct MD5, otherwise the core might 
 |kick37175.A500|Kickstart v2.04 (Rev. 37.175)|Amiga 500+|dc10d7bdd1b6f450773dfb558477c230|
 |kick40063.A600|Kickstart v3.1 (Rev. 40.063)|Amiga 600|e40a5dfb3d017ba8779faba30cbd1c8e|
 |kick40068.A1200|Kickstart v3.1 (Rev. 40.068)|Amiga 1200|646773759326fbac3b2311fd8c8793ee|
-|kick40060.CD32|Kickstart v3.1 (Rev. 40.060)|Amiga CD32|5f8924d013dd57a89cf349f4cdedc6b1|
+
+For CD32 you need either separate ROMs (Kickstart + extended ROM) or the combined ROM:
+
+|Name|Description|System|MD5|
+|---|---|---|---|
+|kick40060.CD32|CD32 (KS + extended) v3.1 (Rev. 40.060)|Amiga CD32|f2f241bf094168cfb9e7805dc2856433|
+| **OR** | | | |
+|kick40060.CD32|CD32 Kickstart v3.1 (Rev. 40.060)|Amiga CD32|5f8924d013dd57a89cf349f4cdedc6b1|
 |kick40060.CD32.ext|CD32 Extended ROM (Rev. 40.060)|Amiga CD32|bb72565701b1b6faece07d68ea5da639|
+
 
 ### Resolution and rendering
 These parameters control the output resolution of the core:
@@ -91,7 +99,7 @@ You can pass a disk image, a hard drive image, or a playlist file for disk image
 
 Supported formats are:
 - **ADF**, **ADZ**, **IPF**, **DMS**, **FDI** files for floppy disk images
-- **ISO**, **CUE**, **CCD**, **NRG**, files for CD images
+- **ISO**, **CUE**, **CCD**, **NRG** files for CD images
 - **HDF**, **HDZ** for hard drive images
 - **M3U** for multiple disk image playlist
 
@@ -152,7 +160,7 @@ Grab the new version from the repo: https://github.com/libretro/libretro-uae/tre
 - `WHDLoad.prefs` will be copied from the system directory, if it exists. It needs to be there for the core option overrides to work.
 - `WHDLoad.key` will be copied from the system directory if you have registered WHDLoad.
 - Supports a file named `custom` in the root of the game.hdf for passing specific WHDLoad parameters when the slave does not support the config screen or when it should be the default, for example `Custom1=1`. It always overrides `WHDLoad.prefs`.
-  - The Easiest way to create `custom` is to quit WHDLoad (default key Numpad*), type `echo custom1=1 >custom`, press enter and reboot the Amiga.
+  - The easiest way to create `custom` is to quit WHDLoad (default Numpad*), type `echo custom1=1 >custom`, press enter and reboot the Amiga.
 - Supports a file named `load` in the root of the game.hdf which overrides the whole launch command, aimed at non-WHDLoad installs.
 - 'Use WHDLoad.hdf' core option does not need to be disabled when launching a non-WHDLoad HDF which has its own startup-sequence.
 - NTSC parameter can be used with WHDLoad.
