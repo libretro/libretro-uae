@@ -18,14 +18,7 @@
 #endif
 
 #ifndef _WIN32
-struct timeb {
-    time_t          time;
-    unsigned short  millitm;
-    short           timezone;
-    short           dstflag;
-};
-
-extern int ftime(struct timeb*  timebuf);
+#include <sys/timeb.h>
 #endif
 
 typedef int BOOL;

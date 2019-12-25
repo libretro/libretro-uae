@@ -34,11 +34,11 @@ ifneq (,$(findstring unix,$(platform)))
 
 # use for raspberry pi
 else ifeq ($(platform), rpi)
-	   TARGET := $(TARGET_NAME)_libretro.so
-	   fpic := -fPIC
-		 LDFLAGS := -lpthread
-		 PLATFLAGS +=  -DARM  -marm
-	   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T
+	TARGET := $(TARGET_NAME)_libretro.so
+	fpic := -fPIC
+	LDFLAGS := -lpthread -lm -ldl
+	PLATFLAGS +=  -DARM  -marm
+	SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--as-needed -Wl,--no-undefined
 
 # Classic Platforms ####################
 # Platform affix = classic_<ISA>_<µARCH>
