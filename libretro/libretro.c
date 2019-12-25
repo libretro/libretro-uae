@@ -19,12 +19,6 @@
 #include "blkdev.h"
 extern void check_changes(int unitnum);
 
-#define UAE_HZ_PAL 49.9201
-#define UAE_HZ_NTSC 59.8251
-
-#if EMULATOR_DEF_WIDTH < 0 || EMULATOR_DEF_WIDTH > EMULATOR_MAX_WIDTH || EMULATOR_DEF_HEIGHT < 0 || EMULATOR_DEF_HEIGHT > EMULATOR_MAX_HEIGHT
-#error EMULATOR_DEF_WIDTH || EMULATOR_DEF_HEIGHT
-#endif
 
 cothread_t mainThread;
 cothread_t emuThread;
@@ -70,12 +64,13 @@ extern uae_u8 *natmem_offset;
 extern uae_u32 natmem_size;
 #endif
 
-extern unsigned short int retro_bmp[EMULATOR_DEF_WIDTH*EMULATOR_DEF_HEIGHT];
+unsigned short int retro_bmp[(EMULATOR_DEF_WIDTH*EMULATOR_DEF_HEIGHT*2)];
+char RPATH[512];
+static int firstpass = 1;
 extern int SHIFTON;
 extern int STATUSON;
-extern char RPATH[512];
 extern void Print_Status(void);
-static int firstpass = 1;
+extern void DrawHline(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color);
 extern int prefs_changed;
 
 int opt_vertical_offset = 0;
@@ -208,6 +203,7 @@ floppy0type=-1\n"
 #define CD32_ROM                "kick40060.CD32"
 #define CD32_ROM_EXT            "kick40060.CD32.ext"
 
+// Amiga video
 #define PUAE_VIDEO_PAL          0x01
 #define PUAE_VIDEO_NTSC         0x02
 #define PUAE_VIDEO_HIRES        0x04
@@ -220,6 +216,12 @@ floppy0type=-1\n"
 #define PUAE_VIDEO_NTSC_LO      PUAE_VIDEO_NTSC
 #define PUAE_VIDEO_NTSC_HI      PUAE_VIDEO_NTSC|PUAE_VIDEO_HIRES
 #define PUAE_VIDEO_NTSC_HI_SL   PUAE_VIDEO_NTSC|PUAE_VIDEO_HIRES_SINGLE
+
+#define PUAE_VIDEO_HZ_PAL       49.9201
+#define PUAE_VIDEO_HZ_NTSC      59.8251
+#define PUAE_VIDEO_WIDTH        720
+#define PUAE_VIDEO_HEIGHT_PAL   576
+#define PUAE_VIDEO_HEIGHT_NTSC  480
 
 // Amiga files
 #define ADF_FILE_EXT "adf"
@@ -365,7 +367,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_video_resolution",
          "Video Resolution",
-         "Restart required.",
+         "Changing will issue soft reset.",
          {
             { "lores", "Low" },
             { "hires_single", "High (Single line)" },
@@ -1231,22 +1233,45 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
+      int video_config_old = video_config;
+
       if (strcmp(var.value, "hires_double") == 0)
       {
          video_config |= PUAE_VIDEO_HIRES;
          video_config &= ~PUAE_VIDEO_HIRES_SINGLE;
+         max_diwlastword = 824;
+         if (!firstpass)
+         {
+            changed_prefs.gfx_resolution=RES_HIRES;
+            changed_prefs.gfx_vresolution=VRES_DOUBLE;
+         }
       }
       else if (strcmp(var.value, "hires_single") == 0)
       {
          video_config |= PUAE_VIDEO_HIRES_SINGLE;
          video_config &= ~PUAE_VIDEO_HIRES;
+         max_diwlastword = 824;
+         if (!firstpass)
+         {
+            changed_prefs.gfx_resolution=RES_HIRES;
+            changed_prefs.gfx_vresolution=VRES_NONDOUBLE;
+         }
       }
       else if (strcmp(var.value, "lores") == 0)
       {
          video_config &= ~PUAE_VIDEO_HIRES;
          video_config &= ~PUAE_VIDEO_HIRES_SINGLE;
-         max_diwlastword = max_diwlastword / 2;
+         max_diwlastword = 412;
+         if (!firstpass)
+         {
+            changed_prefs.gfx_resolution=RES_LORES;
+            changed_prefs.gfx_vresolution=VRES_NONDOUBLE;
+         }
       }
+
+      /* Resolution change requires Amiga reset */
+      if (!firstpass && video_config != video_config_old)
+         uae_reset(0, 0);
    }
 
    var.key = "puae_statusbar";
@@ -1276,7 +1301,7 @@ static void update_variables(void)
 
       /* Screen refresh required */
       if (opt_statusbar_position_old != opt_statusbar_position || !opt_enhanced_statusbar)
-         Screen_SetFullUpdate();
+         reset_drawing();
 
       opt_statusbar_position_old = opt_statusbar_position;
    }
@@ -2085,39 +2110,39 @@ static void update_variables(void)
    switch (video_config)
    {
 		case PUAE_VIDEO_PAL_HI:
-			defaultw = 720;
-			defaulth = 574;
+			defaultw = PUAE_VIDEO_WIDTH;
+			defaulth = PUAE_VIDEO_HEIGHT_PAL;
 			strcat(uae_config, "gfx_lores=false\n");
 			strcat(uae_config, "gfx_linemode=double\n");
 			break;
 		case PUAE_VIDEO_PAL_HI_SL:
-			defaultw = 720;
-			defaulth = 287;
+			defaultw = PUAE_VIDEO_WIDTH;
+			defaulth = PUAE_VIDEO_HEIGHT_PAL / 2;
 			strcat(uae_config, "gfx_lores=false\n");
 			strcat(uae_config, "gfx_linemode=none\n");
 			break;
 		case PUAE_VIDEO_PAL_LO:
-			defaultw = 360;
-			defaulth = 287;
+			defaultw = PUAE_VIDEO_WIDTH / 2;
+			defaulth = PUAE_VIDEO_HEIGHT_PAL / 2;
 			strcat(uae_config, "gfx_lores=true\n");
 			strcat(uae_config, "gfx_linemode=none\n");
 			break;
 
 		case PUAE_VIDEO_NTSC_HI:
-			defaultw = 720;
-			defaulth = 480;
+			defaultw = PUAE_VIDEO_WIDTH;
+			defaulth = PUAE_VIDEO_HEIGHT_NTSC;
 			strcat(uae_config, "gfx_lores=false\n");
 			strcat(uae_config, "gfx_linemode=double\n");
 			break;
 		case PUAE_VIDEO_NTSC_HI_SL:
-			defaultw = 720;
-			defaulth = 240;
+			defaultw = PUAE_VIDEO_WIDTH;
+			defaulth = PUAE_VIDEO_HEIGHT_NTSC / 2;
 			strcat(uae_config, "gfx_lores=false\n");
 			strcat(uae_config, "gfx_linemode=none\n");
 			break;
 		case PUAE_VIDEO_NTSC_LO:
-			defaultw = 360;
-			defaulth = 240;
+			defaultw = PUAE_VIDEO_WIDTH / 2;
+			defaulth = PUAE_VIDEO_HEIGHT_NTSC / 2;
 			strcat(uae_config, "gfx_lores=true\n");
 			strcat(uae_config, "gfx_linemode=none\n");
 			break;
@@ -2417,8 +2442,6 @@ void retro_init(void)
 
 void retro_deinit(void)
 {	
-   leave_program();
-
    if (emuThread)
       co_delete(emuThread);
    emuThread = 0;
@@ -2563,29 +2586,29 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
    switch (video_config_geometry)
    {
       case PUAE_VIDEO_PAL_HI:
-         retrow = 720;
-         retroh = 574;
+         retrow = PUAE_VIDEO_WIDTH;
+         retroh = PUAE_VIDEO_HEIGHT_PAL;
          break;
       case PUAE_VIDEO_PAL_HI_SL:
-         retrow = 720;
-         retroh = 287;
+         retrow = PUAE_VIDEO_WIDTH;
+         retroh = PUAE_VIDEO_HEIGHT_PAL / 2;
          break;
       case PUAE_VIDEO_PAL_LO:
-         retrow = 360;
-         retroh = 287;
+         retrow = PUAE_VIDEO_WIDTH / 2;
+         retroh = PUAE_VIDEO_HEIGHT_PAL / 2;
          break;
 
       case PUAE_VIDEO_NTSC_HI:
-         retrow = 720;
-         retroh = 480;
+         retrow = PUAE_VIDEO_WIDTH;
+         retroh = PUAE_VIDEO_HEIGHT_NTSC;
          break;
       case PUAE_VIDEO_NTSC_HI_SL:
-         retrow = 720;
-         retroh = 240;
+         retrow = PUAE_VIDEO_WIDTH;
+         retroh = PUAE_VIDEO_HEIGHT_NTSC / 2;
          break;
       case PUAE_VIDEO_NTSC_LO:
-         retrow = 360;
-         retroh = 240;
+         retrow = PUAE_VIDEO_WIDTH / 2;
+         retroh = PUAE_VIDEO_HEIGHT_NTSC / 2;
          break;
    }
 
@@ -2649,7 +2672,6 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
    }
 
    /* Apply zoom mode if necessary */
-   zoomed_height = retroh;
    switch (zoom_mode_id)
    {
       case 1:
@@ -2696,7 +2718,7 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
          break;
       case 8:
          if (thisframe_first_drawn_line != thisframe_last_drawn_line
-         && thisframe_first_drawn_line > 0 && thisframe_last_drawn_line > 0
+          && thisframe_first_drawn_line > 0 && thisframe_last_drawn_line > 0
          )
          {
             zoomed_height = thisframe_last_drawn_line - thisframe_first_drawn_line + 1;
@@ -2709,6 +2731,9 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
             zoomed_height = (zoomed_height < 200) ? 200 : zoomed_height;
          break;
       default:
+         zoomed_height = retroh;
+         if (fake_ntsc)
+            zoomed_height = 460;
          break;
    }
 
@@ -2732,19 +2757,23 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       if (opt_statusbar_position >= 0 && (retroh - zoomed_height - opt_statusbar_position_offset) > opt_statusbar_position)
          opt_statusbar_position = retroh - zoomed_height - opt_statusbar_position_offset;
 
+      /* Exception for Dyna Blaster */
+      if (fake_ntsc)
+         opt_statusbar_position -= (retroh - defaulth);
+
       //fprintf(stdout, "ztatusbar:%3d old:%3d offset:%3d, retroh:%d defaulth:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, retroh, defaulth);
    }
 
    /* If zoom mode should be centered automagically */
-   if (opt_vertical_offset_auto && zoom_mode_id != 0 && firstpass != 1)
+   if (opt_vertical_offset_auto && (zoom_mode_id != 0 || zoomed_height != retroh) && firstpass != 1)
    {
       int zoomed_height_normal = (video_config & PUAE_VIDEO_HIRES) ? zoomed_height / 2 : zoomed_height;
       int thisframe_y_adjust_new = minfirstline;
 
       /* Need proper values for calculations */
       if (thisframe_first_drawn_line != thisframe_last_drawn_line
-      && thisframe_first_drawn_line > 0 && thisframe_last_drawn_line > 0 
-      && thisframe_first_drawn_line < 150 && thisframe_last_drawn_line > 150
+       && thisframe_first_drawn_line > 0 && thisframe_last_drawn_line > 0
+       && (thisframe_first_drawn_line < 150 || thisframe_last_drawn_line > 150)
       )
          thisframe_y_adjust_new = (thisframe_last_drawn_line - thisframe_first_drawn_line - zoomed_height_normal) / 2 + thisframe_first_drawn_line; // Smart
          //thisframe_y_adjust_new = thisframe_first_drawn_line + ((thisframe_last_drawn_line - thisframe_first_drawn_line) - zoomed_height_normal) / 2; // Simple
@@ -2752,6 +2781,8 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       /* Sensible limits */
       thisframe_y_adjust_new = (thisframe_y_adjust_new < 0) ? 0 : thisframe_y_adjust_new;
       thisframe_y_adjust_new = (thisframe_y_adjust_new > (minfirstline + 50)) ? (minfirstline + 50) : thisframe_y_adjust_new;
+      if (thisframe_first_drawn_line == -1 && thisframe_last_drawn_line == -1)
+          thisframe_y_adjust_new = thisframe_y_adjust_old;
 
       /* Change value only if altered */
       if (thisframe_y_adjust != thisframe_y_adjust_new)
@@ -2771,13 +2802,15 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
 
       /* Need proper values for calculations */
       if (min_diwstart != max_diwstop
-      && min_diwstart > 0 && max_diwstop > 0
-      && min_diwstart < 200 && max_diwstop > 600
+       && min_diwstart > 0 && max_diwstop > 0
+       && min_diwstart < 220 && max_diwstop > 600
       )
       {
          visible_left_border_new = (max_diwstop - min_diwstart - retrow) / 2 + min_diwstart; // Smart
          //visible_left_border_new = max_diwstop - retrow - (max_diwstop - min_diwstart - retrow) / 2; // Simple
       }
+      else if (min_diwstart == 30000 && max_diwstop == 0)
+         visible_left_border_new = visible_left_border;
 
       /* Change value only if altered */
       if (visible_left_border != visible_left_border_new)
@@ -2818,8 +2851,8 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
    static struct retro_game_geometry geom;
    geom.base_width=retrow;
    geom.base_height=retroh;
-   geom.max_width=EMULATOR_MAX_WIDTH;
-   geom.max_height=EMULATOR_MAX_HEIGHT;
+   geom.max_width=EMULATOR_DEF_WIDTH;
+   geom.max_height=EMULATOR_DEF_HEIGHT;
 
    if (retro_get_region() == RETRO_REGION_NTSC)
       geom.aspect_ratio=(float)retrow/(float)retroh * 44.0/52.0;
@@ -2831,7 +2864,7 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
 
    info->geometry = geom;
    info->timing.sample_rate = 44100.0;
-   info->timing.fps = (retro_get_region() == RETRO_REGION_NTSC) ? UAE_HZ_NTSC : UAE_HZ_PAL;
+   info->timing.fps = (retro_get_region() == RETRO_REGION_NTSC) ? PUAE_VIDEO_HZ_NTSC : PUAE_VIDEO_HZ_PAL;
 }
 
 void retro_set_audio_sample(retro_audio_sample_t cb)
@@ -2862,7 +2895,7 @@ void retro_reset(void)
 
 void retro_audio_cb(short l, short r)
 {
-   audio_cb(l,r);
+   audio_cb(l, r);
 }
 
 void retro_run(void)
@@ -2877,9 +2910,17 @@ void retro_run(void)
    {
       if (thisframe_first_drawn_line != thisframe_first_drawn_line_old || thisframe_last_drawn_line != thisframe_last_drawn_line_old)
       {
-         thisframe_first_drawn_line_old = thisframe_first_drawn_line;
-         thisframe_last_drawn_line_old = thisframe_last_drawn_line;
-         request_update_av_info = true;
+         // Prevent interlace stuttering by requiring a change of at least 2 lines
+         if (abs(thisframe_first_drawn_line_old - thisframe_first_drawn_line) > 1)
+         {
+            thisframe_first_drawn_line_old = thisframe_first_drawn_line;
+            request_update_av_info = true;
+         }
+         if (abs(thisframe_last_drawn_line_old - thisframe_last_drawn_line) > 1)
+         {
+            thisframe_last_drawn_line_old = thisframe_last_drawn_line;
+            request_update_av_info = true;
+         }
       }
       // Timer required for unserialize recovery
       else if (thisframe_first_drawn_line == thisframe_first_drawn_line_old)
@@ -2952,6 +2993,19 @@ void retro_run(void)
       virtual_kbd(retro_bmp, vkb_pos_x, vkb_pos_y);
    if (STATUSON == 1)
       Print_Status();
+   // Maximum 288p/576p PAL shenanigans:
+   // Mask the last line(s), since UAE does not refresh the last line, and even its own OSD will leave trails
+   else if (video_config & PUAE_VIDEO_PAL)
+   {
+      if (video_config & PUAE_VIDEO_HIRES)
+      {
+         DrawHline(retro_bmp, 0, 574, retrow, 0, 0);
+         DrawHline(retro_bmp, 0, 575, retrow, 0, 0);
+      }
+      else
+         DrawHline(retro_bmp, 0, 287, retrow, 0, 0);
+   }
+
    video_cb(retro_bmp, retrow, zoomed_height, retrow << (pix_bytes / 2));
 }
 
@@ -3331,18 +3385,26 @@ bool retro_load_game(const struct retro_game_info *info)
                fclose(configfile);
                return false;
             }
+            else
+               fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
 
-            // Verify extended ROM
-            if (!file_exists(kickstart_ext))
+            // Decide if CD32 ROM is combined based on filesize
+            struct stat kickstart_st;
+            stat(kickstart, &kickstart_st);
+
+            // Verify extended ROM if external
+            if (kickstart_st.st_size == 524288)
             {
-               // Kickstart rom not found
-               fprintf(stderr, "Kickstart extended ROM '%s' not found!\n", (const char*)&kickstart_ext);
-               fclose(configfile);
-               return false;
+               if (!file_exists(kickstart_ext))
+               {
+                  // Kickstart extended ROM not found
+                  fprintf(stderr, "Kickstart extended ROM '%s' not found!\n", (const char*)&kickstart_ext);
+                  fclose(configfile);
+                  return false;
+               }
+               else
+                  fprintf(configfile, "kickstart_ext_rom_file=%s\n", (const char*)&kickstart_ext);
             }
-
-            fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
-            fprintf(configfile, "kickstart_ext_rom_file=%s\n", (const char*)&kickstart_ext);
 
             // NVRAM per disk
             char flash_file[RETRO_PATH_MAX];
@@ -3435,7 +3497,6 @@ bool retro_load_game(const struct retro_game_info *info)
       if (configfile = fopen(RPATH, "w"))
       {
          char kickstart[RETRO_PATH_MAX];
-         char kickstart_ext[RETRO_PATH_MAX];
 
          // No machine specified
          fprintf(stdout, "[libretro-uae]: Booting default configuration\n");
@@ -3445,32 +3506,53 @@ bool retro_load_game(const struct retro_game_info *info)
          // Write common config
          fprintf(configfile, uae_config);
 
-         // Verify kickstart
-         if (!file_exists(kickstart))
+         // CD32 exception
+         if (strcmp(opt_model, "CD32") == 0)
          {
-            // Kickstart ROM not found
-            fprintf(stderr, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
-            fclose(configfile);
-            return false;
-         }
-
-         fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
-
-         // Extended ROM
-         if (strcmp(uae_kickstart_ext, ""))
-         {
+            char kickstart_ext[RETRO_PATH_MAX];
             path_join((char*)&kickstart_ext, retro_system_directory, uae_kickstart_ext);
 
-            // Verify extended ROM
-            if (!file_exists(kickstart_ext))
+            // Verify kickstart
+            if (!file_exists(kickstart))
             {
-               // Kickstart rom not found
-               fprintf(stderr, "Kickstart extended ROM '%s' not found!\n", (const char*)&kickstart_ext);
+               // Kickstart ROM not found
+               fprintf(stderr, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
                fclose(configfile);
                return false;
             }
+            else
+               fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
 
-            fprintf(configfile, "kickstart_ext_rom_file=%s\n", (const char*)&kickstart_ext);
+            // Decide if CD32 ROM is combined based on filesize
+            struct stat kickstart_st;
+            stat(kickstart, &kickstart_st);
+
+            // Verify extended ROM if external
+            if (kickstart_st.st_size == 524288)
+            {
+               if (!file_exists(kickstart_ext))
+               {
+                  // Kickstart extended ROM not found
+                  fprintf(stderr, "Kickstart extended ROM '%s' not found!\n", (const char*)&kickstart_ext);
+                  fclose(configfile);
+                  return false;
+               }
+               else
+                  fprintf(configfile, "kickstart_ext_rom_file=%s\n", (const char*)&kickstart_ext);
+            }
+         }
+         else
+         {
+            // Verify Kickstart
+            if (!file_exists(kickstart))
+            {
+               // Kickstart ROM not found
+               fprintf(stderr, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
+               fclose(configfile);
+               return false;
+            }
+            else
+               fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
          }
 
          fclose(configfile);
@@ -3481,13 +3563,12 @@ bool retro_load_game(const struct retro_game_info *info)
 
    retrow = defaultw;
    retroh = defaulth;
-   memset(retro_bmp, 0, sizeof(retro_bmp));
-   Screen_SetFullUpdate();
    return true;
 }
 
 void retro_unload_game(void)
 {
+   leave_program();
 }
 
 unsigned retro_get_region(void)

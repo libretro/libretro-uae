@@ -95,8 +95,29 @@ void DrawHlineBmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned
    for(i=x;i<x+dx;i++)
    {
       idx=i+y*retrow;
-      buffer[idx]=color;		
+      buffer[idx]=color;
    }
+}
+
+void DrawHlineBmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t color)
+{
+   int i,j,idx;
+
+   (void)j;
+
+   for(i=x;i<x+dx;i++)
+   {
+      idx=i+y*retrow;
+      buffer[idx]=color;
+   }
+}
+
+void DrawHline(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color)
+{
+   if (pix_bytes == 4)
+      DrawHlineBmp32((uint32_t *)buffer, x, y, dx, dy, (uint32_t)color);
+   else
+      DrawHlineBmp(buffer, x, y, dx, dy, color);
 }
 
 void DrawVlineBmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color)
