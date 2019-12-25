@@ -4,6 +4,9 @@
  * Copyright 1996-1998 Bernd Schmidt
  */
 
+#ifndef UAE_DRAWING_H
+#define UAE_DRAWING_H
+
 #define SMART_UPDATE 1
 
 #ifdef SUPPORT_PENGUINS
@@ -304,3 +307,5 @@ STATIC_INLINE void toggle_inhibit_frame (int bit)
 {
 	inhibit_frame ^= 1 << bit;
 }
+
+#endif /* UAE_DRAWING_H */

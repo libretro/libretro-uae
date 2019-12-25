@@ -45,7 +45,7 @@ unsigned short int clut[] = {
 
 unsigned short int* pixbuf = NULL;
 
-extern unsigned short int retro_bmp[EMULATOR_DEF_WIDTH*EMULATOR_DEF_HEIGHT];
+extern unsigned short int retro_bmp[(EMULATOR_DEF_WIDTH*EMULATOR_DEF_HEIGHT*2)];
 void retro_audio_cb(short l, short r);
 
 int prefs_changed = 0;
@@ -189,8 +189,8 @@ int graphics_init(void) {
 	//	currprefs.gfx_lores = 1;
 	//}
 	//vsync_enabled = currprefs.gfx_vsync;
-	LOG_MSG2("screen w=%i", currprefs.gfx_size_win.width);
-	LOG_MSG2("screen h=%i", currprefs.gfx_size_win.height);
+	//LOG_MSG2("screen w=%i", currprefs.gfx_size_win.width);
+	//LOG_MSG2("screen h=%i", currprefs.gfx_size_win.height);
 
 #ifdef ENABLE_LOG_SCREEN
 	pixbuf = (unsigned int*) malloc(currprefs.gfx_size_win.width * 576 * pix_bytes);
@@ -208,7 +208,7 @@ int graphics_init(void) {
 	gfxvidinfo.height_allocated = currprefs.gfx_size_win.height;
 	gfxvidinfo.maxblocklines = 1000;
 	gfxvidinfo.pixbytes = pix_bytes;
-	gfxvidinfo.rowbytes = gfxvidinfo.width_allocated * gfxvidinfo.pixbytes ;
+	gfxvidinfo.rowbytes = gfxvidinfo.width_allocated * gfxvidinfo.pixbytes;
 	gfxvidinfo.bufmem = (unsigned char*)pixbuf;
 	gfxvidinfo.emergmem = 0;
 	gfxvidinfo.linemem = 0;
@@ -294,16 +294,21 @@ int check_prefs_changed_gfx (void)
     changed_prefs.gfx_size_win.width = defaultw;
     changed_prefs.gfx_size_win.height = defaulth;
 
-    currprefs.gfx_size_win.width    = changed_prefs.gfx_size_win.width;
-    currprefs.gfx_size_win.height   = changed_prefs.gfx_size_win.height;
-    currprefs.gfx_xcenter           = changed_prefs.gfx_xcenter;
-    currprefs.gfx_ycenter           = changed_prefs.gfx_ycenter;
+    if (currprefs.gfx_size_win.width   != changed_prefs.gfx_size_win.width)
+        currprefs.gfx_size_win.width    = changed_prefs.gfx_size_win.width;
+    if (currprefs.gfx_size_win.height  != changed_prefs.gfx_size_win.height)
+        currprefs.gfx_size_win.height   = changed_prefs.gfx_size_win.height;
+    if (currprefs.gfx_resolution       != changed_prefs.gfx_resolution)
+        currprefs.gfx_resolution        = changed_prefs.gfx_resolution;
+    if (currprefs.gfx_vresolution      != changed_prefs.gfx_vresolution)
+        currprefs.gfx_vresolution       = changed_prefs.gfx_vresolution;
 
     gfxvidinfo.width_allocated      = currprefs.gfx_size_win.width;
     gfxvidinfo.height_allocated     = currprefs.gfx_size_win.height;
+    gfxvidinfo.rowbytes             = gfxvidinfo.width_allocated * gfxvidinfo.pixbytes;
 
     reset_drawing();
-    //printf("check_prefs_changed_gfx: %d:%d, xcenter:%d ycenter:%d\n", changed_prefs.gfx_size_win.width, changed_prefs.gfx_size_win.height, changed_prefs.gfx_xcenter, changed_prefs.gfx_ycenter);
+    //printf("check_prefs_changed_gfx: %d:%d, res:%d vres:%d\n", changed_prefs.gfx_size_win.width, changed_prefs.gfx_size_win.height, changed_prefs.gfx_resolution, changed_prefs.gfx_vresolution);
     return 0;
 }
 

@@ -14,7 +14,11 @@ extern void DrawBoxBmp(unsigned short *buffer, int x, int y, int dx, int dy, uns
 extern void DrawBoxBmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t color);
 
 extern void DrawPointBmp(unsigned short *buffer, int x, int y, unsigned short color);
+
 extern void DrawHlineBmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color);
+extern void DrawHlineBmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t color);
+extern void DrawHline(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color);
+
 extern void DrawVlineBmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color);
 extern void DrawlineBmp(unsigned short *buffer, int x1, int y1, int x2, int y2, unsigned short color);
 

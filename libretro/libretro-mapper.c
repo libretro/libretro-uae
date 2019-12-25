@@ -37,8 +37,6 @@ void gettimeofday (struct timeval *tv, void *blah)
 #include <time.h>
 #endif
 
-unsigned short int retro_bmp[EMULATOR_DEF_WIDTH*EMULATOR_DEF_HEIGHT];
-
 // Mouse speed flags
 #define MOUSE_SPEED_SLOWER 1
 #define MOUSE_SPEED_FASTER 2
@@ -49,8 +47,6 @@ unsigned short int retro_bmp[EMULATOR_DEF_WIDTH*EMULATOR_DEF_HEIGHT];
 int NPAGE=-1;
 int SHIFTON=-1,ALTON=-1;
 int MOUSEMODE=-1,SHOWKEY=-1,SHOWKEYPOS=-1,SHOWKEYTRANS=-1,STATUSON=-1,LEDON=-1;
-
-char RPATH[512];
 
 unsigned int mouse_speed[2]={0};
 extern int pix_bytes;
@@ -66,6 +62,7 @@ static int mflag[2][16]={0};
 static int jbt[2][24]={0};
 static int kbt[16]={0};
 
+extern unsigned short int retro_bmp[(EMULATOR_DEF_WIDTH*EMULATOR_DEF_HEIGHT*2)];
 extern void reset_drawing(void);
 extern void retro_key_up(int);
 extern void retro_key_down(int);
@@ -118,12 +115,12 @@ void emu_function(int function)
    {
       case EMU_VKBD:
          SHOWKEY = -SHOWKEY;
-         Screen_SetFullUpdate();
+         reset_drawing();
          break;
       case EMU_STATUSBAR:
          STATUSON = -STATUSON;
          LEDON = -LEDON;
-         Screen_SetFullUpdate();
+         reset_drawing();
          break;
       case EMU_MOUSE_TOGGLE:
          MOUSEMODE = -MOUSEMODE;
@@ -421,11 +418,6 @@ void Print_Status(void)
       Draw_text(retro_bmp,STAT_DECX+80,STAT_BASEY,FONT_COLOR,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT3);
       Draw_text(retro_bmp,STAT_DECX+120,STAT_BASEY,FONT_COLOR,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT4);
    }
-}
-
-void Screen_SetFullUpdate(void)
-{
-   reset_drawing();
 }
 
 void ProcessKeyrah()
@@ -766,7 +758,7 @@ void ProcessKey(int disable_physical_cursor_keys)
             retro_key_down(keyboard_translation[i]);
             retro_key_up(keyboard_translation[i]);
             SHIFTON=-SHIFTON;
-            Screen_SetFullUpdate();
+            reset_drawing();
             key_state2[i]=1;
          }
          else if (!key_state[i] && key_state2[i]==1)
@@ -1133,7 +1125,7 @@ void update_input(int disable_physical_cursor_keys)
       {
          /* Movement needs screen refresh in transparent mode */
          if (SHOWKEYTRANS==1)
-            Screen_SetFullUpdate();
+            reset_drawing();
 
          long now = GetTicks();
          if (let_go_of_direction)
@@ -1176,7 +1168,7 @@ void update_input(int disable_physical_cursor_keys)
       {
          vkflag[6]=1;
          SHOWKEYPOS=-SHOWKEYPOS;
-         Screen_SetFullUpdate();
+         reset_drawing();
       }
       else if (vkflag[6]==1 && (!input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && !input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i)))
       {
@@ -1189,7 +1181,7 @@ void update_input(int disable_physical_cursor_keys)
       {
          vkflag[5]=1;
          SHOWKEYTRANS=-SHOWKEYTRANS;
-         Screen_SetFullUpdate();
+         reset_drawing();
       }
       else if (vkflag[5]==1 && (!input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && !input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i)))
       {
@@ -1213,7 +1205,7 @@ void update_input(int disable_physical_cursor_keys)
          {
             oldi=-1;
             NPAGE=-NPAGE;
-            Screen_SetFullUpdate();
+            reset_drawing();
          }
          else if (i < -10)
          {
@@ -1250,7 +1242,7 @@ void update_input(int disable_physical_cursor_keys)
                retro_key_down(i);
                retro_key_up(i);
                SHIFTON=-SHIFTON;
-               Screen_SetFullUpdate();
+               reset_drawing();
                oldi=-1;
             }
             else

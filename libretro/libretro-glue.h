@@ -19,8 +19,10 @@ extern cothread_t mainThread;
 extern cothread_t emuThread;
 extern int retrow; 
 extern int retroh;
+extern int pix_bytes;
 extern int zoomed_height;
 extern bool retro_update_av_info(bool, bool, bool);
+extern void reset_drawing();
 
 #define LOGI printf
 
@@ -32,9 +34,7 @@ extern bool retro_update_av_info(bool, bool, bool);
 #define RGB888(r, g, b) (((r * 255 / 31) << (16)) | ((g * 255 / 31) << 8) | (b * 255 / 31))
 
 #define EMULATOR_DEF_WIDTH 720
-#define EMULATOR_DEF_HEIGHT 574
-#define EMULATOR_MAX_WIDTH 1024
-#define EMULATOR_MAX_HEIGHT 1024
+#define EMULATOR_DEF_HEIGHT 576
 
 #ifndef _WIN32
 #define TCHAR char /* from sysdeps.h */
