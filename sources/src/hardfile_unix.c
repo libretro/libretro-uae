@@ -261,7 +261,7 @@ int hdf_open_target (struct hardfiledata *hfd, const char *pname)
 					zmode = 1;
 			}
 		}
-		h = fopen (name, /*hfd->readonly ? "rb" :*/ "r+b");
+		h = fopen (name, hfd->ci.readonly ? "rb" : "r+b");
 		if (h == INVALID_HANDLE_VALUE)
 			goto end;
 		hfd->handle->h = h;
@@ -319,7 +319,6 @@ end:
  * Is it no longer neccessary for hdf_close_target
  * to close hfd->h->h ?
  */
-#if 0
 static void freehandle (struct hardfilehandle *h)
 {
 	if (!h)
@@ -332,11 +331,10 @@ static void freehandle (struct hardfilehandle *h)
 	h->h = INVALID_HANDLE_VALUE;
 	h->zfile = 0;
 }
-#endif
 
 void hdf_close_target (struct hardfiledata *hfd)
 {
- 	//freehandle (hfd->handle);
+ 	freehandle (hfd->handle);
 	xfree (hfd->handle);
 	xfree (hfd->emptyname);
 	hfd->emptyname = NULL;
