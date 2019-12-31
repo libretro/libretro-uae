@@ -6,6 +6,7 @@
 #include "retro_files.h"
 #include "retro_strings.h"
 #include "retro_disk_control.h"
+#include "string/stdstring.h"
 #include "file/file_path.h"
 #include "uae_types.h"
 
@@ -238,7 +239,6 @@ floppy0type=-1\n"
 #define UAE_FILE_EXT "uae"
 #define M3U_FILE_EXT "m3u"
 #define LIBRETRO_PUAE_CONF "puae_libretro.uae"
-#define WHDLOAD_HDF "WHDLoad.hdf"
 
 // Configs
 static char uae_machine[256];
@@ -1233,7 +1233,7 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      int video_config_old = video_config;
+      int video_config_prev = video_config;
 
       if (strcmp(var.value, "hires_double") == 0)
       {
@@ -1270,7 +1270,7 @@ static void update_variables(void)
       }
 
       /* Resolution change requires Amiga reset */
-      if (!firstpass && video_config != video_config_old)
+      if (!firstpass && video_config != video_config_prev)
          uae_reset(0, 0);
    }
 
@@ -3193,18 +3193,34 @@ bool retro_load_game(const struct retro_game_info *info)
                if (opt_use_whdload_hdf)
                {
                   // Init WHDLoad
-                  char whdload[RETRO_PATH_MAX];
-                  path_join((char*)&whdload, retro_system_directory, WHDLOAD_HDF);
+                  char whdload_hdf[RETRO_PATH_MAX];
+                  path_join((char*)&whdload_hdf, retro_system_directory, "WHDLoad.hdf");
 
                   // Verify WHDLoad
-                  if (file_exists(whdload))
-                     fprintf(configfile, "hardfile2=rw,DH0:%s,32,1,2,512,0,,uae0\n", (const char*)&whdload);
+                  // Windows needs double backslashes when paths are in quotes, hence the string_replace_substring()
+                  if (!file_exists(whdload_hdf))
+                     path_join((char*)&whdload_hdf, retro_save_directory, "WHDLoad.hdf");
+                  if (file_exists(whdload_hdf))
+                     fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae0\n", (const char*)string_replace_substring(whdload_hdf, "\\", "\\\\"));
                   else
-                     fprintf(stderr, "WHDLoad image file '%s' not found!\n", (const char*)&whdload);
+                     fprintf(stderr, "WHDLoad image file '%s' not found!\n", (const char*)&whdload_hdf);
 
-                  fprintf(configfile, "hardfile2=rw,DH1:%s,32,1,2,512,0,,uae0\n", full_path);
+                  // Attach game hdf
+                  fprintf(configfile, "hardfile2=rw,DH1:\"%s\",32,1,2,512,0,,uae1\n", string_replace_substring(full_path, "\\", "\\\\"));
+
                   // Attach retro_system_directory as a read only hard drive for WHDLoad kickstarts/prefs/key
-                  fprintf(configfile, "filesystem2=ro,DH2:System:%s,0\n", retro_system_directory);
+                  // Does not work with: Android, Switch
+#if !defined(ANDROID) && !defined(__SWITCH__)
+                  fprintf(configfile, "filesystem2=ro,DH2:RASystem:\"%s\",-128\n", string_replace_substring(retro_system_directory, "\\", "\\\\"));
+#endif
+
+                  // Attach WHDSaves.hdf if available
+                  char whdsaves_hdf[RETRO_PATH_MAX];
+                  path_join((char*)&whdsaves_hdf, retro_system_directory, "WHDSaves.hdf");
+                  if (!file_exists(whdsaves_hdf))
+                     path_join((char*)&whdsaves_hdf, retro_save_directory, "WHDSaves.hdf");
+                  if (file_exists(whdsaves_hdf))
+                     fprintf(configfile, "hardfile2=rw,WHDSaves:\"%s\",32,1,2,512,0,,uae2\n", (const char*)string_replace_substring(whdsaves_hdf, "\\", "\\\\"));
 
                   // Manipulate WHDLoad.prefs
                   int WHDLoad_ConfigDelay = 0;
@@ -3271,7 +3287,7 @@ bool retro_load_game(const struct retro_game_info *info)
                      fprintf(stderr, "WHDLoad.prefs '%s' not found!\n", (const char*)&whdload_prefs_path);
                }
                else
-                  fprintf(configfile, "hardfile2=rw,DH0:%s,32,1,2,512,0,,uae0\n", full_path);
+                  fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae0\n", string_replace_substring(full_path, "\\", "\\\\"));
             }
             else
             {

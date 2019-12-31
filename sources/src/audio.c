@@ -27,6 +27,7 @@
 #include "savestate.h"
 #include "driveclick.h"
 #include "zfile.h"
+#include "zarchive.h"
 #include "uae.h"
 #include "gui.h"
 #include "xwin.h"

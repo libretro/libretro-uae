@@ -48,6 +48,7 @@ int disk_debug_track = -1;
 #include "driveclick.h"
 #ifdef CAPS
 #include "caps.h"
+#include "caps/capsimage.h"
 #endif
 #include "crc32.h"
 #include "inputdevice.h"

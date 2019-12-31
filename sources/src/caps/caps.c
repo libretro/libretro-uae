@@ -13,7 +13,7 @@
 
 #ifdef CAPS
 
-#include "caps.h"
+//#include "caps.h"
 #include "zfile.h"
 #include "caps/capsimage.h"
 

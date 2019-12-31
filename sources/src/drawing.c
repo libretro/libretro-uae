@@ -3377,7 +3377,7 @@ static void draw_frame2 (void)
 #endif
 }
 
-bool draw_frame (struct vidbuffer *vb)
+bool draw_frame (struct vidbuf_description *vb)
 {
 	uae_u8 oldstate[LINESTATE_SIZE];
 

@@ -3,6 +3,8 @@
 #include "sysdeps.h"
 
 #include "cda_play.h"
+#include "zfile.h"
+#include "zarchive.h"
 #include "audio.h"
 #include "cfgfile.h"
 #include "sounddep/sound.h"
