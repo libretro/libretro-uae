@@ -883,6 +883,7 @@ end:
 }
 
 #ifdef CAPS
+#include "caps.h"
 #include "caps/capsimage.h"
 static struct zfile *ipf (struct zfile *z, int index, int *retcode)
 {

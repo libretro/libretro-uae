@@ -414,14 +414,14 @@ int my_setcurrentdir (const TCHAR *curdir, TCHAR *oldcur)
 {
     int ret = 0;
     if (oldcur)
-        ret = getcwd (oldcur, MAX_DPATH);
+        ret = getcwd (oldcur, MAX_DPATH) ? 0 : 1;
     if (curdir) {
         const TCHAR *namep;
         TCHAR path[MAX_DPATH];
         namep = curdir;
         ret = chdir (namep);
     }
-    //write_log("curdir=\"%s\" oldcur=\"%s\"\n", curdir, oldcur);
+    //write_log("curdir=\"%s\" oldcur=\"%s\" ret=%d\n", curdir, oldcur, ret);
     return ret;
 }
 

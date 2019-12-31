@@ -54,21 +54,21 @@ To use this core you'll need the following Kickstart ROMs. Rename them to the gi
 
 It is critical to use Kickstarts with the correct MD5, otherwise the core might not start.
 
-|Name|Description|System|MD5|
-|---|---|---|---|
-|kick34005.A500|Kickstart v1.3 (Rev. 34.005)|Amiga 500|82a21c1890cae844b3df741f2762d48d|
-|kick37175.A500|Kickstart v2.04 (Rev. 37.175)|Amiga 500+|dc10d7bdd1b6f450773dfb558477c230|
-|kick40063.A600|Kickstart v3.1 (Rev. 40.063)|Amiga 600|e40a5dfb3d017ba8779faba30cbd1c8e|
-|kick40068.A1200|Kickstart v3.1 (Rev. 40.068)|Amiga 1200|646773759326fbac3b2311fd8c8793ee|
+|System|Description|Filename|Size|MD5|
+|---|---|---|---|---|
+|Amiga 500|Kickstart v1.3 rev 34.005|**kick34005.A500**|262 144|82a21c1890cae844b3df741f2762d48d|
+|Amiga 500+|Kickstart v2.04 rev 37.175|**kick37175.A500**|524 288|dc10d7bdd1b6f450773dfb558477c230|
+|Amiga 600|Kickstart v3.1 rev 40.063|**kick40063.A600**|524 288|e40a5dfb3d017ba8779faba30cbd1c8e|
+|Amiga 1200|Kickstart v3.1 rev 40.068|**kick40068.A1200**|524 288|646773759326fbac3b2311fd8c8793ee|
 
 For CD32 you need either separate ROMs (Kickstart + extended ROM) or the combined ROM:
 
-|Name|Description|System|MD5|
-|---|---|---|---|
-|kick40060.CD32|CD32 (KS + extended) v3.1 (Rev. 40.060)|Amiga CD32|f2f241bf094168cfb9e7805dc2856433|
-| **OR** | | | |
-|kick40060.CD32|CD32 Kickstart v3.1 (Rev. 40.060)|Amiga CD32|5f8924d013dd57a89cf349f4cdedc6b1|
-|kick40060.CD32.ext|CD32 Extended ROM (Rev. 40.060)|Amiga CD32|bb72565701b1b6faece07d68ea5da639|
+|System|Description|Filename|Size|MD5|
+|---|---|---|---|---|
+|Amiga CD32|CD32 (KS + extended) v3.1 rev 40.060|**kick40060.CD32**|1 048 576|f2f241bf094168cfb9e7805dc2856433|
+| **OR** | | | | |
+|Amiga CD32|CD32 Kickstart v3.1 rev 40.060|**kick40060.CD32**|524 288|5f8924d013dd57a89cf349f4cdedc6b1|
+|Amiga CD32|CD32 Extended ROM rev 40.060|**kick40060.CD32.ext**|524 288|bb72565701b1b6faece07d68ea5da639|
 
 
 ### Resolution and rendering
@@ -159,17 +159,23 @@ Grab the new version from the repo: https://github.com/libretro/libretro-uae/tre
 - Kickstarts will be copied automatically from the system directory on the first run, so it might take a little longer than usual.
 - `WHDLoad.prefs` will be copied from the system directory, if it exists. It needs to be there for the core option overrides to work.
 - `WHDLoad.key` will be copied from the system directory if you have registered WHDLoad.
+- **These previous features involving RA system directory require directory filesystem in UAE. At the moment it does not work and will be disabled on these platforms: Android, Switch**
 - Supports a file named `custom` in the root of the game.hdf for passing specific WHDLoad parameters when the slave does not support the config screen or when it should be the default, for example `Custom1=1`. It always overrides `WHDLoad.prefs`.
   - The easiest way to create `custom` is to quit WHDLoad (default Numpad*), type `echo custom1=1 >custom`, press enter and reboot the Amiga.
 - Supports a file named `load` in the root of the game.hdf which overrides the whole launch command, aimed at non-WHDLoad installs.
 - 'Use WHDLoad.hdf' core option does not need to be disabled when launching a non-WHDLoad HDF which has its own startup-sequence.
 - NTSC parameter can be used with WHDLoad.
 - Included ClickNot for suppressing drive clicking if drive sound emulation is on.
-- Included MEmacs for easy file editing (`custom` & `load`).
+- Included MEmacs for file editing (`custom` & `load`).
 - Updated WHDLoad to the latest one (18.5 2019-03-09).
 - New WHDLoad defaults:
   - ButtonWait (Waits for a button press in certain slaves when loading is so fast that you can't enjoy a picture or a tune)
   - ReadDelay=0 & WriteDelay=0 (These speed up OS switching on loadings and savings)
+- **Latest version changes:**
+  - Script called `MkCustom` for simplest `custom` file handling. Launches after quitting WHDLoad.
+  - If `.slave` is not in the root of the HDF, it will also be searched under the first found directory.
+  - Saves can be redirected to a separate `WHDSaves.hdf`. Repo provides an empty 2MiB HDF.
+  - Both HDF-files can be located either in RA system or saves.
 
 ### Create a HDF image for a game
 If you have a WHDLoad game in a ZIP or a directory, you will have to create an image file.
@@ -178,8 +184,8 @@ To do this you can use ADFOpus (http://adfopus.sourceforge.net/) or amitools (ht
 
 Example, to create a HDF file from a zipped WHDLoad game:
 - Extract files from the ZIP to a directory
-- Go to the directory where files were extracted
-- Rename the main slave file (ending with '.slave') to 'game.slave' (certains games have many slave files, guess which is the right one)
+- ~~Go to the directory where files were extracted~~
+- ~~Rename the main slave file (ending with '.slave') to 'game.slave' (certains games have many slave files, guess which is the right one)~~
 - Pack the directory in a HDF file:
 	- Using ADFOpus (see [Allan Lindqvist's tutorial](http://lindqvist.synology.me/wordpress/?page_id=182))
 	- Using amitools
@@ -239,6 +245,7 @@ If you are using RDB HDF files, please use 0,0,0,0 instead of geometry numbers l
 - Single line high resolution mode (sonninnos)
 - Savestate support (sonninnos)
 - Parallel port four player joystick adapter is emulated with working two, three and four-player controls (sonninnos and rsn8887)
+- CD32 controller support (sonninnos)
 - Multiple mice support using raw input driver on Windows (sonninnos)
 - Autozoom and autocentering options for large game display without borders or distortion (sonninnos)
 - Mappable hotkeys to bring up statusbar and on-screen keyboard (sonninnos)

@@ -160,6 +160,7 @@ struct uaedev_config_info {
 	bool readonly;
 	int bootpri;
 	TCHAR filesys[MAX_DPATH];
+	TCHAR geometry[MAX_DPATH];
 	int lowcyl;
 	int highcyl; // zero if detected from size
 	int cyls; // calculated/corrected highcyl

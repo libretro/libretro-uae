@@ -135,11 +135,12 @@ SOURCES_C += $(LIBRETRO)/libretro.c \
 
 ifneq ($(STATIC_LINKING), 1)
 SOURCES_C += $(CORE_DIR)/libretro-include/file_path.c \
-				 $(CORE_DIR)/libretro-include/encoding_utf.c \
-				 $(CORE_DIR)/libretro-include/fopen_utf8.c \
-				 $(CORE_DIR)/libretro-include/compat_strl.c \
-				 $(CORE_DIR)/libretro-include/compat_strcasestr.c \
-				 $(CORE_DIR)/libretro-include/vfs_implementation.c
+				$(CORE_DIR)/libretro-include/stdstring.c \
+				$(CORE_DIR)/libretro-include/encoding_utf.c \
+				$(CORE_DIR)/libretro-include/fopen_utf8.c \
+				$(CORE_DIR)/libretro-include/compat_strl.c \
+				$(CORE_DIR)/libretro-include/compat_strcasestr.c \
+				$(CORE_DIR)/libretro-include/vfs_implementation.c
 endif
 
 ifneq ($(STATIC_LINKING), 1)

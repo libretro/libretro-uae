@@ -264,6 +264,67 @@ TCHAR *my_strdup_trim (const TCHAR *s);
 #define UNEXPANDED _T("$(FILE_PATH)")
 
 
+static TCHAR *cfgfile_unescape(const TCHAR *s, const TCHAR **endpos, TCHAR separator, bool min)
+{
+	bool quoted = false;
+	TCHAR *s2 = xmalloc(TCHAR, _tcslen(s) + 1);
+	TCHAR *p = s2;
+	if (s[0] == '\"') {
+		s++;
+		quoted = true;
+	}
+	int i;
+	for (i = 0; s[i]; i++) {
+		TCHAR c = s[i];
+		if (quoted && c == '\"') {
+			i++;
+			break;
+		}
+		if (c == separator) {
+			i++;
+			break;
+		}
+		if (c == '\\' && !min) {
+			char v = 0;
+			TCHAR c2;
+			c = s[i + 1];
+			switch (c)
+			{
+			case 'X':
+			case 'x':
+				c2 = _totupper(s[i + 2]);
+				v = ((c2 >= 'A') ? c2 - 'A' : c2 - '0') << 4;
+				c2 = _totupper(s[i + 3]);
+				v |= (c2 >= 'A') ? c2 - 'A' : c2 - '0';
+				*p++ = c2;
+				i += 2;
+				break;
+			case 'r':
+				*p++ = '\r';
+				break;
+			case '\n':
+				*p++ = '\n';
+				break;
+			default:
+				*p++ = c;
+				break;
+			}
+			i++;
+		}
+		else {
+			*p++ = c;
+		}
+	}
+	*p = 0;
+	if (endpos)
+		*endpos = &s[i];
+	return s2;
+}
+static TCHAR *cfgfile_unescape_min(const TCHAR *s)
+{
+	return cfgfile_unescape(s, NULL, 0, true);
+}
+
 static void trimwsa (char *s)
 {
 	/* Delete trailing whitespace.  */
@@ -1565,34 +1626,46 @@ static int getintval (TCHAR **p, int *result, int delim)
 	return 1;
 }
 
-static int getintval2 (TCHAR **p, int *result, int delim)
+static int getintval2 (TCHAR **p, int *result, int delim, bool last)
 {
-	TCHAR *value = *p;
-	int base = 10;
-	TCHAR *endptr;
-	TCHAR *p2 = _tcschr (*p, delim);
+    TCHAR *value = *p;
+    int base = 10;
+    TCHAR *endptr;
+    TCHAR *p2;
 
-	if (p2 == 0) {
-		p2 = _tcschr (*p, 0);
-		if (p2 == 0) {
-			*p = 0;
-			return 0;
-		}
-	}
-	if (*p2 != 0)
-		*p2++ = '\0';
+    p2 = _tcschr (*p, delim);
+    if (p2 == 0) {
+        if (last) {
+            if (delim != '.')
+                p2 = _tcschr (*p, ',');
+            if (p2 == 0) {
+                p2 = *p;
+                while(*p2)
+                    p2++;
+                if (p2 == *p)
+                    return 0;
+            }
+        } else {
+            return 0;
+        }
+    }
+    if (!_istdigit(**p) && **p != '-' && **p != '+')
+        return 0;
 
-	if (value[0] == '0' && _totupper (value[1]) == 'X')
-		value += 2, base = 16;
-	*result = _tcstol (value, &endptr, base);
-	*p = p2;
+    if (*p2 != 0)
+        *p2++ = '\0';
 
-	if (*endptr != '\0' || *value == '\0') {
-		*p = 0;
-		return 0;
-	}
+    if (value[0] == '0' && _totupper (value[1]) == 'X')
+        value += 2, base = 16;
+    *result = _tcstol (value, &endptr, base);
+    *p = p2;
 
-	return 1;
+    if (*endptr != '\0' || *value == '\0') {
+        *p = 0;
+        return 0;
+    }
+
+    return 1;
 }
 
 static void set_chipset_mask (struct uae_prefs *p, int val)
@@ -2564,10 +2637,10 @@ struct uaedev_config_data *add_filesys_config (struct uae_prefs *p, int index, s
 	struct uaedev_config_data *uci;
 	int i;
 
-	if (index < 0 && ci->devname && _tcslen (ci->devname) > 0) {
+	if (index < 0 && (ci->type == UAEDEV_DIR || ci->type == UAEDEV_HDF) && ci->devname && _tcslen (ci->devname) > 0) {
 		for (i = 0; i < p->mountitems; i++) {
 			if (p->mountconfig[i].ci.devname && !_tcscmp (p->mountconfig[i].ci.devname, ci->devname))
-				return 0;
+				return NULL;
 		}
 	}
 	if (ci->type == UAEDEV_CD) {
@@ -2640,9 +2713,9 @@ static void parse_addmem (struct uae_prefs *p, TCHAR *buf, int num)
 {
 	int size = 0, addr = 0;
 
-	if (!getintval2 (&buf, &addr, ','))
+	if (!getintval2 (&buf, &addr, ',', false))
 		return;
-	if (!getintval2 (&buf, &size, 0))
+	if (!getintval2 (&buf, &size, 0, true))
 		return;
 	if (addr & 0xffff)
 		return;
@@ -2835,75 +2908,149 @@ static int cfgfile_parse_newfilesys (struct uae_prefs *p, int nr, int type, TCHA
 
 	value = tmpp;
 	if (type == 0) {
-		uci.type = UAEDEV_DIR;
-		tmpp = _tcschr (value, ':');
-		if (tmpp == 0)
-			goto empty_fs;
-		*tmpp++ = 0;
-		_tcscpy (devname, value);
-		tmpp2 = tmpp;
-		tmpp = _tcschr (tmpp, ':');
-		if (tmpp == 0)
-			goto empty_fs;
-		*tmpp++ = 0;
-		_tcscpy (volname, tmpp2);
-		tmpp2 = tmpp;
-		tmpp = _tcschr (tmpp, ',');
-		if (tmpp == 0)
-			goto empty_fs;
-		*tmpp++ = 0;
-		_tcscpy (uci.rootdir, tmpp2);
-		_tcscpy (uci.volname, volname);
-		_tcscpy (uci.devname, devname);
-		if (! getintval (&tmpp, &uci.bootpri, 0))
-			goto empty_fs;
+        uci.type = UAEDEV_DIR;
+        tmpp = _tcschr (value, ':');
+        if (tmpp == 0)
+            goto empty_fs;
+        *tmpp++ = 0;
+        _tcscpy (devname, value);
+        tmpp2 = tmpp;
+        tmpp = _tcschr (tmpp, ':');
+        if (tmpp == 0)
+            goto empty_fs;
+        *tmpp++ = 0;
+        _tcscpy (volname, tmpp2);
+        tmpp2 = tmpp;
+        // quoted special case
+        if (tmpp2[0] == '\"') {
+            const TCHAR *end;
+            TCHAR *n = cfgfile_unescape (tmpp2, &end, 0, false);
+            if (!n)
+                goto invalid_fs;
+            _tcscpy (uci.rootdir, n);
+            xfree(n);
+            tmpp = (TCHAR*)end;
+            *tmpp++ = 0;
+        } else {
+            tmpp = _tcschr (tmpp, ',');
+            if (tmpp == 0)
+                goto empty_fs;
+            *tmpp++ = 0;
+            _tcscpy (uci.rootdir, tmpp2);
+        }
+        _tcscpy (uci.volname, volname);
+        _tcscpy (uci.devname, devname);
+        if (! getintval (&tmpp, &uci.bootpri, 0))
+            goto empty_fs;
 	} else if (type == 1 || (type == 2 && uaehfentry)) {
-		tmpp = _tcschr (value, ':');
-		if (tmpp == 0)
-			goto invalid_fs;
-		*tmpp++ = '\0';
-		_tcscpy (devname, value);
-		tmpp2 = tmpp;
-		tmpp = _tcschr (tmpp, ',');
-		if (tmpp == 0)
-			goto invalid_fs;
-		*tmpp++ = 0;
-		_tcscpy (uci.rootdir, tmpp2);
-		if (uci.rootdir[0] != ':')
-			get_hd_geometry (&uci);
-		_tcscpy (uci.devname, devname);
-		if (! getintval (&tmpp, &uci.sectors, ',')
-			|| ! getintval (&tmpp, &uci.surfaces, ',')
-			|| ! getintval (&tmpp, &uci.reserved, ',')
-			|| ! getintval (&tmpp, &uci.blocksize, ','))
-			goto invalid_fs;
-		if (getintval2 (&tmpp, &uci.bootpri, ',')) {
+        tmpp = _tcschr (value, ':');
+        if (tmpp == 0)
+            goto invalid_fs;
+        *tmpp++ = '\0';
+        _tcscpy (devname, value);
+        tmpp2 = tmpp;
+        // quoted special case
+        if (tmpp2[0] == '\"') {
+            const TCHAR *end;
+            TCHAR *n = cfgfile_unescape (tmpp2, &end, 0, false);
+            if (!n)
+                goto invalid_fs;
+            _tcscpy (uci.rootdir, n);
+            xfree(n);
+            tmpp = (TCHAR*)end;
+            *tmpp++ = 0;
+        } else {
+            tmpp = _tcschr (tmpp, ',');
+            if (tmpp == 0)
+                goto invalid_fs;
+            *tmpp++ = 0;
+            _tcscpy (uci.rootdir, tmpp2);
+        }
+        if (uci.rootdir[0] != ':')
+            get_hd_geometry (&uci);
+        _tcscpy (uci.devname, devname);
+        if (! getintval (&tmpp, &uci.sectors, ',')
+            || ! getintval (&tmpp, &uci.surfaces, ',')
+            || ! getintval (&tmpp, &uci.reserved, ',')
+            || ! getintval (&tmpp, &uci.blocksize, ','))
+            goto invalid_fs;
+		if (getintval2 (&tmpp, &uci.bootpri, ',', false)) {
+			const TCHAR *end;
+			TCHAR *n;
 			tmpp2 = tmpp;
-			tmpp = _tcschr (tmpp, ',');
-			if (tmpp != 0) {
+			// quoted special case
+			if (tmpp2[0] == '\"') {
+				const TCHAR *end;
+				TCHAR *n = cfgfile_unescape (tmpp2, &end, 0, false);
+				if (!n)
+					goto invalid_fs;
+				_tcscpy (uci.filesys, n);
+				xfree(n);
+				tmpp = (TCHAR*)end;
+				*tmpp++ = 0;
+			} else {
+				tmpp = _tcschr (tmpp, ',');
+				if (tmpp == 0)
+					goto empty_fs;
 				*tmpp++ = 0;
 				_tcscpy (uci.filesys, tmpp2);
-				TCHAR *tmpp2 = _tcschr (tmpp, ',');
-				if (tmpp2)
-					*tmpp2++ = 0;
-				uci.controller = get_filesys_controller (tmpp);
-				if (tmpp2) {
-					if (getintval2 (&tmpp2, &uci.highcyl, ',')) {
-						getintval (&tmpp2, &uci.pcyls, '/');
-						getintval (&tmpp2, &uci.pheads, '/');
-						getintval2 (&tmpp2, &uci.psecs, '/');
+			}
+			TCHAR *tmpp2 = _tcschr (tmpp, ',');
+			if (tmpp2)
+				*tmpp2++ = 0;
+			uci.controller = get_filesys_controller (tmpp);
+			if (tmpp2) {
+				if (getintval2 (&tmpp2, &uci.highcyl, ',', false)) {
+					getintval (&tmpp2, &uci.pcyls, '/');
+					getintval (&tmpp2, &uci.pheads, '/');
+					getintval2 (&tmpp2, &uci.psecs, '/', true);
+				}
+				if (tmpp2[0]) {
+					if (tmpp2[0] == '\"') {
+						n = cfgfile_unescape (tmpp2, &end, 0, false);
+						if (!n)
+							goto invalid_fs;
+						_tcscpy(uci.geometry, n);
+						xfree(n);
 					}
 				}
 			}
-		}
-		if (type == 2) {
-			uci.cd_emu_unit = unit;
-			uci.blocksize = 2048;
-			uci.readonly = true;
-			uci.type = UAEDEV_CD;
-		} else {
-			uci.type = UAEDEV_HDF;
-		}
+#if 0
+			get_filesys_controller (tmpp, &uci.controller_type, &uci.controller_type_unit, &uci.controller_unit);
+			tmpp2 = _tcschr (tmpp, ',');
+			if (tmpp2) {
+				tmpp2++;
+				if (getintval2 (&tmpp2, &uci.highcyl, ',', false)) {
+					getintval (&tmpp2, &uci.pcyls, '/');
+					getintval (&tmpp2, &uci.pheads, '/');
+					getintval2 (&tmpp2, &uci.psecs, '/', true);
+					if (uci.pheads && uci.psecs) {
+						uci.physical_geometry = true;
+					} else {
+						uci.pheads = uci.psecs = uci.pcyls = 0;
+						uci.physical_geometry = false;
+					}
+					if (tmpp2[0]) {
+						if (tmpp2[0] == '\"') {
+							n = cfgfile_unescape (tmpp2, &end, 0, false);
+							if (!n)
+								goto invalid_fs;
+							_tcscpy(uci.geometry, n);
+							xfree(n);
+						}
+					}
+				}
+			}
+#endif
+        }
+        if (type == 2) {
+            uci.cd_emu_unit = unit;
+            uci.blocksize = 2048;
+            uci.readonly = true;
+            uci.type = UAEDEV_CD;
+        } else {
+            uci.type = UAEDEV_HDF;
+        }
 	} else {
 		goto invalid_fs;
 	}

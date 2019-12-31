@@ -68,6 +68,7 @@ static uaecptr debug_copper_pc;
 
 extern int audio_channel_mask;
 extern int inputdevice_logging;
+extern void my_trim (TCHAR *s);
 
 #ifdef MMUEMU
 int safe_addr (uaecptr addr, int size);
