@@ -1309,7 +1309,7 @@ int iszip2 (struct zfile *z, int mask)
 	}
 	if (mask & ZFD_ADF) {
 		if (!strcasecmp (ext, _T(".adf"))) {
-			if (header[0] == 'D' && header[1] == 'O' && header[2] == 'S' && (header[3] >= 0 && header[3] <= 7))
+			if (header[0] == 'D' && header[1] == 'O' && header[2] == 'S' && header[3] <= 7)
 				return ArchiveFormatADF;
 			if (isfat (header))
 				return ArchiveFormatFAT;
@@ -1322,7 +1322,7 @@ int iszip2 (struct zfile *z, int mask)
 	}
 	if (mask & ZFD_HD) {
 		if (!strcasecmp (ext, _T(".hdf"))) {
-			if (header[0] == 'D' && header[1] == 'O' && header[2] == 'S' && (header[3] >= 0 && header[3] <= 7))
+			if (header[0] == 'D' && header[1] == 'O' && header[2] == 'S' && header[3] <= 7)
 				return ArchiveFormatADF;
 			if (header[0] == 'S' && header[1] == 'F' && header[2] == 'S')
 				return ArchiveFormatADF;
@@ -1471,7 +1471,7 @@ struct zfile *zuncompress (struct znode *parent, struct zfile *z, int dodefault,
 			return archive_access_select (parent, z, ArchiveFormatLHA, dodefault, retcode, index);
 	}
 	if (mask & ZFD_ADF) {
-		if (header[0] == 'D' && header[1] == 'O' && header[2] == 'S' && (header[3] >= 0 && header[3] <= 7))
+		if (header[0] == 'D' && header[1] == 'O' && header[2] == 'S' && header[3] <= 7)
 			return archive_access_select (parent, z, ArchiveFormatADF, dodefault, retcode, index);
 		if (header[0] == 'S' && header[1] == 'F' && header[2] == 'S')
 			return archive_access_select (parent, z, ArchiveFormatADF, dodefault, retcode, index);
@@ -2801,10 +2801,10 @@ struct znode *znode_adddir (struct znode *parent, const TCHAR *name, struct zarc
 	TCHAR path[MAX_DPATH];
 
 	path[0] = 0;
-	recurparent (path, parent, FALSE);
+	recurparent (path, parent, false);
 	_tcscat (path, FSDB_DIR_SEPARATOR_S);
 	_tcscat (path, name);
-	zn = get_znode (parent->volume, path, FALSE);
+	zn = get_znode (parent->volume, path, false);
 	if (zn)
 		return zn;
 	zn = znode_alloc_child (parent, name);
@@ -3075,7 +3075,7 @@ struct zdirectory *zfile_opendir_archive_flags (const TCHAR *path, int flags)
 		zv = zfile_fopen_archive_flags (path, flags);
 		created = true;
 	}
-	struct znode *zn = get_znode (zv, path, TRUE);
+	struct znode *zn = get_znode (zv, path, true);
 	struct zdirectory *zd;
 	if (!zn || (!zn->child && !zn->vchild)) {
 		if (created)

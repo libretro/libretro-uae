@@ -66,7 +66,7 @@ For CD32 you need either separate ROMs (Kickstart + extended ROM) or the combine
 |System|Description|Filename|Size|MD5|
 |---|---|---|---|---|
 |Amiga CD32|CD32 (KS + extended) v3.1 rev 40.060|**kick40060.CD32**|1 048 576|f2f241bf094168cfb9e7805dc2856433|
-| **OR** | | | | |
+| | | **OR** | | |
 |Amiga CD32|CD32 Kickstart v3.1 rev 40.060|**kick40060.CD32**|524 288|5f8924d013dd57a89cf349f4cdedc6b1|
 |Amiga CD32|CD32 Extended ROM rev 40.060|**kick40060.CD32.ext**|524 288|bb72565701b1b6faece07d68ea5da639|
 
@@ -159,7 +159,7 @@ Grab the new version from the repo: https://github.com/libretro/libretro-uae/tre
 - Kickstarts will be copied automatically from the system directory on the first run, so it might take a little longer than usual.
 - `WHDLoad.prefs` will be copied from the system directory, if it exists. It needs to be there for the core option overrides to work.
 - `WHDLoad.key` will be copied from the system directory if you have registered WHDLoad.
-- **These previous features involving RA system directory require directory filesystem in UAE. At the moment it does not work and will be disabled on these platforms: Android, Switch**
+- **These previous features involving RA system directory require directory filesystem in UAE. At the moment it is known to not work on these platforms: Android, Switch**
 - Supports a file named `custom` in the root of the game.hdf for passing specific WHDLoad parameters when the slave does not support the config screen or when it should be the default, for example `Custom1=1`. It always overrides `WHDLoad.prefs`.
   - The easiest way to create `custom` is to quit WHDLoad (default Numpad*), type `echo custom1=1 >custom`, press enter and reboot the Amiga.
 - Supports a file named `load` in the root of the game.hdf which overrides the whole launch command, aimed at non-WHDLoad installs.
@@ -170,13 +170,14 @@ Grab the new version from the repo: https://github.com/libretro/libretro-uae/tre
 - Updated WHDLoad to the latest one (18.5 2019-03-09).
 - New WHDLoad defaults:
   - ButtonWait (Waits for a button press in certain slaves when loading is so fast that you can't enjoy a picture or a tune)
-  - ReadDelay=0 & WriteDelay=0 (These speed up OS switching on loadings and savings)
+  - ReadDelay=0 & WriteDelay=50 (These speed up OS switching on loadings and savings. Saves tend to corrupt with WriteDelay below 50)
 - **Latest changes:**
   - Script called `MkCustom` for simplest `custom` file handling. Launches after quitting WHDLoad.
+  - `MkCustom` will create a slave-based `custom_$SLAVE` in WHDSaves:. Essential with readonly images.
   - If `.slave` is not in the root of the HDF, it will also be searched under the first found directory.
   - Saves can be redirected to a separate `WHDSaves.hdf`. Repo provides an empty 2MiB HDF.
-  - Both HDF-files can be located either in RA system or saves.
-  - Support for Retroplay LHA archives
+  - Both HDF-files (`WHDLoad.hdf` & `WHDSaves.hdf`) can be located in either RA system or saves.
+  - Support for Retroplay LHA archives.
 
 ### Create a HDF image for a game
 If you have a WHDLoad game in a ZIP or a directory, you will have to create an image file. WHDLoad specific LHA archives will work directly as a read only hard drive image.
@@ -188,7 +189,7 @@ Example, to create a HDF file from a zipped WHDLoad game:
 - ~~Go to the directory where files were extracted~~
 - ~~Rename the main slave file (ending with '.slave') to 'game.slave' (certains games have many slave files, guess which is the right one)~~
 - Pack the directory in a HDF file with:
-	- ADFOpus: (see [Allan Lindqvist's tutorial](http://lindqvist.synology.me/wordpress/?page_id=182))
+	- ADFOpus: see [Allan Lindqvist's tutorial](http://lindqvist.synology.me/wordpress/?page_id=182)
 	- amitools: `xdftool -f <NAME_OF_HDF> pack <GAME_DIRECTORY> size=<SIZE_OF_HDF>`
 	
 Note the size of the HDF specified by SIZE_OF_HDF must be greater than size of the directory to store the additional filesystem informations (f.ex a 1.25 ratio).

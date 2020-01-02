@@ -33,11 +33,11 @@ NoWriteCache			;disable the disk write cache
 ;ReadDelay=150			;wait after reading from disk (1/50 seconds)
 ;RecallAdr=$4f000000		;memory address to store recall data
 ;RestartKey=$5c			;rawkey code to restart
-SavePath=SYS:WHDSaves		;base directory for all saves
+SavePath=WHDSaves:		;base directory for all saves
 ;ShowRegs=SYS:Utilities/MuchMore W WL=80 WT=80 WW=582 WH=700	;command for Show Regs
 ;SplashDelay=200		;time to display splash window (1/50 seconds)
 ;WriteDelay=150			;wait after saving something to disk (1/50 seconds)
 ReadDelay=0
-WriteDelay=0
+WriteDelay=50
 ConfigDelay=0
 SplashDelay=0

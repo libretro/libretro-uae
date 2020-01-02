@@ -26,7 +26,9 @@ struct zvolume *archive_directory_lha (struct zfile *zf)
     LzHeader hdr;
     int i;
 
-    _tzset();
+#if !defined(ANDROID) && !defined(__SWITCH__) && !defined(WIIU)
+    tzset();
+#endif
     zv = zvolume_alloc (zf, ArchiveFormatLHA, NULL, NULL);
     while (get_header(zf, &hdr)) {
         struct znode *zn;
@@ -41,7 +43,9 @@ struct zvolume *archive_directory_lha (struct zfile *zf)
         zai.size = hdr.original_size;
         zai.flags = hdr.attribute;
         if (hdr.extend_type != 0) {
+#if !defined(ANDROID) && !defined(__SWITCH__) && !defined(WIIU)
             zai.tv.tv_sec = hdr.unix_last_modified_stamp -= timezone;
+#endif
         } else {
             struct tm t;
             uae_u32 v = hdr.last_modified_stamp;
@@ -51,7 +55,9 @@ struct zvolume *archive_directory_lha (struct zfile *zf)
             t.tm_mday = (v >> 16) & 0x1f;
             t.tm_mon = ((v >> 21) & 0xf) - 1;
             t.tm_year = ((v >> 25) & 0x7f) + 80;
-            zai.tv.tv_sec = mktime (&t) - _timezone;
+#if !defined(ANDROID) && !defined(__SWITCH__) && !defined(WIIU)
+            zai.tv.tv_sec = mktime (&t) - timezone;
+#endif
         }
         if (hdr.name[strlen(hdr.name) + 1] != 0)
             zai.comment = au (&hdr.name[strlen(hdr.name) + 1]);

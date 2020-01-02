@@ -3208,20 +3208,20 @@ bool retro_load_game(const struct retro_game_info *info)
                   if (!file_exists(whdload_hdf))
                      path_join((char*)&whdload_hdf, retro_save_directory, "WHDLoad.hdf");
                   if (file_exists(whdload_hdf))
-                     fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae0\n", (const char*)string_replace_substring(whdload_hdf, "\\", "\\\\"));
+                     fprintf(configfile, "hardfile2=rw,WHDLoad:\"%s\",32,1,2,512,0,,uae0\n", (const char*)string_replace_substring(whdload_hdf, "\\", "\\\\"));
                   else
                      fprintf(stderr, "WHDLoad image file '%s' not found!\n", (const char*)&whdload_hdf);
 
                   // Attach game image
                   if (strendswith(full_path, LHA_FILE_EXT))
-                     fprintf(configfile, "filesystem2=ro,DH1:LHA:\"%s\",0\n", string_replace_substring(full_path, "\\", "\\\\"));
+                     fprintf(configfile, "filesystem2=ro,DH0:LHA:\"%s\",0\n", string_replace_substring(full_path, "\\", "\\\\"));
                   else
-                     fprintf(configfile, "hardfile2=rw,DH1:\"%s\",32,1,2,512,0,,uae1\n", string_replace_substring(full_path, "\\", "\\\\"));
+                     fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae1\n", string_replace_substring(full_path, "\\", "\\\\"));
 
                   // Attach retro_system_directory as a read only hard drive for WHDLoad kickstarts/prefs/key
                   // Does not work with: Android, Switch (?)
 //#if !defined(ANDROID) && !defined(__SWITCH__)
-                  fprintf(configfile, "filesystem2=ro,DH2:RASystem:\"%s\",-128\n", string_replace_substring(retro_system_directory, "\\", "\\\\"));
+                  fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s\",-128\n", string_replace_substring(retro_system_directory, "\\", "\\\\"));
 //#endif
 
                   // Attach WHDSaves.hdf if available

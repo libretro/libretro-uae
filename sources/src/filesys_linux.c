@@ -367,7 +367,7 @@ struct my_openfile_s *my_open (const TCHAR *name, int flags)
 		return NULL;
 
 	mos->fd = file;
-	mos->path = _strdup(name);
+	mos->path = my_strdup(name);
 	my_errno = 0;
 	return mos;
 }
