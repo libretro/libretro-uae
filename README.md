@@ -81,9 +81,9 @@ These parameters control the output resolution of the core:
 
 With these settings all the standard resolutions are available:
 
-- **720x574** PAL High resolution double line
-- **720x287** PAL High resolution single line
-- **360x287** PAL Low resolution
+- **720x576** PAL High resolution double line
+- **720x288** PAL High resolution single line
+- **360x288** PAL Low resolution
 - **720x480** NTSC High resolution double line
 - **720x240** NTSC High resolution single line
 - **360x240** NTSC Low resolution
@@ -98,9 +98,9 @@ When using high resolution single line mode, rendering is presented as is. It de
 You can pass a disk image, a hard drive image, or a playlist file for disk images.
 
 Supported formats are:
-- **ADF**, **ADZ**, **IPF**, **DMS**, **FDI** files for floppy disk images
-- **ISO**, **CUE**, **CCD**, **NRG** files for CD images
-- **HDF**, **HDZ** for hard drive images
+- **ADF**, **ADZ**, **IPF**, **DMS**, **FDI** for floppy disk images
+- **ISO**, **CUE**, **CCD**, **NRG**, **MDS** for CD images
+- **HDF**, **HDZ**, **LHA** for hard drive images
 - **M3U** for multiple disk image playlist
 
 When passing these files as a parameter the core will generate a temporary uae configuration file in RetroArch saves directory 
@@ -171,14 +171,15 @@ Grab the new version from the repo: https://github.com/libretro/libretro-uae/tre
 - New WHDLoad defaults:
   - ButtonWait (Waits for a button press in certain slaves when loading is so fast that you can't enjoy a picture or a tune)
   - ReadDelay=0 & WriteDelay=0 (These speed up OS switching on loadings and savings)
-- **Latest version changes:**
+- **Latest changes:**
   - Script called `MkCustom` for simplest `custom` file handling. Launches after quitting WHDLoad.
   - If `.slave` is not in the root of the HDF, it will also be searched under the first found directory.
   - Saves can be redirected to a separate `WHDSaves.hdf`. Repo provides an empty 2MiB HDF.
   - Both HDF-files can be located either in RA system or saves.
+  - Support for Retroplay LHA archives
 
 ### Create a HDF image for a game
-If you have a WHDLoad game in a ZIP or a directory, you will have to create an image file.
+If you have a WHDLoad game in a ZIP or a directory, you will have to create an image file. WHDLoad specific LHA archives will work directly as a read only hard drive image.
 
 To do this you can use ADFOpus (http://adfopus.sourceforge.net/) or amitools (https://github.com/cnvogelg/amitools).
 
@@ -186,15 +187,10 @@ Example, to create a HDF file from a zipped WHDLoad game:
 - Extract files from the ZIP to a directory
 - ~~Go to the directory where files were extracted~~
 - ~~Rename the main slave file (ending with '.slave') to 'game.slave' (certains games have many slave files, guess which is the right one)~~
-- Pack the directory in a HDF file:
-	- Using ADFOpus (see [Allan Lindqvist's tutorial](http://lindqvist.synology.me/wordpress/?page_id=182))
-	- Using amitools
+- Pack the directory in a HDF file with:
+	- ADFOpus: (see [Allan Lindqvist's tutorial](http://lindqvist.synology.me/wordpress/?page_id=182))
+	- amitools: `xdftool -f <NAME_OF_HDF> pack <GAME_DIRECTORY> size=<SIZE_OF_HDF>`
 	
-The amitools command to use is:
-```
-xdftool -f <NAME_OF_HDF> pack <GAME_DIRECTORY> size=<SIZE_OF_HDF>
-```
-
 Note the size of the HDF specified by SIZE_OF_HDF must be greater than size of the directory to store the additional filesystem informations (f.ex a 1.25 ratio).
 
 ## Games that need a specific Amiga model

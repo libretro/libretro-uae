@@ -60,6 +60,15 @@
 #define A_FIBF_EXECUTE (1<<1)
 #define A_FIBF_DELETE  (1<<0)
 
+struct virtualfilesysobject
+{
+	int dir;
+	TCHAR *comment;
+	uae_u32 amigaos_mode;
+	uae_u8 *data;
+	int size;
+};
+
 /* AmigaOS "keys" */
 typedef struct a_inode_struct {
 #ifdef AINO_DEBUG
@@ -105,6 +114,7 @@ typedef struct a_inode_struct {
     /* not equaling unit.mountcount -> not in this volume */
     unsigned int mountcount;
 	uae_u64 uniq_external;
+	struct virtualfilesysobject *vfso;
 #ifdef AINO_DEBUG
     uae_u32 checksum2;
 #endif
@@ -121,15 +131,28 @@ struct mystat
 	uae_s64 size;
 	uae_u32 mode;
 	struct mytimeval mtime;
+	//uae_s64 st_blocks;
 };
 
-struct my_opendir_s {
+typedef struct mylist
+{
+    void* data;
+    struct mylist *next, *prev;
+} mylist;
+
+struct my_opendir_s
+{
 	DIR *h;
 	int first;
+	mylist *items;
+	mylist *current;
+	char *path;
 };
 
-struct my_openfile_s {
-	HANDLE h;
+struct my_openfile_s
+{
+	int fd;
+    char *path;
 };
 
 extern TCHAR *nname_begin (TCHAR *);
@@ -165,7 +188,11 @@ extern TCHAR *fsdb_create_unique_nname (a_inode *base, const TCHAR *);
 
 extern struct my_opendir_s *my_opendir (const TCHAR*, const TCHAR*);
 extern void my_closedir (struct my_opendir_s*);
+#if 0
+extern int my_readdir (struct my_opendir_s*, TCHAR*);
+#else
 extern struct dirent* my_readdir (struct my_opendir_s*, TCHAR*);
+#endif
 
 extern int my_rmdir (const TCHAR*);
 extern int my_mkdir (const TCHAR*);
@@ -179,8 +206,8 @@ extern struct my_openfile_s *my_open (const TCHAR*, int);
 extern void my_close (struct my_openfile_s*);
 extern uae_s64 my_lseek (struct my_openfile_s*, uae_s64, int);
 extern uae_s64 my_fsize (struct my_openfile_s*);
-extern int my_read (struct my_openfile_s*, void*, unsigned int);
-extern int my_write (struct my_openfile_s*, void*, unsigned int);
+extern unsigned int my_read (struct my_openfile_s*, void*, unsigned int);
+extern unsigned int my_write (struct my_openfile_s*, void*, unsigned int);
 extern int my_truncate (const TCHAR *name, uae_u64 len);
 extern int dos_errno (void);
 extern int my_existsfile (const TCHAR *name);

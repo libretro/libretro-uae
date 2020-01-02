@@ -34,6 +34,7 @@ void fetch_saveimagepath (TCHAR *out, int size, int dir);
 char *ua_copy (char *dst, int maxlen, const char *src);
 char *au_fs_copy (char *dst, int maxlen, const char *src);
 char *ua_fs (const char *s, int defchar);
+char *ua_fs_copy (char *dst, int maxlen, const TCHAR *src, int defchar);
 void close_console (void);
 bool console_isch (void);
 TCHAR console_getch (void);

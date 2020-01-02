@@ -5112,13 +5112,19 @@ void default_prefs (struct uae_prefs *p, int type)
 	p->rtg_horiz_zoom_mult = 1.0;
 	p->rtg_vert_zoom_mult = 1.0;
 
+#ifndef __LIBRETRO__
 	_tcscpy (p->floppyslots[0].df, _T("df0.adf"));
 	_tcscpy (p->floppyslots[1].df, _T("df1.adf"));
 	_tcscpy (p->floppyslots[2].df, _T("df2.adf"));
 	_tcscpy (p->floppyslots[3].df, _T("df3.adf"));
+#endif
 
 	configure_rom (p, roms, 0);
+#ifndef __LIBRETRO__
 	_tcscpy (p->romfile, _T("kick.rom"));
+#else
+	_tcscpy (p->romfile, _T(""));
+#endif
 	_tcscpy (p->romextfile, _T(""));
 	_tcscpy (p->romextfile2, _T(""));
 	p->romextfile2addr = 0;
@@ -5154,6 +5160,8 @@ void default_prefs (struct uae_prefs *p, int type)
 	p->genlock = 0;
 	p->ntscmode = 0;
 	p->filesys_limit = 0;
+	p->filesys_max_name = 107;
+	p->filesys_max_file_size = 0x7fffffff;
 
 	p->fastmem_size = 0x00000000;
 	p->fastmem2_size = 0x00000000;
