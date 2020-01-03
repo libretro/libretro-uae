@@ -1528,14 +1528,14 @@ void retro_poll_event()
                if (abs(analog_left[0]) > 0)
                {
                   uae_mouse_x[j] = analog_left[0] * 10 * (opt_analogmouse_speed * opt_analogmouse_speed * 0.7) / (32768 / mouse_multiplier);
-                  if (uae_mouse_x[j] == 0)
+                  if (uae_mouse_x[j] == 0 && mouse_multiplier != 1)
                      uae_mouse_x[j] = (analog_left[0] > 0) ? 1 : -1;
                }
 
                if (abs(analog_left[1]) > 0)
                {
                   uae_mouse_y[j] = analog_left[1] * 10 * (opt_analogmouse_speed * opt_analogmouse_speed * 0.7) / (32768 / mouse_multiplier);
-                  if (uae_mouse_y[j] == 0)
+                  if (uae_mouse_y[j] == 0 && mouse_multiplier != 1)
                      uae_mouse_y[j] = (analog_left[1] > 0) ? 1 : -1;
                }
             }
@@ -1567,14 +1567,14 @@ void retro_poll_event()
                if (abs(analog_right[0]) > 0)
                {
                   uae_mouse_x[j] = analog_right[0] * 10 * (opt_analogmouse_speed * opt_analogmouse_speed * 0.7) / (32768 / mouse_multiplier);
-                  if (uae_mouse_x[j] == 0)
+                  if (uae_mouse_x[j] == 0 && mouse_multiplier != 1)
                      uae_mouse_x[j] = (analog_right[0] > 0) ? 1 : -1;
                }
 
                if (abs(analog_right[1]) > 0)
                {
                   uae_mouse_y[j] = analog_right[1] * 10 * (opt_analogmouse_speed * opt_analogmouse_speed * 0.7) / (32768 / mouse_multiplier);
-                  if (uae_mouse_y[j] == 0)
+                  if (uae_mouse_y[j] == 0 && mouse_multiplier != 1)
                      uae_mouse_y[j] = (analog_right[1] > 0) ? 1 : -1;
                }
             }
