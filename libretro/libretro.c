@@ -147,54 +147,69 @@ static dc_storage* dc;
 
 #define A500_CONFIG "\
 cpu_type=68000\n\
+chipset=ocs\n\
+chipset_compatible=A500\n\
 chipmem_size=1\n\
 bogomem_size=2\n\
-chipset_compatible=A500\n\
-chipset=ocs\n"
+"
 
 #define A500OG_CONFIG "\
 cpu_type=68000\n\
+chipset=ocs\n\
+chipset_compatible=A500\n\
 chipmem_size=1\n\
 bogomem_size=0\n\
-chipset_compatible=A500\n\
-chipset=ocs\n"
+"
 
 #define A500PLUS_CONFIG "\
 cpu_type=68000\n\
+chipset=ecs\n\
+chipset_compatible=A500+\n\
 chipmem_size=2\n\
 bogomem_size=0\n\
-chipset_compatible=A500+\n\
-chipset=ecs\n"
+"
 
 #define A600_CONFIG "\
 cpu_type=68000\n\
+chipset=ecs\n\
+chipset_compatible=A600\n\
 chipmem_size=4\n\
 fastmem_size=8\n\
-chipset_compatible=A600\n\
-chipset=ecs\n"
+"
 
 #define A1200_CONFIG "\
 cpu_type=68ec020\n\
+chipset=aga\n\
+chipset_compatible=A1200\n\
 chipmem_size=4\n\
 fastmem_size=8\n\
-chipset_compatible=A1200\n\
-chipset=aga\n"
+"
 
 #define A1200OG_CONFIG "\
 cpu_type=68ec020\n\
+chipset=aga\n\
+chipset_compatible=A1200\n\
 chipmem_size=4\n\
 fastmem_size=0\n\
-chipset_compatible=A1200\n\
-chipset=aga\n"
+"
 
 #define CD32_CONFIG "\
 cpu_type=68ec020\n\
+chipset=aga\n\
+chipset_compatible=CD32\n\
 chipmem_size=4\n\
 fastmem_size=0\n\
-chipset_compatible=CD32\n\
-chipset=aga\n\
-floppy0type=-1\n"
+floppy0type=-1\n\
+"
 
+#define CD32FR_CONFIG "\
+cpu_type=68ec020\n\
+chipset=aga\n\
+chipset_compatible=CD32\n\
+chipmem_size=4\n\
+fastmem_size=8\n\
+floppy0type=-1\n\
+"
 
 // Amiga kickstarts
 #define A500_ROM                "kick34005.A500"
@@ -296,6 +311,7 @@ void retro_set_environment(retro_environment_t cb)
             { "A1200", "A1200 (2MB Chip + 8MB Fast)" },
             { "A1200OG", "A1200 (2MB Chip)" },
             { "CD32", "CD32 (2MB Chip)" },
+            { "CD32FR", "CD32 (2MB Chip + 8MB Fast)" },
             { NULL, NULL },
          },
          "auto"
@@ -3053,6 +3069,12 @@ bool retro_load_game(const struct retro_game_info *info)
       strcpy(uae_kickstart, CD32_ROM);
       strcpy(uae_kickstart_ext, CD32_ROM_EXT);
    }
+   else if (strcmp(opt_model, "CD32FR") == 0)
+   {
+      strcat(uae_machine, CD32FR_CONFIG);
+      strcpy(uae_kickstart, CD32_ROM);
+      strcpy(uae_kickstart_ext, CD32_ROM_EXT);
+   }
    else if (strcmp(opt_model, "auto") == 0)
    {
       strcat(uae_machine, A500_CONFIG);
@@ -3374,15 +3396,42 @@ bool retro_load_game(const struct retro_game_info *info)
             char kickstart[RETRO_PATH_MAX];
             char kickstart_ext[RETRO_PATH_MAX];
 
-            uae_machine[0] = '\0';
-            strcat(uae_machine, CD32_CONFIG);
-            strcpy(uae_kickstart, CD32_ROM);
-            strcpy(uae_kickstart_ext, CD32_ROM_EXT);
+            // If a machine was specified in the name of the game
+            if (strstr(full_path, "(CD32FR)") != NULL || strstr(full_path, "FastRAM") != NULL)
+            {
+               // Use CD32 with Fast RAM
+               fprintf(stdout, "[libretro-uae]: Found '(CD32FR)' or 'FastRAM' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Booting CD32 FastRAM with Kickstart 3.1 r40.060\n");
+               fprintf(configfile, CD32FR_CONFIG);
+               path_join((char*)&kickstart, retro_system_directory, CD32_ROM);
+               path_join((char*)&kickstart_ext, retro_system_directory, CD32_ROM_EXT);
+            }
+            else if (strstr(full_path, "(CD32)") != NULL || strstr(full_path, "(CD32NF)") != NULL)
+            {
+               // Use CD32 barebone
+               fprintf(stdout, "[libretro-uae]: Found '(CD32)' or '(CD32NF)' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Booting CD32 with Kickstart 3.1 r40.060\n");
+               fprintf(configfile, CD32_CONFIG);
+               path_join((char*)&kickstart, retro_system_directory, CD32_ROM);
+               path_join((char*)&kickstart_ext, retro_system_directory, CD32_ROM_EXT);
+            }
+            else
+            {
+               if (strcmp(opt_model, "auto") == 0)
+               {
+                  uae_machine[0] = '\0';
+                  strcat(uae_machine, CD32_CONFIG);
+                  strcpy(uae_kickstart, CD32_ROM);
+                  strcpy(uae_kickstart_ext, CD32_ROM_EXT);
+               }
 
-            // No machine specified
-            fprintf(configfile, uae_machine);
-            path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
-            path_join((char*)&kickstart_ext, retro_system_directory, uae_kickstart_ext);
+               // No machine specified
+               fprintf(stdout, "[libretro-uae]: No machine specified in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Booting default configuration\n");
+               fprintf(configfile, uae_machine);
+               path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
+               path_join((char*)&kickstart_ext, retro_system_directory, uae_kickstart_ext);
+            }
 
             // Write common config
             fprintf(configfile, uae_config);
