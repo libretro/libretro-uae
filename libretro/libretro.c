@@ -3010,12 +3010,12 @@ void retro_run(void)
    retro_poll_event();
    co_switch(emuThread);
    if (SHOWKEY == 1)
-      virtual_kbd(retro_bmp, vkb_pos_x, vkb_pos_y);
+      virtual_kbd(retro_bmp, vkey_pos_x, vkey_pos_y);
    if (STATUSON == 1)
       Print_Status();
    // Maximum 288p/576p PAL shenanigans:
    // Mask the last line(s), since UAE does not refresh the last line, and even its own OSD will leave trails
-   else if (video_config & PUAE_VIDEO_PAL)
+   if (video_config & PUAE_VIDEO_PAL)
    {
       if (video_config & PUAE_VIDEO_HIRES)
       {

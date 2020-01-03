@@ -30,6 +30,8 @@ And of course for the RetroArch/Libretro team: "http://www.libretro.com/"
 |A|Toggle transparency|
 |X|Toggle position|
 
+Long press for sticky keys. Stickying a third key will replace the second.
+
 ## Configuration
 To generate the temporary uae configuration file the core will use the core options configured in RetroArch.
 
