@@ -232,9 +232,11 @@ floppy0type=-1\n"
 #define IPF_FILE_EXT "ipf"
 #define HDF_FILE_EXT "hdf"
 #define HDZ_FILE_EXT "hdz"
+#define LHA_FILE_EXT "lha"
 #define CUE_FILE_EXT "cue"
 #define CCD_FILE_EXT "ccd"
 #define NRG_FILE_EXT "nrg"
+#define MDS_FILE_EXT "mds"
 #define ISO_FILE_EXT "iso"
 #define UAE_FILE_EXT "uae"
 #define M3U_FILE_EXT "m3u"
@@ -2209,6 +2211,7 @@ static bool disk_set_eject_state(bool ejected)
             else if (strendswith(dc->files[dc->index], CUE_FILE_EXT)
                   || strendswith(dc->files[dc->index], CCD_FILE_EXT)
                   || strendswith(dc->files[dc->index], NRG_FILE_EXT)
+                  || strendswith(dc->files[dc->index], MDS_FILE_EXT)
                   || strendswith(dc->files[dc->index], ISO_FILE_EXT))
             {
                changed_prefs.cdslots[0].name[0] = 0;
@@ -2232,6 +2235,7 @@ static bool disk_set_eject_state(bool ejected)
             else if (strendswith(dc->files[dc->index], CUE_FILE_EXT)
                   || strendswith(dc->files[dc->index], CCD_FILE_EXT)
                   || strendswith(dc->files[dc->index], NRG_FILE_EXT)
+                  || strendswith(dc->files[dc->index], MDS_FILE_EXT)
                   || strendswith(dc->files[dc->index], ISO_FILE_EXT))
             {
                //FIXME
@@ -2502,7 +2506,7 @@ void retro_get_system_info(struct retro_system_info *info)
    info->library_version  = "2.6.1" GIT_VERSION;
    info->need_fullpath    = true;
    info->block_extract    = false;	
-   info->valid_extensions = "adf|adz|dms|fdi|ipf|hdf|hdz|cue|ccd|nrg|iso|uae|m3u|zip";
+   info->valid_extensions = "adf|adz|dms|fdi|ipf|hdf|hdz|lha|cue|ccd|nrg|mds|iso|uae|m3u|zip";
 }
 
 bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
@@ -3067,6 +3071,7 @@ bool retro_load_game(const struct retro_game_info *info)
        || strendswith(full_path, IPF_FILE_EXT)
        || strendswith(full_path, HDF_FILE_EXT)
        || strendswith(full_path, HDZ_FILE_EXT)
+       || strendswith(full_path, LHA_FILE_EXT)
        || strendswith(full_path, M3U_FILE_EXT))
       {
 	     path_join((char*)&RPATH, retro_save_directory, LIBRETRO_PUAE_CONF);
@@ -3133,7 +3138,8 @@ bool retro_load_game(const struct retro_game_info *info)
                {
                   // Hard disk defaults to A600
                   if (  strendswith(full_path, HDF_FILE_EXT)
-                     || strendswith(full_path, HDZ_FILE_EXT))
+                     || strendswith(full_path, HDZ_FILE_EXT)
+                     || strendswith(full_path, LHA_FILE_EXT))
                   {
                      uae_machine[0] = '\0';
                      strcat(uae_machine, A600_CONFIG);
@@ -3188,7 +3194,8 @@ bool retro_load_game(const struct retro_game_info *info)
 
             // If argument is a hard drive image file
             if (strendswith(full_path, HDF_FILE_EXT)
-             || strendswith(full_path, HDZ_FILE_EXT))
+             || strendswith(full_path, HDZ_FILE_EXT)
+             || strendswith(full_path, LHA_FILE_EXT))
             {
                if (opt_use_whdload_hdf)
                {
@@ -3201,18 +3208,21 @@ bool retro_load_game(const struct retro_game_info *info)
                   if (!file_exists(whdload_hdf))
                      path_join((char*)&whdload_hdf, retro_save_directory, "WHDLoad.hdf");
                   if (file_exists(whdload_hdf))
-                     fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae0\n", (const char*)string_replace_substring(whdload_hdf, "\\", "\\\\"));
+                     fprintf(configfile, "hardfile2=rw,WHDLoad:\"%s\",32,1,2,512,0,,uae0\n", (const char*)string_replace_substring(whdload_hdf, "\\", "\\\\"));
                   else
                      fprintf(stderr, "WHDLoad image file '%s' not found!\n", (const char*)&whdload_hdf);
 
-                  // Attach game hdf
-                  fprintf(configfile, "hardfile2=rw,DH1:\"%s\",32,1,2,512,0,,uae1\n", string_replace_substring(full_path, "\\", "\\\\"));
+                  // Attach game image
+                  if (strendswith(full_path, LHA_FILE_EXT))
+                     fprintf(configfile, "filesystem2=ro,DH0:LHA:\"%s\",0\n", string_replace_substring(full_path, "\\", "\\\\"));
+                  else
+                     fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae1\n", string_replace_substring(full_path, "\\", "\\\\"));
 
                   // Attach retro_system_directory as a read only hard drive for WHDLoad kickstarts/prefs/key
-                  // Does not work with: Android, Switch
-#if !defined(ANDROID) && !defined(__SWITCH__)
-                  fprintf(configfile, "filesystem2=ro,DH2:RASystem:\"%s\",-128\n", string_replace_substring(retro_system_directory, "\\", "\\\\"));
-#endif
+                  // Does not work with: Android, Switch (?)
+//#if !defined(ANDROID) && !defined(__SWITCH__)
+                  fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s\",-128\n", string_replace_substring(retro_system_directory, "\\", "\\\\"));
+//#endif
 
                   // Attach WHDSaves.hdf if available
                   char whdsaves_hdf[RETRO_PATH_MAX];
@@ -3351,6 +3361,7 @@ bool retro_load_game(const struct retro_game_info *info)
       else if (strendswith(full_path, CUE_FILE_EXT)
             || strendswith(full_path, CCD_FILE_EXT)
             || strendswith(full_path, NRG_FILE_EXT)
+            || strendswith(full_path, MDS_FILE_EXT)
             || strendswith(full_path, ISO_FILE_EXT))
       {
          path_join((char*)&RPATH, retro_save_directory, LIBRETRO_PUAE_CONF);

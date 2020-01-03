@@ -54,6 +54,25 @@ TCHAR *nname_begin (TCHAR *nname)
  * exists that compares equal to REL, return 0.  */
 TCHAR *fsdb_search_dir (const TCHAR *dirname, TCHAR *rel)
 {
+#if 0
+	TCHAR *p = 0;
+	int de;
+	TCHAR fn[MAX_DPATH];
+
+	struct my_opendir_s *dir = my_opendir (dirname, 0);
+	/* This really shouldn't happen...  */
+	if (! dir)
+		return 0;
+
+	while (p == 0 && (de = my_readdir (dir, fn)) != 0) {
+		if (strcmp (fn, rel) == 0)
+			p = rel;
+		else if (strcasecmp (fn, rel) == 0)
+			p = my_strdup (fn);
+	}
+	my_closedir (dir);
+	return p;
+#else
 	TCHAR *p = 0;
 	struct dirent *de;
 	TCHAR fn[MAX_DPATH];
@@ -71,6 +90,7 @@ TCHAR *fsdb_search_dir (const TCHAR *dirname, TCHAR *rel)
 	}
 	my_closedir (dir);
 	return p;
+#endif
 }
 
 static FILE *get_fsdb (a_inode *dir, const TCHAR *mode)

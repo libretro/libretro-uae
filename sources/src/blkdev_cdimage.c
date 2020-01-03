@@ -29,6 +29,7 @@
 #include "uae.h"
 #include "cdrom.h"
 #include "sleep.h"
+#include "misc.h"
 
 //#define WITH_MP3
 #ifdef WITH_MP3
@@ -1325,10 +1326,10 @@ static int parsemds (struct cdunit *cdu, struct zfile *zmds, const TCHAR *img)
 		goto end;
 
 	head = (MDS_Header*)mds;
-//#ifndef __LIBRETRO__
+#ifndef __LIBRETRO__
 	if (!memcmp (head->signature, MEDIA_DESCRIPTOR, strlen (MEDIA_DESCRIPTOR)))
 		goto end;
-//#endif
+#endif
 	if (head->version[0] != 1) {
 		write_log (_T("unsupported MDS version %d, only v.1 supported\n"), head->version[0]);
 		goto end;
@@ -1364,7 +1365,7 @@ static int parsemds (struct cdunit *cdu, struct zfile *zmds, const TCHAR *img)
 			if (footer) {
 				TCHAR *fname = NULL;
 				if (footer->widechar_filename == 0)
-					;//fname = au ((char*)(mds + footer->filename_offset));
+					fname = au ((char*)(mds + footer->filename_offset));
 				else
 					fname = my_strdup ((TCHAR*)(mds + footer->filename_offset));
 				if (fname[0] == '*' && fname[1] == '.') {

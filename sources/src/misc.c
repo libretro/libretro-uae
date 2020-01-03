@@ -251,6 +251,13 @@ char *au_fs_copy (char *dst, int maxlen, const char *src)
 	return dst;
 }
 
+char *ua_fs_copy (char *dst, int maxlen, const TCHAR *src, int defchar)
+{
+    dst[0] = 0;
+    strncpy(dst, src, maxlen);
+    return dst;
+}
+
 // clipboard
 static uaecptr clipboard_data;
 static int signaling, initialized;
@@ -442,30 +449,8 @@ void refreshtitle (void)
 		setmaintitle ();
 }
 
-// win32gui
-#define MAX_ROM_PATHS 10
 int scan_roms (int show)
 {
-/** FIXME: This function does nothing right now.
-	TCHAR path[MAX_DPATH];
-	static int recursive;
-	int id, i, ret, keys, cnt;
-	TCHAR *paths[MAX_ROM_PATHS];
-
-	if (recursive)
-		return 0;
-	recursive++;
-
-//FIXME:
-	cnt = 0;
-	ret = 0;
-	for (i = 0; i < MAX_ROM_PATHS; i++)
-		paths[i] = NULL;
-
-end:
-	recursive--;
-	return ret;
-**/
 	return 0;
 }
 

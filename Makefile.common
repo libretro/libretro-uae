@@ -92,7 +92,19 @@ SOURCES_C += $(EMU)/archivers/dms/crc_csum.c \
 				 $(EMU)/archivers/dms/u_init.c  \
 				 $(EMU)/archivers/dms/u_medium.c \
 				 $(EMU)/archivers/dms/u_quick.c \
-				 $(EMU)/archivers/dms/u_rle.c
+				 $(EMU)/archivers/dms/u_rle.c \
+                 $(EMU)/archivers/lha/crcio.c \
+                 $(EMU)/archivers/lha/dhuf.c \
+                 $(EMU)/archivers/lha/header.c \
+                 $(EMU)/archivers/lha/huf.c \
+                 $(EMU)/archivers/lha/larc.c \
+                 $(EMU)/archivers/lha/lhamaketbl.c \
+                 $(EMU)/archivers/lha/lharc.c \
+                 $(EMU)/archivers/lha/shuf.c \
+                 $(EMU)/archivers/lha/slide.c \
+                 $(EMU)/archivers/lha/uae_lha.c \
+                 $(EMU)/archivers/lha/util.c
+
 
 SOURCES_C += $(EMU)/hardfile.c \
 				  $(EMU)/hardfile_unix.c \
@@ -160,4 +172,4 @@ SOURCES_C += $(DEPS_DIR)/zlib/adler32.c \
 				 $(DEPS_DIR)/zlib/zutil.c
 endif
 
-CFLAGS += -DLIBRETRO_PUAE -DCAPS -DA_DMS
+CFLAGS += -DLIBRETRO_PUAE -DCAPS -DA_DMS -DA_LHA

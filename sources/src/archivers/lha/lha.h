@@ -1,3 +1,6 @@
+#ifndef UAE_LHA_H
+#define UAE_LHA_H
+
 #include "sysconfig.h"
 #include "sysdeps.h"
 #include "zfile.h"
@@ -322,3 +325,5 @@ extern int      encode_stored_crc();
 #define warning write_log
 #define fatal_error write_log
 #define error write_log
+
+#endif // UAE_LHA_H

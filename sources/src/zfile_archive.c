@@ -25,6 +25,7 @@
 #include "archivers/zip/unzip.h"
 #include "archivers/dms/pfile.h"
 #include "crc32.h"
+#include "zarchive.h"
 #include "disk.h"
 #include "fsdb.h"
 #include "misc.h"
@@ -72,24 +73,25 @@ static struct zvolume *getzvolume (struct znode *parent, struct zfile *zf, unsig
 		break;
 #endif
 #ifdef A_7Z
-//	case ArchiveFormat7Zip:
-//		zv = archive_directory_7z (zf);
-//		break;
+	case ArchiveFormat7Zip:
+		zv = archive_directory_7z (zf);
+		break;
 #endif
 #ifdef A_RAR
-//	case ArchiveFormatRAR:
-//		zv = archive_directory_rar (zf);
-//		break;
+	case ArchiveFormatRAR:
+		zv = archive_directory_rar (zf);
+		break;
 #endif
 #ifdef A_LHA
-//	case ArchiveFormatLHA:
-//		zv = archive_directory_lha (zf);
-//		break;
+	case ArchiveFormatLHA:
+		zv = archive_directory_lha (zf);
+		printf("GETZVOLUME\n");
+		break;
 #endif
 #ifdef A_LZX
-//	case ArchiveFormatLZX:
-//		zv = archive_directory_lzx (zf);
-//		break;
+	case ArchiveFormatLZX:
+		zv = archive_directory_lzx (zf);
+		break;
 #endif
 	case ArchiveFormatPLAIN:
 		zv = archive_directory_plain (zf);
@@ -534,7 +536,6 @@ struct aaFileInArchiveInfo {
 	struct aaFILETIME LastWriteTime;
 	char path[FileInArchiveInfoStringSize];
 };
-
 
 #define ARCACC_STACKSIZE 10
 static struct zfile *arcacc_stack[ARCACC_STACKSIZE];
@@ -1735,14 +1736,14 @@ void archive_access_close (void *handle, unsigned int id)
 		break;
 #endif
 #ifdef A_7Z
-//	case ArchiveFormat7Zip:
-//		archive_close_7z (handle);
-//		break;
+	case ArchiveFormat7Zip:
+		archive_close_7z (handle);
+		break;
 #endif
 #ifdef A_RAR
-//	case ArchiveFormatRAR:
-//		archive_close_rar (handle);
-//		break;
+	case ArchiveFormatRAR:
+		archive_close_rar (handle);
+		break;
 #endif
 #ifdef A_LHA
 	case ArchiveFormatLHA:
@@ -1798,24 +1799,24 @@ struct zfile *archive_getzfile (struct znode *zn, unsigned int id, int flags)
 		break;
 #endif
 #ifdef A_7Z
-//	case ArchiveFormat7Zip:
-//		zf = archive_access_7z (zn);
-//		break;
+	case ArchiveFormat7Zip:
+		zf = archive_access_7z (zn);
+		break;
 #endif
 #ifdef A_RAR
-//	case ArchiveFormatRAR:
-//		zf = archive_access_rar (zn);
-//		break;
+	case ArchiveFormatRAR:
+		zf = archive_access_rar (zn);
+		break;
 #endif
 #ifdef A_LHA
-//	case ArchiveFormatLHA:
-//		zf = archive_access_lha (zn);
-//		break;
+	case ArchiveFormatLHA:
+		zf = archive_access_lha (zn);
+		break;
 #endif
 #ifdef A_LZX
-//	case ArchiveFormatLZX:
-//		zf = archive_access_lzx (zn);
-//		break;
+	case ArchiveFormatLZX:
+		zf = archive_access_lzx (zn);
+		break;
 #endif
 	case ArchiveFormatPLAIN:
 		zf = archive_access_plain (zn);

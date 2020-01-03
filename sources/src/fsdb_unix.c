@@ -115,7 +115,7 @@ static int fsdb_name_invalid_2 (const TCHAR *n, int dir)
 
         s1[0] = 0;
         s2[0] = 0;
-        //FIXME: ua_fs_copy (s1, MAX_DPATH, n, -1);
+        ua_fs_copy (s1, MAX_DPATH, n, -1);
         strcpy (s1, n);
         au_fs_copy (s2, MAX_DPATH, s1);
         if (_tcscmp (s2, n) != 0)

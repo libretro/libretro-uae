@@ -7,6 +7,7 @@
 #include "sysdeps.h"
 #include "lha.h"
 #include "zarchive.h"
+#include "misc.h"
 
 
 static char *methods[] =
@@ -25,47 +26,52 @@ struct zvolume *archive_directory_lha (struct zfile *zf)
     LzHeader hdr;
     int i;
 
-    _tzset();
+#if !defined(ANDROID) && !defined(__SWITCH__) && !defined(WIIU)
+    tzset();
+#endif
     zv = zvolume_alloc (zf, ArchiveFormatLHA, NULL, NULL);
     while (get_header(zf, &hdr)) {
-	struct znode *zn;
-	int method;
+        struct znode *zn;
+        int method;
 
-	for (i = 0; methods[i]; i++) {
-	    if (!strcmp (methods[i], hdr.method))
-		method = i;
-	}
-	memset (&zai, 0, sizeof zai);
-	zai.name = au (hdr.name);
-	zai.size = hdr.original_size;
-	zai.flags = hdr.attribute;
-	if (hdr.extend_type != 0) {
-		zai.t = hdr.unix_last_modified_stamp -= timezone;
-	} else {
-		struct tm t;
-		uae_u32 v = hdr.last_modified_stamp;
-		t.tm_sec = (v & 0x1f) * 2;
-		t.tm_min = (v >> 5) & 0x3f;
-		t.tm_hour = (v >> 11) & 0x1f;
-		t.tm_mday = (v >> 16) & 0x1f;
-		t.tm_mon = ((v >> 21) & 0xf) - 1;
-		t.tm_year = ((v >> 25) & 0x7f) + 80;
-		zai.tv.tv_sec = mktime (&t) - _timezone;
-	}
-	if (hdr.name[strlen(hdr.name) + 1] != 0)
-	    zai.comment = au (&hdr.name[strlen(hdr.name) + 1]);
-	if (method == LZHDIRS_METHOD_NUM) {
-	    zvolume_adddir_abs (zv, &zai);
-	} else {
-	    zn = zvolume_addfile_abs (zv, &zai);
-	    zn->offset = zfile_ftell(zf);
-	    zn->packedsize = hdr.packed_size;
-	    zn->method = method;
-	}
-	xfree (zai.name);
-	xfree (zai.comment);
-	zfile_fseek (zf, hdr.packed_size, SEEK_CUR);
-
+        for (i = 0; methods[i]; i++) {
+            if (!strcmp (methods[i], hdr.method))
+            method = i;
+        }
+        memset (&zai, 0, sizeof zai);
+        zai.name = au (hdr.name);
+        zai.size = hdr.original_size;
+        zai.flags = hdr.attribute;
+        if (hdr.extend_type != 0) {
+#if !defined(ANDROID) && !defined(__SWITCH__) && !defined(WIIU)
+            zai.tv.tv_sec = hdr.unix_last_modified_stamp -= timezone;
+#endif
+        } else {
+            struct tm t;
+            uae_u32 v = hdr.last_modified_stamp;
+            t.tm_sec = (v & 0x1f) * 2;
+            t.tm_min = (v >> 5) & 0x3f;
+            t.tm_hour = (v >> 11) & 0x1f;
+            t.tm_mday = (v >> 16) & 0x1f;
+            t.tm_mon = ((v >> 21) & 0xf) - 1;
+            t.tm_year = ((v >> 25) & 0x7f) + 80;
+#if !defined(ANDROID) && !defined(__SWITCH__) && !defined(WIIU)
+            zai.tv.tv_sec = mktime (&t) - timezone;
+#endif
+        }
+        if (hdr.name[strlen(hdr.name) + 1] != 0)
+            zai.comment = au (&hdr.name[strlen(hdr.name) + 1]);
+        if (method == LZHDIRS_METHOD_NUM) {
+            zvolume_adddir_abs (zv, &zai);
+        } else {
+            zn = zvolume_addfile_abs (zv, &zai);
+            zn->offset = zfile_ftell(zf);
+            zn->packedsize = hdr.packed_size;
+            zn->method = method;
+        }
+        xfree (zai.name);
+        xfree (zai.comment);
+        zfile_fseek (zf, hdr.packed_size, SEEK_CUR);
     }
     return zv;
 }

@@ -1,7 +1,3 @@
-#pragma once
-#ifndef SRC_INCLUDE_ZFILE_H_INCLUDED
-#define SRC_INCLUDE_ZFILE_H_INCLUDED 1
-
  /*
   * UAE - The Un*x Amiga Emulator
   *
@@ -9,6 +5,9 @@
   *
   * (c) 1996 Samuel Devulder
   */
+
+#ifndef UAE_ZFILE_H
+#define UAE_ZFILE_H
 
 struct zvolume;
 struct zdirectory;
@@ -25,21 +24,21 @@ struct zdirectory;
 struct fs_dirhandle
 {
 	int fstype;
-//	union {
+	union {
 		struct zdirectory *zd;
 		struct my_opendir_s *od;
 		struct cd_opendir_s *isod;
-//	};
+	};
 };
 
 struct fs_filehandle
 {
 	int fstype;
-//	union {
+	union {
 		struct zfile *zf;
 		struct my_openfile_s *of;
 		struct cd_openfile_s *isof;
-//	};
+	};
 };
 
 extern struct zfile *zfile_fopen (const TCHAR *, const TCHAR *, int mask);
@@ -47,7 +46,7 @@ extern struct zfile *zfile_fopen2 (const TCHAR *, const TCHAR *);
 extern struct zfile *zfile_fopen4 (const TCHAR *, const TCHAR *, int mask, int index);
 extern struct zfile *zfile_fopen_empty (struct zfile*, const TCHAR *name, uae_u64 size);
 extern struct zfile *zfile_fopen_empty2 (struct zfile*, const TCHAR *name);
-//extern struct zfile *zfile_fopen_data (const TCHAR *name, uae_u64 size, const uae_u8 *data);
+extern struct zfile *zfile_fopen_data (const TCHAR *name, uae_u64 size, const uae_u8 *data);
 extern struct zfile *zfile_fopen_load_zfile (struct zfile *f);
 extern uae_u8 *zfile_load_data (const TCHAR *name, const uae_u8 *data,int datalen, int *outlen);
 extern struct zfile *zfile_fopen_parent (struct zfile*, const TCHAR*, uae_u64 offset, uae_u64 size);
@@ -127,8 +126,7 @@ extern int zfile_stat_archive (const TCHAR *path, struct mystat *statbuf);
 extern struct zdirectory *zfile_opendir_archive (const TCHAR *path);
 extern struct zdirectory *zfile_opendir_archive2 (const TCHAR *path, int flags);
 extern void zfile_closedir_archive (struct zdirectory *);
-extern int zfile_readdir_archive (struct zdirectory *, TCHAR*);
-extern int zfile_readdir_archive3 (struct zdirectory *, TCHAR*, bool fullpath);
+extern struct dirent*/*int*/ zfile_readdir_archive (struct zdirectory *, TCHAR*);
 extern void zfile_resetdir_archive (struct zdirectory *);
 extern int zfile_fill_file_attrs_archive (const TCHAR *path, int *isdir, int *flags, TCHAR **comment);
 extern uae_s64 zfile_lseek_archive (struct zfile *d, uae_s64 offset, int whence);
@@ -143,4 +141,4 @@ extern struct zfile *zfile_fopen_data (const TCHAR *name, uae_u64 size, const ua
 extern void timeval_to_amiga (struct mytimeval *tv, int* days, int* mins, int* ticks);
 extern void amiga_to_timeval (struct mytimeval *tv, int days, int mins, int ticks);
 
-#endif /* SRC_INCLUDE_ZFILE_H_INCLUDED */
+#endif /* UAE_ZFILE_H */
