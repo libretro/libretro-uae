@@ -2716,7 +2716,7 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       opt_statusbar_position_offset = opt_statusbar_position_old - opt_statusbar_position;
 
       /* Compensate for the last line in PAL HIRES */
-      if (video_config_geometry & (PUAE_VIDEO_PAL && PUAE_VIDEO_HIRES) && zoom_mode_id==0 && opt_statusbar_position >= 0)
+      if (video_config_geometry & PUAE_VIDEO_PAL && video_config_geometry & PUAE_VIDEO_HIRES && retroh == defaulth && opt_statusbar_position >= 0)
          opt_statusbar_position += 1;
 
       //fprintf(stdout, "statusbar:%3d old:%3d offset:%3d, retroh:%d defaulth:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, retroh, defaulth);
