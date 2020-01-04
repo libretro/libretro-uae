@@ -53,8 +53,8 @@ extern int pix_bytes;
 extern bool fake_ntsc;
 extern bool real_ntsc;
 
-int vkb_pos_x = 0;
-int vkb_pos_y = 0;
+int vkey_pos_x = 0;
+int vkey_pos_y = 0;
 int vkflag[7]={0};
 static int jflag[4][16]={0};
 static int kjflag[2][16]={0};
@@ -108,6 +108,15 @@ enum EMU_FUNCTIONS {
 bool let_go_of_direction = true;
 long last_move_time = 0;
 long last_press_time = 0;
+
+/* VKBD_STICKY_HOLDING_TIME: Button press longer than this triggers sticky key */
+#define VKBD_STICKY_HOLDING_TIME 1000
+int let_go_of_button = 1;
+long last_press_time_button = 0;
+int vkey_pressed=-1;
+int vkey_sticky=-1;
+int vkey_sticky1=-1;
+int vkey_sticky2=-1;
 
 void emu_function(int function)
 {
@@ -834,27 +843,45 @@ void update_input(int disable_physical_cursor_keys)
    // INDEX    0   1   2   3   4   5   6   7   8   9   10  11  12  13  14  15  16  17  18  19  20  21  22  23
 
    static int i, j, mk;
-   static int oldi=-1;
+
+   static long now;
+   static int last_vkey_pressed = -1;
+   static int vkey_sticky1_release = 0;
+   static int vkey_sticky2_release = 0;
 
    static int LX, LY, RX, RY;
-   static int threshold=20000;
+   static int threshold = 20000;
+
+   now = GetTicks();
+
+   if (vkey_sticky && last_vkey_pressed != -1)
+   {
+      if (vkey_sticky1 > -1 && vkey_sticky1 != last_vkey_pressed)
+      {
+         if (vkey_sticky2 > -1 && vkey_sticky2 != last_vkey_pressed)
+            retro_key_up(vkey_sticky2);
+         vkey_sticky2 = last_vkey_pressed;
+      }
+      else
+         vkey_sticky1 = last_vkey_pressed;
+   }
 
    /* Keyup only after button is up */
-   if (oldi!=-1 && vkflag[4]!=1)
+   if (last_vkey_pressed !=-1 && vkflag[4]!=1)
    {
-      if (oldi < -10)
+      if (last_vkey_pressed < -10)
       {
-         if (oldi==-15)
+         if (last_vkey_pressed==-15)
          {
             retro_mouse_button(0, 0, 0);
             mflag[0][RETRO_DEVICE_ID_JOYPAD_B]=0;
          }
-         if (oldi==-16)
+         if (last_vkey_pressed==-16)
          {
             retro_mouse_button(0, 1, 0);
             mflag[0][RETRO_DEVICE_ID_JOYPAD_A]=0;
          }
-         if (oldi==-17)
+         if (last_vkey_pressed==-17)
          {
             retro_mouse_button(0, 2, 0);
             mflag[0][RETRO_DEVICE_ID_JOYPAD_Y]=0;
@@ -862,13 +889,27 @@ void update_input(int disable_physical_cursor_keys)
       }
       else
       {
-         retro_key_up(oldi);
+         if (vkey_pressed == -1 && last_vkey_pressed >= 0 && last_vkey_pressed != vkey_sticky1 && last_vkey_pressed != vkey_sticky2)
+            retro_key_up(last_vkey_pressed);
 
          if (SHIFTON==1)
             retro_key_up(keyboard_translation[RETROK_LSHIFT]);
       }
 
-      oldi=-1;
+      last_vkey_pressed=-1;
+   }
+
+   if (vkey_sticky1_release)
+   {
+      vkey_sticky1_release=0;
+      vkey_sticky1=-1;
+      retro_key_up(vkey_sticky1);
+   }
+   if (vkey_sticky2_release)
+   {
+      vkey_sticky2_release=0;
+      vkey_sticky2=-1;
+      retro_key_up(vkey_sticky2);
    }
 
    input_poll_cb();
@@ -1127,7 +1168,6 @@ void update_input(int disable_physical_cursor_keys)
          if (SHOWKEYTRANS==1)
             reset_drawing();
 
-         long now = GetTicks();
          if (let_go_of_direction)
             /* just pressing down */
             last_press_time = now;
@@ -1139,28 +1179,28 @@ void update_input(int disable_physical_cursor_keys)
             last_move_time = now;
 
             if (vkflag[0])
-               vkb_pos_y -= 1;
+               vkey_pos_y -= 1;
             else if (vkflag[1])
-               vkb_pos_y += 1;
+               vkey_pos_y += 1;
 
             if (vkflag[2])
-               vkb_pos_x -= 1;
+               vkey_pos_x -= 1;
             else if (vkflag[3])
-               vkb_pos_x += 1;
+               vkey_pos_x += 1;
          }
          let_go_of_direction = false;
       }
       else
          let_go_of_direction = true;
 
-      if (vkb_pos_x < 0)
-         vkb_pos_x=NPLGN-1;
-      else if (vkb_pos_x > NPLGN-1)
-         vkb_pos_x=0;
-      if (vkb_pos_y < 0)
-         vkb_pos_y=NLIGN-1;
-      else if (vkb_pos_y > NLIGN-1)
-         vkb_pos_y=0;
+      if (vkey_pos_x < 0)
+         vkey_pos_x=NPLGN-1;
+      else if (vkey_pos_x > NPLGN-1)
+         vkey_pos_x=0;
+      if (vkey_pos_y < 0)
+         vkey_pos_y=NLIGN-1;
+      else if (vkey_pos_y > NLIGN-1)
+         vkey_pos_y=0;
 
       /* Position toggle, RetroPad X */
       i=RETRO_DEVICE_ID_JOYPAD_X;
@@ -1192,44 +1232,44 @@ void update_input(int disable_physical_cursor_keys)
       i=RETRO_DEVICE_ID_JOYPAD_B;
       if (vkflag[4]==0 && (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_RETURN)))
       {
-         i=check_vkey(vkb_pos_x,vkb_pos_y);
+         vkey_pressed = check_vkey(vkey_pos_x, vkey_pos_y);
 
-         if (i < -10 && i > -15)
+         if (vkey_pressed < -10 && vkey_pressed > -15)
             ; // Allow mouse movement hold
          else
             vkflag[4]=1;
 
-         if (i==-1)
-            oldi=-1;
-         else if (i==-2)
+         if (vkey_pressed==-1)
+            last_vkey_pressed=-1;
+         else if (vkey_pressed==-2)
          {
-            oldi=-1;
+            last_vkey_pressed=-1;
             NPAGE=-NPAGE;
             reset_drawing();
          }
-         else if (i < -10)
+         else if (vkey_pressed < -10)
          {
-            oldi=i;
+            last_vkey_pressed=vkey_pressed;
 
-            if (i==-11) // Mouse up
+            if (vkey_pressed==-11) // Mouse up
                retro_mouse(0, 0, -3);
-            if (i==-12) // Mouse down
+            if (vkey_pressed==-12) // Mouse down
                retro_mouse(0, 0, 3);
-            if (i==-13) // Mouse left
+            if (vkey_pressed==-13) // Mouse left
                retro_mouse(0, -3, 0);
-            if (i==-14) // Mouse right
+            if (vkey_pressed==-14) // Mouse right
                retro_mouse(0, 3, 0);
-            if (i==-15) // LMB
+            if (vkey_pressed==-15) // LMB
             {
                retro_mouse_button(0, 0, 1);
                mflag[0][RETRO_DEVICE_ID_JOYPAD_B]=1;
             }
-            if (i==-16) // RMB
+            if (vkey_pressed==-16) // RMB
             {
                retro_mouse_button(0, 1, 1);
                mflag[0][RETRO_DEVICE_ID_JOYPAD_A]=1;
             }
-            if (i==-17) // MMB
+            if (vkey_pressed==-17) // MMB
             {
                retro_mouse_button(0, 2, 1);
                mflag[0][RETRO_DEVICE_ID_JOYPAD_Y]=1;
@@ -1237,29 +1277,52 @@ void update_input(int disable_physical_cursor_keys)
          }
          else
          {
-            if (i==AK_CAPSLOCK)
+            if (vkey_pressed==AK_CAPSLOCK)
             {
-               retro_key_down(i);
-               retro_key_up(i);
+               retro_key_down(vkey_pressed);
+               retro_key_up(vkey_pressed);
                SHIFTON=-SHIFTON;
                reset_drawing();
-               oldi=-1;
+               last_vkey_pressed=-1;
             }
             else
             {
-               oldi=i;
+               last_vkey_pressed=vkey_pressed;
                if (SHIFTON==1)
                   retro_key_down(keyboard_translation[RETROK_LSHIFT]);
 
-               retro_key_down(i);
+               if (!vkey_sticky)
+               {
+                  if (vkey_pressed == vkey_sticky1)
+                     vkey_sticky1_release = 1;
+                  if (vkey_pressed == vkey_sticky2)
+                     vkey_sticky2_release = 1;
+               }
+               retro_key_down(vkey_pressed);
             }
          }
       }
       else if (vkflag[4]==1 && (!input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && !input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i) && !input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_RETURN)))
       {
+         vkey_pressed = -1;
          vkflag[4]=0;
       }
+
+      if (vkflag[4])
+      {
+         if (let_go_of_button)
+            last_press_time_button = now;
+         if (now-last_press_time_button>VKBD_STICKY_HOLDING_TIME)
+            vkey_sticky = 1;
+         let_go_of_button = 0;
+      }
+      else
+      {
+         let_go_of_button = 1;
+         vkey_sticky = 0;
+      }
    }
+   //printf("vkey:%d sticky:%d sticky1:%d sticky2:%d, now:%d last:%d\n", vkey_pressed, vkey_sticky, vkey_sticky1, vkey_sticky2, now, last_press_time_button);
 }
 
 void retro_poll_event()
@@ -1465,14 +1528,14 @@ void retro_poll_event()
                if (abs(analog_left[0]) > 0)
                {
                   uae_mouse_x[j] = analog_left[0] * 10 * (opt_analogmouse_speed * opt_analogmouse_speed * 0.7) / (32768 / mouse_multiplier);
-                  if (uae_mouse_x[j] == 0)
+                  if (uae_mouse_x[j] == 0 && mouse_multiplier != 1)
                      uae_mouse_x[j] = (analog_left[0] > 0) ? 1 : -1;
                }
 
                if (abs(analog_left[1]) > 0)
                {
                   uae_mouse_y[j] = analog_left[1] * 10 * (opt_analogmouse_speed * opt_analogmouse_speed * 0.7) / (32768 / mouse_multiplier);
-                  if (uae_mouse_y[j] == 0)
+                  if (uae_mouse_y[j] == 0 && mouse_multiplier != 1)
                      uae_mouse_y[j] = (analog_left[1] > 0) ? 1 : -1;
                }
             }
@@ -1504,14 +1567,14 @@ void retro_poll_event()
                if (abs(analog_right[0]) > 0)
                {
                   uae_mouse_x[j] = analog_right[0] * 10 * (opt_analogmouse_speed * opt_analogmouse_speed * 0.7) / (32768 / mouse_multiplier);
-                  if (uae_mouse_x[j] == 0)
+                  if (uae_mouse_x[j] == 0 && mouse_multiplier != 1)
                      uae_mouse_x[j] = (analog_right[0] > 0) ? 1 : -1;
                }
 
                if (abs(analog_right[1]) > 0)
                {
                   uae_mouse_y[j] = analog_right[1] * 10 * (opt_analogmouse_speed * opt_analogmouse_speed * 0.7) / (32768 / mouse_multiplier);
-                  if (uae_mouse_y[j] == 0)
+                  if (uae_mouse_y[j] == 0 && mouse_multiplier != 1)
                      uae_mouse_y[j] = (analog_right[1] > 0) ? 1 : -1;
                }
             }

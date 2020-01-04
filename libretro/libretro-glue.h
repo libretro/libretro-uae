@@ -24,6 +24,11 @@ extern int zoomed_height;
 extern bool retro_update_av_info(bool, bool, bool);
 extern void reset_drawing();
 
+extern int vkey_pressed;
+extern int vkey_sticky;
+extern int vkey_sticky1;
+extern int vkey_sticky2;
+
 #define LOGI printf
 
 #define NPLGN 11

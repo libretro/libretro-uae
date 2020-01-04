@@ -30,6 +30,8 @@ And of course for the RetroArch/Libretro team: "http://www.libretro.com/"
 |A|Toggle transparency|
 |X|Toggle position|
 
+Long press for sticky keys. Stickying a third key will replace the second.
+
 ## Configuration
 To generate the temporary uae configuration file the core will use the core options configured in RetroArch.
 
@@ -37,15 +39,16 @@ The most important option is the model.
 
 The following models are provided (hardcoded configuration):
 
-|Model|Description|
-|---|---|
-|A500|Amiga 500 with OCS chipset, 0.5MB Chip RAM + 0.5MB Slow RAM|
-|A500OG|Amiga 500 with OCS chipset, 0.5MB Chip RAM|
-|A500+|Amiga 500+ with ECS chipset, 1MB Chip RAM|
-|A600|Amiga 600 with ECS chipset, 2MB Chip RAM + 8MB Fast RAM|
-|A1200|Amiga 1200 with AGA chipset, 2MB Chip RAM + 8MB Fast RAM|
-|A1200OG|Amiga 1200 with AGA chipset, 2MB Chip RAM|
-|CD32|Amiga CD32 with AGA chipset, 2MB Chip RAM|
+|Short|Long|Chipset|Memory|
+|---|---|---|---|
+|A500|Amiga 500|OCS|0.5MB Chip RAM + 0.5MB Slow RAM|
+|A500OG|Amiga 500|OCS|0.5MB Chip RAM|
+|A500+|Amiga 500+|ECS|1MB Chip RAM|
+|A600|Amiga 600|ECS|2MB Chip RAM + 8MB Fast RAM|
+|A1200|Amiga 1200|AGA|2MB Chip RAM + 8MB Fast RAM|
+|A1200OG|Amiga 1200|AGA|2MB Chip RAM|
+|CD32|Amiga CD32|AGA|2MB Chip RAM|
+|CD32FR|Amiga CD32|AGA|2MB Chip RAM + 8MB Fast RAM|
 
 As the configuration file is only generated at launch you must restart RetroArch for the change to take effect.
 
@@ -54,21 +57,21 @@ To use this core you'll need the following Kickstart ROMs. Rename them to the gi
 
 It is critical to use Kickstarts with the correct MD5, otherwise the core might not start.
 
-|System|Description|Filename|Size|MD5|
+|System|Version|Filename|Size|MD5|
 |---|---|---|---|---|
-|Amiga 500|Kickstart v1.3 rev 34.005|**kick34005.A500**|262 144|82a21c1890cae844b3df741f2762d48d|
-|Amiga 500+|Kickstart v2.04 rev 37.175|**kick37175.A500**|524 288|dc10d7bdd1b6f450773dfb558477c230|
-|Amiga 600|Kickstart v3.1 rev 40.063|**kick40063.A600**|524 288|e40a5dfb3d017ba8779faba30cbd1c8e|
-|Amiga 1200|Kickstart v3.1 rev 40.068|**kick40068.A1200**|524 288|646773759326fbac3b2311fd8c8793ee|
+|A500|KS v1.3 rev 34.005|**kick34005.A500**|262 144|82a21c1890cae844b3df741f2762d48d|
+|A500+|KS v2.04 rev 37.175|**kick37175.A500**|524 288|dc10d7bdd1b6f450773dfb558477c230|
+|A600|KS v3.1 rev 40.063|**kick40063.A600**|524 288|e40a5dfb3d017ba8779faba30cbd1c8e|
+|A1200|KS v3.1 rev 40.068|**kick40068.A1200**|524 288|646773759326fbac3b2311fd8c8793ee|
 
 For CD32 you need either separate ROMs (Kickstart + extended ROM) or the combined ROM:
 
-|System|Description|Filename|Size|MD5|
+|System|Version|Filename|Size|MD5|
 |---|---|---|---|---|
-|Amiga CD32|CD32 (KS + extended) v3.1 rev 40.060|**kick40060.CD32**|1 048 576|f2f241bf094168cfb9e7805dc2856433|
+|CD32|KS + extended v3.1 rev 40.060|**kick40060.CD32**|1 048 576|f2f241bf094168cfb9e7805dc2856433|
 | | | **OR** | | |
-|Amiga CD32|CD32 Kickstart v3.1 rev 40.060|**kick40060.CD32**|524 288|5f8924d013dd57a89cf349f4cdedc6b1|
-|Amiga CD32|CD32 Extended ROM rev 40.060|**kick40060.CD32.ext**|524 288|bb72565701b1b6faece07d68ea5da639|
+|CD32|KS v3.1 rev 40.060|**kick40060.CD32**|524 288|5f8924d013dd57a89cf349f4cdedc6b1|
+|CD32|Extended ROM rev 40.060|**kick40060.CD32.ext**|524 288|bb72565701b1b6faece07d68ea5da639|
 
 
 ### Resolution and rendering
@@ -201,12 +204,14 @@ To do this just add the particular string to the filename:
 
 |String|Result|
 |---|---|
-|**(A500)** or **OCS**|Amiga 500|
-|**(A500OG)** or **(512K)**|Amiga 500 without memory expansion|
-|**(A500+)** or **(A500PLUS)**|Amiga 500+|
-|**(A600)** or **ECS**|Amiga 600|
-|**(A1200)** or **AGA**|Amiga 1200|
-|**(A1200OG)** or **(A1200NF)**|Amiga 1200 without memory expansion|
+|**(A500)** or **OCS**|Amiga 500, 0.5MB Chip RAM + 0.5MB Slow RAM|
+|**(A500OG)** or **(512K)**|Amiga 500, 0.5MB Chip RAM|
+|**(A500+)** or **(A500PLUS)**|Amiga 500+, 1MB Chip RAM|
+|**(A600)** or **ECS**|Amiga 600, 2MB Chip RAM + 8MB Fast RAM|
+|**(A1200)** or **AGA**|Amiga 1200, 2MB Chip RAM + 8MB Fast RAM|
+|**(A1200OG)** or **(A1200NF)**|Amiga 1200, 2MB Chip RAM|
+|**(CD32)** or **(CD32NF)**|CD32, 2MB Chip RAM|
+|**(CD32FR)** or **FastRAM**|CD32, 2MB Chip RAM + 8MB Fast RAM|
 |**(NTSC)**|NTSC 60Hz|
 |**(PAL)**|PAL 50Hz|
 |**(MD)**|Insert each disk in a different drive (Maximum 4 disks)|
@@ -236,6 +241,7 @@ Note that for most HDF files, the model has to be set to A1200 in Quickmenu->Opt
 If you are using RDB HDF files, please use 0,0,0,0 instead of geometry numbers like 32,1,2,512. The geometry will then be read from the file. This only works for RDB HDF files.
 
 ## Latest features
+- Retroplay WHDLoad LHA support (sonninnos)
 - CD32 support (sonninnos)
 - WHDLoad.prefs override core option (sonninnos)
 - Internal+external floppy drive sounds (sonninnos)
