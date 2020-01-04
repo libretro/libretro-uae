@@ -45,8 +45,8 @@ void gettimeofday (struct timeval *tv, void *blah)
 #define MOUSE_SPEED_FAST 2
 
 int NPAGE=-1;
-int SHIFTON=-1,ALTON=-1;
-int MOUSEMODE=-1,SHOWKEY=-1,SHOWKEYPOS=-1,SHOWKEYTRANS=-1,STATUSON=-1,LEDON=-1;
+int SHIFTON=-1,ALTON=-1,STATUSON=-1,LEDON=-1;
+int MOUSEMODE=-1,SHOWKEY=-1,SHOWKEYPOS=-1,SHOWKEYTRANS=1;
 
 unsigned int mouse_speed[2]={0};
 extern int pix_bytes;
@@ -124,7 +124,6 @@ void emu_function(int function)
    {
       case EMU_VKBD:
          SHOWKEY = -SHOWKEY;
-         reset_drawing();
          break;
       case EMU_STATUSBAR:
          STATUSON = -STATUSON;
@@ -395,37 +394,37 @@ void Print_Status(void)
    // Statusbar output
    if (pix_bytes == 4)
    {
-      DrawFBoxBmp32((uint32_t *)retro_bmp,0,BOX_Y,BOX_WIDTH,BOX_HEIGHT,RGB888(0,0,0));
+      DrawFBoxBmp32((uint32_t *)retro_bmp,0,BOX_Y,BOX_WIDTH,BOX_HEIGHT,RGB888(0,0,0),255);
 
       if (JOYPORT1_COLORIZE)
          FONT_COLOR = joystick_color(jflag[0], pix_bytes);
-      Draw_text32((uint32_t *)retro_bmp,STAT_DECX+0,STAT_BASEY,FONT_COLOR,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT1);
+      Draw_text32((uint32_t *)retro_bmp,STAT_DECX+0,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT1);
       if (JOYPORT1_COLORIZE)
          FONT_COLOR = FONT_COLOR_DEFAULT;
       if (JOYPORT2_COLORIZE)
          FONT_COLOR = joystick_color(jflag[1], pix_bytes);
-      Draw_text32((uint32_t *)retro_bmp,STAT_DECX+40,STAT_BASEY,FONT_COLOR,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT2);
+      Draw_text32((uint32_t *)retro_bmp,STAT_DECX+40,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT2);
       if (JOYPORT2_COLORIZE)
          FONT_COLOR = FONT_COLOR_DEFAULT;
-      Draw_text32((uint32_t *)retro_bmp,STAT_DECX+80,STAT_BASEY,FONT_COLOR,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT3);
-      Draw_text32((uint32_t *)retro_bmp,STAT_DECX+120,STAT_BASEY,FONT_COLOR,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT4);
+      Draw_text32((uint32_t *)retro_bmp,STAT_DECX+80,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT3);
+      Draw_text32((uint32_t *)retro_bmp,STAT_DECX+120,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT4);
    }
    else
    {
-      DrawFBoxBmp(retro_bmp,0,BOX_Y,BOX_WIDTH,BOX_HEIGHT,RGB565(0,0,0));
+      DrawFBoxBmp(retro_bmp,0,BOX_Y,BOX_WIDTH,BOX_HEIGHT,RGB565(0,0,0),255);
 
       if (JOYPORT1_COLORIZE)
          FONT_COLOR = joystick_color(jflag[0], pix_bytes);
-      Draw_text(retro_bmp,STAT_DECX+0,STAT_BASEY,FONT_COLOR,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT1);
+      Draw_text(retro_bmp,STAT_DECX+0,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT1);
       if (JOYPORT1_COLORIZE)
          FONT_COLOR = FONT_COLOR_DEFAULT;
       if (JOYPORT2_COLORIZE)
          FONT_COLOR = joystick_color(jflag[1], pix_bytes);
-      Draw_text(retro_bmp,STAT_DECX+40,STAT_BASEY,FONT_COLOR,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT2);
+      Draw_text(retro_bmp,STAT_DECX+40,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT2);
       if (JOYPORT2_COLORIZE)
          FONT_COLOR = FONT_COLOR_DEFAULT;
-      Draw_text(retro_bmp,STAT_DECX+80,STAT_BASEY,FONT_COLOR,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT3);
-      Draw_text(retro_bmp,STAT_DECX+120,STAT_BASEY,FONT_COLOR,0x0000,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT4);
+      Draw_text(retro_bmp,STAT_DECX+80,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT3);
+      Draw_text(retro_bmp,STAT_DECX+120,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT4);
    }
 }
 
@@ -767,7 +766,6 @@ void ProcessKey(int disable_physical_cursor_keys)
             retro_key_down(keyboard_translation[i]);
             retro_key_up(keyboard_translation[i]);
             SHIFTON=-SHIFTON;
-            reset_drawing();
             key_state2[i]=1;
          }
          else if (!key_state[i] && key_state2[i]==1)
@@ -1164,10 +1162,6 @@ void update_input(int disable_physical_cursor_keys)
 
       if (vkflag[0] || vkflag[1] || vkflag[2] || vkflag[3])
       {
-         /* Movement needs screen refresh in transparent mode */
-         if (SHOWKEYTRANS==1)
-            reset_drawing();
-
          if (let_go_of_direction)
             /* just pressing down */
             last_press_time = now;
@@ -1208,7 +1202,6 @@ void update_input(int disable_physical_cursor_keys)
       {
          vkflag[6]=1;
          SHOWKEYPOS=-SHOWKEYPOS;
-         reset_drawing();
       }
       else if (vkflag[6]==1 && (!input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && !input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i)))
       {
@@ -1221,7 +1214,6 @@ void update_input(int disable_physical_cursor_keys)
       {
          vkflag[5]=1;
          SHOWKEYTRANS=-SHOWKEYTRANS;
-         reset_drawing();
       }
       else if (vkflag[5]==1 && (!input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && !input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i)))
       {
@@ -1245,7 +1237,6 @@ void update_input(int disable_physical_cursor_keys)
          {
             last_vkey_pressed=-1;
             NPAGE=-NPAGE;
-            reset_drawing();
          }
          else if (vkey_pressed < -10)
          {
@@ -1282,7 +1273,6 @@ void update_input(int disable_physical_cursor_keys)
                retro_key_down(vkey_pressed);
                retro_key_up(vkey_pressed);
                SHIFTON=-SHIFTON;
-               reset_drawing();
                last_vkey_pressed=-1;
             }
             else
