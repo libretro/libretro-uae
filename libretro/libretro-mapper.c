@@ -161,15 +161,6 @@ void emu_function(int function)
    }
 }
 
-int STAT_BASEY;
-int STAT_DECX=4;
-int FONT_WIDTH=1;
-int FONT_HEIGHT=1;
-int BOX_PADDING=2;
-int BOX_Y;
-int BOX_WIDTH;
-int BOX_HEIGHT=11;
-
 extern char key_state[512];
 extern char key_state2[512];
 
@@ -319,13 +310,25 @@ void Print_Status(void)
    if (!opt_enhanced_statusbar)
       return;
 
+   static int STAT_BASEY;
+   static int BOX_WIDTH;
+   static int BOX_HEIGHT;
+   static int BOX_PADDING=2;
+   static int BOX_Y;
+
+   static int FONT_WIDTH=1;
+   static int FONT_HEIGHT=1;
+   static int STAT_DECX=4;
+
    // Statusbar location
    if (opt_statusbar_position < 0) // Top
       STAT_BASEY=2;
    else // Bottom
       STAT_BASEY=gfxvidinfo.outheight-opt_statusbar_position-BOX_HEIGHT+2;
 
-   BOX_WIDTH=retrow-146;
+   // Statusbar size
+   BOX_WIDTH=retrow-(24*5)-2; // (LED-width * LED-num) - LED-border
+   BOX_HEIGHT=11;
    BOX_Y=STAT_BASEY-BOX_PADDING;
 
    // Joy port indicators

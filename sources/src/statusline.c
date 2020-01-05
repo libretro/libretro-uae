@@ -52,15 +52,28 @@ void statusline_getpos (int *x, int *y, int width, int height)
 	}
 }
 
+#ifdef __LIBRETRO__
 static const char *numbers = { /* ugly  0123456789CHD%+-PNKV */
-	"+++++++--++++-+++++++++++++++++-++++++++++++++++++++++++++++++++++++++++++++-++++++-++++----++---+--------------++++++++++++++++++++++++-+++"
-	"+xxxxx+--+xx+-+xxxxx++xxxxx++x+-+x++xxxxx++xxxxx++xxxxx++xxxxx++xxxxx++xxxx+-+x++x+-+xxx++-+xx+-+x---+----------+xxxxx++x+++x++x++x+++x+-+x+"
-	"+x+++x+--++x+-+++++x++++++x++x+++x++x++++++x++++++++++x++x+++x++x+++x++x++++-+x++x+-+x++x+--+x++x+--+x+----+++--+x---x++xx++x++x+x++++x+-+x+"
-	"+x+-+x+---+x+-+xxxxx++xxxxx++xxxxx++xxxxx++xxxxx+--++x+-+xxxxx++xxxxx++x+----+xxxx+-+x++x+----+x+--+xxx+--+xxx+-+xxxxx++x+x+x++xx++++++x+x++"
-	"+x+++x+---+x+-+x++++++++++x++++++x++++++x++x+++x+--+x+--+x+++x++++++x++x++++-+x++x+-+x++x+---+x+x+--+x+----+++--+x++++++x+x+x++x+x+++-+xxx+-"
-	"+xxxxx+---+x+-+xxxxx++xxxxx+----+x++xxxxx++xxxxx+--+x+--+xxxxx++xxxxx++xxxx+-+x++x+-+xxx+---+x++xx--------------+x+----+x++xx++x++x++-++x++-"
-	"+++++++---+++-++++++++++++++----+++++++++++++++++--+++--++++++++++++++++++++-++++++-++++------------------------+++----++++++++++++++--+++--"
+	"+++++++--++++-+++++++++++++++++-++++++++++++++++++++++++++++++++++++++-+++++++++-+++++++++--++---+--------------++++++++++++++++++++++++-+++"
+	"+xxxxx+--+xx+-+xxxxx++xxxxx++x+-+x++xxxxx++xxxxx++xxxxx++xxxxx++xxxxx+++xxxx++x+-+x++xxxx+++xx+-+x---+----------+xxxxx++x+++x++x++x+++x+-+x+"
+	"+x+++x+--++x+-+++++x++++++x++x+++x++x++++++x++++++++++x++x+++x++x+++x++x++++++x+++x++x+++x+-+x++x+--+x+----+++--+x---x++xx++x++x+x++++x+++x+"
+	"+x+-+x+---+x+-+xxxxx++xxxxx++xxxxx++xxxxx++xxxxx+--++x+-+xxxxx++xxxxx++x+----+xxxxx++x+-+x+---+x+--+xxx+--+xxx+-+xxxxx++x+x+x++xx++++++x+x++"
+	"+x+++x+---+x+-+x++++++++++x++++++x++++++x++x+++x+--+x+--+x+++x++++++x++x++++++x+++x++x+++x+--+x+x+--+x+----+++--+x++++++x++xx++x+x+++-+x+x+-"
+	"+xxxxx+---+x+-+xxxxx++xxxxx+----+x++xxxxx++xxxxx+--+x+--+xxxxx++xxxxx+++xxxx++x+-+x++xxxx++-+x++xx--------------+x+----+x+++x++x++x++-++x++-"
+	"+++++++---+++-++++++++++++++----+++++++++++++++++--+++--++++++++++++++-+++++++++-+++++++++----------------------+++----++++++++++++++--+++--"
 };
+#else
+static const char *numbers = { /* ugly  0123456789CHD%+-PNK */
+	"+++++++--++++-+++++++++++++++++-++++++++++++++++++++++++++++++++++++++++++++-++++++-++++----++---+--------------+++++++++++++++++++++"
+	"+xxxxx+--+xx+-+xxxxx++xxxxx++x+-+x++xxxxx++xxxxx++xxxxx++xxxxx++xxxxx++xxxx+-+x++x+-+xxx++-+xx+-+x---+----------+xxxxx++x+++x++x++x++"
+	"+x+++x+--++x+-+++++x++++++x++x+++x++x++++++x++++++++++x++x+++x++x+++x++x++++-+x++x+-+x++x+--+x++x+--+x+----+++--+x---x++xx++x++x+x+++"
+	"+x+-+x+---+x+-+xxxxx++xxxxx++xxxxx++xxxxx++xxxxx+--++x+-+xxxxx++xxxxx++x+----+xxxx+-+x++x+----+x+--+xxx+--+xxx+-+xxxxx++x+x+x++xx++++"
+	"+x+++x+---+x+-+x++++++++++x++++++x++++++x++x+++x+--+x+--+x+++x++++++x++x++++-+x++x+-+x++x+---+x+x+--+x+----+++--+x++++++x+x+x++x+x+++"
+	"+xxxxx+---+x+-+xxxxx++xxxxx+----+x++xxxxx++xxxxx+--+x+--+xxxxx++xxxxx++xxxx+-+x++x+-+xxx+---+x++xx--------------+x+----+x++xx++x++x++"
+	"+++++++---+++-++++++++++++++----+++++++++++++++++--+++--++++++++++++++++++++-++++++-++++------------------------+++----++++++++++++++"
+};
+
+#endif
 
 STATIC_INLINE uae_u32 ledcolor (uae_u32 c, uae_u32 *rc, uae_u32 *gc, uae_u32 *bc, uae_u32 *a)
 {
@@ -75,7 +88,11 @@ static void write_tdnumber (uae_u8 *buf, int bpp, int x, int y, int num, uae_u32
 	int j;
 	const char *numptr;
 
+#ifdef __LIBRETRO__
 	numptr = numbers + num * TD_NUM_WIDTH + 20 * TD_NUM_WIDTH * y;
+#else
+    numptr = numbers + num * TD_NUM_WIDTH + NUMBERS_NUM * TD_NUM_WIDTH * y;
+#endif
 	for (j = 0; j < TD_NUM_WIDTH; j++) {
 		if (*numptr == 'x')
 			putpixel (buf, bpp, x + j, c1, 1);
@@ -127,8 +144,8 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
         if (led >= LED_DF0 && led <= LED_DF3) {
             int pled = led - LED_DF0;
             int track = gui_data.drive_track[pled];
-            pos = 5 + pled;
-            if (gui_data.hd >= 0 || gui_data.cd >= 0)
+            pos = 6 + pled;
+            if (gui_data.hd >= 0 || gui_data.cd >= 0 || gui_data.md >= 0)
             {
                 on_rgb = BLACK;
                 on_rgb2 = BLACK;
@@ -187,7 +204,7 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
                 num2 = 10;
                 num3 = 12;
             }
-        } else if (led == LED_HD) {
+        } else if (led == LED_HD && gui_data.hd >= 0) {
             pos = 9;
             if (gui_data.hd >= 0) {
                 on = gui_data.hd;
