@@ -52,14 +52,14 @@ void statusline_getpos (int *x, int *y, int width, int height)
 	}
 }
 
-static const char *numbers = { /* ugly  0123456789CHD%+-PNK */
-	"+++++++--++++-+++++++++++++++++-++++++++++++++++++++++++++++++++++++++++++++-++++++-++++----++---+--------------+++++++++++++++++++++"
-	"+xxxxx+--+xx+-+xxxxx++xxxxx++x+-+x++xxxxx++xxxxx++xxxxx++xxxxx++xxxxx++xxxx+-+x++x+-+xxx++-+xx+-+x---+----------+xxxxx++x+++x++x++x++"
-	"+x+++x+--++x+-+++++x++++++x++x+++x++x++++++x++++++++++x++x+++x++x+++x++x++++-+x++x+-+x++x+--+x++x+--+x+----+++--+x---x++xx++x++x+x+++"
-	"+x+-+x+---+x+-+xxxxx++xxxxx++xxxxx++xxxxx++xxxxx+--++x+-+xxxxx++xxxxx++x+----+xxxx+-+x++x+----+x+--+xxx+--+xxx+-+xxxxx++x+x+x++xx++++"
-	"+x+++x+---+x+-+x++++++++++x++++++x++++++x++x+++x+--+x+--+x+++x++++++x++x++++-+x++x+-+x++x+---+x+x+--+x+----+++--+x++++++x+x+x++x+x+++"
-	"+xxxxx+---+x+-+xxxxx++xxxxx+----+x++xxxxx++xxxxx+--+x+--+xxxxx++xxxxx++xxxx+-+x++x+-+xxx+---+x++xx--------------+x+----+x++xx++x++x++"
-	"+++++++---+++-++++++++++++++----+++++++++++++++++--+++--++++++++++++++++++++-++++++-++++------------------------+++----++++++++++++++"
+static const char *numbers = { /* ugly  0123456789CHD%+-PNKV */
+	"+++++++--++++-+++++++++++++++++-++++++++++++++++++++++++++++++++++++++++++++-++++++-++++----++---+--------------++++++++++++++++++++++++-+++"
+	"+xxxxx+--+xx+-+xxxxx++xxxxx++x+-+x++xxxxx++xxxxx++xxxxx++xxxxx++xxxxx++xxxx+-+x++x+-+xxx++-+xx+-+x---+----------+xxxxx++x+++x++x++x+++x+-+x+"
+	"+x+++x+--++x+-+++++x++++++x++x+++x++x++++++x++++++++++x++x+++x++x+++x++x++++-+x++x+-+x++x+--+x++x+--+x+----+++--+x---x++xx++x++x+x++++x+-+x+"
+	"+x+-+x+---+x+-+xxxxx++xxxxx++xxxxx++xxxxx++xxxxx+--++x+-+xxxxx++xxxxx++x+----+xxxx+-+x++x+----+x+--+xxx+--+xxx+-+xxxxx++x+x+x++xx++++++x+x++"
+	"+x+++x+---+x+-+x++++++++++x++++++x++++++x++x+++x+--+x+--+x+++x++++++x++x++++-+x++x+-+x++x+---+x+x+--+x+----+++--+x++++++x+x+x++x+x+++-+xxx+-"
+	"+xxxxx+---+x+-+xxxxx++xxxxx+----+x++xxxxx++xxxxx+--+x+--+xxxxx++xxxxx++xxxx+-+x++x+-+xxx+---+x++xx--------------+x+----+x++xx++x++x++-++x++-"
+	"+++++++---+++-++++++++++++++----+++++++++++++++++--+++--++++++++++++++++++++-++++++-++++------------------------+++----++++++++++++++--+++--"
 };
 
 STATIC_INLINE uae_u32 ledcolor (uae_u32 c, uae_u32 *rc, uae_u32 *gc, uae_u32 *bc, uae_u32 *a)
@@ -75,7 +75,7 @@ static void write_tdnumber (uae_u8 *buf, int bpp, int x, int y, int num, uae_u32
 	int j;
 	const char *numptr;
 
-	numptr = numbers + num * TD_NUM_WIDTH + NUMBERS_NUM * TD_NUM_WIDTH * y;
+	numptr = numbers + num * TD_NUM_WIDTH + 20 * TD_NUM_WIDTH * y;
 	for (j = 0; j < TD_NUM_WIDTH; j++) {
 		if (*numptr == 'x')
 			putpixel (buf, bpp, x + j, c1, 1);
@@ -86,6 +86,17 @@ static void write_tdnumber (uae_u8 *buf, int bpp, int x, int y, int num, uae_u32
 }
 
 #ifdef __LIBRETRO__
+#define BLACK           0x000000
+#define YELLOW_DARK     0x333300
+#define YELLOW_DIM      0x666600
+#define YELLOW_BRIGHT   0x999900
+#define GREEN_DARK      0x003300
+#define GREEN_DIM       0x006600
+#define GREEN_BRIGHT    0x009900
+#define RED_DARK        0x330000
+#define RED_DIM         0x660000
+#define RED_BRIGHT      0x990000
+
 void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u32 *rc, uae_u32 *gc, uae_u32 *bc, uae_u32 *alpha)
 {
     if(LEDON==-1)
@@ -117,31 +128,43 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
             int pled = led - LED_DF0;
             int track = gui_data.drive_track[pled];
             pos = 5 + pled;
-            if (gui_data.cd >= 0)
+            if (gui_data.hd >= 0 || gui_data.cd >= 0)
             {
-                on_rgb = 0x000000;
-                on_rgb2 = 0x000000;
-                off_rgb = 0x000000;
+                on_rgb = BLACK;
+                on_rgb2 = BLACK;
+                off_rgb = BLACK;
             } else {
             //if (!gui_data.drive_disabled[pled]) {
-                on_rgb = 0x00cc00;
-                on_rgb2 = 0x006600;
-                off_rgb = 0x003300;
+                if (currprefs.chipset_mask & CSMASK_MASK)
+                {
+                    on_rgb = YELLOW_BRIGHT;
+                    on_rgb2 = YELLOW_DIM;
+                    off_rgb = YELLOW_DARK;
+                }
+                else
+                {
+                    on_rgb = GREEN_BRIGHT;
+                    on_rgb2 = GREEN_DIM;
+                    off_rgb = GREEN_DARK;
+                }
 
                 num1 = -1;
                 num2 = track / 10;
                 num3 = track % 10;
                 on = gui_data.drive_motor[pled];
                 if (gui_data.drive_writing[pled]) {
-                    on_rgb = 0xcc0000;
-                    on_rgb2 = 0x880000;
+                    on_rgb = RED_BRIGHT;
+                    on_rgb2 = RED_DIM;
                 }
                 half = gui_data.drive_side ? 1 : -1;
                 if (gui_data.df[pled][0] == 0)
                 {
-                    pen_rgb = ledcolor (0x00aaaaaa, rc, gc, bc, alpha);
-                    num2 = -1;
-                    num3 = -1;
+                    if (currprefs.chipset_mask & CSMASK_MASK)
+                        pen_rgb = ledcolor (0x00666600, rc, gc, bc, alpha);
+                    else
+                        pen_rgb = ledcolor (0x00006600, rc, gc, bc, alpha);
+                    num2 = 12;
+                    num3 = pled;
                 }
             }
             side = gui_data.drive_side;
@@ -154,25 +177,25 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
             pos = 9;
             if (gui_data.cd >= 0) {
                 on = gui_data.cd & (LED_CD_AUDIO | LED_CD_ACTIVE);
-                on_rgb = (on & LED_CD_AUDIO) ? 0x666600 : 0xcccc00;
-                off_rgb = 0x333300;
+                on_rgb = (on & LED_CD_AUDIO) ? YELLOW_DIM : YELLOW_BRIGHT;
+                off_rgb = YELLOW_DARK;
                 if ((gui_data.cd & LED_CD_ACTIVE2) && !(gui_data.cd & LED_CD_AUDIO)) {
                     on_rgb &= 0xfefefe;
                     on_rgb >>= 1;
                 }
                 num1 = -1;
-                num2 = -1;//10;
-                num3 = -1;//12;
+                num2 = 10;
+                num3 = 12;
             }
         } else if (led == LED_HD) {
             pos = 9;
             if (gui_data.hd >= 0) {
                 on = gui_data.hd;
-                on_rgb = on == 2 ? 0x333300 : 0xcccc00;
-                off_rgb = 0x333300;
+                on_rgb = on == 2 ? YELLOW_DIM : YELLOW_BRIGHT;
+                off_rgb = YELLOW_DARK;
                 num1 = -1;
-                num2 = -1;//11;
-                num3 = -1;//12;
+                num2 = 11;
+                num3 = 12;
             }
         } else if (led == LED_FPS) {
             pos = 10;
@@ -200,9 +223,17 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
                         am = 2;
                 }
             }
-            on_rgb = ((gui_data.powerled_brightness * 10 / 16) + 0x33) << 16;
+            if (currprefs.chipset_mask & CSMASK_MASK)
+            {
+                on_rgb = ((gui_data.powerled_brightness * 10 / 16) + 0x33) << 9;
+                off_rgb = GREEN_DARK;
+            }
+            else
+            {
+                on_rgb = ((gui_data.powerled_brightness * 10 / 16) + 0x33) << 16;
+                off_rgb = RED_DARK;
+            }
             on = 1;
-            off_rgb = 0x330000;
         /*} else if (led == LED_CPU) {
             int idle = (gui_data.idle + 5) / 10;
             pos = 1;
@@ -257,12 +288,18 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
             pos = 8;
             if (gui_data.md >= 0) {
                 on = gui_data.md;
-                on_rgb = on == 2 ? 0xcc0000 : 0x00cc00;
+                on_rgb = on == 2 ? RED_BRIGHT : GREEN_BRIGHT;
                 off_rgb = 0x000000;
             }
             num1 = -1;
             num2 = -1;
             num3 = -1;
+
+            if (on)
+            {
+                num2 = 17;
+                num3 = 19;
+            }
         /*} else if (led == LED_NET) {
             pos = 6;
             if (gui_data.net >= 0) {

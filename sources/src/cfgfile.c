@@ -5023,8 +5023,8 @@ void default_prefs (struct uae_prefs *p, int type)
 	p->gfx_autoresolution_minh = 0;
 	p->color_mode = 2;
 	p->gfx_blackerthanblack = 0;
-	p->gfx_apmode[0].gfx_backbuffers = 2;
-	p->gfx_apmode[1].gfx_backbuffers = 1;
+	p->gfx_apmode[0].gfx_backbuffers = 0;
+	p->gfx_apmode[1].gfx_backbuffers = 0;
 
 #ifdef USE_X11_GFX
 	p->x11_use_low_bandwidth = 0;

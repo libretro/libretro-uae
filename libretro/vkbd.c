@@ -10,6 +10,7 @@ extern int SHIFTON;
 extern int pix_bytes;
 extern int vkflag[7];
 extern unsigned int video_config_geometry;
+extern unsigned int opt_vkbd_alpha;
 
 void virtual_kbd(unsigned short int *pixels, int vx, int vy)
 {
@@ -19,9 +20,13 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
    uint16_t *pix = &pixels[0];
 
    int XKEY, YKEY, XTEXT, YTEXT;
-   int YOFFSET, YPADDING;
+   int XOFFSET          = 0;
    int XPADDING         = 0;
-   int KEYSPACING       = 2;
+   int YOFFSET          = 0;
+   int YPADDING         = 0;
+   int KEYSPACING       = 1;
+   int ALPHA            = opt_vkbd_alpha;
+   int BKG_ALPHA        = ALPHA;
    int BKG_PADDING_X    = 0;
    int BKG_PADDING_Y    = 4;
    int BKG_COLOR;
@@ -37,6 +42,7 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
    int FONT_COLOR;
    int FONT_COLOR_NORMAL;
    int FONT_COLOR_SEL;
+
    if (pix_bytes == 4)
    {
       BKG_COLOR_NORMAL  = RGB888(24, 24, 24);
@@ -63,13 +69,15 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
    if (video_config_geometry & 0x04)    // PUAE_VIDEO_HIRES
    {
       YPADDING          = 10;
-      YOFFSET           = (SHOWKEYPOS == 1) ? (-zoomed_height + YPADDING - 5 + (zoomed_height / 2)) : -(YPADDING);
+      YOFFSET           = (SHOWKEYPOS == 1) ? (-zoomed_height + (YPADDING / 2) + (retroh / 2)) : -(YPADDING);
+      XOFFSET           = 2;
    }
    else if (video_config_geometry & 0x08)    // PUAE_VIDEO_HIRES_SINGLE
    {
-      YPADDING          = 5;
+      YPADDING          = 6;
       BKG_PADDING_Y     = -1;
-      YOFFSET           = (SHOWKEYPOS == 1) ? (-zoomed_height + 3 + (zoomed_height / 2)) : -(YPADDING * 2);
+      YOFFSET           = (SHOWKEYPOS == 1) ? (-zoomed_height + YPADDING + (retroh / 2)) : -(YPADDING * 2);
+      XOFFSET           = 2;
    }
    else                                 // PUAE_VIDEO_LORES
    {
@@ -77,12 +85,13 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
       BKG_PADDING_Y     = -1;
       FONT_MAX          = 4;
 
-      YPADDING          = 5;
-      YOFFSET           = (SHOWKEYPOS == 1) ? (-zoomed_height + 3 + (zoomed_height / 2)) : -(YPADDING * 2);
+      YPADDING          = 6;
+      YOFFSET           = (SHOWKEYPOS == 1) ? (-zoomed_height + YPADDING + (retroh / 2)) : -(YPADDING * 2);
+      XOFFSET           = 3;
    }
 
    int XSIDE = (retrow - XPADDING) / NPLGN;
-   int YSIDE = ((zoomed_height / 2) - YPADDING) / NLIGN;
+   int YSIDE = ((retroh / 2) - YPADDING) / NLIGN;
 
    int XBASEKEY = (XPADDING / 2);
    int YBASEKEY = (zoomed_height - (NLIGN * YSIDE)) - (YPADDING / 2);
@@ -120,20 +129,13 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
                     BKG_COLOR = BKG_COLOR_ALT;
 
          /* Key positions */
-         XKEY  = XBASEKEY + (x * XSIDE);
-         XTEXT = XBASETEXT + BKG_PADDING_X + (x * XSIDE);
+         XKEY  = XBASEKEY + (x * XSIDE) + XOFFSET;
+         XTEXT = XBASETEXT + BKG_PADDING_X + (x * XSIDE) + XOFFSET;
          YKEY  = YOFFSET + YBASEKEY + (y * YSIDE);
          YTEXT = YOFFSET + YBASETEXT + BKG_PADDING_Y + (y * YSIDE);
 
          /* Default font color */
          FONT_COLOR = FONT_COLOR_NORMAL;
-
-         /* Better readability with transparency */
-         if (SHOWKEYTRANS == 1)
-         {
-             FONT_COLOR         = FONT_COLOR_SEL;
-             BKG_COLOR          = BKG_COLOR_SEL;
-         }
 
          /* Sticky key + CapsLock colors */
          if (vkey_sticky1 == MVk[(y * NPLGN) + x + page].val
@@ -145,39 +147,28 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
             BKG_COLOR = BKG_COLOR_DARK;
          }
 
-         /* Key background */
-         if (SHOWKEYTRANS == -1 || sticky)
-         {
-            if (pix_bytes == 4)
-               DrawFBoxBmp32((uint32_t *)pix, XKEY+KEYSPACING, YKEY+KEYSPACING, XSIDE-KEYSPACING, YSIDE-KEYSPACING, BKG_COLOR);
-            else
-               DrawFBoxBmp(pix, XKEY+KEYSPACING, YKEY+KEYSPACING, XSIDE-KEYSPACING, YSIDE-KEYSPACING, BKG_COLOR);
-         }
+         /* Opacity */
+         BKG_ALPHA = (SHOWKEYTRANS == -1) ? 255 : ALPHA;
 
-#if 0
-         /* Key border */
-         if (SHOWKEYTRANS == -1)
-         {
-            if (pix_bytes == 4)
-               DrawBoxBmp32((uint32_t *)pix, XKEY+KEYSPACING, YKEY+KEYSPACING, XSIDE-KEYSPACING, YSIDE-KEYSPACING, BKG_COLOR_BORDER);
-            else
-               DrawBoxBmp(pix, XKEY+KEYSPACING, YKEY+KEYSPACING, XSIDE-KEYSPACING, YSIDE-KEYSPACING, BKG_COLOR_BORDER);
-         }
-#endif
+         /* Key background */
+         if (pix_bytes == 4)
+            DrawFBoxBmp32((uint32_t *)pix, XKEY+KEYSPACING, YKEY+KEYSPACING, XSIDE-KEYSPACING, YSIDE-KEYSPACING, BKG_COLOR, BKG_ALPHA);
+         else
+            DrawFBoxBmp(pix, XKEY+KEYSPACING, YKEY+KEYSPACING, XSIDE-KEYSPACING, YSIDE-KEYSPACING, BKG_COLOR, BKG_ALPHA);
 
          /* Key text */
          if (pix_bytes == 4)
-            Draw_text32((uint32_t *)pix, XTEXT, YTEXT, FONT_COLOR, BKG_COLOR, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+            Draw_text32((uint32_t *)pix, XTEXT, YTEXT, FONT_COLOR, 0, BKG_ALPHA, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
                (SHIFTON == -1) ? MVk[(y * NPLGN) + x + page].norml : MVk[(y * NPLGN) + x + page].shift);
          else
-            Draw_text(pix, XTEXT, YTEXT, FONT_COLOR, BKG_COLOR, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+            Draw_text(pix, XTEXT, YTEXT, FONT_COLOR, 0, BKG_ALPHA, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
                (SHIFTON == -1) ? MVk[(y * NPLGN) + x + page].norml : MVk[(y * NPLGN) + x + page].shift);
       }
    }
 
    /* Selected key position */
-   XKEY  = XBASEKEY + (vx * XSIDE);
-   XTEXT = XBASETEXT + BKG_PADDING_X + (vx * XSIDE);
+   XKEY  = XBASEKEY + (vx * XSIDE) + XOFFSET;
+   XTEXT = XBASETEXT + BKG_PADDING_X + (vx * XSIDE) + XOFFSET;
    YKEY  = YOFFSET + YBASEKEY + (vy * YSIDE);
    YTEXT = YOFFSET + YBASETEXT + BKG_PADDING_Y + (vy * YSIDE);
 
@@ -185,18 +176,21 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
    if (vkflag[4] == 1)
       BKG_COLOR_SEL = BKG_COLOR_DARK;
 
+   /* Opacity */
+   BKG_ALPHA = (SHOWKEYTRANS == -1) ? 255 : ALPHA;
+
    /* Selected key background */
    if (pix_bytes == 4)
-      DrawFBoxBmp32((uint32_t *)pix, XKEY+KEYSPACING, YKEY+KEYSPACING, XSIDE-KEYSPACING, YSIDE-KEYSPACING, BKG_COLOR_SEL);
+      DrawFBoxBmp32((uint32_t *)pix, XKEY+KEYSPACING, YKEY+KEYSPACING, XSIDE-KEYSPACING, YSIDE-KEYSPACING, BKG_COLOR_SEL, BKG_ALPHA);
    else
-      DrawFBoxBmp(pix, XKEY+KEYSPACING, YKEY+KEYSPACING, XSIDE-KEYSPACING, YSIDE-KEYSPACING, BKG_COLOR_SEL);
+      DrawFBoxBmp(pix, XKEY+KEYSPACING, YKEY+KEYSPACING, XSIDE-KEYSPACING, YSIDE-KEYSPACING, BKG_COLOR_SEL, BKG_ALPHA);
 
    /* Selected key text */
    if (pix_bytes == 4)
-      Draw_text32((uint32_t *)pix, XTEXT, YTEXT, FONT_COLOR_SEL, BKG_COLOR_SEL, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+      Draw_text32((uint32_t *)pix, XTEXT, YTEXT, FONT_COLOR_SEL, 0, BKG_ALPHA, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
          (SHIFTON == -1) ? MVk[(vy * NPLGN) + vx + page].norml : MVk[(vy * NPLGN) + vx + page].shift);
    else
-      Draw_text(pix, XTEXT, YTEXT, FONT_COLOR_SEL, BKG_COLOR_SEL, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+      Draw_text(pix, XTEXT, YTEXT, FONT_COLOR_SEL, 0, BKG_ALPHA, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
          (SHIFTON == -1) ? MVk[(vy * NPLGN) + vx + page].norml : MVk[(vy * NPLGN) + vx + page].shift);
 }
 

@@ -251,7 +251,11 @@ uae_sem_t gui_sem;
 int inhibit_frame;
 
 int framecnt = 0;
+#ifdef __LIBRETRO__
+int frame_redraw_necessary;
+#else
 static int frame_redraw_necessary;
+#endif
 static int picasso_redraw_necessary;
 
 #ifdef XLINECHECK

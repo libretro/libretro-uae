@@ -162,7 +162,7 @@ Grab the new version from the repo: https://github.com/libretro/libretro-uae/tre
 - Kickstarts will be copied automatically from the system directory on the first run, so it might take a little longer than usual.
 - `WHDLoad.prefs` will be copied from the system directory, if it exists. It needs to be there for the core option overrides to work.
 - `WHDLoad.key` will be copied from the system directory if you have registered WHDLoad.
-- **These previous features involving RA system directory require directory filesystem in UAE. At the moment it is known to not work on these platforms: Android, Switch**
+- **These previous features involving RA system directory require directory filesystem in UAE. At the moment it is known to not work on these platforms: Switch**
 - Supports a file named `custom` in the root of the game.hdf for passing specific WHDLoad parameters when the slave does not support the config screen or when it should be the default, for example `Custom1=1`. It always overrides `WHDLoad.prefs`.
   - The easiest way to create `custom` is to quit WHDLoad (default Numpad*), type `echo custom1=1 >custom`, press enter and reboot the Amiga.
 - Supports a file named `load` in the root of the game.hdf which overrides the whole launch command, aimed at non-WHDLoad installs.

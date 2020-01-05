@@ -19,7 +19,7 @@
 #include "akiko.h"
 #include "blkdev.h"
 extern void check_changes(int unitnum);
-
+extern int frame_redraw_necessary;
 
 cothread_t mainThread;
 cothread_t emuThread;
@@ -40,6 +40,7 @@ bool opt_enhanced_statusbar = true;
 int opt_statusbar_position = 0;
 int opt_statusbar_position_old = 0;
 int opt_statusbar_position_offset = 0;
+unsigned int opt_vkbd_alpha = 204;
 bool opt_keyrahkeypad = false;
 bool opt_keyboard_pass_through = false;
 bool opt_multimouse = false;
@@ -119,9 +120,7 @@ int keyId(const char *val)
 extern void retro_poll_event(void);
 unsigned int uae_devices[4];
 extern int cd32_pad_enabled[NORMAL_JPORTS];
-
 int mapper_keys[31]={0};
-static char buf[64][4096]={0};
 
 #ifdef WIN32
 #define DIR_SEP_STR "\\"
@@ -301,7 +300,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_model",
          "Model",
-         "Automatic defaults to A500 when booting floppy disks and to A600 when booting hard drives.\nRestart required.",
+         "Automatic defaults to A500 when booting floppy disks and to A600 when booting hard drives.\nCore restart required.",
          {
             { "auto", "Automatic" },
             { "A500", "A500 (512KB Chip + 512KB Slow)" },
@@ -536,7 +535,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_gfx_colors",
          "Color Depth",
-         "24-bit is slower and not available on all platforms. Restart required.",
+         "24-bit is slower and not available on all platforms. Core restart required.",
          {
             { "16bit", "Thousands (16-bit)" },
             { "24bit", "Millions (24-bit)" },
@@ -593,6 +592,25 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "bottom"
+      },
+      {
+         "puae_vkbd_alpha",
+         "Virtual Keyboard Transparency",
+         "",
+         {
+            { "255", "0\%" },
+            { "229", "10\%" },
+            { "204", "20\%" },
+            { "178", "30\%" },
+            { "153", "40\%" },
+            { "127", "50\%" },
+            { "102", "60\%" },
+            { "76", "70\%" },
+            { "51", "80\%" },
+            { "25", "90\%" },
+            { NULL, NULL },
+         },
+         "204"
       },
       {
          "puae_audio_options_display",
@@ -725,7 +743,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_use_whdload",
          "Use WHDLoad.hdf",
-         "Enables the use of WHDLoad hard drive images which only have the game files. Restart required.",
+         "Enables the use of WHDLoad hard drive images which only have the game files. Core restart required.",
          {
             { "enabled", NULL },
             { "disabled", NULL },
@@ -736,7 +754,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_use_whdload_prefs",
          "Use WHDLoad.prefs",
-         "WHDLoad.prefs in 'system/' required.\n'Config' shows the config screen only if the slave supports it. 'Splash' shows the splash screen always. Space/Enter/Fire work as a start button in 'Config'.\nRestart required. Will not work with the old WHDLoad.hdf!",
+         "WHDLoad.prefs in 'system/' required.\n'Config' shows the config screen only if the slave supports it. 'Splash' shows the splash screen always. Space/Enter/Fire work as a start button in 'Config'.\nCore restart required. Will not work with the old WHDLoad.hdf!",
          {
             { "disabled", NULL },
             { "config", "Config" },
@@ -1149,17 +1167,16 @@ void retro_set_environment(retro_environment_t cb)
       };
       ++i;
    }
-   
-   environ_cb = cb;
-   cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, (void*)ports);
 
+   environ_cb = cb;
    unsigned version = 0;
    if (cb(RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION, &version) && (version == 1))
       cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS, core_options);
    else
    {
       /* Fallback for older API */
-      static struct retro_variable variables[64] = { 0 };
+      static char buf[sizeof(core_options) / sizeof(core_options[0])][4096] = { 0 };
+      static struct retro_variable variables[sizeof(core_options) / sizeof(core_options[0])] = { 0 };
       i = 0;
       while (core_options[i].key)
       {
@@ -1180,12 +1197,13 @@ void retro_set_environment(retro_environment_t cb)
       };
       variables[i].key = NULL;
       variables[i].value = NULL;
-      cb( RETRO_ENVIRONMENT_SET_VARIABLES, variables);
+      cb(RETRO_ENVIRONMENT_SET_VARIABLES, variables);
    }
 
    static bool allowNoGameMode;
    allowNoGameMode = true;
-   environ_cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &allowNoGameMode);
+   cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &allowNoGameMode);
+   cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, (void*)ports);
 }
 
 static void update_variables(void)
@@ -1322,6 +1340,13 @@ static void update_variables(void)
          reset_drawing();
 
       opt_statusbar_position_old = opt_statusbar_position;
+   }
+
+   var.key = "puae_vkbd_alpha";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      opt_vkbd_alpha = atoi(var.value);
    }
 
    var.key = "puae_cpu_compatibility";
@@ -2123,6 +2148,8 @@ static void update_variables(void)
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_statusbar";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_vkbd_alpha";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
 
    /* Setting resolution */
    switch (video_config)
@@ -2688,6 +2715,10 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       /* Aspect offset for zoom mode */
       opt_statusbar_position_offset = opt_statusbar_position_old - opt_statusbar_position;
 
+      /* Compensate for the last line in PAL HIRES */
+      if (video_config_geometry & PUAE_VIDEO_PAL && video_config_geometry & PUAE_VIDEO_HIRES && retroh == defaulth && opt_statusbar_position >= 0)
+         opt_statusbar_position += 1;
+
       //fprintf(stdout, "statusbar:%3d old:%3d offset:%3d, retroh:%d defaulth:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, retroh, defaulth);
    }
 
@@ -2823,7 +2854,8 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       /* Need proper values for calculations */
       if (min_diwstart != max_diwstop
        && min_diwstart > 0 && max_diwstop > 0
-       && min_diwstart < 220 && max_diwstop > 600
+       && min_diwstart < ((video_config & PUAE_VIDEO_HIRES) ? 220 : 220/2)
+       && max_diwstop > ((video_config & PUAE_VIDEO_HIRES) ? 600 : 600/2)
       )
       {
          visible_left_border_new = (max_diwstop - min_diwstart - retrow) / 2 + min_diwstart; // Smart
@@ -3009,10 +3041,14 @@ void retro_run(void)
 
    retro_poll_event();
    co_switch(emuThread);
-   if (SHOWKEY == 1)
-      virtual_kbd(retro_bmp, vkey_pos_x, vkey_pos_y);
    if (STATUSON == 1)
       Print_Status();
+   if (SHOWKEY == 1)
+   {
+      // Virtual keyboard transparency requires a graceful redraw, blunt reset_drawing() interferes with zoom
+      frame_redraw_necessary=2;
+      virtual_kbd(retro_bmp, vkey_pos_x, vkey_pos_y);
+   }
    // Maximum 288p/576p PAL shenanigans:
    // Mask the last line(s), since UAE does not refresh the last line, and even its own OSD will leave trails
    if (video_config & PUAE_VIDEO_PAL)
