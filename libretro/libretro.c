@@ -300,7 +300,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_model",
          "Model",
-         "Automatic defaults to A500 when booting floppy disks and to A600 when booting hard drives.\nRestart required.",
+         "Automatic defaults to A500 when booting floppy disks and to A600 when booting hard drives.\nCore restart required.",
          {
             { "auto", "Automatic" },
             { "A500", "A500 (512KB Chip + 512KB Slow)" },
@@ -535,7 +535,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_gfx_colors",
          "Color Depth",
-         "24-bit is slower and not available on all platforms. Restart required.",
+         "24-bit is slower and not available on all platforms. Core restart required.",
          {
             { "16bit", "Thousands (16-bit)" },
             { "24bit", "Millions (24-bit)" },
@@ -743,7 +743,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_use_whdload",
          "Use WHDLoad.hdf",
-         "Enables the use of WHDLoad hard drive images which only have the game files. Restart required.",
+         "Enables the use of WHDLoad hard drive images which only have the game files. Core restart required.",
          {
             { "enabled", NULL },
             { "disabled", NULL },
@@ -754,7 +754,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_use_whdload_prefs",
          "Use WHDLoad.prefs",
-         "WHDLoad.prefs in 'system/' required.\n'Config' shows the config screen only if the slave supports it. 'Splash' shows the splash screen always. Space/Enter/Fire work as a start button in 'Config'.\nRestart required. Will not work with the old WHDLoad.hdf!",
+         "WHDLoad.prefs in 'system/' required.\n'Config' shows the config screen only if the slave supports it. 'Splash' shows the splash screen always. Space/Enter/Fire work as a start button in 'Config'.\nCore restart required. Will not work with the old WHDLoad.hdf!",
          {
             { "disabled", NULL },
             { "config", "Config" },
