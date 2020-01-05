@@ -69,14 +69,14 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
    if (video_config_geometry & 0x04)    // PUAE_VIDEO_HIRES
    {
       YPADDING          = 10;
-      YOFFSET           = (SHOWKEYPOS == 1) ? (-zoomed_height + (YPADDING / 2) + (zoomed_height / 2)) : -(YPADDING);
+      YOFFSET           = (SHOWKEYPOS == 1) ? (-zoomed_height + (YPADDING / 2) + (retroh / 2)) : -(YPADDING);
       XOFFSET           = 2;
    }
    else if (video_config_geometry & 0x08)    // PUAE_VIDEO_HIRES_SINGLE
    {
       YPADDING          = 6;
       BKG_PADDING_Y     = -1;
-      YOFFSET           = (SHOWKEYPOS == 1) ? (-zoomed_height + YPADDING + (zoomed_height / 2)) : -(YPADDING * 2);
+      YOFFSET           = (SHOWKEYPOS == 1) ? (-zoomed_height + YPADDING + (retroh / 2)) : -(YPADDING * 2);
       XOFFSET           = 2;
    }
    else                                 // PUAE_VIDEO_LORES
@@ -86,12 +86,12 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
       FONT_MAX          = 4;
 
       YPADDING          = 6;
-      YOFFSET           = (SHOWKEYPOS == 1) ? (-zoomed_height + YPADDING + (zoomed_height / 2)) : -(YPADDING * 2);
+      YOFFSET           = (SHOWKEYPOS == 1) ? (-zoomed_height + YPADDING + (retroh / 2)) : -(YPADDING * 2);
       XOFFSET           = 3;
    }
 
    int XSIDE = (retrow - XPADDING) / NPLGN;
-   int YSIDE = ((zoomed_height / 2) - YPADDING) / NLIGN;
+   int YSIDE = ((retroh / 2) - YPADDING) / NLIGN;
 
    int XBASEKEY = (XPADDING / 2);
    int YBASEKEY = (zoomed_height - (NLIGN * YSIDE)) - (YPADDING / 2);
