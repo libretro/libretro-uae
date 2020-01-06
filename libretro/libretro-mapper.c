@@ -1387,6 +1387,8 @@ void retro_poll_event()
       static int analog_right[2];
       static double analog_left_magnitude;
       static double analog_right_magnitude;
+      static int analog_deadzone;
+      analog_deadzone = (opt_analogmouse_deadzone * 32768 / 100);
 
       int retro_port;
       for (retro_port = 0; retro_port <= 3; retro_port++)
@@ -1505,7 +1507,7 @@ void retro_poll_event()
                analog_left[0] = (input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X));
                analog_left[1] = (input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y));
                analog_left_magnitude = sqrt((analog_left[0]*analog_left[0]) + (analog_left[1]*analog_left[1]));
-               if (analog_left_magnitude < (opt_analogmouse_deadzone * 32768 / 100))
+               if (analog_left_magnitude <= analog_deadzone)
                {
                   analog_left[0] = 0;
                   analog_left[1] = 0;
@@ -1521,14 +1523,14 @@ void retro_poll_event()
                if (abs(analog_left[0]) > 0)
                {
                   uae_mouse_x[j] = analog_left[0] * 10 * (opt_analogmouse_speed * opt_analogmouse_speed * 0.7) / (32768 / mouse_multiplier);
-                  if (uae_mouse_x[j] == 0 && mouse_multiplier != 1)
+                  if (uae_mouse_x[j] == 0 && abs(analog_left[0]) > analog_deadzone)
                      uae_mouse_x[j] = (analog_left[0] > 0) ? 1 : -1;
                }
 
                if (abs(analog_left[1]) > 0)
                {
                   uae_mouse_y[j] = analog_left[1] * 10 * (opt_analogmouse_speed * opt_analogmouse_speed * 0.7) / (32768 / mouse_multiplier);
-                  if (uae_mouse_y[j] == 0 && mouse_multiplier != 1)
+                  if (uae_mouse_y[j] == 0 && abs(analog_left[1]) > analog_deadzone)
                      uae_mouse_y[j] = (analog_left[1] > 0) ? 1 : -1;
                }
             }
@@ -1544,7 +1546,7 @@ void retro_poll_event()
                analog_right[0] = (input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X));
                analog_right[1] = (input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y));
                analog_right_magnitude = sqrt((analog_right[0]*analog_right[0]) + (analog_right[1]*analog_right[1]));
-               if (analog_right_magnitude < (opt_analogmouse_deadzone * 32768 / 100))
+               if (analog_right_magnitude <= analog_deadzone)
                {
                   analog_right[0] = 0;
                   analog_right[1] = 0;
@@ -1560,14 +1562,14 @@ void retro_poll_event()
                if (abs(analog_right[0]) > 0)
                {
                   uae_mouse_x[j] = analog_right[0] * 10 * (opt_analogmouse_speed * opt_analogmouse_speed * 0.7) / (32768 / mouse_multiplier);
-                  if (uae_mouse_x[j] == 0 && mouse_multiplier != 1)
+                  if (uae_mouse_x[j] == 0 && abs(analog_right[0]) > analog_deadzone)
                      uae_mouse_x[j] = (analog_right[0] > 0) ? 1 : -1;
                }
 
                if (abs(analog_right[1]) > 0)
                {
                   uae_mouse_y[j] = analog_right[1] * 10 * (opt_analogmouse_speed * opt_analogmouse_speed * 0.7) / (32768 / mouse_multiplier);
-                  if (uae_mouse_y[j] == 0 && mouse_multiplier != 1)
+                  if (uae_mouse_y[j] == 0 && abs(analog_right[1]) > analog_deadzone)
                      uae_mouse_y[j] = (analog_right[1] > 0) ? 1 : -1;
                }
             }
