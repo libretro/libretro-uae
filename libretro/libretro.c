@@ -3701,6 +3701,7 @@ size_t retro_serialize_size(void)
    if (firstpass != 1)
    {
       snprintf(savestate_fname, sizeof(savestate_fname), "%s%suae_tempsave.uss", retro_save_directory, DIR_SEP_STR);
+      savestate_initsave (savestate_fname, 1, 1, true);
       if (save_state(savestate_fname, "retro") >= 0)
       {
          FILE *file = fopen(savestate_fname, "rb");
@@ -3722,6 +3723,7 @@ bool retro_serialize(void *data_, size_t size)
    if (firstpass != 1)
    {
       snprintf(savestate_fname, sizeof(savestate_fname), "%s%suae_tempsave.uss", retro_save_directory, DIR_SEP_STR);
+      savestate_initsave (savestate_fname, 1, 1, true);
       if (save_state(savestate_fname, "retro") >= 0)
       {
          FILE *file = fopen(savestate_fname, "rb");
