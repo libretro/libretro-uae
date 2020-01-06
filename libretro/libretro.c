@@ -566,7 +566,7 @@ void retro_set_environment(retro_environment_t cb)
             { "waiting", "Wait for Blitter" },
             { NULL, NULL },
          },
-         "false"
+         "waiting"
       },
       {
          "puae_gfx_framerate",
@@ -3673,6 +3673,9 @@ bool retro_load_game(const struct retro_game_info *info)
 
    fprintf(stderr, "[libretro-uae]: Resolution selected: %dx%d\n", defaultw, defaulth);
 
+   snprintf(savestate_fname, sizeof(savestate_fname), "%s%suae_tempsave.uss", retro_save_directory, DIR_SEP_STR);
+   savestate_initsave (savestate_fname, 1, 1, true);
+
    retrow = defaultw;
    retroh = defaulth;
    return true;
@@ -3700,8 +3703,6 @@ size_t retro_serialize_size(void)
 {
    if (firstpass != 1)
    {
-      snprintf(savestate_fname, sizeof(savestate_fname), "%s%suae_tempsave.uss", retro_save_directory, DIR_SEP_STR);
-      savestate_initsave (savestate_fname, 1, 1, true);
       if (save_state(savestate_fname, "retro") >= 0)
       {
          FILE *file = fopen(savestate_fname, "rb");
@@ -3722,8 +3723,6 @@ bool retro_serialize(void *data_, size_t size)
 {
    if (firstpass != 1)
    {
-      snprintf(savestate_fname, sizeof(savestate_fname), "%s%suae_tempsave.uss", retro_save_directory, DIR_SEP_STR);
-      savestate_initsave (savestate_fname, 1, 1, true);
       if (save_state(savestate_fname, "retro") >= 0)
       {
          FILE *file = fopen(savestate_fname, "rb");
@@ -3743,10 +3742,9 @@ bool retro_serialize(void *data_, size_t size)
 
 bool retro_unserialize(const void *data_, size_t size)
 {
-   thisframe_y_adjust_update_frame_timer = 3;
    if (firstpass != 1)
    {
-      snprintf(savestate_fname, sizeof(savestate_fname), "%s%suae_tempsave.uss", retro_save_directory, DIR_SEP_STR);
+      thisframe_y_adjust_update_frame_timer = 3;
       FILE *file = fopen(savestate_fname, "wb");
       if (file)
       {
