@@ -181,6 +181,8 @@ Grab the new version from the repo: https://github.com/libretro/libretro-uae/tre
   - Saves can be redirected to a separate `WHDSaves.hdf`. Repo provides an empty 2MiB HDF.
   - Both HDF-files (`WHDLoad.hdf` & `WHDSaves.hdf`) can be located in either RA system or saves.
   - Support for Retroplay LHA archives.
+  - Support for Arcadia installs (requires KS 1.2, kick33180.A500 will be copied automatically from RA system).
+  - Fixed xpkmaster.library.
 
 ### Create a HDF image for a game
 If you have a WHDLoad game in a ZIP or a directory, you will have to create an image file. WHDLoad specific LHA archives will work directly as a read only hard drive image.
