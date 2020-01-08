@@ -2427,7 +2427,7 @@ void retro_init(void)
    environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &disk_interface);
 
    // Savestates
-   static uint32_t quirks = RETRO_SERIALIZATION_QUIRK_INCOMPLETE | RETRO_SERIALIZATION_QUIRK_MUST_INITIALIZE | RETRO_SERIALIZATION_QUIRK_CORE_VARIABLE_SIZE;
+   static uint32_t quirks = RETRO_SERIALIZATION_QUIRK_INCOMPLETE | RETRO_SERIALIZATION_QUIRK_CORE_VARIABLE_SIZE;
    environ_cb(RETRO_ENVIRONMENT_SET_SERIALIZATION_QUIRKS, &quirks);
 
    // Inputs
@@ -3673,8 +3673,8 @@ bool retro_load_game(const struct retro_game_info *info)
 
    fprintf(stderr, "[libretro-uae]: Resolution selected: %dx%d\n", defaultw, defaulth);
 
-   snprintf(savestate_fname, sizeof(savestate_fname), "%s%suae_tempsave.uss", retro_save_directory, DIR_SEP_STR);
-   savestate_initsave (savestate_fname, 1, 1, true);
+   // Savestate filename
+   snprintf(savestate_fname, sizeof(savestate_fname), "%s%spuae_libretro.asf", retro_save_directory, DIR_SEP_STR);
 
    retrow = defaultw;
    retroh = defaulth;
@@ -3703,8 +3703,10 @@ size_t retro_serialize_size(void)
 {
    if (firstpass != 1)
    {
-      if (save_state(savestate_fname, "retro") >= 0)
+      savestate_initsave (savestate_fname, 1, 1, true);
+      if (save_state(savestate_fname, "libretro") >= 0)
       {
+#if 0
          FILE *file = fopen(savestate_fname, "rb");
          if (file)
          {
@@ -3714,6 +3716,10 @@ size_t retro_serialize_size(void)
             fclose(file);
             return size;
          }
+#endif
+         struct stat savestate_st;
+         stat(savestate_fname, &savestate_st);
+         return savestate_st.st_size;
       }
    }
    return 0;
@@ -3723,8 +3729,14 @@ bool retro_serialize(void *data_, size_t size)
 {
    if (firstpass != 1)
    {
-      if (save_state(savestate_fname, "retro") >= 0)
+      savestate_initsave (savestate_fname, 1, 1, true);
+      if (save_state(savestate_fname, "libretro") >= 0)
       {
+         struct stat savestate_st;
+         stat(savestate_fname, &savestate_st);
+         //printf("size:%d st_size:%d\n", size, savestate_st.st_size);
+         size = savestate_st.st_size;
+
          FILE *file = fopen(savestate_fname, "rb");
          if (file)
          {

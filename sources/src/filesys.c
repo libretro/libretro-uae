@@ -8083,10 +8083,12 @@ static int recurse_aino (UnitInfo *ui, a_inode *a, int cnt, uae_u8 **dstp)
 		if (a->elock || a->shlock || a->uniq == 0) {
 			if (dst) {
 				TCHAR *fn = NULL;
-				write_log (_T("uniq=%d %lld s=%d e=%d d=%d '%s' '%s'\n"), a->uniq, a->uniq_external, a->shlock, a->elock, a->dir, a->aname, a->nname);
+				if (log_filesys)
+					write_log (_T("uniq=%d %lld s=%d e=%d d=%d '%s' '%s'\n"), a->uniq, a->uniq_external, a->shlock, a->elock, a->dir, a->aname, a->nname);
 				if (a->aname) {
-				fn = getfullaname(a);
-					write_log (_T("->'%s'\n"), fn);
+					fn = getfullaname(a);
+					if (log_filesys)
+						write_log (_T("->'%s'\n"), fn);
 				}
 				save_u64 (a->uniq);
 				save_u32 (a->locked_children);
@@ -8158,7 +8160,8 @@ static uae_u8 *save_filesys_virtual (UnitInfo *ui, uae_u8 *dst)
 	Key *k;
 	int cnt, i, j;
 
-	write_log (_T("FSSAVE: '%s'\n"), ui->devname);
+	if (log_filesys)
+		write_log (_T("FSSAVE: '%s'\n"), ui->devname);
 	save_u32 (u->dosbase);
 	save_u32 (u->volume);
 	save_u32 (u->port);
@@ -8171,13 +8174,15 @@ static uae_u8 *save_filesys_virtual (UnitInfo *ui, uae_u8 *dst)
 	save_u32 (u->total_locked_ainos);
 	cnt = recurse_aino (ui, &u->rootnode, 0, NULL);
 	save_u32 (cnt);
-	write_log (_T("%d open locks\n"), cnt);
+	if (log_filesys)
+		write_log (_T("%d open locks\n"), cnt);
 	cnt = recurse_aino (ui, &u->rootnode, 0, &dst);
 	cnt = 0;
 	for (k = u->keys; k; k = k->next)
 		cnt++;
 	save_u32 (cnt);
-	write_log (_T("%d open files\n"), cnt);
+	if (log_filesys)
+		write_log (_T("%d open files\n"), cnt);
 	for (k = u->keys; k; k = k->next)
 		dst = save_key (dst, k);
 	for (j = 0; j < 2; j++) {
@@ -8193,7 +8198,8 @@ static uae_u8 *save_filesys_virtual (UnitInfo *ui, uae_u8 *dst)
 		}
 		if (j == 0) {
 			save_u32 (cnt);
-			write_log (_T("%d notify requests\n"), cnt);
+			if (log_filesys)
+				write_log (_T("%d notify requests\n"), cnt);
 		}
 	}
 	for (j = 0; j < 2; j++) {
@@ -8208,10 +8214,12 @@ static uae_u8 *save_filesys_virtual (UnitInfo *ui, uae_u8 *dst)
 		}
 		if (j == 0) {
 			save_u32 (cnt);
-			write_log (_T("%d exkeys\n"), cnt);
+			if (log_filesys)
+				write_log (_T("%d exkeys\n"), cnt);
 		}
 	}
-	write_log (_T("END\n"));
+	if (log_filesys)
+		write_log (_T("END\n"));
 	return dst;
 }
 
@@ -8253,7 +8261,8 @@ uae_u8 *save_filesys (int num, int *len)
 	/* not initialized yet, do not save */
 	if ((type == FILESYS_VIRTUAL || type == FILESYS_CD) && ui->self == NULL)
 		return NULL;
-	write_log (_T("FS_FILESYS: '%s' '%s'\n"), ui->devname, ui->volname ? ui->volname : _T("<no name>"));
+	if (log_filesys)
+		write_log (_T("FS_FILESYS: '%s' '%s'\n"), ui->devname, ui->volname ? ui->volname : _T("<no name>"));
 	dstbak = dst = xmalloc (uae_u8, 100000);
 	save_u32 (2); /* version */
 	save_u32 (ui->devno);
