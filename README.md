@@ -146,6 +146,29 @@ Note: ZIP support is provided by RetroArch and is done before passing the game t
 
 Append "(MD)" as in "MultiDrive" to the M3U filename to insert each disk in a different drive for games that support multiple drives. Only possible if there are no more than 4 disks.
 
+For games that require a dedicated save disk, one may be generated automatically by entering the following line in an M3U file: `#SAVEDISK:VolumeName`. `VolumeName` is optional and may be omitted. For example, this will create a blank, unlabelled disk image at disk index 5:
+
+Secret of Monkey Island.m3u
+```
+Secret of Monkey Island_Disk 1.adf
+Secret of Monkey Island_Disk 2.adf
+Secret of Monkey Island_Disk 3.adf
+Secret of Monkey Island_Disk 4.adf
+#SAVEDISK:
+```
+
+Some games require save disks to have a specific label - for example, `It Came from the Desert` will only save to a disk named `DSAVE`:
+
+It Came from the Desert.m3u
+```
+It Came from the Desert_Disk 1.adf
+It Came from the Desert_Disk 2.adf
+It Came from the Desert_Disk 3.adf
+#SAVEDISK:DSAVE
+```
+
+Although one save disk is normally sufficient, an arbitrary number of `#SAVEDISK:VolumeName` lines may be included. Save disks are located in the frontend's save directory, with the following name: `[M3U_FILE_NAME].save[DISK_INDEX].adf`.
+
 ## WHDLoad
 To use WHDLoad games you'll need to have a prepared WHDLoad image named 'WHDLoad.hdf' in RetroArch system directory.
 

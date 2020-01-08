@@ -3363,7 +3363,7 @@ bool retro_load_game(const struct retro_game_info *info)
                if (strendswith(full_path, M3U_FILE_EXT))
                {
                   // Parse the m3u file
-                  dc_parse_m3u(dc, full_path);
+                  dc_parse_m3u(dc, full_path, retro_save_directory);
 
                   // Some debugging
                   fprintf(stdout, "[libretro-uae]: M3U file parsed, %d file(s) found\n", dc->count);
