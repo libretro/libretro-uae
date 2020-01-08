@@ -365,7 +365,9 @@ static void save_chunk (struct zfile *f, uae_u8 *chunk, size_t len, TCHAR *name,
 	if (len2)
 		zfile_fwrite (zero, 1, len2, f);
 
+#if OPEN_LOG > 0
 	write_log (_T("Chunk '%s' chunk size %d (%d)\n"), name, chunklen, len);
+#endif
 }
 
 static uae_u8 *restore_chunk (struct zfile *f, TCHAR *name, size_t *len, size_t *totallen, size_t *filepos)
@@ -534,7 +536,9 @@ void restore_state (const TCHAR *filename)
 	for (;;) {
 		name[0] = 0;
 		chunk = end = restore_chunk (f, name, &len, &totallen, &filepos);
+#if OPEN_LOG > 0
 		write_log (_T("Chunk '%s' size %d (%d)\n"), name, len, totallen);
+#endif
 		if (!_tcscmp (name, _T("END "))) {
 #ifdef _DEBUG
 			if (filesize > filepos + 8)
@@ -825,7 +829,9 @@ static int save_state_internal (struct zfile *f, const TCHAR *description, int c
 	TCHAR name[5];
 	int i, len;
 
+#if OPEN_LOG > 0
 	write_log (_T("STATESAVE (%s):\n"), f ? zfile_getname (f) : _T("<internal>"));
+#endif
 	dst = header;
 	save_u32 (0);
 	save_string (_T("UAE"));
