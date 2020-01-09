@@ -45,6 +45,8 @@ struct zvolume *archive_directory_lha (struct zfile *zf)
         if (hdr.extend_type != 0) {
 #if !defined(ANDROID) && !defined(__SWITCH__) && !defined(WIIU)
             zai.tv.tv_sec = hdr.unix_last_modified_stamp -= timezone;
+#else
+            zai.tv.tv_sec = hdr.unix_last_modified_stamp;
 #endif
         } else {
             struct tm t;
@@ -57,6 +59,8 @@ struct zvolume *archive_directory_lha (struct zfile *zf)
             t.tm_year = ((v >> 25) & 0x7f) + 80;
 #if !defined(ANDROID) && !defined(__SWITCH__) && !defined(WIIU)
             zai.tv.tv_sec = mktime (&t) - timezone;
+#else
+            zai.tv.tv_sec = mktime (&t);
 #endif
         }
         if (hdr.name[strlen(hdr.name) + 1] != 0)
@@ -65,9 +69,11 @@ struct zvolume *archive_directory_lha (struct zfile *zf)
             zvolume_adddir_abs (zv, &zai);
         } else {
             zn = zvolume_addfile_abs (zv, &zai);
-            zn->offset = zfile_ftell(zf);
-            zn->packedsize = hdr.packed_size;
-            zn->method = method;
+            if (zn) {
+                zn->offset = zfile_ftell(zf);
+                zn->packedsize = hdr.packed_size;
+                zn->method = method;
+            }
         }
         xfree (zai.name);
         xfree (zai.comment);
