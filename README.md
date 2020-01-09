@@ -147,44 +147,59 @@ Note: ZIP support is provided by RetroArch and is done before passing the game t
 Append "(MD)" as in "MultiDrive" to the M3U filename to insert each disk in a different drive for games that support multiple drives. Only possible if there are no more than 4 disks.
 
 ## WHDLoad
-To use WHDLoad games you'll need to have a prepared WHDLoad image named 'WHDLoad.hdf' in RetroArch system directory.
+To use WHDLoad games you'll need to have a prepared WHDLoad image named `WHDLoad.hdf` in RetroArch `system` directory.
 
-In this WHDLoad image you must have these Kickstart ROMs (kick34005.A500, kick40068.A1200) in 'Devs:Kickstarts' directory.
+In this WHDLoad image you must have these Kickstart ROMs `kick34005.A500` & `kick40068.A1200` in `Devs:Kickstarts` directory. Kickstart 1.2 `kick33180.A500` is optional.
 
-To do this, you can consult the excellent tutorial made by Allan Lindqvist (http://lindqvist.synology.me/wordpress/?page_id=182) and just jump to the 'Create WHDLoad.hdf' section.
+~~To do this, you can consult the excellent tutorial made by Allan Lindqvist (http://lindqvist.synology.me/wordpress/?page_id=182) and just jump to the 'Create WHDLoad.hdf' section.~~
 
 **NOTE: The tutorial is now outdated regarding default controls and the need of .uae conf files for basic use.**
 
-Grab the new version from the repo: https://github.com/libretro/libretro-uae/tree/master/whdload/
+### Current checklist
+1. Grab the latest version from the repo: https://github.com/libretro/libretro-uae/tree/master/whdload/
+2. Place **both** HDFs (`WHDSaves.hdf` is highly recommended, but not required) in either RetroArch `saves` or `system`
+3. Place `WHDLoad.prefs` to RetroArch `system` to be able to use the `WHDLoad.prefs` core option
+4. Place `WHDLoad.key` to RetroArch `system` if you have registered WHDLoad
+5. Launch a LHA/HDF/HDZ, Kickstarts will be copied automatically
+
+- Hold fire button at boot for launch selector
+- Hold spacebar at boot to show `ReadMe` and start `MkCustom`
 
 ### New WHDLoad.hdf features
+#### Major changes
 - Slave no longer needs to be renamed to game.slave. The first one is selected.
 - Kickstarts will be copied automatically from the system directory on the first run, so it might take a little longer than usual.
 - `WHDLoad.prefs` will be copied from the system directory, if it exists. It needs to be there for the core option overrides to work.
 - `WHDLoad.key` will be copied from the system directory if you have registered WHDLoad.
-- **These previous features involving RA system directory require directory filesystem in UAE. At the moment it is known to not work on these platforms: Switch**
 - Supports a file named `custom` in the root of the game.hdf for passing specific WHDLoad parameters when the slave does not support the config screen or when it should be the default, for example `Custom1=1`. It always overrides `WHDLoad.prefs`.
-  - The easiest way to create `custom` is to quit WHDLoad (default Numpad*), type `echo custom1=1 >custom`, press enter and reboot the Amiga.
+  - ~~The easiest way to create `custom` is to quit WHDLoad (default Numpad*), type `echo custom1=1 >custom`, press enter and reboot the Amiga.~~
+  - Script called `MkCustom` for simplest `custom` file handling. Launches after quitting WHDLoad.
+  - `MkCustom` will create a slave-based `custom_$SLAVE` in WHDSaves:. Essential with readonly images.
 - Supports a file named `load` in the root of the game.hdf which overrides the whole launch command, aimed at non-WHDLoad installs.
+- If `.slave` is not in the root of the HDF, it will also be searched under the first found directory.
+- Saves can be redirected to a separate `WHDSaves.hdf`. Repo provides an empty 2MiB HDF.
+
+#### Minor changes
+- Both HDF-files (`WHDLoad.hdf` & `WHDSaves.hdf`) can be located in either RA system or saves.
 - 'Use WHDLoad.hdf' core option does not need to be disabled when launching a non-WHDLoad HDF which has its own startup-sequence.
 - NTSC parameter can be used with WHDLoad.
 - Included ClickNot for suppressing drive clicking if drive sound emulation is on.
 - Included MEmacs for file editing (`custom` & `load`).
 - Updated WHDLoad to the latest one (18.5 2019-03-09).
 - New WHDLoad defaults:
-  - ButtonWait (Waits for a button press in certain slaves when loading is so fast that you can't enjoy a picture or a tune)
-  - ReadDelay=0 & WriteDelay=50 (These speed up OS switching on loadings and savings. Saves tend to corrupt with WriteDelay below 50)
-- **Latest changes:**
-  - Script called `MkCustom` for simplest `custom` file handling. Launches after quitting WHDLoad.
-  - `MkCustom` will create a slave-based `custom_$SLAVE` in WHDSaves:. Essential with readonly images.
-  - If `.slave` is not in the root of the HDF, it will also be searched under the first found directory.
-  - Saves can be redirected to a separate `WHDSaves.hdf`. Repo provides an empty 2MiB HDF.
-  - Both HDF-files (`WHDLoad.hdf` & `WHDSaves.hdf`) can be located in either RA system or saves.
-  - Support for Retroplay LHA installs.
-  - Support for Arcadia installs (requires KS 1.2, `kick33180.A500` will be copied automatically from RA system).
-  - Fixed `xpkmaster.library`.
-  - Show `ReadMe` before running `MkCustom` after quitting.
-  - Changed filesystem from OFS to FFS. Prevents image corruption on unclean shutdowns.
+  - ButtonWait (Waits for a button press in certain slaves when loading is so fast that you can't enjoy a picture or a tune).
+  - ReadDelay=0 & WriteDelay=50 (These speed up OS switching on loadings and savings. Saves tend to corrupt with WriteDelay below 50).
+
+#### Latest changes
+- Support for Retroplay LHA installs.
+- Support for Arcadia installs (requires KS 1.2, `kick33180.A500` will be copied automatically).
+- Fixed `xpkmaster.library`.
+- Show `ReadMe` before running `MkCustom` after quitting.
+- Changed filesystem from OFS to FFS. Prevents image corruption on unclean shutdowns.
+- Default launch method changed to WBRun.
+- Better support for games with multiple icons.
+- Hold down fire button at boot for `.info` selector. Selector will be launched always when there is no exact match for `.slave`.
+- Hold down spacebar at boot for `Readme` and `MkCustom`.
 
 ### Create a HDF image for a game
 If you have a WHDLoad game in a ZIP or a directory, you will have to create an image file. WHDLoad specific LHA archives will work directly as a read only hard drive image.

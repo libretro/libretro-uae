@@ -2815,7 +2815,7 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       //fprintf(stdout, "ztatusbar:%3d old:%3d offset:%3d, retroh:%d defaulth:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, retroh, defaulth);
    }
 
-   /* If zoom mode should be centered automagically */
+   /* If zoom mode should be vertically centered automagically */
    if (opt_vertical_offset_auto && (zoom_mode_id != 0 || zoomed_height != retroh) && firstpass != 1)
    {
       int zoomed_height_normal = (video_config & PUAE_VIDEO_HIRES) ? zoomed_height / 2 : zoomed_height;
@@ -2847,6 +2847,7 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
    else
       thisframe_y_adjust = minfirstline + opt_vertical_offset;
 
+   /* Horizontal centering */
    if (opt_horizontal_offset_auto && firstpass != 1)
    {
       int visible_left_border_new = max_diwlastword - retrow;
@@ -2854,8 +2855,8 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       /* Need proper values for calculations */
       if (min_diwstart != max_diwstop
        && min_diwstart > 0 && max_diwstop > 0
-       && min_diwstart < ((video_config & PUAE_VIDEO_HIRES) ? 220 : 220/2)
-       && max_diwstop > ((video_config & PUAE_VIDEO_HIRES) ? 600 : 600/2)
+       && min_diwstart < ((video_config & PUAE_VIDEO_HIRES || video_config & PUAE_VIDEO_HIRES_SINGLE) ? 220 : 220/2)
+       && max_diwstop > ((video_config & PUAE_VIDEO_HIRES || video_config & PUAE_VIDEO_HIRES_SINGLE) ? 600 : 600/2)
       )
       {
          visible_left_border_new = (max_diwstop - min_diwstart - retrow) / 2 + min_diwstart; // Smart

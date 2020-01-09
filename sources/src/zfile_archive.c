@@ -85,7 +85,6 @@ static struct zvolume *getzvolume (struct znode *parent, struct zfile *zf, unsig
 #ifdef A_LHA
 	case ArchiveFormatLHA:
 		zv = archive_directory_lha (zf);
-		printf("GETZVOLUME\n");
 		break;
 #endif
 #ifdef A_LZX
@@ -1398,8 +1397,10 @@ struct zvolume *archive_directory_rdb (struct zfile *z)
 		zai.size = size;
 		zai.flags = -1;
 		zn = zvolume_addfile_abs (zv, &zai);
-		zn->offset = partblock;
-		zn->offset2 = blocksize; // abuse of offset2..
+		if (zn) {
+			zn->offset = partblock;
+			zn->offset2 = blocksize; // abuse of offset2..
+		}
 	}
 
 	zfile_fseek (z, 0, SEEK_SET);
@@ -1422,7 +1423,8 @@ static struct zfile *archive_access_rdb (struct znode *zn)
 	struct zfile *zf;
 	uae_u8 buf[512] = { 0 };
 	int surf, spb, spt, lowcyl, highcyl;
-	int size, block, blocksize;
+	int block, blocksize;
+	uae_s64 size;
 	uae_u8 *p;
 
 	if (zn->offset) {
