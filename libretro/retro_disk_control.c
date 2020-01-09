@@ -20,6 +20,11 @@
 #include "retro_strings.h"
 #include "retro_files.h"
 
+#include "sysconfig.h"
+#include "sysdeps.h"
+#include "options.h"
+#include "disk.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -32,6 +37,7 @@
 
 #define COMMENT "#"
 #define M3U_SPECIAL_COMMAND "#COMMAND:"
+#define M3U_SAVEDISK "#SAVEDISK:"
 
 // Return the directory name of filename 'filename'.
 char* dirname_int(const char* filename)
@@ -166,7 +172,110 @@ bool dc_add_file(dc_storage* dc, const char* filename)
 	return dc_add_file_int(dc, filename_int);
 }
 
-void dc_parse_m3u(dc_storage* dc, const char* m3u_file)
+static bool dc_add_m3u_save_disk(
+		dc_storage* dc,
+		const char* m3u_file, const char* save_dir,
+		const char* disk_name, unsigned int index)
+{
+	bool save_disk_exists                     = false;
+	char *m3u_file_name                       = NULL;
+	char *last_period                         = NULL;
+	char m3u_file_name_no_ext[RETRO_PATH_MAX] = {0};
+	char save_disk_file_name[RETRO_PATH_MAX]  = {0};
+	char save_disk_path[RETRO_PATH_MAX]       = {0};
+	char volume_name[31]                      = {0};
+	
+	// Verify
+	if(dc == NULL)
+		return false;
+
+	if(m3u_file == NULL)
+		return false;
+	
+	if(save_dir == NULL)
+		return false;
+	
+	// It seems that we don't want to use "string/stdstring.h"
+	// or "file/file_path.h" functions here, so this will be ugly...
+	
+	// Get m3u file name
+	m3u_file_name = strrchr(m3u_file, RETRO_PATH_SEPARATOR[0]);
+#ifdef _WIN32
+	if (m3u_file_name == NULL)
+		m3u_file_name = strrchr(m3u_file, RETRO_PATH_SEPARATOR_ALT[0]);
+#endif
+	
+	if (!m3u_file_name || (*m3u_file_name == '\0'))
+		return false;
+	
+	m3u_file_name++;
+	
+	if (*m3u_file_name == '\0')
+		return false;
+	
+	// Get m3u file name without extension
+	// (Looks like we can't use strlcpy() either...)
+	strncpy(m3u_file_name_no_ext, m3u_file_name, sizeof(m3u_file_name_no_ext) - 1);
+	
+	last_period = strrchr(m3u_file_name_no_ext, '.');
+	if (last_period != NULL)
+		*last_period = '\0';
+	
+	// Construct save disk file name
+	snprintf(save_disk_file_name, RETRO_PATH_MAX, "%s.save%u.adf",
+			m3u_file_name_no_ext, index);
+	
+	// Construct save disk path
+	path_join(save_disk_path, save_dir, save_disk_file_name);
+	
+	// Check whether save disk already exists
+	// Note: If a disk already exists, we should be
+	// able to support changing the volume label if
+	// it differs from 'disk_name'. This is quite
+	// fiddly, however - perhaps it can be added later...
+	save_disk_exists = file_exists(save_disk_path);
+	
+	// ...if not, create a new one
+	if (!save_disk_exists)
+	{
+		// Get volume name
+		// > If disk_name is NULL or empty/EMPTY,
+		//   no volume name is set
+		if (disk_name && (*disk_name != '\0'))
+		{
+			if(strncasecmp(disk_name, "empty", strlen("empty")))
+			{
+				char *scrub_pointer = NULL;
+				
+				// Ensure volume name is valid
+				// > Must be <= 30 characters
+				// > Cannot contain '/' or ':'
+				strncpy(volume_name, disk_name, sizeof(volume_name) - 1);
+				
+				while((scrub_pointer = strpbrk(volume_name, "/:")))
+					*scrub_pointer = '_';
+			}
+		}
+		
+		// Create save disk
+		save_disk_exists = disk_creatediskfile(
+				save_disk_path, 0, DRV_35_DD,
+				(volume_name[0] == '\0') ? NULL : volume_name,
+				false, false, NULL);
+	}
+	
+	// If save disk exists/was created, add it to
+	// the list
+	if (save_disk_exists)
+	{
+		dc_add_file_int(dc, my_strdup(save_disk_path));
+		return true;
+	}
+	
+	return false;
+}
+
+void dc_parse_m3u(dc_storage* dc, const char* m3u_file, const char* save_dir)
 {
 	// Verify
 	if(dc == NULL)
@@ -188,6 +297,7 @@ void dc_parse_m3u(dc_storage* dc, const char* m3u_file)
 	char* basedir = dirname_int(m3u_file);
 	
 	// Read the lines while there is line to read and we have enough space
+	unsigned int save_disk_index = 0;
 	char buffer[2048];
 	while ((dc->count <= DC_MAX_SIZE) && (fgets(buffer, sizeof(buffer), fp) != NULL))
 	{
@@ -198,6 +308,21 @@ void dc_parse_m3u(dc_storage* dc, const char* m3u_file)
 		{
 			dc->command = strright(string, strlen(string) - strlen(M3U_SPECIAL_COMMAND));
 		}
+		else if (strstartswith(string, M3U_SAVEDISK))
+		{
+			// Get volume name
+			char* disk_name = strright(string, strlen(string) - strlen(M3U_SAVEDISK));
+			
+			// Add save disk, creating it if necessary
+			if (dc_add_m3u_save_disk(
+					dc, m3u_file, save_dir,
+					disk_name, save_disk_index))
+				save_disk_index++;
+			
+			// Clean up
+			if (disk_name != NULL)
+				free(disk_name);
+		}
 		else if (!strstartswith(string, COMMENT))
 		{
 			// Search the file (absolute, relative to m3u)
@@ -207,7 +332,6 @@ void dc_parse_m3u(dc_storage* dc, const char* m3u_file)
 				// Add the file to the struct
 				dc_add_file_int(dc, filename);
 			}
-
 		}
 	}
 	

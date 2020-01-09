@@ -35,7 +35,7 @@ struct dc_storage{
 
 typedef struct dc_storage dc_storage;
 dc_storage* dc_create(void);
-void dc_parse_m3u(dc_storage* dc, const char* m3u_file);
+void dc_parse_m3u(dc_storage* dc, const char* m3u_file, const char* save_dir);
 bool dc_add_file(dc_storage* dc, const char* filename);
 void dc_free(dc_storage* dc);
 
