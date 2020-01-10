@@ -729,3 +729,22 @@ void uae_pause (void)
 void uae_resume (void)
 {
 }
+
+#include "deps/zlib/zlib.h"
+void gz_uncompress(gzFile in, FILE *out)
+{
+    char gzbuf[16384];
+    int len;
+    int err;
+
+    for (;;)
+    {
+        len = gzread(in, gzbuf, sizeof(gzbuf));
+        if (len < 0)
+            fprintf(stderr, gzerror(in, &err));
+        if (len == 0)
+            break;
+        if ((int)fwrite(gzbuf, 1, (unsigned)len, out) != len)
+            fprintf(stderr, "Write error!\n");
+    }
+}
