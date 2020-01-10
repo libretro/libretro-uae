@@ -178,13 +178,15 @@ In this WHDLoad image you must have these Kickstart ROMs `kick34005.A500` & `kic
 
 **NOTE: The tutorial is now outdated regarding default controls and the need of .uae conf files for basic use.**
 
-### Current checklist
-1. Grab the latest version from the repo: https://github.com/libretro/libretro-uae/tree/master/whdload/
-2. Place **both** HDFs (`WHDSaves.hdf` is highly recommended, but not required) in either RetroArch `saves` or `system`
-3. Place `WHDLoad.prefs` to RetroArch `system` to be able to use the `WHDLoad.prefs` core option
-4. Place `WHDLoad.key` to RetroArch `system` if you have registered WHDLoad
-5. Launch a LHA/HDF/HDZ, Kickstarts will be copied automatically
+### Current checklist for new users
+1. ~~Grab the latest version from the repo: https://github.com/libretro/libretro-uae/tree/master/whdload/~~
+2. ~~Place **both** HDFs (`WHDSaves.hdf` is highly recommended, but not required) in either RetroArch `saves` or `system`~~
+3. ~~Place `WHDLoad.prefs` to RetroArch `system` to be able to use the `WHDLoad.prefs` core option~~
+4. ~~Place `WHDLoad.key` to RetroArch `system` if you have registered WHDLoad~~
+5. ~~Launch a LHA/HDF/HDZ, Kickstarts will be copied automatically~~
 
+- Launch a **LHA**/**HDF**/**HDZ**
+  - `WHDLoad.hdf` & `WHDSaves.hdf` will be generated to RetroArch saves and Kickstarts will be copied automatically
 - Hold fire button at boot for launch selector
 - Hold spacebar at boot to show `ReadMe` and start `MkCustom`
 
@@ -223,6 +225,7 @@ In this WHDLoad image you must have these Kickstart ROMs `kick34005.A500` & `kic
 - Better support for games with multiple icons.
 - Hold down fire button at boot for `.info` selector. Selector will be launched always when there is no exact match for `.slave`.
 - Hold down spacebar at boot for `Readme` and `MkCustom`.
+- `WHDLoad.hdf` + `WHDSaves.hdf` + `WHDLoad.prefs` baked in the core. No more separate downloads!
 
 ### Create a HDF image for a game
 If you have a WHDLoad game in a ZIP or a directory, you will have to create an image file. WHDLoad specific LHA archives will work directly as a read only hard drive image.
