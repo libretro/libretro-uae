@@ -481,8 +481,8 @@ STATIC_INLINE void put_sound_word_left (uae_u32 w)
 		rold = right_word_saved[saved_ptr] - SOUND16_BASE_VAL;
 		w = (lnew * mixed_mul2 + rold * mixed_mul1) / MIXED_STEREO_SCALE;
 
-		PUT_SOUND_WORD_LEFT (w);
-		PUT_SOUND_WORD_RIGHT (tmp);
+		PUT_SOUND_WORD_LEFT (tmp);
+		PUT_SOUND_WORD_RIGHT (w);
 	} else {
 		PUT_SOUND_WORD_LEFT (w);
 	}
@@ -515,8 +515,8 @@ STATIC_INLINE void put_sound_word_left2 (uae_u32 w)
 		rold = right2_word_saved[saved_ptr2] - SOUND16_BASE_VAL;
 		w = (lnew * mixed_mul2 + rold * mixed_mul1) / MIXED_STEREO_SCALE;
 
-		PUT_SOUND_WORD_LEFT2 (w);
-		PUT_SOUND_WORD_RIGHT2 (tmp);
+		PUT_SOUND_WORD_LEFT2 (tmp);
+		PUT_SOUND_WORD_RIGHT2 (w);
 	} else {
 		PUT_SOUND_WORD_LEFT2 (w);
 	}
