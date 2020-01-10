@@ -40,6 +40,7 @@ unsigned int opt_video_options_display;
 unsigned int opt_audio_options_display;
 char opt_model[10];
 bool opt_use_whdload_hdf = true;
+bool opt_use_whdsaves_hdf = true;
 unsigned int opt_use_whdload_prefs = 0;
 bool opt_enhanced_statusbar = true;
 int opt_statusbar_position = 0;
@@ -749,6 +750,17 @@ void retro_set_environment(retro_environment_t cb)
          "puae_use_whdload",
          "Use WHDLoad.hdf",
          "Enables the use of WHDLoad hard drive images which only have the game files. Core restart required.",
+         {
+            { "enabled", NULL },
+            { "disabled", NULL },
+            { NULL, NULL },
+         },
+         "enabled"
+      },
+      {
+         "puae_use_whdsaves",
+         "Use WHDSaves.hdf",
+         "Enabled will save WHDLoad saves to WHDSaves.hdf or WHDLoad.hdf. Disabled will save files directly to RA saves. Core restart required.",
          {
             { "enabled", NULL },
             { "disabled", NULL },
@@ -1756,6 +1768,14 @@ static void update_variables(void)
    {
       if (strcmp(var.value, "enabled") == 0) opt_use_whdload_hdf = true;
       if (strcmp(var.value, "disabled") == 0) opt_use_whdload_hdf = false;
+   }
+
+   var.key = "puae_use_whdsaves";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "enabled") == 0) opt_use_whdsaves_hdf = true;
+      if (strcmp(var.value, "disabled") == 0) opt_use_whdsaves_hdf = false;
    }
 
    var.key = "puae_use_whdload_prefs";
@@ -3317,42 +3337,56 @@ bool retro_load_game(const struct retro_game_info *info)
                   fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s\",-128\n", string_replace_substring(retro_system_directory, "\\", "\\\\"));
 //#endif
 
-                  // Attach WHDSaves.hdf if available
-                  char whdsaves_hdf[RETRO_PATH_MAX];
-                  path_join((char*)&whdsaves_hdf, retro_system_directory, "WHDSaves.hdf");
-                  if (!file_exists(whdsaves_hdf))
-                     path_join((char*)&whdsaves_hdf, retro_save_directory, "WHDSaves.hdf");
-                  if (!file_exists(whdsaves_hdf))
+                  if (opt_use_whdsaves_hdf)
                   {
-                     fprintf(stdout, "[libretro-uae]: WHDSaves image file '%s' not found, attempting to create one\n", (const char*)&whdsaves_hdf);
-
-                     char whdsaves_hdf_gz[RETRO_PATH_MAX];
-                     path_join((char*)&whdsaves_hdf_gz, retro_save_directory, "WHDSaves.hdf.gz");
-
-                     FILE *whdsaves_hdf_gz_fp;
-                     if (whdsaves_hdf_gz_fp = fopen(whdsaves_hdf_gz, "wb"))
+                     // Attach WHDSaves.hdf if available
+                     char whdsaves_hdf[RETRO_PATH_MAX];
+                     path_join((char*)&whdsaves_hdf, retro_system_directory, "WHDSaves.hdf");
+                     if (!file_exists(whdsaves_hdf))
+                        path_join((char*)&whdsaves_hdf, retro_save_directory, "WHDSaves.hdf");
+                     if (!file_exists(whdsaves_hdf))
                      {
-                        fwrite(___whdload_WHDSaves_hdf_gz, ___whdload_WHDSaves_hdf_gz_len, 1, whdsaves_hdf_gz_fp);
-                        fclose(whdsaves_hdf_gz_fp);
+                        fprintf(stdout, "[libretro-uae]: WHDSaves image file '%s' not found, attempting to create one\n", (const char*)&whdsaves_hdf);
 
-                        struct gzFile_s *whdsaves_hdf_gz_fp;
-                        if (whdsaves_hdf_gz_fp = gzopen(whdsaves_hdf_gz, "r"))
+                        char whdsaves_hdf_gz[RETRO_PATH_MAX];
+                        path_join((char*)&whdsaves_hdf_gz, retro_save_directory, "WHDSaves.hdf.gz");
+
+                        FILE *whdsaves_hdf_gz_fp;
+                        if (whdsaves_hdf_gz_fp = fopen(whdsaves_hdf_gz, "wb"))
                         {
-                           FILE *whdsaves_hdf_fp;
-                           if (whdsaves_hdf_fp = fopen(whdsaves_hdf, "wb"))
+                           fwrite(___whdload_WHDSaves_hdf_gz, ___whdload_WHDSaves_hdf_gz_len, 1, whdsaves_hdf_gz_fp);
+                           fclose(whdsaves_hdf_gz_fp);
+
+                           struct gzFile_s *whdsaves_hdf_gz_fp;
+                           if (whdsaves_hdf_gz_fp = gzopen(whdsaves_hdf_gz, "r"))
                            {
-                              gz_uncompress(whdsaves_hdf_gz_fp, whdsaves_hdf_fp);
-                              fclose(whdsaves_hdf_fp);
+                              FILE *whdsaves_hdf_fp;
+                              if (whdsaves_hdf_fp = fopen(whdsaves_hdf, "wb"))
+                              {
+                                 gz_uncompress(whdsaves_hdf_gz_fp, whdsaves_hdf_fp);
+                                 fclose(whdsaves_hdf_fp);
+                              }
+                              gzclose(whdsaves_hdf_gz_fp);
                            }
-                           gzclose(whdsaves_hdf_gz_fp);
+                           remove(whdsaves_hdf_gz);
                         }
-                        remove(whdsaves_hdf_gz);
+                        else
+                           fprintf(stderr, "Error creating WHDSaves.hdf '%s'!\n", (const char*)&whdsaves_hdf);
                      }
-                     else
-                        fprintf(stderr, "Error creating WHDSaves.hdf '%s'!\n", (const char*)&whdsaves_hdf);
+                     if (file_exists(whdsaves_hdf))
+                        fprintf(configfile, "hardfile2=rw,WHDSaves:\"%s\",32,1,2,512,0,,uae2\n", (const char*)string_replace_substring(whdsaves_hdf, "\\", "\\\\"));
                   }
-                  if (file_exists(whdsaves_hdf))
-                     fprintf(configfile, "hardfile2=rw,WHDSaves:\"%s\",32,1,2,512,0,,uae2\n", (const char*)string_replace_substring(whdsaves_hdf, "\\", "\\\\"));
+                  else
+                  {
+                     char whdsaves_path[RETRO_PATH_MAX];
+                     path_join((char*)&whdsaves_path, retro_save_directory, "WHDSaves");
+                     if (!path_is_directory(whdsaves_path))
+                        path_mkdir(whdsaves_path);
+                     if (path_is_directory(whdsaves_path))
+                        fprintf(configfile, "filesystem2=rw,WHDSaves:WHDSaves:\"%s\",-128\n", string_replace_substring(whdsaves_path, "\\", "\\\\"));
+                     else
+                        fprintf(stderr, "Error creating WHDSaves directory in '%s'!\n", (const char*)&whdsaves_path);
+                  }
 
                   // Manipulate WHDLoad.prefs
                   int WHDLoad_ConfigDelay = 0;
