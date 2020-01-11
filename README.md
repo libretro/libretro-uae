@@ -18,10 +18,15 @@ And of course for the RetroArch/Libretro team: "http://www.libretro.com/"
 
 |Key|Action|
 |---|---|
-|B|Button 1 / LMB|
-|A|Button 2 / RMB|
+|B|Fire button 1|
+|A|Fire button 2|
 |L|Toggle virtual keyboard|
 |R|Toggle statusbar|
+|L2|Left mouse button|
+|R2|Right mouse button|
+|Select|Toggle D-Pad + face buttons between joystick/mouse|
+
+Right analog stick controls the mouse by default.
 
 ### Virtual keyboard controls
 |Key|Action|
@@ -185,8 +190,9 @@ In this WHDLoad image you must have these Kickstart ROMs `kick34005.A500` & `kic
 4. ~~Place `WHDLoad.key` to RetroArch `system` if you have registered WHDLoad~~
 5. ~~Launch a LHA/HDF/HDZ, Kickstarts will be copied automatically~~
 
-- Launch a **LHA**/**HDF**/**HDZ**
-  - `WHDLoad.hdf` & `WHDSaves.hdf` will be generated to RetroArch saves and Kickstarts will be copied automatically
+- `WHDLoad.hdf` & `WHDSaves.hdf` will be generated to RetroArch saves and Kickstarts will be copied automatically
+- To update `WHDLoad.hdf` simply delete it
+
 - Hold fire button at boot for launch selector
 - Hold spacebar at boot to show `ReadMe` and start `MkCustom`
 
