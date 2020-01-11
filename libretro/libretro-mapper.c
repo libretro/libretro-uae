@@ -291,7 +291,7 @@ static int joystick_color(int val[16])
       color |= (pix_bytes == 4) ? RGB888(164,164,164) : RGB565(72,72,72);
 
    if (color == 0)
-      color = 0xffffff;
+      color = (pix_bytes == 4) ? 0xffffff : 0xffff;
    return color;
 }
 
@@ -310,26 +310,25 @@ void Print_Status(void)
    if (!opt_enhanced_statusbar)
       return;
 
-   static int STAT_BASEY;
-   static int BOX_WIDTH;
-   static int BOX_HEIGHT;
-   static int BOX_PADDING=2;
    static int BOX_Y;
+   static int BOX_WIDTH;
+   static int BOX_HEIGHT=11;
+   static int BOX_PADDING=2;
 
    static int FONT_WIDTH=1;
    static int FONT_HEIGHT=1;
    static int STAT_DECX=4;
+   static int STAT_BASEY;
 
    // Statusbar location
    if (opt_statusbar_position < 0) // Top
       STAT_BASEY=2;
    else // Bottom
       STAT_BASEY=gfxvidinfo.outheight-opt_statusbar_position-BOX_HEIGHT+2;
+   BOX_Y=STAT_BASEY-BOX_PADDING;
 
    // Statusbar size
    BOX_WIDTH=retrow-(24*5)-2; // (LED-width * LED-num) - LED-border
-   BOX_HEIGHT=11;
-   BOX_Y=STAT_BASEY-BOX_PADDING;
 
    // Joy port indicators
    char JOYPORT1[10];
@@ -337,8 +336,8 @@ void Print_Status(void)
    char JOYPORT3[10];
    char JOYPORT4[10];
 
-   char JOYMODE1[3];
-   char JOYMODE2[3];
+   char JOYMODE1[5];
+   char JOYMODE2[5];
 
    // Regular joyflags
    if (MOUSEMODE==-1)
@@ -353,8 +352,8 @@ void Print_Status(void)
    }
 
    // Normal ports
-   sprintf(JOYPORT1, "%s%3s", JOYMODE1, joystick_value_human(jflag[0], 0));
-   sprintf(JOYPORT2, "%s%3s", JOYMODE2, joystick_value_human(jflag[1], 0));
+   sprintf(JOYPORT1, "%2s%3s", JOYMODE1, joystick_value_human(jflag[0], 0));
+   sprintf(JOYPORT2, "%2s%3s", JOYMODE2, joystick_value_human(jflag[1], 0));
 
    // Parallel ports, hidden if not connected
    if (uae_devices[2])
@@ -389,8 +388,8 @@ void Print_Status(void)
    if (uae_devices[1] == RETRO_DEVICE_UAE_CD32PAD)
       JOYPORT2_COLORIZE = true;
 
-   int FONT_COLOR;
    int FONT_COLOR_DEFAULT;
+   int FONT_COLOR;
    FONT_COLOR_DEFAULT = (pix_bytes == 4) ? 0xffffff : 0xffff;
    FONT_COLOR = FONT_COLOR_DEFAULT;
 
