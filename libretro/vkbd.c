@@ -156,12 +156,20 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
          else
             DrawFBoxBmp(pix, XKEY+KEYSPACING, YKEY+KEYSPACING, XSIDE-KEYSPACING, YSIDE-KEYSPACING, BKG_COLOR, BKG_ALPHA);
 
-         /* Key text */
+         /* Key text shadow */
          if (pix_bytes == 4)
-            Draw_text32((uint32_t *)pix, XTEXT, YTEXT, FONT_COLOR, 0, BKG_ALPHA, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+            Draw_text32((uint32_t *)pix, XTEXT+1, YTEXT+1, BKG_COLOR, BKG_COLOR, 64, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
                (SHIFTON == -1) ? MVk[(y * NPLGN) + x + page].norml : MVk[(y * NPLGN) + x + page].shift);
          else
-            Draw_text(pix, XTEXT, YTEXT, FONT_COLOR, 0, BKG_ALPHA, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+            Draw_text(pix, XTEXT+1, YTEXT+1, BKG_COLOR, BKG_COLOR, 64, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+               (SHIFTON == -1) ? MVk[(y * NPLGN) + x + page].norml : MVk[(y * NPLGN) + x + page].shift);
+
+         /* Key text */
+         if (pix_bytes == 4)
+            Draw_text32((uint32_t *)pix, XTEXT, YTEXT, FONT_COLOR, BKG_COLOR, 255, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+               (SHIFTON == -1) ? MVk[(y * NPLGN) + x + page].norml : MVk[(y * NPLGN) + x + page].shift);
+         else
+            Draw_text(pix, XTEXT, YTEXT, FONT_COLOR, BKG_COLOR, 255, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
                (SHIFTON == -1) ? MVk[(y * NPLGN) + x + page].norml : MVk[(y * NPLGN) + x + page].shift);
       }
    }
@@ -177,7 +185,7 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
       BKG_COLOR_SEL = BKG_COLOR_DARK;
 
    /* Opacity */
-   BKG_ALPHA = (SHOWKEYTRANS == -1) ? 255 : ALPHA;
+   BKG_ALPHA = (SHOWKEYTRANS == -1) ? 255 : 200;
 
    /* Selected key background */
    if (pix_bytes == 4)
@@ -187,10 +195,10 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
 
    /* Selected key text */
    if (pix_bytes == 4)
-      Draw_text32((uint32_t *)pix, XTEXT, YTEXT, FONT_COLOR_SEL, 0, BKG_ALPHA, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+      Draw_text32((uint32_t *)pix, XTEXT, YTEXT, FONT_COLOR_SEL, 0, 255, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
          (SHIFTON == -1) ? MVk[(vy * NPLGN) + vx + page].norml : MVk[(vy * NPLGN) + vx + page].shift);
    else
-      Draw_text(pix, XTEXT, YTEXT, FONT_COLOR_SEL, 0, BKG_ALPHA, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+      Draw_text(pix, XTEXT, YTEXT, FONT_COLOR_SEL, 0, 255, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
          (SHIFTON == -1) ? MVk[(vy * NPLGN) + vx + page].norml : MVk[(vy * NPLGN) + vx + page].shift);
 }
 
