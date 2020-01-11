@@ -645,7 +645,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_sound_stereo_separation",
          "Sound Stereo Separation",
-         "",
+         "Paula sound chip channel panning.",
          {
             { "0\%", NULL },
             { "10\%", NULL },

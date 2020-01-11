@@ -452,6 +452,21 @@ static int filter (int input, struct filter_state *fs)
 	return o;
 }
 
+#ifdef __LIBRETRO__
+/* Stereo separation */
+static void stereo_separation_mix(int *right, int *left)
+{
+    if (mixed_on) {
+        int rold, lold;
+
+        rold    = *right;
+        lold    = *left;
+        *right  = (rold * mixed_mul2 + lold * mixed_mul1) / MIXED_STEREO_SCALE;
+        *left   = (lold * mixed_mul2 + rold * mixed_mul1) / MIXED_STEREO_SCALE;
+    }
+}
+#endif
+
 /* Always put the right word before the left word.  */
 
 STATIC_INLINE void put_sound_word_right (uae_u32 w)
@@ -460,14 +475,14 @@ STATIC_INLINE void put_sound_word_right (uae_u32 w)
 		right_word_saved[saved_ptr] = w;
 		return;
 	}
-	PUT_SOUND_WORD_RIGHT (w);
+	PUT_SOUND_WORD(w);
 }
 
 STATIC_INLINE void put_sound_word_left (uae_u32 w)
 {
 	if (mixed_on) {
 		uae_u32 rold, lold, rnew, lnew, tmp;
-
+#ifndef __LIBRETRO__
 		left_word_saved[saved_ptr] = w;
 		lnew = w - SOUND16_BASE_VAL;
 		rnew = right_word_saved[saved_ptr] - SOUND16_BASE_VAL;
@@ -480,11 +495,13 @@ STATIC_INLINE void put_sound_word_left (uae_u32 w)
 
 		rold = right_word_saved[saved_ptr] - SOUND16_BASE_VAL;
 		w = (lnew * mixed_mul2 + rold * mixed_mul1) / MIXED_STEREO_SCALE;
-
-		PUT_SOUND_WORD_LEFT (tmp);
-		PUT_SOUND_WORD_RIGHT (w);
+#else
+		tmp = right_word_saved[saved_ptr];
+#endif
+		PUT_SOUND_WORD(tmp);
+		PUT_SOUND_WORD(w);
 	} else {
-		PUT_SOUND_WORD_LEFT (w);
+		PUT_SOUND_WORD(w);
 	}
 }
 
@@ -494,14 +511,14 @@ STATIC_INLINE void put_sound_word_right2 (uae_u32 w)
 		right2_word_saved[saved_ptr2] = w;
 		return;
 	}
-	PUT_SOUND_WORD_RIGHT2 (w);
+	PUT_SOUND_WORD(w);
 }
 
 STATIC_INLINE void put_sound_word_left2 (uae_u32 w)
 {
 	if (mixed_on) {
 		uae_u32 rold, lold, rnew, lnew, tmp;
-
+#ifndef __LIBRETRO__
 		left2_word_saved[saved_ptr2] = w;
 		lnew = w - SOUND16_BASE_VAL;
 		rnew = right2_word_saved[saved_ptr2] - SOUND16_BASE_VAL;
@@ -514,11 +531,13 @@ STATIC_INLINE void put_sound_word_left2 (uae_u32 w)
 
 		rold = right2_word_saved[saved_ptr2] - SOUND16_BASE_VAL;
 		w = (lnew * mixed_mul2 + rold * mixed_mul1) / MIXED_STEREO_SCALE;
-
-		PUT_SOUND_WORD_LEFT2 (tmp);
-		PUT_SOUND_WORD_RIGHT2 (w);
+#else
+		tmp = right2_word_saved[saved_ptr2];
+#endif
+		PUT_SOUND_WORD(tmp);
+		PUT_SOUND_WORD(w);
 	} else {
-		PUT_SOUND_WORD_LEFT2 (w);
+		PUT_SOUND_WORD(w);
 	}
 }
 
@@ -1001,6 +1020,9 @@ static void sample16si_anti_handler (void)
 	do_filter(&data1, 0);
 	do_filter(&data2, 1);
 
+#ifdef __LIBRETRO__
+	stereo_separation_mix(&data1, &data2);
+#endif
 	get_extra_channels_sample2(&data1, &data2, 1);
 
 	set_sound_buffers ();
@@ -1055,11 +1077,14 @@ static void sample16si_sinc_handler (void)
 	do_filter(&data1, 0);
 	do_filter(&data2, 1);
 
+#ifdef __LIBRETRO__
+	stereo_separation_mix(&data1, &data2);
+#endif
 	get_extra_channels_sample2(&data1, &data2, 2);
 
 	set_sound_buffers ();
 	put_sound_word_right(data1);
-	put_sound_word_left(data2);
+	put_sound_word_left (data2);
 	check_sound_buffers ();
 }
 
@@ -1089,11 +1114,14 @@ void sample16s_handler (void)
 	do_filter(&data2, 0);
 	do_filter(&data3, 1);
 
+#ifdef __LIBRETRO__
+	stereo_separation_mix(&data2, &data3);
+#endif
 	get_extra_channels_sample2(&data2, &data3, 0);
 
 	set_sound_buffers ();
 	put_sound_word_right(data2);
-	put_sound_word_left(data3);
+	put_sound_word_left (data3);
 	check_sound_buffers ();
 }
 
@@ -1168,6 +1196,9 @@ static void sample16si_crux_handler (void)
 	do_filter(&data2, 0);
 	do_filter(&data3, 1);
 
+#ifdef __LIBRETRO__
+	stereo_separation_mix(&data2, &data3);
+#endif
 	get_extra_channels_sample2(&data2, &data3, 0);
 
 	set_sound_buffers ();
@@ -1228,6 +1259,9 @@ static void sample16si_rh_handler (void)
 	do_filter(&data2, 0);
 	do_filter(&data3, 1);
 
+#ifdef __LIBRETRO__
+	stereo_separation_mix(&data2, &data3);
+#endif
 	get_extra_channels_sample2(&data2, &data3, 0);
 
 	set_sound_buffers ();
