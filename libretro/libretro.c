@@ -645,7 +645,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_sound_stereo_separation",
          "Sound Stereo Separation",
-         "",
+         "Paula sound chip channel panning.",
          {
             { "0\%", NULL },
             { "10\%", NULL },
@@ -699,6 +699,26 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "auto",
+      },
+      {
+         "puae_sound_volume_cd",
+         "CD Audio Volume",
+         "",
+         {
+            { "0\%", NULL },
+            { "10\%", NULL },
+            { "20\%", NULL },
+            { "30\%", NULL },
+            { "40\%", NULL },
+            { "50\%", NULL },
+            { "60\%", NULL },
+            { "70\%", NULL },
+            { "80\%", NULL },
+            { "90\%", NULL },
+            { "100\%", NULL },
+            { NULL, NULL },
+         },
+         "100\%"
       },
       {
          "puae_floppy_sound",
@@ -1518,6 +1538,21 @@ static void update_variables(void)
       }
    }
 
+   var.key = "puae_sound_volume_cd";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      /* 100 is mute, 0 is max */
+      int val = 100 - atoi(var.value);
+      changed_prefs.sound_volume_cd=val;
+
+      char valbuf[50];
+      snprintf(valbuf, 50, "%d", val);
+      strcat(uae_config, "sound_volume_cd=");
+      strcat(uae_config, valbuf);
+      strcat(uae_config, "\n");
+   }
+
    var.key = "puae_floppy_speed";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -2140,6 +2175,8 @@ static void update_variables(void)
    option_display.key = "puae_sound_filter";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_sound_filter_type";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_sound_volume_cd";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_floppy_sound";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);

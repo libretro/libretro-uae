@@ -204,7 +204,7 @@ long GetTicks(void)
 #endif
 } 
 
-char* joystick_value_human(int val[16], int uae_device)
+static char* joystick_value_human(int val[16], int uae_device)
 {
    static char str[4];
    sprintf(str, "%3s", "   ");
@@ -264,7 +264,7 @@ char* joystick_value_human(int val[16], int uae_device)
    return str;
 }
 
-int joystick_color(int val[16], int pix_bytes)
+static int joystick_color(int val[16])
 {
    static unsigned int color;
    color = 0;
@@ -288,7 +288,7 @@ int joystick_color(int val[16], int pix_bytes)
       color |= (pix_bytes == 4) ? RGB888(170,170,170) : RGB565(110,110,110);
 
    if (val[RETRO_DEVICE_ID_JOYPAD_START])
-      color |= (pix_bytes == 4) ? RGB888(160,160,160) : RGB565(70,70,70);
+      color |= (pix_bytes == 4) ? RGB888(164,164,164) : RGB565(72,72,72);
 
    if (color == 0)
       color = 0xffffff;
@@ -400,12 +400,12 @@ void Print_Status(void)
       DrawFBoxBmp32((uint32_t *)retro_bmp,0,BOX_Y,BOX_WIDTH,BOX_HEIGHT,RGB888(0,0,0),255);
 
       if (JOYPORT1_COLORIZE)
-         FONT_COLOR = joystick_color(jflag[0], pix_bytes);
+         FONT_COLOR = joystick_color(jflag[0]);
       Draw_text32((uint32_t *)retro_bmp,STAT_DECX+0,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT1);
       if (JOYPORT1_COLORIZE)
          FONT_COLOR = FONT_COLOR_DEFAULT;
       if (JOYPORT2_COLORIZE)
-         FONT_COLOR = joystick_color(jflag[1], pix_bytes);
+         FONT_COLOR = joystick_color(jflag[1]);
       Draw_text32((uint32_t *)retro_bmp,STAT_DECX+40,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT2);
       if (JOYPORT2_COLORIZE)
          FONT_COLOR = FONT_COLOR_DEFAULT;
@@ -417,12 +417,12 @@ void Print_Status(void)
       DrawFBoxBmp(retro_bmp,0,BOX_Y,BOX_WIDTH,BOX_HEIGHT,RGB565(0,0,0),255);
 
       if (JOYPORT1_COLORIZE)
-         FONT_COLOR = joystick_color(jflag[0], pix_bytes);
+         FONT_COLOR = joystick_color(jflag[0]);
       Draw_text(retro_bmp,STAT_DECX+0,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT1);
       if (JOYPORT1_COLORIZE)
          FONT_COLOR = FONT_COLOR_DEFAULT;
       if (JOYPORT2_COLORIZE)
-         FONT_COLOR = joystick_color(jflag[1], pix_bytes);
+         FONT_COLOR = joystick_color(jflag[1]);
       Draw_text(retro_bmp,STAT_DECX+40,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT2);
       if (JOYPORT2_COLORIZE)
          FONT_COLOR = FONT_COLOR_DEFAULT;
