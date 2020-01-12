@@ -55,7 +55,7 @@ extern bool real_ntsc;
 
 int vkey_pos_x = 0;
 int vkey_pos_y = 0;
-int vkflag[7]={0};
+int vkflag[8]={0};
 static int jflag[4][16]={0};
 static int kjflag[2][16]={0};
 static int mflag[2][16]={0};
@@ -86,6 +86,7 @@ extern unsigned int opt_dpadmouse_speed;
 extern bool opt_multimouse;
 extern bool opt_keyrahkeypad;
 extern bool opt_keyboard_pass_through;
+int turbo_fire_button_disabled=-1;
 int turbo_fire_button=-1;
 unsigned int turbo_pulse=2;
 unsigned int turbo_state[5]={0};
@@ -98,6 +99,7 @@ enum EMU_FUNCTIONS {
    EMU_RESET,
    EMU_ASPECT_RATIO_TOGGLE,
    EMU_ZOOM_MODE_TOGGLE,
+   EMU_TURBO_FIRE_TOGGLE,
    EMU_FUNCTION_COUNT
 };
 
@@ -155,8 +157,24 @@ void emu_function(int function)
             zoom_mode_id = 0;
          else if (zoom_mode_id == 0)
             zoom_mode_id = opt_zoom_mode_id;
-
          request_update_av_info = true;
+         break;
+      case EMU_TURBO_FIRE_TOGGLE:
+         if (turbo_fire_button_disabled == -1 && turbo_fire_button == -1)
+            break;
+         else if (turbo_fire_button_disabled != -1 && turbo_fire_button != -1)
+            turbo_fire_button_disabled = -1;
+
+         if (turbo_fire_button_disabled != -1)
+         {
+            turbo_fire_button = turbo_fire_button_disabled;
+            turbo_fire_button_disabled = -1;
+         }
+         else
+         {
+            turbo_fire_button_disabled = turbo_fire_button;
+            turbo_fire_button = -1;
+         }
          break;
    }
 }
@@ -330,6 +348,9 @@ void Print_Status(void)
    // Statusbar size
    BOX_WIDTH=retrow-(24*5)-2; // (LED-width * LED-num) - LED-border
 
+   // Hires single line font exception
+   FONT_WIDTH = (video_config & 0x08) ? 2 : 1;
+
    // Joy port indicators
    char JOYPORT1[10];
    char JOYPORT2[10];
@@ -392,6 +413,8 @@ void Print_Status(void)
    int FONT_COLOR;
    FONT_COLOR_DEFAULT = (pix_bytes == 4) ? 0xffffff : 0xffff;
    FONT_COLOR = FONT_COLOR_DEFAULT;
+   int FONT_SLOT;
+   FONT_SLOT = (video_config & 0x08) ? 40*2 : 40;
 
    // Statusbar output
    if (pix_bytes == 4)
@@ -405,11 +428,11 @@ void Print_Status(void)
          FONT_COLOR = FONT_COLOR_DEFAULT;
       if (JOYPORT2_COLORIZE)
          FONT_COLOR = joystick_color(jflag[1]);
-      Draw_text32((uint32_t *)retro_bmp,STAT_DECX+40,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT2);
+      Draw_text32((uint32_t *)retro_bmp,STAT_DECX+(FONT_SLOT),STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT2);
       if (JOYPORT2_COLORIZE)
          FONT_COLOR = FONT_COLOR_DEFAULT;
-      Draw_text32((uint32_t *)retro_bmp,STAT_DECX+80,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT3);
-      Draw_text32((uint32_t *)retro_bmp,STAT_DECX+120,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT4);
+      Draw_text32((uint32_t *)retro_bmp,STAT_DECX+(FONT_SLOT*2),STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT3);
+      Draw_text32((uint32_t *)retro_bmp,STAT_DECX+(FONT_SLOT*3),STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT4);
    }
    else
    {
@@ -422,11 +445,11 @@ void Print_Status(void)
          FONT_COLOR = FONT_COLOR_DEFAULT;
       if (JOYPORT2_COLORIZE)
          FONT_COLOR = joystick_color(jflag[1]);
-      Draw_text(retro_bmp,STAT_DECX+40,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT2);
+      Draw_text(retro_bmp,STAT_DECX+(FONT_SLOT),STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT2);
       if (JOYPORT2_COLORIZE)
          FONT_COLOR = FONT_COLOR_DEFAULT;
-      Draw_text(retro_bmp,STAT_DECX+80,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT3);
-      Draw_text(retro_bmp,STAT_DECX+120,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT4);
+      Draw_text(retro_bmp,STAT_DECX+(FONT_SLOT*2),STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT3);
+      Draw_text(retro_bmp,STAT_DECX+(FONT_SLOT*3),STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT4);
    }
 }
 
@@ -1002,7 +1025,7 @@ void update_input(int disable_physical_cursor_keys)
                }
 
                /* Skip the vkbd extra buttons if vkbd is visible */
-               if (SHOWKEY==1 && (i==RETRO_DEVICE_ID_JOYPAD_A || i==RETRO_DEVICE_ID_JOYPAD_X))
+               if (SHOWKEY==1 && (i==RETRO_DEVICE_ID_JOYPAD_A || i==RETRO_DEVICE_ID_JOYPAD_X || i==RETRO_DEVICE_ID_JOYPAD_START))
                   continue;
 
                if (input_state_cb(j, RETRO_DEVICE_JOYPAD, 0, i) && jbt[j][i]==0 && i!=turbo_fire_button)
@@ -1198,6 +1221,19 @@ void update_input(int disable_physical_cursor_keys)
       else if (vkey_pos_y > NLIGN-1)
          vkey_pos_y=0;
 
+      /* Press Return, RetroPad Start */
+      i=RETRO_DEVICE_ID_JOYPAD_START;
+      if (vkflag[7]==0 && (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i)))
+      {
+         vkflag[7]=1;
+         retro_key_down(AK_RET);
+      }
+      else if (vkflag[7]==1 && (!input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && !input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i)))
+      {
+         vkflag[7]=0;
+         retro_key_up(AK_RET);
+      }
+
       /* Position toggle, RetroPad X */
       i=RETRO_DEVICE_ID_JOYPAD_X;
       if (vkflag[6]==0 && (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i)))
@@ -1246,26 +1282,46 @@ void update_input(int disable_physical_cursor_keys)
 
             if (vkey_pressed==-11) // Mouse up
                retro_mouse(0, 0, -3);
-            if (vkey_pressed==-12) // Mouse down
+            else if (vkey_pressed==-12) // Mouse down
                retro_mouse(0, 0, 3);
-            if (vkey_pressed==-13) // Mouse left
+            else if (vkey_pressed==-13) // Mouse left
                retro_mouse(0, -3, 0);
-            if (vkey_pressed==-14) // Mouse right
+            else if (vkey_pressed==-14) // Mouse right
                retro_mouse(0, 3, 0);
-            if (vkey_pressed==-15) // LMB
+            else if (vkey_pressed==-15) // LMB
             {
                retro_mouse_button(0, 0, 1);
                mflag[0][RETRO_DEVICE_ID_JOYPAD_B]=1;
             }
-            if (vkey_pressed==-16) // RMB
+            else if (vkey_pressed==-16) // RMB
             {
                retro_mouse_button(0, 1, 1);
                mflag[0][RETRO_DEVICE_ID_JOYPAD_A]=1;
             }
-            if (vkey_pressed==-17) // MMB
+            else if (vkey_pressed==-17) // MMB
             {
                retro_mouse_button(0, 2, 1);
                mflag[0][RETRO_DEVICE_ID_JOYPAD_Y]=1;
+            }
+            else if (vkey_pressed==-18) // Toggle joystick/mouse
+            {
+               emu_function(EMU_MOUSE_TOGGLE);
+            }
+            else if (vkey_pressed==-19) // Toggle turbo fire
+            {
+               emu_function(EMU_TURBO_FIRE_TOGGLE);
+            }
+            else if (vkey_pressed==-20) // Reset
+            {
+               emu_function(EMU_RESET);
+            }
+            else if (vkey_pressed==-21) // Toggle statusbar
+            {
+               emu_function(EMU_STATUSBAR);
+            }
+            else if (vkey_pressed==-22) // Toggle aspect ratio
+            {
+               emu_function(EMU_ASPECT_RATIO_TOGGLE);
             }
          }
          else
@@ -1300,7 +1356,7 @@ void update_input(int disable_physical_cursor_keys)
          vkflag[4]=0;
       }
 
-      if (vkflag[4])
+      if (vkflag[4] && vkey_pressed > 0)
       {
          if (let_go_of_button)
             last_press_time_button = now;

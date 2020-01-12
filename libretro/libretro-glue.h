@@ -32,7 +32,7 @@ extern int vkey_sticky2;
 #define LOGI printf
 
 #define NPLGN 11
-#define NLIGN 7
+#define NLIGN 8
 #define NLETT 9
 
 #define RGB565(r, g, b) (((r) << (5+6)) | ((g) << 6) | (b))

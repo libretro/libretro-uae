@@ -2949,6 +2949,7 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
        && min_diwstart > 0 && max_diwstop > 0
        && min_diwstart < ((video_config & PUAE_VIDEO_HIRES || video_config & PUAE_VIDEO_HIRES_SINGLE) ? 220 : 220/2)
        && max_diwstop > ((video_config & PUAE_VIDEO_HIRES || video_config & PUAE_VIDEO_HIRES_SINGLE) ? 600 : 600/2)
+       && (max_diwstop - min_diwstart) <= retrow
       )
       {
          visible_left_border_new = (max_diwstop - min_diwstart - retrow) / 2 + min_diwstart; // Smart

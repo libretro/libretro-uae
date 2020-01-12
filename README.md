@@ -34,6 +34,7 @@ Right analog stick controls the mouse by default.
 |B / Enter|Keypress|
 |A|Toggle transparency|
 |X|Toggle position|
+|Start|Press Return|
 
 Long press for sticky keys. Stickying a third key will replace the second.
 
