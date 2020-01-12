@@ -604,19 +604,29 @@ void retro_set_environment(retro_environment_t cb)
          "Virtual Keyboard Transparency",
          "",
          {
-            { "255", "0\%" },
-            { "229", "10\%" },
-            { "204", "20\%" },
-            { "178", "30\%" },
-            { "153", "40\%" },
-            { "127", "50\%" },
-            { "102", "60\%" },
-            { "76", "70\%" },
-            { "51", "80\%" },
-            { "25", "90\%" },
+            { "0\%", NULL },
+            { "5\%", NULL },
+            { "10\%", NULL },
+            { "15\%", NULL },
+            { "20\%", NULL },
+            { "25\%", NULL },
+            { "30\%", NULL },
+            { "35\%", NULL },
+            { "40\%", NULL },
+            { "45\%", NULL },
+            { "50\%", NULL },
+            { "55\%", NULL },
+            { "60\%", NULL },
+            { "65\%", NULL },
+            { "70\%", NULL },
+            { "75\%", NULL },
+            { "80\%", NULL },
+            { "85\%", NULL },
+            { "90\%", NULL },
+            { "95\%", NULL },
             { NULL, NULL },
          },
-         "204"
+         "20\%"
       },
       {
          "puae_audio_options_display",
@@ -706,15 +716,25 @@ void retro_set_environment(retro_environment_t cb)
          "",
          {
             { "0\%", NULL },
+            { "5\%", NULL },
             { "10\%", NULL },
+            { "15\%", NULL },
             { "20\%", NULL },
+            { "25\%", NULL },
             { "30\%", NULL },
+            { "35\%", NULL },
             { "40\%", NULL },
+            { "45\%", NULL },
             { "50\%", NULL },
+            { "55\%", NULL },
             { "60\%", NULL },
+            { "65\%", NULL },
             { "70\%", NULL },
+            { "75\%", NULL },
             { "80\%", NULL },
+            { "85\%", NULL },
             { "90\%", NULL },
+            { "95\%", NULL },
             { "100\%", NULL },
             { NULL, NULL },
          },
@@ -726,15 +746,25 @@ void retro_set_environment(retro_environment_t cb)
          "",
          {
             { "100", "disabled" },
+            { "95", "5\% volume" },
             { "90", "10\% volume" },
+            { "85", "15\% volume" },
             { "80", "20\% volume" },
+            { "75", "25\% volume" },
             { "70", "30\% volume" },
+            { "65", "35\% volume" },
             { "60", "40\% volume" },
+            { "55", "45\% volume" },
             { "50", "50\% volume" },
+            { "45", "55\% volume" },
             { "40", "60\% volume" },
+            { "35", "65\% volume" },
             { "30", "70\% volume" },
+            { "25", "75\% volume" },
             { "20", "80\% volume" },
+            { "15", "85\% volume" },
             { "10", "90\% volume" },
+            { "5", "95\% volume" },
             { "0", "100\% volume" },
             { NULL, NULL },
          },
@@ -995,7 +1025,7 @@ void retro_set_environment(retro_environment_t cb)
          "RetroPad Select",
          "",
          {{ NULL, NULL }},
-         "---"
+         "RETROK_RCTRL"
       },
       {
          "puae_mapper_start",
@@ -1044,14 +1074,14 @@ void retro_set_environment(retro_environment_t cb)
          "RetroPad L2",
          "",
          {{ NULL, NULL }},
-         "---"
+         "MOUSE_LEFT_BUTTON"
       },
       {
          "puae_mapper_r2",
          "RetroPad R2",
          "",
          {{ NULL, NULL }},
-         "---"
+         "MOUSE_RIGHT_BUTTON"
       },
       {
          "puae_mapper_l3",
@@ -1383,7 +1413,7 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      opt_vkbd_alpha = atoi(var.value);
+      opt_vkbd_alpha = 255 - (255 * atoi(var.value) / 100);
    }
 
    var.key = "puae_cpu_compatibility";
@@ -3369,10 +3399,7 @@ bool retro_load_game(const struct retro_game_info *info)
                      fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae1\n", string_replace_substring(full_path, "\\", "\\\\"));
 
                   // Attach retro_system_directory as a read only hard drive for WHDLoad kickstarts/prefs/key
-                  // Does not work with: Switch (?)
-//#if !defined(__SWITCH__)
                   fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s\",-128\n", string_replace_substring(retro_system_directory, "\\", "\\\\"));
-//#endif
 
                   if (opt_use_whdsaves_hdf)
                   {
@@ -3868,7 +3895,9 @@ size_t retro_serialize_size(void)
 {
    if (firstpass != 1)
    {
-      savestate_initsave (savestate_fname, 1, 1, true);
+      /* savestate_initsave(const TCHAR *filename, int mode, int nodialogs, bool save) */
+      /* mode: 1=compressed,2=not compressed,3=ram dump,4=audio dump */
+      savestate_initsave (savestate_fname, 2, 1, true);
       if (save_state(savestate_fname, "libretro") >= 0)
       {
 #if 0
@@ -3882,9 +3911,12 @@ size_t retro_serialize_size(void)
             return size;
          }
 #endif
-         struct stat savestate_st;
-         stat(savestate_fname, &savestate_st);
-         return savestate_st.st_size;
+         if (file_exists(savestate_fname))
+         {
+            struct stat savestate_st;
+            stat(savestate_fname, &savestate_st);
+            return savestate_st.st_size;
+         }
       }
    }
    return 0;
@@ -3894,7 +3926,9 @@ bool retro_serialize(void *data_, size_t size)
 {
    if (firstpass != 1)
    {
-      savestate_initsave (savestate_fname, 1, 1, true);
+      /* savestate_initsave(const TCHAR *filename, int mode, int nodialogs, bool save) */
+      /* mode: 1=compressed,2=not compressed,3=ram dump,4=audio dump */
+      savestate_initsave (savestate_fname, 2, 1, true);
       if (save_state(savestate_fname, "libretro") >= 0)
       {
          struct stat savestate_st;

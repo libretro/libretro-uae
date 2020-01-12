@@ -283,7 +283,8 @@ void Draw_string(unsigned short *surf, signed short int x, signed short int y,
 
    // Pseudo transparency for now
    if (alpha < 255)
-      fg = blend(fg, 0xFFFF, alpha);
+      fg = blend32(fg, ((bg == 0) ? 0xFFFF : bg), alpha);
+   bg = 0;
 
    for(strlen = 0; strlen < maxstrlen && string[strlen]; strlen++) {}
 
@@ -341,7 +342,8 @@ void Draw_string32(uint32_t *surf, signed short int x, signed short int y,
 
    // Pseudo transparency for now
    if (alpha < 255)
-      fg = blend32(fg, 0xFFFFFFFF, alpha);
+      fg = blend32(fg, ((bg == 0) ? 0xFFFFFFFF : bg), alpha);
+   bg = 0;
 
    for(strlen = 0; strlen < maxstrlen && string[strlen]; strlen++) {}
 
