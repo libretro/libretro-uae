@@ -208,7 +208,7 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
             pos = 9;
             if (gui_data.hd >= 0) {
                 on = gui_data.hd;
-                on_rgb = on == 2 ? YELLOW_DIM : YELLOW_BRIGHT;
+                on_rgb = on == 2 ? RED_BRIGHT : YELLOW_BRIGHT;
                 off_rgb = YELLOW_DARK;
                 num1 = -1;
                 num2 = 11;

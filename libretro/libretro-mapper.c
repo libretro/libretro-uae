@@ -228,16 +228,16 @@ static char* joystick_value_human(int val[16], int uae_device)
    sprintf(str, "%3s", "   ");
 
    if (val[RETRO_DEVICE_ID_JOYPAD_UP])
-      str[1] = '^';
+      str[1] = 30;
 
    if (val[RETRO_DEVICE_ID_JOYPAD_DOWN])
-      str[1] = 'v';
+      str[1] = 28;
 
    if (val[RETRO_DEVICE_ID_JOYPAD_LEFT])
-      str[0] = '<';
+      str[0] = 27;
 
    if (val[RETRO_DEVICE_ID_JOYPAD_RIGHT])
-      str[2] = '>';
+      str[2] = 29;
 
    if (val[RETRO_DEVICE_ID_JOYPAD_B]
     || val[RETRO_DEVICE_ID_JOYPAD_A]
@@ -784,30 +784,30 @@ void ProcessKey(int disable_physical_cursor_keys)
       key_state[i]=input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, i) ? 0x80 : 0;
 
       /* CapsLock */
-      if (keyboard_translation[i]==AK_CAPSLOCK)
+      if (keyboard_translation[i] == AK_CAPSLOCK)
       {
          if (key_state[i] && key_state2[i]==0)
          {
             retro_key_down(keyboard_translation[i]);
             retro_key_up(keyboard_translation[i]);
-            SHIFTON=-SHIFTON;
+            SHIFTON = -SHIFTON;
             key_state2[i]=1;
          }
          else if (!key_state[i] && key_state2[i]==1)
             key_state2[i]=0;
       }
       /* Special key (Right Alt) for overriding RetroPad cursor override */ 
-      else if (keyboard_translation[i]==AK_RALT)
+      else if (keyboard_translation[i] == AK_RALT)
       {
          if (key_state[i] && key_state2[i]==0)
          {
-            ALTON=1;
+            ALTON = 1;
             retro_key_down(keyboard_translation[i]);
             key_state2[i]=1;
          }
          else if (!key_state[i] && key_state2[i]==1)
          {
-            ALTON=-1;
+            ALTON = -1;
             retro_key_up(keyboard_translation[i]);
             key_state2[i]=0;
          }
@@ -836,13 +836,13 @@ void ProcessKey(int disable_physical_cursor_keys)
             }
          }
 
-         /* Skip keys if VKBD is active */
-         if (SHOWKEY==1)
-            continue;
-
          if (key_state[i] && keyboard_translation[i]!=-1 && key_state2[i]==0)
          {
-            if (SHIFTON==1)
+            /* Skip keydown if VKBD is active */
+            if (SHOWKEY == 1)
+               continue;
+
+            if (SHIFTON == 1)
                retro_key_down(keyboard_translation[RETROK_LSHIFT]);
 
             retro_key_down(keyboard_translation[i]);
@@ -853,7 +853,7 @@ void ProcessKey(int disable_physical_cursor_keys)
             retro_key_up(keyboard_translation[i]);
             key_state2[i]=0;
 
-            if (SHIFTON==1)
+            if (SHIFTON == 1)
                retro_key_up(keyboard_translation[RETROK_LSHIFT]);
          }
       }
@@ -890,21 +890,21 @@ void update_input(int disable_physical_cursor_keys)
    }
 
    /* Keyup only after button is up */
-   if (last_vkey_pressed !=-1 && vkflag[4]!=1)
+   if (last_vkey_pressed != -1 && vkflag[4] != 1)
    {
       if (last_vkey_pressed < -10)
       {
-         if (last_vkey_pressed==-15)
+         if (last_vkey_pressed == -15)
          {
             retro_mouse_button(0, 0, 0);
             mflag[0][RETRO_DEVICE_ID_JOYPAD_B]=0;
          }
-         if (last_vkey_pressed==-16)
+         else if (last_vkey_pressed == -16)
          {
             retro_mouse_button(0, 1, 0);
             mflag[0][RETRO_DEVICE_ID_JOYPAD_A]=0;
          }
-         if (last_vkey_pressed==-17)
+         else if (last_vkey_pressed == -17)
          {
             retro_mouse_button(0, 2, 0);
             mflag[0][RETRO_DEVICE_ID_JOYPAD_Y]=0;
@@ -915,11 +915,11 @@ void update_input(int disable_physical_cursor_keys)
          if (vkey_pressed == -1 && last_vkey_pressed >= 0 && last_vkey_pressed != vkey_sticky1 && last_vkey_pressed != vkey_sticky2)
             retro_key_up(last_vkey_pressed);
 
-         if (SHIFTON==1)
+         if (SHIFTON == 1)
             retro_key_up(keyboard_translation[RETROK_LSHIFT]);
       }
 
-      last_vkey_pressed=-1;
+      last_vkey_pressed = -1;
    }
 
    if (vkey_sticky1_release)
@@ -1269,74 +1269,74 @@ void update_input(int disable_physical_cursor_keys)
          else
             vkflag[4]=1;
 
-         if (vkey_pressed==-1)
-            last_vkey_pressed=-1;
-         else if (vkey_pressed==-2)
+         if (vkey_pressed == -1)
+            last_vkey_pressed = -1;
+         else if (vkey_pressed == -2)
          {
-            last_vkey_pressed=-1;
-            NPAGE=-NPAGE;
+            last_vkey_pressed = -1;
+            NPAGE = -NPAGE;
          }
          else if (vkey_pressed < -10)
          {
-            last_vkey_pressed=vkey_pressed;
+            last_vkey_pressed = vkey_pressed;
 
-            if (vkey_pressed==-11) // Mouse up
+            if (vkey_pressed == -11) // Mouse up
                retro_mouse(0, 0, -3);
-            else if (vkey_pressed==-12) // Mouse down
+            else if (vkey_pressed == -12) // Mouse down
                retro_mouse(0, 0, 3);
-            else if (vkey_pressed==-13) // Mouse left
+            else if (vkey_pressed == -13) // Mouse left
                retro_mouse(0, -3, 0);
-            else if (vkey_pressed==-14) // Mouse right
+            else if (vkey_pressed == -14) // Mouse right
                retro_mouse(0, 3, 0);
-            else if (vkey_pressed==-15) // LMB
+            else if (vkey_pressed == -15) // LMB
             {
                retro_mouse_button(0, 0, 1);
                mflag[0][RETRO_DEVICE_ID_JOYPAD_B]=1;
             }
-            else if (vkey_pressed==-16) // RMB
+            else if (vkey_pressed == -16) // RMB
             {
                retro_mouse_button(0, 1, 1);
                mflag[0][RETRO_DEVICE_ID_JOYPAD_A]=1;
             }
-            else if (vkey_pressed==-17) // MMB
+            else if (vkey_pressed == -17) // MMB
             {
                retro_mouse_button(0, 2, 1);
                mflag[0][RETRO_DEVICE_ID_JOYPAD_Y]=1;
             }
-            else if (vkey_pressed==-18) // Toggle joystick/mouse
+            else if (vkey_pressed == -18) // Toggle joystick/mouse
             {
                emu_function(EMU_MOUSE_TOGGLE);
             }
-            else if (vkey_pressed==-19) // Toggle turbo fire
+            else if (vkey_pressed == -19) // Toggle turbo fire
             {
                emu_function(EMU_TURBO_FIRE_TOGGLE);
             }
-            else if (vkey_pressed==-20) // Reset
+            else if (vkey_pressed == -20) // Reset
             {
                emu_function(EMU_RESET);
             }
-            else if (vkey_pressed==-21) // Toggle statusbar
+            else if (vkey_pressed == -21) // Toggle statusbar
             {
                emu_function(EMU_STATUSBAR);
             }
-            else if (vkey_pressed==-22) // Toggle aspect ratio
+            else if (vkey_pressed == -22) // Toggle aspect ratio
             {
                emu_function(EMU_ASPECT_RATIO_TOGGLE);
             }
          }
          else
          {
-            if (vkey_pressed==AK_CAPSLOCK)
+            if (vkey_pressed == AK_CAPSLOCK)
             {
                retro_key_down(vkey_pressed);
                retro_key_up(vkey_pressed);
-               SHIFTON=-SHIFTON;
-               last_vkey_pressed=-1;
+               SHIFTON = -SHIFTON;
+               last_vkey_pressed = -1;
             }
             else
             {
-               last_vkey_pressed=vkey_pressed;
-               if (SHIFTON==1)
+               last_vkey_pressed = vkey_pressed;
+               if (SHIFTON == 1)
                   retro_key_down(keyboard_translation[RETROK_LSHIFT]);
 
                if (!vkey_sticky)
@@ -1376,7 +1376,7 @@ void update_input(int disable_physical_cursor_keys)
 void retro_poll_event()
 {
    /* If RetroPad is controlled with keyboard keys, then prevent RetroPad from generating keyboard key presses */
-   if (!opt_keyboard_pass_through && ALTON==-1 && uae_devices[0] != RETRO_DEVICE_UAE_KEYBOARD &&
+   if (!opt_keyboard_pass_through && ALTON == -1 && uae_devices[0] != RETRO_DEVICE_UAE_KEYBOARD &&
       (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B) ||
        input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y) ||
        input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A) ||
@@ -1393,7 +1393,7 @@ void retro_poll_event()
    )
       update_input(2); /* Skip all keyboard input when RetroPad buttons are pressed */
 
-   else if (!opt_keyboard_pass_through && ALTON==-1 && uae_devices[0] != RETRO_DEVICE_UAE_KEYBOARD &&
+   else if (!opt_keyboard_pass_through && ALTON == -1 && uae_devices[0] != RETRO_DEVICE_UAE_KEYBOARD &&
       (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) ||
        input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN) ||
        input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT) ||
@@ -1402,7 +1402,7 @@ void retro_poll_event()
    )
       update_input(1); /* Process all inputs but disable cursor keys */
 
-   else if (!opt_keyboard_pass_through && ALTON==-1 && uae_devices[1] != RETRO_DEVICE_UAE_KEYBOARD &&
+   else if (!opt_keyboard_pass_through && ALTON == -1 && uae_devices[1] != RETRO_DEVICE_UAE_KEYBOARD &&
       (input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B) ||
        input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y) ||
        input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A) ||
@@ -1426,7 +1426,7 @@ void retro_poll_event()
    else
       update_input(0); /* Process all inputs */
 
-   if (ALTON==-1) /* retro joypad take control over keyboard joy */
+   if (ALTON == -1) /* retro joypad take control over keyboard joy */
    /* override keydown, but allow keyup, to prevent key sticking during keyboard use, if held down on opening keyboard */
    /* keyup allowing most likely not needed on actual keyboard presses even though they get stuck also */
    {
