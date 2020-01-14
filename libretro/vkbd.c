@@ -39,7 +39,6 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
    int FONT_MAX         = 8;
    int FONT_WIDTH       = 1;
    int FONT_HEIGHT      = 1;
-   int FONT_BOLD;
    int FONT_COLOR;
    int FONT_COLOR_NORMAL;
    int FONT_COLOR_SEL;
@@ -52,7 +51,7 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
       BKG_COLOR_SEL     = RGB888(10, 10, 10);
       BKG_COLOR_DARK    = RGB888(5, 5, 5);
       BKG_COLOR_BORDER  = RGB888(24, 24, 24);
-      FONT_COLOR_NORMAL = RGB888(2, 2, 2);
+      FONT_COLOR_NORMAL = RGB888(3, 3, 3);
       FONT_COLOR_SEL    = 0xffffff; //RGB888(255, 255, 255);
    }
    else
@@ -63,7 +62,7 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
       BKG_COLOR_SEL     = RGB565(10, 10, 10);
       BKG_COLOR_DARK    = RGB565(5, 5, 5);
       BKG_COLOR_BORDER  = RGB565(24, 24, 24);
-      FONT_COLOR_NORMAL = RGB565(2, 2, 2);
+      FONT_COLOR_NORMAL = RGB565(3, 3, 3);
       FONT_COLOR_SEL    = 0xffff; //RGB565(255, 255, 255);
    }
 
@@ -124,13 +123,6 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
    };
    int extra_keys_len = sizeof(extra_keys) / sizeof(extra_keys[0]);
 
-   /* Bold keys */
-   int bold_keys[] =
-   {
-       AK_LF, AK_RT, AK_UP, AK_DN,
-   };
-   int bold_keys_len = sizeof(bold_keys) / sizeof(bold_keys[0]);
-
    /* Key label shifted */
    shifted = false;
    if (SHIFTON == 1 || vkey_sticky1 == AK_LSH || vkey_sticky2 == AK_LSH || vkey_sticky1 == AK_RSH || vkey_sticky2 == AK_RSH)
@@ -182,12 +174,6 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
             BKG_COLOR = BKG_COLOR_DARK;
          }
 
-         /* Labels with extra width */
-         FONT_BOLD = 0;
-         for (int bold_key = 0; bold_key < bold_keys_len; ++bold_key)
-             if (bold_keys[bold_key] == MVk[(y * NPLGN) + x + page].val)
-               FONT_BOLD = 1;
-
          /* Key background */
          if (pix_bytes == 4)
             DrawFBoxBmp32((uint32_t *)pix, XKEY+KEYSPACING, YKEY+KEYSPACING, XSIDE-KEYSPACING, YSIDE-KEYSPACING, BKG_COLOR, BKG_ALPHA);
@@ -196,30 +182,22 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
 
          /* Key text shadow */
          if (pix_bytes == 4)
-            Draw_text32((uint32_t *)pix, XTEXT+FONT_WIDTH+((FONT_BOLD) ? FONT_WIDTH : 0), YTEXT, BKG_COLOR_ALT, BKG_COLOR, 32, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+            Draw_text32((uint32_t *)pix, XTEXT-FONT_WIDTH, YTEXT, BKG_COLOR, BKG_COLOR_ALT, 200, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
                (!shifted) ? MVk[(y * NPLGN) + x + page].norml : MVk[(y * NPLGN) + x + page].shift);
          else
-            Draw_text(pix, XTEXT+FONT_WIDTH+((FONT_BOLD) ? FONT_WIDTH : 0), YTEXT, BKG_COLOR_ALT, BKG_COLOR, 32, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+            Draw_text(pix, XTEXT-FONT_WIDTH, YTEXT, BKG_COLOR, BKG_COLOR_ALT, 200, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
                (!shifted) ? MVk[(y * NPLGN) + x + page].norml : MVk[(y * NPLGN) + x + page].shift);
 
          /* Key text */
          if (pix_bytes == 4)
          {
-            Draw_text32((uint32_t *)pix, XTEXT, YTEXT, FONT_COLOR, BKG_COLOR, 255, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+            Draw_text32((uint32_t *)pix, XTEXT, YTEXT, BKG_COLOR, FONT_COLOR, 64, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
                (!shifted) ? MVk[(y * NPLGN) + x + page].norml : MVk[(y * NPLGN) + x + page].shift);
-
-            if (FONT_BOLD)
-               Draw_text32((uint32_t *)pix, XTEXT+FONT_WIDTH, YTEXT, FONT_COLOR, BKG_COLOR, 255, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
-                  (!shifted) ? MVk[(y * NPLGN) + x + page].norml : MVk[(y * NPLGN) + x + page].shift);
          }
          else
          {
-            Draw_text(pix, XTEXT, YTEXT, FONT_COLOR, BKG_COLOR, 255, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+            Draw_text(pix, XTEXT, YTEXT, BKG_COLOR, FONT_COLOR, 64, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
                (!shifted) ? MVk[(y * NPLGN) + x + page].norml : MVk[(y * NPLGN) + x + page].shift);
-
-            if (FONT_BOLD)
-               Draw_text(pix, XTEXT+FONT_WIDTH, YTEXT, FONT_COLOR, BKG_COLOR, 255, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
-                  (!shifted) ? MVk[(y * NPLGN) + x + page].norml : MVk[(y * NPLGN) + x + page].shift);
          }
       }
    }
@@ -243,30 +221,16 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
    else
       DrawFBoxBmp(pix, XKEY+KEYSPACING, YKEY+KEYSPACING, XSIDE-KEYSPACING, YSIDE-KEYSPACING, BKG_COLOR_SEL, BKG_ALPHA);
 
-   /* Labels with extra width */
-   FONT_BOLD = 0;
-   for (int bold_key = 0; bold_key < bold_keys_len; ++bold_key)
-       if (bold_keys[bold_key] == MVk[(vy * NPLGN) + vx + page].val)
-         FONT_BOLD = 1;
-
    /* Selected key text */
    if (pix_bytes == 4)
    {
-      Draw_text32((uint32_t *)pix, XTEXT, YTEXT, FONT_COLOR_SEL, 0, 255, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+      Draw_text32((uint32_t *)pix, XTEXT, YTEXT, FONT_COLOR_SEL, 0, BKG_ALPHA, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
          (!shifted) ? MVk[(vy * NPLGN) + vx + page].norml : MVk[(vy * NPLGN) + vx + page].shift);
-
-      if (FONT_BOLD)
-         Draw_text32((uint32_t *)pix, XTEXT+FONT_WIDTH, YTEXT, FONT_COLOR_SEL, 0, 255, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
-            (!shifted) ? MVk[(vy * NPLGN) + vx + page].norml : MVk[(vy * NPLGN) + vx + page].shift);
    }
    else
    {
-      Draw_text(pix, XTEXT, YTEXT, FONT_COLOR_SEL, 0, 255, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+      Draw_text(pix, XTEXT, YTEXT, FONT_COLOR_SEL, 0, BKG_ALPHA, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
          (!shifted) ? MVk[(vy * NPLGN) + vx + page].norml : MVk[(vy * NPLGN) + vx + page].shift);
-
-      if (FONT_BOLD)
-         Draw_text(pix, XTEXT+FONT_WIDTH, YTEXT, FONT_COLOR_SEL, 0, 255, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
-            (!shifted) ? MVk[(vy * NPLGN) + vx + page].norml : MVk[(vy * NPLGN) + vx + page].shift);
    }
 }
 

@@ -14,10 +14,10 @@ Mvk MVk[NPLGN * NLIGN * 2] = {
    // -11
    { "LMB" ,"LMB" ,-15 },
    { "RMB" ,"RMB" ,-16 },
-   { "MO^" ,"MO^" ,-11 },
-   { "MOv" ,"MOv" ,-12 },
-   { "MO<" ,"MO<" ,-13 },
-   { "MO>" ,"MO>" ,-14 },
+   { {'M','O',30},{'M','O',30},-11 },
+   { {'M','O',28},{'M','O',28},-12 },
+   { {'M','O',27},{'M','O',27},-13 },
+   { {'M','O',29},{'M','O',29},-14 },
    { "J/M" ,"J/M" ,-18 },
    { "TRBF","TRBF",-19 },
    { "ASPR","ASPR",-22 },
@@ -99,7 +99,7 @@ Mvk MVk[NPLGN * NLIGN * 2] = {
    { "'"   ,"\""  ,AK_QUOTE },
    { "RSh" ,"RSh" ,AK_RSH },
    { "Del" ,"Del" ,AK_DEL },
-   { "^"   ,"^"   ,AK_UP },
+   { {30}  ,{30}  ,AK_UP },
    { "Help","Help",AK_HELP },
 
    // 66
@@ -111,19 +111,19 @@ Mvk MVk[NPLGN * NLIGN * 2] = {
    { "NPAD","NPAD",-2 },
    { "<-"  ,"<-"  ,AK_BS },
    { "Rtrn","Rtrn",AK_RET },
-   { "<"   ,"<"   ,AK_LF },
-   { "v"   ,"v"   ,AK_DN },
-   { ">"   ,">"   ,AK_RT },
+   { {27}  ,{27}  ,AK_LF },
+   { {28}  ,{28}  ,AK_DN },
+   { {29}  ,{29}  ,AK_RT },
 
 
 
    // -11
    { "LMB" ,"LMB" ,-15 },
    { "RMB" ,"RMB" ,-16 },
-   { "MO^" ,"MO^" ,-11 },
-   { "MOv" ,"MOv" ,-12 },
-   { "MO<" ,"MO<" ,-13 },
-   { "MO>" ,"MO>" ,-14 },
+   { {'M','O',30},{'M','O',30},-11 },
+   { {'M','O',28},{'M','O',28},-12 },
+   { {'M','O',27},{'M','O',27},-13 },
+   { {'M','O',29},{'M','O',29},-14 },
    { "J/M" ,"J/M" ,-18 },
    { "TRBF","TRBF",-19 },
    { "ASPR","ASPR",-22 },
@@ -146,13 +146,13 @@ Mvk MVk[NPLGN * NLIGN * 2] = {
    // 11
    { "`"   ,"~"   ,AK_BACKQUOTE },
    { "NP1" ,"End" ,AK_NP1 },
-   { "NP2" ,"NPv" ,AK_NP2 },
+   { "NP2" ,{'N','P',28},AK_NP2 },
    { "NP3" ,"PgDn",AK_NP3 },
-   { "NP4" ,"NP<" ,AK_NP4 },
+   { "NP4" ,{'N','P',27},AK_NP4 },
    { "NP5" ," "   ,AK_NP5 },
-   { "NP6" ,"NP>" ,AK_NP6 },
+   { "NP6" ,{'N','P',29},AK_NP6 },
    { "NP7" ,"Home",AK_NP7 },
-   { "NP8" ,"NP^" ,AK_NP8 },
+   { "NP8" ,{'N','P',30},AK_NP8 },
    { "NP9" ,"PgUp",AK_NP9 },
    { "NP0" ,"Ins" ,AK_NP0 },
 
@@ -205,7 +205,7 @@ Mvk MVk[NPLGN * NLIGN * 2] = {
    { "NP*" ,"NP*" ,AK_NPMUL },
    { "RSh" ,"RSh" ,AK_RSH },
    { "NPDl","NPDl",AK_NPDEL },
-   { "NP^" ,"NP^" ,AK_NP8 },
+   { {'N','P',30} ,{'N','P',30},AK_NP8 },
    { "Help","Help",AK_HELP },
 
    // 66
@@ -217,9 +217,9 @@ Mvk MVk[NPLGN * NLIGN * 2] = {
    { "NPAD","NPAD",-2 },
    { "<-"  ,"<-"  ,AK_BS },
    { "Entr","Entr",AK_ENT },
-   { "NP<" ,"NP<" ,AK_NP4 },
-   { "NPv" ,"NPv" ,AK_NP2 },
-   { "NP>" ,"NP>" ,AK_NP6 },
+   { {'N','P',27} ,{'N','P',27},AK_NP4 },
+   { {'N','P',28} ,{'N','P',28},AK_NP2 },
+   { {'N','P',29} ,{'N','P',29},AK_NP6 },
 
 };
 

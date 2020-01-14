@@ -288,7 +288,8 @@ void Draw_string(unsigned short *surf, signed short int x, signed short int y,
 
    for(strlen = 0; strlen < maxstrlen && string[strlen]; strlen++) {}
 
-   int surfw = strlen * 7 * xscale;
+   int fontwidth = 6;
+   int surfw = strlen * fontwidth * xscale;
    int surfh = 8 * yscale;
 
    linesurf = (unsigned char*)malloc(sizeof(unsigned short)*surfw*surfh);
@@ -300,7 +301,7 @@ void Draw_string(unsigned short *surf, signed short int x, signed short int y,
       for(col = 0; col < strlen; col++)
       {
          b = font_array[(((unsigned char)string[col])^0x80)*8 + ypixel];
-         for(bit = 0; bit < 7; bit++, yptr++)
+         for(bit = 0; bit < fontwidth; bit++, yptr++)
          {
             *yptr = (b & (1<<(7-bit))) ? fg : bg;
             for(xrepeat = 1; xrepeat < xscale; xrepeat++, yptr++)
@@ -347,7 +348,8 @@ void Draw_string32(uint32_t *surf, signed short int x, signed short int y,
 
    for(strlen = 0; strlen < maxstrlen && string[strlen]; strlen++) {}
 
-   int surfw = strlen * 7 * xscale;
+   int fontwidth = 6;
+   int surfw = strlen * fontwidth * xscale;
    int surfh = 8 * yscale;
 
    linesurf = (uint32_t *)malloc(sizeof(uint32_t)*surfw*surfh);
@@ -359,7 +361,7 @@ void Draw_string32(uint32_t *surf, signed short int x, signed short int y,
       for(col = 0; col < strlen; col++)
       {
          b = font_array[(((unsigned char)string[col])^0x80)*8 + ypixel];
-         for(bit = 0; bit < 7; bit++, yptr++)
+         for(bit = 0; bit < fontwidth; bit++, yptr++)
          {
             *yptr = (b & (1<<(7-bit))) ? fg : bg;
             for(xrepeat = 1; xrepeat < xscale; xrepeat++, yptr++)
