@@ -270,7 +270,7 @@ static char uae_config[1024];
 
 void retro_set_environment(retro_environment_t cb)
 {
-   static const struct retro_controller_description p1_controllers[] ={
+   static const struct retro_controller_description p1_controllers[] = {
       { "CD32 Pad", RETRO_DEVICE_UAE_CD32PAD },
       { "Joystick", RETRO_DEVICE_UAE_JOYSTICK },
       { "Keyboard", RETRO_DEVICE_UAE_KEYBOARD },

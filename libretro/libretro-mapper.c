@@ -55,12 +55,12 @@ extern bool real_ntsc;
 
 int vkey_pos_x = 0;
 int vkey_pos_y = 0;
-int vkflag[8]={0};
-static int jflag[4][16]={0};
-static int kjflag[2][16]={0};
-static int mflag[2][16]={0};
-static int jbt[2][24]={0};
-static int kbt[16]={0};
+int vkflag[8] = {0};
+int jflag[4][16] = {0};
+int kjflag[2][16] = {0};
+int mflag[2][16] = {0};
+int jbt[2][24] = {0};
+int kbt[16] = {0};
 
 extern unsigned short int retro_bmp[(EMULATOR_DEF_WIDTH*EMULATOR_DEF_HEIGHT*2)];
 extern void reset_drawing(void);
@@ -222,9 +222,9 @@ long GetTicks(void)
 #endif
 } 
 
-static char* joystick_value_human(int val[16], int uae_device)
+char* joystick_value_human(int val[16], int uae_device)
 {
-   static char str[4];
+   static char str[4] = {0};
    sprintf(str, "%3s", "   ");
 
    if (val[RETRO_DEVICE_ID_JOYPAD_UP])
@@ -282,10 +282,9 @@ static char* joystick_value_human(int val[16], int uae_device)
    return str;
 }
 
-static int joystick_color(int val[16])
+int joystick_color(int val[16])
 {
-   static unsigned int color;
-   color = 0;
+   static unsigned int color = 0;
 
    if (val[RETRO_DEVICE_ID_JOYPAD_B])
       color |= (pix_bytes == 4) ? RGB888(248,0,0) : RGB565(255,0,0);
@@ -328,40 +327,47 @@ void Print_Status(void)
    if (!opt_enhanced_statusbar)
       return;
 
-   static int BOX_Y;
-   static int BOX_WIDTH;
-   static int BOX_HEIGHT=11;
-   static int BOX_PADDING=2;
+   int BOX_Y        = 0;
+   int BOX_WIDTH    = 0;
+   int BOX_HEIGHT   = 11;
+   int BOX_PADDING  = 2;
 
-   static int FONT_WIDTH=1;
-   static int FONT_HEIGHT=1;
-   static int STAT_DECX=4;
-   static int STAT_BASEY;
+   int FONT_WIDTH   = 1;
+   int FONT_HEIGHT  = 1;
+   int FONT_COLOR_DEFAULT = 0;
+   FONT_COLOR_DEFAULT = (pix_bytes == 4) ? 0xffffff : 0xffff;
+   int FONT_COLOR   = 0;
+   FONT_COLOR       = FONT_COLOR_DEFAULT;
+   int FONT_SLOT    = 0;
+   FONT_SLOT        = (video_config & 0x08) ? 40*2 : 40;
+
+   int STAT_DECX    = 4;
+   int STAT_BASEY   = 0;
 
    // Statusbar location
    if (opt_statusbar_position < 0) // Top
-      STAT_BASEY=2;
+      STAT_BASEY = BOX_PADDING;
    else // Bottom
-      STAT_BASEY=gfxvidinfo.outheight-opt_statusbar_position-BOX_HEIGHT+2;
-   BOX_Y=STAT_BASEY-BOX_PADDING;
+      STAT_BASEY = gfxvidinfo.outheight - opt_statusbar_position - BOX_HEIGHT + BOX_PADDING;
+   BOX_Y = STAT_BASEY - BOX_PADDING;
 
    // Statusbar size
-   BOX_WIDTH=retrow-(24*5)-2; // (LED-width * LED-num) - LED-border
+   BOX_WIDTH = retrow - (24 * 5) - 2; // (LED-width * LED-num) - LED-border
 
    // Hires single line font exception
    FONT_WIDTH = (video_config & 0x08) ? 2 : 1;
 
    // Joy port indicators
-   char JOYPORT1[10];
-   char JOYPORT2[10];
-   char JOYPORT3[10];
-   char JOYPORT4[10];
+   char JOYPORT1[10] = {0};
+   char JOYPORT2[10] = {0};
+   char JOYPORT3[10] = {0};
+   char JOYPORT4[10] = {0};
 
-   char JOYMODE1[5];
-   char JOYMODE2[5];
+   char JOYMODE1[5] = {0};
+   char JOYMODE2[5] = {0};
 
    // Regular joyflags
-   if (MOUSEMODE==-1)
+   if (MOUSEMODE == -1)
    {
        sprintf(JOYMODE1, "%2s", "J1");
        sprintf(JOYMODE2, "%2s", "J2");
@@ -409,12 +415,6 @@ void Print_Status(void)
    if (uae_devices[1] == RETRO_DEVICE_UAE_CD32PAD)
       JOYPORT2_COLORIZE = true;
 
-   int FONT_COLOR_DEFAULT;
-   int FONT_COLOR;
-   FONT_COLOR_DEFAULT = (pix_bytes == 4) ? 0xffffff : 0xffff;
-   FONT_COLOR = FONT_COLOR_DEFAULT;
-   int FONT_SLOT;
-   FONT_SLOT = (video_config & 0x08) ? 40*2 : 40;
 
    // Statusbar output
    if (pix_bytes == 4)
@@ -865,15 +865,14 @@ void update_input(int disable_physical_cursor_keys)
    // RETRO    B   Y   SLT STA UP  DWN LFT RGT A   X   L   R   L2  R2  L3  R3  LR  LL  LD  LU  RR  RL  RD  RU
    // INDEX    0   1   2   3   4   5   6   7   8   9   10  11  12  13  14  15  16  17  18  19  20  21  22  23
 
-   static int i, j, mk;
-
-   static long now;
+   static long now = 0;
    static int last_vkey_pressed = -1;
    static int vkey_sticky1_release = 0;
    static int vkey_sticky2_release = 0;
 
-   static int LX, LY, RX, RY;
-   static int threshold = 20000;
+   static int i = 0, j = 0, mk = 0;
+   static int LX = 0, LY = 0, RX = 0, RY = 0;
+   const int threshold = 20000;
 
    now = GetTicks();
 
@@ -1360,7 +1359,7 @@ void update_input(int disable_physical_cursor_keys)
       {
          if (let_go_of_button)
             last_press_time_button = now;
-         if (now-last_press_time_button>VKBD_STICKY_HOLDING_TIME)
+         if (now - last_press_time_button > VKBD_STICKY_HOLDING_TIME)
             vkey_sticky = 1;
          let_go_of_button = 0;
       }
@@ -1430,19 +1429,19 @@ void retro_poll_event()
    /* override keydown, but allow keyup, to prevent key sticking during keyboard use, if held down on opening keyboard */
    /* keyup allowing most likely not needed on actual keyboard presses even though they get stuck also */
    {
-      static float mouse_multiplier=1;
-      static int dpadmouse_speed;
-      static int uae_mouse_x[2],uae_mouse_y[2];
-      static int uae_mouse_l[2]={0},uae_mouse_r[2]={0},uae_mouse_m[2]={0};
-      static int mouse_lmb[2]={0},mouse_rmb[2]={0},mouse_mmb[2]={0};
-      static int16_t mouse_x[2]={0},mouse_y[2]={0};
-      static int i=0,j=0;
+      float mouse_multiplier=1;
+      int dpadmouse_speed;
+      int uae_mouse_x[2], uae_mouse_y[2];
+      int uae_mouse_l[2]={0},uae_mouse_r[2]={0},uae_mouse_m[2]={0};
+      int mouse_lmb[2]={0},mouse_rmb[2]={0},mouse_mmb[2]={0};
+      int16_t mouse_x[2]={0},mouse_y[2]={0};
+      int i=0, j=0;
 
-      static int analog_left[2];
-      static int analog_right[2];
-      static double analog_left_magnitude;
-      static double analog_right_magnitude;
-      static int analog_deadzone;
+      int analog_left[2]={0};
+      int analog_right[2]={0};
+      double analog_left_magnitude=0;
+      double analog_right_magnitude=0;
+      int analog_deadzone=0;
       analog_deadzone = (opt_analogmouse_deadzone * 32768 / 100);
 
       int retro_port;
