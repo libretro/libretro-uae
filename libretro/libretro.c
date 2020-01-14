@@ -3013,9 +3013,19 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
    info->timing.fps = (retro_get_region() == RETRO_REGION_NTSC) ? PUAE_VIDEO_HZ_NTSC : PUAE_VIDEO_HZ_PAL;
 }
 
+void retro_set_video_refresh(retro_video_refresh_t cb)
+{
+   video_cb = cb;
+}
+
 void retro_set_audio_sample(retro_audio_sample_t cb)
 {
    audio_cb = cb;
+}
+
+void retro_audio_cb(short l, short r)
+{
+   audio_cb(l, r);
 }
 
 void retro_set_audio_sample_batch(retro_audio_sample_batch_t cb)
@@ -3023,25 +3033,15 @@ void retro_set_audio_sample_batch(retro_audio_sample_batch_t cb)
    audio_batch_cb = cb;
 }
 
-void retro_set_video_refresh(retro_video_refresh_t cb)
+void retro_audio_batch_cb(const int16_t *data, size_t frames)
 {
-   video_cb = cb;
-}
-
-void retro_shutdown_uae(void)
-{
-   environ_cb(RETRO_ENVIRONMENT_SHUTDOWN, NULL);
+   audio_batch_cb(data, frames);
 }
 
 void retro_reset(void)
 {
    fake_ntsc=false;
    uae_reset(1, 1); /* hardreset, keyboardreset */
-}
-
-void retro_audio_cb(short l, short r)
-{
-   audio_cb(l, r);
 }
 
 void retro_run(void)
@@ -3876,7 +3876,8 @@ bool retro_load_game(const struct retro_game_info *info)
 
 void retro_unload_game(void)
 {
-   leave_program();
+   if (!firstpass)
+      leave_program();
 }
 
 unsigned retro_get_region(void)

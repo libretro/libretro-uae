@@ -1326,10 +1326,8 @@ static int parsemds (struct cdunit *cdu, struct zfile *zmds, const TCHAR *img)
 		goto end;
 
 	head = (MDS_Header*)mds;
-#ifndef __LIBRETRO__
-	if (!memcmp (head->signature, MEDIA_DESCRIPTOR, strlen (MEDIA_DESCRIPTOR)))
+	if (!memcmp (head->signature, MEDIA_DESCRIPTOR, sizeof (MEDIA_DESCRIPTOR)))
 		goto end;
-#endif
 	if (head->version[0] != 1) {
 		write_log (_T("unsupported MDS version %d, only v.1 supported\n"), head->version[0]);
 		goto end;
@@ -1830,6 +1828,9 @@ static int parsecue (struct cdunit *cdu, struct zfile *zcue, const TCHAR *img)
                     if (!secoffset) {
                         // secoffset == 0: same file contained also previous track
                         t->offset = fileoffset - pregap * t->size;
+                    } else {
+                        // pregap was already added, do not add extra silence.
+                        t->pregap = 0;
                     }
                     t->address += postgap;
                     if (fnametypeid == AUDENC_PCM && t->handle) {
