@@ -1025,7 +1025,7 @@ void retro_set_environment(retro_environment_t cb)
          "RetroPad Select",
          "",
          {{ NULL, NULL }},
-         "RETROK_RCTRL"
+         "RETROK_F11"
       },
       {
          "puae_mapper_start",
@@ -1060,14 +1060,14 @@ void retro_set_environment(retro_environment_t cb)
          "RetroPad L",
          "",
          {{ NULL, NULL }},
-         "RETROK_F11"
+         ""
       },
       {
          "puae_mapper_r",
          "RetroPad R",
          "",
          {{ NULL, NULL }},
-         "RETROK_F12"
+         ""
       },
       {
          "puae_mapper_l2",

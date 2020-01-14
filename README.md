@@ -16,20 +16,24 @@ And of course for the RetroArch/Libretro team: "http://www.libretro.com/"
 
 ## Default controls
 
-|Key|Action|
+|RetroPad button|Action|
 |---|---|
 |B|Fire button 1|
 |A|Fire button 2|
-|L|Toggle virtual keyboard|
-|R|Toggle statusbar|
 |L2|Left mouse button|
 |R2|Right mouse button|
-|Select|Toggle D-Pad + face buttons between joystick/mouse|
+|SELECT|Toggle virtual keyboard|
+
+|Keyboard key|Action|
+|---|---|
+|F11|Toggle virtual keyboard|
+|F12|Toggle statusbar|
+|RControl|Toggle between joystick/mouse|
 
 Right analog stick controls the mouse by default.
 
 ### Virtual keyboard controls
-|Key|Action|
+|Button|Action|
 |---|---|
 |B / Enter|Keypress|
 |A|Toggle transparency|
@@ -58,7 +62,7 @@ The following models are provided (hardcoded configuration):
 
 As the configuration file is only generated at launch you must restart RetroArch for the change to take effect.
 
-### Kickstarts ROMs
+### Kickstart ROMs
 To use this core you'll need the following Kickstart ROMs. Rename them to the given name and copy the files to RetroArch system directory.
 
 It is critical to use Kickstarts with the correct MD5, otherwise the core might not start.
@@ -249,10 +253,10 @@ Example, to create a HDF file from a zipped WHDLoad game:
 	
 Note the size of the HDF specified by SIZE_OF_HDF must be greater than size of the directory to store the additional filesystem informations (f.ex a 1.25 ratio).
 
-## Games that need a specific Amiga model
-If a game needs a specific Amiga model (AGA games for instance), you can force the model.
+## Games that need a specific model
+You can force a specific model if a game needs one (AGA games for instance).
 
-To do this just add the particular string to the filename:
+To do this just add the corresponding string to the filename:
 
 |String|Result|
 |---|---|
@@ -268,7 +272,7 @@ To do this just add the particular string to the filename:
 |**(PAL)**|PAL 50Hz|
 |**(MD)**|Insert each disk in a different drive (Maximum 4 disks)|
 
-Example: When launching "Alien Breed 2 (AGA).hdf" file the core will use the Amiga 1200 model.
+Example: When launching "Alien Breed 2 AGA.hdf" the core will use the Amiga 1200 model.
 
 If no special string is found the core will use the model configured in the core options. The model core option at 'Automatic' will select A500 when booting floppy disks and A600 when booting hard drives. CD32 will always be selected with CD images.
 
