@@ -883,9 +883,23 @@ static void pfield_erase_hborder_sprites (void)
 // erase whole viewable area if upper or lower border
 static void pfield_erase_vborder_sprites (void)
 {
+#ifdef __LIBRETRO__
+	if (visible_right_border <= visible_left_border)
+		return;
+	int pos = 0;
+	int size = 0;
+	if (visible_left_border < native_ddf_left) {
+		size = res_shift_from_window (native_ddf_left - visible_left_border);
+		pos = -size;
+	}
+	if (visible_right_border > native_ddf_left)
+		size += res_shift_from_window (visible_right_border - native_ddf_left);
+	memset (pixdata.apixels + MAX_PIXELS_PER_LINE - pos, 0, size);
+#else
 	uae_u8 c = colors_for_drawing.borderblank ? 0 : colors_for_drawing.acolors[0];
 	int size = res_shift_from_window (linetoscr_diw_end - linetoscr_diw_start);
 	memset (pixdata.apixels + MAX_PIXELS_PER_LINE - size, c, size);
+#endif
 }
 
 
