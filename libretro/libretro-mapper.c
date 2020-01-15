@@ -1429,13 +1429,14 @@ void retro_poll_event()
    /* override keydown, but allow keyup, to prevent key sticking during keyboard use, if held down on opening keyboard */
    /* keyup allowing most likely not needed on actual keyboard presses even though they get stuck also */
    {
+      int i=0, j=0;
       float mouse_multiplier=1;
       int dpadmouse_speed;
-      int uae_mouse_x[2], uae_mouse_y[2];
-      int uae_mouse_l[2]={0},uae_mouse_r[2]={0},uae_mouse_m[2]={0};
-      int mouse_lmb[2]={0},mouse_rmb[2]={0},mouse_mmb[2]={0};
-      int16_t mouse_x[2]={0},mouse_y[2]={0};
-      int i=0, j=0;
+
+      static int uae_mouse_x[2]={0}, uae_mouse_y[2]={0};
+      static int uae_mouse_l[2]={0}, uae_mouse_r[2]={0}, uae_mouse_m[2]={0};
+      static int mouse_lmb[2]={0}, mouse_rmb[2]={0}, mouse_mmb[2]={0};
+      static int16_t mouse_x[2]={0}, mouse_y[2]={0};
 
       int analog_left[2]={0};
       int analog_right[2]={0};

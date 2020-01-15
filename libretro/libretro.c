@@ -3899,7 +3899,7 @@ size_t retro_serialize_size(void)
    {
       /* savestate_initsave(const TCHAR *filename, int mode, int nodialogs, bool save) */
       /* mode: 1=compressed,2=not compressed,3=ram dump,4=audio dump */
-      savestate_initsave (savestate_fname, 2, 1, true);
+      //savestate_initsave (savestate_fname, 2, 1, true);
       if (save_state(savestate_fname, "libretro") >= 0)
       {
 #if 0
@@ -3917,6 +3917,7 @@ size_t retro_serialize_size(void)
          {
             struct stat savestate_st;
             stat(savestate_fname, &savestate_st);
+            remove(savestate_fname);
             return savestate_st.st_size;
          }
       }
@@ -3930,7 +3931,7 @@ bool retro_serialize(void *data_, size_t size)
    {
       /* savestate_initsave(const TCHAR *filename, int mode, int nodialogs, bool save) */
       /* mode: 1=compressed,2=not compressed,3=ram dump,4=audio dump */
-      savestate_initsave (savestate_fname, 2, 1, true);
+      //savestate_initsave (savestate_fname, 2, 1, true);
       if (save_state(savestate_fname, "libretro") >= 0)
       {
          struct stat savestate_st;
@@ -3944,6 +3945,7 @@ bool retro_serialize(void *data_, size_t size)
             if (fread(data_, size, 1, file) == 1)
             {
                fclose(file);
+               remove(savestate_fname);
                return true;
             }
             fclose(file);
