@@ -3400,7 +3400,12 @@ bool retro_load_game(const struct retro_game_info *info)
                      fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae1\n", string_replace_substring(full_path, "\\", "\\\\"));
 
                   // Attach retro_system_directory as a read only hard drive for WHDLoad kickstarts/prefs/key
+#ifdef WIN32
                   fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s\",-128\n", string_replace_substring(retro_system_directory, "\\", "\\\\"));
+#else
+                  // Force the ending slash to make sure the path is not treated as a file
+                  fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s%s\",-128\n", retro_system_directory, "/");
+#endif
 
                   if (opt_use_whdsaves_hdf)
                   {
