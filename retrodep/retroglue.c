@@ -46,7 +46,7 @@ unsigned short int clut[] = {
 unsigned short int* pixbuf = NULL;
 
 extern unsigned short int retro_bmp[(EMULATOR_DEF_WIDTH*EMULATOR_DEF_HEIGHT*2)];
-void retro_audio_cb(short l, short r);
+void retro_audio_batch_cb(const int16_t *data, size_t frames);
 
 int prefs_changed = 0;
 int vsync_enabled = 0;
@@ -124,25 +124,25 @@ void retro_key_up(int key)
 }
 
 
-
+/* retro */
 void retro_renderSound(short* samples, int sampleCount)
 {
-    int i;
-
     if (sampleCount < 1)
         return;
-
-    for(i=0; i<sampleCount; i+=2)
+#if 0
+    for(int i=0; i<sampleCount; i+=2)
     {
         retro_audio_cb(samples[i], samples[i+1]);
     }
+#else
+    retro_audio_batch_cb(samples, sampleCount/2);
+#endif
 }
 
 void retro_flush_screen (struct vidbuf_description *gfxinfo, int ystart, int yend)
 {
 	co_switch(mainThread);
 }
-
 
 void retro_flush_block (struct vidbuf_description *gfxinfo, int ystart, int yend)
 {

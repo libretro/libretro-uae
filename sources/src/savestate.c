@@ -1052,7 +1052,12 @@ static int save_state_internal (struct zfile *f, const TCHAR *description, int c
 int save_state (const TCHAR *filename, const TCHAR *description)
 {
 	struct zfile *f;
+#ifdef __LIBRETRO__
+	int comp = 0;
+	savestate_nodialogs = 1;
+#else
 	int comp = savestate_docompress;
+#endif
 
 	if (!savestate_specialdump && !savestate_nodialogs) {
 		state_incompatible_warn ();

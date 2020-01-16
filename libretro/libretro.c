@@ -270,7 +270,7 @@ static char uae_config[1024];
 
 void retro_set_environment(retro_environment_t cb)
 {
-   static const struct retro_controller_description p1_controllers[] ={
+   static const struct retro_controller_description p1_controllers[] = {
       { "CD32 Pad", RETRO_DEVICE_UAE_CD32PAD },
       { "Joystick", RETRO_DEVICE_UAE_JOYSTICK },
       { "Keyboard", RETRO_DEVICE_UAE_KEYBOARD },
@@ -3013,9 +3013,19 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
    info->timing.fps = (retro_get_region() == RETRO_REGION_NTSC) ? PUAE_VIDEO_HZ_NTSC : PUAE_VIDEO_HZ_PAL;
 }
 
+void retro_set_video_refresh(retro_video_refresh_t cb)
+{
+   video_cb = cb;
+}
+
 void retro_set_audio_sample(retro_audio_sample_t cb)
 {
    audio_cb = cb;
+}
+
+void retro_audio_cb(short l, short r)
+{
+   audio_cb(l, r);
 }
 
 void retro_set_audio_sample_batch(retro_audio_sample_batch_t cb)
@@ -3023,25 +3033,15 @@ void retro_set_audio_sample_batch(retro_audio_sample_batch_t cb)
    audio_batch_cb = cb;
 }
 
-void retro_set_video_refresh(retro_video_refresh_t cb)
+void retro_audio_batch_cb(const int16_t *data, size_t frames)
 {
-   video_cb = cb;
-}
-
-void retro_shutdown_uae(void)
-{
-   environ_cb(RETRO_ENVIRONMENT_SHUTDOWN, NULL);
+   audio_batch_cb(data, frames);
 }
 
 void retro_reset(void)
 {
    fake_ntsc=false;
    uae_reset(1, 1); /* hardreset, keyboardreset */
-}
-
-void retro_audio_cb(short l, short r)
-{
-   audio_cb(l, r);
 }
 
 void retro_run(void)
@@ -3400,7 +3400,12 @@ bool retro_load_game(const struct retro_game_info *info)
                      fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae1\n", string_replace_substring(full_path, "\\", "\\\\"));
 
                   // Attach retro_system_directory as a read only hard drive for WHDLoad kickstarts/prefs/key
+#ifdef WIN32
                   fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s\",-128\n", string_replace_substring(retro_system_directory, "\\", "\\\\"));
+#else
+                  // Force the ending slash to make sure the path is not treated as a file
+                  fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s%s\",-128\n", retro_system_directory, "/");
+#endif
 
                   if (opt_use_whdsaves_hdf)
                   {
@@ -3876,7 +3881,8 @@ bool retro_load_game(const struct retro_game_info *info)
 
 void retro_unload_game(void)
 {
-   leave_program();
+   if (!firstpass)
+      leave_program();
 }
 
 unsigned retro_get_region(void)
@@ -3898,7 +3904,7 @@ size_t retro_serialize_size(void)
    {
       /* savestate_initsave(const TCHAR *filename, int mode, int nodialogs, bool save) */
       /* mode: 1=compressed,2=not compressed,3=ram dump,4=audio dump */
-      savestate_initsave (savestate_fname, 2, 1, true);
+      //savestate_initsave (savestate_fname, 2, 1, true);
       if (save_state(savestate_fname, "libretro") >= 0)
       {
 #if 0
@@ -3916,6 +3922,7 @@ size_t retro_serialize_size(void)
          {
             struct stat savestate_st;
             stat(savestate_fname, &savestate_st);
+            remove(savestate_fname);
             return savestate_st.st_size;
          }
       }
@@ -3929,7 +3936,7 @@ bool retro_serialize(void *data_, size_t size)
    {
       /* savestate_initsave(const TCHAR *filename, int mode, int nodialogs, bool save) */
       /* mode: 1=compressed,2=not compressed,3=ram dump,4=audio dump */
-      savestate_initsave (savestate_fname, 2, 1, true);
+      //savestate_initsave (savestate_fname, 2, 1, true);
       if (save_state(savestate_fname, "libretro") >= 0)
       {
          struct stat savestate_st;
@@ -3943,6 +3950,7 @@ bool retro_serialize(void *data_, size_t size)
             if (fread(data_, size, 1, file) == 1)
             {
                fclose(file);
+               remove(savestate_fname);
                return true;
             }
             fclose(file);
