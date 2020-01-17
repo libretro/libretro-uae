@@ -2441,9 +2441,29 @@ static bool disk_replace_image_index(unsigned index, const struct retro_game_inf
          dc->files[index] = NULL;
       }
 
+      if (dc->labels[index])
+      {
+         free(dc->labels[index]);
+         dc->labels[index] = NULL;
+      }
+
       // TODO : Handling removing of a disk image when info = NULL
       if (info != NULL)
-         dc->files[index] = strdup(info->path);
+      {
+         if (!string_is_empty(info->path))
+         {
+            char image_label[RETRO_PATH_MAX];
+
+            image_label[0] = '\0';
+
+            // File path
+            dc->files[index] = strdup(info->path);
+
+            // Image label
+            fill_short_pathname_representation(image_label, info->path, sizeof(image_label));
+            dc->labels[index] = strdup(image_label);
+         }
+      }
    }
 
    return false;
@@ -2455,9 +2475,50 @@ static bool disk_add_image_index(void)
    {
       if (dc->count <= DC_MAX_SIZE)
       {
-         dc->files[dc->count] = NULL;
+         dc->files[dc->count]  = NULL;
+         dc->labels[dc->count] = NULL;
          dc->count++;
          return true;
+      }
+   }
+
+   return false;
+}
+
+static bool disk_get_image_path(unsigned index, char *path, size_t len)
+{
+   if (len < 1)
+      return false;
+
+   if (dc)
+   {
+      if (index < dc->count)
+      {
+         if (!string_is_empty(dc->files[index]))
+         {
+            strlcpy(path, dc->files[index], len);
+            return true;
+         }
+      }
+   }
+
+   return false;
+}
+
+static bool disk_get_image_label(unsigned index, char *label, size_t len)
+{
+   if (len < 1)
+      return false;
+
+   if (dc)
+   {
+      if (index < dc->count)
+      {
+         if (!string_is_empty(dc->labels[index]))
+         {
+            strlcpy(label, dc->labels[index], len);
+            return true;
+         }
       }
    }
 
@@ -2472,6 +2533,19 @@ static struct retro_disk_control_callback disk_interface = {
    disk_get_num_images,
    disk_replace_image_index,
    disk_add_image_index,
+};
+
+static struct retro_disk_control_ext_callback disk_interface_ext = {
+   disk_set_eject_state,
+   disk_get_eject_state,
+   disk_get_image_index,
+   disk_set_image_index,
+   disk_get_num_images,
+   disk_replace_image_index,
+   disk_add_image_index,
+   NULL, // set_initial_image
+   disk_get_image_path,
+   disk_get_image_label,
 };
 
 //*****************************************************************************
@@ -2516,7 +2590,12 @@ void retro_init(void)
 
    // Disk control interface
    dc = dc_create();
-   environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &disk_interface);
+
+   unsigned dci_version = 0;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_DISK_CONTROL_INTERFACE_VERSION, &dci_version) && (dci_version >= 1))
+      environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_EXT_INTERFACE, &disk_interface_ext);
+   else
+      environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &disk_interface);
 
    // Savestates
    static uint32_t quirks = RETRO_SERIALIZATION_QUIRK_INCOMPLETE | RETRO_SERIALIZATION_QUIRK_CORE_VARIABLE_SIZE;
@@ -3571,7 +3650,14 @@ bool retro_load_game(const struct retro_game_info *info)
                else
                {
                   // Add the file to disk control context
-                  dc_add_file(dc, full_path);
+                  char disk_image_label[RETRO_PATH_MAX];
+                  disk_image_label[0] = '\0';
+
+                  if (!string_is_empty(full_path))
+                     fill_short_pathname_representation(
+                           disk_image_label, info->path, sizeof(disk_image_label));
+
+                  dc_add_file(dc, full_path, disk_image_label);
                }
 
                // Init first disk
@@ -3726,7 +3812,14 @@ bool retro_load_game(const struct retro_game_info *info)
             fprintf(configfile, "flash_file=%s.nvr\n", (const char*)&flash_file);
 
             // Add the file to disk control context
-            dc_add_file(dc, full_path);
+            char cd_image_label[RETRO_PATH_MAX];
+            cd_image_label[0] = '\0';
+
+            if (!string_is_empty(full_path))
+               fill_short_pathname_representation(
+                     cd_image_label, info->path, sizeof(cd_image_label));
+
+            dc_add_file(dc, full_path, cd_image_label);
 
             // Init first disk
             dc->index = 0;
