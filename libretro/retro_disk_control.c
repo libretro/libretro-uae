@@ -38,6 +38,8 @@
 #define COMMENT "#"
 #define M3U_SPECIAL_COMMAND "#COMMAND:"
 #define M3U_SAVEDISK "#SAVEDISK:"
+#define M3U_SAVEDISK_LABEL "SAVE DISK"
+#define M3U_PATH_DELIM '|'
 
 // Return the directory name of filename 'filename'.
 char* dirname_int(const char* filename)
@@ -108,8 +110,13 @@ void dc_reset(dc_storage* dc)
 	// Clean the struct
 	for(unsigned i=0; i < dc->count; i++)
 	{
-		free(dc->files[i]);
+		if (dc->files[i])
+			free(dc->files[i]);
 		dc->files[i] = NULL;
+
+		if (dc->labels[i])
+			free(dc->labels[i]);
+		dc->labels[i] = NULL;
 	}
 	dc->count = 0;
 	dc->index = -1;
@@ -129,20 +136,21 @@ dc_storage* dc_create(void)
 		dc->command = NULL;
 		for(int i = 0; i < DC_MAX_SIZE; i++)
 		{
-			dc->files[i] = NULL;
+			dc->files[i]  = NULL;
+			dc->labels[i] = NULL;
 		}
 	}
 	
 	return dc;
 }
 
-bool dc_add_file_int(dc_storage* dc, char* filename)
+bool dc_add_file_int(dc_storage* dc, char* filename, char* label)
 {
 	// Verify
-	if(dc == NULL)
+	if (dc == NULL)
 		return false;
 
-	if(filename == NULL)
+	if (!filename || (*filename == '\0'))
 		return false;
 
 	// If max size is not
@@ -150,26 +158,35 @@ bool dc_add_file_int(dc_storage* dc, char* filename)
 	{
 		// Add the file
 		dc->count++;
-		dc->files[dc->count-1] = filename;
+		dc->files[dc->count-1]  = filename;
+		dc->labels[dc->count-1] = label;
 		return true;
 	}
 	
 	return false;
 }
 
-bool dc_add_file(dc_storage* dc, const char* filename)
+bool dc_add_file(dc_storage* dc, const char* filename, const char* label)
 {
 	// Verify
 	if(dc == NULL)
 		return false;
 
-	if(filename == NULL)
+	if (!filename || (*filename == '\0'))
 		return false;
 
 	// Copy and return
-	char* filename_int = calloc(strlen(filename) + 1, sizeof(char));
+	char *filename_int = calloc(strlen(filename) + 1, sizeof(char));
 	strcpy(filename_int, filename);
-	return dc_add_file_int(dc, filename_int);
+
+	char *label_int = NULL; // NULL is a valid label
+	if (!(!label || (*label == '\0')))
+	{
+		label_int = calloc(strlen(label) + 1, sizeof(char));
+		strcpy(label_int, label);
+	}
+
+	return dc_add_file_int(dc, filename_int, label_int);
 }
 
 static bool dc_add_m3u_save_disk(
@@ -178,8 +195,7 @@ static bool dc_add_m3u_save_disk(
 		const char* disk_name, unsigned int index)
 {
 	bool save_disk_exists                     = false;
-	char *m3u_file_name                       = NULL;
-	char *last_period                         = NULL;
+	const char *m3u_file_name                 = NULL;
 	char m3u_file_name_no_ext[RETRO_PATH_MAX] = {0};
 	char save_disk_file_name[RETRO_PATH_MAX]  = {0};
 	char save_disk_path[RETRO_PATH_MAX]       = {0};
@@ -199,27 +215,17 @@ static bool dc_add_m3u_save_disk(
 	// or "file/file_path.h" functions here, so this will be ugly...
 	
 	// Get m3u file name
-	m3u_file_name = strrchr(m3u_file, RETRO_PATH_SEPARATOR[0]);
-#ifdef _WIN32
-	if (m3u_file_name == NULL)
-		m3u_file_name = strrchr(m3u_file, RETRO_PATH_SEPARATOR_ALT[0]);
-#endif
+	m3u_file_name = path_get_basename(m3u_file);
 	
 	if (!m3u_file_name || (*m3u_file_name == '\0'))
 		return false;
 	
-	m3u_file_name++;
-	
-	if (*m3u_file_name == '\0')
-		return false;
-	
 	// Get m3u file name without extension
-	// (Looks like we can't use strlcpy() either...)
-	strncpy(m3u_file_name_no_ext, m3u_file_name, sizeof(m3u_file_name_no_ext) - 1);
+	remove_file_extension(
+			m3u_file_name, m3u_file_name_no_ext, sizeof(m3u_file_name_no_ext));
 	
-	last_period = strrchr(m3u_file_name_no_ext, '.');
-	if (last_period != NULL)
-		*last_period = '\0';
+	if (!m3u_file_name_no_ext || (*m3u_file_name_no_ext == '\0'))
+		return false;
 	
 	// Construct save disk file name
 	snprintf(save_disk_file_name, RETRO_PATH_MAX, "%s.save%u.adf",
@@ -268,7 +274,65 @@ static bool dc_add_m3u_save_disk(
 	// the list
 	if (save_disk_exists)
 	{
-		dc_add_file_int(dc, my_strdup(save_disk_path));
+		char save_disk_label[64] = {0};
+		
+		snprintf(save_disk_label, 64, "%s %u",
+				M3U_SAVEDISK_LABEL, index);
+		
+		dc_add_file_int(dc, my_strdup(save_disk_path), my_strdup(save_disk_label));
+		return true;
+	}
+	
+	return false;
+}
+
+static bool dc_add_m3u_disk(
+		dc_storage* dc, const char *m3u_base_dir,
+		const char* disk_file, const char* usr_disk_label,
+		bool usr_disk_label_set)
+{
+	char *disk_file_path = NULL;
+	
+	// Verify
+	if(dc == NULL)
+		return false;
+	
+	if(m3u_base_dir == NULL)
+		return false;
+	
+	if(disk_file == NULL)
+		return false;
+	
+	// Search the file (absolute, relative to m3u)
+	if ((disk_file_path = m3u_search_file(m3u_base_dir, disk_file)) != NULL)
+	{
+		char disk_label[RETRO_PATH_MAX] = {0};
+		
+		// If a label is provided, use it
+		if (usr_disk_label_set)
+		{
+			// Note that label may intentionally be left blank
+			if (usr_disk_label && (*usr_disk_label != '\0'))
+				strncpy(
+						disk_label, usr_disk_label, sizeof(disk_label) - 1);
+		}
+		else
+		{
+			// Otherwise, use file name without extension as label
+			const char *file_name = path_get_basename(disk_file_path);
+			
+			if (!(!file_name || (*file_name == '\0')))
+			{
+				remove_file_extension(
+						file_name, disk_label, sizeof(disk_label));
+			}
+		}
+		
+		// Add the file to the list
+		dc_add_file_int(
+				dc, disk_file_path,
+				(disk_label[0] == '\0') ? NULL : my_strdup(disk_label));
+		
 		return true;
 	}
 	
@@ -325,13 +389,45 @@ void dc_parse_m3u(dc_storage* dc, const char* m3u_file, const char* save_dir)
 		}
 		else if (!strstartswith(string, COMMENT))
 		{
-			// Search the file (absolute, relative to m3u)
-			char* filename;
-			if ((filename = m3u_search_file(basedir, string)) != NULL)
+			// Path format:
+			//    FILE_NAME|FILE_LABEL
+			// Delimiter + FILE_LABEL is optional
+			char file_name[RETRO_PATH_MAX]  = {0};
+			char file_label[RETRO_PATH_MAX] = {0};
+			char* delim_ptr                 = strchr(string, M3U_PATH_DELIM);
+			bool label_set                  = false;
+			
+			if (delim_ptr)
 			{
-				// Add the file to the struct
-				dc_add_file_int(dc, filename);
+				// Not going to use strleft()/strright() here,
+				// since these functions allocate new strings,
+				// which we don't want to do...
+				
+				// Get FILE_NAME segment
+				size_t len = (size_t)(1 + delim_ptr - string);
+				if (len > 0)
+					strncpy(
+							file_name, string,
+							((len < RETRO_PATH_MAX ? len : RETRO_PATH_MAX) * sizeof(char)) - 1);
+				
+				// Get FILE_LABEL segment
+				delim_ptr++;
+				if (*delim_ptr != '\0')
+					strncpy(
+							file_label, delim_ptr, sizeof(file_label) - 1);
+
+				// Note: If delimiter is present but FILE_LABEL
+				// is omitted, label is intentionally left blank
+				label_set = true;
 			}
+			else
+				strncpy(file_name, string, sizeof(file_name) - 1);
+
+			dc_add_m3u_disk(
+					dc, basedir,
+					trimwhitespace(file_name),
+					(file_label[0] == '\0') ? NULL : trimwhitespace(file_label),
+					label_set);
 		}
 	}
 	

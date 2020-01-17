@@ -20,6 +20,7 @@
 #define RETRO_FILES_H__
 
 #include <stdbool.h>
+#include <stddef.h>
 
 //*****************************************************************************
 // File helpers functions
@@ -35,5 +36,10 @@
 
 void path_join(char* out, const char* basedir, const char* filename);
 bool file_exists(const char *filename);
+// Have to be careful with naming to avoid conflicts with
+// 'file_path.h'
+// NOTE: Why can't we use 'file_path.h' functions directly...?
+const char *path_get_basename(const char* path);
+void remove_file_extension(const char* path, char* path_no_ext, size_t len);
 
 #endif
