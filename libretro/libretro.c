@@ -10,6 +10,7 @@
 #include "file/file_path.h"
 #include "deps/zlib/zlib.h"
 #include "uae_types.h"
+#include "emu_thread.h"
 
 #include "retrodep/WHDLoad_hdf.gz.c"
 #include "retrodep/WHDSaves_hdf.gz.c"
@@ -26,8 +27,10 @@
 extern void check_changes(int unitnum);
 extern int frame_redraw_necessary;
 
+#ifdef USE_LIBCO
 cothread_t mainThread;
 cothread_t emuThread;
+#endif
 
 int defaultw = EMULATOR_DEF_WIDTH;
 int defaulth = EMULATOR_DEF_HEIGHT;
@@ -2321,6 +2324,7 @@ static void update_variables(void)
    config_changed = 0;
 }
 
+#ifdef USE_LIBCO
 static void retro_wrap_emulator(void)
 {
    static char *argv[] = { "puae", RPATH };
@@ -2339,6 +2343,7 @@ static void retro_wrap_emulator(void)
       co_switch(mainThread);
    }
 }
+#endif
 
 //*****************************************************************************
 //*****************************************************************************
@@ -2670,18 +2675,27 @@ void retro_init(void)
 
    update_variables();
 
+#ifdef USE_LIBCO
    if (!emuThread && !mainThread)
    {
       mainThread = co_active();
       emuThread = co_create(65536 * sizeof(void*), retro_wrap_emulator);
    }
+#else
+   if (!init_emu_thread(RPATH))
+      fprintf(stderr, "Failed to initialize emulation thread!\n");
+#endif
 }
 
 void retro_deinit(void)
 {	
+#ifdef USE_LIBCO
    if (emuThread)
       co_delete(emuThread);
    emuThread = 0;
+#else
+   deinit_emu_thread();
+#endif
 
 	// Clean the m3u storage
 	if (dc)
@@ -3878,6 +3892,20 @@ void retro_reset(void)
 
 void retro_run(void)
 {
+#ifndef USE_LIBCO
+   if (!is_emu_thread_initialized())
+   {
+      environ_cb(RETRO_ENVIRONMENT_SHUTDOWN, NULL);
+      return;
+   }
+   if (emu_thread_exited())
+   {
+      environ_cb(RETRO_ENVIRONMENT_SHUTDOWN, NULL);
+      join_emu_thread();
+      return;
+   }
+#endif
+
    // Core options
    bool updated = false;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
@@ -3951,7 +3979,11 @@ void retro_run(void)
    if (firstpass)
    {
       firstpass=0;
+#ifdef USE_LIBCO
       co_switch(emuThread);
+#else
+      switch_thread();
+#endif
       video_cb(retro_bmp, retrow, zoomed_height, retrow << (pix_bytes / 2));
       return;
    }
@@ -3966,7 +3998,11 @@ void retro_run(void)
    }
 
    retro_poll_event();
+#ifdef USE_LIBCO
    co_switch(emuThread);
+#else
+   switch_thread();
+#endif
    if (STATUSON == 1)
       Print_Status();
    if (SHOWKEY == 1)
@@ -3992,6 +4028,11 @@ void retro_run(void)
 
 bool retro_load_game(const struct retro_game_info *info)
 {
+#ifndef USE_LIBCO
+   if (!is_emu_thread_initialized())
+      return false;
+#endif
+
    // UAE config
    if (info)
       strcpy(full_path, (char*)info->path);
@@ -4013,8 +4054,15 @@ bool retro_load_game(const struct retro_game_info *info)
 
 void retro_unload_game(void)
 {
+#ifdef USE_LIBCO
    if (!firstpass)
       leave_program();
+#else
+   if (!firstpass && is_emu_thread_initialized())
+      leave_program();
+   cancel_emu_thread();
+   join_emu_thread();
+#endif
 }
 
 unsigned retro_get_region(void)

@@ -23,6 +23,7 @@ extern int mouse_port[NORMAL_JPORTS];
 #include "drawing.h"
 #include "hotkeys.h"
 
+#include "emu_thread.h"
 #include "libretro.h"
 #include "libretro-glue.h"
 #include "libretro-mapper.h"
@@ -141,7 +142,11 @@ void retro_renderSound(short* samples, int sampleCount)
 
 void retro_flush_screen (struct vidbuf_description *gfxinfo, int ystart, int yend)
 {
-	co_switch(mainThread);
+#ifdef USE_LIBCO
+   co_switch(mainThread);
+#else
+   switch_thread();
+#endif
 }
 
 void retro_flush_block (struct vidbuf_description *gfxinfo, int ystart, int yend)

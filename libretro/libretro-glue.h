@@ -15,8 +15,10 @@
 #include <windows.h>
 #endif
 
+#ifdef USE_LIBCO
 extern cothread_t mainThread;
 extern cothread_t emuThread;
+#endif
 extern int retrow; 
 extern int retroh;
 extern int pix_bytes;
