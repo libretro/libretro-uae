@@ -72,6 +72,9 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
    if (video_config_geometry & 0x04)
    {
       // PUAE_VIDEO_HIRES
+      FONT_WIDTH        = 2;
+      FONT_HEIGHT       = 2;
+      FONT_MAX          = 4;
       XOFFSET           = 2;
       YPADDING          = 10;
       YOFFSET           = 0;
