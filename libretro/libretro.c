@@ -42,7 +42,8 @@ char opt_model[10];
 bool opt_use_whdload_hdf = true;
 bool opt_use_whdsaves_hdf = true;
 unsigned int opt_use_whdload_prefs = 0;
-bool opt_enhanced_statusbar = true;
+bool opt_statusbar_enhanced = true;
+bool opt_statusbar_minimal = false;
 int opt_statusbar_position = 0;
 int opt_statusbar_position_old = 0;
 int opt_statusbar_position_offset = 0;
@@ -592,9 +593,13 @@ void retro_set_environment(retro_environment_t cb)
          "",
          {
             { "bottom", "Bottom Full" },
+            { "bottom_minimal", "Bottom Full Minimal" },
             { "bottom_basic", "Bottom Basic" },
+            { "bottom_basic_minimal", "Bottom Basic Minimal" },
             { "top", "Top Full" },
+            { "top_minimal", "Top Full Minimal" },
             { "top_basic", "Top Basic" },
+            { "top_basic_minimal", "Top Basic Minimal" },
             { NULL, NULL },
          },
          "bottom"
@@ -1381,29 +1386,23 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "top") == 0)
-      {
+      if (strstr(var.value, "top"))
          opt_statusbar_position = -1;
-         opt_enhanced_statusbar = true;
-      }
-      else if (strcmp(var.value, "top_basic") == 0)
-      {
-         opt_statusbar_position = -1;
-         opt_enhanced_statusbar = false;
-      }
-      else if (strcmp(var.value, "bottom") == 0)
-      {
+      else if (strstr(var.value, "bottom"))
          opt_statusbar_position = 0;
-         opt_enhanced_statusbar = true;
-      }
-      else if (strcmp(var.value, "bottom_basic") == 0)
-      {
-         opt_statusbar_position = 0;
-         opt_enhanced_statusbar = false;
-      }
+
+      if (strstr(var.value, "basic"))
+         opt_statusbar_enhanced = false;
+      else
+         opt_statusbar_enhanced = true;
+
+      if (strstr(var.value, "minimal"))
+         opt_statusbar_minimal = true;
+      else
+         opt_statusbar_minimal = false;
 
       /* Screen refresh required */
-      if (opt_statusbar_position_old != opt_statusbar_position || !opt_enhanced_statusbar)
+      if (opt_statusbar_position_old != opt_statusbar_position || !opt_statusbar_enhanced)
          reset_drawing();
 
       opt_statusbar_position_old = opt_statusbar_position;

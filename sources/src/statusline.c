@@ -15,6 +15,8 @@
 
 #ifdef __LIBRETRO__
 extern int opt_statusbar_position;
+extern bool opt_statusbar_enhanced;
+extern bool opt_statusbar_minimal;
 extern int LEDON;
 #endif
 
@@ -131,6 +133,10 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
     else
         x_start = TD_PADX;
 
+    int floppies = 1;
+    if (gui_data.hd >= 0 || gui_data.cd >= 0 || gui_data.md >= 0)
+        floppies = (opt_statusbar_enhanced) ? 1 : 0;
+
     for (led = 0; led < LED_MAX; led++) {
         int side, pos, num1 = -1, num2 = -1, num3 = -1, num4 = -1;
         int x, c, on = 0, am = 2;
@@ -141,7 +147,7 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
             continue;
 
         pen_rgb = c1;
-        if (led >= LED_DF0 && led <= LED_DF3) {
+        if (led >= LED_DF0 && led <= LED_DF3 && floppies) {
             int pled = led - LED_DF0;
             int track = gui_data.drive_track[pled];
             pos = 6 + pled;
@@ -185,6 +191,9 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
                 }
             }
             side = gui_data.drive_side;
+
+            if (opt_statusbar_minimal)
+                num1 = num2 = num3 = -1;
         /*} else if (led == LED_POWER) {
             pos = 3;
             on_rgb = ((gui_data.powerled_brightness * 10 / 16) + 0x33) << 16;
@@ -204,6 +213,8 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
                 num2 = 10;
                 num3 = 12;
             }
+            if (opt_statusbar_minimal)
+                num1 = num2 = num3 = -1;
         } else if (led == LED_HD && gui_data.hd >= 0) {
             pos = 9;
             if (gui_data.hd >= 0) {
@@ -214,6 +225,8 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
                 num2 = 11;
                 num3 = 12;
             }
+            if (opt_statusbar_minimal)
+                num1 = num2 = num3 = -1;
         } else if (led == LED_FPS) {
             pos = 10;
             if (pause_emulation) {
@@ -251,6 +264,8 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
                 off_rgb = RED_DARK;
             }
             on = 1;
+            if (opt_statusbar_minimal)
+                num1 = num2 = num3 = -1;
         /*} else if (led == LED_CPU) {
             int idle = (gui_data.idle + 5) / 10;
             pos = 1;
@@ -300,10 +315,10 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
                 on_rgb = 0x0000cc; // "normal" overflow
             off_rgb = 0x000000;
             am = 3;*/
-        } else if (led == LED_MD && gui_data.drive_disabled[3] && gui_data.md >= 0) {
+        } else if (led == LED_MD && gui_data.drive_disabled[3] && gui_data.md >= 1) {
             // DF3 reused as internal non-volatile ram led (cd32/cdtv)
             pos = 8;
-            if (gui_data.md >= 0) {
+            if (gui_data.md >= 1) {
                 on = gui_data.md;
                 on_rgb = on == 2 ? RED_BRIGHT : GREEN_BRIGHT;
                 off_rgb = 0x000000;
@@ -317,6 +332,8 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
                 num2 = 17;
                 num3 = 19;
             }
+            if (opt_statusbar_minimal)
+                num1 = num2 = num3 = -1;
         /*} else if (led == LED_NET) {
             pos = 6;
             if (gui_data.net >= 0) {

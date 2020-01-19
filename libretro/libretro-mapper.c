@@ -77,7 +77,7 @@ extern unsigned int video_config_aspect;
 extern unsigned int zoom_mode_id;
 extern unsigned int opt_zoom_mode_id;
 extern bool request_update_av_info;
-extern bool opt_enhanced_statusbar;
+extern bool opt_statusbar_enhanced;
 extern int opt_statusbar_position;
 extern unsigned int opt_analogmouse;
 extern unsigned int opt_analogmouse_deadzone;
@@ -325,7 +325,7 @@ bool flag_empty(int val[16])
 
 void Print_Status(void)
 {
-   if (!opt_enhanced_statusbar)
+   if (!opt_statusbar_enhanced)
       return;
 
    int BOX_Y        = 0;
