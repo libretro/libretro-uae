@@ -123,18 +123,18 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
    BKG_ALPHA = (SHOWKEYTRANS == -1) ? 255 : ALPHA;
 
    /* Alternate color keys */
-   char *alt_keys[] =
+   int alt_keys[] =
    {
-      "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10",
-      "LSh", "LAlt", "LAmi", "RAmi", "RAlt", "RSh", "LMB", "RMB",
-      "Esc", "`", "Tab", "Ctrl", "CapsLock", "Rtrn", "Entr", "<-", "Del", "NPDl", "Help",
+      AK_F1, AK_F2, AK_F3, AK_F4, AK_F5, AK_F6, AK_F7, AK_F8, AK_F9, AK_F10,
+      AK_LSH, AK_RSH, AK_LALT, AK_RALT, AK_LAMI, AK_RAMI, -15 /*LMB*/, -16 /*RMB*/,
+      AK_ESC, AK_BACKQUOTE, AK_TAB, AK_CTRL, AK_CAPSLOCK, AK_RET, AK_ENT, AK_BS, AK_DEL, AK_NPDEL, AK_HELP,
    };
    int alt_keys_len = sizeof(alt_keys) / sizeof(alt_keys[0]);
 
    /* Extra color keys */
-   char *extra_keys[] =
+   int extra_keys[] =
    {
-       "NPAD", "J/M", "TRBF", "ASPR", "STBR",
+       -2 /*NUMPAD*/, -18 /*J/M*/, -19 /*TRBF*/, -22 /*ASPR*/, -21 /*STBR*/,
    };
    int extra_keys_len = sizeof(extra_keys) / sizeof(extra_keys[0]);
 
@@ -154,18 +154,18 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
          BKG_COLOR = BKG_COLOR_NORMAL;
 
          /* Reset key color */
-         if (!strcmp("RST", MVk[(y * NPLGN) + x].norml))
+         if (MVk[(y * NPLGN) + x].val == -20)
             BKG_COLOR = (pix_bytes == 4) ? RGB888(110,0,0) : RGB565(110,0,0);
          else
          {
             /* Alternate key color */
             for (int alt_key = 0; alt_key < alt_keys_len; ++alt_key)
-                if (!strcmp(alt_keys[alt_key], MVk[(y * NPLGN) + x + page].norml))
+                if (alt_keys[alt_key] == MVk[(y * NPLGN) + x + page].val)
                     BKG_COLOR = BKG_COLOR_ALT;
 
             /* Extra key color */
             for (int extra_key = 0; extra_key < extra_keys_len; ++extra_key)
-                if (!strcmp(extra_keys[extra_key], MVk[(y * NPLGN) + x + page].norml))
+                if (extra_keys[extra_key] == MVk[(y * NPLGN) + x + page].val)
                     BKG_COLOR = BKG_COLOR_EXTRA;
          }
 
@@ -183,7 +183,7 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
           ||  vkey_sticky2 == MVk[(y * NPLGN) + x + page].val
           ||   (SHIFTON==1 && MVk[(y * NPLGN) + x + page].val==AK_CAPSLOCK)
           || (vkflag[7]==1 && MVk[(y * NPLGN) + x + page].val==AK_RET))
-          && BKG_COLOR != BKG_COLOR_EXTRA && strcmp("RST", MVk[(y * NPLGN) + x + page].norml))
+          && BKG_COLOR != BKG_COLOR_EXTRA && MVk[(y * NPLGN) + x + page].val != -20)
          {
             FONT_COLOR = FONT_COLOR_SEL;
             BKG_COLOR = BKG_COLOR_DARK;
@@ -200,7 +200,7 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
             Draw_text32((uint32_t *)pix, XTEXT+1, YTEXT, BKG_COLOR, FONT_COLOR, 200, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
                (!shifted) ? MVk[(y * NPLGN) + x + page].norml : MVk[(y * NPLGN) + x + page].shift);
          else
-            Draw_text(pix, XTEXT, YTEXT+1, BKG_COLOR, FONT_COLOR, 200, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+            Draw_text(pix, XTEXT+1, YTEXT, BKG_COLOR, FONT_COLOR, 200, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
                (!shifted) ? MVk[(y * NPLGN) + x + page].norml : MVk[(y * NPLGN) + x + page].shift);
 
          /* Key text */

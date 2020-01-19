@@ -230,13 +230,13 @@ static char* joystick_value_human(int val[16], int uae_device)
    if (val[RETRO_DEVICE_ID_JOYPAD_UP])
       str[1] = 30;
 
-   if (val[RETRO_DEVICE_ID_JOYPAD_DOWN])
+   else if (val[RETRO_DEVICE_ID_JOYPAD_DOWN])
       str[1] = 28;
 
    if (val[RETRO_DEVICE_ID_JOYPAD_LEFT])
       str[0] = 27;
 
-   if (val[RETRO_DEVICE_ID_JOYPAD_RIGHT])
+   else if (val[RETRO_DEVICE_ID_JOYPAD_RIGHT])
       str[2] = 29;
 
    if (val[RETRO_DEVICE_ID_JOYPAD_B]
@@ -250,7 +250,7 @@ static char* joystick_value_human(int val[16], int uae_device)
       if (val[RETRO_DEVICE_ID_JOYPAD_B])
       {
          if (uae_device == 1)
-            str[1] |= ('1' | 0x80);
+            str[1] = ('1' | 0x80);
          else
             str[1] = (str[1] | 0x80);
       }
@@ -258,7 +258,7 @@ static char* joystick_value_human(int val[16], int uae_device)
       if (val[RETRO_DEVICE_ID_JOYPAD_A])
       {
          if (uae_device == 1)
-            str[1] |= ('2' | 0x80);
+            str[1] = ('2' | 0x80);
          else
             str[1] = (str[1] | 0x80);
       }

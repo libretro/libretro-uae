@@ -22,7 +22,7 @@ Mvk MVk[NPLGN * NLIGN * 2] = {
    { "TRBF","TRBF",-19 },
    { "ASPR","ASPR",-22 },
    { "STBR","STBR",-21 },
-   { "RST" ,"RST" ,-20 },
+   { {17}  ,{17}  ,-20 }, // Reset
 
    // 0 PG1
    { "Esc" ,"Esc" ,AK_ESC },
@@ -51,7 +51,7 @@ Mvk MVk[NPLGN * NLIGN * 2] = {
    { "0"   ,")"   ,AK_0 },
 
    // 22
-   { "Tab" ,"Tab" ,AK_TAB },
+   { {11}  ,{11}  ,AK_TAB },
    { "q"   ,"Q"   ,AK_Q },
    { "w"   ,"W"   ,AK_W },
    { "e"   ,"E"   ,AK_E },
@@ -90,27 +90,27 @@ Mvk MVk[NPLGN * NLIGN * 2] = {
    { "/"   ,"?"   ,AK_SLASH },
 
    // 55
-   { "LSh" ,"LSh" ,AK_LSH },
+   { {12}  ,{12}  ,AK_LSH },
    { "-"   ,"_"   ,AK_MINUS },
    { "="   ,"+"   ,AK_EQUAL },
    { "\\"  ,"|"   ,AK_BACKSLASH },
    { "["   ,"{"   ,AK_LBRACKET },
    { "]"   ,"}"   ,AK_RBRACKET },
    { "'"   ,"\""  ,AK_QUOTE },
-   { "RSh" ,"RSh" ,AK_RSH },
+   { {12}  ,{12}  ,AK_RSH },
    { "Del" ,"Del" ,AK_DEL },
    { {30}  ,{30}  ,AK_UP },
    { "Help","Help",AK_HELP },
 
    // 66
-   { "LAlt","LAlt",AK_LALT },
-   { "LAmi","LAmi",AK_LAMI },
-   { "Spc" ,"Spc" ,AK_SPC },
-   { "RAmi","RAmi",AK_RAMI },
-   { "RAlt","RAlt",AK_RALT },
-   { "NPAD","NPAD",-2 },
-   { "<-"  ,"<-"  ,AK_BS },
-   { "Rtrn","Rtrn",AK_RET },
+   { "Alt" ,"Alt" ,AK_LALT },
+   { {14}  ,{14}  ,AK_LAMI },
+   { {18}  ,{18}  ,AK_SPC },
+   { {13}  ,{13}  ,AK_RAMI },
+   { "Alt" ,"Alt" ,AK_RALT },
+   { {15}  ,{15}  ,-2 }, // Numpad
+   { {25}  ,{25}  ,AK_BS },
+   { {16}  ,{16}  ,AK_RET },
    { {27}  ,{27}  ,AK_LF },
    { {28}  ,{28}  ,AK_DN },
    { {29}  ,{29}  ,AK_RT },
@@ -128,7 +128,7 @@ Mvk MVk[NPLGN * NLIGN * 2] = {
    { "TRBF","TRBF",-19 },
    { "ASPR","ASPR",-22 },
    { "STBR","STBR",-21 },
-   { "RST" ,"RST" ,-20 },
+   { {17}  ,{17}  ,-20 }, // Reset
 
    // 0 PG2
    { "Esc" ,"Esc" ,AK_ESC },
@@ -157,7 +157,7 @@ Mvk MVk[NPLGN * NLIGN * 2] = {
    { "NP0" ,"Ins" ,AK_NP0 },
 
    // 22
-   { "Tab" ,"Tab" ,AK_TAB },
+   { {11}  ,{11}  ,AK_TAB },
    { "q"   ,"Q"   ,AK_Q },
    { "w"   ,"W"   ,AK_W },
    { "e"   ,"E"   ,AK_E },
@@ -196,26 +196,26 @@ Mvk MVk[NPLGN * NLIGN * 2] = {
    { "/"   ,"?"   ,AK_SLASH },
 
    // 55
-   { "LSh" ,"LSh" ,AK_LSH },
+   { {12}  ,{12}  ,AK_LSH },
    { "NP-" ,"NP-" ,AK_NPSUB },
    { "NP+" ,"NP+" ,AK_NPADD },
    { "NP/" ,"NP/" ,AK_NPDIV },
    { "NP(" ,"NP(" ,AK_NPLPAREN },
    { "NP)" ,"NP)" ,AK_NPRPAREN },
    { "NP*" ,"NP*" ,AK_NPMUL },
-   { "RSh" ,"RSh" ,AK_RSH },
+   { {12}  ,{12}  ,AK_RSH },
    { "NPDl","NPDl",AK_NPDEL },
    { {'N','P',30} ,{'N','P',30},AK_NP8 },
    { "Help","Help",AK_HELP },
 
    // 66
-   { "LAlt","LAlt",AK_LALT },
-   { "LAmi","LAmi",AK_LAMI },
-   { "Spc" ,"Spc" ,AK_SPC },
-   { "RAmi","RAmi",AK_RAMI },
-   { "RAlt","RAlt",AK_RALT },
-   { "NPAD","NPAD",-2 },
-   { "<-"  ,"<-"  ,AK_BS },
+   { "Alt" ,"Alt" ,AK_LALT },
+   { {14}  ,{14}  ,AK_LAMI },
+   { {18}  ,{18}  ,AK_SPC },
+   { {13}  ,{13}  ,AK_RAMI },
+   { "Alt" ,"Alt" ,AK_RALT },
+   { {15}  ,{15}  ,-2 }, // Numpad
+   { {25}  ,{25}  ,AK_BS },
    { "Entr","Entr",AK_ENT },
    { {'N','P',27} ,{'N','P',27},AK_NP4 },
    { {'N','P',28} ,{'N','P',28},AK_NP2 },
