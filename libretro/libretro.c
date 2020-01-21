@@ -263,7 +263,7 @@ floppy0type=-1\n\
 #define ISO_FILE_EXT "iso"
 #define UAE_FILE_EXT "uae"
 #define M3U_FILE_EXT "m3u"
-#define LIBRETRO_PUAE_CONF "puae_libretro.uae"
+#define LIBRETRO_PUAE_PREFIX "puae_libretro"
 
 // Configs
 static char uae_machine[256];
@@ -3143,7 +3143,7 @@ void retro_audio_batch_cb(const int16_t *data, size_t frames)
 bool retro_create_config()
 {
    RPATH[0] = '\0';
-   path_join((char*)&RPATH, retro_save_directory, LIBRETRO_PUAE_CONF);
+   path_join((char*)&RPATH, retro_save_directory, LIBRETRO_PUAE_PREFIX ".uae");
    fprintf(stdout, "[libretro-uae]: Generating temporary config file '%s'\n", (const char*)&RPATH);
 
    if (strcmp(opt_model, "A500") == 0)
@@ -3704,7 +3704,7 @@ bool retro_create_config()
             if (opt_shared_nvram)
             {
                // Shared
-               path_join((char*)&flash_file, retro_save_directory, "puae_libretro");
+               path_join((char*)&flash_file, retro_save_directory, LIBRETRO_PUAE_PREFIX);
             }
             else
             {
@@ -3807,7 +3807,7 @@ bool retro_create_config()
          fprintf(configfile, uae_config);
 
          // CD32 exception
-         if (strcmp(opt_model, "CD32") == 0)
+         if (strcmp(opt_model, "CD32") == 0 || strcmp(opt_model, "CD32FR") == 0)
          {
             char kickstart_ext[RETRO_PATH_MAX];
             path_join((char*)&kickstart_ext, retro_system_directory, uae_kickstart_ext);
@@ -3840,6 +3840,13 @@ bool retro_create_config()
                else
                   fprintf(configfile, "kickstart_ext_rom_file=%s\n", (const char*)&kickstart_ext);
             }
+
+            // NVRAM always shared without content
+            char flash_file[RETRO_PATH_MAX];
+            char flash_filepath[RETRO_PATH_MAX];
+            path_join((char*)&flash_file, retro_save_directory, LIBRETRO_PUAE_PREFIX);
+            fprintf(stdout, "[libretro-uae]: Using Flash RAM: '%s.nvr'\n", flash_file);
+            fprintf(configfile, "flash_file=%s.nvr\n", (const char*)&flash_file);
          }
          else
          {
@@ -3999,7 +4006,7 @@ bool retro_load_game(const struct retro_game_info *info)
    retroh = defaulth;
 
    // Savestate filename
-   snprintf(savestate_fname, sizeof(savestate_fname), "%s%spuae_libretro.asf", retro_save_directory, DIR_SEP_STR);
+   snprintf(savestate_fname, sizeof(savestate_fname), "%s%s%s.asf", retro_save_directory, DIR_SEP_STR, LIBRETRO_PUAE_PREFIX);
 
    return true;
 }

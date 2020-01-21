@@ -106,9 +106,11 @@ static void write_tdnumber (uae_u8 *buf, int bpp, int x, int y, int num, uae_u32
 
 #ifdef __LIBRETRO__
 #define BLACK           0x000000
+#define YELLOW_DISABLED 0x111100
 #define YELLOW_DARK     0x333300
 #define YELLOW_DIM      0x666600
 #define YELLOW_BRIGHT   0x999900
+#define GREEN_DISABLED  0x001100
 #define GREEN_DARK      0x003300
 #define GREEN_DIM       0x006600
 #define GREEN_BRIGHT    0x009900
@@ -183,9 +185,15 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
                 if (gui_data.df[pled][0] == 0)
                 {
                     if (currprefs.chipset_mask & CSMASK_MASK)
-                        pen_rgb = ledcolor (0x00666600, rc, gc, bc, alpha);
+                    {
+                        pen_rgb = ledcolor (YELLOW_DIM, rc, gc, bc, alpha);
+                        off_rgb = YELLOW_DISABLED;
+                    }
                     else
-                        pen_rgb = ledcolor (0x00006600, rc, gc, bc, alpha);
+                    {
+                        pen_rgb = ledcolor (GREEN_DIM, rc, gc, bc, alpha);
+                        off_rgb = GREEN_DISABLED;
+                    }
                     num2 = 12;
                     num3 = pled;
                 }
@@ -321,7 +329,7 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
             if (gui_data.md >= 1) {
                 on = gui_data.md;
                 on_rgb = on == 2 ? RED_BRIGHT : GREEN_BRIGHT;
-                off_rgb = 0x000000;
+                off_rgb = BLACK;
             }
             num1 = -1;
             num2 = -1;
