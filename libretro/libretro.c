@@ -42,6 +42,7 @@ char opt_model[10];
 bool opt_use_whdload_hdf = true;
 bool opt_use_whdsaves_hdf = true;
 unsigned int opt_use_whdload_prefs = 0;
+bool opt_shared_nvram = 0;
 bool opt_statusbar_enhanced = true;
 bool opt_statusbar_minimal = false;
 int opt_statusbar_position = 0;
@@ -801,6 +802,17 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "100"
+      },
+      {
+         "puae_shared_nvram",
+         "Shared CD32 NVRAM",
+         "Disabled will save separate files per game. Enabled will use one shared file. Core restart required.",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "disabled"
       },
       {
          "puae_use_whdload",
@@ -1856,6 +1868,14 @@ static void update_variables(void)
       if (strcmp(var.value, "config") == 0) opt_use_whdload_prefs = 1;
       if (strcmp(var.value, "splash") == 0) opt_use_whdload_prefs = 2;
       if (strcmp(var.value, "both") == 0) opt_use_whdload_prefs = 3;
+   }
+
+   var.key = "puae_shared_nvram";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "enabled") == 0) opt_shared_nvram = true;
+      if (strcmp(var.value, "disabled") == 0) opt_shared_nvram = false;
    }
 
    var.key = "puae_analogmouse";
@@ -3678,12 +3698,21 @@ bool retro_create_config()
                   fprintf(configfile, "kickstart_ext_rom_file=%s\n", (const char*)&kickstart_ext);
             }
 
-            // NVRAM per disk
+            // NVRAM
             char flash_file[RETRO_PATH_MAX];
             char flash_filepath[RETRO_PATH_MAX];
-            snprintf(flash_filepath, RETRO_PATH_MAX, "%s", full_path);
-            path_remove_extension((char*)flash_filepath);
-            path_join((char*)&flash_file, retro_save_directory, path_basename(flash_filepath));
+            if (opt_shared_nvram)
+            {
+               // Shared
+               path_join((char*)&flash_file, retro_save_directory, "puae_libretro");
+            }
+            else
+            {
+               // Per game
+               snprintf(flash_filepath, RETRO_PATH_MAX, "%s", full_path);
+               path_remove_extension((char*)flash_filepath);
+               path_join((char*)&flash_file, retro_save_directory, path_basename(flash_filepath));
+            }
             fprintf(stdout, "[libretro-uae]: Using Flash RAM: '%s.nvr'\n", flash_file);
             fprintf(configfile, "flash_file=%s.nvr\n", (const char*)&flash_file);
 
