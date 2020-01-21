@@ -559,7 +559,6 @@ bool blkdev_get_info (struct uae_prefs *p, int unitnum, struct device_info *di)
 	if (open && opened)
 		sys_command_close_internal (unitnum);
 
-printf("BLKDEV_GET_INFO %d %d\n", open, opened);
 	return ok;
 }
 
@@ -657,11 +656,13 @@ static void check_changes (int unitnum)
 			gotsem = false;
 		}
 	}
+#ifndef __LIBRETRO__
 	if (st->imagechangetime == 0)
 		return;
 	st->imagechangetime--;
 	if (st->imagechangetime > 0)
 		return;
+#endif
 	if (blkdevsema)
 		gotsem = getsem2 (unitnum, true);
 	_tcscpy (currprefs.cdslots[unitnum].name, st->newimagefile);
