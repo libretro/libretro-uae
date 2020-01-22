@@ -77,7 +77,7 @@ extern unsigned int video_config_aspect;
 extern unsigned int zoom_mode_id;
 extern unsigned int opt_zoom_mode_id;
 extern bool request_update_av_info;
-extern bool opt_enhanced_statusbar;
+extern bool opt_statusbar_enhanced;
 extern int opt_statusbar_position;
 extern unsigned int opt_analogmouse;
 extern unsigned int opt_analogmouse_deadzone;
@@ -230,13 +230,13 @@ static char* joystick_value_human(int val[16], int uae_device)
    if (val[RETRO_DEVICE_ID_JOYPAD_UP])
       str[1] = 30;
 
-   if (val[RETRO_DEVICE_ID_JOYPAD_DOWN])
+   else if (val[RETRO_DEVICE_ID_JOYPAD_DOWN])
       str[1] = 28;
 
    if (val[RETRO_DEVICE_ID_JOYPAD_LEFT])
       str[0] = 27;
 
-   if (val[RETRO_DEVICE_ID_JOYPAD_RIGHT])
+   else if (val[RETRO_DEVICE_ID_JOYPAD_RIGHT])
       str[2] = 29;
 
    if (val[RETRO_DEVICE_ID_JOYPAD_B]
@@ -250,7 +250,7 @@ static char* joystick_value_human(int val[16], int uae_device)
       if (val[RETRO_DEVICE_ID_JOYPAD_B])
       {
          if (uae_device == 1)
-            str[1] |= ('1' | 0x80);
+            str[1] = ('1' | 0x80);
          else
             str[1] = (str[1] | 0x80);
       }
@@ -258,7 +258,7 @@ static char* joystick_value_human(int val[16], int uae_device)
       if (val[RETRO_DEVICE_ID_JOYPAD_A])
       {
          if (uae_device == 1)
-            str[1] |= ('2' | 0x80);
+            str[1] = ('2' | 0x80);
          else
             str[1] = (str[1] | 0x80);
       }
@@ -325,7 +325,7 @@ bool flag_empty(int val[16])
 
 void Print_Status(void)
 {
-   if (!opt_enhanced_statusbar)
+   if (!opt_statusbar_enhanced)
       return;
 
    int BOX_Y        = 0;
@@ -1477,8 +1477,12 @@ void retro_poll_event()
    /* keyup allowing most likely not needed on actual keyboard presses even though they get stuck also */
    {
       int i=0, j=0;
-      float mouse_multiplier=1;
-      int dpadmouse_speed;
+      static float mouse_multiplier=1;
+      static int dpadmouse_speed[2]={0};
+      static long dpadmouse_press[2]={0};
+      static int dpadmouse_pressed[2]={0};
+      static long now = 0;
+      now = GetTicks();
 
       static int uae_mouse_x[2]={0}, uae_mouse_y[2]={0};
       static int uae_mouse_l[2]={0}, uae_mouse_r[2]={0}, uae_mouse_m[2]={0};
@@ -1578,24 +1582,46 @@ void retro_poll_event()
          for (j = 0; j < 2; j++)
          {
             // Digital mouse speed modifiers
-            dpadmouse_speed = opt_dpadmouse_speed;
+            if (dpadmouse_pressed[j] == 0)
+               dpadmouse_speed[j] = opt_dpadmouse_speed;
+
             if (mouse_speed[j] & MOUSE_SPEED_FASTER)
-               dpadmouse_speed = dpadmouse_speed + 3;
+               dpadmouse_speed[j] = dpadmouse_speed[j] + 3;
             if (mouse_speed[j] & MOUSE_SPEED_SLOWER)
-               dpadmouse_speed = dpadmouse_speed - 4;
+               dpadmouse_speed[j] = dpadmouse_speed[j] - 4;
+
+            // Digital mouse acceleration
+            if (dpadmouse_pressed[j] == 1)
+               if (now - dpadmouse_press[j] > 200)
+               {
+                  dpadmouse_speed[j]++;
+                  dpadmouse_press[j] = now;
+               }
 
             // Digital mouse speed limits
-            if (dpadmouse_speed<3) dpadmouse_speed = 2;
-            if (dpadmouse_speed>12) dpadmouse_speed = 13;
+            if (dpadmouse_speed[j] < 3) dpadmouse_speed[j] = 2;
+            if (dpadmouse_speed[j] > 13) dpadmouse_speed[j] = 14;
 
             if (input_state_cb(j, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT))
-               uae_mouse_x[j] += dpadmouse_speed;
-            if (input_state_cb(j, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT))
-               uae_mouse_x[j] -= dpadmouse_speed;
+               uae_mouse_x[j] += dpadmouse_speed[j];
+            else if (input_state_cb(j, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT))
+               uae_mouse_x[j] -= dpadmouse_speed[j];
             if (input_state_cb(j, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN))
-               uae_mouse_y[j] += dpadmouse_speed;
-            if (input_state_cb(j, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP))
-               uae_mouse_y[j] -= dpadmouse_speed;
+               uae_mouse_y[j] += dpadmouse_speed[j];
+            else if (input_state_cb(j, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP))
+               uae_mouse_y[j] -= dpadmouse_speed[j];
+
+            // Acceleration timestamps
+            if ((uae_mouse_x[j] != 0 || uae_mouse_y[j] != 0) && dpadmouse_pressed[j] == 0)
+            {
+               dpadmouse_press[j] = now;
+               dpadmouse_pressed[j] = 1;
+            }
+            else if ((uae_mouse_x[j] == 0 && uae_mouse_y[j] == 0) && dpadmouse_pressed[j] == 1)
+            {
+               dpadmouse_press[j] = 0;
+               dpadmouse_pressed[j] = 0;
+            }
          }
       }
 

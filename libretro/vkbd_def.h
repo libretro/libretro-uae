@@ -12,17 +12,17 @@ typedef struct {
 Mvk MVk[NPLGN * NLIGN * 2] = {
 
    // -11
-   { "LMB" ,"LMB" ,-15 },
-   { "RMB" ,"RMB" ,-16 },
-   { {'M','O',30},{'M','O',30},-11 },
-   { {'M','O',28},{'M','O',28},-12 },
-   { {'M','O',27},{'M','O',27},-13 },
-   { {'M','O',29},{'M','O',29},-14 },
+   { {10,'L'},{10,'L'},-15 },
+   { {10,'R'},{10,'R'},-16 },
+   { {10,30},{10,30},-11 },
+   { {10,28},{10,28},-12 },
+   { {10,27},{10,27},-13 },
+   { {10,29},{10,29},-14 },
    { "J/M" ,"J/M" ,-18 },
    { "TRBF","TRBF",-19 },
    { "ASPR","ASPR",-22 },
    { "STBR","STBR",-21 },
-   { "RST" ,"RST" ,-20 },
+   { {17}  ,{17}  ,-20 }, // Reset
 
    // 0 PG1
    { "Esc" ,"Esc" ,AK_ESC },
@@ -51,7 +51,7 @@ Mvk MVk[NPLGN * NLIGN * 2] = {
    { "0"   ,")"   ,AK_0 },
 
    // 22
-   { "Tab" ,"Tab" ,AK_TAB },
+   { {11}  ,{11}  ,AK_TAB },
    { "q"   ,"Q"   ,AK_Q },
    { "w"   ,"W"   ,AK_W },
    { "e"   ,"E"   ,AK_E },
@@ -90,27 +90,27 @@ Mvk MVk[NPLGN * NLIGN * 2] = {
    { "/"   ,"?"   ,AK_SLASH },
 
    // 55
-   { "LSh" ,"LSh" ,AK_LSH },
+   { {12}  ,{12}  ,AK_LSH },
    { "-"   ,"_"   ,AK_MINUS },
    { "="   ,"+"   ,AK_EQUAL },
    { "\\"  ,"|"   ,AK_BACKSLASH },
    { "["   ,"{"   ,AK_LBRACKET },
    { "]"   ,"}"   ,AK_RBRACKET },
    { "'"   ,"\""  ,AK_QUOTE },
-   { "RSh" ,"RSh" ,AK_RSH },
+   { {12}  ,{12}  ,AK_RSH },
    { "Del" ,"Del" ,AK_DEL },
    { {30}  ,{30}  ,AK_UP },
    { "Help","Help",AK_HELP },
 
    // 66
-   { "LAlt","LAlt",AK_LALT },
-   { "LAmi","LAmi",AK_LAMI },
-   { "Spc" ,"Spc" ,AK_SPC },
-   { "RAmi","RAmi",AK_RAMI },
-   { "RAlt","RAlt",AK_RALT },
-   { "NPAD","NPAD",-2 },
-   { "<-"  ,"<-"  ,AK_BS },
-   { "Rtrn","Rtrn",AK_RET },
+   { "Alt" ,"Alt" ,AK_LALT },
+   { {14}  ,{14}  ,AK_LAMI },
+   { {18}  ,{18}  ,AK_SPC },
+   { {13}  ,{13}  ,AK_RAMI },
+   { "Alt" ,"Alt" ,AK_RALT },
+   { {15}  ,{15}  ,-2 }, // Numpad
+   { {25}  ,{25}  ,AK_BS },
+   { {16}  ,{16}  ,AK_RET },
    { {27}  ,{27}  ,AK_LF },
    { {28}  ,{28}  ,AK_DN },
    { {29}  ,{29}  ,AK_RT },
@@ -118,17 +118,17 @@ Mvk MVk[NPLGN * NLIGN * 2] = {
 
 
    // -11
-   { "LMB" ,"LMB" ,-15 },
-   { "RMB" ,"RMB" ,-16 },
-   { {'M','O',30},{'M','O',30},-11 },
-   { {'M','O',28},{'M','O',28},-12 },
-   { {'M','O',27},{'M','O',27},-13 },
-   { {'M','O',29},{'M','O',29},-14 },
+   { {10,'L'},{10,'L'},-15 },
+   { {10,'R'},{10,'R'},-16 },
+   { {10,30},{10,30},-11 },
+   { {10,28},{10,28},-12 },
+   { {10,27},{10,27},-13 },
+   { {10,29},{10,29},-14 },
    { "J/M" ,"J/M" ,-18 },
    { "TRBF","TRBF",-19 },
    { "ASPR","ASPR",-22 },
    { "STBR","STBR",-21 },
-   { "RST" ,"RST" ,-20 },
+   { {17}  ,{17}  ,-20 }, // Reset
 
    // 0 PG2
    { "Esc" ,"Esc" ,AK_ESC },
@@ -144,20 +144,20 @@ Mvk MVk[NPLGN * NLIGN * 2] = {
    { "F10" ,"F10" ,AK_F10 },
 
    // 11
-   { "`"   ,"~"   ,AK_BACKQUOTE },
-   { "NP1" ,"End" ,AK_NP1 },
-   { "NP2" ,{'N','P',28},AK_NP2 },
-   { "NP3" ,"PgDn",AK_NP3 },
-   { "NP4" ,{'N','P',27},AK_NP4 },
-   { "NP5" ," "   ,AK_NP5 },
-   { "NP6" ,{'N','P',29},AK_NP6 },
-   { "NP7" ,"Home",AK_NP7 },
-   { "NP8" ,{'N','P',30},AK_NP8 },
-   { "NP9" ,"PgUp",AK_NP9 },
-   { "NP0" ,"Ins" ,AK_NP0 },
+   { "`"     ,"~"    ,AK_BACKQUOTE },
+   { {15,'1'},"End"  ,AK_NP1 },
+   { {15,'2'},{15,28},AK_NP2 },
+   { {15,'3'},"PgDn" ,AK_NP3 },
+   { {15,'4'},{15,27},AK_NP4 },
+   { {15,'5'}," "    ,AK_NP5 },
+   { {15,'6'},{15,29},AK_NP6 },
+   { {15,'7'},"Home" ,AK_NP7 },
+   { {15,'8'},{15,30},AK_NP8 },
+   { {15,'9'},"PgUp" ,AK_NP9 },
+   { {15,'0'},"Ins"  ,AK_NP0 },
 
    // 22
-   { "Tab" ,"Tab" ,AK_TAB },
+   { {11}  ,{11}  ,AK_TAB },
    { "q"   ,"Q"   ,AK_Q },
    { "w"   ,"W"   ,AK_W },
    { "e"   ,"E"   ,AK_E },
@@ -196,30 +196,30 @@ Mvk MVk[NPLGN * NLIGN * 2] = {
    { "/"   ,"?"   ,AK_SLASH },
 
    // 55
-   { "LSh" ,"LSh" ,AK_LSH },
-   { "NP-" ,"NP-" ,AK_NPSUB },
-   { "NP+" ,"NP+" ,AK_NPADD },
-   { "NP/" ,"NP/" ,AK_NPDIV },
-   { "NP(" ,"NP(" ,AK_NPLPAREN },
-   { "NP)" ,"NP)" ,AK_NPRPAREN },
-   { "NP*" ,"NP*" ,AK_NPMUL },
-   { "RSh" ,"RSh" ,AK_RSH },
-   { "NPDl","NPDl",AK_NPDEL },
-   { {'N','P',30} ,{'N','P',30},AK_NP8 },
+   { {12}  ,{12}  ,AK_LSH },
+   { {15,'-'},{15,'-'},AK_NPSUB },
+   { {15,'+'},{15,'+'},AK_NPADD },
+   { {15,'/'},{15,'/'},AK_NPDIV },
+   { {15,'('},{15,'('},AK_NPLPAREN },
+   { {15,')'},{15,')'},AK_NPRPAREN },
+   { {15,'*'},{15,'*'},AK_NPMUL },
+   { {12}  ,{12}  ,AK_RSH },
+   { {15,'.'},{15,'D','e','l'},AK_NPDEL },
+   { {15,30} ,{15,30},AK_NP8 },
    { "Help","Help",AK_HELP },
 
    // 66
-   { "LAlt","LAlt",AK_LALT },
-   { "LAmi","LAmi",AK_LAMI },
-   { "Spc" ,"Spc" ,AK_SPC },
-   { "RAmi","RAmi",AK_RAMI },
-   { "RAlt","RAlt",AK_RALT },
-   { "NPAD","NPAD",-2 },
-   { "<-"  ,"<-"  ,AK_BS },
-   { "Entr","Entr",AK_ENT },
-   { {'N','P',27} ,{'N','P',27},AK_NP4 },
-   { {'N','P',28} ,{'N','P',28},AK_NP2 },
-   { {'N','P',29} ,{'N','P',29},AK_NP6 },
+   { "Alt" ,"Alt" ,AK_LALT },
+   { {14}  ,{14}  ,AK_LAMI },
+   { {18}  ,{18}  ,AK_SPC },
+   { {13}  ,{13}  ,AK_RAMI },
+   { "Alt" ,"Alt" ,AK_RALT },
+   { {15}  ,{15}  ,-2 }, // Numpad
+   { {25}  ,{25}  ,AK_BS },
+   { {15,16},{15,16},AK_ENT },
+   { {15,27},{15,27},AK_NP4 },
+   { {15,28},{15,28},AK_NP2 },
+   { {15,29},{15,29},AK_NP6 },
 
 };
 
