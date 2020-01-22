@@ -2461,6 +2461,8 @@ static bool disk_replace_image_index(unsigned index, const struct retro_game_inf
             // Image label
             fill_short_pathname_representation(image_label, info->path, sizeof(image_label));
             dc->labels[index] = strdup(image_label);
+
+            return true;
          }
       }
    }
