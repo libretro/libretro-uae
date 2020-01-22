@@ -870,6 +870,7 @@ void reset_all_systems (void)
 #ifdef SAMPLER
 	sampler_init ();
 #endif
+    device_func_reset();
 }
 
 #ifdef __LIBRETRO__
@@ -956,7 +957,7 @@ void do_leave_program (void)
 #ifdef GAYLE
 	gayle_free ();
 #endif
-	device_func_reset ();
+	device_func_free ();
 #endif
 	savestate_free ();
 	memory_cleanup ();

@@ -448,14 +448,15 @@ static uae_u32 akiko_c2p_read (int offset)
 #define CDINTERRUPT_PBX			0x04000000
 #define CDINTERRUPT_OVERFLOW	0x02000000
 
-#define CDFLAG_SUBCODE			0x80000000
-#define CDFLAG_TXD				0x40000000
-#define CDFLAG_RXD				0x20000000
-#define CDFLAG_CAS				0x10000000
-#define CDFLAG_PBX				0x08000000
-#define CDFLAG_ENABLE			0x04000000
-#define CDFLAG_RAW				0x02000000
-#define CDFLAG_MSB				0x01000000
+#define CDFLAG_SUBCODE			0x80000000 // 31
+#define CDFLAG_TXD				0x40000000 // 30
+#define CDFLAG_RXD				0x20000000 // 29
+#define CDFLAG_CAS				0x10000000 // 28
+#define CDFLAG_PBX				0x08000000 // 27
+#define CDFLAG_ENABLE			0x04000000 // 26
+#define CDFLAG_RAW				0x02000000 // 25
+#define CDFLAG_MSB				0x01000000 // 24
+#define CDFLAG_NTSC				0x00800000 // 23
 
 #define CDS_ERROR 0x80
 #define CDS_PLAYING 0x08
@@ -525,13 +526,14 @@ static int sector_buffer_sector_1, sector_buffer_sector_2;
 static uae_u8 *sector_buffer_info_1, *sector_buffer_info_2;
 
 static int unitnum = -1;
+static uae_u8 cdrom_door = 1;
 static bool akiko_inited;
 static volatile int mediachanged, mediacheckcounter;
 static volatile int frame2counter;
 
 static smp_comm_pipe requests;
 static volatile int akiko_thread_running;
-static uae_sem_t akiko_sem, sub_sem;
+static uae_sem_t akiko_sem, sub_sem, cda_sem;
 
 static void checkint (void)
 {
@@ -611,17 +613,20 @@ static void subfunc (uae_u8 *data, int cnt)
 	uae_sem_post (&sub_sem);
 }
 
-static int statusfunc (int status, int playpos)
+static int statusfunc(int status, int playpos)
 {
 	if (status == -1)
 		return 0;
 	if (status == -2)
 		return 10;
+	if (status < 0)
+		return 0;
 	if (cdrom_audiostatus != status) {
 		if (status == AUDIO_STATUS_IN_PROGRESS) {
-			cdrom_playing = 1;
+			if (cdrom_playing == 0)
+				cdrom_playing = 1;
 			cdrom_audiotimeout = 1;
-		} 
+		}
 		if (cdrom_playing && status != AUDIO_STATUS_IN_PROGRESS && status != AUDIO_STATUS_PAUSED && status != AUDIO_STATUS_NOT_SUPPORTED) {
 			cdrom_audiotimeout = -1;
 		}
@@ -630,19 +635,27 @@ static int statusfunc (int status, int playpos)
 	return 0;
 }
 
-static void cdaudioplay_do (void)
+static int statusfunc_imm(int status, int playpos)
 {
-	uae_u32 startlsn = read_comm_pipe_u32_blocking (&requests);
-	uae_u32 endlsn = read_comm_pipe_u32_blocking (&requests);
-	uae_u32 scan = read_comm_pipe_u32_blocking (&requests);
+	if (status == -3 || status > AUDIO_STATUS_IN_PROGRESS)
+		uae_sem_post(&cda_sem);
+	if (status < 0)
+		return 0;
+	return statusfunc(status, playpos);
+}
+
+static void cdaudioplay_do(bool immediate)
+{
+	uae_u32 startlsn = read_comm_pipe_u32_blocking(&requests);
+	uae_u32 endlsn = read_comm_pipe_u32_blocking(&requests);
+	uae_u32 scan = read_comm_pipe_u32_blocking(&requests);
 	qcode_valid = 0;
 	if (unitnum < 0)
 		return;
-	sys_command_cd_pause (unitnum, 0);
-	sys_command_cd_play2 (unitnum, startlsn, endlsn, scan, statusfunc, subfunc);
+	sys_command_cd_pause(unitnum, 0);
+	sys_command_cd_play2(unitnum, startlsn, endlsn, scan, immediate ? statusfunc_imm : statusfunc, subfunc);
 }
 
-#ifdef SAVESTATE
 static bool akiko_isaudiotrack (int startlsn)
 {
 	struct cd_toc *s = NULL;
@@ -659,16 +672,15 @@ static bool akiko_isaudiotrack (int startlsn)
 		s++;
 	}
 	if (s && (s->control & 0x0c) == 0x04) {
-		write_log (_T("tried to play data track %d!\n"), s->track);
+		write_log (_T("CD32: tried to play data track %d!\n"), s->track);
 		return false;
 	}
 	return true;
 }
-#endif // SAVESTATE
 
 static struct cd_toc *get_track (int startlsn)
 {
-	for (int i = cdrom_toc_cd_buffer.first_track_offset + 1; i <= cdrom_toc_cd_buffer.last_track_offset; i++) {
+	for (int i = cdrom_toc_cd_buffer.first_track_offset + 1; i <= cdrom_toc_cd_buffer.last_track_offset + 1; i++) {
 		struct cd_toc *s = &cdrom_toc_cd_buffer.toc[i];
 		size_t addr = (size_t)s->paddress;
 		if ((size_t)startlsn < addr)
@@ -688,7 +700,7 @@ static int cd_play_audio (int startlsn, int endlsn, int scan)
 	if (s && (s->control & 0x0c) == 0x04) {
 		s = get_track (startlsn + 150);
 		if (s && (s->control & 0x0c) == 0x04) {
-			write_log (_T("tried to play data track %d!\n"), s->track);
+			write_log (_T("CD32: tried to play data track %d!\n"), s->track);
 			s++;
 			startlsn = s->paddress;
 			s++;
@@ -802,10 +814,10 @@ static int get_cdrom_toc (void)
 /* open device */
 static int sys_cddev_open (void)
 {
-	struct device_info di;
+	struct device_info di = { 0 };
 	unitnum = get_standard_cd_unit (CD_STANDARD_UNIT_CD32);
 	sys_command_info (unitnum, &di, 0);
-	write_log (_T("using drive %s (unit %d, media %d)\n"), di.label, unitnum, di.media_inserted);
+	write_log (_T("CD32: using drive %s (unit %d, media %d)\n"), di.label, unitnum, di.media_inserted);
 	/* make sure CD audio is not playing */
 	cdaudiostop_do ();
 	return 0;
@@ -1507,9 +1519,13 @@ static void *akiko_thread (void *null)
 			case 0x0105: // mute change
 				sys_command_cd_volume (unitnum, cdrom_muted ? 0 : 0x7fff, cdrom_muted ? 0 : 0x7fff);
 				break;
+			case 0x0111: // instant play
+				sys_command_cd_volume(unitnum, cdrom_muted ? 0 : 0x7fff, cdrom_muted ? 0 : 0x7fff);
+				cdaudioplay_do (true);
+				break;
 			case 0x0110: // do_play!
 				sys_command_cd_volume (unitnum, cdrom_muted ? 0 : 0x7fff, cdrom_muted ? 0 : 0x7fff);
-				cdaudioplay_do ();
+				cdaudioplay_do (false);
 				break;
 			}
 		}
@@ -1536,7 +1552,7 @@ static void *akiko_thread (void *null)
 						write_log (_T("CD32: CD missing but statefile was stored with CD inserted: faking media present\n"));
 					lastmediastate = 3;
 				} else {
-					write_log (_T("CD32: media changed = %d\n"), media);
+					//write_log (_T("CD32: media changed = %d\n"), media);
 					lastmediastate = cdrom_disk = media;
 					mediachanged = 1;
 					cdaudiostop_do ();
@@ -1615,9 +1631,9 @@ static uae_u32 akiko_bget2 (uaecptr addr, int msg)
          * Kickstart Akiko C2P support requires $CAFE at $B80002.W
          * $B80000 $C0CA is not checked.
          */
-    //case 0x00:
-        //return 0xC0;
-    //case 0x01:
+    case 0x00:
+        return 0xC0;
+    case 0x01:
 	case 0x02:
 		return 0xCA;
 	case 0x03:
@@ -1659,7 +1675,6 @@ static uae_u32 akiko_bget2 (uaecptr addr, int msg)
 	case 0x0b:
 		v = akiko_get_long (cdrom_intena, addr - 0x08);
 		break;
-/*
     case 0x0c:
     case 0x0d:
     case 0x0e:
@@ -1722,41 +1737,6 @@ static uae_u32 akiko_bget2 (uaecptr addr, int msg)
 		}
 		v = cdrom_last_rx;
 		break;
-*/
-    case 0x10:
-    case 0x11:
-    case 0x12:
-    case 0x13:
-        v = akiko_get_long (cdrom_addressdata, addr - 0x10);
-        break;
-    case 0x14:
-    case 0x15:
-    case 0x16:
-    case 0x17:
-        v = akiko_get_long (cdrom_addressmisc, addr - 0x14);
-        break;
-    case 0x18:
-        v = cdrom_subcodeoffset;
-        break;
-    case 0x19:
-        v = cdcomtxinx;
-        break;
-    case 0x1a:
-        v = cdcomrxinx;
-        break;
-    case 0x1f:
-        v = cdcomrxcmp;
-        break;
-    case 0x20:
-    case 0x21:
-        v = akiko_get_long (cdrom_pbx, addr - 0x20 + 2);
-        break;
-    case 0x24:
-    case 0x25:
-    case 0x26:
-    case 0x27:
-        v = akiko_get_long (cdrom_flags, addr - 0x24);
-        break;
 
 	default:
 		write_log (_T("akiko_bget: unknown address %08X PC=%08X\n"), addr, M68K_GETPC);
@@ -2072,6 +2052,7 @@ int akiko_init (void)
 	sector_buffer_sector_2 = -1;
 	uae_sem_init (&akiko_sem, 0, 1);
 	uae_sem_init (&sub_sem, 0, 1);
+	uae_sem_init (&cda_sem, 0, 1);
 	if (!savestate_state) {
 		cdrom_playing = cdrom_paused = 0;
 		cdrom_data_offset = -1;
@@ -2225,17 +2206,23 @@ void restore_akiko_finish (void)
 	akiko_init ();
 	akiko_c2p_do ();
 	get_cdrom_toc ();
-	write_comm_pipe_u32 (&requests, 0x0102, 1); // pause
-	write_comm_pipe_u32 (&requests, 0x0104, 1); // stop
-	write_comm_pipe_u32 (&requests, 0x0103, 1); // unpause
-	if (cdrom_playing && akiko_isaudiotrack (last_play_pos)) {
-		write_comm_pipe_u32 (&requests, 0x0103, 1); // unpause
-		write_comm_pipe_u32 (&requests, 0x0110, 0); // play
-		write_comm_pipe_u32 (&requests, last_play_pos, 0);
-		write_comm_pipe_u32 (&requests, last_play_end, 0);
-		write_comm_pipe_u32 (&requests, 0, 1);
+}
+
+void restore_akiko_final(void)
+{
+	if (!currprefs.cs_cd32cd)
+		return;
+	write_comm_pipe_u32(&requests, 0x0102, 1); // pause
+	write_comm_pipe_u32(&requests, 0x0104, 1); // stop
+	write_comm_pipe_u32(&requests, 0x0103, 1); // unpause
+	if (cdrom_playing && akiko_isaudiotrack(last_play_pos)) {
+		write_comm_pipe_u32(&requests, 0x0111, 0); // play immediate
+		write_comm_pipe_u32(&requests, last_play_pos, 0);
+		write_comm_pipe_u32(&requests, last_play_end, 0);
+		write_comm_pipe_u32(&requests, 0, 1);
+		uae_sem_wait(&cda_sem);
 	}
-	cd_initialized = 1;
+	cd_initialized = 2;
 }
 
 #endif
