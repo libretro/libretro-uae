@@ -8276,8 +8276,13 @@ uae_u8 *save_filesys (int num, int *len)
 	else
 		save_path (ui->rootdir, SAVESTATE_PATH);
 	save_string (ui->devname);
+#ifdef __LIBRETRO__
+	save_string (ui->volname ? ui->volname : ui->devname);
+	save_path (ui->filesysdir ? ui->filesysdir : "./", SAVESTATE_PATH);
+#else
 	save_string (ui->volname);
 	save_path (ui->filesysdir, SAVESTATE_PATH);
+#endif
 	save_u8 (ui->bootpri);
 	save_u8 (ui->readonly);
 	save_u32 (ui->startup);

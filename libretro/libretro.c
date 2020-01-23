@@ -834,7 +834,7 @@ void retro_set_environment(retro_environment_t cb)
             { "disabled", NULL },
             { NULL, NULL },
          },
-         "enabled"
+         "disabled"
       },
       {
          "puae_use_whdload_prefs",
