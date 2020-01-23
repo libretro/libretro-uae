@@ -4848,6 +4848,7 @@ void m68k_go (int may_quit)
 
 	in_m68k_go++;
 	for (;;) {
+		int restored = 0;
 		void (*run_func)(void);
 
 		cputrace.state = -1;
@@ -4865,7 +4866,6 @@ void m68k_go (int may_quit)
 			bool kbreset = quit_program == UAE_RESET_KEYBOARD;
 			if (quit_program == UAE_QUIT)
 				break;
-			int restored = 0;
 
 			hsync_counter = 0;
 			vsync_counter = 0;
@@ -4894,7 +4894,7 @@ void m68k_go (int may_quit)
 					record_dma_reset ();
 					record_dma_reset ();
 				}
-				savestate_restore_finish ();
+				restored = savestate_restore_finish ();
 				memory_map_dump ();
 #ifdef MMUEMU
 				if (currprefs.mmu_model == 68030) {
@@ -4904,7 +4904,6 @@ void m68k_go (int may_quit)
 				}
 #endif
 				startup = 1;
-				restored = 1;
 			}
 #endif
 			if (currprefs.produce_sound == 0)
@@ -4968,6 +4967,14 @@ void m68k_go (int may_quit)
 #endif
 		}
 		startup = 0;
+
+#ifdef SAVESTATE
+		if (restored) {
+			restored = 0;
+			savestate_restore_final();
+		}
+#endif
+
 		if (regs.halted) {
 			cpu_halt (regs.halted);
 			continue;

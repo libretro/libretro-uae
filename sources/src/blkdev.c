@@ -511,13 +511,18 @@ void blkdev_cd_change (int unitnum, const TCHAR *name)
 
 void device_func_reset (void)
 {
+	// if reset during delayed CD change, re-insert the CD immediately
 	for (int i = 0; i < MAX_TOTAL_SCSI_DEVICES; i++) {
 		struct blkdevstate *st = &state[i];
-		st->wasopen = 0;
-		st->waspaused = false;
+		if (st->imagechangetime > 0 && st->newimagefile[0] && !currprefs.cdslots[i].name[0]) {
+			_tcscpy(changed_prefs.cdslots[i].name, st->newimagefile);
+			_tcscpy(currprefs.cdslots[i].name, st->newimagefile);
+			//cd_statusline_label(i);
+		}
 		st->imagechangetime = 0;
-		st->cdimagefileinuse = false;
 		st->newimagefile[0] = 0;
+		st->mediawaschanged = false;
+		st->waspaused = false;
 	}
 }
 
@@ -559,7 +564,6 @@ bool blkdev_get_info (struct uae_prefs *p, int unitnum, struct device_info *di)
 	if (open && opened)
 		sys_command_close_internal (unitnum);
 
-printf("BLKDEV_GET_INFO %d %d\n", open, opened);
 	return ok;
 }
 
@@ -657,11 +661,13 @@ static void check_changes (int unitnum)
 			gotsem = false;
 		}
 	}
+#ifndef __LIBRETRO__
 	if (st->imagechangetime == 0)
 		return;
 	st->imagechangetime--;
 	if (st->imagechangetime > 0)
 		return;
+#endif
 	if (blkdevsema)
 		gotsem = getsem2 (unitnum, true);
 	_tcscpy (currprefs.cdslots[unitnum].name, st->newimagefile);

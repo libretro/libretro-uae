@@ -737,10 +737,20 @@ error:
 		zfile_fclose (f);
 }
 
-void savestate_restore_finish (void)
+void savestate_restore_final(void)
+{
+#ifdef CD32
+	restore_akiko_final();
+#endif
+#ifdef CDTV
+	restore_cdtv_final();
+#endif
+}
+
+bool savestate_restore_finish (void)
 {
 	if (!isrestore ())
-		return;
+		return false;
 	zfile_fclose (savestate_file);
 	savestate_file = 0;
 	restore_cpu_finish ();
@@ -764,6 +774,7 @@ void savestate_restore_finish (void)
 	savestate_state = 0;
 	init_hz_normal ();
 	audio_activate ();
+	return true;
 }
 
 /* 1=compressed,2=not compressed,3=ram dump,4=audio dump */
