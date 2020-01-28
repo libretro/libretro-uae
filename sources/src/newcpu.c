@@ -4830,8 +4830,44 @@ static void exception2_handle (uaecptr addr, uaecptr fault)
 	Exception (2);
 }
 
+#ifdef __LIBRETRO__
+static int hardboot = 1;
+static int startup = 1;
+#endif
+
+#ifdef __LIBRETRO__
+// > Returns 0 when libretro_frame_end is detected
+//   (i.e. normal emulation frame)
+// > Returns 1 when quit_program == UAE_QUIT
+//   (for the libretro implementation, this means
+//    a restart is required)
+int m68k_go (int may_quit, int resume)
+#else
 void m68k_go (int may_quit)
+#endif
 {
+#ifdef __LIBRETRO__
+	if ( resume == 0 )
+	{
+		hardboot = 1;
+		startup = 1;
+		libretro_frame_end = 0;
+
+		// Don't need to check in_m68k_go here:
+		// libretro calls m68k_go() once per frame,
+		// so reentrancy is not an issue
+		if (!may_quit) {
+			write_log (_T("Bug! m68k_go is not reentrant.\n"));
+			abort ();
+		}
+
+		reset_frame_rate_hack ();
+		update_68k_cycles ();
+		start_cycles = 0;
+
+		set_cpu_tracer (false);
+	}
+#else
 	int hardboot = 1;
 	int startup = 1;
 
@@ -4847,6 +4883,7 @@ void m68k_go (int may_quit)
 	set_cpu_tracer (false);
 
 	in_m68k_go++;
+#endif
 	for (;;) {
 		int restored = 0;
 		void (*run_func)(void);
@@ -5001,11 +5038,23 @@ void m68k_go (int may_quit)
 #endif
 		run_func ();
 		unset_special (SPCFLAG_BRK | SPCFLAG_MODE_CHANGE);
+
+#ifdef __LIBRETRO__
+		if ( libretro_frame_end )
+		{
+			libretro_frame_end = 0;
+			return 0;
+		}
+#endif
 	}
 #ifdef NATMEM_OFFSET
 	protect_roms (false);
 #endif
+#ifdef __LIBRETRO__
+	return 1;
+#else
 	in_m68k_go--;
+#endif
 }
 
 #if 0

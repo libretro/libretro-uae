@@ -8,16 +8,12 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#include <libco.h>
-
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 
-extern cothread_t mainThread;
-extern cothread_t emuThread;
-extern int retrow; 
+extern int retrow;
 extern int retroh;
 extern int pix_bytes;
 extern int zoomed_height;
@@ -28,6 +24,13 @@ extern int vkey_pressed;
 extern int vkey_sticky;
 extern int vkey_sticky1;
 extern int vkey_sticky2;
+
+extern int retro_thisframe_first_drawn_line;
+extern int retro_thisframe_last_drawn_line;
+extern int retro_min_diwstart;
+extern int retro_max_diwstop;
+
+extern char retro_system_directory[512];
 
 #define LOGI printf
 
