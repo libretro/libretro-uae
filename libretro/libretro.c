@@ -2616,7 +2616,7 @@ void retro_init(void)
       environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &disk_interface);
 
    // Savestates
-   static uint32_t quirks = RETRO_SERIALIZATION_QUIRK_INCOMPLETE | RETRO_SERIALIZATION_QUIRK_CORE_VARIABLE_SIZE;
+   static uint64_t quirks = RETRO_SERIALIZATION_QUIRK_INCOMPLETE | RETRO_SERIALIZATION_QUIRK_CORE_VARIABLE_SIZE;
    environ_cb(RETRO_ENVIRONMENT_SET_SERIALIZATION_QUIRKS, &quirks);
 
    // Inputs
@@ -3314,6 +3314,8 @@ bool retro_create_config()
              || strendswith(full_path, HDZ_FILE_EXT)
              || strendswith(full_path, LHA_FILE_EXT))
             {
+               char *tmp_str = NULL;
+
                if (opt_use_whdload_hdf)
                {
                   // Init WHDLoad
@@ -3354,19 +3356,33 @@ bool retro_create_config()
                         fprintf(stderr, "Error creating WHDLoad.hdf '%s'!\n", (const char*)&whdload_hdf);
                   }
                   if (file_exists(whdload_hdf))
-                     fprintf(configfile, "hardfile2=rw,WHDLoad:\"%s\",32,1,2,512,0,,uae0\n", (const char*)string_replace_substring(whdload_hdf, "\\", "\\\\"));
+                  {
+                     tmp_str = string_replace_substring(whdload_hdf, "\\", "\\\\");
+                     fprintf(configfile, "hardfile2=rw,WHDLoad:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
+                     free(tmp_str);
+                     tmp_str = NULL;
+                  }
                   else
                      fprintf(stderr, "WHDLoad image file '%s' not found!\n", (const char*)&whdload_hdf);
 
                   // Attach game image
+                  tmp_str = string_replace_substring(full_path, "\\", "\\\\");
+
                   if (strendswith(full_path, LHA_FILE_EXT))
-                     fprintf(configfile, "filesystem2=ro,DH0:LHA:\"%s\",0\n", string_replace_substring(full_path, "\\", "\\\\"));
+                     fprintf(configfile, "filesystem2=ro,DH0:LHA:\"%s\",0\n", (const char*)tmp_str);
                   else
-                     fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae1\n", string_replace_substring(full_path, "\\", "\\\\"));
+                     fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae1\n", (const char*)tmp_str);
+
+                  free(tmp_str);
+                  tmp_str = NULL;
+
 
                   // Attach retro_system_directory as a read only hard drive for WHDLoad kickstarts/prefs/key
 #ifdef WIN32
-                  fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s\",-128\n", string_replace_substring(retro_system_directory, "\\", "\\\\"));
+                  tmp_str = string_replace_substring(retro_system_directory, "\\", "\\\\");
+                  fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s\",-128\n", (const char*)tmp_str);
+                  free(tmp_str);
+                  tmp_str = NULL;
 #else
                   // Force the ending slash to make sure the path is not treated as a file
                   fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s%s\",-128\n", retro_system_directory, "/");
@@ -3409,7 +3425,12 @@ bool retro_create_config()
                            fprintf(stderr, "Error creating WHDSaves.hdf '%s'!\n", (const char*)&whdsaves_hdf);
                      }
                      if (file_exists(whdsaves_hdf))
-                        fprintf(configfile, "hardfile2=rw,WHDSaves:\"%s\",32,1,2,512,0,,uae2\n", (const char*)string_replace_substring(whdsaves_hdf, "\\", "\\\\"));
+                     {
+                        tmp_str = string_replace_substring(whdsaves_hdf, "\\", "\\\\");
+                        fprintf(configfile, "hardfile2=rw,WHDSaves:\"%s\",32,1,2,512,0,,uae2\n", (const char*)tmp_str);
+                        free(tmp_str);
+                        tmp_str = NULL;
+                     }
                   }
                   else
                   {
@@ -3418,7 +3439,12 @@ bool retro_create_config()
                      if (!path_is_directory(whdsaves_path))
                         path_mkdir(whdsaves_path);
                      if (path_is_directory(whdsaves_path))
-                        fprintf(configfile, "filesystem2=rw,WHDSaves:WHDSaves:\"%s\",-128\n", string_replace_substring(whdsaves_path, "\\", "\\\\"));
+                     {
+                        tmp_str = string_replace_substring(whdsaves_path, "\\", "\\\\");
+                        fprintf(configfile, "filesystem2=rw,WHDSaves:WHDSaves:\"%s\",-128\n", (const char*)tmp_str);
+                        free(tmp_str);
+                        tmp_str = NULL;
+                     }
                      else
                         fprintf(stderr, "Error creating WHDSaves directory in '%s'!\n", (const char*)&whdsaves_path);
                   }
@@ -3518,7 +3544,12 @@ bool retro_create_config()
                      fprintf(stderr, "WHDLoad.prefs '%s' not found!\n", (const char*)&whdload_prefs_path);
                }
                else
-                  fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae0\n", string_replace_substring(full_path, "\\", "\\\\"));
+               {
+                  tmp_str = string_replace_substring(full_path, "\\", "\\\\");
+                  fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
+                  free(tmp_str);
+                  tmp_str = NULL;
+               }
             }
             else
             {
@@ -4030,8 +4061,6 @@ bool retro_load_game(const struct retro_game_info *info)
 
 void retro_unload_game(void)
 {
-   disk_set_eject_state(true);
-
    if (!firstpass)
       leave_program();
 }

@@ -436,7 +436,7 @@ void Draw_text32(uint32_t *buffer, int x, int y,
 #if 0
    Draw_string32(buffer, x, y, text, max, scalex, scaley, fgcol, bgcol, alpha);
 #else
-   char c[1] = {0};
+   char c[2] = {0};
    char s[2] = {0};
    int charwidth = 6;
    int cmax;

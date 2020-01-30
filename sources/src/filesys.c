@@ -3684,8 +3684,10 @@ static void	get_fileinfo (Unit *unit, dpacket packet, uaecptr info, a_inode *ain
 	int i, n, entrytype, blocksize;
 	//uae_s64 numblocks;
 	int fsdb_can = fsdb_cando (unit);
-	TCHAR *xs;
-	char *x, *x2;
+	TCHAR *xs = NULL;
+	char *x = NULL;
+	char *x_ptr = NULL;
+	char *x2 = NULL;
 	uae_u8 *buf;
 	uae_u8 buf_array[260] = { 0 };
 	bool ok = true;
@@ -3720,7 +3722,8 @@ static void	get_fileinfo (Unit *unit, dpacket packet, uaecptr info, a_inode *ain
 	put_long (info + 120, entrytype);
 
 	TRACE((_T("name=\"%s\"\n"), xs));
-	x = ua_fs (xs, -1);
+	x_ptr = ua_fs (xs, -1);
+	x = x_ptr;
 	n = strlen (x);
 	if (n > 106)
 		n = 106;
@@ -3730,6 +3733,10 @@ static void	get_fileinfo (Unit *unit, dpacket packet, uaecptr info, a_inode *ain
 		put_byte (info + i, *x), i++, x++;
 	while (i < 108)
 		put_byte (info + i, 0), i++;
+
+	free (x_ptr);
+	x_ptr = NULL;
+	x = NULL;
 
 	put_long (info + 116, fsdb_can ? aino->amigaos_mode : fsdb_mode_supported (aino));
 	put_long (info + 124, statbuf.size > MAXFILESIZE32 ? MAXFILESIZE32 : (uae_u32)statbuf.size);
@@ -3748,7 +3755,8 @@ static void	get_fileinfo (Unit *unit, dpacket packet, uaecptr info, a_inode *ain
 		xs = aino->comment;
 		if (!xs)
 			xs= _T("");
-		x = ua_fs (xs, -1);
+		x_ptr = ua_fs (xs, -1);
+		x = x_ptr;
 		n = strlen (x);
 		if (n > 78)
 			n = 78;
@@ -3757,6 +3765,10 @@ static void	get_fileinfo (Unit *unit, dpacket packet, uaecptr info, a_inode *ain
 			put_byte (info + i, *x), i++, x++;
 		while (i < 224)
 			put_byte (info + i, 0), i++;
+
+		free (x_ptr);
+		x_ptr = NULL;
+		x = NULL;
 	}
 	PUT_PCK_RES1 (packet, DOS_TRUE);
 }

@@ -685,6 +685,7 @@ static void setamax (void)
 
 static void reset_drive (int num)
 {
+	char *fname = NULL;
 	drive *drv = &floppy[num];
 
 	drv->amax = 0;
@@ -714,10 +715,12 @@ static void reset_drive (int num)
 	drive_settype_id (drv);
 	_tcscpy (currprefs.floppyslots[num].df, changed_prefs.floppyslots[num].df);
 
+	fname = my_strdup (currprefs.floppyslots[num].df);
 	drv->newname[0] = 0;
 	drv->newnamewriteprotected = false;
-	if (!drive_insert (drv, &currprefs, num, currprefs.floppyslots[num].df, false, false))
+	if (!drive_insert (drv, &currprefs, num, fname, false, false))
 		disk_eject (num);
+	free (fname);
 }
 
 /* code for track display */
@@ -3708,10 +3711,12 @@ void DISK_init (void)
 
 	for (dr = 0; dr < MAX_FLOPPY_DRIVES; dr++) {
 		drive *drv = &floppy[dr];
+		char *fname = my_strdup (currprefs.floppyslots[dr].df);
 		/* reset all drive types to 3.5 DD */
 		drive_settype_id (drv);
-		if (!drive_insert (drv, &currprefs, dr, currprefs.floppyslots[dr].df, false, currprefs.floppyslots[dr].forcedwriteprotect))
+		if (!drive_insert (drv, &currprefs, dr, fname, false, currprefs.floppyslots[dr].forcedwriteprotect))
 			disk_eject (dr);
+		free (fname);
 	}
 	if (disk_empty (0))
 		write_log (_T("No disk in drive 0.\n"));

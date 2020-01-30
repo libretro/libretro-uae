@@ -307,6 +307,7 @@ int hdf_open_target (struct hardfiledata *hfd, const char *pname)
 	if (hfd->handle_valid || hfd->drive_empty) {
 		hfd_log ("HDF '%s' opened, size=%dK mode=%d empty=%d\n",
 			name, hfd->physsize / 1024, hfd->handle_valid, hfd->drive_empty);
+		xfree (name);
 		return 1;
 	}
 end:
