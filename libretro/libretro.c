@@ -64,6 +64,7 @@ bool fake_ntsc = false;
 bool real_ntsc = false;
 bool forced_video = false;
 bool request_update_av_info = false;
+bool request_reset_drawing = false;
 unsigned int zoom_mode_id = 0;
 unsigned int opt_zoom_mode_id = 0;
 int zoomed_height;
@@ -1417,9 +1418,11 @@ static void update_variables(void)
       else
          opt_statusbar_minimal = false;
 
-      /* Screen refresh required */
+      /* Screen refresh required
+       * (redundant - will be forced by av_info
+       *  geometry update) */
       if (opt_statusbar_position_old != opt_statusbar_position || !opt_statusbar_enhanced)
-         reset_drawing();
+         request_reset_drawing = true;
 
       opt_statusbar_position_old = opt_statusbar_position;
    }
@@ -3057,6 +3060,11 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
    if (!firstpass)
       prefs_changed = 1; // Triggers check_prefs_changed_gfx() in vsync_handle_check()
 
+   /* Changing any drawing/offset parameters requires
+    * a drawing reset - it is safest to just do this
+    * whenever retro_update_av_info() is called */
+   request_reset_drawing = true;
+
    return true;
 }
 
@@ -3910,24 +3918,15 @@ void retro_run(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
       update_variables();
 
-   // Check if a restart is required
-   if (restart_pending)
+   // Update audio settings
+   if (filter_type_update)
    {
-      restart_pending = 0;
-      libretro_do_restart(sizeof(uae_argv)/sizeof(*uae_argv), uae_argv);
-      // Note that this is set *temporarily*
-      // > It will be reset inside the following
-      //   'if' statement
-      firstpass = 1;
-   }
-
-   if (firstpass)
-   {
-      firstpass = 0;
-      // Run emulation first pass
-      restart_pending = m68k_go(1, 0);
-      video_cb(retro_bmp, retrow, zoomed_height, retrow << (pix_bytes / 2));
-      return;
+      filter_type_update = false;
+      if (currprefs.cpu_model == 68020)
+         changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A1200;
+      else
+         changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A500;
+      config_changed = 0;
    }
 
    // Automatic vertical offset
@@ -3966,8 +3965,13 @@ void retro_run(void)
       {
          thisframe_y_adjust_update_frame_timer--;
          if (thisframe_y_adjust_update_frame_timer == 0)
+         {
             if (opt_vertical_offset != 0)
+            {
                thisframe_y_adjust = minfirstline + opt_vertical_offset;
+               request_reset_drawing = true;
+            }
+         }
       }
    }
 
@@ -3989,7 +3993,10 @@ void retro_run(void)
       {
          visible_left_border_update_frame_timer--;
          if (visible_left_border_update_frame_timer == 0)
+         {
             visible_left_border = max_diwlastword - retrow - opt_horizontal_offset;
+            request_reset_drawing = true;
+         }
       }
    }
 
@@ -3997,17 +4004,43 @@ void retro_run(void)
    if (request_update_av_info)
       retro_update_av_info(1, 0, 0);
 
-   if (filter_type_update)
+   // Poll inputs
+   retro_poll_event();
+
+   // If any drawing parameters/offsets have been modified,
+   // must call reset_drawing() to ensure that the changes
+   // are 'registered' by center_image() in drawing.c
+   // > If we don't do this, the wrong parameters may be
+   //   used on the next frame, which can lead to out of
+   //   bounds video buffer access (memory corruption)
+   // > This check must come *after* horizontal/vertical
+   //   offset calculation, retro_update_av_info() and
+   //   retro_poll_event()
+   if (request_reset_drawing)
    {
-      filter_type_update = false;
-      if (currprefs.cpu_model == 68020)
-         changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A1200;
-      else
-         changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A500;
-      config_changed = 0;
+      request_reset_drawing = false;
+      reset_drawing();
    }
 
-   retro_poll_event();
+   // Check if a restart is required
+   if (restart_pending)
+   {
+      restart_pending = 0;
+      libretro_do_restart(sizeof(uae_argv)/sizeof(*uae_argv), uae_argv);
+      // Note that this is set *temporarily*
+      // > It will be reset inside the following
+      //   'if' statement
+      firstpass = 1;
+   }
+
+   if (firstpass)
+   {
+      firstpass = 0;
+      // Run emulation first pass
+      restart_pending = m68k_go(1, 0);
+      video_cb(retro_bmp, retrow, zoomed_height, retrow << (pix_bytes / 2));
+      return;
+   }
 
    // Resume emulation for 1 frame
    restart_pending = m68k_go(1, 1);
