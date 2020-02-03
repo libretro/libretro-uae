@@ -137,7 +137,6 @@ SOURCES_C += $(EMU)/machdep/support.c \
 				 $(EMU)/threaddep/thread.c
 
 SOURCES_C += $(LIBRETRO)/libretro.c \
-				 $(CORE_DIR)/libco/libco.c \
 				 $(LIBRETRO)/libretro-mapper.c \
 				 $(LIBRETRO)/vkbd.c \
 				 $(LIBRETRO)/graph.c \

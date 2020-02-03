@@ -288,6 +288,9 @@ extern void putpixel (uae_u8 *buf, int bpp, int x, xcolnr c8, int opaq);
 /* Finally, stuff that shouldn't really be shared.  */
 
 extern int thisframe_first_drawn_line, thisframe_last_drawn_line;
+#ifdef __LIBRETRO__
+extern int min_diwstart, max_diwstop;
+#endif
 
 #define IHF_SCROLLLOCK 0
 #define IHF_QUIT_PROGRAM 1

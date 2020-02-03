@@ -136,7 +136,10 @@ static cpuop_func *nfcpufunctbl[65536];
 uae_u8* comp_pc_p;
 
 // From newcpu.cpp
-extern bool quit_program;
+extern int quit_program;
+#ifdef __LIBRETRO__
+extern int libretro_frame_end;
+#endif
 
 // gb-- Extra data for Basilisk II/JIT
 #if JIT_DEBUG
@@ -7124,7 +7127,11 @@ static void m68k_do_compile_execute(void)
 void m68k_compile_execute (void)
 {
     for (;;) {
+#ifdef __LIBRETRO__
+	  if (quit_program || libretro_frame_end)
+#else
 	  if (quit_program)
+#endif
 		break;
 	  m68k_do_compile_execute();
     }

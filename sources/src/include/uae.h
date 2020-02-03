@@ -7,9 +7,13 @@
   * Copyright 2006-2007 Richard Drummond
   */
 
+#ifndef __LIBRETRO__
 extern void do_start_program (void);
+#endif
 extern void do_leave_program (void);
+#ifndef __LIBRETRO__
 extern void start_program (void);
+#endif
 extern void leave_program (void);
 extern void real_main (int, TCHAR **);
 extern void virtualdevice_init (void);
@@ -27,6 +31,9 @@ extern int sleep_resolution;
 extern void uae_reset (int, int);
 extern void uae_quit (void);
 extern void uae_restart (int, const TCHAR*);
+#ifdef __LIBRETRO__
+extern void libretro_do_restart (int argc, TCHAR **argv);
+#endif
 extern void reset_all_systems (void);
 extern void target_reset (void);
 extern void target_addtorecent (const TCHAR*, int);
@@ -42,6 +49,9 @@ extern void getfilepart (TCHAR *out, int size, const TCHAR *path);
 extern uae_u32 getlocaltime (void);
 
 extern int quit_program;
+#ifdef __LIBRETRO__
+extern int libretro_frame_end;
+#endif
 extern bool console_emulation;
 
 extern TCHAR warning_buffer[256];

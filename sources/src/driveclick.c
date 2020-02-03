@@ -20,6 +20,11 @@
 #include "events.h"
 #include "driveclick.h"
 
+#ifdef __LIBRETRO__
+#include "libretro-glue.h"
+extern char retro_system_directory[];
+#endif
+
 static struct drvsample drvs[4][DS_END];
 static int freq = 44100;
 
@@ -196,7 +201,6 @@ void driveclick_init (void)
 				for (int j = 0; j < CLICK_TRACKS; j++)
 					drvs[i][DS_CLICK].lengths[j] = drvs[i][DS_CLICK].len;
 #ifdef __LIBRETRO__
-				extern char *retro_system_directory;
 				_stprintf (path2, "%s%cuae_data%c", retro_system_directory, FSDB_DIR_SEPARATOR, FSDB_DIR_SEPARATOR);
 #else
 				get_plugin_path (path2, sizeof path2 / sizeof (TCHAR), _T("floppysounds"));

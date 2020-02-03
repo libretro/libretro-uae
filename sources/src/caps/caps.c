@@ -29,7 +29,8 @@ static int caps_flags = DI_LOCK_DENVAR|DI_LOCK_DENNOISE|DI_LOCK_NOISE|DI_LOCK_UP
 
 #ifdef __LIBRETRO__
 #include "retro_files.h"
-extern char *retro_system_directory;
+#include "libretro-glue.h"
+extern char retro_system_directory[];
 char CAPSLIB_PATH[RETRO_PATH_MAX];
 #endif
 

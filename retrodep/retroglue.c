@@ -36,6 +36,8 @@ extern int pix_bytes;
 extern int defaultw;
 extern int defaulth;
 
+extern int libretro_frame_end;
+
 unsigned short int clut[] = {
 	0x0000,  /* full background transparency */
 	0x0200,  /* background semi transparent */
@@ -53,6 +55,11 @@ int vsync_enabled = 0;
 int opt_scrw = 0;
 int opt_scrh = 0;
 unsigned long stat_value = 0;
+
+int retro_thisframe_first_drawn_line;
+int retro_thisframe_last_drawn_line;
+int retro_min_diwstart;
+int retro_max_diwstop;
 
 int gui_init (void)
 {
@@ -141,7 +148,16 @@ void retro_renderSound(short* samples, int sampleCount)
 
 void retro_flush_screen (struct vidbuf_description *gfxinfo, int ystart, int yend)
 {
-	co_switch(mainThread);
+   // These values must be cached here, since the
+   // source variables will be reset before the frame
+   // ends and control is returned to the frontend
+   retro_thisframe_first_drawn_line = thisframe_first_drawn_line;
+   retro_thisframe_last_drawn_line  = thisframe_last_drawn_line;
+   retro_min_diwstart               = min_diwstart;
+   retro_max_diwstop                = max_diwstop;
+
+   // Flag that we should end the frame, return out of retro_run
+   libretro_frame_end = 1;
 }
 
 void retro_flush_block (struct vidbuf_description *gfxinfo, int ystart, int yend)

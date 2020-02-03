@@ -594,8 +594,8 @@ void cfgfile_target_dwrite (struct zfile *f, const TCHAR *option, const TCHAR *f
 
 static void cfgfile_write_rom (struct zfile *f, struct multipath *mp, const TCHAR *romfile, const TCHAR *name)
 {
-	TCHAR *str = cfgfile_subst_path (mp->path[0], UNEXPANDED, romfile);
-	str = cfgfile_put_multipath (mp, str);
+	TCHAR *tmp_str = cfgfile_subst_path (mp->path[0], UNEXPANDED, romfile);
+	TCHAR *str = cfgfile_put_multipath (mp, tmp_str);
 	cfgfile_write_str (f, name, str);
 	struct zfile *zf = zfile_fopen (str, _T("rb"), ZFD_ALL);
 	if (zf) {
@@ -609,8 +609,8 @@ static void cfgfile_write_rom (struct zfile *f, struct multipath *mp, const TCHA
 		}
 		zfile_fclose (zf);
 	}
+	xfree (tmp_str);
 	xfree (str);
-
 }
 
 static void cfgfile_write_path (struct zfile *f, struct multipath *mp, const TCHAR *option, const TCHAR *value)
@@ -3066,7 +3066,8 @@ empty_fs:
 #ifdef FILESYS
 	add_filesys_config (p, nr, &uci);
 #endif
-//	xfree (str);
+	if (str)
+		xfree (str);
 	return 1;
 
 invalid_fs:

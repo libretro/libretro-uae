@@ -48,6 +48,11 @@ STATIC_INLINE void destroy_comm_pipe (smp_comm_pipe *p)
     uae_sem_destroy (&p->lock);
     uae_sem_destroy (&p->reader_wait);
     uae_sem_destroy (&p->writer_wait);
+    if (p->data)
+    {
+		free(p->data);
+		p->data = NULL;
+    }
 }
 
 STATIC_INLINE void maybe_wake_reader (smp_comm_pipe *p, int no_buffer)

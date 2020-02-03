@@ -63,7 +63,6 @@ static int jbt[2][24] = {0};
 static int kbt[16] = {0};
 
 extern unsigned short int retro_bmp[(EMULATOR_DEF_WIDTH*EMULATOR_DEF_HEIGHT*2)];
-extern void reset_drawing(void);
 extern void retro_key_up(int);
 extern void retro_key_down(int);
 extern void retro_mouse(int, int, int);
@@ -77,6 +76,7 @@ extern unsigned int video_config_aspect;
 extern unsigned int zoom_mode_id;
 extern unsigned int opt_zoom_mode_id;
 extern bool request_update_av_info;
+extern bool request_reset_drawing;
 extern bool opt_statusbar_enhanced;
 extern int opt_statusbar_position;
 extern unsigned int opt_analogmouse;
@@ -130,7 +130,7 @@ void emu_function(int function)
       case EMU_STATUSBAR:
          STATUSON = -STATUSON;
          LEDON = -LEDON;
-         reset_drawing();
+         request_reset_drawing = true;
          break;
       case EMU_MOUSE_TOGGLE:
          MOUSEMODE = -MOUSEMODE;
