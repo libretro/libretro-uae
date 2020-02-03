@@ -2593,7 +2593,7 @@ void retro_init(void)
       // If save directory is defined use it, otherwise use system directory
       strlcpy(
             retro_save_directory,
-            !string_is_empty(save_dir) ? save_dir : retro_system_directory,
+            string_is_empty(save_dir) ? retro_system_directory : save_dir,
             sizeof(retro_save_directory));
    }
    else
@@ -3964,13 +3964,10 @@ void retro_run(void)
       if (thisframe_y_adjust_update_frame_timer > 0)
       {
          thisframe_y_adjust_update_frame_timer--;
-         if (thisframe_y_adjust_update_frame_timer == 0)
+         if ((thisframe_y_adjust_update_frame_timer == 0) && (opt_vertical_offset != 0))
          {
-            if (opt_vertical_offset != 0)
-            {
-               thisframe_y_adjust = minfirstline + opt_vertical_offset;
-               request_reset_drawing = true;
-            }
+            thisframe_y_adjust = minfirstline + opt_vertical_offset;
+            request_reset_drawing = true;
          }
       }
    }
