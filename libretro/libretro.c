@@ -3217,10 +3217,10 @@ bool retro_create_config()
                fprintf(configfile, A1200OG_CONFIG);
                path_join((char*)&kickstart, retro_system_directory, A1200_ROM);
             }
-            else if (strstr(full_path, "(A1200)") != NULL || strstr(full_path, "AGA") != NULL)
+            else if (strstr(full_path, "(A1200)") != NULL || strstr(full_path, "AGA") != NULL || strstr(full_path, "CD32") != NULL || strstr(full_path, "AmigaCD") != NULL)
             {
                // Use A1200
-               fprintf(stdout, "[libretro-uae]: Found '(A1200)' or 'AGA' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Found '(A1200)', 'AGA', 'CD32', or 'AmigaCD' in filename '%s'\n", full_path);
                fprintf(stdout, "[libretro-uae]: Booting A1200 with Kickstart 3.1 r40.068\n");
                fprintf(configfile, A1200_CONFIG);
                path_join((char*)&kickstart, retro_system_directory, A1200_ROM);
