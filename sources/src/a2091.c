@@ -7,7 +7,6 @@
  *
  */
 
-#ifdef A2091
 #define A2091_DEBUG 0
 #define A2091_DEBUG_IO 0
 #define A3000_DEBUG 0
@@ -1975,4 +1974,3 @@ uae_u8 *restore_scsi_hd (uae_u8 *src)
 	return src;
 
 }
-#endif //A2091

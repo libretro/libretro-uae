@@ -2724,6 +2724,9 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 
 void retro_get_system_info(struct retro_system_info *info)
 {
+#ifndef GIT_VERSION
+#define GIT_VERSION ""
+#endif
    memset(info, 0, sizeof(*info));
    info->library_name     = "PUAE";
    info->library_version  = "2.6.1" GIT_VERSION;

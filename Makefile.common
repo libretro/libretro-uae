@@ -4,7 +4,13 @@ LIBRETRO = $(CORE_DIR)/libretro
 DEPS_DIR = $(CORE_DIR)/deps
 RETRODEP = $(CORE_DIR)/retrodep
 
-INCFLAGS := -I$(EMU) -I$(EMU)/include -I$(LIBRETRO) -I$(CORE_DIR)/libretro-include -I$(LIBUTILS) -I$(CORE_DIR) -I$(DEPS_DIR)/zlib
+GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
+ifneq ($(GIT_VERSION)," unknown")
+    CFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
+endif
+
+CFLAGS += -D__LIBRETRO__
+INCFLAGS := -I$(EMU) -I$(EMU)/include -I$(LIBRETRO) -I$(CORE_DIR)/libretro-include -I$(RETRODEP) -I$(LIBUTILS) -I$(CORE_DIR) -I$(DEPS_DIR)/zlib
 
 SOURCES_C +=  $(EMU)/main.c \
 				  $(EMU)/newcpu.c \
@@ -130,11 +136,11 @@ SOURCES_C += $(EMU)/hardfile.c \
 				  $(EMU)/cpummu30.c \
 				  $(EMU)/fpp.c 
 
-SOURCES_C += $(EMU)/machdep/support.c \
+SOURCES_C += $(RETRODEP)/machdep/support.c \
 				 $(RETRODEP)/gui.c \
 				 $(RETRODEP)/retroglue.c \
-				 $(EMU)/sounddep/sound.c \
-				 $(EMU)/threaddep/thread.c
+				 $(RETRODEP)/sounddep/sound.c \
+				 $(RETRODEP)/threaddep/thread.c
 
 SOURCES_C += $(LIBRETRO)/libretro.c \
 				 $(LIBRETRO)/libretro-mapper.c \
@@ -170,5 +176,3 @@ SOURCES_C += $(DEPS_DIR)/zlib/adler32.c \
 				 $(DEPS_DIR)/zlib/uncompr.c \
 				 $(DEPS_DIR)/zlib/zutil.c
 endif
-
-CFLAGS += -DLIBRETRO_PUAE -DCAPS -DA_DMS -DA_LHA
