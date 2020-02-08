@@ -62,7 +62,7 @@ static int mflag[2][16] = {0};
 static int jbt[2][24] = {0};
 static int kbt[16] = {0};
 
-extern unsigned short int retro_bmp[(EMULATOR_DEF_WIDTH*EMULATOR_DEF_HEIGHT*2)];
+extern unsigned short int retro_bmp[RETRO_BMP_SIZE];
 extern void retro_key_up(int);
 extern void retro_key_down(int);
 extern void retro_mouse(int, int, int);
@@ -143,11 +143,11 @@ void emu_function(int function)
          if (real_ntsc)
             break;
          if (video_config_aspect == 0)
-            video_config_aspect = (video_config & 0x02) ? 1 : 2;
-         else if (video_config_aspect == 1)
-            video_config_aspect = 2;
-         else if (video_config_aspect == 2)
-            video_config_aspect = 1;
+            video_config_aspect = (video_config & PUAE_VIDEO_NTSC) ? PUAE_VIDEO_PAL : PUAE_VIDEO_NTSC;
+         else if (video_config_aspect == PUAE_VIDEO_PAL)
+            video_config_aspect = PUAE_VIDEO_NTSC;
+         else if (video_config_aspect == PUAE_VIDEO_NTSC)
+            video_config_aspect = PUAE_VIDEO_PAL;
          request_update_av_info = true;
          break;
       case EMU_ZOOM_MODE_TOGGLE:
@@ -334,13 +334,27 @@ void Print_Status(void)
    int BOX_PADDING  = 2;
 
    int FONT_WIDTH   = 1;
+   if (video_config & PUAE_VIDEO_HIRES)
+   {
+      if (video_config & PUAE_VIDEO_DOUBLELINE)
+         FONT_WIDTH = 1;
+      else
+         FONT_WIDTH = 2;
+   }
+   else if (video_config & PUAE_VIDEO_SUPERHIRES)
+   {
+      if (video_config & PUAE_VIDEO_DOUBLELINE)
+         FONT_WIDTH = 2;
+      else
+         FONT_WIDTH = 4;
+   }
    int FONT_HEIGHT  = 1;
    int FONT_COLOR_DEFAULT = 0;
    FONT_COLOR_DEFAULT = (pix_bytes == 4) ? 0xffffff : 0xffff;
    int FONT_COLOR   = 0;
    FONT_COLOR       = FONT_COLOR_DEFAULT;
    int FONT_SLOT    = 0;
-   FONT_SLOT        = (video_config & 0x08) ? 40*2 : 40;
+   FONT_SLOT        = 40 * FONT_WIDTH;
 
    int STAT_DECX    = 4;
    int STAT_BASEY   = 0;
@@ -355,8 +369,6 @@ void Print_Status(void)
    // Statusbar size
    BOX_WIDTH = retrow - (24 * 5) - 2; // (LED-width * LED-num) - LED-border
 
-   // Hires single line font exception
-   FONT_WIDTH = (video_config & 0x08) ? 2 : 1;
 
    // Joy port indicators
    char JOYPORT1[10] = {0};

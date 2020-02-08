@@ -27,7 +27,8 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
    int XPADDING         = 0;
    int YOFFSET          = 0;
    int YPADDING         = 0;
-   int KEYSPACING       = 1;
+   int XKEYSPACING      = 1;
+   int YKEYSPACING      = 1;
    int ALPHA            = opt_vkbd_alpha;
    int BKG_ALPHA        = ALPHA;
    int BKG_PADDING_X    = 0;
@@ -69,33 +70,48 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
       FONT_COLOR_SEL    = 0xffff; //RGB565(255, 255, 255);
    }
 
-   if (video_config_geometry & 0x04)
+   if (video_config_geometry & PUAE_VIDEO_HIRES || video_config_geometry & PUAE_VIDEO_SUPERHIRES)
    {
-      // PUAE_VIDEO_HIRES
-      FONT_WIDTH        = 2;
-      FONT_HEIGHT       = 2;
-      FONT_MAX          = 4;
-      XOFFSET           = 2;
-      YPADDING          = 10;
-      YOFFSET           = 0;
-      if (SHOWKEYPOS == 1 && zoomed_height > (retroh + (YPADDING * 3) - (zoomed_height / 2)))
-         YOFFSET = -zoomed_height + retroh - (zoomed_height / 2) + 5;
+
+      if(video_config_geometry & PUAE_VIDEO_DOUBLELINE)
+      {
+         // PUAE_VIDEO_HIRES_DOUBLELINE
+         FONT_WIDTH        = 2;
+         FONT_HEIGHT       = 2;
+         FONT_MAX          = 4;
+         XKEYSPACING       = 2;
+         YKEYSPACING       = 2;
+         XOFFSET           = 2;
+         YPADDING          = 10;
+         YOFFSET           = 0;
+         if (SHOWKEYPOS == 1 && zoomed_height > (retroh + (YPADDING * 3) - (zoomed_height / 2)))
+            YOFFSET = -zoomed_height + retroh - (zoomed_height / 2) + 5;
+         else
+            YOFFSET = -(YPADDING);
+      }
       else
-         YOFFSET = -(YPADDING);
-   }
-   else if (video_config_geometry & 0x08)
-   {
-      // PUAE_VIDEO_HIRES_SINGLE
-      FONT_WIDTH        = 2;
-      FONT_MAX          = 4;
-      XOFFSET           = 2;
-      YPADDING          = 6;
-      BKG_PADDING_Y     = -1;
-      YOFFSET           = 0;
-      if (SHOWKEYPOS == 1 && zoomed_height > (retroh + (YPADDING * 3) - (zoomed_height / 2)))
-         YOFFSET = -zoomed_height + retroh - (zoomed_height / 2) + 5;
-      else
-         YOFFSET = -(YPADDING * 2);
+      {
+         // PUAE_VIDEO_HIRES
+         FONT_WIDTH        = 2;
+         FONT_MAX          = 4;
+         XKEYSPACING       = 2;
+         XOFFSET           = 2;
+         YPADDING          = 6;
+         BKG_PADDING_Y     = -1;
+         YOFFSET           = 0;
+         if (SHOWKEYPOS == 1 && zoomed_height > (retroh + (YPADDING * 3) - (zoomed_height / 2)))
+            YOFFSET = -zoomed_height + retroh - (zoomed_height / 2) + 5;
+         else
+            YOFFSET = -(YPADDING * 2);
+      }
+
+      // PUAE_VIDEO_SUPERHIRES
+      if (video_config_geometry & PUAE_VIDEO_SUPERHIRES)
+      {
+         FONT_WIDTH *= 2;
+         XOFFSET *= 2;
+         XKEYSPACING *= 2;
+      }
    }
    else
    {
@@ -116,11 +132,11 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
    int XSIDE = (retrow - XPADDING) / NPLGN;
    int YSIDE = (retroh - (zoomed_height / 2) - 15) / NLIGN;
 
-   int XBASEKEY = (XPADDING / 2);
+   int XBASEKEY = (XPADDING > 0) ? (XPADDING / 2) : 0;
    int YBASEKEY = (zoomed_height - (NLIGN * YSIDE)) - (YPADDING / 2);
 
-   int XBASETEXT = (XPADDING / 2) + 5;
-   int YBASETEXT = YBASEKEY + ((video_config_geometry & 0x02) ? 4 : 6);
+   int XBASETEXT = ((XPADDING > 0) ? (XPADDING / 2) : 0) + (video_config_geometry & PUAE_VIDEO_SUPERHIRES) ? 12 : (video_config_geometry & PUAE_VIDEO_HIRES) ? 6 : 5;
+   int YBASETEXT = YBASEKEY + ((video_config_geometry & PUAE_VIDEO_NTSC) ? 4 : 6);
 
    /* Opacity */
    BKG_ALPHA = (SHOWKEYTRANS == -1) ? 255 : ALPHA;
@@ -194,16 +210,16 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
 
          /* Key background */
          if (pix_bytes == 4)
-            DrawFBoxBmp32((uint32_t *)pix, XKEY+KEYSPACING, YKEY+KEYSPACING, XSIDE-KEYSPACING, YSIDE-KEYSPACING, BKG_COLOR, BKG_ALPHA);
+            DrawFBoxBmp32((uint32_t *)pix, XKEY+XKEYSPACING, YKEY+YKEYSPACING, XSIDE-XKEYSPACING, YSIDE-YKEYSPACING, BKG_COLOR, BKG_ALPHA);
          else
-            DrawFBoxBmp(pix, XKEY+KEYSPACING, YKEY+KEYSPACING, XSIDE-KEYSPACING, YSIDE-KEYSPACING, BKG_COLOR, BKG_ALPHA);
+            DrawFBoxBmp(pix, XKEY+XKEYSPACING, YKEY+YKEYSPACING, XSIDE-XKEYSPACING, YSIDE-YKEYSPACING, BKG_COLOR, BKG_ALPHA);
 
          /* Key text shadow */
          if (pix_bytes == 4)
-            Draw_text32((uint32_t *)pix, XTEXT+1, YTEXT, BKG_COLOR, FONT_COLOR, 200, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+            Draw_text32((uint32_t *)pix, XTEXT+FONT_WIDTH, YTEXT, BKG_COLOR, FONT_COLOR, 200, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
                (!shifted) ? MVk[(y * NPLGN) + x + page].norml : MVk[(y * NPLGN) + x + page].shift);
          else
-            Draw_text(pix, XTEXT+1, YTEXT, BKG_COLOR, FONT_COLOR, 200, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+            Draw_text(pix, XTEXT+FONT_WIDTH, YTEXT, BKG_COLOR, FONT_COLOR, 200, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
                (!shifted) ? MVk[(y * NPLGN) + x + page].norml : MVk[(y * NPLGN) + x + page].shift);
 
          /* Key text */
@@ -235,9 +251,9 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
 
    /* Selected key background */
    if (pix_bytes == 4)
-      DrawFBoxBmp32((uint32_t *)pix, XKEY+KEYSPACING, YKEY+KEYSPACING, XSIDE-KEYSPACING, YSIDE-KEYSPACING, BKG_COLOR_SEL, BKG_ALPHA);
+      DrawFBoxBmp32((uint32_t *)pix, XKEY+XKEYSPACING, YKEY+YKEYSPACING, XSIDE-XKEYSPACING, YSIDE-YKEYSPACING, BKG_COLOR_SEL, BKG_ALPHA);
    else
-      DrawFBoxBmp(pix, XKEY+KEYSPACING, YKEY+KEYSPACING, XSIDE-KEYSPACING, YSIDE-KEYSPACING, BKG_COLOR_SEL, BKG_ALPHA);
+      DrawFBoxBmp(pix, XKEY+XKEYSPACING, YKEY+YKEYSPACING, XSIDE-XKEYSPACING, YSIDE-YKEYSPACING, BKG_COLOR_SEL, BKG_ALPHA);
 
    /* Selected key text */
    if (pix_bytes == 4)
