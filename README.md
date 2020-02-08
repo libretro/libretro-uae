@@ -90,16 +90,21 @@ These parameters control the output resolution of the core:
 |Name|Values|Default|
 |---|---|---|
 |Video Standard|PAL, NTSC|PAL|
-|Video Resolution|Lores, Hires (Single line), Hires (Double line)|Hires (Double line)|
+|Video Resolution|Low, High (Single line), High (Double line), Super-High (Single line), Super-High (Double line)|High (Double line)|
 
 With these settings all the standard resolutions are available:
 
-- **720x576** PAL High resolution double line
-- **720x288** PAL High resolution single line
-- **360x288** PAL Low resolution
-- **720x480** NTSC High resolution double line
-- **720x240** NTSC High resolution single line
-- **360x240** NTSC Low resolution
+- **360x288** PAL Lores
+- **720x288** PAL Hires single line
+- **720x576** PAL Hires double line
+- **1440x288** PAL SuperHires single line
+- **1440x576** PAL SuperHires double line
+
+- **360x240** NTSC Lores
+- **720x240** NTSC Hires single line
+- **720x480** NTSC Hires double line
+- **1440x240** NTSC SuperHires single line
+- **1440x480** NTSC SuperHires double line
 
 When using low resolution mode, rendering will be halved horizontally. Scaling shaders looks great but high resolution games and Workbench are badly rendered.
 

@@ -32,12 +32,12 @@ extern int retro_max_diwstop;
 
 extern char retro_system_directory[512];
 
-int umain (int argc, TCHAR **argv);
-
 #ifndef _WIN32
 #define TCHAR char /* from sysdeps.h */
 #endif
 #define LOGI printf
+
+int umain (int argc, TCHAR **argv);
 
 // VKBD
 #define NPLGN 11
@@ -172,6 +172,6 @@ floppy0type=-1\n\
 // Libretro video
 #define EMULATOR_DEF_WIDTH      720
 #define EMULATOR_DEF_HEIGHT     576
-#define RETRO_BMP_SIZE          (EMULATOR_DEF_WIDTH * EMULATOR_DEF_HEIGHT * 4) // 4x is big enough for SuperHires 24-bit
+#define RETRO_BMP_SIZE          (EMULATOR_DEF_WIDTH * EMULATOR_DEF_HEIGHT * 4) // 4x is big enough for 24-bit SuperHires double line
 
 #endif /* LIBRETRO_GLUE_H */

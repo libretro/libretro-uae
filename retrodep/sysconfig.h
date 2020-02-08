@@ -349,28 +349,28 @@
 #define HAVE__BOOL 1
 
 /* Name of package */
-#define PACKAGE "UAE"
+#define PACKAGE "puae"
 
 /* Define to the address where bug reports for this package should be sent. */
 #define PACKAGE_BUGREPORT ""
 
 /* cloned git commit version */
-#define PACKAGE_COMMIT "e5bb3fdfbf3641140f54bc4101b95cb076d7be0b"
+#define PACKAGE_COMMIT "0186c1b16f7181ffa02d73e6920d3180ce457c46"
 
 /* Define to the full name of this package. */
-#define PACKAGE_NAME "WinUAE"
+#define PACKAGE_NAME "PUAE"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "WinUAE 4.3.0"
+#define PACKAGE_STRING "PUAE 2.6.1"
 
 /* Define to the one symbol short name of this package. */
-#define PACKAGE_TARNAME "UAE"
+#define PACKAGE_TARNAME "puae"
 
 /* Define to the home page for this package. */
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "4.3.0"
+#define PACKAGE_VERSION "2.6.1"
 
 /* Define to the necessary symbol if this constant uses a non-standard name on
    your system. */
@@ -467,7 +467,7 @@
 
 
 /* Version number of package */
-#define VERSION "4.3.0"
+#define VERSION "2.6.1"
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */
@@ -532,4 +532,3 @@
 #ifdef VITA
 #define chmod(a, b)
 #endif
-

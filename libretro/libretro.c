@@ -283,13 +283,13 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_video_resolution",
          "Video Resolution",
-         "Changing will issue soft reset.",
+         "Width:\n- 360px Low\n- 720px High\n- 1440px Super-High\nChanging will issue soft reset.",
          {
             { "lores", "Low" },
             { "hires_single", "High (Single line)" },
             { "hires_double", "High (Double line)" },
-            { "superhires_single", "SuperHigh (Single line)" },
-            { "superhires_double", "SuperHigh (Double line)" },
+            { "superhires_single", "Super-High (Single line)" },
+            { "superhires_double", "Super-High (Double line)" },
             { NULL, NULL },
          },
          "hires_double"
@@ -308,7 +308,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_video_standard",
          "Video Standard",
-         "",
+         "Height (Single line/Double line):\n- 288px/576px PAL\n- 240px/480px NTSC",
          {
             { "PAL", NULL },
             { "NTSC", NULL },
