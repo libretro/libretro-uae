@@ -921,14 +921,14 @@ STATIC_INLINE uae_u32 merge_2pixel32 (uae_u32 p1, uae_u32 p2)
 STATIC_INLINE void fill_line_16 (uae_u8 *buf, int start, int stop, bool blank)
 {
 	uae_u16 *b = (uae_u16 *)buf;
-	int i;
+	unsigned int i;
 	unsigned int rem = 0;
 	xcolnr col = getbgc (blank);
-	if (((long)&b[start]) & 1)
+	if (((uintptr_t)&b[start]) & 1)
 		b[start++] = (uae_u16) col;
 	if (start >= stop)
 		return;
-	if (((long)&b[stop]) & 1) {
+	if (((uintptr_t)&b[stop]) & 1) {
 		rem++;
 		stop--;
 	}
@@ -943,7 +943,7 @@ STATIC_INLINE void fill_line_16 (uae_u8 *buf, int start, int stop, bool blank)
 STATIC_INLINE void fill_line_32 (uae_u8 *buf, int start, int stop, bool blank)
 {
 	uae_u32 *b = (uae_u32 *)buf;
-	int i;
+	unsigned int i;
 	xcolnr col = getbgc (blank);
 	for (i = start; i < stop; i++)
 		b[i] = col;

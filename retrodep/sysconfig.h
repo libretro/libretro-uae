@@ -395,7 +395,7 @@
 #define SIZEOF_SHORT 2
 
 /* The size of `void *', as computed by sizeof. */
-#if defined(__SWITCH__)
+#if defined(__SWITCH__) || defined(WIN32)
 #define SIZEOF_VOID_P 8
 #else
 #define SIZEOF_VOID_P 4

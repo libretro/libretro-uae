@@ -239,7 +239,7 @@ else ifneq (,$(findstring armv,$(platform)))
 else
 
 ifneq ($(subplatform), 32)
-   CFLAGS += -fno-aggressive-loop-optimizations
+   CFLAGS +=
 endif
    PLATFLAGS += -DRETRO -DALIGN_DWORD -DWIN32
    TARGET := $(TARGET_NAME)_libretro.dll
