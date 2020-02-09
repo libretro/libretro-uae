@@ -1,5 +1,7 @@
 #include "libretro.h"
 #include "libretro-glue.h"
+#include "retro_files.h"
+#include "file/file_path.h"
 #include "keyboard.h"
 #include "libretro-keymap.h"
 #include "graph.h"
@@ -86,6 +88,8 @@ extern unsigned int opt_dpadmouse_speed;
 extern bool opt_multimouse;
 extern bool opt_keyrahkeypad;
 extern bool opt_keyboard_pass_through;
+int imagename_timer=0;
+static char statusbar_text[100]={0};
 int turbo_fire_button_disabled=-1;
 int turbo_fire_button=-1;
 unsigned int turbo_pulse=2;
@@ -245,8 +249,6 @@ static char* joystick_value_human(int val[16], int uae_device)
     || val[RETRO_DEVICE_ID_JOYPAD_X]
     || val[RETRO_DEVICE_ID_JOYPAD_START])
    {
-      str[1] = ' ';
-
       if (val[RETRO_DEVICE_ID_JOYPAD_B])
       {
          if (uae_device == 1)
@@ -323,6 +325,32 @@ bool flag_empty(int val[16])
    return true;
 }
 
+void display_current_image(const char *image, bool inserted)
+{
+    static char imagename[RETRO_PATH_MAX] = {0};
+    static char imagename_prev[RETRO_PATH_MAX] = {0};
+
+    imagename_timer = 150;
+    if (strcmp(image, ""))
+    {
+        snprintf(imagename, sizeof(imagename), "%s%.99s", " ", path_basename(image));
+        snprintf(imagename_prev, sizeof(imagename_prev), "%.100s", imagename);
+    }
+    else
+    {
+        snprintf(imagename, sizeof(imagename), "%.100s", imagename_prev);
+    }
+
+    int len;
+    len = sprintf(&(statusbar_text[0]), "%-100s", imagename);
+    statusbar_text[0 + len] = ' ';
+
+    if (inserted)
+        statusbar_text[0] = 8 | 0x80;
+    else if (!strcmp(image, ""))
+        statusbar_text[0] = 9 | 0x80;
+}
+
 void Print_Status(void)
 {
    if (!opt_statusbar_enhanced)
@@ -367,8 +395,17 @@ void Print_Status(void)
    BOX_Y = STAT_BASEY - BOX_PADDING;
 
    // Statusbar size
-   BOX_WIDTH = retrow - (24 * 5) - 2; // (LED-width * LED-num) - LED-border
-
+   int BOX_LED_WIDTH = 20;
+   BOX_WIDTH = retrow - (BOX_LED_WIDTH * 5) - 2; // (LED-width * LED-num) - LED-border
+   if (video_config & PUAE_VIDEO_HIRES && !(video_config & PUAE_VIDEO_DOUBLELINE))
+      BOX_WIDTH = retrow - ((BOX_LED_WIDTH * 2) * 5) - 2;
+   else if (video_config & PUAE_VIDEO_SUPERHIRES)
+   {
+      if (video_config & PUAE_VIDEO_DOUBLELINE)
+         BOX_WIDTH = retrow - ((BOX_LED_WIDTH * 2) * 5) - 2;
+      else
+         BOX_WIDTH = retrow - ((BOX_LED_WIDTH * 4) * 5) - 2;
+   }
 
    // Joy port indicators
    char JOYPORT1[10] = {0};
@@ -433,6 +470,12 @@ void Print_Status(void)
    {
       DrawFBoxBmp32((uint32_t *)retro_bmp,0,BOX_Y,BOX_WIDTH,BOX_HEIGHT,RGB888(0,0,0),255);
 
+      if (imagename_timer > 0)
+      {
+          Draw_text32((uint32_t *)retro_bmp,STAT_DECX+0,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,100,statusbar_text);
+          return;
+      }
+
       if (JOYPORT1_COLORIZE)
          FONT_COLOR = joystick_color(jflag[0]);
       Draw_text32((uint32_t *)retro_bmp,STAT_DECX+0,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT1);
@@ -449,6 +492,12 @@ void Print_Status(void)
    else
    {
       DrawFBoxBmp(retro_bmp,0,BOX_Y,BOX_WIDTH,BOX_HEIGHT,RGB565(0,0,0),255);
+
+      if (imagename_timer > 0)
+      {
+          Draw_text(retro_bmp,STAT_DECX+0,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,100,statusbar_text);
+          return;
+      }
 
       if (JOYPORT1_COLORIZE)
          FONT_COLOR = joystick_color(jflag[0]);

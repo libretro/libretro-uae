@@ -10,7 +10,7 @@ static int NOINLINE linetoscr_16 (int spix, int dpix, int dpix_end)
 
     if (dp_for_drawing->ham_seen) {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = ham_linebuf[spix];
@@ -20,7 +20,7 @@ static int NOINLINE linetoscr_16 (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -50,7 +50,7 @@ static int NOINLINE linetoscr_16 (int spix, int dpix, int dpix_end)
     } else if (bpldualpf) {
         int *lookup = bpldualpfpri ? dblpf_ind2 : dblpf_ind1;
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix];
@@ -60,7 +60,7 @@ static int NOINLINE linetoscr_16 (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -89,7 +89,7 @@ static int NOINLINE linetoscr_16 (int spix, int dpix, int dpix_end)
         }
     } else if (bplehb) {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix];
@@ -102,7 +102,7 @@ static int NOINLINE linetoscr_16 (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -140,7 +140,7 @@ static int NOINLINE linetoscr_16 (int spix, int dpix, int dpix_end)
         }
     } else {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix];
@@ -150,7 +150,7 @@ static int NOINLINE linetoscr_16 (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -326,7 +326,7 @@ static int NOINLINE linetoscr_16_shrink1 (int spix, int dpix, int dpix_end)
 
     if (dp_for_drawing->ham_seen) {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = ham_linebuf[spix];
@@ -336,7 +336,7 @@ static int NOINLINE linetoscr_16_shrink1 (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -366,7 +366,7 @@ static int NOINLINE linetoscr_16_shrink1 (int spix, int dpix, int dpix_end)
     } else if (bpldualpf) {
         int *lookup = bpldualpfpri ? dblpf_ind2 : dblpf_ind1;
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix];
@@ -376,7 +376,7 @@ static int NOINLINE linetoscr_16_shrink1 (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -405,7 +405,7 @@ static int NOINLINE linetoscr_16_shrink1 (int spix, int dpix, int dpix_end)
         }
     } else if (bplehb) {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix];
@@ -418,7 +418,7 @@ static int NOINLINE linetoscr_16_shrink1 (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -456,7 +456,7 @@ static int NOINLINE linetoscr_16_shrink1 (int spix, int dpix, int dpix_end)
         }
     } else {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix];
@@ -466,7 +466,7 @@ static int NOINLINE linetoscr_16_shrink1 (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -504,7 +504,7 @@ static int NOINLINE linetoscr_16_shrink1f (int spix, int dpix, int dpix_end)
 
     if (dp_for_drawing->ham_seen) {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = ham_linebuf[spix];
@@ -521,7 +521,7 @@ static int NOINLINE linetoscr_16_shrink1f (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -572,7 +572,7 @@ static int NOINLINE linetoscr_16_shrink1f (int spix, int dpix, int dpix_end)
     } else if (bpldualpf) {
         int *lookup = bpldualpfpri ? dblpf_ind2 : dblpf_ind1;
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix];
@@ -589,7 +589,7 @@ static int NOINLINE linetoscr_16_shrink1f (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -639,7 +639,7 @@ static int NOINLINE linetoscr_16_shrink1f (int spix, int dpix, int dpix_end)
         }
     } else if (bplehb) {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix];
@@ -662,7 +662,7 @@ static int NOINLINE linetoscr_16_shrink1f (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -730,7 +730,7 @@ static int NOINLINE linetoscr_16_shrink1f (int spix, int dpix, int dpix_end)
         }
     } else {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix];
@@ -747,7 +747,7 @@ static int NOINLINE linetoscr_16_shrink1f (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -807,7 +807,7 @@ static int NOINLINE linetoscr_16_shrink2 (int spix, int dpix, int dpix_end)
 
     if (dp_for_drawing->ham_seen) {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = ham_linebuf[spix];
@@ -817,7 +817,7 @@ static int NOINLINE linetoscr_16_shrink2 (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -847,7 +847,7 @@ static int NOINLINE linetoscr_16_shrink2 (int spix, int dpix, int dpix_end)
     } else if (bpldualpf) {
         int *lookup = bpldualpfpri ? dblpf_ind2 : dblpf_ind1;
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix];
@@ -857,7 +857,7 @@ static int NOINLINE linetoscr_16_shrink2 (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -886,7 +886,7 @@ static int NOINLINE linetoscr_16_shrink2 (int spix, int dpix, int dpix_end)
         }
     } else if (bplehb) {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix];
@@ -899,7 +899,7 @@ static int NOINLINE linetoscr_16_shrink2 (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -937,7 +937,7 @@ static int NOINLINE linetoscr_16_shrink2 (int spix, int dpix, int dpix_end)
         }
     } else {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix];
@@ -947,7 +947,7 @@ static int NOINLINE linetoscr_16_shrink2 (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -987,7 +987,7 @@ static int NOINLINE linetoscr_16_shrink2f (int spix, int dpix, int dpix_end)
 
     if (dp_for_drawing->ham_seen) {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = ham_linebuf[spix];
@@ -1014,7 +1014,7 @@ static int NOINLINE linetoscr_16_shrink2f (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -1095,7 +1095,7 @@ static int NOINLINE linetoscr_16_shrink2f (int spix, int dpix, int dpix_end)
     } else if (bpldualpf) {
         int *lookup = bpldualpfpri ? dblpf_ind2 : dblpf_ind1;
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix];
@@ -1122,7 +1122,7 @@ static int NOINLINE linetoscr_16_shrink2f (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -1202,7 +1202,7 @@ static int NOINLINE linetoscr_16_shrink2f (int spix, int dpix, int dpix_end)
         }
     } else if (bplehb) {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix];
@@ -1241,7 +1241,7 @@ static int NOINLINE linetoscr_16_shrink2f (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -1357,7 +1357,7 @@ static int NOINLINE linetoscr_16_shrink2f (int spix, int dpix, int dpix_end)
         }
     } else {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix];
@@ -1384,7 +1384,7 @@ static int NOINLINE linetoscr_16_shrink2f (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -2017,7 +2017,7 @@ static int NOINLINE linetoscr_16_aga (int spix, int dpix, int dpix_end)
 
     if (dp_for_drawing->ham_seen) {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = ham_linebuf[spix];
@@ -2027,7 +2027,7 @@ static int NOINLINE linetoscr_16_aga (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -2058,7 +2058,7 @@ static int NOINLINE linetoscr_16_aga (int spix, int dpix, int dpix_end)
         int *lookup    = bpldualpfpri ? dblpf_ind2_aga : dblpf_ind1_aga;
         int *lookup_no = bpldualpfpri ? dblpf_2nd2     : dblpf_2nd1;
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix];
@@ -2074,7 +2074,7 @@ static int NOINLINE linetoscr_16_aga (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -2121,7 +2121,7 @@ static int NOINLINE linetoscr_16_aga (int spix, int dpix, int dpix_end)
         }
     } else if (bplehb) {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix] ^ xor_val;
@@ -2135,7 +2135,7 @@ static int NOINLINE linetoscr_16_aga (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -2176,7 +2176,7 @@ static int NOINLINE linetoscr_16_aga (int spix, int dpix, int dpix_end)
         }
     } else {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix] ^ xor_val;
@@ -2186,7 +2186,7 @@ static int NOINLINE linetoscr_16_aga (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -2387,7 +2387,7 @@ static int NOINLINE linetoscr_16_shrink1_aga (int spix, int dpix, int dpix_end)
 
     if (dp_for_drawing->ham_seen) {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = ham_linebuf[spix];
@@ -2397,7 +2397,7 @@ static int NOINLINE linetoscr_16_shrink1_aga (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -2428,7 +2428,7 @@ static int NOINLINE linetoscr_16_shrink1_aga (int spix, int dpix, int dpix_end)
         int *lookup    = bpldualpfpri ? dblpf_ind2_aga : dblpf_ind1_aga;
         int *lookup_no = bpldualpfpri ? dblpf_2nd2     : dblpf_2nd1;
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix];
@@ -2444,7 +2444,7 @@ static int NOINLINE linetoscr_16_shrink1_aga (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -2491,7 +2491,7 @@ static int NOINLINE linetoscr_16_shrink1_aga (int spix, int dpix, int dpix_end)
         }
     } else if (bplehb) {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix] ^ xor_val;
@@ -2505,7 +2505,7 @@ static int NOINLINE linetoscr_16_shrink1_aga (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -2546,7 +2546,7 @@ static int NOINLINE linetoscr_16_shrink1_aga (int spix, int dpix, int dpix_end)
         }
     } else {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix] ^ xor_val;
@@ -2556,7 +2556,7 @@ static int NOINLINE linetoscr_16_shrink1_aga (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -2597,7 +2597,7 @@ static int NOINLINE linetoscr_16_shrink1f_aga (int spix, int dpix, int dpix_end)
 
     if (dp_for_drawing->ham_seen) {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = ham_linebuf[spix];
@@ -2614,7 +2614,7 @@ static int NOINLINE linetoscr_16_shrink1f_aga (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -2666,7 +2666,7 @@ static int NOINLINE linetoscr_16_shrink1f_aga (int spix, int dpix, int dpix_end)
         int *lookup    = bpldualpfpri ? dblpf_ind2_aga : dblpf_ind1_aga;
         int *lookup_no = bpldualpfpri ? dblpf_2nd2     : dblpf_2nd1;
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix];
@@ -2695,7 +2695,7 @@ static int NOINLINE linetoscr_16_shrink1f_aga (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -2781,7 +2781,7 @@ static int NOINLINE linetoscr_16_shrink1f_aga (int spix, int dpix, int dpix_end)
         }
     } else if (bplehb) {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix] ^ xor_val;
@@ -2806,7 +2806,7 @@ static int NOINLINE linetoscr_16_shrink1f_aga (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -2880,7 +2880,7 @@ static int NOINLINE linetoscr_16_shrink1f_aga (int spix, int dpix, int dpix_end)
         }
     } else {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix] ^ xor_val;
@@ -2897,7 +2897,7 @@ static int NOINLINE linetoscr_16_shrink1f_aga (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -2959,7 +2959,7 @@ static int NOINLINE linetoscr_16_shrink2_aga (int spix, int dpix, int dpix_end)
 
     if (dp_for_drawing->ham_seen) {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = ham_linebuf[spix];
@@ -2969,7 +2969,7 @@ static int NOINLINE linetoscr_16_shrink2_aga (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -3000,7 +3000,7 @@ static int NOINLINE linetoscr_16_shrink2_aga (int spix, int dpix, int dpix_end)
         int *lookup    = bpldualpfpri ? dblpf_ind2_aga : dblpf_ind1_aga;
         int *lookup_no = bpldualpfpri ? dblpf_2nd2     : dblpf_2nd1;
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix];
@@ -3016,7 +3016,7 @@ static int NOINLINE linetoscr_16_shrink2_aga (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -3063,7 +3063,7 @@ static int NOINLINE linetoscr_16_shrink2_aga (int spix, int dpix, int dpix_end)
         }
     } else if (bplehb) {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix] ^ xor_val;
@@ -3077,7 +3077,7 @@ static int NOINLINE linetoscr_16_shrink2_aga (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -3118,7 +3118,7 @@ static int NOINLINE linetoscr_16_shrink2_aga (int spix, int dpix, int dpix_end)
         }
     } else {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix] ^ xor_val;
@@ -3128,7 +3128,7 @@ static int NOINLINE linetoscr_16_shrink2_aga (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -3169,7 +3169,7 @@ static int NOINLINE linetoscr_16_shrink2f_aga (int spix, int dpix, int dpix_end)
 
     if (dp_for_drawing->ham_seen) {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = ham_linebuf[spix];
@@ -3196,7 +3196,7 @@ static int NOINLINE linetoscr_16_shrink2f_aga (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -3278,7 +3278,7 @@ static int NOINLINE linetoscr_16_shrink2f_aga (int spix, int dpix, int dpix_end)
         int *lookup    = bpldualpfpri ? dblpf_ind2_aga : dblpf_ind1_aga;
         int *lookup_no = bpldualpfpri ? dblpf_2nd2     : dblpf_2nd1;
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix];
@@ -3329,7 +3329,7 @@ static int NOINLINE linetoscr_16_shrink2f_aga (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -3481,7 +3481,7 @@ static int NOINLINE linetoscr_16_shrink2f_aga (int spix, int dpix, int dpix_end)
         }
     } else if (bplehb) {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix] ^ xor_val;
@@ -3524,7 +3524,7 @@ static int NOINLINE linetoscr_16_shrink2f_aga (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {
@@ -3652,7 +3652,7 @@ static int NOINLINE linetoscr_16_shrink2f_aga (int spix, int dpix, int dpix_end)
         }
     } else {
         int rem;
-        if (((long)&buf[dpix]) & 2) {
+        if (((uintptr_t)&buf[dpix]) & 2) {
             uae_u32 spix_val;
             uae_u32 dpix_val = 0;
             spix_val = pixdata.apixels[spix] ^ xor_val;
@@ -3679,7 +3679,7 @@ static int NOINLINE linetoscr_16_shrink2f_aga (int spix, int dpix, int dpix_end)
         }
         if (dpix >= dpix_end)
             return spix;
-        rem = (((long)&buf[dpix_end]) & 2);
+        rem = (((uintptr_t)&buf[dpix_end]) & 2);
         if (rem)
             dpix_end--;
         while (dpix < dpix_end) {

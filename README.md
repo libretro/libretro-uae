@@ -51,12 +51,14 @@ The following models are provided (hardcoded configuration):
 
 |Short|Long|Chipset|Memory|
 |---|---|---|---|
-|A500|Amiga 500|OCS|0.5MB Chip RAM + 0.5MB Slow RAM|
 |A500OG|Amiga 500|OCS|0.5MB Chip RAM|
+|A500|Amiga 500|OCS|0.5MB Chip RAM + 0.5MB Slow RAM|
 |A500+|Amiga 500+|ECS|1MB Chip RAM|
 |A600|Amiga 600|ECS|2MB Chip RAM + 8MB Fast RAM|
-|A1200|Amiga 1200|AGA|2MB Chip RAM + 8MB Fast RAM|
 |A1200OG|Amiga 1200|AGA|2MB Chip RAM|
+|A1200|Amiga 1200|AGA|2MB Chip RAM + 8MB Fast RAM|
+|A4030|Amiga 4000/030|AGA|2MB Chip RAM + 8MB Fast RAM|
+|A4040|Amiga 4000/040|AGA|2MB Chip RAM + 8MB Fast RAM|
 |CD32|Amiga CD32|AGA|2MB Chip RAM|
 |CD32FR|Amiga CD32|AGA|2MB Chip RAM + 8MB Fast RAM|
 
@@ -73,6 +75,7 @@ It is critical to use Kickstarts with the correct MD5, otherwise the core might 
 |A500+|KS v2.04 rev 37.175|**kick37175.A500**|524 288|dc10d7bdd1b6f450773dfb558477c230|
 |A600|KS v3.1 rev 40.063|**kick40063.A600**|524 288|e40a5dfb3d017ba8779faba30cbd1c8e|
 |A1200|KS v3.1 rev 40.068|**kick40068.A1200**|524 288|646773759326fbac3b2311fd8c8793ee|
+|A4000|KS v3.1 rev 40.068|**kick40068.A4000**|524 288|9bdedde6a4f33555b4a270c8ca53297d|
 
 For CD32 you need either separate ROMs (Kickstart + extended ROM) or the combined ROM:
 
@@ -89,28 +92,60 @@ These parameters control the output resolution of the core:
 
 |Name|Values|Default|
 |---|---|---|
+|Video Resolution|Low, High (SL), High (DL), Super-High (SL), Super-High (DL)|High (DL)|
 |Video Standard|PAL, NTSC|PAL|
-|Video Resolution|Low, High (Single line), High (Double line), Super-High (Single line), Super-High (Double line)|High (Double line)|
+|Aspect Ratio|PAL, NTSC, Automatic|Automatic|
 
 With these settings all the standard resolutions are available:
 
-- **360x288** PAL Lores
-- **720x288** PAL Hires single line
-- **720x576** PAL Hires double line
-- **1440x288** PAL SuperHires single line
-- **1440x576** PAL SuperHires double line
+|PAL Resolution|Description|
+|---|---|
+|**360x288**|Lores|
+|**720x288**|Hires single line|
+|**720x576**|Hires double line|
+|**1440x288**|SuperHires single line|
+|**1440x576**|SuperHires double line|
 
-- **360x240** NTSC Lores
-- **720x240** NTSC Hires single line
-- **720x480** NTSC Hires double line
-- **1440x240** NTSC SuperHires single line
-- **1440x480** NTSC SuperHires double line
+|NTSC Resolution|Description|
+|---|---|
+|**360x240**|Lores|
+|**720x240**|Hires single line|
+|**720x480**|Hires double line|
+|**1440x240**|SuperHires single line|
+|**1440x480**|SuperHires double line|
 
 When using low resolution mode, rendering will be halved horizontally. Scaling shaders looks great but high resolution games and Workbench are badly rendered.
 
 When using high resolution double line mode, rendering will be doubled vertically. It is compatible with high resolution games and Workbench, but scaling shaders will look ugly.
 
 When using high resolution single line mode, rendering is presented as is. It delivers the best of both worlds, and looks great with high resolution games, Workbench and shaders.
+
+## Games that need a specific model
+You can force a specific model if a game needs one (AGA games for instance).
+
+To do this just add the corresponding string to the filename:
+
+|Floppy/HD/LHA|CD|String|Result|
+|---|---|---|---|
+|**x**| |**(A500OG)** or **(512K)**|Amiga 500, 0.5MB Chip RAM|
+|**x**| |**(A500)** or **OCS**|Amiga 500, 0.5MB Chip RAM + 0.5MB Slow RAM|
+|**x**| |**(A500+)** or **(A500PLUS)**|Amiga 500+, 1MB Chip RAM|
+|**x**| |**(A600)** or **ECS**|Amiga 600, 2MB Chip RAM + 8MB Fast RAM|
+|**x**| |**(A1200OG)** or **(A1200NF)**|Amiga 1200, 2MB Chip RAM|
+|**x**| |**(A1200)** or **AGA** or **CD32** or **AmigaCD**|Amiga 1200, 2MB Chip RAM + 8MB Fast RAM|
+|**x**| |**(A4030)** or **(030)**|Amiga 4000/030, 2MB Chip RAM + 8MB Fast RAM|
+|**x**| |**(A4040)** or **(040)**|Amiga 4000/040, 2MB Chip RAM + 8MB Fast RAM|
+|**x**| |**(MD)**|*Insert each disk in a different drive (**Maximum 4 disks**)*|
+| |**x**|**(CD32)** or **(CD32NF)**|Amiga CD32, 2MB Chip RAM|
+| |**x**|**(CD32FR)** or **FastRAM**|Amiga CD32, 2MB Chip RAM + 8MB Fast RAM|
+|**x**|**x**|**(NTSC)**|NTSC 60Hz|
+|**x**|**x**|**(PAL)**|PAL 50Hz|
+
+Example: When launching "Alien Breed 2 AGA.hdf" the core will use the Amiga 1200 model.
+
+Note: **CD32** and **AmigaCD** are a bit misleading, since they have nothing to do with actual CDs. They are for automatically selecting the appropriate model with certain WHDLoad slaves and AmigaCD-to-HDF conversions.
+
+If no special string is found the core will use the model configured in the core options. The model core option at "**Automatic**" will select A500 when booting floppy disks and A600 when booting hard drives. CD32 will always be selected with CD images.
 
 ## Disk images, WHDLoad and M3U support
 You can pass a disk image, a hard drive image, or a playlist file for disk images.
@@ -285,31 +320,6 @@ Example, to create a HDF file from a zipped WHDLoad game:
 	- amitools: `xdftool -f <NAME_OF_HDF> pack <GAME_DIRECTORY> size=<SIZE_OF_HDF>`
 	
 Note the size of the HDF specified by SIZE_OF_HDF must be greater than size of the directory to store the additional filesystem informations (f.ex a 1.25 ratio).
-
-## Games that need a specific model
-You can force a specific model if a game needs one (AGA games for instance).
-
-To do this just add the corresponding string to the filename:
-
-|String|Result|
-|---|---|
-|**(A500)** or **OCS**|Amiga 500, 0.5MB Chip RAM + 0.5MB Slow RAM|
-|**(A500OG)** or **(512K)**|Amiga 500, 0.5MB Chip RAM|
-|**(A500+)** or **(A500PLUS)**|Amiga 500+, 1MB Chip RAM|
-|**(A600)** or **ECS**|Amiga 600, 2MB Chip RAM + 8MB Fast RAM|
-|**(A1200)** or **AGA** or **CD32** or **AmigaCD**|Amiga 1200, 2MB Chip RAM + 8MB Fast RAM|
-|**(A1200OG)** or **(A1200NF)**|Amiga 1200, 2MB Chip RAM|
-|**(CD32)** or **(CD32NF)**|CD32, 2MB Chip RAM|
-|**(CD32FR)** or **FastRAM**|CD32, 2MB Chip RAM + 8MB Fast RAM|
-|**(NTSC)**|NTSC 60Hz|
-|**(PAL)**|PAL 50Hz|
-|**(MD)**|Insert each disk in a different drive (Maximum 4 disks)|
-
-Example: When launching "Alien Breed 2 AGA.hdf" the core will use the Amiga 1200 model.
-
-Note: **CD32** and **AmigaCD** are a bit misleading, since they have nothing to do with actual CDs. They are for automatically selecting the appropriate model with certain WHDLoad slaves and AmigaCD-to-HDF conversions.
-
-If no special string is found the core will use the model configured in the core options. The model core option at 'Automatic' will select A500 when booting floppy disks and A600 when booting hard drives. CD32 will always be selected with CD images.
 
 ## Using configuration files
 You can pass an '.uae' configuration file and the core will load the settings and start emulation.

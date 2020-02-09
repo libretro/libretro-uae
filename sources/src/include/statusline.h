@@ -4,14 +4,16 @@
 #ifdef __LIBRETRO__
 #define TD_PADX 1
 #define TD_PADY 2
-#define TD_WIDTH 24
-#define TD_LED_WIDTH 24
+//#define TD_WIDTH 20
+//#define TD_LED_WIDTH 20
 #define TD_LED_HEIGHT 4
 
 #define TD_RIGHT 1
 #define TD_BOTTOM 2
 #define TD_BORDER 0
+
 #else
+
 #define TD_PADX 4
 #define TD_PADY 2
 #define TD_WIDTH 30
@@ -20,9 +22,8 @@
 
 #define TD_RIGHT 1
 #define TD_BOTTOM 2
-
 #define TD_BORDER 0x333333
-#endif
+#endif // __LIBRETRO__
 
 static int td_pos = (TD_RIGHT | TD_BOTTOM);
 
