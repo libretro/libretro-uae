@@ -86,7 +86,7 @@ fastmem_size=8\n\
 "
 
 #define A1200_CONFIG "\
-cpu_model=68ec020\n\
+cpu_model=68020\n\
 chipset=aga\n\
 chipset_compatible=A1200\n\
 chipmem_size=4\n\
@@ -94,7 +94,7 @@ fastmem_size=8\n\
 "
 
 #define A1200OG_CONFIG "\
-cpu_model=68ec020\n\
+cpu_model=68020\n\
 chipset=aga\n\
 chipset_compatible=A1200\n\
 chipmem_size=4\n\
@@ -102,7 +102,7 @@ fastmem_size=0\n\
 "
 
 #define CD32_CONFIG "\
-cpu_model=68ec020\n\
+cpu_model=68020\n\
 chipset=aga\n\
 chipset_compatible=CD32\n\
 chipmem_size=4\n\
@@ -111,7 +111,7 @@ floppy0type=-1\n\
 "
 
 #define CD32FR_CONFIG "\
-cpu_model=68ec020\n\
+cpu_model=68020\n\
 chipset=aga\n\
 chipset_compatible=CD32\n\
 chipmem_size=4\n\
