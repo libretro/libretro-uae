@@ -9,20 +9,20 @@
 //#define A_LZX
 #define A_DMS
 //#define WITH_CHD
-#define CPUEMU_0
-#define CPUEMU_11
-#define CPUEMU_12
-#define CPUEMU_20
-#define CPUEMU_21
-#define CPUEMU_22
-#define CPUEMU_23
-#define CPUEMU_24
-#define CPUEMU_25
-#define CPUEMU_31
-#define CPUEMU_32
-#define CPUEMU_33
-#define CPUEMU_34
-#define CPUEMU_35
+#define CPUEMU_0 /* generic 680x0 emulation */
+#define CPUEMU_11 /* 68000/68010 prefetch emulation */
+#define CPUEMU_12 /* 68000/68010 cycle-exact cpu&blitter */
+#define CPUEMU_20 /* 68020 prefetch */
+#define CPUEMU_21 /* 68020 "cycle-exact" + blitter */
+#define CPUEMU_22 /* 68030 prefetch */
+//#define CPUEMU_23 /* 68030 "cycle-exact" + blitter */
+//#define CPUEMU_24 /* 68060 "cycle-exact" + blitter */
+//#define CPUEMU_25 /* 68040 "cycle-exact" + blitter */
+#define CPUEMU_31 /* Aranym 68040 MMU */
+#define CPUEMU_32 /* Previous 68030 MMU */
+#define CPUEMU_33 /* 68060 MMU */
+//#define CPUEMU_34 /* 68030 MMU + cache */
+//#define CPUEMU_35 /* 68030 MMU + cache + CE */
 #define MMUEMU
 #define FULLMMU
 #define FPUEMU

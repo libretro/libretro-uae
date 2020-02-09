@@ -54,7 +54,7 @@ int umain (int argc, TCHAR **argv);
 // bogomem_size 2 = 0.5MB, 4 = 1MB, 6 = 1.5MB, 7 = 1.8MB
 
 #define A500_CONFIG "\
-cpu_type=68000\n\
+cpu_model=68000\n\
 chipset=ocs\n\
 chipset_compatible=A500\n\
 chipmem_size=1\n\
@@ -62,7 +62,7 @@ bogomem_size=2\n\
 "
 
 #define A500OG_CONFIG "\
-cpu_type=68000\n\
+cpu_model=68000\n\
 chipset=ocs\n\
 chipset_compatible=A500\n\
 chipmem_size=1\n\
@@ -70,7 +70,7 @@ bogomem_size=0\n\
 "
 
 #define A500PLUS_CONFIG "\
-cpu_type=68000\n\
+cpu_model=68000\n\
 chipset=ecs\n\
 chipset_compatible=A500+\n\
 chipmem_size=2\n\
@@ -78,7 +78,7 @@ bogomem_size=0\n\
 "
 
 #define A600_CONFIG "\
-cpu_type=68000\n\
+cpu_model=68000\n\
 chipset=ecs\n\
 chipset_compatible=A600\n\
 chipmem_size=4\n\
@@ -86,7 +86,7 @@ fastmem_size=8\n\
 "
 
 #define A1200_CONFIG "\
-cpu_type=68ec020\n\
+cpu_model=68ec020\n\
 chipset=aga\n\
 chipset_compatible=A1200\n\
 chipmem_size=4\n\
@@ -94,7 +94,7 @@ fastmem_size=8\n\
 "
 
 #define A1200OG_CONFIG "\
-cpu_type=68ec020\n\
+cpu_model=68ec020\n\
 chipset=aga\n\
 chipset_compatible=A1200\n\
 chipmem_size=4\n\
@@ -102,7 +102,7 @@ fastmem_size=0\n\
 "
 
 #define CD32_CONFIG "\
-cpu_type=68ec020\n\
+cpu_model=68ec020\n\
 chipset=aga\n\
 chipset_compatible=CD32\n\
 chipmem_size=4\n\
@@ -111,7 +111,7 @@ floppy0type=-1\n\
 "
 
 #define CD32FR_CONFIG "\
-cpu_type=68ec020\n\
+cpu_model=68ec020\n\
 chipset=aga\n\
 chipset_compatible=CD32\n\
 chipmem_size=4\n\
@@ -119,11 +119,30 @@ fastmem_size=8\n\
 floppy0type=-1\n\
 "
 
+#define A4030_CONFIG "\
+cpu_model=68030\n\
+fpu_model=68882\n\
+chipset=aga\n\
+chipset_compatible=A4000\n\
+chipmem_size=4\n\
+fastmem_size=8\n\
+"
+
+#define A4040_CONFIG "\
+cpu_model=68040\n\
+fpu_model=68040\n\
+chipset=aga\n\
+chipset_compatible=A4000\n\
+chipmem_size=4\n\
+fastmem_size=8\n\
+"
+
 // Amiga kickstarts
 #define A500_ROM                "kick34005.A500"
 #define A500KS2_ROM             "kick37175.A500"
 #define A600_ROM                "kick40063.A600"
 #define A1200_ROM               "kick40068.A1200"
+#define A4000_ROM               "kick40068.A4000"
 #define CD32_ROM                "kick40060.CD32"
 #define CD32_ROM_EXT            "kick40060.CD32.ext"
 

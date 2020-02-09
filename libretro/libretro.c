@@ -203,12 +203,14 @@ void retro_set_environment(retro_environment_t cb)
          "Automatic defaults to A500 when booting floppy disks and to A600 when booting hard drives.\nCore restart required.",
          {
             { "auto", "Automatic" },
-            { "A500", "A500 (512KB Chip + 512KB Slow)" },
             { "A500OG", "A500 (512KB Chip)" },
+            { "A500", "A500 (512KB Chip + 512KB Slow)" },
             { "A500PLUS", "A500+ (1MB Chip)" },
             { "A600", "A600 (2MB Chip + 8MB Fast)" },
-            { "A1200", "A1200 (2MB Chip + 8MB Fast)" },
             { "A1200OG", "A1200 (2MB Chip)" },
+            { "A1200", "A1200 (2MB Chip + 8MB Fast)" },
+            { "A4030", "A4000/030 (2MB Chip + 8MB Fast)" },
+            { "A4040", "A4000/040 (2MB Chip + 8MB Fast)" },
             { "CD32", "CD32 (2MB Chip)" },
             { "CD32FR", "CD32 (2MB Chip + 8MB Fast)" },
             { NULL, NULL },
@@ -266,6 +268,7 @@ void retro_set_environment(retro_environment_t cb)
             { "2", "2x (7.093790 MHz) A500" },
             { "4", "4x (14.187580 MHz) A1200" },
             { "8", "8x (28.375160 MHz)" },
+            { "16", "16x (56.750320 MHz)" },
             { NULL, NULL },
          },
          "0"
@@ -748,9 +751,9 @@ void retro_set_environment(retro_environment_t cb)
          "",
          {
             { "disabled", NULL },
-            { "left", "Left analog" },
-            { "right", "Right analog" },
-            { "both", "Both analogs" },
+            { "left", "Left Analog" },
+            { "right", "Right Analog" },
+            { "both", "Both Analogs" },
             { NULL, NULL },
          },
          "right"
@@ -3167,6 +3170,16 @@ bool retro_create_config()
       strcat(uae_machine, A1200OG_CONFIG);
       strcpy(uae_kickstart, A1200_ROM);
    }
+   else if (strcmp(opt_model, "A4030") == 0)
+   {
+      strcat(uae_machine, A4030_CONFIG);
+      strcpy(uae_kickstart, A4000_ROM);
+   }
+   else if (strcmp(opt_model, "A4040") == 0)
+   {
+      strcat(uae_machine, A4040_CONFIG);
+      strcpy(uae_kickstart, A4000_ROM);
+   }
    else if (strcmp(opt_model, "CD32") == 0)
    {
       strcat(uae_machine, CD32_CONFIG);
@@ -3205,7 +3218,23 @@ bool retro_create_config()
 	        char kickstart[RETRO_PATH_MAX];
 
             // If a machine was specified in the name of the game
-            if (strstr(full_path, "(A1200OG)") != NULL || strstr(full_path, "(A1200NF)") != NULL)
+            if (strstr(full_path, "(A4030)") != NULL || strstr(full_path, "(030)") != NULL)
+            {
+               // Use A4000/030
+               fprintf(stdout, "[libretro-uae]: Found '(A4030)' or '(030)' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Booting A4000/030 with Kickstart 3.1 r40.068\n");
+               fprintf(configfile, A4030_CONFIG);
+               path_join((char*)&kickstart, retro_system_directory, A4000_ROM);
+            }
+            else if (strstr(full_path, "(A4040)") != NULL || strstr(full_path, "(040)") != NULL)
+            {
+               // Use A4000/040
+               fprintf(stdout, "[libretro-uae]: Found '(A4040)' or '(040)' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Booting A4000/040 with Kickstart 3.1 r40.068\n");
+               fprintf(configfile, A4040_CONFIG);
+               path_join((char*)&kickstart, retro_system_directory, A4000_ROM);
+            }
+            else if (strstr(full_path, "(A1200OG)") != NULL || strstr(full_path, "(A1200NF)") != NULL)
             {
                // Use A1200 barebone
                fprintf(stdout, "[libretro-uae]: Found '(A1200OG)' or '(A1200NF)' in filename '%s'\n", full_path);
