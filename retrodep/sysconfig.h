@@ -1,6 +1,56 @@
 /* src/sysconfig.h.  Generated from sysconfig.h.in by configure.  */
 /* src/sysconfig.h.in.  Generated from configure.ac by autoheader.  */
 
+#define CAPS
+//#define A_ZIP
+//#define A_RAR
+//#define A_7Z
+#define A_LHA
+//#define A_LZX
+#define A_DMS
+//#define WITH_CHD
+#define CPUEMU_0
+#define CPUEMU_11
+#define CPUEMU_12
+#define CPUEMU_20
+#define CPUEMU_21
+#define CPUEMU_22
+#define CPUEMU_23
+#define CPUEMU_24
+#define CPUEMU_25
+#define CPUEMU_31
+#define CPUEMU_32
+#define CPUEMU_33
+#define CPUEMU_34
+#define CPUEMU_35
+#define MMUEMU
+#define FULLMMU
+#define FPUEMU
+#define UNALIGNED_PROFITABLE
+#define AMAX
+#define AGA
+#define AUTOCONFIG
+#define FILESYS
+#define SUPPORT_THREADS
+#define FDI2RAW
+#define DEBUGGER
+#define SAVESTATE
+#define ACTION_REPLAY
+#define DRIVESOUND
+#define GAYLE
+#define NCR
+#define CD32
+#define CDTV
+#define A2091
+#define SERIAL_PORT
+#define ARCADIA
+#define ECS_DENISE
+//#define JIT
+//#define USE_JIT_FPU
+//#define PARALLEL_PORT
+//#define OPTIMIZED_FLAGS
+
+
 /* Define if building universal (internal helper macro) */
 /* #undef AC_APPLE_UNIVERSAL_BUILD */
 
@@ -302,7 +352,7 @@
 #define PACKAGE "puae"
 
 /* Define to the address where bug reports for this package should be sent. */
-#define PACKAGE_BUGREPORT "mustafa.tufan@gmail.com"
+#define PACKAGE_BUGREPORT ""
 
 /* cloned git commit version */
 #define PACKAGE_COMMIT "0186c1b16f7181ffa02d73e6920d3180ce457c46"
@@ -311,7 +361,7 @@
 #define PACKAGE_NAME "PUAE"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "PUAE 2.6.0"
+#define PACKAGE_STRING "PUAE 2.6.1"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "puae"
@@ -320,7 +370,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "2.6.0"
+#define PACKAGE_VERSION "2.6.1"
 
 /* Define to the necessary symbol if this constant uses a non-standard name on
    your system. */
@@ -417,7 +467,7 @@
 
 
 /* Version number of package */
-#define VERSION "2.6.0"
+#define VERSION "2.6.1"
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */

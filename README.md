@@ -90,16 +90,21 @@ These parameters control the output resolution of the core:
 |Name|Values|Default|
 |---|---|---|
 |Video Standard|PAL, NTSC|PAL|
-|Video Resolution|Lores, Hires (Single line), Hires (Double line)|Hires (Double line)|
+|Video Resolution|Low, High (Single line), High (Double line), Super-High (Single line), Super-High (Double line)|High (Double line)|
 
 With these settings all the standard resolutions are available:
 
-- **720x576** PAL High resolution double line
-- **720x288** PAL High resolution single line
-- **360x288** PAL Low resolution
-- **720x480** NTSC High resolution double line
-- **720x240** NTSC High resolution single line
-- **360x240** NTSC Low resolution
+- **360x288** PAL Lores
+- **720x288** PAL Hires single line
+- **720x576** PAL Hires double line
+- **1440x288** PAL SuperHires single line
+- **1440x576** PAL SuperHires double line
+
+- **360x240** NTSC Lores
+- **720x240** NTSC Hires single line
+- **720x480** NTSC Hires double line
+- **1440x240** NTSC SuperHires single line
+- **1440x480** NTSC SuperHires double line
 
 When using low resolution mode, rendering will be halved horizontally. Scaling shaders looks great but high resolution games and Workbench are badly rendered.
 
@@ -214,7 +219,7 @@ In this WHDLoad image you must have these Kickstart ROMs `kick34005.A500` & `kic
 
 ~~To do this, you can consult the excellent tutorial made by Allan Lindqvist (http://lindqvist.synology.me/wordpress/?page_id=182) and just jump to the 'Create WHDLoad.hdf' section.~~
 
-**NOTE: The tutorial is now outdated regarding default controls and the need of .uae conf files for basic use.**
+**The tutorial is now outdated regarding default controls, need of creating HDFs and the need of .uae conf files for basic use.**
 
 ### Current checklist for new users
 1. ~~Grab the latest version from the repo: https://github.com/libretro/libretro-uae/tree/master/whdload/~~
@@ -292,7 +297,7 @@ To do this just add the corresponding string to the filename:
 |**(A500OG)** or **(512K)**|Amiga 500, 0.5MB Chip RAM|
 |**(A500+)** or **(A500PLUS)**|Amiga 500+, 1MB Chip RAM|
 |**(A600)** or **ECS**|Amiga 600, 2MB Chip RAM + 8MB Fast RAM|
-|**(A1200)** or **AGA**|Amiga 1200, 2MB Chip RAM + 8MB Fast RAM|
+|**(A1200)** or **AGA** or **CD32** or **AmigaCD**|Amiga 1200, 2MB Chip RAM + 8MB Fast RAM|
 |**(A1200OG)** or **(A1200NF)**|Amiga 1200, 2MB Chip RAM|
 |**(CD32)** or **(CD32NF)**|CD32, 2MB Chip RAM|
 |**(CD32FR)** or **FastRAM**|CD32, 2MB Chip RAM + 8MB Fast RAM|
@@ -301,6 +306,8 @@ To do this just add the corresponding string to the filename:
 |**(MD)**|Insert each disk in a different drive (Maximum 4 disks)|
 
 Example: When launching "Alien Breed 2 AGA.hdf" the core will use the Amiga 1200 model.
+
+Note: **CD32** and **AmigaCD** are a bit misleading, since they have nothing to do with actual CDs. They are for automatically selecting the appropriate model with certain WHDLoad slaves and AmigaCD-to-HDF conversions.
 
 If no special string is found the core will use the model configured in the core options. The model core option at 'Automatic' will select A500 when booting floppy disks and A600 when booting hard drives. CD32 will always be selected with CD images.
 

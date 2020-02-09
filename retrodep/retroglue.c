@@ -47,7 +47,7 @@ unsigned short int clut[] = {
 
 unsigned short int* pixbuf = NULL;
 
-extern unsigned short int retro_bmp[(EMULATOR_DEF_WIDTH*EMULATOR_DEF_HEIGHT*2)];
+extern unsigned short int retro_bmp[RETRO_BMP_SIZE];
 void retro_audio_batch_cb(const int16_t *data, size_t frames);
 
 int prefs_changed = 0;

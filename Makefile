@@ -1,5 +1,7 @@
-
+CORE_DIR  := .
+ROOT_DIR  := .
 PLATFLAGS :=
+TARGET_NAME := puae
 
 ifeq ($(platform),)
 platform = unix
@@ -12,22 +14,14 @@ else ifneq ($(findstring Darwin,$(shell uname -a)),)
 else ifneq ($(findstring win,$(shell uname -a)),)
    platform = win
 else ifneq ($(findstring arm,$(shell uname -a)),)
-    PLATFLAGS +=  -DARM  -marm
+   PLATFLAGS += -DARM -marm
 endif
 endif
-
-TARGET_NAME := puae
-
-GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
-CFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
-
-CORE_DIR  := .
-ROOT_DIR  := .
 
 ifneq (,$(findstring unix,$(platform)))
    TARGET := $(TARGET_NAME)_libretro.so
    fpic := -fPIC
-	LDFLAGS += -lpthread
+   LDFLAGS += -lpthread
    SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T
 
 # use for raspberry pi
@@ -35,7 +29,7 @@ else ifeq ($(platform), rpi)
 	TARGET := $(TARGET_NAME)_libretro.so
 	fpic := -fPIC
 	LDFLAGS := -lpthread -lm -ldl
-	PLATFLAGS +=  -DARM  -marm
+	PLATFLAGS += -DARM -marm
 	SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--as-needed -Wl,--no-undefined
 
 # Classic Platforms ####################
@@ -95,9 +89,9 @@ else ifeq ($(platform), android-armv7)
    LD = @arm-linux-androideabi-g++
    TARGET := $(TARGET_NAME)_libretro_android.so
    fpic := -fPIC
-	LDFLAGS := -lm
-   SHARED :=  -Wl,--fix-cortex-a8 -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
-   PLATFLAGS += -DANDROID -DRETRO -DAND -DALIGN_DWORD -DA_ZIP
+   LDFLAGS := -lm
+   SHARED := -Wl,--fix-cortex-a8 -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
+   PLATFLAGS += -DANDROID -DRETRO -DAND -DALIGN_DWORD
 
 else ifeq ($(platform), android)
    CC = arm-linux-androideabi-gcc
@@ -105,8 +99,8 @@ else ifeq ($(platform), android)
    LD = @arm-linux-androideabi-g++ 
    TARGET := $(TARGET_NAME)_libretro_android.so
    fpic := -fPIC
-	LDFLAGS := 
-   SHARED :=  -Wl,--fix-cortex-a8 -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
+   LDFLAGS :=
+   SHARED := -Wl,--fix-cortex-a8 -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
    PLATFLAGS += -DANDROID -DRETRO -DAND -DALIGN_DWORD -DARM_OPT_TEST=1
 
 # CTR(3DS)
@@ -129,7 +123,7 @@ else ifneq (,$(filter $(platform), ngc wii wiiu))
    COMMONFLAGS += -DGEKKO -mcpu=750 -meabi -mhard-float -D__POWERPC__ -D__ppc__ -DMSB_FIRST -DWORDS_BIGENDIAN=1
    COMMONFLAGS += -U__INT32_TYPE__ -U __UINT32_TYPE__ -D__INT32_TYPE__=int -DC68K_BIG_ENDIAN
    COMMONFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DBYTE_ORDER=BIG_ENDIAN
-   PLATFLAGS +=  -DRETRO -DALIGN_DWORD
+   PLATFLAGS += -DRETRO -DALIGN_DWORD
    STATIC_LINKING=1
    STATIC_LINKING_LINK=1
    ifneq (,$(findstring wiiu,$(platform)))
@@ -169,17 +163,16 @@ else ifeq ($(platform), ps3)
    CC = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-gcc.exe
    AR = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-ar.exe
    ZLIB_DIR = $(LIBUTILS)/zlib/
-   LDFLAGS :=   -lm -lpthread -lc
-   CFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DMSB_FIRST -DBYTE_ORDER=BIG_ENDIAN  -DBYTE_ORDER=BIG_ENDIAN \
-	-D__CELLOS_LV2__ -DHAVE_MEMALIGN -DHAVE_ASPRINTF -I$(ZLIB_DIR)
-   PLATFLAGS +=  -DRETRO -DALIGN_DWORD
-	STATIC_LINKING=1
+   LDFLAGS := -lm -lpthread -lc
+   CFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DMSB_FIRST -DBYTE_ORDER=BIG_ENDIAN -D__CELLOS_LV2__ -DHAVE_MEMALIGN -DHAVE_ASPRINTF -I$(ZLIB_DIR)
+   PLATFLAGS += -DRETRO -DALIGN_DWORD
+   STATIC_LINKING=1
 
 else ifeq ($(platform), emscripten)
    TARGET := $(TARGET_NAME)_libretro_$(platform).bc
-   PLATFLAGS +=  -DRETRO -DALIGN_DWORD
-   CFLAGS    +=  -DHAVE_MEMALIGN -DHAVE_ASPRINTF -I$(ZLIB_DIR)
-	STATIC_LINKING=1
+   PLATFLAGS += -DRETRO -DALIGN_DWORD
+   CFLAGS    += -DHAVE_MEMALIGN -DHAVE_ASPRINTF -I$(ZLIB_DIR)
+   STATIC_LINKING=1
 
 else ifneq (,$(findstring ios,$(platform)))
    TARGET := $(TARGET_NAME)_libretro_ios.dylib
@@ -248,11 +241,11 @@ else
 ifneq ($(subplatform), 32)
    CFLAGS += -fno-aggressive-loop-optimizations
 endif
-   PLATFLAGS +=  -DRETRO -DALIGN_DWORD -DWIN32
+   PLATFLAGS += -DRETRO -DALIGN_DWORD -DWIN32
    TARGET := $(TARGET_NAME)_libretro.dll
    fpic := -fPIC
    SHARED := -shared -static-libgcc -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
-	LDFLAGS += -lm
+   LDFLAGS += -lm
 endif
 
 ifeq ($(DEBUG), 1)
@@ -262,10 +255,7 @@ else
    SHARED += -s
 endif
 
-DEFINES += -DCPUEMU_0 -DCPUEMU_11 -DCPUEMU_12 -DCPUEMU_20 -DCPUEMU_21 -DCPUEMU_22 -DCPUEMU_31 -DCPUEMU_32 -DCPUEMU_33 -DMMUEMU -DFULLMMU -DFPUEMU -DUNALIGNED_PROFITABLE -DAMAX -DAGA -DAUTOCONFIG -DFILESYS -DSUPPORT_THREADS -DFDI2RAW -DDEBUGGER -DSAVESTATE -DACTION_REPLAY -DDRIVESOUND -DGAYLE -DNCR -DCD32 -DCDTV -DA2091 -DSERIAL_PORT
-# -DENFORCER -DXARCADE -DSCSIEMU -DSCSIEMU_LINUX_IOCTL -DUSE_SDL -DBSDSOCKET
-DEFINES += -D__LIBRETRO__
-CFLAGS += $(DEFINES) -DRETRO=1 -DINLINE="inline" -std=gnu99
+CFLAGS += -DRETRO=1 -DINLINE="inline" -std=gnu99
 
 include Makefile.common
 
