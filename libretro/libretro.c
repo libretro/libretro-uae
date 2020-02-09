@@ -3097,8 +3097,8 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
    static struct retro_game_geometry geom;
    geom.base_width = retrow;
    geom.base_height = retroh;
-   geom.max_width = EMULATOR_DEF_WIDTH;
-   geom.max_height = EMULATOR_DEF_HEIGHT;
+   geom.max_width = EMULATOR_MAX_WIDTH;
+   geom.max_height = EMULATOR_MAX_HEIGHT;
    geom.aspect_ratio = retro_get_aspect_ratio(retrow, retroh, video_config_geometry);
 
    info->geometry = geom;

@@ -173,6 +173,9 @@ floppy0type=-1\n\
 // Libretro video
 #define EMULATOR_DEF_WIDTH      720
 #define EMULATOR_DEF_HEIGHT     576
+#define EMULATOR_MAX_WIDTH      (EMULATOR_DEF_WIDTH * 2)
+#define EMULATOR_MAX_HEIGHT     EMULATOR_DEF_HEIGHT
+
 #define RETRO_BMP_SIZE          (EMULATOR_DEF_WIDTH * EMULATOR_DEF_HEIGHT * 4) // 4x is big enough for 24-bit SuperHires double line
 
 #endif /* LIBRETRO_GLUE_H */
