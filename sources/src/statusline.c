@@ -18,6 +18,7 @@ extern int opt_statusbar_position;
 extern bool opt_statusbar_enhanced;
 extern bool opt_statusbar_minimal;
 extern int LEDON;
+static int num_multip = 1;
 #endif
 
 /*
@@ -92,9 +93,53 @@ static void write_tdnumber (uae_u8 *buf, int bpp, int x, int y, int num, uae_u32
 
 #ifdef __LIBRETRO__
 	numptr = numbers + num * TD_NUM_WIDTH + 20 * TD_NUM_WIDTH * y;
+	for (j = 0; j < (TD_NUM_WIDTH * num_multip); j++) {
+		if (*numptr == 'x')
+		{
+			putpixel (buf, bpp, x + j, c1, 1);
+            switch (num_multip)
+            {
+                case 2:
+                    putpixel (buf, bpp, x + 1 + j, c1, 1);
+                    break;
+                case 4:
+                    putpixel (buf, bpp, x + 1 + j, c1, 1);
+                    putpixel (buf, bpp, x + 2 + j, c1, 1);
+                    putpixel (buf, bpp, x + 3 + j, c1, 1);
+                    break;
+            }
+        }
+		else if (*numptr == '+')
+		{
+		    putpixel (buf, bpp, x + j, c2, 0);
+		    switch (num_multip)
+		    {
+		        case 2:
+		            putpixel (buf, bpp, x + 1 + j, c2, 0);
+		            break;
+		        case 4:
+		            putpixel (buf, bpp, x + 1 + j, c2, 0);
+		            putpixel (buf, bpp, x + 2 + j, c2, 0);
+		            putpixel (buf, bpp, x + 3 + j, c2, 0);
+		            break;
+            }
+        }
+        switch (num_multip)
+        {
+            case 2:
+                j++;
+                break;
+            case 4:
+                j++;
+                j++;
+                j++;
+                break;
+        }
+		numptr++;
+	}
 #else
     numptr = numbers + num * TD_NUM_WIDTH + NUMBERS_NUM * TD_NUM_WIDTH * y;
-#endif
+
 	for (j = 0; j < TD_NUM_WIDTH; j++) {
 		if (*numptr == 'x')
 			putpixel (buf, bpp, x + j, c1, 1);
@@ -102,26 +147,42 @@ static void write_tdnumber (uae_u8 *buf, int bpp, int x, int y, int num, uae_u32
 			putpixel (buf, bpp, x + j, c2, 0);
 		numptr++;
 	}
+#endif
 }
 
 #ifdef __LIBRETRO__
 #define BLACK           0x000000
-#define YELLOW_DISABLED 0x111100
-#define YELLOW_DARK     0x333300
+#define YELLOW_DISABLED 0x222200
+#define YELLOW_DARK     0x444400
 #define YELLOW_DIM      0x666600
 #define YELLOW_BRIGHT   0x999900
-#define GREEN_DISABLED  0x001100
-#define GREEN_DARK      0x003300
+#define GREEN_DISABLED  0x002200
+#define GREEN_DARK      0x004400
 #define GREEN_DIM       0x006600
 #define GREEN_BRIGHT    0x009900
-#define RED_DARK        0x330000
+#define RED_DARK        0x440000
 #define RED_DIM         0x660000
 #define RED_BRIGHT      0x990000
 
 void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u32 *rc, uae_u32 *gc, uae_u32 *bc, uae_u32 *alpha)
 {
-    if(LEDON==-1)
+    if (LEDON==-1)
         return;
+
+    num_multip = 1;
+    if (currprefs.gfx_resolution == RES_HIRES && currprefs.gfx_vresolution == VRES_NONDOUBLE)
+        num_multip = 2;
+    else if (currprefs.gfx_resolution == RES_SUPERHIRES)
+    {
+        if (currprefs.gfx_vresolution == VRES_DOUBLE)
+            num_multip = 2;
+        else
+            num_multip = 4;
+    }
+
+    int LED_WIDTH = 20;
+    int TD_WIDTH = LED_WIDTH * num_multip;
+    int TD_LED_WIDTH = LED_WIDTH * num_multip;
 
     int x_start, j, led, border;
     uae_u32 c1, c2, cb;
@@ -216,6 +277,11 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
                 if ((gui_data.cd & LED_CD_ACTIVE2) && !(gui_data.cd & LED_CD_AUDIO)) {
                     on_rgb &= 0xfefefe;
                     on_rgb >>= 1;
+                }
+                if (currprefs.cdslots[0].name[0] == 0)
+                {
+                    pen_rgb = ledcolor (YELLOW_DIM, rc, gc, bc, alpha);
+                    off_rgb = YELLOW_DISABLED;
                 }
                 num1 = -1;
                 num2 = 10;
@@ -386,17 +452,17 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
 
         if (y >= TD_PADY && y - TD_PADY < TD_NUM_HEIGHT) {
             if (num3 >= 0) {
-                x += (TD_LED_WIDTH - am * TD_NUM_WIDTH) / 2;
+                x += (TD_LED_WIDTH - am * TD_NUM_WIDTH * num_multip) / 2;
                 if (num1 > 0) {
                     write_tdnumber (buf, bpp, x, y - TD_PADY, num1, pen_rgb, c2);
-                    x += TD_NUM_WIDTH;
+                    x += TD_NUM_WIDTH * num_multip;
                 }
                 if (num2 >= 0) {
                     write_tdnumber (buf, bpp, x, y - TD_PADY, num2, pen_rgb, c2);
-                    x += TD_NUM_WIDTH;
+                    x += TD_NUM_WIDTH * num_multip;
                 }
                 write_tdnumber (buf, bpp, x, y - TD_PADY, num3, pen_rgb, c2);
-                x += TD_NUM_WIDTH;
+                x += TD_NUM_WIDTH * num_multip;
                 if (num4 > -1)
                     write_tdnumber (buf, bpp, x, y - TD_PADY, num4, pen_rgb, c2);
             }

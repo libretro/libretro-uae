@@ -134,6 +134,7 @@ extern void retro_poll_event(void);
 unsigned int uae_devices[4];
 extern int cd32_pad_enabled[NORMAL_JPORTS];
 int mapper_keys[31]={0};
+extern void display_current_image(const char *image, bool inserted);
 
 #ifdef WIN32
 #define DIR_SEP_STR "\\"
@@ -2280,6 +2281,7 @@ static bool disk_set_eject_state(bool ejected)
       else
          dc->eject_state = ejected;
 
+      display_current_image(((!dc->eject_state) ? dc->labels[dc->index] : ""), !dc->eject_state);
       if (dc->eject_state)
       {
          if (dc->files[dc->index] > 0)
@@ -2361,6 +2363,7 @@ static bool disk_set_image_index(unsigned index)
       if ((index < dc->count) && (dc->files[index]))
       {
          dc->index = index;
+         display_current_image(dc->labels[dc->index], false);
          fprintf(stdout, "[libretro-uae]: Disk (%d) inserted into drive DF0: '%s'\n", dc->index+1, dc->files[dc->index]);
          return true;
       }
@@ -3585,6 +3588,7 @@ bool retro_create_config()
                // Init first disk
                dc->index = 0;
                dc->eject_state = false;
+               display_current_image(dc->labels[dc->index], !dc->eject_state);
                fprintf(stdout, "[libretro-uae]: Disk (%d) inserted into drive DF0: '%s'\n", dc->index+1, dc->files[dc->index]);
                fprintf(configfile, "floppy0=%s\n", dc->files[0]);
 
@@ -3756,6 +3760,7 @@ bool retro_create_config()
             // Init first disk
             dc->index = 0;
             dc->eject_state = false;
+            display_current_image(dc->labels[dc->index], !dc->eject_state);
             fprintf(stdout, "[libretro-uae]: CD (%d) inserted into drive CD0: '%s'\n", dc->index+1, dc->files[dc->index]);
             fprintf(configfile, "cdimage0=%s,\n", dc->files[0]); // ","-suffix needed if filename contains ","
 
@@ -3910,6 +3915,10 @@ void retro_run(void)
    bool updated = false;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
       update_variables();
+
+   // Statusbar disk display timer
+   if (imagename_timer > 0)
+      imagename_timer--;
 
    // Update audio settings
    if (filter_type_update)

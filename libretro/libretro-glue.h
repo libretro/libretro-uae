@@ -17,6 +17,7 @@ extern int retrow;
 extern int retroh;
 extern int pix_bytes;
 extern int zoomed_height;
+extern int imagename_timer;
 extern bool retro_update_av_info(bool, bool, bool);
 extern void reset_drawing();
 

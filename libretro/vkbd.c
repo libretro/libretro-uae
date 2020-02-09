@@ -40,7 +40,7 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
    int BKG_COLOR_SEL    = 0;
    int BKG_COLOR_DARK   = 0;
    int BKG_COLOR_BORDER = 0;
-   int FONT_MAX         = 8;
+   int FONT_MAX         = 4;
    int FONT_WIDTH       = 1;
    int FONT_HEIGHT      = 1;
    int FONT_COLOR       = 0;
@@ -78,7 +78,6 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
          // PUAE_VIDEO_HIRES_DOUBLELINE
          FONT_WIDTH        = 2;
          FONT_HEIGHT       = 2;
-         FONT_MAX          = 4;
          XKEYSPACING       = 2;
          YKEYSPACING       = 2;
          XOFFSET           = 2;
@@ -93,7 +92,6 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
       {
          // PUAE_VIDEO_HIRES
          FONT_WIDTH        = 2;
-         FONT_MAX          = 4;
          XKEYSPACING       = 2;
          XOFFSET           = 2;
          YPADDING          = 6;
@@ -118,7 +116,6 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
       // PUAE_VIDEO_LORES
       BKG_PADDING_X     = -2;
       BKG_PADDING_Y     = -1;
-      FONT_MAX          = 4;
 
       XOFFSET           = 3;
       YPADDING          = 6;
