@@ -169,12 +169,14 @@ void retro_set_environment(retro_environment_t cb)
 {
    static const struct retro_controller_description p1_controllers[] = {
       { "CD32 Pad", RETRO_DEVICE_UAE_CD32PAD },
+      { "Analog Joystick", RETRO_DEVICE_UAE_ANALOG },
       { "Joystick", RETRO_DEVICE_UAE_JOYSTICK },
       { "Keyboard", RETRO_DEVICE_UAE_KEYBOARD },
       { "None", RETRO_DEVICE_NONE },
    };
    static const struct retro_controller_description p2_controllers[] = {
       { "CD32 Pad", RETRO_DEVICE_UAE_CD32PAD },
+      { "Analog Joystick", RETRO_DEVICE_UAE_ANALOG },
       { "Joystick", RETRO_DEVICE_UAE_JOYSTICK },
       { "Keyboard", RETRO_DEVICE_UAE_KEYBOARD },
       { "None", RETRO_DEVICE_NONE },
@@ -191,8 +193,8 @@ void retro_set_environment(retro_environment_t cb)
    };
 
    static const struct retro_controller_info ports[] = {
-      { p1_controllers, 4 }, // port 1
-      { p2_controllers, 4 }, // port 2
+      { p1_controllers, 5 }, // port 1
+      { p2_controllers, 5 }, // port 2
       { p3_controllers, 3 }, // port 3
       { p4_controllers, 3 }, // port 4
       { NULL, 0 }
@@ -2647,10 +2649,10 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 {
    if (port<4)
    {
-      uae_devices[port]=device;
+      uae_devices[port] = device;
       int uae_port;
       uae_port = (port==0) ? 1 : 0;
-      cd32_pad_enabled[uae_port]=0;
+      cd32_pad_enabled[uae_port] = 0;
       switch (device)
       {
          case RETRO_DEVICE_JOYPAD:
@@ -2660,6 +2662,10 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
          case RETRO_DEVICE_UAE_CD32PAD:
             fprintf(stdout, "[libretro-uae]: Controller %u: CD32 Pad\n", (port+1));
             cd32_pad_enabled[uae_port]=1;
+            break;
+
+         case RETRO_DEVICE_UAE_ANALOG:
+            fprintf(stdout, "[libretro-uae]: Controller %u: Analog Joystick\n", (port+1));
             break;
 
          case RETRO_DEVICE_UAE_JOYSTICK:

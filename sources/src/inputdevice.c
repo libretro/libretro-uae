@@ -241,6 +241,7 @@ static int parport_joystick_enabled;
 static int oldmx[MAX_JPORTS], oldmy[MAX_JPORTS];
 static int oleft[MAX_JPORTS], oright[MAX_JPORTS], otop[MAX_JPORTS], obot[MAX_JPORTS];
 static int horizclear[MAX_JPORTS], vertclear[MAX_JPORTS];
+static int relativecount[MAX_JPORTS][2];
 
 uae_u16 potgo_value;
 static int pot_cap[NORMAL_JPORTS][2];
@@ -3211,7 +3212,17 @@ int handle_input_event (int nr, int state, int max, int autofire, bool canstoppl
 					state -= deadzone;
 				}
 				state = state * max / (max - deadzone);
+			} else {
+				max = 100;
+				relativecount[joy][unit] += state;
+				state = relativecount[joy][unit];
+				if (state < -max)
+					state = -max;
+				if (state > max)
+					state = max;
+				relativecount[joy][unit] = state;
 			}
+
 			if (ie->data & IE_INVERT)
 				state = -state;
 
@@ -5471,6 +5482,7 @@ void inputdevice_default_prefs (struct uae_prefs *p)
 	p->input_mouse_speed = 100;
 	p->input_autofire_linecnt = 600;
 	p->input_keyboard_type = 0;
+
 	keyboard_default = keyboard_default_table[p->input_keyboard_type];
 	inputdevice_default_kb_all (p);
 }
@@ -6742,11 +6754,12 @@ void setjoystickstate (int joy, int axis, int state, int max)
 	}
 	for (i = 0; i < MAX_INPUT_SUB_EVENT; i++) {
 		uae_u64 flags = id->flags[ID_AXIS_OFFSET + axis][i];
+		int state2 = v1;
 		if (flags & ID_FLAG_INVERT)
-			state = -state;
-		if (state != id2->states[axis][i]) {
+			state = -state2;
+		if (state2 != id2->states[axis][i]) {
 			//write_log(_T("-> %d %d\n"), i, state);
-		handle_input_event (id->eventid[ID_AXIS_OFFSET + axis][i], state, max, flags & ID_FLAG_AUTOFIRE, true, false);
+			handle_input_event (id->eventid[ID_AXIS_OFFSET + axis][i], state2, max, flags & ID_FLAG_AUTOFIRE, true, false);
 			id2->states[axis][i] = state;
 		}
 	}
@@ -7104,6 +7117,7 @@ void clear_inputstate (void)
 	for (int i = 0; i < MAX_JPORTS; i++) {
 		horizclear[i] = 1;
 		vertclear[i] = 1;
+		relativecount[i][0] = relativecount[i][1] = 0;
 	}
 }
 #endif

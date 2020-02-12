@@ -100,7 +100,7 @@ void retro_mouse_button(int port, int button, int state)
 void retro_joystick(int port, int axis, int state)
 {
     // disable mouse in normal ports, joystick/mouse inverted
-    if(port < 2)
+    if (port < 2)
     {
         int m_port = (port == 0) ? 1 : 0;
         mouse_port[m_port] = 0;
@@ -108,10 +108,21 @@ void retro_joystick(int port, int axis, int state)
     setjoystickstate(port, axis, state, 1);
 }
 
+void retro_joystick_analog(int port, int axis, int state)
+{
+    // disable mouse in normal ports, joystick/mouse inverted
+    if (port < 2)
+    {
+        int m_port = (port == 0) ? 1 : 0;
+        mouse_port[m_port] = 0;
+    }
+    setjoystickstate(port, axis, state, 32768);
+}
+
 void retro_joystick_button(int port, int button, int state)
 {
     // disable mouse in normal ports, joystick/mouse inverted
-    if(port < 2)
+    if (port < 2)
     {
         int m_port = (port == 0) ? 1 : 0;
         mouse_port[m_port] = 0;
@@ -364,26 +375,49 @@ static int get_joystick_num (void)
     return 4;
 }
 
+static TCHAR *get_joystick_friendlyname (int joy)
+{
+
+    switch (joy)
+    {
+        case 0:
+            return "RetroPad0";
+            break;
+        case 1:
+            return "RetroPad1";
+            break;
+        case 2:
+            return "RetroPad2";
+            break;
+        case 3:
+            return "RetroPad3";
+            break;
+        default:
+            return "RetroPad1";
+            break;
+    }
+}
+
 static char *get_joystick_uniquename (int joy)
 {
     switch (joy)
-	{
-		case 0:
-			return "RetroPad0";
-			break;
-		case 1:
-			return "RetroPad1";
-			break;
-		case 2:
-			return "RetroPad2";
-			break;
-		case 3:
-			return "RetroPad3";
-			break;
-		default:
-			return "RetroPad1";
-			break;
-	}
+    {
+        case 0:
+            return "RetroPad0";
+            break;
+        case 1:
+            return "RetroPad1";
+            break;
+        case 2:
+            return "RetroPad2";
+            break;
+        case 3:
+            return "RetroPad3";
+            break;
+        default:
+            return "RetroPad1";
+            break;
+    }
 }
 
 static int get_joystick_widget_num (int joy)
@@ -399,28 +433,6 @@ static int get_joystick_widget_type (int joy, int num, char *name, uae_u32 *code
 static int get_joystick_widget_first (int joy, int type)
 {
     return -1;
-}
-
-static TCHAR *get_joystick_friendlyname (int joy)
-{
-	switch (joy)
-	{
-		case 0:
-			return "RetroPad0";
-			break;
-		case 1:
-			return "RetroPad1";
-			break;
-		case 2:
-			return "RetroPad2";
-			break;
-		case 3:
-			return "RetroPad3";
-			break;
-		default:
-			return "RetroPad1";
-			break;
-	}
 }
 
 struct inputdevice_functions inputdevicefunc_joystick = {
@@ -440,55 +452,75 @@ struct inputdevice_functions inputdevicefunc_joystick = {
 
 int input_get_default_joystick (struct uae_input_device *uid, int num, int port, int af, int mode, bool gp)
 {
-    if(uae_devices[0] == RETRO_DEVICE_UAE_CD32PAD)
+    if (uae_devices[0] == RETRO_DEVICE_UAE_CD32PAD)
     {
-        uid[0].eventid[ID_AXIS_OFFSET + 0][0]   =  INPUTEVENT_JOY2_HORIZ;
-        uid[0].eventid[ID_AXIS_OFFSET + 1][0]   =  INPUTEVENT_JOY2_VERT;
-        uid[0].eventid[ID_BUTTON_OFFSET + 0][0] =  INPUTEVENT_JOY2_CD32_RED;
-        uid[0].eventid[ID_BUTTON_OFFSET + 1][0] =  INPUTEVENT_JOY2_CD32_BLUE;
-        uid[0].eventid[ID_BUTTON_OFFSET + 2][0] =  INPUTEVENT_JOY2_CD32_GREEN;
-        uid[0].eventid[ID_BUTTON_OFFSET + 3][0] =  INPUTEVENT_JOY2_CD32_YELLOW;
-        uid[0].eventid[ID_BUTTON_OFFSET + 4][0] =  INPUTEVENT_JOY2_CD32_RWD;
-        uid[0].eventid[ID_BUTTON_OFFSET + 5][0] =  INPUTEVENT_JOY2_CD32_FFW;
-        uid[0].eventid[ID_BUTTON_OFFSET + 6][0] =  INPUTEVENT_JOY2_CD32_PLAY;
+        uid[0].eventid[ID_AXIS_OFFSET + 0][0]   = INPUTEVENT_JOY2_HORIZ;
+        uid[0].eventid[ID_AXIS_OFFSET + 1][0]   = INPUTEVENT_JOY2_VERT;
+        uid[0].eventid[ID_BUTTON_OFFSET + 0][0] = INPUTEVENT_JOY2_CD32_RED;
+        uid[0].eventid[ID_BUTTON_OFFSET + 1][0] = INPUTEVENT_JOY2_CD32_BLUE;
+        uid[0].eventid[ID_BUTTON_OFFSET + 2][0] = INPUTEVENT_JOY2_CD32_GREEN;
+        uid[0].eventid[ID_BUTTON_OFFSET + 3][0] = INPUTEVENT_JOY2_CD32_YELLOW;
+        uid[0].eventid[ID_BUTTON_OFFSET + 4][0] = INPUTEVENT_JOY2_CD32_RWD;
+        uid[0].eventid[ID_BUTTON_OFFSET + 5][0] = INPUTEVENT_JOY2_CD32_FFW;
+        uid[0].eventid[ID_BUTTON_OFFSET + 6][0] = INPUTEVENT_JOY2_CD32_PLAY;
+    }
+    else if (uae_devices[0] == RETRO_DEVICE_UAE_ANALOG)
+    {
+        uid[0].eventid[ID_AXIS_OFFSET + 0][0]   = INPUTEVENT_JOY2_HORIZ_POT;
+        uid[0].eventid[ID_AXIS_OFFSET + 1][0]   = INPUTEVENT_JOY2_VERT_POT;
+        uid[0].eventid[ID_BUTTON_OFFSET + 0][0] = INPUTEVENT_JOY2_LEFT;
+        uid[0].eventid[ID_BUTTON_OFFSET + 1][0] = INPUTEVENT_JOY2_RIGHT;
+        uid[0].eventid[ID_BUTTON_OFFSET + 2][0] = INPUTEVENT_JOY2_UP;
+        uid[0].eventid[ID_BUTTON_OFFSET + 3][0] = INPUTEVENT_JOY2_DOWN;
     }
     else
     {
-        uid[0].eventid[ID_AXIS_OFFSET + 0][0]   =  INPUTEVENT_JOY2_HORIZ;
-        uid[0].eventid[ID_AXIS_OFFSET + 1][0]   =  INPUTEVENT_JOY2_VERT;
-        uid[0].eventid[ID_BUTTON_OFFSET + 0][0] =  INPUTEVENT_JOY2_FIRE_BUTTON;
-        uid[0].eventid[ID_BUTTON_OFFSET + 1][0] =  INPUTEVENT_JOY2_2ND_BUTTON;
+        uid[0].eventid[ID_AXIS_OFFSET + 0][0]   = INPUTEVENT_JOY2_HORIZ;
+        uid[0].eventid[ID_AXIS_OFFSET + 1][0]   = INPUTEVENT_JOY2_VERT;
+        uid[0].eventid[ID_BUTTON_OFFSET + 0][0] = INPUTEVENT_JOY2_FIRE_BUTTON;
+        uid[0].eventid[ID_BUTTON_OFFSET + 1][0] = INPUTEVENT_JOY2_2ND_BUTTON;
     }
 
-    if(uae_devices[1] == RETRO_DEVICE_UAE_CD32PAD)
+    if (uae_devices[1] == RETRO_DEVICE_UAE_CD32PAD)
     {
-        uid[1].eventid[ID_AXIS_OFFSET + 0][0]   =  INPUTEVENT_JOY1_HORIZ;
-        uid[1].eventid[ID_AXIS_OFFSET + 1][0]   =  INPUTEVENT_JOY1_VERT;
-        uid[1].eventid[ID_BUTTON_OFFSET + 0][0] =  INPUTEVENT_JOY1_CD32_RED;
-        uid[1].eventid[ID_BUTTON_OFFSET + 1][0] =  INPUTEVENT_JOY1_CD32_BLUE;
-        uid[1].eventid[ID_BUTTON_OFFSET + 2][0] =  INPUTEVENT_JOY1_CD32_GREEN;
-        uid[1].eventid[ID_BUTTON_OFFSET + 3][0] =  INPUTEVENT_JOY1_CD32_YELLOW;
-        uid[1].eventid[ID_BUTTON_OFFSET + 4][0] =  INPUTEVENT_JOY1_CD32_RWD;
-        uid[1].eventid[ID_BUTTON_OFFSET + 5][0] =  INPUTEVENT_JOY1_CD32_FFW;
-        uid[1].eventid[ID_BUTTON_OFFSET + 6][0] =  INPUTEVENT_JOY1_CD32_PLAY;
+        uid[1].eventid[ID_AXIS_OFFSET + 0][0]   = INPUTEVENT_JOY1_HORIZ;
+        uid[1].eventid[ID_AXIS_OFFSET + 1][0]   = INPUTEVENT_JOY1_VERT;
+        uid[1].eventid[ID_BUTTON_OFFSET + 0][0] = INPUTEVENT_JOY1_CD32_RED;
+        uid[1].eventid[ID_BUTTON_OFFSET + 1][0] = INPUTEVENT_JOY1_CD32_BLUE;
+        uid[1].eventid[ID_BUTTON_OFFSET + 2][0] = INPUTEVENT_JOY1_CD32_GREEN;
+        uid[1].eventid[ID_BUTTON_OFFSET + 3][0] = INPUTEVENT_JOY1_CD32_YELLOW;
+        uid[1].eventid[ID_BUTTON_OFFSET + 4][0] = INPUTEVENT_JOY1_CD32_RWD;
+        uid[1].eventid[ID_BUTTON_OFFSET + 5][0] = INPUTEVENT_JOY1_CD32_FFW;
+        uid[1].eventid[ID_BUTTON_OFFSET + 6][0] = INPUTEVENT_JOY1_CD32_PLAY;
+    }
+    else if (uae_devices[1] == RETRO_DEVICE_UAE_ANALOG)
+    {
+        uid[1].eventid[ID_AXIS_OFFSET + 0][0]   = INPUTEVENT_JOY1_HORIZ_POT;
+        uid[1].eventid[ID_AXIS_OFFSET + 1][0]   = INPUTEVENT_JOY1_VERT_POT;
+        uid[1].eventid[ID_BUTTON_OFFSET + 0][0] = INPUTEVENT_JOY1_LEFT;
+        uid[1].eventid[ID_BUTTON_OFFSET + 1][0] = INPUTEVENT_JOY1_RIGHT;
+        uid[1].eventid[ID_BUTTON_OFFSET + 2][0] = INPUTEVENT_JOY1_UP;
+        uid[1].eventid[ID_BUTTON_OFFSET + 3][0] = INPUTEVENT_JOY1_DOWN;
     }
     else
     {
-        uid[1].eventid[ID_AXIS_OFFSET + 0][0]   =  INPUTEVENT_JOY1_HORIZ;
-        uid[1].eventid[ID_AXIS_OFFSET + 1][0]   =  INPUTEVENT_JOY1_VERT;
-        uid[1].eventid[ID_BUTTON_OFFSET + 0][0] =  INPUTEVENT_JOY1_FIRE_BUTTON;
-        uid[1].eventid[ID_BUTTON_OFFSET + 1][0] =  INPUTEVENT_JOY1_2ND_BUTTON;
+        uid[1].eventid[ID_AXIS_OFFSET + 0][0]   = INPUTEVENT_JOY1_HORIZ;
+        uid[1].eventid[ID_AXIS_OFFSET + 1][0]   = INPUTEVENT_JOY1_VERT;
+        uid[1].eventid[ID_AXIS_OFFSET + 2][0]   = INPUTEVENT_JOY1_HORIZ_POT;
+        uid[1].eventid[ID_AXIS_OFFSET + 3][0]   = INPUTEVENT_JOY1_VERT_POT;
+        uid[1].eventid[ID_BUTTON_OFFSET + 0][0] = INPUTEVENT_JOY1_FIRE_BUTTON;
+        uid[1].eventid[ID_BUTTON_OFFSET + 1][0] = INPUTEVENT_JOY1_2ND_BUTTON;
     }
 
-    uid[2].eventid[ID_AXIS_OFFSET + 0][0]   =  INPUTEVENT_PAR_JOY1_HORIZ;
-    uid[2].eventid[ID_AXIS_OFFSET + 1][0]   =  INPUTEVENT_PAR_JOY1_VERT;
-    uid[2].eventid[ID_BUTTON_OFFSET + 0][0] =  INPUTEVENT_PAR_JOY1_FIRE_BUTTON;
-    uid[2].eventid[ID_BUTTON_OFFSET + 1][0] =  INPUTEVENT_PAR_JOY1_2ND_BUTTON;
+    uid[2].eventid[ID_AXIS_OFFSET + 0][0]   = INPUTEVENT_PAR_JOY1_HORIZ;
+    uid[2].eventid[ID_AXIS_OFFSET + 1][0]   = INPUTEVENT_PAR_JOY1_VERT;
+    uid[2].eventid[ID_BUTTON_OFFSET + 0][0] = INPUTEVENT_PAR_JOY1_FIRE_BUTTON;
+    uid[2].eventid[ID_BUTTON_OFFSET + 1][0] = INPUTEVENT_PAR_JOY1_2ND_BUTTON;
 
-    uid[3].eventid[ID_AXIS_OFFSET + 0][0]   =  INPUTEVENT_PAR_JOY2_HORIZ;
-    uid[3].eventid[ID_AXIS_OFFSET + 1][0]   =  INPUTEVENT_PAR_JOY2_VERT;
-    uid[3].eventid[ID_BUTTON_OFFSET + 0][0] =  INPUTEVENT_PAR_JOY2_FIRE_BUTTON;
-    uid[3].eventid[ID_BUTTON_OFFSET + 1][0] =  INPUTEVENT_PAR_JOY2_2ND_BUTTON;
+    uid[3].eventid[ID_AXIS_OFFSET + 0][0]   = INPUTEVENT_PAR_JOY2_HORIZ;
+    uid[3].eventid[ID_AXIS_OFFSET + 1][0]   = INPUTEVENT_PAR_JOY2_VERT;
+    uid[3].eventid[ID_BUTTON_OFFSET + 0][0] = INPUTEVENT_PAR_JOY2_FIRE_BUTTON;
+    uid[3].eventid[ID_BUTTON_OFFSET + 1][0] = INPUTEVENT_PAR_JOY2_2ND_BUTTON;
 
     uid[0].enabled = 1;
     uid[1].enabled = 1;
@@ -496,8 +528,23 @@ int input_get_default_joystick (struct uae_input_device *uid, int num, int port,
     uid[3].enabled = 1;
 
     inputdevice_finalized = 1;
+
+    currprefs.input_analog_joystick_mult = 100;
+    currprefs.input_analog_joystick_offset = 0;
     return 1;
 }
+
+int input_get_default_joystick_analog (struct uae_input_device *uid, int num, int port, int af, bool gp)
+{
+    uid[num].eventid[ID_AXIS_OFFSET + 0][0] = port ? INPUTEVENT_JOY2_HORIZ_POT : INPUTEVENT_JOY1_HORIZ_POT;
+    uid[num].eventid[ID_AXIS_OFFSET + 1][0] = port ? INPUTEVENT_JOY2_VERT_POT : INPUTEVENT_JOY1_VERT_POT;
+    uid[num].eventid[ID_BUTTON_OFFSET + 0][0] = port ? INPUTEVENT_JOY2_LEFT : INPUTEVENT_JOY1_LEFT;
+    uid[num].eventid[ID_BUTTON_OFFSET + 1][0] = port ? INPUTEVENT_JOY2_RIGHT : INPUTEVENT_JOY1_RIGHT;
+    uid[num].eventid[ID_BUTTON_OFFSET + 2][0] = port ? INPUTEVENT_JOY2_UP : INPUTEVENT_JOY1_UP;
+    uid[num].eventid[ID_BUTTON_OFFSET + 3][0] = port ? INPUTEVENT_JOY2_DOWN : INPUTEVENT_JOY1_DOWN;
+    return 0;
+}
+
 
 
 /***************************************************************
@@ -543,7 +590,7 @@ static int get_mouse_num (void)
 
 static TCHAR *get_mouse_friendlyname (int mouse)
 {
-    return "Default mouse";
+    return "RetroMouse";
 }
 
 static TCHAR *get_mouse_uniquename (int mouse)
@@ -626,6 +673,15 @@ int input_get_default_mouse (struct uae_input_device *uid, int num, int port, in
     return 0;
 }
 
+int input_get_default_lightpen (struct uae_input_device *uid, int num, int port, int af, bool gp)
+{
+    uid[num].eventid[ID_AXIS_OFFSET + 0][0] = INPUTEVENT_LIGHTPEN_HORIZ;
+    uid[num].eventid[ID_AXIS_OFFSET + 1][0] = INPUTEVENT_LIGHTPEN_VERT;
+    uid[num].eventid[ID_BUTTON_OFFSET + 0][0] = port ? INPUTEVENT_JOY2_3RD_BUTTON : INPUTEVENT_JOY1_3RD_BUTTON;
+    return 0;
+}
+
+
 /***************************************************************
   Keyboard functions
 ****************************************************************/
@@ -658,19 +714,19 @@ static int get_kb_num (void)
     return 1;
 }
 
-static char *get_kb_uniquename (int mouse)
-{
-    return "Default keyboard";
-}
-
 static char *get_kb_friendlyname (int mouse)
 {
-    return "Default keyboard";
+    return "RetroKeyboard";
+}
+
+static char *get_kb_uniquename (int mouse)
+{
+    return "RetroKeyboard";
 }
 
 static int get_kb_widget_num (int mouse)
 {
-    return 255; //fix me
+    return 255;
 }
 
 static int get_kb_widget_type (int mouse, int num, char *name, uae_u32 *code)
