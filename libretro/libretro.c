@@ -3346,7 +3346,7 @@ bool retro_create_config()
                real_ntsc=true;
                forced_video=true;
             }
-            else if (strstr(full_path, "(PAL)") != NULL)
+            else if (strstr(full_path, "PAL") != NULL)
             {
                fprintf(stdout, "[libretro-uae]: Found 'PAL' in filename '%s'\n", full_path);
                fprintf(stdout, "[libretro-uae]: Forcing PAL mode\n");
