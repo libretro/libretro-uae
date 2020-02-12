@@ -131,22 +131,12 @@ struct mystat
 	uae_s64 size;
 	uae_u32 mode;
 	struct mytimeval mtime;
-	//uae_s64 st_blocks;
 };
-
-typedef struct mylist
-{
-    void* data;
-    struct mylist *next, *prev;
-} mylist;
 
 struct my_opendir_s
 {
-	DIR *h;
-	int first;
-	mylist *items;
-	mylist *current;
-	char *path;
+	DIR *dh;
+	struct dirent *dp;
 };
 
 struct my_openfile_s
@@ -183,16 +173,9 @@ extern int fsdb_mode_representable_p (const a_inode *, int);
 extern int fsdb_mode_supported (const a_inode *);
 extern TCHAR *fsdb_create_unique_nname (a_inode *base, const TCHAR *);
 
-//struct my_opendir_s;
-//struct my_openfile_s;
-
 extern struct my_opendir_s *my_opendir (const TCHAR*, const TCHAR*);
 extern void my_closedir (struct my_opendir_s*);
-#if 0
 extern int my_readdir (struct my_opendir_s*, TCHAR*);
-#else
-extern struct dirent* my_readdir (struct my_opendir_s*, TCHAR*);
-#endif
 
 extern int my_rmdir (const TCHAR*);
 extern int my_mkdir (const TCHAR*);

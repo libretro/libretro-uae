@@ -1,14 +1,19 @@
+#ifndef UAE_SYSCONFIG_H
+#define UAE_SYSCONFIG_H
+
 /* src/sysconfig.h.  Generated from sysconfig.h.in by configure.  */
 /* src/sysconfig.h.in.  Generated from configure.ac by autoheader.  */
 
-#define CAPS
+#define CAPS /* CAPS-image support */
+#define FDI2RAW /* FDI 1.0 and 2.x image support */
+//#define WITH_CHD
 //#define A_ZIP
 //#define A_RAR
 //#define A_7Z
 #define A_LHA
 //#define A_LZX
 #define A_DMS
-//#define WITH_CHD
+
 #define CPUEMU_0 /* generic 680x0 emulation */
 #define CPUEMU_11 /* 68000/68010 prefetch emulation */
 #define CPUEMU_12 /* 68000/68010 cycle-exact cpu&blitter */
@@ -23,33 +28,34 @@
 #define CPUEMU_33 /* 68060 MMU */
 //#define CPUEMU_34 /* 68030 MMU + cache */
 //#define CPUEMU_35 /* 68030 MMU + cache + CE */
-#define MMUEMU
-#define FULLMMU
-#define FPUEMU
-#define UNALIGNED_PROFITABLE
-#define AMAX
-#define AGA
-#define AUTOCONFIG
-#define FILESYS
-#define SUPPORT_THREADS
-#define FDI2RAW
-#define DEBUGGER
-#define SAVESTATE
-#define ACTION_REPLAY
-#define DRIVESOUND
-#define GAYLE
-#define NCR
-#define CD32
-#define CDTV
-#define A2091
-#define SERIAL_PORT
-#define ARCADIA
-#define ECS_DENISE
-//#define JIT
-//#define USE_JIT_FPU
-//#define PARALLEL_PORT
-//#define OPTIMIZED_FLAGS
+#define MMUEMU /* Aranym 68040 MMU */
+#define FULLMMU /* Aranym 68040 MMU */
+#define FPUEMU /* FPU emulation */
 
+#define GAYLE /* Gayle emulation */
+#define ECS_DENISE /* ECS DENISE new features */
+#define AGA /* AGA chipset emulation (ECS_DENISE must be enabled) */
+#define FILESYS /* filesys emulation */
+//#define UAE_FILESYS_THREADS
+//#define JIT /* JIT compiler support */
+//#define USE_JIT_FPU
+#define AUTOCONFIG /* autoconfig support, fast ram, harddrives etc.. */
+#define SAVESTATE /* State file support */
+#define ACTION_REPLAY /* Action Replay 1/2/3 support */
+#define NCR /* A4000T/A4091, 53C710/53C770 SCSI */
+#define A2091 /* A590/A2091 SCSI */
+#define CDTV /* CDTV emulation */
+#define CD32 /* CD32 emulation */
+#define SERIAL_PORT /* serial port emulation */
+//#define PARALLEL_PORT /* parallel port emulation */
+//#define AMAX /* A-Max ROM adapter emulation */
+#define ARCADIA /* Arcadia arcade system */
+//#define ARCHIVEACCESS /* ArchiveAccess decompression library */
+#define DRIVESOUND
+#define DEBUGGER
+#define SUPPORT_THREADS
+//#define OPTIMIZED_FLAGS
+//#define UNALIGNED_PROFITABLE
 
 /* Define if building universal (internal helper macro) */
 /* #undef AC_APPLE_UNIVERSAL_BUILD */
@@ -233,11 +239,11 @@
 #define HAVE_STRSTR 1
 
 /* Define to 1 if `st_blocks' is a member of `struct stat'. */
-#define HAVE_STRUCT_STAT_ST_BLOCKS 1
+//#define HAVE_STRUCT_STAT_ST_BLOCKS 1
 
 /* Define to 1 if your `struct stat' has `st_blocks'. Deprecated, use
    `HAVE_STRUCT_STAT_ST_BLOCKS' instead. */
-#define HAVE_ST_BLOCKS 1
+//#define HAVE_ST_BLOCKS 1
 
 /* Define to 1 if you have the <sun/audioio.h> header file. */
 /* #undef HAVE_SUN_AUDIOIO_H */
@@ -532,3 +538,5 @@
 #ifdef VITA
 #define chmod(a, b)
 #endif
+
+#endif /* UAE_SYSCONFIG_H */

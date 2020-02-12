@@ -542,6 +542,65 @@ void uci_set_defaults (struct uaedev_config_info *uci, bool rdb)
 	uci->cd_emu_unit = -1;
 }
 
+static void get_usedblocks(struct fs_usage *fsu, bool fs, int *pblocksize, uae_s64 *pnumblocks, uae_s64 *pinuse, bool reduce)
+{
+	uae_s64 numblocks = 0, inuse;
+	int blocksize = *pblocksize;
+
+	if (fs && currprefs.filesys_limit) {
+		if (fsu->total > (uae_s64)currprefs.filesys_limit * 1024) {
+			uae_s64 oldtotal = fsu->total;
+			fsu->total = currprefs.filesys_limit * 1024;
+			fsu->avail = ((fsu->avail / 1024) * (fsu->total / 1024)) / (oldtotal / 1024);
+			fsu->avail *= 1024;
+		}
+	}
+	if (reduce) {
+		while (blocksize < 32768 || numblocks == 0) {
+			numblocks = fsu->total / blocksize;
+			if (numblocks <= 10)
+				numblocks = 10;
+			// Value that does not overflow when multiplied by 100 (uses 128 to keep it simple)
+			if (numblocks < 0x02000000)
+				break;
+			blocksize *= 2;
+		}
+	}
+	numblocks = fsu->total / blocksize;
+	inuse = (numblocks * blocksize - fsu->avail) / blocksize;
+	if (inuse > numblocks)
+		inuse = numblocks;
+	if (pnumblocks)
+		*pnumblocks = numblocks;
+	if (pinuse)
+		*pinuse = inuse;
+	if (pblocksize)
+		*pblocksize = blocksize;
+}
+
+static bool get_blocks(const TCHAR *rootdir, int unit, int flags, int *pblocksize, uae_s64 *pnumblocks, uae_s64 *pinuse, bool reduce)
+{
+	struct fs_usage fsu;
+	int ret;
+	bool fs = false;
+	int blocksize;
+
+	blocksize = 512;
+	if (flags & MYVOLUMEINFO_ARCHIVE) {
+		ret = zfile_fs_usage_archive(rootdir, 0, &fsu);
+		fs = true;
+	} else {
+		ret = get_fs_usage(rootdir, 0, &fsu);
+		fs = true;
+	}
+	if (ret)
+		return false;
+	get_usedblocks(&fsu, fs, &blocksize, pnumblocks, pinuse, reduce);
+	if (pblocksize)
+		*pblocksize = blocksize;
+	return ret == 0;
+}
+
 static int set_filesys_unit_1 (int nr, struct uaedev_config_info *ci)
 {
 	UnitInfo *ui;
@@ -2892,8 +2951,12 @@ static void do_info (Unit *unit, dpacket packet, uaecptr info, bool disk_info)
 	bool fs = false, media = false;
 
 	blocksize = 512;
+#if 0
 	/* not FFS because it is not understood by WB1.x C:Info */
 	dostype = DISK_TYPE_DOS;
+#else
+	dostype = get_long(unit->volume + 32);
+#endif
 	nr = unit->unit;
 	if (unit->volflags & MYVOLUMEINFO_ARCHIVE) {
 		ret = zfile_fs_usage_archive (unit->ui.rootdir, 0, &fsu);
@@ -2908,8 +2971,8 @@ static void do_info (Unit *unit, dpacket packet, uaecptr info, bool disk_info)
 			nr = unit->unit - cd_unit_offset;
 			blocksize = ii.blocksize;
 			if (ii.media) {
-				fsu.fsu_blocks = ii.blocks;
-				fsu.fsu_bavail = 0;
+				fsu.total = ii.blocks * ii.blocksize;
+				fsu.avail = 0;
 			}
 		}
 #endif
@@ -2951,16 +3014,13 @@ static void do_info (Unit *unit, dpacket packet, uaecptr info, bool disk_info)
 		put_long (info + 24, -1); /* ID_NO_DISK_PRESENT */
 		put_long (info + 28, 0);
 	} else {
-		if (fs && currprefs.filesys_limit) {
-			if (fsu.fsu_blocks > (uae_u64)currprefs.filesys_limit * 1024 / blocksize) {
-				uae_u32 oldblocks = fsu.fsu_blocks;
-				fsu.fsu_blocks = (uae_u32)((uae_u64)currprefs.filesys_limit * 1024 / blocksize);
-				fsu.fsu_bavail = (uae_u32)((uae_u64)fsu.fsu_bavail * fsu.fsu_blocks / oldblocks);
-			}
-		}
-		put_long (info + 12, fsu.fsu_blocks ); /* numblocks */
-		put_long (info + 16, fsu.fsu_blocks - fsu.fsu_bavail); /* inuse */
-		put_long (info + 24, dostype); /* disk type */
+		uae_s64 numblocks, inuse;
+		get_usedblocks(&fsu, fs, &blocksize, &numblocks, &inuse, true);
+		//write_log(_T("total %lld avail %lld Blocks %lld Inuse %lld blocksize %d\n"), fsu.total, fsu.avail, numblocks, inuse, blocksize);
+		put_long (info + 12, (uae_u32)numblocks); /* numblocks */
+		put_long (info + 16, (uae_u32)inuse); /* inuse */
+		put_long (info + 20, blocksize); /* bytesperblock */
+		put_long (info + 24, dostype == DISK_TYPE_DOS && kickstart_version >= 36 ? DISK_TYPE_DOS_FFS : dostype); /* disk type */
 		put_long (info + 28, unit->volume >> 2); /* volume node */
 		put_long (info + 32, (get_long (unit->volume + 28) || unit->keys) ? -1 : 0); /* inuse */
 	}
@@ -4144,7 +4204,6 @@ static bool filesys_name_invalid(const TCHAR *fn)
 	return _tcslen (fn) > currprefs.filesys_max_name;
 }
 
-#if 0
 static int filesys_readdir(struct fs_dirhandle *d, TCHAR *fn, uae_u64 *uniq)
 {
 	int ok = 0;
@@ -4156,13 +4215,11 @@ static int filesys_readdir(struct fs_dirhandle *d, TCHAR *fn, uae_u64 *uniq)
 		ok = isofs_readdir(d->isod, fn, uniq);*/
 	return ok;
 }
-#endif
 
 static int action_examine_all_do (Unit *unit, uaecptr lock, ExAllKey *eak, uaecptr exalldata, uae_u32 exalldatasize, uae_u32 type, uaecptr control)
 {
 	a_inode *aino, *base = NULL;
-	//int ok;
-	struct dirent *ok = NULL;
+	int ok;
 	uae_u32 err;
 	struct fs_dirhandle *d;
 	TCHAR fn[MAX_DPATH];
@@ -4175,41 +4232,23 @@ static int action_examine_all_do (Unit *unit, uaecptr lock, ExAllKey *eak, uaecp
 		uae_u64 uniq = 0;
 		d = eak->dirhandle;
 		if (!eak->fn) {
-#if 0
 			do {
 				ok = filesys_readdir(d, fn, &uniq);
 			} while (ok && d->fstype == FS_DIRECTORY && (filesys_name_invalid (fn) || fsdb_name_invalid_dir (fn)));
-#else
-            do {
-                if (d->fstype == FS_ARCHIVE)
-                    ok = zfile_readdir_archive (d->zd, fn);
-                else if (d->fstype == FS_DIRECTORY)
-                    ok = my_readdir (d->od, 0);
-                /*else if (d->fstype == FS_CDFS)
-                    ok = isofs_readdir (d->isod, fn, &uniq);*/
-                else
-                    ok = 0;
-            } while (ok && d->fstype == FS_DIRECTORY && fsdb_name_invalid (ok->d_name));
-#endif
 			if (!ok)
 				return 0;
 		} else {
-			//_tcscpy (fn, eak->fn);
-			_tcscpy (ok->d_name, eak->fn);
+			_tcscpy (fn, eak->fn);
 			xfree (eak->fn);
 			eak->fn = NULL;
 		}
-		if (d->fstype == FS_DIRECTORY)
-		    strcpy(fn, ok->d_name);
 		aino = lookup_child_aino_for_exnext (unit, base, fn, &err, uniq);
-		//aino = lookup_child_aino_for_exnext (unit, base, ok->d_name, &err, uniq);
 		if (!aino)
 			return 0;
 		eak->id = unit->exallid++;
 		put_long (control + 4, eak->id);
 		if (!exalldo (exalldata, exalldatasize, type, control, unit, aino)) {
-			//eak->fn = my_strdup (fn); /* no space in exallstruct, save current entry */
-			//eak->fn = my_strdup (ok->d_name); /* no space in exallstruct, save current entry */
+			eak->fn = my_strdup (fn); /* no space in exallstruct, save current entry */
 			break;
 		}
 	}
@@ -4455,36 +4494,19 @@ static void populate_directory (Unit *unit, a_inode *base)
 	for (;;) {
 		uae_u64 uniq = 0;
 		TCHAR fn[MAX_DPATH];
-		//int ok;
-		struct dirent *ok = NULL;
+		int ok;
 		uae_u32 err;
 
 		/* Find next file that belongs to the Amiga fs (skipping things
 		like "..", "." etc.  */
-#if 0
 		do {
 			ok = filesys_readdir(d, fn, &uniq);
 		} while (ok && d->fstype == FS_DIRECTORY && (filesys_name_invalid (fn) || fsdb_name_invalid_dir (fn)));
-#else
-        do {
-            if (d->fstype == FS_ARCHIVE)
-                ok = zfile_readdir_archive (d->zd, fn);
-            else if (d->fstype == FS_DIRECTORY)
-                ok = my_readdir (d->od, 0);
-            /*else if (d->fstype == FS_CDFS)
-                ok = isofs_readdir (d->isod, fn, &uniq);*/
-            else
-                ok = 0;
-        } while (ok && d->fstype == FS_DIRECTORY && fsdb_name_invalid (ok->d_name));
-#endif
 		if (!ok)
 			break;
 		/* This calls init_child_aino, which will notice that the parent is
 		being ExNext()ed, and it will increment the locked counts.  */
-		if (d->fstype == FS_DIRECTORY)
-		    strcpy(fn, ok->d_name);
 		aino = lookup_child_aino_for_exnext (unit, base, fn, &err, uniq);
-		//aino = lookup_child_aino_for_exnext (unit, base, ok->d_name, &err, uniq);
 	}
 	fs_closedir (d);
 }
@@ -4511,28 +4533,6 @@ static void do_examine (Unit *unit, dpacket packet, ExamineKey *ek, uaecptr info
 	PUT_PCK_RES1 (packet, DOS_FALSE);
 	PUT_PCK_RES2 (packet, ERROR_NO_MORE_ENTRIES);
 }
-/*
-static bool do_examine (Unit *unit, dpacket packet, a_inode *aino, uaecptr info)
-	for (;;) {
-		TCHAR *name;
-		if (!aino)
-			break;
-		name = aino->nname;
-		get_fileinfo (unit, packet, info, aino);
-		if (!aino->vfso && !(unit->volflags & (MYVOLUMEINFO_ARCHIVE | MYVOLUMEINFO_CDFS)) && !fsdb_exists(name)) {
-			TRACE ((_T("%s orphaned"), name));
-			return false;
-		}
-		return true;
-	}
-	TRACE((_T("no more entries\n")));
-	free_exkey (unit, aino->parent);
-	PUT_PCK_RES1 (packet, DOS_FALSE);
-	PUT_PCK_RES2 (packet, ERROR_NO_MORE_ENTRIES);
-	return true;
-}
-*/
-
 
 #define EXNEXT_DEBUG 0
 

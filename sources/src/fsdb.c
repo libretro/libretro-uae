@@ -54,12 +54,12 @@ TCHAR *nname_begin (TCHAR *nname)
  * exists that compares equal to REL, return 0.  */
 TCHAR *fsdb_search_dir (const TCHAR *dirname, TCHAR *rel)
 {
-#if 0
 	TCHAR *p = 0;
 	int de;
+	struct my_opendir_s *dir;
 	TCHAR fn[MAX_DPATH];
 
-	struct my_opendir_s *dir = my_opendir (dirname, 0);
+	dir = my_opendir (dirname, 0);
 	/* This really shouldn't happen...  */
 	if (! dir)
 		return 0;
@@ -72,25 +72,6 @@ TCHAR *fsdb_search_dir (const TCHAR *dirname, TCHAR *rel)
 	}
 	my_closedir (dir);
 	return p;
-#else
-	TCHAR *p = 0;
-	struct dirent *de;
-	TCHAR fn[MAX_DPATH];
-
-	struct my_opendir_s *dir = my_opendir (dirname, 0);
-	/* This really shouldn't happen...  */
-	if (! dir)
-		return 0;
-
-	while (p == 0 && (de = my_readdir (dir, fn)) != 0) {
-		if (strcmp (de->d_name, rel) == 0)
-			p = rel;
-		else if (strcasecmp (de->d_name, rel) == 0)
-			p = my_strdup (de->d_name);
-	}
-	my_closedir (dir);
-	return p;
-#endif
 }
 
 static FILE *get_fsdb (a_inode *dir, const TCHAR *mode)
@@ -367,7 +348,7 @@ void fsdb_dir_writeback (a_inode *dir)
 
 	f = get_fsdb (dir, _T("r+b"));
 	if (f == 0) {
-		if (/*(currprefs.filesys_custom_uaefsdb  && (dir->volflags & MYVOLUMEINFO_STREAMS)) ||*/ currprefs.filesys_no_uaefsdb) {
+		if ((currprefs.filesys_custom_uaefsdb  && (dir->volflags & MYVOLUMEINFO_STREAMS)) || currprefs.filesys_no_uaefsdb) {
 			for (aino = dir->child; aino; aino = aino->sibling) {
 				aino->dirty = 0;
 				aino->has_dbentry = 0;
@@ -423,40 +404,5 @@ void fsdb_dir_writeback (a_inode *dir)
 	TRACE ((_T("end\n")));
 	fclose (f);
 	xfree (tmpbuf);
-}
-
-#define STUB(format, ...) \
-{ \
-    printf(" -- stub -- %s " format "\n", __func__, ##__VA_ARGS__); \
-}
-
-int my_setcurrentdir (const TCHAR *curdir, TCHAR *oldcur)
-{
-    int ret = 0;
-    if (oldcur)
-        ret = getcwd (oldcur, MAX_DPATH) ? 0 : 1;
-    if (curdir) {
-        const TCHAR *namep;
-        TCHAR path[MAX_DPATH];
-        namep = curdir;
-        ret = chdir (namep);
-    }
-    //write_log("curdir=\"%s\" oldcur=\"%s\" ret=%d\n", curdir, oldcur, ret);
-    return ret;
-}
-
-bool my_isfilehidden (const TCHAR *path)
-{
-    STUB("path=\"%s\"", path);
-    return 0;
-}
-
-void my_setfilehidden (const TCHAR *path, bool hidden)
-{
-    STUB("path=\"%s\" hidden=%d", path, hidden);
-}
-
-TCHAR *target_expand_environment (const TCHAR *path, TCHAR *out, int maxlen)
-{
 }
 

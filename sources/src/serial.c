@@ -53,7 +53,7 @@
 #endif
 #endif
 
-#define SERIALDEBUG 1 /* 0, 1, 2 3 */
+#define SERIALDEBUG 0 /* 0, 1, 2 3 */
 #define MODEMTEST   0 /* 0 or 1 */
 
 extern unsigned int ciabpra;
@@ -364,11 +364,13 @@ uae_u8 serial_writestatus (uae_u8 old, uae_u8 nw)
     if ((old & 0x80) == 0x00 && (nw & 0x80) == 0x80)
 		serial_dtr_off();
 
+#if SERIALDEBUG > 0
     if ((old & 0x40) != (nw & 0x40))
 		write_log (_T("RTS %s.\n"), ((nw & 0x40) == 0x40) ? _T("set") : _T("cleared"));
 
     if ((old & 0x10) != (nw & 0x10))
 		write_log (_T("CTS %s.\n"), ((nw & 0x10) == 0x10) ? _T("set") : _T("cleared"));
+#endif
 
     return nw; /* This value could also be changed here */
 }
@@ -379,7 +381,9 @@ void serial_open(void)
 		return;
 
     if ((sd = open (currprefs.sername, O_RDWR|O_NONBLOCK|O_BINARY, 0)) < 0) {
+#ifndef __LIBRETRO__
 		write_log (_T("Error: Could not open Device %s\n"), currprefs.sername);
+#endif
 		return;
     } else {
 		write_log (_T("Serial device %s opened.\n"), currprefs.sername);
