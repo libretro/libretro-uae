@@ -78,7 +78,7 @@ struct zvolume *zvolume_alloc_nofile (const TCHAR *name, unsigned int id, void *
 struct zvolume *zfile_fopen_directory (const TCHAR *dirname);
 struct zvolume *zfile_fopen_archive_flags (const TCHAR *filename, int flags);
 struct zdirectory *zfile_opendir_archive_flags (const TCHAR *path, int flags);
-struct dirent*/*int*/ zfile_readdir_archive_fullpath (struct zdirectory *zd, TCHAR *out, bool fullpath);
+int zfile_readdir_archive_fullpath (struct zdirectory *zd, TCHAR *out, bool fullpath);
 int zfile_fs_usage_archive (const TCHAR *path, const TCHAR *disk, struct fs_usage *fsp);
 
 
@@ -168,7 +168,7 @@ static void checkarchiveparent (struct zfile *z)
 		archive_unpackzfile (z);
 }
 
-static struct zfile *zfile_create (struct zfile *prev)
+static struct zfile *zfile_create (struct zfile *prev, const TCHAR *originalname)
 {
 	struct zfile *z;
 
@@ -179,6 +179,10 @@ static struct zfile *zfile_create (struct zfile *prev)
 	z->next = zlist;
 	zlist = z;
 	z->opencnt = 1;
+	if (prev && prev->originalname)
+		z->originalname = my_strdup(prev->originalname);
+	else if (originalname)
+		z->originalname = my_strdup(originalname);
 	if (prev) {
 		z->zfdmask = prev->zfdmask;
 	}
@@ -1540,7 +1544,7 @@ static struct zfile *zfile_fopen_nozip (const TCHAR *name, const TCHAR *mode)
 
 	if(*name == '\0')
 		return NULL;
-	l = zfile_create (NULL);
+	l = zfile_create (NULL, name);
 	l->name = my_strdup (name);
 	l->mode = my_strdup (mode);
 	f = _tfopen (name, mode);
@@ -1616,7 +1620,7 @@ static struct zfile *zfile_fopen_2 (const TCHAR *name, const TCHAR *mode, int ma
 		l->zfdmask = mask;
 	} else {
 		struct mystat st;
-		l = zfile_create (NULL);
+		l = zfile_create (NULL, name);
 		l->mode = my_strdup (mode);
 		l->name = my_strdup (name);
 		l->zfdmask = mask;
@@ -1778,9 +1782,9 @@ struct zfile *zfile_dup (struct zfile *zf)
 	if (zf->userdata)
 		return NULL;
 	if (!zf->data && zf->dataseek) {
-		nzf = zfile_create (zf);
+		nzf = zfile_create (zf, NULL);
 	} else if (zf->data) {
-		nzf = zfile_create (zf);
+		nzf = zfile_create (zf, NULL);
 		nzf->data = xmalloc (uae_u8, zf->size);
         if (!nzf->data) {
             write_log(_T("Out of memory: %s\n"), zfile_getname(zf));
@@ -1803,7 +1807,7 @@ struct zfile *zfile_dup (struct zfile *zf)
 		FILE *ff = _tfopen (zf->name, zf->mode);
 		if (!ff)
 			return NULL;
-		nzf = zfile_create (zf);
+		nzf = zfile_create (zf, NULL);
 		nzf->f = ff;
 	}
 	zfile_fseek (nzf, zf->seek, SEEK_SET);
@@ -1838,7 +1842,7 @@ int zfile_iscompressed (struct zfile *z)
 struct zfile *zfile_fopen_empty (struct zfile *prev, const TCHAR *name, uae_u64 size)
 {
 	struct zfile *l;
-	l = zfile_create (prev);
+	l = zfile_create (prev, NULL);
 	l->name = my_strdup (name ? name : _T(""));
 	if (size) {
 		l->data = xcalloc (uae_u8, size);
@@ -1868,7 +1872,7 @@ struct zfile *zfile_fopen_parent (struct zfile *z, const TCHAR *name, uae_u64 of
 
 	if (z == NULL)
 		return NULL;
-	l = zfile_create (z);
+	l = zfile_create (z, NULL);
 	if (name)
 		l->name = my_strdup (name);
 	else if (z->name)
@@ -1902,7 +1906,7 @@ struct zfile *zfile_fopen_data (const TCHAR *name, uae_u64 size, const uae_u8 *d
 {
 	struct zfile *l;
 
-	l = zfile_create (NULL);
+	l = zfile_create (NULL, name);
 	l->name = my_strdup (name ? name : _T(""));
 	l->data = xmalloc (uae_u8, size);
 	l->size = size;
@@ -2371,7 +2375,7 @@ static struct znode *znode_alloc (struct znode *parent, const TCHAR *name)
 	_tcscat (fullpath, FSDB_DIR_SEPARATOR_S);
 	_tcscat (fullpath, tmpname);
 #ifdef ZFILE_DEBUG
-	write_log (_T("znode_alloc vol='%s' parent='%s' name='%s'\n"), parent->volume->root.name, parent->name, name);
+	write_log (_T("znode_alloc vol='%s' parent='%s' name='%s'\n"), parent->volume->root.name, parent->name, tmpname);
 #endif
 	zn->fullname = my_strdup (fullpath);
 	zn->name = my_strdup (tmpname);
@@ -2781,7 +2785,6 @@ static void addvolumesize (struct zvolume *zv, uae_s64 size)
 	if (blocks == 0)
 		blocks++;
 	while (zv) {
-		zv->blocks += blocks;
 		zv->size += size;
 		zv = zv->parent;
 	}
@@ -3116,7 +3119,7 @@ void zfile_closedir_archive (struct zdirectory *zd)
 	xfree (zd);
 }
 
-struct dirent*/*int*/ zfile_readdir_archive_fullpath (struct zdirectory *zd, TCHAR *out, bool fullpath)
+int zfile_readdir_archive_fullpath (struct zdirectory *zd, TCHAR *out, bool fullpath)
 {
 	if (out)
 		out[0] = 0;
@@ -3149,17 +3152,17 @@ struct dirent*/*int*/ zfile_readdir_archive_fullpath (struct zdirectory *zd, TCH
 		zd->cnt = cnt;
 	}
 	if (out == NULL)
-		return NULL;//return zd->cnt;
+		return zd->cnt;
 	if (fullpath) {
 		_tcscpy (out, zd->parentpath);
 		_tcscat (out, FSDB_DIR_SEPARATOR_S);
 	}
 	_tcscat (out, zd->filenames[zd->offset]);
 	zd->offset++;
-	return (struct dirent *)zd;
+	return 1;
 }
 
-struct dirent*/*int*/ zfile_readdir_archive (struct zdirectory *zd, TCHAR *out)
+int zfile_readdir_archive (struct zdirectory *zd, TCHAR *out)
 {
 	return zfile_readdir_archive_fullpath (zd, out, false);
 }
@@ -3204,8 +3207,8 @@ int zfile_fs_usage_archive (const TCHAR *path, const TCHAR *disk, struct fs_usag
 
 	if (!zv)
 		return -1;
-	fsp->fsu_blocks = zv->blocks;
-	fsp->fsu_bavail = 0;
+	fsp->total = zv->size;
+	fsp->avail = 0;
 	return 0;
 }
 

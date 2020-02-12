@@ -113,13 +113,13 @@ struct hd_hardfiledata {
 #define FILESYS_HARDDRIVE 3
 #define FILESYS_CD 4
 
-#define MAX_FILESYSTEM_UNITS 30
+#define MAX_FILESYSTEM_UNITS 50
 
 struct uaedev_mount_info;
 extern struct uaedev_mount_info options_mountinfo;
 
 struct hardfiledata *get_hardfile_data (int nr);
-#define FILESYS_MAX_BLOCKSIZE 2048
+#define FILESYS_MAX_BLOCKSIZE 8192
 
 int hdf_open (struct hardfiledata *hfd, const TCHAR *altname);
 int hdf_dup (struct hardfiledata *dhfd, const struct hardfiledata *shfd);

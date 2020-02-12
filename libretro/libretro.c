@@ -2284,7 +2284,9 @@ static bool disk_set_eject_state(bool ejected)
       else
          dc->eject_state = ejected;
 
-      display_current_image(((!dc->eject_state) ? dc->labels[dc->index] : ""), !dc->eject_state);
+      if (dc->files[dc->index] > 0 && file_exists(dc->files[dc->index]))
+          display_current_image(((!dc->eject_state) ? dc->labels[dc->index] : ""), !dc->eject_state);
+
       if (dc->eject_state)
       {
          if (dc->files[dc->index] > 0)
@@ -3614,33 +3616,37 @@ bool retro_create_config()
                   dc_add_file(dc, full_path, disk_image_label);
                }
 
-               // Init first disk
-               dc->index = 0;
-               dc->eject_state = false;
-               display_current_image(dc->labels[dc->index], !dc->eject_state);
-               fprintf(stdout, "[libretro-uae]: Disk (%d) inserted into drive DF0: '%s'\n", dc->index+1, dc->files[dc->index]);
-               fprintf(configfile, "floppy0=%s\n", dc->files[0]);
-
-               // Append rest of the disks to the config if m3u is a MultiDrive-m3u
-               if (strstr(full_path, "(MD)") != NULL)
+               // Init only existing disks
+               if (dc->count)
                {
-                  for (unsigned i = 1; i < dc->count; i++)
-                  {
-                     dc->index = i;
-                     if (i <= 3)
-                     {
-                        fprintf(stdout, "[libretro-uae]: Disk (%d) inserted into drive DF%d: '%s'\n", dc->index+1, i, dc->files[dc->index]);
-                        fprintf(configfile, "floppy%d=%s\n", i, dc->files[i]);
+                  // Init first disk
+                  dc->index = 0;
+                  dc->eject_state = false;
+                  display_current_image(dc->labels[dc->index], true);
+                  fprintf(stdout, "[libretro-uae]: Disk (%d) inserted into drive DF0: '%s'\n", dc->index+1, dc->files[dc->index]);
+                  fprintf(configfile, "floppy0=%s\n", dc->files[0]);
 
-                        // By default only DF0: is enabled, so floppyXtype needs to be set on the extra drives
-                        if (i > 0)
-                           fprintf(configfile, "floppy%dtype=%d\n", i, 0); // 0 = 3.5" DD
-                     }
-                     else
+                  // Append rest of the disks to the config if m3u is a MultiDrive-m3u
+                  if (strstr(full_path, "(MD)") != NULL)
+                  {
+                     for (unsigned i = 1; i < dc->count; i++)
                      {
-                        fprintf(stderr, "Too many disks for MultiDrive!\n");
-                        fclose(configfile);
-                        return false;
+                        dc->index = i;
+                        if (i <= 3)
+                        {
+                           fprintf(stdout, "[libretro-uae]: Disk (%d) inserted into drive DF%d: '%s'\n", dc->index+1, i, dc->files[dc->index]);
+                           fprintf(configfile, "floppy%d=%s\n", i, dc->files[i]);
+
+                           // By default only DF0: is enabled, so floppyXtype needs to be set on the extra drives
+                           if (i > 0)
+                              fprintf(configfile, "floppy%dtype=%d\n", i, 0); // 0 = 3.5" DD
+                        }
+                        else
+                        {
+                           fprintf(stderr, "Too many disks for MultiDrive!\n");
+                           fclose(configfile);
+                           return false;
+                        }
                      }
                   }
                }
@@ -3789,7 +3795,7 @@ bool retro_create_config()
             // Init first disk
             dc->index = 0;
             dc->eject_state = false;
-            display_current_image(dc->labels[dc->index], !dc->eject_state);
+            display_current_image(dc->labels[dc->index], true);
             fprintf(stdout, "[libretro-uae]: CD (%d) inserted into drive CD0: '%s'\n", dc->index+1, dc->files[dc->index]);
             fprintf(configfile, "cdimage0=%s,\n", dc->files[0]); // ","-suffix needed if filename contains ","
 

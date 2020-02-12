@@ -99,8 +99,8 @@ bool my_stat (const TCHAR *name, struct mystat *ms) {
         write_log("my_stat: stat on file %s failed\n", name);
         return false;
     }
-    //if (log_filesys)
-    //    write_log("fs_stat returned size %jd\n", sonuc.st_size);
+    if (log_filesys)
+        write_log("fs_stat returned size %9jd: %s\n", sonuc.st_size, name);
     ms->size = sonuc.st_size;
     // FIXME: read mode more accurately
     ms->mode = 0;
@@ -112,9 +112,9 @@ bool my_stat (const TCHAR *name, struct mystat *ms) {
     }
     ms->mtime.tv_sec = sonuc.st_mtime;
     ms->mtime.tv_usec = 0;
-//#ifdef HAVE_STRUCT_STAT_ST_BLOCKS
-//    ms->st_blocks = sonuc.blocks;
-//#endif
+#ifdef HAVE_STRUCT_STAT_ST_BLOCKS
+    ms->st_blocks = sonuc.blocks;
+#endif
     return true;
 }
 
@@ -250,23 +250,42 @@ FILE *my_opentext (const TCHAR *name)
 
 struct my_opendir_s *my_opendir (const TCHAR *name, const TCHAR *mask)
 {
-    /// FIXME: opendir returns struct DIR*, please translate instead of casting.
-    return (struct my_opendir_s*)opendir(name);
+    struct my_opendir_s *mod;
+    mod = xmalloc (struct my_opendir_s, 1);
+    if (!mod)
+        return NULL;
+
+    DIR* dir = opendir(name);
+    if (!dir) {
+        write_log("my_opendir '%s' failed\n", name);
+        return NULL;
+    } else if (log_filesys) {
+        write_log("my_opendir '%s'\n", name);
+    }
+
+    mod->dh = dir;
+    return mod;
 }
 
 void my_closedir (struct my_opendir_s *mod)
 {
-	if (mod)
-		/// FIXME: closedir needs struct DIR*, please translate instead of casting.
-		closedir((DIR*)mod);
-#if 0
-	xfree (mod);
-#endif
+    if (mod)
+    {
+        closedir(mod->dh);
+        free(mod);
+    }
 }
 
-struct dirent* my_readdir (struct my_opendir_s *mod, TCHAR *name)
+int my_readdir(struct my_opendir_s* mod, TCHAR* name)
 {
-	return readdir((DIR*)mod);
+    mod->dp = readdir(mod->dh);
+    if (!mod->dp)
+        return 0;
+    _tcscpy (name, mod->dp->d_name);
+    if (log_filesys) {
+        write_log("my_readdir => '%s'\n", name);
+    }
+    return 1;
 }
 
 int my_rmdir (const TCHAR *name)
@@ -431,4 +450,35 @@ unsigned int my_write(struct my_openfile_s *mos, void *b, unsigned int size) {
     if (log_filesys)
         write_log("my_write fd=%d buffer=%p size=%d => %zd\n", mos->fd, b, size, bytes_written);
     return (unsigned int) bytes_written;
+}
+
+int my_setcurrentdir (const TCHAR *curdir, TCHAR *oldcur)
+{
+    int ret = 0;
+    if (oldcur)
+        ret = getcwd (oldcur, MAX_DPATH) ? 0 : 1;
+    if (curdir) {
+        const TCHAR *namep;
+        TCHAR path[MAX_DPATH];
+        namep = curdir;
+        ret = chdir (namep);
+    }
+    //write_log("curdir=\"%s\" oldcur=\"%s\" ret=%d\n", curdir, oldcur, ret);
+    return ret;
+}
+
+bool my_isfilehidden (const TCHAR *path)
+{
+    return 0;
+}
+
+void my_setfilehidden (const TCHAR *path, bool hidden)
+{
+}
+
+TCHAR *target_expand_environment (const TCHAR *path, TCHAR *out, int maxlen)
+{
+    if (!path)
+        return NULL;
+    return out;
 }

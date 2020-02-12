@@ -89,7 +89,7 @@ extern bool opt_multimouse;
 extern bool opt_keyrahkeypad;
 extern bool opt_keyboard_pass_through;
 int imagename_timer=0;
-static char statusbar_text[100]={0};
+static char statusbar_text[RETRO_PATH_MAX]={0};
 int turbo_fire_button_disabled=-1;
 int turbo_fire_button=-1;
 unsigned int turbo_pulse=2;
