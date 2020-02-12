@@ -138,8 +138,8 @@ To do this just add the corresponding string to the filename:
 |**x**| |**(MD)**|*Insert each disk in a different drive (**Maximum 4 disks**)*|
 | |**x**|**(CD32)** or **(CD32NF)**|Amiga CD32, 2MB Chip RAM|
 | |**x**|**(CD32FR)** or **FastRAM**|Amiga CD32, 2MB Chip RAM + 8MB Fast RAM|
-|**x**|**x**|**(NTSC)**|NTSC 60Hz|
-|**x**|**x**|**(PAL)**|PAL 50Hz|
+|**x**|**x**|**NTSC**|NTSC 60Hz|
+|**x**|**x**|**PAL**|PAL 50Hz|
 
 Example: When launching "Alien Breed 2 AGA.hdf" the core will use the Amiga 1200 model.
 
@@ -342,6 +342,8 @@ Note that for most HDF files, the model has to be set to A1200 in Quickmenu->Opt
 If you are using RDB HDF files, please use 0,0,0,0 instead of geometry numbers like 32,1,2,512. The geometry will then be read from the file. This only works for RDB HDF files.
 
 ## Latest features
+- Analog Joystick (sonninnos)
+- SuperHires (sonninnos)
 - Retroplay WHDLoad LHA support (sonninnos)
 - CD32 support (sonninnos)
 - WHDLoad.prefs override core option (sonninnos)

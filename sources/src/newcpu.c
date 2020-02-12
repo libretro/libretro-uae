@@ -7,7 +7,7 @@
  */
 
 #define MOVEC_DEBUG 0
-#define MMUOP_DEBUG 2
+#define MMUOP_DEBUG 0
 #define DEBUG_CD32CDTVIO 0
 #define EXCEPTION3_DEBUGGER 0
 #define CPUTRACE_DEBUG 0

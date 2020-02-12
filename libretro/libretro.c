@@ -3338,9 +3338,9 @@ bool retro_create_config()
             fprintf(configfile, uae_config);
 
             // If region was specified in the name of the game
-            if (strstr(full_path, "(NTSC)") != NULL)
+            if (strstr(full_path, "NTSC") != NULL)
             {
-               fprintf(stdout, "[libretro-uae]: Found '(NTSC)' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Found 'NTSC' in filename '%s'\n", full_path);
                fprintf(stdout, "[libretro-uae]: Forcing NTSC mode\n");
                fprintf(configfile, "ntsc=true\n");
                real_ntsc=true;
@@ -3348,7 +3348,7 @@ bool retro_create_config()
             }
             else if (strstr(full_path, "(PAL)") != NULL)
             {
-               fprintf(stdout, "[libretro-uae]: Found '(PAL)' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Found 'PAL' in filename '%s'\n", full_path);
                fprintf(stdout, "[libretro-uae]: Forcing PAL mode\n");
                fprintf(configfile, "ntsc=false\n");
                forced_video=true;
@@ -3736,17 +3736,17 @@ bool retro_create_config()
             fprintf(configfile, uae_config);
 
             // If region was specified in the name of the game
-            if (strstr(full_path, "(NTSC)") != NULL)
+            if (strstr(full_path, "NTSC") != NULL)
             {
-               fprintf(stdout, "[libretro-uae]: Found '(NTSC)' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Found 'NTSC' in filename '%s'\n", full_path);
                fprintf(stdout, "[libretro-uae]: Forcing NTSC mode\n");
                fprintf(configfile, "ntsc=true\n");
                real_ntsc=true;
                forced_video=true;
             }
-            else if (strstr(full_path, "(PAL)") != NULL)
+            else if (strstr(full_path, "PAL") != NULL)
             {
-               fprintf(stdout, "[libretro-uae]: Found '(PAL)' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Found 'PAL' in filename '%s'\n", full_path);
                fprintf(stdout, "[libretro-uae]: Forcing PAL mode\n");
                fprintf(configfile, "ntsc=false\n");
                forced_video=true;
