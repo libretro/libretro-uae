@@ -452,6 +452,39 @@ unsigned int my_write(struct my_openfile_s *mos, void *b, unsigned int size) {
     return (unsigned int) bytes_written;
 }
 
+void my_canonicalize_path(const TCHAR *path, TCHAR *out, int size)
+{
+	_tcsncpy (out, path, size);
+	out[size - 1] = 0;
+	return;
+}
+
+int my_issamevolume(const TCHAR *path1, const TCHAR *path2, TCHAR *path)
+{
+	TCHAR p1[MAX_DPATH];
+	TCHAR p2[MAX_DPATH];
+	unsigned int len, cnt;
+
+	my_canonicalize_path(path1, p1, sizeof p1 / sizeof (TCHAR));
+	my_canonicalize_path(path2, p2, sizeof p2 / sizeof (TCHAR));
+	len = _tcslen (p1);
+	if (len > _tcslen (p2))
+		len = _tcslen (p2);
+	if (_tcsnicmp (p1, p2, len))
+		return 0;
+	_tcscpy (path, p2 + len);
+	cnt = 0;
+	for (unsigned int i = 0; i < _tcslen (path); i++) {
+		if (path[i] == '\\' || path[i] == '/') {
+			path[i] = '/';
+			cnt++;
+		}
+	}
+	if (log_filesys)
+	    write_log (_T("'%s' (%s) matched with '%s' (%s), extra = '%s'\n"), path1, p1, path2, p2, path);
+	return cnt;
+}
+
 int my_setcurrentdir (const TCHAR *curdir, TCHAR *oldcur)
 {
     int ret = 0;
@@ -465,6 +498,11 @@ int my_setcurrentdir (const TCHAR *curdir, TCHAR *oldcur)
     }
     //write_log("curdir=\"%s\" oldcur=\"%s\" ret=%d\n", curdir, oldcur, ret);
     return ret;
+}
+
+bool my_resolvesoftlink(TCHAR *linkfile, int size)
+{
+    return false;
 }
 
 bool my_isfilehidden (const TCHAR *path)

@@ -454,52 +454,6 @@ int scan_roms (int show)
 	return 0;
 }
 
-// dinput
-int input_get_default_lightpen (struct uae_input_device *uid, int num, int port, int af, bool gp)
-{
-/*        struct didata *did;
-
-        if (num >= num_mouse)
-                return 0;
-        did = &di_mouse[i];
-        uid[num].eventid[ID_AXIS_OFFSET + 0][0] = INPUTEVENT_LIGHTPEN_HORIZ;
-        uid[num].eventid[ID_AXIS_OFFSET + 1][0] = INPUTEVENT_LIGHTPEN_VERT;
-        uid[num].eventid[ID_BUTTON_OFFSET + 0][0] = port ? INPUTEVENT_JOY2_3RD_BUTTON : INPUTEVENT_JOY1_3RD_BUTTON;
-        if (num == 0)
-                return 1;*/
-        return 0;
-}
-
-int input_get_default_joystick_analog (struct uae_input_device *uid, int num, int port, int af, bool gp)
-{
-/*        int j;
-        struct didata *did;
-
-        if (num >= num_joystick)
-                return 0;
-        did = &di_joystick[i];
-        uid[num].eventid[ID_AXIS_OFFSET + 0][0] = port ? INPUTEVENT_JOY2_HORIZ_POT : INPUTEVENT_JOY1_HORIZ_POT;
-        uid[num].eventid[ID_AXIS_OFFSET + 1][0] = port ? INPUTEVENT_JOY2_VERT_POT : INPUTEVENT_JOY1_VERT_POT;
-        uid[num].eventid[ID_BUTTON_OFFSET + 0][0] = port ? INPUTEVENT_JOY2_LEFT : INPUTEVENT_JOY1_LEFT;
-        if (isrealbutton (did, 1))
-                uid[num].eventid[ID_BUTTON_OFFSET + 1][0] = port ? INPUTEVENT_JOY2_RIGHT : INPUTEVENT_JOY1_RIGHT;
-        if (isrealbutton (did, 2))
-                uid[num].eventid[ID_BUTTON_OFFSET + 2][0] = port ? INPUTEVENT_JOY2_UP : INPUTEVENT_JOY1_UP;
-        if (isrealbutton (did, 3))
-                uid[num].eventid[ID_BUTTON_OFFSET + 3][0] = port ? INPUTEVENT_JOY2_DOWN : INPUTEVENT_JOY1_DOWN;
-        for (j = 2; j < MAX_MAPPINGS - 1; j++) {
-                int am = did->axismappings[j];
-                if (am == DIJOFS_POV(0) || am == DIJOFS_POV(1) || am == DIJOFS_POV(2) || am == DIJOFS_POV(3)) {
-                        uid[num].eventid[ID_AXIS_OFFSET + j + 0][0] = port ? INPUTEVENT_JOY2_HORIZ_POT : INPUTEVENT_JOY1_HORIZ_POT;
-                        uid[num].eventid[ID_AXIS_OFFSET + j + 1][0] = port ? INPUTEVENT_JOY2_VERT_POT : INPUTEVENT_JOY1_VERT_POT;
-                        j++;
-                }
-        }
-        if (num == 0)
-                return 1;*/
-        return 0;
-}
-
 // writelog
 TCHAR* buf_out (TCHAR *buffer, int *bufsize, const TCHAR *format, ...)
 {
@@ -1322,45 +1276,4 @@ int isinf (double x)
 }
 #endif
 */
-
-//fsdb_mywin
-bool my_issamevolume(const TCHAR *path1, const TCHAR *path2, TCHAR *path)
-{
-/*
-FIXME:
-        TCHAR p1[MAX_DPATH];
-        TCHAR p2[MAX_DPATH];
-        TCHAR p1b[MAX_DPATH];
-        TCHAR p2b[MAX_DPATH];
-        int len;
-
-        if (!GetFullPathName(path1, sizeof p1 / sizeof (TCHAR), p1, NULL))
-                return false;
-        if (!GetFullPathName(path2, sizeof p2 / sizeof (TCHAR), p2, NULL))
-                return false;
-        PathCanonicalize(p1b, p1);
-        PathCanonicalize(p2b, p2);
-        len = _tcslen (p1b);
-        if (len > _tcslen (p2b))
-                len = _tcslen (p2b);
-        if (_tcsnicmp (p1b, p2b, len))
-                return false;
-        _tcscpy (path, p2b + len);
-        for (int i = 0; i < _tcslen (path); i++) {
-                if (path[i] == '\\')
-                        path[i] = '/';
-        }*/
-        return true;
-}
-
-bool my_resolvesoftlink(TCHAR *linkfile, int size)
-{
-/*
-FIXME:
-	if (my_resolvessymboliclink(linkfile, size))
-		return true;
-	if (my_resolveshortcut(linkfile,size))
-		return true;*/
-	return false;
-}
 

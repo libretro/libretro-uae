@@ -203,7 +203,8 @@ extern bool my_chmod (const TCHAR *name, uae_u32 mode);
 extern bool my_resolveshortcut(TCHAR *linkfile, int size);
 extern bool my_resolvessymboliclink(TCHAR *linkfile, int size);
 extern bool my_resolvesoftlink(TCHAR *linkfile, int size);
-extern bool my_issamevolume(const TCHAR *path1, const TCHAR *path2, TCHAR *path);
+extern void my_canonicalize_path(const TCHAR *path, TCHAR *out, int size);
+extern int my_issamevolume(const TCHAR *path1, const TCHAR *path2, TCHAR *path);
 extern bool my_createsoftlink(const TCHAR *path, const TCHAR *target);
 
 #define MYVOLUMEINFO_READONLY 1

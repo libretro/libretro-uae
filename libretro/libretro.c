@@ -21,6 +21,8 @@
 #include "inputdevice.h"
 #include "savestate.h"
 #include "custom.h"
+#include "xwin.h"
+#include "drawing.h"
 #include "akiko.h"
 #include "blkdev.h"
 extern void check_changes(int unitnum);
@@ -65,6 +67,7 @@ bool real_ntsc = false;
 bool forced_video = false;
 bool request_update_av_info = false;
 bool request_reset_drawing = false;
+unsigned int request_init_custom_timer = 0;
 unsigned int zoom_mode_id = 0;
 unsigned int opt_zoom_mode_id = 0;
 int zoomed_height;
@@ -100,8 +103,8 @@ static int thisframe_y_adjust_update_frame_timer = 3;
 
 int opt_horizontal_offset = 0;
 bool opt_horizontal_offset_auto = true;
-static int max_diwlastword_hires = 824;
-static int max_diwlastword = 824;
+static int retro_max_diwlastword_hires = 824;
+static int retro_max_diwlastword = 824;
 extern int retro_min_diwstart;
 static int min_diwstart_old = -1;
 extern int retro_max_diwstop;
@@ -166,12 +169,14 @@ void retro_set_environment(retro_environment_t cb)
 {
    static const struct retro_controller_description p1_controllers[] = {
       { "CD32 Pad", RETRO_DEVICE_UAE_CD32PAD },
+      { "Analog Joystick", RETRO_DEVICE_UAE_ANALOG },
       { "Joystick", RETRO_DEVICE_UAE_JOYSTICK },
       { "Keyboard", RETRO_DEVICE_UAE_KEYBOARD },
       { "None", RETRO_DEVICE_NONE },
    };
    static const struct retro_controller_description p2_controllers[] = {
       { "CD32 Pad", RETRO_DEVICE_UAE_CD32PAD },
+      { "Analog Joystick", RETRO_DEVICE_UAE_ANALOG },
       { "Joystick", RETRO_DEVICE_UAE_JOYSTICK },
       { "Keyboard", RETRO_DEVICE_UAE_KEYBOARD },
       { "None", RETRO_DEVICE_NONE },
@@ -188,8 +193,8 @@ void retro_set_environment(retro_environment_t cb)
    };
 
    static const struct retro_controller_info ports[] = {
-      { p1_controllers, 4 }, // port 1
-      { p2_controllers, 4 }, // port 2
+      { p1_controllers, 5 }, // port 1
+      { p2_controllers, 5 }, // port 2
       { p3_controllers, 3 }, // port 3
       { p4_controllers, 3 }, // port 4
       { NULL, 0 }
@@ -287,7 +292,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_video_resolution",
          "Video Resolution",
-         "Width:\n- 360px Low\n- 720px High\n- 1440px Super-High\nChanging will issue soft reset.",
+         "Width:\n- 360px Low\n- 720px High\n- 1440px Super-High",
          {
             { "lores", "Low" },
             { "hires_single", "High (Single line)" },
@@ -377,11 +382,6 @@ void retro_set_environment(retro_environment_t cb)
             { "36", NULL },
             { "38", NULL },
             { "40", NULL },
-            { "42", NULL },
-            { "44", NULL },
-            { "46", NULL },
-            { "48", NULL },
-            { "50", NULL },
             { "-20", NULL },
             { "-18", NULL },
             { "-16", NULL },
@@ -418,6 +418,16 @@ void retro_set_environment(retro_environment_t cb)
             { "26", NULL },
             { "28", NULL },
             { "30", NULL },
+            { "32", NULL },
+            { "34", NULL },
+            { "36", NULL },
+            { "38", NULL },
+            { "40", NULL },
+            { "-40", NULL },
+            { "-38", NULL },
+            { "-36", NULL },
+            { "-34", NULL },
+            { "-32", NULL },
             { "-30", NULL },
             { "-28", NULL },
             { "-26", NULL },
@@ -1261,7 +1271,7 @@ static void update_variables(void)
       {
          video_config |= PUAE_VIDEO_HIRES;
          video_config |= PUAE_VIDEO_DOUBLELINE;
-         max_diwlastword = max_diwlastword_hires;
+         retro_max_diwlastword = retro_max_diwlastword_hires;
          if (!firstpass)
          {
             changed_prefs.gfx_resolution=RES_HIRES;
@@ -1271,7 +1281,7 @@ static void update_variables(void)
       else if (strcmp(var.value, "hires_single") == 0)
       {
          video_config |= PUAE_VIDEO_HIRES;
-         max_diwlastword = max_diwlastword_hires;
+         retro_max_diwlastword = retro_max_diwlastword_hires;
          if (!firstpass)
          {
             changed_prefs.gfx_resolution=RES_HIRES;
@@ -1283,7 +1293,7 @@ static void update_variables(void)
          video_config |= PUAE_VIDEO_SUPERHIRES;
          video_config |= PUAE_VIDEO_DOUBLELINE;
 
-         max_diwlastword = max_diwlastword_hires * 2;
+         retro_max_diwlastword = retro_max_diwlastword_hires * 2;
          if (!firstpass)
          {
             changed_prefs.gfx_resolution=RES_SUPERHIRES;
@@ -1294,7 +1304,7 @@ static void update_variables(void)
       {
          video_config |= PUAE_VIDEO_SUPERHIRES;
 
-         max_diwlastword = max_diwlastword_hires * 2;
+         retro_max_diwlastword = retro_max_diwlastword_hires * 2;
          if (!firstpass)
          {
             changed_prefs.gfx_resolution=RES_SUPERHIRES;
@@ -1303,7 +1313,7 @@ static void update_variables(void)
       }
       else if (strcmp(var.value, "lores") == 0)
       {
-         max_diwlastword = max_diwlastword_hires / 2;
+         retro_max_diwlastword = retro_max_diwlastword_hires / 2;
          if (!firstpass)
          {
             changed_prefs.gfx_resolution=RES_LORES;
@@ -1311,9 +1321,9 @@ static void update_variables(void)
          }
       }
 
-      /* Resolution change requires Amiga reset */
+      /* Resolution change needs init_custom() to be done after reset_drawing() is done */
       if (!firstpass && video_config != video_config_prev)
-         uae_reset(0, 0);
+         request_init_custom_timer = 2;
    }
 
    var.key = "puae_statusbar";
@@ -1730,6 +1740,7 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
+      opt_vertical_offset = 0;
       if (strcmp(var.value, "auto") == 0)
       {
          opt_vertical_offset_auto = true;
@@ -1739,7 +1750,7 @@ static void update_variables(void)
       {
          opt_vertical_offset_auto = false;
          int new_vertical_offset = atoi(var.value);
-         if (new_vertical_offset >= -20 && new_vertical_offset <= 50)
+         if (new_vertical_offset >= -20 && new_vertical_offset <= 40)
          {
             /* This offset is used whenever minfirstline is reset on gfx mode changes in the init_hz() function */
             opt_vertical_offset = new_vertical_offset;
@@ -1752,6 +1763,7 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
+      opt_horizontal_offset = 0;
       if (strcmp(var.value, "auto") == 0)
       {
          opt_horizontal_offset_auto = true;
@@ -1760,10 +1772,15 @@ static void update_variables(void)
       {
          opt_horizontal_offset_auto = false;
          int new_horizontal_offset = atoi(var.value);
-         if (new_horizontal_offset >= -30 && new_horizontal_offset <= 30)
+         int horizontal_multiplier = 1;
+         if (video_config & PUAE_VIDEO_HIRES)
+            horizontal_multiplier = 2;
+         else if (video_config & PUAE_VIDEO_SUPERHIRES)
+            horizontal_multiplier = 4;
+         if (new_horizontal_offset >= -40 && new_horizontal_offset <= 40)
          {
             opt_horizontal_offset = new_horizontal_offset;
-            visible_left_border = max_diwlastword - retrow - opt_horizontal_offset;
+            visible_left_border = retro_max_diwlastword - retrow - (opt_horizontal_offset * horizontal_multiplier);
          }
       }
    }
@@ -2632,10 +2649,10 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 {
    if (port<4)
    {
-      uae_devices[port]=device;
+      uae_devices[port] = device;
       int uae_port;
       uae_port = (port==0) ? 1 : 0;
-      cd32_pad_enabled[uae_port]=0;
+      cd32_pad_enabled[uae_port] = 0;
       switch (device)
       {
          case RETRO_DEVICE_JOYPAD:
@@ -2645,6 +2662,10 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
          case RETRO_DEVICE_UAE_CD32PAD:
             fprintf(stdout, "[libretro-uae]: Controller %u: CD32 Pad\n", (port+1));
             cd32_pad_enabled[uae_port]=1;
+            break;
+
+         case RETRO_DEVICE_UAE_ANALOG:
+            fprintf(stdout, "[libretro-uae]: Controller %u: Analog Joystick\n", (port+1));
             break;
 
          case RETRO_DEVICE_UAE_JOYSTICK:
@@ -2680,7 +2701,7 @@ void retro_get_system_info(struct retro_system_info *info)
    info->valid_extensions = "adf|adz|dms|fdi|ipf|hdf|hdz|lha|cue|ccd|nrg|mds|iso|uae|m3u|zip";
 }
 
-float retro_get_aspect_ratio(int w, int h, int video_config_geometry)
+float retro_get_aspect_ratio(int w, int h)
 {
    static float ar = 1;
 
@@ -2866,7 +2887,7 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
    static struct retro_system_av_info new_av_info;
    new_av_info.geometry.base_width = retrow;
    new_av_info.geometry.base_height = retroh;
-   new_av_info.geometry.aspect_ratio = retro_get_aspect_ratio(retrow, retroh, video_config_geometry);
+   new_av_info.geometry.aspect_ratio = retro_get_aspect_ratio(retrow, retroh);
 
    /* Disable Hz change if not allowed */
    if (!video_config_allow_hz_change)
@@ -2984,7 +3005,7 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
    if (zoomed_height != retroh)
    {
       new_av_info.geometry.base_height = zoomed_height;
-      new_av_info.geometry.aspect_ratio = retro_get_aspect_ratio(retrow, zoomed_height, video_config_geometry);
+      new_av_info.geometry.aspect_ratio = retro_get_aspect_ratio(retrow, zoomed_height);
       environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
 
       /* Ensure statusbar stays visible at the bottom */
@@ -3033,7 +3054,7 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
    /* Horizontal centering */
    if (opt_horizontal_offset_auto && !firstpass)
    {
-      int visible_left_border_new = max_diwlastword - retrow;
+      int visible_left_border_new = retro_max_diwlastword - retrow;
       int diw_multiplier = 1;
       if (video_config_geometry & PUAE_VIDEO_HIRES)
          diw_multiplier = 2;
@@ -3104,7 +3125,7 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
    geom.base_height = retroh;
    geom.max_width = EMULATOR_MAX_WIDTH;
    geom.max_height = EMULATOR_MAX_HEIGHT;
-   geom.aspect_ratio = retro_get_aspect_ratio(retrow, retroh, video_config_geometry);
+   geom.aspect_ratio = retro_get_aspect_ratio(retrow, retroh);
 
    info->geometry = geom;
    info->timing.sample_rate = 44100.0;
@@ -3317,17 +3338,17 @@ bool retro_create_config()
             fprintf(configfile, uae_config);
 
             // If region was specified in the name of the game
-            if (strstr(full_path, "(NTSC)") != NULL)
+            if (strstr(full_path, "NTSC") != NULL)
             {
-               fprintf(stdout, "[libretro-uae]: Found '(NTSC)' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Found 'NTSC' in filename '%s'\n", full_path);
                fprintf(stdout, "[libretro-uae]: Forcing NTSC mode\n");
                fprintf(configfile, "ntsc=true\n");
                real_ntsc=true;
                forced_video=true;
             }
-            else if (strstr(full_path, "(PAL)") != NULL)
+            else if (strstr(full_path, "PAL") != NULL)
             {
-               fprintf(stdout, "[libretro-uae]: Found '(PAL)' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Found 'PAL' in filename '%s'\n", full_path);
                fprintf(stdout, "[libretro-uae]: Forcing PAL mode\n");
                fprintf(configfile, "ntsc=false\n");
                forced_video=true;
@@ -3715,17 +3736,17 @@ bool retro_create_config()
             fprintf(configfile, uae_config);
 
             // If region was specified in the name of the game
-            if (strstr(full_path, "(NTSC)") != NULL)
+            if (strstr(full_path, "NTSC") != NULL)
             {
-               fprintf(stdout, "[libretro-uae]: Found '(NTSC)' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Found 'NTSC' in filename '%s'\n", full_path);
                fprintf(stdout, "[libretro-uae]: Forcing NTSC mode\n");
                fprintf(configfile, "ntsc=true\n");
                real_ntsc=true;
                forced_video=true;
             }
-            else if (strstr(full_path, "(PAL)") != NULL)
+            else if (strstr(full_path, "PAL") != NULL)
             {
-               fprintf(stdout, "[libretro-uae]: Found '(PAL)' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Found 'PAL' in filename '%s'\n", full_path);
                fprintf(stdout, "[libretro-uae]: Forcing PAL mode\n");
                fprintf(configfile, "ntsc=false\n");
                forced_video=true;
@@ -4028,7 +4049,7 @@ void retro_run(void)
          visible_left_border_update_frame_timer--;
          if (visible_left_border_update_frame_timer == 0)
          {
-            visible_left_border = max_diwlastword - retrow - opt_horizontal_offset;
+            visible_left_border = retro_max_diwlastword - retrow - opt_horizontal_offset;
             request_reset_drawing = true;
          }
       }
@@ -4054,6 +4075,13 @@ void retro_run(void)
    {
       request_reset_drawing = false;
       reset_drawing();
+   }
+   // Dynamic resolution changing requires a frame breather after reset_drawing()
+   if (request_init_custom_timer > 0)
+   {
+      request_init_custom_timer--;
+      if (request_init_custom_timer == 0)
+         init_custom ();
    }
 
    // Check if a restart is required
@@ -4083,7 +4111,7 @@ void retro_run(void)
       Print_Status();
    if (SHOWKEY == 1)
    {
-      // Virtual keyboard transparency requires a graceful redraw, blunt reset_drawing() interferes with zoom
+      // Virtual keyboard requires a graceful redraw, blunt reset_drawing() interferes with zoom
       frame_redraw_necessary=2;
       virtual_kbd(retro_bmp, vkey_pos_x, vkey_pos_y);
    }
