@@ -318,8 +318,8 @@ int check_prefs_changed_gfx (void)
     else
         return 0;
 
-    changed_prefs.gfx_size_win.width = defaultw;
-    changed_prefs.gfx_size_win.height = defaulth;
+    changed_prefs.gfx_size_win.width    = defaultw;
+    changed_prefs.gfx_size_win.height   = defaulth;
 
     if (currprefs.gfx_size_win.width   != changed_prefs.gfx_size_win.width)
         currprefs.gfx_size_win.width    = changed_prefs.gfx_size_win.width;
@@ -330,13 +330,12 @@ int check_prefs_changed_gfx (void)
     if (currprefs.gfx_vresolution      != changed_prefs.gfx_vresolution)
         currprefs.gfx_vresolution       = changed_prefs.gfx_vresolution;
 
-    gfxvidinfo.width_allocated      = currprefs.gfx_size_win.width;
-    gfxvidinfo.height_allocated     = currprefs.gfx_size_win.height;
-    gfxvidinfo.rowbytes             = gfxvidinfo.width_allocated * gfxvidinfo.pixbytes;
+    gfxvidinfo.width_allocated          = currprefs.gfx_size_win.width;
+    gfxvidinfo.height_allocated         = currprefs.gfx_size_win.height;
+    gfxvidinfo.rowbytes                 = gfxvidinfo.width_allocated * gfxvidinfo.pixbytes;
 
-    reset_drawing();
     //printf("check_prefs_changed_gfx: %d:%d, res:%d vres:%d\n", changed_prefs.gfx_size_win.width, changed_prefs.gfx_size_win.height, changed_prefs.gfx_resolution, changed_prefs.gfx_vresolution);
-    return 0;
+    return 1;
 }
 
 
@@ -377,7 +376,6 @@ static int get_joystick_num (void)
 
 static TCHAR *get_joystick_friendlyname (int joy)
 {
-
     switch (joy)
     {
         case 0:

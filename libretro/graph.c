@@ -414,7 +414,7 @@ void Draw_text(unsigned short *buffer, int x, int y,
    unsigned char c;
    char s[2] = {0};
    int charwidth = 6;
-   if (max > 4)
+   if (max > 10)
       charwidth = 7;
    int cmax;
    cmax = strlen(text);
@@ -461,7 +461,7 @@ void Draw_text32(uint32_t *buffer, int x, int y,
    unsigned char c;
    char s[2] = {0};
    int charwidth = 6;
-   if (max > 4)
+   if (max > 10)
       charwidth = 7;
    int cmax;
    cmax = strlen(text);

@@ -386,10 +386,11 @@ void Print_Status(void)
    int FONT_COLOR   = 0;
    FONT_COLOR       = FONT_COLOR_DEFAULT;
    int FONT_SLOT    = 0;
-   FONT_SLOT        = 40 * FONT_WIDTH;
+   FONT_SLOT        = 34 * FONT_WIDTH;
 
-   int STAT_DECX    = 4;
+   int STAT_X       = 2;
    int STAT_BASEY   = 0;
+   int TEXT_LENGTH  = (video_config & PUAE_VIDEO_DOUBLELINE) ? 88 : 37;
 
    // Statusbar location
    if (opt_statusbar_position < 0) // Top
@@ -409,6 +410,51 @@ void Print_Status(void)
          BOX_WIDTH = retrow - ((BOX_LED_WIDTH * 2) * 5) - 2;
       else
          BOX_WIDTH = retrow - ((BOX_LED_WIDTH * 4) * 5) - 2;
+   }
+
+   // Video resolution
+   int STAT_X_RESOLUTION = STAT_X+(FONT_SLOT*4);
+   char RESOLUTION[10] = {0};
+   snprintf(RESOLUTION, sizeof(RESOLUTION), "%4dx%3d", retrow, zoomed_height);
+
+   // Model & memory
+   int STAT_X_MODEL  = STAT_X+(FONT_SLOT*5)+(FONT_WIDTH*52);
+   int STAT_X_MEMORY = STAT_X+(FONT_SLOT*5)+(FONT_WIDTH*25);
+   char MODEL[10] = {0};
+   char MEMORY[5] = {0};
+   float mem_size = 0;
+   mem_size = (float)(currprefs.chipmem_size / 0x80000) / 2;
+   mem_size += (float)(currprefs.bogomem_size / 0x40000) / 4;
+   mem_size += (float)(currprefs.fastmem_size / 0x100000);
+   snprintf(MEMORY, sizeof(MEMORY), "%2.0fM", floor(mem_size));
+   switch (currprefs.cs_compatible)
+   {
+      case CP_A500:
+         snprintf(MODEL, sizeof(MODEL), "%s", " A500");
+         break;
+      case CP_A500P:
+         snprintf(MODEL, sizeof(MODEL), "%s", "A500+");
+         break;
+      case CP_A600:
+         snprintf(MODEL, sizeof(MODEL), "%s", " A600");
+         break;
+      case CP_A1200:
+         snprintf(MODEL, sizeof(MODEL), "%s", "A1200");
+         break;
+      case CP_A4000:
+         snprintf(MODEL, sizeof(MODEL), "%s", "A4000");
+         break;
+      case CP_CD32:
+         snprintf(MODEL, sizeof(MODEL), "%s", " CD32");
+         break;
+   }
+
+   // Double line positions
+   if (video_config & PUAE_VIDEO_DOUBLELINE)
+   {
+      STAT_X_RESOLUTION = STAT_X+(FONT_SLOT*14)+(FONT_WIDTH*29);
+      STAT_X_MODEL      = STAT_X+(FONT_SLOT*15)+(FONT_WIDTH*72);
+      STAT_X_MEMORY     = STAT_X+(FONT_SLOT*15)+(FONT_WIDTH*48);
    }
 
    // Joy port indicators
@@ -482,22 +528,26 @@ void Print_Status(void)
 
       if (imagename_timer > 0)
       {
-          Draw_text32((uint32_t *)retro_bmp,STAT_DECX+0,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,100,statusbar_text);
+          Draw_text32((uint32_t *)retro_bmp,STAT_X+0,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,TEXT_LENGTH,statusbar_text);
           return;
       }
 
       if (JOYPORT1_COLORIZE)
          FONT_COLOR = joystick_color(jflag[0]);
-      Draw_text32((uint32_t *)retro_bmp,STAT_DECX+0,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT1);
+      Draw_text32((uint32_t *)retro_bmp,STAT_X+0,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT1);
       if (JOYPORT1_COLORIZE)
          FONT_COLOR = FONT_COLOR_DEFAULT;
       if (JOYPORT2_COLORIZE)
          FONT_COLOR = joystick_color(jflag[1]);
-      Draw_text32((uint32_t *)retro_bmp,STAT_DECX+(FONT_SLOT),STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT2);
+      Draw_text32((uint32_t *)retro_bmp,STAT_X+(FONT_SLOT),STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT2);
       if (JOYPORT2_COLORIZE)
          FONT_COLOR = FONT_COLOR_DEFAULT;
-      Draw_text32((uint32_t *)retro_bmp,STAT_DECX+(FONT_SLOT*2),STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT3);
-      Draw_text32((uint32_t *)retro_bmp,STAT_DECX+(FONT_SLOT*3),STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT4);
+      Draw_text32((uint32_t *)retro_bmp,STAT_X+(FONT_SLOT*2),STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT3);
+      Draw_text32((uint32_t *)retro_bmp,STAT_X+(FONT_SLOT*3),STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT4);
+
+      Draw_text32((uint32_t *)retro_bmp,STAT_X_RESOLUTION,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,RESOLUTION);
+      Draw_text32((uint32_t *)retro_bmp,STAT_X_MEMORY,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,MEMORY);
+      Draw_text32((uint32_t *)retro_bmp,STAT_X_MODEL,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,MODEL);
    }
    else
    {
@@ -505,22 +555,26 @@ void Print_Status(void)
 
       if (imagename_timer > 0)
       {
-          Draw_text(retro_bmp,STAT_DECX+0,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,100,statusbar_text);
+          Draw_text(retro_bmp,STAT_X+0,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,TEXT_LENGTH,statusbar_text);
           return;
       }
 
       if (JOYPORT1_COLORIZE)
          FONT_COLOR = joystick_color(jflag[0]);
-      Draw_text(retro_bmp,STAT_DECX+0,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT1);
+      Draw_text(retro_bmp,STAT_X+0,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT1);
       if (JOYPORT1_COLORIZE)
          FONT_COLOR = FONT_COLOR_DEFAULT;
       if (JOYPORT2_COLORIZE)
          FONT_COLOR = joystick_color(jflag[1]);
-      Draw_text(retro_bmp,STAT_DECX+(FONT_SLOT),STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT2);
+      Draw_text(retro_bmp,STAT_X+(FONT_SLOT),STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT2);
       if (JOYPORT2_COLORIZE)
          FONT_COLOR = FONT_COLOR_DEFAULT;
-      Draw_text(retro_bmp,STAT_DECX+(FONT_SLOT*2),STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT3);
-      Draw_text(retro_bmp,STAT_DECX+(FONT_SLOT*3),STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT4);
+      Draw_text(retro_bmp,STAT_X+(FONT_SLOT*2),STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT3);
+      Draw_text(retro_bmp,STAT_X+(FONT_SLOT*3),STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,JOYPORT4);
+
+      Draw_text(retro_bmp,STAT_X_RESOLUTION,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,RESOLUTION);
+      Draw_text(retro_bmp,STAT_X_MEMORY,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,MEMORY);
+      Draw_text(retro_bmp,STAT_X_MODEL,STAT_BASEY,FONT_COLOR,0,255,FONT_WIDTH,FONT_HEIGHT,10,MODEL);
    }
 }
 

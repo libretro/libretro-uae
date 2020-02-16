@@ -27,7 +27,10 @@
 #include "blkdev.h"
 extern void check_changes(int unitnum);
 extern int frame_redraw_necessary;
-
+extern int bplcon0;
+extern int diwlastword_total;
+extern int diwfirstword_total;
+extern int interlace_seen;
 extern int m68k_go(int may_quit, int resume);
 
 int defaultw = EMULATOR_DEF_WIDTH;
@@ -36,10 +39,12 @@ int retrow = 0;
 int retroh = 0;
 char key_state[512];
 char key_state2[512];
+
 unsigned int opt_mapping_options_display;
 unsigned int opt_video_options_display;
 unsigned int opt_audio_options_display;
 char opt_model[10];
+bool opt_video_resolution_auto = false;
 bool opt_use_whdload_hdf = true;
 bool opt_use_whdsaves_hdf = true;
 unsigned int opt_use_whdload_prefs = 0;
@@ -57,8 +62,28 @@ unsigned int opt_dpadmouse_speed = 4;
 unsigned int opt_analogmouse = 0;
 unsigned int opt_analogmouse_deadzone = 15;
 float opt_analogmouse_speed = 1.0;
+
+#if defined(NATMEM_OFFSET)
+extern uae_u8 *natmem_offset;
+extern uae_u32 natmem_size;
+#endif
+
+static char RPATH[512] = {0};
+static char full_path[512] = {0};
+static char *uae_argv[] = { "puae", RPATH };
+static int firstpass = 1;
+static int restart_pending = 0;
+
+unsigned short int retro_bmp[RETRO_BMP_SIZE];
+extern int SHIFTON;
+extern int STATUSON;
+extern void Print_Status(void);
+extern void DrawHline(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color);
+extern int prefs_changed;
+
 extern int turbo_fire_button;
 extern unsigned int turbo_pulse;
+unsigned int inputdevice_finalized = 0;
 int pix_bytes = 2;
 static bool pix_bytes_initialized = false;
 bool filter_type_update = true;
@@ -72,31 +97,13 @@ unsigned int zoom_mode_id = 0;
 unsigned int opt_zoom_mode_id = 0;
 int zoomed_height;
 
-#if defined(NATMEM_OFFSET)
-extern uae_u8 *natmem_offset;
-extern uae_u32 natmem_size;
-#endif
-
-unsigned short int retro_bmp[RETRO_BMP_SIZE];
-static char RPATH[512] = {0};
-static char full_path[512] = {0};
-static int firstpass = 1;
-static int restart_pending = 0;
-extern int SHIFTON;
-extern int STATUSON;
-extern void Print_Status(void);
-extern void DrawHline(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color);
-extern int prefs_changed;
-
-static char *uae_argv[] = { "puae", RPATH };
-
 int opt_vertical_offset = 0;
 bool opt_vertical_offset_auto = true;
 extern int minfirstline;
 extern int retro_thisframe_first_drawn_line;
-static int thisframe_first_drawn_line_old = -1;
+static int retro_thisframe_first_drawn_line_old = -1;
 extern int retro_thisframe_last_drawn_line;
-static int thisframe_last_drawn_line_old = -1;
+static int retro_thisframe_last_drawn_line_old = -1;
 extern int thisframe_y_adjust;
 static int thisframe_y_adjust_old = 0;
 static int thisframe_y_adjust_update_frame_timer = 3;
@@ -106,9 +113,9 @@ bool opt_horizontal_offset_auto = true;
 static int retro_max_diwlastword_hires = 824;
 static int retro_max_diwlastword = 824;
 extern int retro_min_diwstart;
-static int min_diwstart_old = -1;
+static int retro_min_diwstart_old = -1;
 extern int retro_max_diwstop;
-static int max_diwstop_old = -1;
+static int retro_max_diwstop_old = -1;
 extern int visible_left_border;
 static int visible_left_border_old = 0;
 static int visible_left_border_update_frame_timer = 3;
@@ -118,7 +125,6 @@ unsigned int video_config_old = 0;
 unsigned int video_config_aspect = 0;
 unsigned int video_config_geometry = 0;
 unsigned int video_config_allow_hz_change = 0;
-unsigned int inputdevice_finalized = 0;
 
 #include "libretro-keyboard.i"
 int keyId(const char *val)
@@ -290,20 +296,6 @@ void retro_set_environment(retro_environment_t cb)
          "disabled"
       },
       {
-         "puae_video_resolution",
-         "Video Resolution",
-         "Width:\n- 360px Low\n- 720px High\n- 1440px Super-High",
-         {
-            { "lores", "Low" },
-            { "hires_single", "High (Single line)" },
-            { "hires_double", "High (Double line)" },
-            { "superhires_single", "Super-High (Single line)" },
-            { "superhires_double", "Super-High (Double line)" },
-            { NULL, NULL },
-         },
-         "hires_double"
-      },
-      {
          "puae_video_allow_hz_change",
          "Allow PAL/NTSC Hz Change",
          "",
@@ -315,12 +307,28 @@ void retro_set_environment(retro_environment_t cb)
          "enabled"
       },
       {
+         "puae_video_resolution",
+         "Video Resolution",
+         "Output width:\n- Automatic defaults to High and switches to Super-High when needed.\n- Double Line deinterlaces interlaced images.",
+         {
+            { "lores", "Low 360px" },
+            { "hires_single", "High 720px - Single Line" },
+            { "hires_double", "High 720px - Double Line" },
+            { "superhires_single", "Super-High 1440px - Single Line" },
+            { "superhires_double", "Super-High 1440px - Double Line" },
+            { "automatic_single", "Automatic - Single Line" },
+            { "automatic_double", "Automatic - Double Line" },
+            { NULL, NULL },
+         },
+         "automatic_double"
+      },
+      {
          "puae_video_standard",
          "Video Standard",
-         "Height (Single line/Double line):\n- 288px/576px PAL\n- 240px/480px NTSC",
+         "Output height:\n- Single Line / Double Line.",
          {
-            { "PAL", NULL },
-            { "NTSC", NULL },
+            { "PAL", "PAL - 288px / 576px" },
+            { "NTSC", "NTSC - 240px / 480px" },
             { NULL, NULL },
          },
          "PAL"
@@ -328,7 +336,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_video_aspect",
          "Aspect Ratio",
-         "",
+         "PAR:\n- PAL 1/1 = 1.000\n- NTSC 44/52 = 0.846",
          {
             { "auto", "Automatic" },
             { "PAL", NULL },
@@ -340,7 +348,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_zoom_mode",
          "Zoom Mode",
-         "Requirements in RetroArch settings:\nAspect Ratio: Core provided,\nInteger Scale: Off.",
+         "Requirements in RetroArch settings:\n- Aspect Ratio: Core provided,\n- Integer Scale: Off.",
          {
             { "none", "disabled" },
             { "minimum", "Minimum" },
@@ -1266,8 +1274,18 @@ static void update_variables(void)
    {
       int video_config_prev = video_config;
       video_config = video_config_region;
+      opt_video_resolution_auto = false;
 
-      if (strcmp(var.value, "hires_double") == 0)
+      if (strcmp(var.value, "lores") == 0)
+      {
+         retro_max_diwlastword = retro_max_diwlastword_hires / 2;
+         if (!firstpass)
+         {
+            changed_prefs.gfx_resolution=RES_LORES;
+            changed_prefs.gfx_vresolution=VRES_NONDOUBLE;
+         }
+      }
+      else if (strcmp(var.value, "hires_double") == 0)
       {
          video_config |= PUAE_VIDEO_HIRES;
          video_config |= PUAE_VIDEO_DOUBLELINE;
@@ -1292,7 +1310,6 @@ static void update_variables(void)
       {
          video_config |= PUAE_VIDEO_SUPERHIRES;
          video_config |= PUAE_VIDEO_DOUBLELINE;
-
          retro_max_diwlastword = retro_max_diwlastword_hires * 2;
          if (!firstpass)
          {
@@ -1303,7 +1320,6 @@ static void update_variables(void)
       else if (strcmp(var.value, "superhires_single") == 0)
       {
          video_config |= PUAE_VIDEO_SUPERHIRES;
-
          retro_max_diwlastword = retro_max_diwlastword_hires * 2;
          if (!firstpass)
          {
@@ -1311,19 +1327,63 @@ static void update_variables(void)
             changed_prefs.gfx_vresolution=VRES_NONDOUBLE;
          }
       }
-      else if (strcmp(var.value, "lores") == 0)
+      else if (strcmp(var.value, "automatic_double") == 0)
       {
-         retro_max_diwlastword = retro_max_diwlastword_hires / 2;
-         if (!firstpass)
+         opt_video_resolution_auto = true;
+         video_config |= PUAE_VIDEO_DOUBLELINE;
+         if (video_config_prev & PUAE_VIDEO_SUPERHIRES)
          {
-            changed_prefs.gfx_resolution=RES_LORES;
-            changed_prefs.gfx_vresolution=VRES_NONDOUBLE;
+            video_config |= PUAE_VIDEO_SUPERHIRES;
+            retro_max_diwlastword = retro_max_diwlastword_hires * 2;
+
+            if (!firstpass)
+            {
+               changed_prefs.gfx_resolution=RES_SUPERHIRES;
+               changed_prefs.gfx_vresolution=VRES_DOUBLE;
+            }
+         }
+         else
+         {
+            video_config |= PUAE_VIDEO_HIRES;
+            retro_max_diwlastword = retro_max_diwlastword_hires;
+
+            if (!firstpass)
+            {
+               changed_prefs.gfx_resolution=RES_HIRES;
+               changed_prefs.gfx_vresolution=VRES_DOUBLE;
+            }
+         }
+      }
+      else if (strcmp(var.value, "automatic_single") == 0)
+      {
+         opt_video_resolution_auto = true;
+         if (video_config_prev & PUAE_VIDEO_SUPERHIRES)
+         {
+            video_config |= PUAE_VIDEO_SUPERHIRES;
+            retro_max_diwlastword = retro_max_diwlastword_hires * 2;
+
+            if (!firstpass)
+            {
+               changed_prefs.gfx_resolution=RES_SUPERHIRES;
+               changed_prefs.gfx_vresolution=VRES_NONDOUBLE;
+            }
+         }
+         else
+         {
+            video_config |= PUAE_VIDEO_HIRES;
+            retro_max_diwlastword = retro_max_diwlastword_hires;
+
+            if (!firstpass)
+            {
+               changed_prefs.gfx_resolution=RES_HIRES;
+               changed_prefs.gfx_vresolution=VRES_NONDOUBLE;
+            }
          }
       }
 
       /* Resolution change needs init_custom() to be done after reset_drawing() is done */
       if (!firstpass && video_config != video_config_prev)
-         request_init_custom_timer = 2;
+         request_init_custom_timer = 3;
    }
 
    var.key = "puae_statusbar";
@@ -1344,12 +1404,6 @@ static void update_variables(void)
          opt_statusbar_minimal = true;
       else
          opt_statusbar_minimal = false;
-
-      /* Screen refresh required
-       * (redundant - will be forced by av_info
-       *  geometry update) */
-      if (opt_statusbar_position_old != opt_statusbar_position || !opt_statusbar_enhanced)
-         request_reset_drawing = true;
 
       opt_statusbar_position_old = opt_statusbar_position;
    }
@@ -2728,13 +2782,13 @@ float retro_get_aspect_ratio(int w, int h)
    return ar;
 }
 
-bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
+bool retro_update_av_info(bool change_timing, bool isntsc)
 {
    bool av_log = false;
    request_update_av_info = false;
    float hz = currprefs.chipset_refreshrate;
    if (av_log)
-      fprintf(stdout, "[libretro-uae]: Trying to update AV geometry:%d timing:%d, to: ntsc:%d hz:%0.4f, from video_config:%d, video_aspect:%d\n", change_geometry, change_timing, isntsc, hz, video_config, video_config_aspect);
+      fprintf(stdout, "[libretro-uae]: Trying to update AV timing:%d to: ntsc:%d hz:%0.4f, from video_config:%d, video_aspect:%d\n", change_timing, isntsc, hz, video_config, video_config_aspect);
 
    /* Change PAL/NTSC with a twist, thanks to Dyna Blaster
 
@@ -2877,6 +2931,10 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
          break;
    }
 
+   /* Exception for Dyna Blaster */
+   if (fake_ntsc)
+      retroh = (video_config & PUAE_VIDEO_DOUBLELINE) ? 476 : 238;
+
    /* When the actual dimensions change and not just the view */
    if (change_timing)
    {
@@ -2885,53 +2943,64 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
    }
 
    static struct retro_system_av_info new_av_info;
-   new_av_info.geometry.base_width = retrow;
-   new_av_info.geometry.base_height = retroh;
-   new_av_info.geometry.aspect_ratio = retro_get_aspect_ratio(retrow, retroh);
+   retro_get_system_av_info(&new_av_info);
 
    /* Disable Hz change if not allowed */
    if (!video_config_allow_hz_change)
-      change_timing = 0;
+      change_timing = false;
 
-   /* Logging */
-   if (av_log)
+   /* Timing or geometry update */
+   if (change_timing)
    {
-      if (change_geometry && change_timing) {
-         fprintf(stdout, "[libretro-uae]: Update av_info: %dx%d %0.4fHz, video_config:%d\n", retrow, retroh, hz, video_config_geometry);
-      } else if (change_geometry && !change_timing) {
-         fprintf(stdout, "[libretro-uae]: Update geometry: %dx%d, video_config:%d\n", retrow, retroh, video_config_geometry);
-      } else if (!change_geometry && change_timing) {
-         fprintf(stdout, "[libretro-uae]: Update timing: %0.4fHz, video_config:%d\n", hz, video_config_geometry);
+      new_av_info.timing.fps = hz;
+      environ_cb(RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO, &new_av_info);
+   }
+   else
+      environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
+
+   /* Ensure statusbar stays visible at the bottom */
+   opt_statusbar_position_offset = 0;
+   opt_statusbar_position = opt_statusbar_position_old;
+   if (!change_timing)
+      if (retroh < defaulth)
+         if (opt_statusbar_position >= 0 && (defaulth - retroh) >= opt_statusbar_position)
+            opt_statusbar_position = defaulth - retroh;
+
+   /* Aspect offset for zoom mode */
+   opt_statusbar_position_offset = opt_statusbar_position_old - opt_statusbar_position;
+
+   /* Compensate for the PAL last line  */
+   if (video_config_geometry & PUAE_VIDEO_PAL && retroh == defaulth && opt_statusbar_position == 0)
+   {
+      if (interlace_seen)
+      {
+         if (video_config_geometry & PUAE_VIDEO_DOUBLELINE)
+         {
+            opt_statusbar_position += 2;
+            opt_statusbar_position_offset += 2;
+         }
+         else
+         {
+            opt_statusbar_position += 1;
+            opt_statusbar_position_offset += 1;
+         }
+      }
+      else
+      {
+         if (video_config_geometry & PUAE_VIDEO_DOUBLELINE)
+         {
+            opt_statusbar_position += 1;
+            opt_statusbar_position_offset += 1;
+         }
+         else
+         {
+            opt_statusbar_position += 0;
+            opt_statusbar_position_offset += 0;
+         }
       }
    }
 
-   if (change_timing) {
-      struct retro_system_av_info new_timing;
-      retro_get_system_av_info(&new_timing);
-      new_timing.timing.fps = hz;
-      environ_cb(RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO, &new_timing);
-   }
-
-   if (change_geometry) {
-      environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
-
-      /* Ensure statusbar stays visible at the bottom */
-      opt_statusbar_position_offset = 0;
-      opt_statusbar_position = opt_statusbar_position_old;
-      if (!change_timing)
-         if (retroh < defaulth)
-            if (opt_statusbar_position >= 0 && (defaulth - retroh) > opt_statusbar_position)
-               opt_statusbar_position = defaulth - retroh;
-
-      /* Aspect offset for zoom mode */
-      opt_statusbar_position_offset = opt_statusbar_position_old - opt_statusbar_position;
-
-      /* Compensate for the last line in PAL HIRES */
-      if (video_config_geometry & PUAE_VIDEO_PAL && video_config_geometry & PUAE_VIDEO_DOUBLELINE && retroh == defaulth && opt_statusbar_position >= 0)
-         opt_statusbar_position += 1;
-
-      //fprintf(stdout, "statusbar:%3d old:%3d offset:%3d, retroh:%d defaulth:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, retroh, defaulth);
-   }
+   //fprintf(stdout, "statusbar:%3d old:%3d offset:%3d, defaulth:%d retroh:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, defaulth, retroh);
 
    /* Apply zoom mode if necessary */
    switch (zoom_mode_id)
@@ -2994,8 +3063,6 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
          break;
       default:
          zoomed_height = retroh;
-         if (fake_ntsc)
-            zoomed_height = 460;
          break;
    }
 
@@ -3009,18 +3076,14 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
 
       /* Ensure statusbar stays visible at the bottom */
-      if (opt_statusbar_position >= 0 && (retroh - zoomed_height - opt_statusbar_position_offset) > opt_statusbar_position)
+      if (opt_statusbar_position >= 0 && (retroh - zoomed_height - opt_statusbar_position_offset) >= opt_statusbar_position)
          opt_statusbar_position = retroh - zoomed_height - opt_statusbar_position_offset;
 
-      /* Exception for Dyna Blaster */
-      if (fake_ntsc)
-         opt_statusbar_position -= (retroh - defaulth);
-
-      //fprintf(stdout, "ztatusbar:%3d old:%3d offset:%3d, retroh:%d defaulth:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, retroh, defaulth);
+      //fprintf(stdout, "ztatusbar:%3d old:%3d offset:%3d, defaulth:%d retroz:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, defaulth, zoomed_height);
    }
 
    /* If zoom mode should be vertically centered automagically */
-   if (opt_vertical_offset_auto && (zoom_mode_id != 0 || zoomed_height != retroh) && !firstpass)
+   if (opt_vertical_offset_auto && (zoom_mode_id != 0 || zoomed_height != retroh))
    {
       int zoomed_height_normal = (video_config & PUAE_VIDEO_DOUBLELINE) ? zoomed_height / 2 : zoomed_height;
       int thisframe_y_adjust_new = minfirstline;
@@ -3052,7 +3115,7 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       thisframe_y_adjust = minfirstline + opt_vertical_offset;
 
    /* Horizontal centering */
-   if (opt_horizontal_offset_auto && !firstpass)
+   if (opt_horizontal_offset_auto)
    {
       int visible_left_border_new = retro_max_diwlastword - retrow;
       int diw_multiplier = 1;
@@ -3085,9 +3148,17 @@ bool retro_update_av_info(bool change_geometry, bool change_timing, bool isntsc)
       visible_left_border_old = visible_left_border;
    }
 
-   /* No need to check changed gfx at startup */
-   if (!firstpass)
-      prefs_changed = 1; // Triggers check_prefs_changed_gfx() in vsync_handle_check()
+   /* Logging */
+   if (av_log)
+   {
+      if (change_timing)
+         fprintf(stdout, "[libretro-uae]: Update av_info: %dx%d %0.4fHz, zoomed_height:%d, video_config:%d\n", retrow, retroh, hz, zoomed_height, video_config_geometry);
+      else
+         fprintf(stdout, "[libretro-uae]: Update geometry: %dx%d zoomed_height:%d, video_config:%d\n", retrow, retroh, zoomed_height, video_config_geometry);
+   }
+
+   /* Triggers check_prefs_changed_gfx() in vsync_handle_check() */
+   prefs_changed = 1;
 
    /* Changing any drawing/offset parameters requires
     * a drawing reset - it is safest to just do this
@@ -3965,13 +4036,8 @@ void retro_reset(void)
    uae_restart(1, (const char*)&RPATH); /* 1=nogui */
 }
 
-void retro_run(void)
+void update_audiovideo(void)
 {
-   // Core options
-   bool updated = false;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
-      update_variables();
-
    // Statusbar disk display timer
    if (imagename_timer > 0)
       imagename_timer--;
@@ -3987,32 +4053,73 @@ void retro_run(void)
       config_changed = 0;
    }
 
+   // Automatic video resolution
+   if (opt_video_resolution_auto && request_init_custom_timer == 0)
+   {
+      int current_resolution = GET_RES_DENISE (bplcon0);
+      //printf("BPLCON0: %d, %d, %d %d\n", bplcon0, current_resolution, diwfirstword_total, diwlastword_total);
+      if (current_resolution == 1 && bplcon0 == 0xC201 && ((diwfirstword_total == 210 && diwlastword_total && 786) || (diwfirstword_total == 420 && diwlastword_total && 1572))) // Super Skidmarks exception
+         current_resolution = 2;
+      else if (current_resolution == 0 && bplcon0 == 0 && ((diwfirstword_total == 114 && diwlastword_total && 818) || (diwfirstword_total == 228 && diwlastword_total && 1636))) // Super Stardust exception
+         current_resolution = 2;
+      else if (current_resolution == 0)
+         current_resolution = 1;
+
+      switch (current_resolution)
+      {
+         case 1:
+            if (!(video_config & PUAE_VIDEO_HIRES))
+            {
+               changed_prefs.gfx_resolution = RES_HIRES;
+               video_config |= PUAE_VIDEO_HIRES;
+               video_config &= ~PUAE_VIDEO_SUPERHIRES;
+               defaultw = retrow = PUAE_VIDEO_WIDTH;
+               retro_max_diwlastword = retro_max_diwlastword_hires;
+               request_init_custom_timer = 3;
+            }
+            break;
+         case 2:
+            if (!(video_config & PUAE_VIDEO_SUPERHIRES))
+            {
+               changed_prefs.gfx_resolution = RES_SUPERHIRES;
+               video_config |= PUAE_VIDEO_SUPERHIRES;
+               video_config &= ~PUAE_VIDEO_HIRES;
+               defaultw = retrow = PUAE_VIDEO_WIDTH * 2;
+               retro_max_diwlastword = retro_max_diwlastword_hires * 2;
+               request_init_custom_timer = 3;
+            }
+            break;
+      }
+
+      // Horizontal centering calculation needs to be forced due to retro_max_diwlastword change, which is crucial for visible_left_border
+      if (request_init_custom_timer > 0)
+      {
+         retro_min_diwstart_old = -1;
+         retro_max_diwstop_old = -1;
+         thisframe_y_adjust = minfirstline;
+         visible_left_border = retro_max_diwlastword - retrow;
+      }
+   }
+
    // Automatic vertical offset
    if (opt_vertical_offset_auto && zoom_mode_id != 0)
    {
-      if ((retro_thisframe_first_drawn_line != thisframe_first_drawn_line_old) ||
-          (retro_thisframe_last_drawn_line != thisframe_last_drawn_line_old))
+      if (((retro_thisframe_first_drawn_line != retro_thisframe_first_drawn_line_old)
+         ||(retro_thisframe_last_drawn_line  != retro_thisframe_last_drawn_line_old))
+         && retro_thisframe_first_drawn_line != -1
+         && retro_thisframe_last_drawn_line  != -1
+      )
       {
          // Prevent interlace stuttering by requiring a change of at least 2 lines
-         if (abs(thisframe_first_drawn_line_old - retro_thisframe_first_drawn_line) > 1)
+         if (abs(retro_thisframe_first_drawn_line_old - retro_thisframe_first_drawn_line) > 1)
          {
-            thisframe_first_drawn_line_old = retro_thisframe_first_drawn_line;
+            retro_thisframe_first_drawn_line_old = retro_thisframe_first_drawn_line;
             request_update_av_info = true;
          }
-         if (abs(thisframe_last_drawn_line_old - retro_thisframe_last_drawn_line) > 1)
+         if (abs(retro_thisframe_last_drawn_line_old - retro_thisframe_last_drawn_line) > 1)
          {
-            thisframe_last_drawn_line_old = retro_thisframe_last_drawn_line;
+            retro_thisframe_last_drawn_line_old = retro_thisframe_last_drawn_line;
             request_update_av_info = true;
-         }
-      }
-      // Timer required for unserialize recovery
-      else if (retro_thisframe_first_drawn_line == thisframe_first_drawn_line_old)
-      {
-         if (thisframe_y_adjust_update_frame_timer > 0)
-         {
-            thisframe_y_adjust_update_frame_timer--;
-            if (thisframe_y_adjust_update_frame_timer == 0)
-               request_update_av_info = true;
          }
       }
    }
@@ -4033,11 +4140,11 @@ void retro_run(void)
    // Automatic horizontal offset
    if (opt_horizontal_offset_auto)
    {
-      if ((retro_min_diwstart != min_diwstart_old) ||
-          (retro_max_diwstop != max_diwstop_old))
+      if ((retro_min_diwstart != retro_min_diwstart_old) ||
+          (retro_max_diwstop != retro_max_diwstop_old))
       {
-         min_diwstart_old = retro_min_diwstart;
-         max_diwstop_old = retro_max_diwstop;
+         retro_min_diwstart_old = retro_min_diwstart;
+         retro_max_diwstop_old = retro_max_diwstop;
          request_update_av_info = true;
       }
    }
@@ -4054,13 +4161,27 @@ void retro_run(void)
          }
       }
    }
+}
 
-   // AV info change is requested
-   if (request_update_av_info)
-      retro_update_av_info(1, 0, 0);
+void retro_run(void)
+{
+   // Core options
+   bool updated = false;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
+      update_variables();
 
-   // Poll inputs
-   retro_poll_event();
+   if (!firstpass)
+   {
+      // Handle statusbar text, audio filter type & video geometry + resolution
+      update_audiovideo();
+
+      // AV info change is requested
+      if (request_update_av_info)
+         retro_update_av_info(false, false);
+
+      // Poll inputs
+      retro_poll_event();
+   }
 
    // If any drawing parameters/offsets have been modified,
    // must call reset_drawing() to ensure that the changes
@@ -4079,6 +4200,8 @@ void retro_run(void)
    // Dynamic resolution changing requires a frame breather after reset_drawing()
    if (request_init_custom_timer > 0)
    {
+      if (request_init_custom_timer == 2)
+         request_reset_drawing = true;
       request_init_custom_timer--;
       if (request_init_custom_timer == 0)
          init_custom ();
@@ -4112,7 +4235,7 @@ void retro_run(void)
    if (SHOWKEY == 1)
    {
       // Virtual keyboard requires a graceful redraw, blunt reset_drawing() interferes with zoom
-      frame_redraw_necessary=2;
+      frame_redraw_necessary = 2;
       virtual_kbd(retro_bmp, vkey_pos_x, vkey_pos_y);
    }
    // Maximum 288p/576p PAL shenanigans:
@@ -4121,11 +4244,23 @@ void retro_run(void)
    {
       if (video_config & PUAE_VIDEO_DOUBLELINE)
       {
-         DrawHline(retro_bmp, 0, 574, retrow, 0, 0);
-         DrawHline(retro_bmp, 0, 575, retrow, 0, 0);
+         if (interlace_seen)
+         {
+            DrawHline(retro_bmp, 0, 572, retrow, 0, 0);
+            DrawHline(retro_bmp, 0, 573, retrow, 0, 0);
+            DrawHline(retro_bmp, 0, 574, retrow, 0, 0);
+            DrawHline(retro_bmp, 0, 575, retrow, 0, 0);
+         }
+         else
+         {
+            DrawHline(retro_bmp, 0, 574, retrow, 0, 0);
+            DrawHline(retro_bmp, 0, 575, retrow, 0, 0);
+         }
       }
       else
+      {
          DrawHline(retro_bmp, 0, 287, retrow, 0, 0);
+      }
    }
    video_cb(retro_bmp, retrow, zoomed_height, retrow << (pix_bytes / 2));
 }
@@ -4232,7 +4367,6 @@ bool retro_unserialize(const void *data_, size_t size)
 {
    if (!firstpass)
    {
-      thisframe_y_adjust_update_frame_timer = 3;
       FILE *file = fopen(savestate_fname, "wb");
       if (file)
       {

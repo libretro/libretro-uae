@@ -92,7 +92,7 @@ These parameters control the output resolution of the core:
 
 |Name|Values|Default|
 |---|---|---|
-|Video Resolution|Low, High (SL), High (DL), Super-High (SL), Super-High (DL)|High (DL)|
+|Video Resolution|Low, High (SL), High (DL), Super-High (SL), Super-High (DL), Automatic (SL), Automatic (DL)|Automatic (DL)|
 |Video Standard|PAL, NTSC|PAL|
 |Aspect Ratio|PAL, NTSC, Automatic|Automatic|
 
@@ -101,24 +101,28 @@ With these settings all the standard resolutions are available:
 |PAL Resolution|Description|
 |---|---|
 |**360x288**|Lores|
-|**720x288**|Hires single line|
-|**720x576**|Hires double line|
-|**1440x288**|SuperHires single line|
-|**1440x576**|SuperHires double line|
+|**720x288**|Hires Single Line|
+|**720x576**|Hires Double Line|
+|**1440x288**|SuperHires Single Line|
+|**1440x576**|SuperHires Double Line|
 
 |NTSC Resolution|Description|
 |---|---|
 |**360x240**|Lores|
-|**720x240**|Hires single line|
-|**720x480**|Hires double line|
-|**1440x240**|SuperHires single line|
-|**1440x480**|SuperHires double line|
+|**720x240**|Hires Single Line|
+|**720x480**|Hires Double Line|
+|**1440x240**|SuperHires Single Line|
+|**1440x480**|SuperHires Double Line|
 
 When using low resolution mode, rendering will be halved horizontally. Scaling shaders looks great but high resolution games and Workbench are badly rendered.
 
 When using high resolution double line mode, rendering will be doubled vertically. It is compatible with high resolution games and Workbench, but scaling shaders will look ugly.
 
 When using high resolution single line mode, rendering is presented as is. It delivers the best of both worlds, and looks great with high resolution games, Workbench and shaders.
+
+Automatic resolution defaults to Hires and selects SuperHires when needed (practically only in Workbench and Super Skidmarks).
+
+Double Line handles deinterlacing, which will halve the framerate, and thus is best suited for still images.
 
 ## Games that need a specific model
 You can force a specific model if a game needs one (AGA games for instance).
@@ -157,7 +161,7 @@ Supported formats are:
 - **M3U** for multiple disk image playlist
 
 When passing these files as a parameter the core will generate a temporary uae configuration file in RetroArch saves directory 
-and use it to launch the game.
+and use it to launch the content.
 
 ### Floppy drive sound
 For external floppy drive sounds to work, copy the files from https://github.com/libretro/libretro-uae/tree/master/sources/uae_data into a subdirectory called `uae_data` in your RetroArch system directory.
@@ -174,7 +178,7 @@ Compatible CAPSIMG libraries for Android can be found at https://github.com/rsn8
 Please be aware that there are 32-bits and 64-bits versions of the library. Choose the one corresponding to your RetroArch executable.
 
 ### M3U support
-When you have a multi disk game, you can use a M3U file to specify each disk of the game and change them from the RetroArch Disk control interface.
+When you have a multi disk game, you can use a M3U file to specify each disk of the game and change them from the RetroArch Disk Control interface.
 
 A M3U file is a simple text file with one disk per line (see https://en.wikipedia.org/wiki/M3U).
 
@@ -335,6 +339,18 @@ hardfile=read-write,32,2,2,512,/emuroms/amiga/hdf/WHDGamesA.hdf
 hardfile=read-write,32,2,2,512,/emuroms/amiga/hdf/WHDGamesB.hdf
 hardfile=read-write,32,2,2,512,/emuroms/amiga/hdf/WHDGamesC.hdf
 ```
+
+Example 2: You want to mount a directory full of extracted data as a hard drive:
+```
+filesystem2=rw,DH0:data:/emuroms/amiga/,0
+```
+
+Windows tip:
+- If paths are enclosed with quotes, Windows needs double blackslashes: `filesystem2=rw,DH0:data:"c:\\emuroms\\amiga",0`.
+
+Linux tip:
+- Leave the ending slash to the path to make sure UAE sees it as a directory.
+
 You can then load your .uae file via Load Content.
 
 Note that for most HDF files, the model has to be set to A1200 in Quickmenu->Options. This requires a restart to take effect.

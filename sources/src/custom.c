@@ -167,7 +167,7 @@ static int frameskiptime;
 static bool genlockhtoggle;
 static bool genlockvtoggle;
 
-#define LOF_TOGGLES_NEEDED 4
+#define LOF_TOGGLES_NEEDED 3
 #define NLACE_CNT_NEEDED 50
 static int lof_togglecnt_lace, lof_togglecnt_nlace, lof_previous, nlace_cnt;
 
@@ -3027,6 +3027,7 @@ int current_maxvpos (void)
 	return maxvpos + (lof_store ? 1 : 0);
 }
 
+#if 0
 static void checklacecount (bool lace)
 {
 	if (!interlace_changed) {
@@ -3056,6 +3057,7 @@ static void checklacecount (bool lace)
 			nlace_cnt = NLACE_CNT_NEEDED * 2;
 	}
 }
+#endif
 
 struct chipset_refresh *get_chipset_refresh (void)
 {
@@ -3233,7 +3235,7 @@ void compute_framesync (void)
 	);
 
 #ifdef __LIBRETRO__
-	retro_update_av_info(1, 1, isntsc);
+	retro_update_av_info(true, isntsc);
 #endif
 
 	config_changed = 1;
@@ -4123,8 +4125,9 @@ static void BPLCON0 (int hpos, uae_u16 v)
 		hpos_previous = hpos;
 	}
 
-	if ((bplcon0 & 4) != (v & 4))
-		checklacecount ((v & 4) != 0);
+	if (v & 4) {
+		bplcon0_interlace_seen = true;
+	}
 
 	bplcon0 = v;
 
@@ -6031,7 +6034,7 @@ static void vsync_handler_pre (void)
 		vblank_hz_state = 1;
 
 	vsync_handle_check ();
-	checklacecount ((bplcon0 & 4) != 0);
+	//checklacecount (bplcon0_interlace_seen || lof_lace);
 }
 
 // emulated hardware vsync
@@ -6529,22 +6532,28 @@ static void hsync_handler_post (bool onvsync)
 
 	if (onvsync) {
 		// vpos_count >= MAXVPOS just to not crash if VPOSW writes prevent vsync completely
+#if 0
 		if ((bplcon0 & 8) && !lightpen_triggered) {
 			vpos_lpen = vpos - 1;
 			hpos_lpen = maxhpos;
 			lightpen_triggered = 1;
 		}
+#endif
 		vpos = 0;
 		vsync_handler_post ();
 		vpos_count = 0;
 	}
-	// DIP Agnus (8361): vblank interrupt is triggered on line 1!
+	// A1000 DIP Agnus (8361): vblank interrupt is triggered on line 1!
 	if (currprefs.cs_dipagnus) {
 		if (vpos == 1)
 			send_interrupt (5, 1 * CYCLE_UNIT);
 	} else {
 		if (vpos == 0)
 			send_interrupt (5, 1 * CYCLE_UNIT);
+	}
+	// lastline - 1?
+	if (vpos + 1 == maxvpos + lof_store || vpos + 1 == maxvpos + lof_store + 1) {
+		lof_lastline = lof_store != 0;
 	}
 
 #ifdef CPUEMU_12
@@ -6632,6 +6641,7 @@ static void hsync_handler_post (bool onvsync)
 	} else {
 		if (vpos + 1 < maxvpos + lof_store && (vpos == maxvpos_nom * 1 / 3 || vpos == maxvpos_nom * 2 / 3)) {
 			vsyncmintime += vsynctimeperline;
+#ifndef __LIBRETRO__
 			if (!currprefs.turbo_emulation) {
 				frame_time_t rpt = read_processor_time ();
 				// sleep if more than 2ms "free" time
@@ -6642,6 +6652,7 @@ static void hsync_handler_post (bool onvsync)
 				    //write_log (_T("*"));
 				}
 			}
+#endif
 		}
 	}
 
@@ -6654,7 +6665,6 @@ static void hsync_handler_post (bool onvsync)
 			lineno *= 2;
 		} else if (currprefs.gfx_vresolution && (doublescan <= 0 || interlace_seen > 0)) {
 			lineno *= 2;
-			nextline_how = currprefs.gfx_vresolution > VRES_NONDOUBLE && currprefs.gfx_scanlines == false ? nln_doubled : nln_nblack;
 			if (interlace_seen) {
 				if (!lof_current) {
 					lineno++;
@@ -6662,6 +6672,8 @@ static void hsync_handler_post (bool onvsync)
 				} else {
 					nextline_how = nln_upper;
 				}
+			} else {
+				nextline_how = currprefs.gfx_vresolution > VRES_NONDOUBLE && currprefs.gfx_scanlines == false ? nln_doubled : nln_nblack;
 			}
 		}
 		prev_lineno = next_lineno;
@@ -6752,7 +6764,8 @@ static void hsync_handler_post (bool onvsync)
 	if (diw_change > 0)
 		diw_change--;
 
-		/* fastest possible + last line and no vflip wait: render the frame as early as possible */
+#if 0
+	/* fastest possible + last line and no vflip wait: render the frame as early as possible */
 	if (is_last_line () && isvsync_chipset () <= -2 && !vsync_rendered && currprefs.gfx_apmode[0].gfx_vflip == 0) {
 		frame_time_t start, end;
 		start = read_processor_time ();
@@ -6764,6 +6777,7 @@ static void hsync_handler_post (bool onvsync)
 		end = read_processor_time ();
 		frameskiptime += end - start;
 	}
+#endif
 
 	rtg_vsynccheck ();
 
