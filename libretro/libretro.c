@@ -45,6 +45,7 @@ unsigned int opt_video_options_display;
 unsigned int opt_audio_options_display;
 char opt_model[10];
 bool opt_video_resolution_auto = false;
+bool opt_video_vresolution_auto = false;
 bool opt_use_whdload_hdf = true;
 bool opt_use_whdsaves_hdf = true;
 unsigned int opt_use_whdload_prefs = 0;
@@ -93,6 +94,7 @@ bool forced_video = false;
 bool request_update_av_info = false;
 bool request_reset_drawing = false;
 unsigned int request_init_custom_timer = 0;
+unsigned int request_check_prefs_timer = 0;
 unsigned int zoom_mode_id = 0;
 unsigned int opt_zoom_mode_id = 0;
 int zoomed_height;
@@ -254,17 +256,17 @@ void retro_set_environment(retro_environment_t cb)
             { "-300.0", "-30\%" },
             { "-200.0", "-20\%" },
             { "-100.0", "-10\%" },
-            { "0.0", "Normal" },
-            { "500.0", "+50\%" },
+            { "0.0", "Default" },
             { "1000.0", "+100\%" },
-            { "1500.0", "+150\%" },
             { "2000.0", "+200\%" },
-            { "2500.0", "+250\%" },
             { "3000.0", "+300\%" },
-            { "3500.0", "+350\%" },
             { "4000.0", "+400\%" },
-            { "4500.0", "+450\%" },
             { "5000.0", "+500\%" },
+            { "6000.0", "+600\%" },
+            { "7000.0", "+700\%" },
+            { "8000.0", "+800\%" },
+            { "9000.0", "+900\%" },
+            { "10000.0", "+1000\%" },
             { NULL, NULL },
          },
          "0.0"
@@ -274,12 +276,14 @@ void retro_set_environment(retro_environment_t cb)
          "CPU Cycle-exact Speed",
          "Applies only with 'Cycle-exact'.",
          {
-            { "0", "Normal" },
-            { "1", "1x (3.546895 MHz)" },
-            { "2", "2x (7.093790 MHz) A500" },
-            { "4", "4x (14.187580 MHz) A1200" },
-            { "8", "8x (28.375160 MHz)" },
-            { "16", "16x (56.750320 MHz)" },
+            { "0", "Default" },
+            { "1", "3.546895 MHz" },
+            { "2", "7.093790 MHz (A500)" },
+            { "4", "14.187580 MHz (A1200)" },
+            { "8", "28.375160 MHz" },
+            { "10", "35.468950 MHz" },
+            { "12", "42.562740 MHz" },
+            { "16", "56.750320 MHz" },
             { NULL, NULL },
          },
          "0"
@@ -307,31 +311,40 @@ void retro_set_environment(retro_environment_t cb)
          "enabled"
       },
       {
-         "puae_video_resolution",
-         "Video Resolution",
-         "Output width:\n- Automatic defaults to High and switches to Super-High when needed.\n- Double Line deinterlaces interlaced images.",
-         {
-            { "lores", "Low 360px" },
-            { "hires_single", "High 720px - Single Line" },
-            { "hires_double", "High 720px - Double Line" },
-            { "superhires_single", "Super-High 1440px - Single Line" },
-            { "superhires_double", "Super-High 1440px - Double Line" },
-            { "automatic_single", "Automatic - Single Line" },
-            { "automatic_double", "Automatic - Double Line" },
-            { NULL, NULL },
-         },
-         "automatic_double"
-      },
-      {
          "puae_video_standard",
          "Video Standard",
-         "Output height:\n- Single Line / Double Line.",
+         "Output Hz & height:\n- Single Line / Double Line.",
          {
-            { "PAL", "PAL - 288px / 576px" },
-            { "NTSC", "NTSC - 240px / 480px" },
+            { "PAL", "PAL 50Hz - 288px / 576px" },
+            { "NTSC", "NTSC 60Hz - 240px / 480px" },
             { NULL, NULL },
          },
          "PAL"
+      },
+      {
+         "puae_video_resolution",
+         "Video Resolution",
+         "Output width:\n- Automatic defaults to High and switches to Super-High when needed.",
+         {
+            { "lores", "Low 360px" },
+            { "hires", "High 720px" },
+            { "superhires", "Super-High 1440px" },
+            { "automatic", "Automatic" },
+            { NULL, NULL },
+         },
+         "automatic"
+      },
+      {
+         "puae_video_vresolution",
+         "Video Line Mode",
+         "Output height:\n- Automatic defaults to Single Line and switches to Double Line on interlaced screens.",
+         {
+            { "single", "Single Line" },
+            { "double", "Double Line" },
+            { "automatic", "Automatic" },
+            { NULL, NULL },
+         },
+         "automatic"
       },
       {
          "puae_video_aspect",
@@ -1272,117 +1285,105 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      int video_config_prev = video_config;
-      video_config = video_config_region;
       opt_video_resolution_auto = false;
 
       if (strcmp(var.value, "lores") == 0)
       {
+         video_config &= ~PUAE_VIDEO_HIRES;
+         video_config &= ~PUAE_VIDEO_SUPERHIRES;
          retro_max_diwlastword = retro_max_diwlastword_hires / 2;
          if (!firstpass)
-         {
             changed_prefs.gfx_resolution=RES_LORES;
-            changed_prefs.gfx_vresolution=VRES_NONDOUBLE;
-         }
       }
-      else if (strcmp(var.value, "hires_double") == 0)
+      else if (strcmp(var.value, "hires") == 0)
       {
-         video_config |= PUAE_VIDEO_HIRES;
-         video_config |= PUAE_VIDEO_DOUBLELINE;
-         retro_max_diwlastword = retro_max_diwlastword_hires;
-         if (!firstpass)
-         {
-            changed_prefs.gfx_resolution=RES_HIRES;
-            changed_prefs.gfx_vresolution=VRES_DOUBLE;
-         }
-      }
-      else if (strcmp(var.value, "hires_single") == 0)
-      {
+         video_config &= ~PUAE_VIDEO_SUPERHIRES;
          video_config |= PUAE_VIDEO_HIRES;
          retro_max_diwlastword = retro_max_diwlastword_hires;
          if (!firstpass)
-         {
             changed_prefs.gfx_resolution=RES_HIRES;
-            changed_prefs.gfx_vresolution=VRES_NONDOUBLE;
-         }
       }
-      else if (strcmp(var.value, "superhires_double") == 0)
+      else if (strcmp(var.value, "superhires") == 0)
       {
-         video_config |= PUAE_VIDEO_SUPERHIRES;
-         video_config |= PUAE_VIDEO_DOUBLELINE;
-         retro_max_diwlastword = retro_max_diwlastword_hires * 2;
-         if (!firstpass)
-         {
-            changed_prefs.gfx_resolution=RES_SUPERHIRES;
-            changed_prefs.gfx_vresolution=VRES_DOUBLE;
-         }
-      }
-      else if (strcmp(var.value, "superhires_single") == 0)
-      {
+         video_config &= ~PUAE_VIDEO_HIRES;
          video_config |= PUAE_VIDEO_SUPERHIRES;
          retro_max_diwlastword = retro_max_diwlastword_hires * 2;
          if (!firstpass)
-         {
             changed_prefs.gfx_resolution=RES_SUPERHIRES;
-            changed_prefs.gfx_vresolution=VRES_NONDOUBLE;
-         }
       }
-      else if (strcmp(var.value, "automatic_double") == 0)
+      else if (strcmp(var.value, "automatic") == 0)
       {
          opt_video_resolution_auto = true;
-         video_config |= PUAE_VIDEO_DOUBLELINE;
-         if (video_config_prev & PUAE_VIDEO_SUPERHIRES)
+
+         if (video_config_old & PUAE_VIDEO_SUPERHIRES)
          {
+            video_config &= ~PUAE_VIDEO_HIRES;
             video_config |= PUAE_VIDEO_SUPERHIRES;
             retro_max_diwlastword = retro_max_diwlastword_hires * 2;
-
             if (!firstpass)
-            {
                changed_prefs.gfx_resolution=RES_SUPERHIRES;
-               changed_prefs.gfx_vresolution=VRES_DOUBLE;
-            }
          }
          else
          {
+            video_config &= ~PUAE_VIDEO_SUPERHIRES;
             video_config |= PUAE_VIDEO_HIRES;
             retro_max_diwlastword = retro_max_diwlastword_hires;
-
             if (!firstpass)
-            {
                changed_prefs.gfx_resolution=RES_HIRES;
-               changed_prefs.gfx_vresolution=VRES_DOUBLE;
-            }
-         }
-      }
-      else if (strcmp(var.value, "automatic_single") == 0)
-      {
-         opt_video_resolution_auto = true;
-         if (video_config_prev & PUAE_VIDEO_SUPERHIRES)
-         {
-            video_config |= PUAE_VIDEO_SUPERHIRES;
-            retro_max_diwlastword = retro_max_diwlastword_hires * 2;
-
-            if (!firstpass)
-            {
-               changed_prefs.gfx_resolution=RES_SUPERHIRES;
-               changed_prefs.gfx_vresolution=VRES_NONDOUBLE;
-            }
-         }
-         else
-         {
-            video_config |= PUAE_VIDEO_HIRES;
-            retro_max_diwlastword = retro_max_diwlastword_hires;
-
-            if (!firstpass)
-            {
-               changed_prefs.gfx_resolution=RES_HIRES;
-               changed_prefs.gfx_vresolution=VRES_NONDOUBLE;
-            }
          }
       }
 
       /* Resolution change needs init_custom() to be done after reset_drawing() is done */
-      if (!firstpass && video_config != video_config_prev)
+      if (!firstpass && video_config != video_config_old)
+         request_init_custom_timer = 3;
+   }
+
+   var.key = "puae_video_vresolution";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      opt_video_vresolution_auto = false;
+
+      if (strcmp(var.value, "double") == 0)
+      {
+         video_config |= PUAE_VIDEO_DOUBLELINE;
+         if (!firstpass)
+            changed_prefs.gfx_vresolution=VRES_DOUBLE;
+      }
+      else if (strcmp(var.value, "single") == 0)
+      {
+         video_config &= ~PUAE_VIDEO_DOUBLELINE;
+         if (!firstpass)
+            changed_prefs.gfx_vresolution=VRES_NONDOUBLE;
+      }
+      else if (strcmp(var.value, "automatic") == 0)
+      {
+         opt_video_vresolution_auto = true;
+
+         if (!firstpass)
+         {
+            if (video_config_old & PUAE_VIDEO_DOUBLELINE)
+            {
+               video_config |= PUAE_VIDEO_DOUBLELINE;
+               changed_prefs.gfx_vresolution=VRES_DOUBLE;
+            }
+            else
+            {
+               video_config &= ~PUAE_VIDEO_DOUBLELINE;
+               changed_prefs.gfx_vresolution=VRES_NONDOUBLE;
+            }
+         }
+      }
+
+      // Lores can not be double lined
+      if (retro_max_diwlastword < retro_max_diwlastword_hires)
+      {
+         video_config &= ~PUAE_VIDEO_DOUBLELINE;
+         changed_prefs.gfx_vresolution=VRES_NONDOUBLE;
+      }
+
+      /* Resolution change needs init_custom() to be done after reset_drawing() is done */
+      if (!firstpass && video_config != video_config_old)
          request_init_custom_timer = 3;
    }
 
@@ -2332,7 +2333,7 @@ static void update_variables(void)
    /* Always update av_info geometry */
    request_update_av_info = true;
 
-   /* Always trigger audio and custom change */
+   /* Always trigger changed prefs */
    config_changed = 1;
    check_prefs_changed_audio();
    check_prefs_changed_custom();
@@ -4058,10 +4059,14 @@ void update_audiovideo(void)
    {
       int current_resolution = GET_RES_DENISE (bplcon0);
       //printf("BPLCON0: %d, %d, %d %d\n", bplcon0, current_resolution, diwfirstword_total, diwlastword_total);
-      if (current_resolution == 1 && bplcon0 == 0xC201 && ((diwfirstword_total == 210 && diwlastword_total && 786) || (diwfirstword_total == 420 && diwlastword_total && 1572))) // Super Skidmarks exception
+
+      // Super Skidmarks force to SuperHires
+      if (current_resolution == 1 && bplcon0 == 0xC201 && ((diwfirstword_total == 210 && diwlastword_total && 786) || (diwfirstword_total == 420 && diwlastword_total && 1572)))
          current_resolution = 2;
-      else if (current_resolution == 0 && bplcon0 == 0 && ((diwfirstword_total == 114 && diwlastword_total && 818) || (diwfirstword_total == 228 && diwlastword_total && 1636))) // Super Stardust exception
-         current_resolution = 2;
+      // Super Stardust force to SuperHires, rather pointless and causes a false positive on The Settlers
+      //else if (current_resolution == 0 && (bplcon0 == 0 /*CD32*/|| bplcon0 == 512 /*AGA*/) && ((diwfirstword_total == 114 && diwlastword_total && 818) || (diwfirstword_total == 228 && diwlastword_total && 1636)))
+         //current_resolution = 2;
+      // Lores force to Hires
       else if (current_resolution == 0)
          current_resolution = 1;
 
@@ -4096,9 +4101,45 @@ void update_audiovideo(void)
       {
          retro_min_diwstart_old = -1;
          retro_max_diwstop_old = -1;
-         thisframe_y_adjust = minfirstline;
          visible_left_border = retro_max_diwlastword - retrow;
       }
+   }
+
+   // Automatic video vresolution (Line Mode)
+   if (opt_video_vresolution_auto && request_init_custom_timer == 0)
+   {
+      int current_interlace = interlace_seen;
+
+      // Lores force to single line
+      if (!(video_config & PUAE_VIDEO_HIRES) && !(video_config & PUAE_VIDEO_SUPERHIRES))
+         current_interlace = 0;
+
+      switch (current_interlace)
+      {
+         case -1:
+         case 1:
+            if (!(video_config & PUAE_VIDEO_DOUBLELINE))
+            {
+               changed_prefs.gfx_vresolution = VRES_DOUBLE;
+               video_config |= PUAE_VIDEO_DOUBLELINE;
+               defaulth = retroh = (video_config & PUAE_VIDEO_NTSC) ? PUAE_VIDEO_HEIGHT_NTSC : PUAE_VIDEO_HEIGHT_PAL;
+               request_init_custom_timer = 3;
+            }
+            break;
+         case 0:
+            if ((video_config & PUAE_VIDEO_DOUBLELINE))
+            {
+               changed_prefs.gfx_vresolution = VRES_NONDOUBLE;
+               video_config &= ~PUAE_VIDEO_DOUBLELINE;
+               defaulth = retroh = (video_config & PUAE_VIDEO_NTSC) ? PUAE_VIDEO_HEIGHT_NTSC / 2 : PUAE_VIDEO_HEIGHT_PAL / 2;
+               request_init_custom_timer = 3;
+            }
+            break;
+      }
+
+      // Update av_info
+      if (request_init_custom_timer > 0)
+         request_update_av_info = true;
    }
 
    // Automatic vertical offset
@@ -4197,6 +4238,7 @@ void retro_run(void)
       request_reset_drawing = false;
       reset_drawing();
    }
+
    // Dynamic resolution changing requires a frame breather after reset_drawing()
    if (request_init_custom_timer > 0)
    {
@@ -4205,6 +4247,21 @@ void retro_run(void)
       request_init_custom_timer--;
       if (request_init_custom_timer == 0)
          init_custom ();
+   }
+
+   // Refresh CPU prefs
+   if (request_check_prefs_timer > 0)
+   {
+      request_check_prefs_timer--;
+      if (request_check_prefs_timer == 0)
+      {
+         update_variables();
+         config_changed = 1;
+         check_prefs_changed_audio();
+         check_prefs_changed_custom();
+         check_prefs_changed_cpu();
+         config_changed = 0;
+      }
    }
 
    // Check if a restart is required
@@ -4367,6 +4424,8 @@ bool retro_unserialize(const void *data_, size_t size)
 {
    if (!firstpass)
    {
+      // Savestates also save CPU prefs, therefore refresh core options, but skip it for now
+      //request_check_prefs_timer = 4;
       FILE *file = fopen(savestate_fname, "wb");
       if (file)
       {

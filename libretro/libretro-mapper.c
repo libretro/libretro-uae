@@ -419,7 +419,7 @@ void Print_Status(void)
 
    // Model & memory
    int STAT_X_MODEL  = STAT_X+(FONT_SLOT*5)+(FONT_WIDTH*52);
-   int STAT_X_MEMORY = STAT_X+(FONT_SLOT*5)+(FONT_WIDTH*25);
+   int STAT_X_MEMORY = STAT_X+(FONT_SLOT*5)+(FONT_WIDTH*24);
    char MODEL[10] = {0};
    char MEMORY[5] = {0};
    float mem_size = 0;
@@ -452,7 +452,7 @@ void Print_Status(void)
    // Double line positions
    if (video_config & PUAE_VIDEO_DOUBLELINE)
    {
-      STAT_X_RESOLUTION = STAT_X+(FONT_SLOT*14)+(FONT_WIDTH*29);
+      STAT_X_RESOLUTION = STAT_X+(FONT_SLOT*14)+(FONT_WIDTH*28);
       STAT_X_MODEL      = STAT_X+(FONT_SLOT*15)+(FONT_WIDTH*72);
       STAT_X_MEMORY     = STAT_X+(FONT_SLOT*15)+(FONT_WIDTH*48);
    }

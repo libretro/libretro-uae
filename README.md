@@ -92,13 +92,14 @@ These parameters control the output resolution of the core:
 
 |Name|Values|Default|
 |---|---|---|
-|Video Resolution|Low, High (SL), High (DL), Super-High (SL), Super-High (DL), Automatic (SL), Automatic (DL)|Automatic (DL)|
-|Video Standard|PAL, NTSC|PAL|
+|Video Standard|PAL 50Hz, NTSC 60Hz|PAL 50Hz|
+|Video Resolution|Low, High, Super-High, Automatic|Automatic|
+|Video Line Mode|Single Line, Double Line, Automatic|Automatic|
 |Aspect Ratio|PAL, NTSC, Automatic|Automatic|
 
 With these settings all the standard resolutions are available:
 
-|PAL Resolution|Description|
+|PAL 50Hz Resolution|Description|
 |---|---|
 |**360x288**|Lores|
 |**720x288**|Hires Single Line|
@@ -106,7 +107,7 @@ With these settings all the standard resolutions are available:
 |**1440x288**|SuperHires Single Line|
 |**1440x576**|SuperHires Double Line|
 
-|NTSC Resolution|Description|
+|NTSC 60Hz Resolution|Description|
 |---|---|
 |**360x240**|Lores|
 |**720x240**|Hires Single Line|
@@ -120,9 +121,12 @@ When using high resolution double line mode, rendering will be doubled verticall
 
 When using high resolution single line mode, rendering is presented as is. It delivers the best of both worlds, and looks great with high resolution games, Workbench and shaders.
 
-Automatic resolution defaults to Hires and selects SuperHires when needed (practically only in Workbench and Super Skidmarks).
+Single Line does bob deinterlacing, which will keep full framerate, but interlaced images will not look correct.
 
-Double Line handles deinterlacing, which will halve the framerate, and thus is best suited for still images.
+Double Line does weave deinterlacing, which will halve the framerate, and thus movement will be jerky.
+
+- Automatic Resolution defaults to Hires and selects SuperHires when needed (practically only in Workbench and Super Skidmarks).
+- Automatic Line Mode defaults to Single Line and selects Double Line on interlaced screens.
 
 ## Games that need a specific model
 You can force a specific model if a game needs one (AGA games for instance).
