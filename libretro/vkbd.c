@@ -133,7 +133,7 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
    int YBASEKEY = (zoomed_height - (NLIGN * YSIDE)) - (YPADDING / 2);
 
    int XBASETEXT = ((XPADDING > 0) ? (XPADDING / 2) : 0) + (video_config_geometry & PUAE_VIDEO_SUPERHIRES) ? 12 : (video_config_geometry & PUAE_VIDEO_HIRES) ? 6 : 5;
-   int YBASETEXT = YBASEKEY + ((video_config_geometry & PUAE_VIDEO_NTSC) ? 4 : 6);
+   int YBASETEXT = YBASEKEY + ((video_config_geometry & PUAE_VIDEO_NTSC) ? 4 : 5);
 
    /* Opacity */
    BKG_ALPHA = (SHOWKEYTRANS == -1) ? 255 : ALPHA;

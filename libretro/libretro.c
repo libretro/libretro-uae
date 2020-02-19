@@ -63,6 +63,8 @@ unsigned int opt_dpadmouse_speed = 4;
 unsigned int opt_analogmouse = 0;
 unsigned int opt_analogmouse_deadzone = 15;
 float opt_analogmouse_speed = 1.0;
+unsigned int opt_cd32pad_options = 0;
+unsigned int opt_retropad_options = 0;
 
 #if defined(NATMEM_OFFSET)
 extern uae_u8 *natmem_offset;
@@ -302,7 +304,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_video_allow_hz_change",
          "Allow PAL/NTSC Hz Change",
-         "",
+         "Let Amiga decide the exact output Hz.",
          {
             { "enabled", NULL },
             { "disabled", NULL },
@@ -970,7 +972,7 @@ void retro_set_environment(retro_environment_t cb)
          "RetroPad Select",
          "",
          {{ NULL, NULL }},
-         "RETROK_F11"
+         "TOGGLE_VKBD"
       },
       {
          "puae_mapper_start",
@@ -980,9 +982,16 @@ void retro_set_environment(retro_environment_t cb)
          "---"
       },
       {
+         "puae_mapper_b",
+         "RetroPad B",
+         "Unmapped will default to fire button.",
+         {{ NULL, NULL }},
+         "---"
+      },
+      {
          "puae_mapper_a",
          "RetroPad A",
-         "",
+         "Unmapped will default to 2nd fire button.",
          {{ NULL, NULL }},
          "---"
       },
@@ -1131,6 +1140,32 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "4"
+      },
+      {
+         "puae_retropad_options",
+         "RetroPad Face Button Options",
+         "Rotate face buttons clockwise and/or make 2nd fire press up.",
+         {
+            { "disabled", NULL },
+            { "rotate", "Rotate" },
+            { "jump", "2nd fire = Up" },
+            { "rotate_jump", "Rotate + 2nd fire = Up" },
+            { NULL, NULL },
+         },
+         "disabled"
+      },
+      {
+         "puae_cd32pad_options",
+         "CD32 Pad Face Button Options",
+         "Rotate face buttons clockwise and/or make blue button press up.",
+         {
+            { "disabled", NULL },
+            { "rotate", "Rotate" },
+            { "jump", "Blue = Up" },
+            { "rotate_jump", "Rotate + Blue = Up" },
+            { NULL, NULL },
+         },
+         "disabled"
       },
       { NULL, NULL, NULL, {{0}}, NULL },
    };
@@ -1953,6 +1988,26 @@ static void update_variables(void)
       else if (strcmp(var.value, "enabled") == 0) opt_audio_options_display=1;
    }
 
+   var.key = "puae_retropad_options";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "disabled") == 0) opt_retropad_options=0;
+      else if (strcmp(var.value, "rotate") == 0) opt_retropad_options=1;
+      else if (strcmp(var.value, "jump") == 0) opt_retropad_options=2;
+      else if (strcmp(var.value, "rotate_jump") == 0) opt_retropad_options=3;
+   }
+
+   var.key = "puae_cd32pad_options";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "disabled") == 0) opt_cd32pad_options=0;
+      else if (strcmp(var.value, "rotate") == 0) opt_cd32pad_options=1;
+      else if (strcmp(var.value, "jump") == 0) opt_cd32pad_options=2;
+      else if (strcmp(var.value, "rotate_jump") == 0) opt_cd32pad_options=3;
+   }
+
    var.key = "puae_turbo_fire_button";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -1994,6 +2049,13 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       mapper_keys[RETRO_DEVICE_ID_JOYPAD_START] = keyId(var.value);
+   }
+
+   var.key = "puae_mapper_b";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_B] = keyId(var.value);
    }
 
    var.key = "puae_mapper_a";
@@ -2166,6 +2228,8 @@ static void update_variables(void)
    option_display.key = "puae_mapper_select";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_mapper_start";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_mapper_b";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_mapper_a";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);

@@ -261,7 +261,7 @@ void DrawlineBmp(unsigned short *buffer, int x1, int y1, int x2, int y2, unsigne
    }
 }
 
-#include "font2.c"
+#include "font.c"
 
 void Draw_string(unsigned short *surf, signed short int x, signed short int y,
       const char *string, unsigned short maxstrlen,
@@ -299,6 +299,9 @@ void Draw_string(unsigned short *surf, signed short int x, signed short int y,
 
    linesurf = (unsigned char*)malloc(sizeof(unsigned short)*surfw*surfh);
    yptr = (unsigned short *)&linesurf[0];
+
+   // Skip the 8th row
+   surfh -= 1;
 
    for(ypixel = 0; ypixel < 8; ypixel++)
    {
@@ -364,6 +367,9 @@ void Draw_string32(uint32_t *surf, signed short int x, signed short int y,
    linesurf = (uint32_t *)malloc(sizeof(uint32_t)*surfw*surfh);
    yptr = (uint32_t *)&linesurf[0];
 
+   // Skip the 8th row
+   surfh -= 1;
+
    for(ypixel = 0; ypixel < 8; ypixel++)
    {
       for(col = 0; col < strlen; col++)
@@ -414,8 +420,6 @@ void Draw_text(unsigned short *buffer, int x, int y,
    unsigned char c;
    char s[2] = {0};
    int charwidth = 6;
-   if (max > 10)
-      charwidth = 7;
    int cmax;
    cmax = strlen(text);
    cmax = (cmax > max) ? max : cmax;
@@ -461,8 +465,6 @@ void Draw_text32(uint32_t *buffer, int x, int y,
    unsigned char c;
    char s[2] = {0};
    int charwidth = 6;
-   if (max > 10)
-      charwidth = 7;
    int cmax;
    cmax = strlen(text);
    cmax = (cmax > max) ? max : cmax;

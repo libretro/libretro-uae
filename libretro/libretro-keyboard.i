@@ -5,6 +5,10 @@ const char* keyDesc[] = {
 "MOUSE_MIDDLE_BUTTON",//-4,
 "MOUSE_SLOWER",//-5,
 "MOUSE_FASTER",//-6,
+"JOYSTICK_FIRE",//-7
+"JOYSTICK_2ND_FIRE",//-8
+"TOGGLE_VKBD",//-11,
+"TOGGLE_STATUSBAR",//-12,
 "RETROK_BACKSPACE",//8,
 "RETROK_TAB",//9,
 "RETROK_CLEAR",//12,
@@ -117,9 +121,9 @@ const char* keyDesc[] = {
 //"RETROK_F13",//294,
 //"RETROK_F14",//295,
 //"RETROK_F15",//296,
-"RETROK_NUMLOCK",//300,
-"RETROK_CAPSLOCK",//301,
-"RETROK_SCROLLOCK",//302,
+//"RETROK_NUMLOCK",//300,
+//"RETROK_CAPSLOCK",//301,
+//"RETROK_SCROLLOCK",//302,
 "RETROK_RSHIFT",//303,
 "RETROK_LSHIFT",//304,
 "RETROK_RCTRL",//305,
@@ -138,8 +142,8 @@ const char* keyDesc[] = {
 "RETROK_BREAK",//318,
 "RETROK_MENU",//319,
 "RETROK_POWER",//320,
-"RETROK_EURO",//321,
-"RETROK_UNDO",//322,
+//"RETROK_EURO",//321,
+//"RETROK_UNDO",//322,
 NULL
 };
 
@@ -150,6 +154,10 @@ int keyVal[] = {
 -4,
 -5,
 -6,
+-7,
+-8,
+-11,
+-12,
 8,
 9,
 12,
@@ -283,8 +291,8 @@ int keyVal[] = {
 318,
 319,
 320,
-321,
-322,
+//321,
+//322,
 -1
 };
 
@@ -297,6 +305,10 @@ const char* keyDescHotkeys[] = {
 //"MOUSE_MIDDLE_BUTTON",//-4,
 //"MOUSE_SLOWER",//-5,
 //"MOUSE_FASTER",//-6,
+//"JOYSTICK_FIRE",//-7
+//"JOYSTICK_2ND_FIRE",//-8
+//"TOGGLE_VKBD",//-11,
+//"TOGGLE_STATUSBAR",//-12,
 "RETROK_BACKSPACE",//8,
 "RETROK_TAB",//9,
 "RETROK_CLEAR",//12,
@@ -430,8 +442,8 @@ const char* keyDescHotkeys[] = {
 "RETROK_BREAK",//318,
 "RETROK_MENU",//319,
 "RETROK_POWER",//320,
-"RETROK_EURO",//321,
-"RETROK_UNDO",//322,
+//"RETROK_EURO",//321,
+//"RETROK_UNDO",//322,
 NULL
 };
 
@@ -442,6 +454,10 @@ int keyValHotkeys[] = {
 //-4,
 //-5,
 //-6,
+//-7,
+//-8,
+//-11,
+//-12,
 8,
 9,
 12,
@@ -554,9 +570,9 @@ int keyValHotkeys[] = {
 //294,
 //295,
 //296,
-300,
-301,
-302,
+//300,
+//301,
+//302,
 303,
 304,
 305,
@@ -575,7 +591,7 @@ int keyValHotkeys[] = {
 318,
 319,
 320,
-321,
-322,
+//321,
+//322,
 -1
 };

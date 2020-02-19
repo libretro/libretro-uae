@@ -47,7 +47,7 @@ To generate the temporary uae configuration file the core will use the core opti
 
 The most important option is the model.
 
-The following models are provided (hardcoded configuration):
+The following models are provided:
 
 |Short|Long|Chipset|Memory|
 |---|---|---|---|
@@ -62,7 +62,7 @@ The following models are provided (hardcoded configuration):
 |CD32|Amiga CD32|AGA|2MB Chip RAM|
 |CD32FR|Amiga CD32|AGA|2MB Chip RAM + 8MB Fast RAM|
 
-As the configuration file is only generated at launch you must restart RetroArch for the change to take effect.
+The configuration file is generated at launch and at core restart.
 
 ### Kickstart ROMs
 To use this core you'll need the following Kickstart ROMs. Rename them to the given name and copy the files to RetroArch system directory.
@@ -115,15 +115,13 @@ With these settings all the standard resolutions are available:
 |**1440x240**|SuperHires Single Line|
 |**1440x480**|SuperHires Double Line|
 
-When using low resolution mode, rendering will be halved horizontally. Scaling shaders looks great but high resolution games and Workbench are badly rendered.
+When using low resolution mode, rendering will be halved horizontally and forced into Single Line mode. Scaling shaders looks great but high resolution games and Workbench are badly rendered.
 
-When using high resolution double line mode, rendering will be doubled vertically. It is compatible with high resolution games and Workbench, but scaling shaders will look ugly.
+When using high resolution Double Line mode, rendering will be doubled vertically. It is compatible with high resolution games and Workbench, but scaling shaders will look ugly.
+Double Line shows interlaced fields separately in one frame, which will halve the framerate, and thus movement will be jerky.
 
-When using high resolution single line mode, rendering is presented as is. It delivers the best of both worlds, and looks great with high resolution games, Workbench and shaders.
-
-Single Line does bob deinterlacing, which will keep full framerate, but interlaced images will not look correct.
-
-Double Line does weave deinterlacing, which will halve the framerate, and thus movement will be jerky.
+When using high resolution Single Line mode, rendering is presented as is. It delivers the best of both worlds, and looks great with high resolution games, Workbench and shaders.
+Single Line combines interlaced fields into one field, which will keep the full framerate, but high resolution images will be blocky.
 
 - Automatic Resolution defaults to Hires and selects SuperHires when needed (practically only in Workbench and Super Skidmarks).
 - Automatic Line Mode defaults to Single Line and selects Double Line on interlaced screens.
