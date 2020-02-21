@@ -7855,7 +7855,8 @@ static uae_u8 *restore_aino (UnitInfo *ui, Unit *u, uae_u8 *src)
 		} else {
 			a->volflags = ui->volflags;
 			recycle_aino (u, a);
-			write_log (_T("FS: Lock (root) '%s' ('%s')\n"), a->aname, a->nname);
+			if (log_filesys)
+			    write_log (_T("FS: Lock (root) '%s' ('%s')\n"), a->aname, a->nname);
 		}
 		return src;
 	}
@@ -7895,7 +7896,8 @@ static uae_u8 *restore_aino (UnitInfo *ui, Unit *u, uae_u8 *src)
 		xfree (a->aname);
 		xfree (a);
 	} else {
-		write_log (_T("FS: Lock '%s' ('%s')\n"), a->aname, a->nname);
+		if (log_filesys)
+		    write_log (_T("FS: Lock '%s' ('%s')\n"), a->aname, a->nname);
 		recycle_aino (u, a);
 	}
 	return src;
@@ -8039,22 +8041,26 @@ static uae_u8 *restore_filesys_virtual (UnitInfo *ui, uae_u8 *src, int num)
 	u->volflags = ui->volflags;
 
 	cnt = restore_u32 ();
-	write_log (_T("FS: restoring %d locks\n"), cnt);
+	if (log_filesys)
+	    write_log (_T("FS: restoring %d locks\n"), cnt);
 	while (cnt-- > 0)
 		src = restore_aino(ui, u, src);
 
 	cnt = restore_u32 ();
-	write_log (_T("FS: restoring %d open files\n"), cnt);
+	if (log_filesys)
+	    write_log (_T("FS: restoring %d open files\n"), cnt);
 	while (cnt-- > 0)
 		src = restore_key(ui, u, src);
 
 	cnt = restore_u32 ();
-	write_log (_T("FS: restoring %d notifications\n"), cnt);
+	if (log_filesys)
+	    write_log (_T("FS: restoring %d notifications\n"), cnt);
 	while (cnt-- > 0)
 		src = restore_notify (ui, u, src);
 
 	cnt = restore_u32 ();
-	write_log (_T("FS: restoring %d exkeys\n"), cnt);
+	if (log_filesys)
+	    write_log (_T("FS: restoring %d exkeys\n"), cnt);
 	while (cnt-- > 0)
 		src = restore_exkey (ui, u, src);
 

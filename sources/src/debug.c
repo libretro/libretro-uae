@@ -2712,7 +2712,9 @@ static void memory_map_dump_2 (int log)
 }
 void memory_map_dump (void)
 {
+#ifndef __LIBRETRO__
 	memory_map_dump_2 (1);
+#endif
 }
 
 STATIC_INLINE uaecptr BPTR2APTR (uaecptr addr)
