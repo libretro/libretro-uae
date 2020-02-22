@@ -377,12 +377,18 @@ static uae_u8 *restore_chunk (struct zfile *f, TCHAR *name, size_t *len, size_t 
 	int len2;
 
 	*totallen = 0;
+	*filepos = 0;
+	*name = 0;
 	/* chunk name */
-	zfile_fread (tmp, 1, 4, f);
+	if (zfile_fread(tmp, 1, 4, f) != 4)
+		return NULL;
 	tmp[4] = 0;
 	au_copy (name, 5, (char*)tmp);
 	/* chunk size */
-	zfile_fread (tmp, 1, 4, f);
+	if (zfile_fread(tmp, 1, 4, f) != 4) {
+		*name = 0;
+		return NULL;
+	}
 	src = tmp;
 	len2 = restore_u32 () - 4 - 4 - 4;
 	if (len2 < 0)
@@ -394,7 +400,10 @@ static uae_u8 *restore_chunk (struct zfile *f, TCHAR *name, size_t *len, size_t 
 	}
 
 	/* chunk flags */
-	zfile_fread (tmp, 1, 4, f);
+	if (zfile_fread(tmp, 1, 4, f) != 4) {
+		*name = 0;
+		return NULL;
+	}
 	src = tmp;
 	flags = restore_u32 ();
 	*totallen = *len;
@@ -502,6 +511,7 @@ void restore_state (const TCHAR *filename)
 	size_t len, totallen;
 	size_t filepos, filesize;
 	int z3num;
+	bool end_found = false;
 
 	chunk = 0;
 	f = zfile_fopen (filename, _T("rb"), ZFD_NORMAL);
@@ -516,7 +526,6 @@ void restore_state (const TCHAR *filename)
 	chunk = restore_chunk (f, name, &len, &totallen, &filepos);
 	if (!chunk || _tcsncmp (name, _T("ASF "), 4)) {
 		write_log (_T("%s is not an AmigaStateFile\n"), filename);
-		gui_message ("Cannot restore state from '%s'.\nIt is not an AmigaStateFile.\n", filename);
 		goto error;
 	}
 	write_log (_T("STATERESTORE: '%s'\n"), filename);
@@ -540,11 +549,10 @@ void restore_state (const TCHAR *filename)
 		write_log (_T("Chunk '%s' size %d (%d)\n"), name, len, totallen);
 #endif
 		if (!_tcscmp (name, _T("END "))) {
-#ifdef _DEBUG
-			if (filesize > filepos + 8)
-				continue;
-#endif
-			break;
+			if (end_found)
+				break;
+			end_found = true;
+			continue;
 		}
 		if (!_tcscmp (name, _T("CRAM"))) {
 			restore_cram (totallen, filepos);
@@ -725,6 +733,8 @@ void restore_state (const TCHAR *filename)
 			write_log (_T("Chunk '%s' total size %d bytes but read %d bytes!\n"),
 			name, totallen, end - chunk);
 		xfree (chunk);
+		if (name[0] == 0)
+			break;
 	}
 //	target_addtorecent (filename, 0);
 	return;
@@ -732,7 +742,8 @@ void restore_state (const TCHAR *filename)
 error:
 	savestate_state = 0;
 	savestate_file = 0;
-	xfree (chunk);
+	if (chunk)
+		xfree (chunk);
 	if (f)
 		zfile_fclose (f);
 }

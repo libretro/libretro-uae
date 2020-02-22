@@ -1253,6 +1253,8 @@ static void update_68k_cycles (void)
 		} else {
 			cpucycleunit = CYCLE_UNIT * currprefs.cpu_clock_multiplier;
 		}
+		if (currprefs.cpu_model >= 68040)
+			cpucycleunit /= 2;
 	} else if (currprefs.cpu_frequency) {
 		cpucycleunit = CYCLE_UNIT * baseclock / currprefs.cpu_frequency;
 	} else if (currprefs.cpu_cycle_exact && currprefs.cpu_clock_multiplier == 0) {
@@ -1278,11 +1280,6 @@ static void update_68k_cycles (void)
 		}
 #endif
 	}
-#ifdef __LIBRETRO__
-	if (currprefs.cpu_model == 68020) {
-		cpucycleunit *= 2;
-	}
-#endif
 	if (cpucycleunit < 1)
 		cpucycleunit = 1;
 	if (currprefs.cpu_cycle_exact)
