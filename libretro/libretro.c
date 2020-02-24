@@ -3397,7 +3397,8 @@ bool retro_create_config()
        || strendswith(full_path, HDF_FILE_EXT)
        || strendswith(full_path, HDZ_FILE_EXT)
        || strendswith(full_path, LHA_FILE_EXT)
-       || strendswith(full_path, M3U_FILE_EXT))
+       || strendswith(full_path, M3U_FILE_EXT)
+       || path_is_directory(full_path))
       {
 	     // Open tmp config file
 	     FILE * configfile;
@@ -3477,7 +3478,8 @@ bool retro_create_config()
                   // Hard disk defaults to A600
                   if (  strendswith(full_path, HDF_FILE_EXT)
                      || strendswith(full_path, HDZ_FILE_EXT)
-                     || strendswith(full_path, LHA_FILE_EXT))
+                     || strendswith(full_path, LHA_FILE_EXT)
+                     || path_is_directory(full_path))
                   {
                      uae_machine[0] = '\0';
                      strcat(uae_machine, A600_CONFIG);
@@ -3533,7 +3535,8 @@ bool retro_create_config()
             // If argument is a hard drive image file
             if (strendswith(full_path, HDF_FILE_EXT)
              || strendswith(full_path, HDZ_FILE_EXT)
-             || strendswith(full_path, LHA_FILE_EXT))
+             || strendswith(full_path, LHA_FILE_EXT)
+             || path_is_directory(full_path))
             {
                char *tmp_str = NULL;
 
@@ -3591,12 +3594,12 @@ bool retro_create_config()
 
                   if (strendswith(full_path, LHA_FILE_EXT))
                      fprintf(configfile, "filesystem2=ro,DH0:LHA:\"%s\",0\n", (const char*)tmp_str);
+                  else if (path_is_directory(full_path))
+                     fprintf(configfile, "filesystem2=rw,DH0:%s:\"%s\",0\n", path_basename(tmp_str), (const char*)tmp_str);
                   else
                      fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae1\n", (const char*)tmp_str);
-
                   free(tmp_str);
                   tmp_str = NULL;
-
 
                   // Attach retro_system_directory as a read only hard drive for WHDLoad kickstarts/prefs/key
 #ifdef WIN32
@@ -3767,7 +3770,10 @@ bool retro_create_config()
                else
                {
                   tmp_str = string_replace_substring(full_path, "\\", "\\\\");
-                  fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
+                  if (path_is_directory(full_path))
+                     fprintf(configfile, "filesystem2=rw,DH0:%s:\"%s\",0\n", path_basename(tmp_str), (const char*)tmp_str);
+                  else
+                     fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
                   free(tmp_str);
                   tmp_str = NULL;
                }
