@@ -1,0 +1,157 @@
+FAILAT 420
+ClickNot
+
+IF NOT EXISTS DH0: >NIL:
+   Echo "No DH0:!"
+   QUIT
+ENDIF
+
+MakeDir RAM:ENV RAM:T >NIL:
+Assign ENV: RAM:ENV >NIL:
+Assign T: RAM:T >NIL:
+CD DH0:
+
+IF EXISTS DH0:S/Startup-Sequence
+   IF EXISTS DH0:Libs
+      Assign LIBS: DH0:Libs ADD
+   ENDIF
+   IF EXISTS DH0:Fonts
+      Assign FONTS: DH0:Fonts ADD
+   ENDIF
+   IF EXISTS DH0:Devs
+      Assign DEVS: DH0:Devs
+      IF EXISTS DH0:Devs/Keymaps
+         Assign KEYMAPS: DH0:Devs/Keymaps
+      ENDIF
+   ENDIF
+   IF EXISTS DH0:C
+      PATH DH0:C ADD 
+      Assign C: DH0:C ADD
+   ENDIF
+   Assign S: DH0:S ADD
+   Assign SYS: DH0:
+   Execute DH0:S/Startup-Sequence
+   QUIT
+ENDIF
+
+Assign EXISTS RASystem: >NIL:
+IF NOT WARN
+    IF NOT EXISTS WHDLoad:Devs/Kickstarts/kick33180.A500
+       IF EXISTS RASystem:kick33180.A500
+          Copy RASystem:kick33180.A500 WHDLoad:Devs/Kickstarts/
+       ENDIF
+    ENDIF
+
+    IF NOT EXISTS WHDLoad:Devs/Kickstarts/kick34005.A500
+       IF EXISTS RASystem:kick34005.A500
+          Copy RASystem:kick34005.A500 WHDLoad:Devs/Kickstarts/
+       ENDIF
+    ENDIF
+
+    IF NOT EXISTS WHDLoad:Devs/Kickstarts/kick40068.A1200
+       IF EXISTS RASystem:kick40068.A1200
+          Copy RASystem:kick40068.A1200 WHDLoad:Devs/Kickstarts/
+       ENDIF
+    ENDIF
+
+    IF NOT EXISTS WHDLoad:L/WHDLoad.key
+       IF EXISTS RASystem:WHDLoad.key
+          Copy RASystem:WHDLoad.key WHDLoad:L/
+       ENDIF
+    ENDIF
+
+    IF EXISTS RASystem:WHDLoad.prefs
+       Copy RASystem:WHDLoad.prefs WHDLoad:S/
+    ENDIF
+ENDIF
+
+
+Devs:Monitors/NTSC
+Devs:Monitors/PAL
+
+IF EXISTS DH0:load
+   Execute DH0:load
+ELSE
+   List #?.slav#? QUICK NOHEAD TO ENV:SLAVE
+   IF NOT EXISTS $SLAVE >NIL:
+       List #? DIRS QUICK NOHEAD TO ENV:SLAVEDIR
+       IF EXISTS $SLAVEDIR >NIL:
+          CD $SLAVEDIR >NIL:
+          List #?.slav#? QUICK NOHEAD TO ENV:SLAVE
+       ENDIF
+   ENDIF
+   
+   Assign EXISTS WHDSaves: >NIL:
+   IF WARN
+      Assign WHDSaves: WHDLoad:WHDSaves
+   ENDIF
+
+   KeyPressed 64
+   IF WARN
+      IF EXISTS ReadMe
+         MultiView ReadMe
+      ENDIF
+      IF NOT "$SLAVE" EQ ""
+          Execute S:MkCustom
+      ENDIF
+   ENDIF
+
+   JoyPad RED QUIET
+   IF WARN
+      Execute WBSelect
+   ELSE
+      IF EXISTS DH0:custom
+         SETENV CUSTOM `type DH0:custom`
+      ELSE
+         SETENV CUSTOM ""
+         
+         IF EXISTS WHDSaves:custom_$SLAVE
+            SETENV CUSTOM `type WHDSaves:custom_$SLAVE`
+         ENDIF
+      ENDIF
+
+      IF "$CUSTOM" EQ ""
+         IF NOT "$SLAVE" EQ ""
+            List $SLAVE QUICK NOHEAD LFORMAT %M TO ENV:WBRUN
+         ELSE
+            SETENV WBRUN notfound
+         ENDIF
+        
+         IF EXISTS $WBRUN.info
+            List $WBRUN.info QUICK NOHEAD LFORMAT %M TO ENV:WBRUN
+            WBRun "$WBRUN" SYNC
+         ELSE
+            IF EXISTS game.slave
+               IF EXISTS data
+                  WHDLoad Preload game.slave Data=data $CUSTOM
+               ELSE
+                  WHDLoad Preload game.slave $CUSTOM
+               ENDIF
+            ELSE
+               Execute WBSelect
+            ENDIF
+         ENDIF
+      ELSE
+         IF EXISTS data
+            WHDLoad Preload $SLAVE Data=data $CUSTOM
+         ELSE
+            WHDLoad Preload $SLAVE "$CUSTOM"
+         ENDIF
+      ENDIF
+   ENDIF
+
+   IF NOT "$SLAVE" EQ ""
+      IF EXISTS ReadMe
+         IF NOT "$WBRUN" EQ "Readme"
+            MultiView ReadMe
+         ENDIF
+      ENDIF
+
+      Execute S:MkCustom
+   ENDIF
+   
+   UNSETENV WBRUN
+ENDIF
+
+MemClear >NIL:
+Execute S:Startup-Sequence

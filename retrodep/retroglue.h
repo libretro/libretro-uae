@@ -4,6 +4,9 @@
 #include "deps/zlib/zlib.h"
 void gz_uncompress(gzFile in, void *out);
 
+#include "deps/zlib/unzip.h"
+void zip_uncompress(char *in, char *out);
+
 #endif
 
 

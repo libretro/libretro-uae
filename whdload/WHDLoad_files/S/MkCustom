@@ -1,0 +1,27 @@
+SETENV CUSTOMPATH WHDSaves:custom_$SLAVE
+IF EXISTS DH0:custom
+   SETENV CUSTOMPATH DH0:custom
+ELSE
+
+IF EXISTS $CUSTOMPATH
+   RequestChoice MkCustom "Current options: `type $CUSTOMPATH`" Cancel Edit Remove >ENV:CustomChoice
+ELSE
+   RequestChoice MkCustom "No options" Cancel Set Remove >ENV:CustomChoice
+ENDIF
+
+IF $CustomChoice EQ 0
+   Delete $CUSTOMPATH >NIL:
+ENDIF
+
+IF $CustomChoice EQ 2
+   IF EXISTS $CUSTOMPATH
+      RequestString MkCustom "Edit options" default="`type $CUSTOMPATH`" >RAM:custom_new
+   ELSE
+      RequestString MkCustom "Set options" >RAM:custom_new
+   ENDIF
+
+   IF EXISTS RAM:custom_new
+      Delete $CUSTOMPATH >NIL:
+      Copy RAM:custom_new WHDSaves:custom_$SLAVE >NIL:
+   ENDIF
+ENDIF

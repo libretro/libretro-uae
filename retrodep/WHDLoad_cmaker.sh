@@ -1,3 +1,9 @@
+cd ../whdload/WHDLoad_files/
+zip -9 -r ../WHDLoad_files.zip .
+cd ../../retrodep/
+xxd -i ../whdload/WHDLoad_files.zip WHDLoad_files.zip.c
+rm ../whdload/WHDLoad_files.zip
+
 gzip -9 -f -k ../whdload/WHDLoad.hdf 
 xxd -i ../whdload/WHDLoad.hdf.gz WHDLoad_hdf.gz.c
 rm ../whdload/WHDLoad.hdf.gz
