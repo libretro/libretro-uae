@@ -25,6 +25,9 @@
 #include "drawing.h"
 #include "akiko.h"
 #include "blkdev.h"
+
+int libretro_runloop_active = 0;
+
 extern void check_changes(int unitnum);
 extern int frame_redraw_necessary;
 extern int bplcon0;
@@ -74,7 +77,6 @@ extern uae_u32 natmem_size;
 static char RPATH[512] = {0};
 static char full_path[512] = {0};
 static char *uae_argv[] = { "puae", RPATH };
-static int firstpass = 1;
 static int restart_pending = 0;
 
 unsigned short int retro_bmp[RETRO_BMP_SIZE];
@@ -129,6 +131,8 @@ unsigned int video_config_old = 0;
 unsigned int video_config_aspect = 0;
 unsigned int video_config_geometry = 0;
 unsigned int video_config_allow_hz_change = 0;
+
+struct zfile *retro_deserialize_file = NULL;
 
 #include "libretro-keyboard.i"
 int keyId(const char *val)
@@ -1327,7 +1331,7 @@ static void update_variables(void)
          video_config &= ~PUAE_VIDEO_HIRES;
          video_config &= ~PUAE_VIDEO_SUPERHIRES;
          retro_max_diwlastword = retro_max_diwlastword_hires / 2;
-         if (!firstpass)
+         if (libretro_runloop_active)
             changed_prefs.gfx_resolution=RES_LORES;
       }
       else if (strcmp(var.value, "hires") == 0)
@@ -1335,7 +1339,7 @@ static void update_variables(void)
          video_config &= ~PUAE_VIDEO_SUPERHIRES;
          video_config |= PUAE_VIDEO_HIRES;
          retro_max_diwlastword = retro_max_diwlastword_hires;
-         if (!firstpass)
+         if (libretro_runloop_active)
             changed_prefs.gfx_resolution=RES_HIRES;
       }
       else if (strcmp(var.value, "superhires") == 0)
@@ -1343,7 +1347,7 @@ static void update_variables(void)
          video_config &= ~PUAE_VIDEO_HIRES;
          video_config |= PUAE_VIDEO_SUPERHIRES;
          retro_max_diwlastword = retro_max_diwlastword_hires * 2;
-         if (!firstpass)
+         if (libretro_runloop_active)
             changed_prefs.gfx_resolution=RES_SUPERHIRES;
       }
       else if (strcmp(var.value, "automatic") == 0)
@@ -1355,7 +1359,7 @@ static void update_variables(void)
             video_config &= ~PUAE_VIDEO_HIRES;
             video_config |= PUAE_VIDEO_SUPERHIRES;
             retro_max_diwlastword = retro_max_diwlastword_hires * 2;
-            if (!firstpass)
+            if (libretro_runloop_active)
                changed_prefs.gfx_resolution=RES_SUPERHIRES;
          }
          else
@@ -1363,13 +1367,13 @@ static void update_variables(void)
             video_config &= ~PUAE_VIDEO_SUPERHIRES;
             video_config |= PUAE_VIDEO_HIRES;
             retro_max_diwlastword = retro_max_diwlastword_hires;
-            if (!firstpass)
+            if (libretro_runloop_active)
                changed_prefs.gfx_resolution=RES_HIRES;
          }
       }
 
       /* Resolution change needs init_custom() to be done after reset_drawing() is done */
-      if (!firstpass && video_config != video_config_old)
+      if (libretro_runloop_active && video_config != video_config_old)
          request_init_custom_timer = 3;
    }
 
@@ -1382,20 +1386,20 @@ static void update_variables(void)
       if (strcmp(var.value, "double") == 0)
       {
          video_config |= PUAE_VIDEO_DOUBLELINE;
-         if (!firstpass)
+         if (libretro_runloop_active)
             changed_prefs.gfx_vresolution=VRES_DOUBLE;
       }
       else if (strcmp(var.value, "single") == 0)
       {
          video_config &= ~PUAE_VIDEO_DOUBLELINE;
-         if (!firstpass)
+         if (libretro_runloop_active)
             changed_prefs.gfx_vresolution=VRES_NONDOUBLE;
       }
       else if (strcmp(var.value, "automatic") == 0)
       {
          opt_video_vresolution_auto = true;
 
-         if (!firstpass)
+         if (libretro_runloop_active)
          {
             if (video_config_old & PUAE_VIDEO_DOUBLELINE)
             {
@@ -1418,7 +1422,7 @@ static void update_variables(void)
       }
 
       /* Resolution change needs init_custom() to be done after reset_drawing() is done */
-      if (!firstpass && video_config != video_config_old)
+      if (libretro_runloop_active && video_config != video_config_old)
          request_init_custom_timer = 3;
    }
 
@@ -1471,7 +1475,7 @@ static void update_variables(void)
          strcat(uae_config, "cycle_exact=true\n");
       }
 
-      if (!firstpass)
+      if (libretro_runloop_active)
       {
          if (strcmp(var.value, "normal") == 0)
          {
@@ -1502,7 +1506,7 @@ static void update_variables(void)
       strcat(uae_config, var.value);
       strcat(uae_config, "\n");
 
-      if (!firstpass)
+      if (libretro_runloop_active)
          changed_prefs.m68k_speed_throttle=atof(var.value);
    }
 
@@ -1514,7 +1518,7 @@ static void update_variables(void)
       strcat(uae_config, var.value);
       strcat(uae_config, "\n");
 
-      if (!firstpass)
+      if (libretro_runloop_active)
          changed_prefs.cpu_clock_multiplier=atoi(var.value) * 256;
    }
 
@@ -1526,7 +1530,7 @@ static void update_variables(void)
       strcat(uae_config, var.value);
       strcat(uae_config, "\n");
 
-      if (!firstpass)
+      if (libretro_runloop_active)
       {
          if (strcmp(var.value, "none") == 0) changed_prefs.produce_sound=0;
          else if (strcmp(var.value, "interrupts") == 0) changed_prefs.produce_sound=1;
@@ -1546,7 +1550,7 @@ static void update_variables(void)
       strcat(uae_config, valbuf);
       strcat(uae_config, "\n");
 
-      if (!firstpass)
+      if (libretro_runloop_active)
          changed_prefs.sound_stereo_separation=val;
    }
 
@@ -1558,7 +1562,7 @@ static void update_variables(void)
       strcat(uae_config, var.value);
       strcat(uae_config, "\n");
 
-      if (!firstpass)
+      if (libretro_runloop_active)
       {
          if (strcmp(var.value, "none") == 0) changed_prefs.sound_interpol=0;
          else if (strcmp(var.value, "anti") == 0) changed_prefs.sound_interpol=1;
@@ -1576,7 +1580,7 @@ static void update_variables(void)
       strcat(uae_config, var.value);
       strcat(uae_config, "\n");
       
-      if (!firstpass)
+      if (libretro_runloop_active)
       {
          if (strcmp(var.value, "emulated") == 0) changed_prefs.sound_filter=FILTER_SOUND_EMUL;
          else if (strcmp(var.value, "off") == 0) changed_prefs.sound_filter=FILTER_SOUND_OFF;
@@ -1595,7 +1599,7 @@ static void update_variables(void)
          strcat(uae_config, "\n");
       }
 
-      if (!firstpass)
+      if (libretro_runloop_active)
       {
          if (strcmp(var.value, "standard") == 0) changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A500;
          else if (strcmp(var.value, "enhanced") == 0) changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A1200;
@@ -1621,7 +1625,7 @@ static void update_variables(void)
       strcat(uae_config, valbuf);
       strcat(uae_config, "\n");
 
-      if (!firstpass)
+      if (libretro_runloop_active)
          changed_prefs.sound_volume_cd=val;
    }
 
@@ -1633,7 +1637,7 @@ static void update_variables(void)
       strcat(uae_config, var.value);
       strcat(uae_config, "\n");
 
-      if (!firstpass)
+      if (libretro_runloop_active)
          changed_prefs.floppy_speed=atoi(var.value);
    }
 
@@ -1648,7 +1652,7 @@ static void update_variables(void)
       strcat(uae_config, "\n");
 
       /* Setting volume in realtime will crash on first pass */
-      if (!firstpass)
+      if (libretro_runloop_active)
          changed_prefs.dfxclickvolume=atoi(var.value);
    }
 
@@ -1684,7 +1688,7 @@ static void update_variables(void)
          strcat(uae_config, "\n");
       }
 
-      if (!firstpass)
+      if (libretro_runloop_active)
       {
          if (strcmp(var.value, "internal") == 0)
          {
@@ -1710,7 +1714,7 @@ static void update_variables(void)
       strcat(uae_config, var.value);
       strcat(uae_config, "\n");
 
-      if (!firstpass)
+      if (libretro_runloop_active)
       {
          int val;
          val = atoi(var.value);
@@ -1738,7 +1742,7 @@ static void update_variables(void)
          strcat(uae_config, "waiting_blits=automatic\n");
       }
 
-      if (!firstpass)
+      if (libretro_runloop_active)
       {
          if (strcmp(var.value, "false") == 0)
          {
@@ -1766,7 +1770,7 @@ static void update_variables(void)
       strcat(uae_config, var.value);
       strcat(uae_config, "\n");
 
-      if (!firstpass)
+      if (libretro_runloop_active)
       {
          if (strcmp(var.value, "none") == 0) changed_prefs.collision_level=0;
          else if (strcmp(var.value, "sprites") == 0) changed_prefs.collision_level=1;
@@ -1793,7 +1797,7 @@ static void update_variables(void)
          strcat(uae_config, "\n");
       }
 
-      if (!firstpass)
+      if (libretro_runloop_active)
          changed_prefs.gfx_framerate=val;
    }
 
@@ -2648,6 +2652,8 @@ static struct retro_disk_control_ext_callback disk_interface_ext = {
 // Init
 void retro_init(void)
 {
+   libretro_runloop_active = 0;
+
    const char *system_dir = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &system_dir) && system_dir)
    {
@@ -2700,8 +2706,19 @@ void retro_init(void)
       environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &disk_interface);
 
    // Savestates
-   static uint64_t quirks = RETRO_SERIALIZATION_QUIRK_INCOMPLETE | RETRO_SERIALIZATION_QUIRK_CORE_VARIABLE_SIZE;
+   static uint64_t quirks = RETRO_SERIALIZATION_QUIRK_INCOMPLETE |
+         RETRO_SERIALIZATION_QUIRK_CORE_VARIABLE_SIZE;
    environ_cb(RETRO_ENVIRONMENT_SET_SERIALIZATION_QUIRKS, &quirks);
+
+   // > Ensure save state de-serialization file
+   //   is closed/NULL
+   //   (redundant safety check, possibly required
+   //   for static builds...)
+   if (retro_deserialize_file)
+   {
+      zfile_fclose(retro_deserialize_file);
+      retro_deserialize_file = NULL;
+   }
 
    // Inputs
    #define RETRO_DESCRIPTOR_BLOCK( _user )                                            \
@@ -2849,6 +2866,11 @@ float retro_get_aspect_ratio(int w, int h)
 
 bool retro_update_av_info(bool change_timing, bool isntsc)
 {
+   /* Ignore request if run loop is not
+    * currently active */
+   if (!libretro_runloop_active)
+      return true;
+
    bool av_log = false;
    request_update_av_info = false;
    float hz = currprefs.chipset_refreshrate;
@@ -4275,18 +4297,15 @@ void retro_run(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
       update_variables();
 
-   if (!firstpass)
-   {
-      // Handle statusbar text, audio filter type & video geometry + resolution
-      update_audiovideo();
+   // Handle statusbar text, audio filter type & video geometry + resolution
+   update_audiovideo();
 
-      // AV info change is requested
-      if (request_update_av_info)
-         retro_update_av_info(false, false);
+   // AV info change is requested
+   if (request_update_av_info)
+      retro_update_av_info(false, false);
 
-      // Poll inputs
-      retro_poll_event();
-   }
+   // Poll inputs
+   retro_poll_event();
 
    // If any drawing parameters/offsets have been modified,
    // must call reset_drawing() to ensure that the changes
@@ -4333,16 +4352,7 @@ void retro_run(void)
    {
       restart_pending = 0;
       libretro_do_restart(sizeof(uae_argv)/sizeof(*uae_argv), uae_argv);
-      // Note that this is set *temporarily*
-      // > It will be reset inside the following
-      //   'if' statement
-      firstpass = 1;
-   }
-
-   if (firstpass)
-   {
-      firstpass = 0;
-      // Run emulation first pass
+      // Re-run emulation first pass
       restart_pending = m68k_go(1, 0);
       video_cb(retro_bmp, retrow, zoomed_height, retrow << (pix_bytes / 2));
       return;
@@ -4401,19 +4411,42 @@ bool retro_load_game(const struct retro_game_info *info)
    retrow = defaultw;
    retroh = defaulth;
 
-   // Savestate filename
-   snprintf(savestate_fname, sizeof(savestate_fname), "%s%s%s.asf", retro_save_directory, DIR_SEP_STR, LIBRETRO_PUAE_PREFIX);
-
    // Initialise emulation
    umain(sizeof(uae_argv)/sizeof(*uae_argv), uae_argv);
+
+   // Run emulation first pass
+   restart_pending = m68k_go(1, 0);
+   // > We are now ready to enter the run loop
+   libretro_runloop_active = 1;
+
+   // Save states
+   // > Ensure that save state file path is empty,
+   //   since we use memory based save states
+   savestate_fname[0] = '\0';
+   // > TODO: Calculate and cache save state size,
+   //   so we don't have to create a save state inside
+   //   retro_serialize_size()
+   //   (note that size changes during run - need to
+   //   determine maximum possible size)
 
    return true;
 }
 
 void retro_unload_game(void)
 {
-   if (!firstpass)
-      leave_program();
+   // Ensure save state de-serialization file
+   // is closed/NULL
+   // Note: Have to do this here (not in retro_deinit())
+   // since leave_program() calls zfile_exit()
+   if (retro_deserialize_file)
+   {
+      zfile_fclose(retro_deserialize_file);
+      retro_deserialize_file = NULL;
+   }
+
+   leave_program();
+
+   libretro_runloop_active = 0;
 }
 
 unsigned retro_get_region(void)
@@ -4431,79 +4464,131 @@ bool retro_load_game_special(unsigned type, const struct retro_game_info *info, 
 
 size_t retro_serialize_size(void)
 {
-   if (!firstpass)
+   // TODO: Determine save state size in
+   // retro_load_game() and return cached
+   // value here
+   struct zfile *state_file = save_state("libretro");
+
+   if (state_file)
    {
-      if (save_state(savestate_fname, "libretro") >= 0)
-      {
-#if 0
-         FILE *file = fopen(savestate_fname, "rb");
-         if (file)
-         {
-            size_t size = 0;
-            fseek(file, 0L, SEEK_END);
-            size = ftell(file);
-            fclose(file);
-            return size;
-         }
-#endif
-         if (file_exists(savestate_fname))
-         {
-            struct stat savestate_st;
-            stat(savestate_fname, &savestate_st);
-            remove(savestate_fname);
-            return savestate_st.st_size;
-         }
-      }
+      uae_s64 state_file_size = zfile_size(state_file);
+      zfile_fclose(state_file);
+      return (size_t)state_file_size;
    }
+
    return 0;
 }
 
 bool retro_serialize(void *data_, size_t size)
 {
-   if (!firstpass)
-   {
-      if (save_state(savestate_fname, "libretro") >= 0)
-      {
-         struct stat savestate_st;
-         stat(savestate_fname, &savestate_st);
-         size = savestate_st.st_size;
+   struct zfile *state_file = save_state("libretro");
+   bool success = false;
 
-         FILE *file = fopen(savestate_fname, "rb");
-         if (file)
-         {
-            if (fread(data_, size, 1, file) == 1)
-            {
-               fclose(file);
-               remove(savestate_fname);
-               return true;
-            }
-            fclose(file);
-         }
+   if (state_file)
+   {
+      uae_s64 state_file_size = zfile_size(state_file);
+
+      if (size >= state_file_size)
+      {
+         size_t len = zfile_fread(data_, 1, state_file_size, state_file);
+
+         if (len == state_file_size)
+            success = true;
       }
+
+      zfile_fclose(state_file);
    }
-   return false;
+
+   return success;
 }
 
 bool retro_unserialize(const void *data_, size_t size)
 {
-   if (!firstpass)
+   // TODO: When attempting to use runahead, CD32
+   // and WHDLoad content will hang on boot. It seems
+   // we cannot restore a state until the system has
+   // passed some level of initialisation - but the
+   // point at which a restore becomes 'safe' is
+   // unknown...
+   bool success = false;
+
+   // Cannot restore state while any 'savestate'
+   // operation is underway
+   // > Actual restore is deferred until m68k_go(),
+   //   so we have to use a shared shared state file
+   //   object - this cannot be modified until the
+   //   restore is complete
+   // > Note that this condition should never be
+   //   true - if a save state operation is underway
+   //   at this point then we are dealing with an
+   //   unknown error
+   if (!savestate_state)
    {
       // Savestates also save CPU prefs, therefore refresh core options, but skip it for now
       //request_check_prefs_timer = 4;
-      FILE *file = fopen(savestate_fname, "wb");
-      if (file)
+
+      if (retro_deserialize_file)
       {
-         if (fwrite(data_, size, 1, file) == 1)
+         zfile_fclose(retro_deserialize_file);
+         retro_deserialize_file = NULL;
+      }
+
+      retro_deserialize_file = zfile_fopen_empty(NULL, "libretro", 0);
+
+      if (retro_deserialize_file)
+      {
+         size_t len = zfile_fwrite(data_, 1, size, retro_deserialize_file);
+
+         if (len == size)
          {
-            fclose(file);
+            unsigned frame_counter = 0;
+            unsigned max_frames    = 50;
+
+            zfile_fseek(retro_deserialize_file, 0, SEEK_SET);
             savestate_state = STATE_DORESTORE;
-            return true;
+
+            // For correct operation of the frontend,
+            // the save state restore must be completed
+            // by the time this function returns.
+            // Since P-UAE requires several (2) frames to get
+            // itself in order during a restore event, we
+            // have to keep emulating frames until the
+            // restore is complete...
+            // > Note that we set a 'timeout' of 50 frames
+            //   here (1s of emulated time at 50Hz) to
+            //   prevent lock-ups in the event of unexpected
+            //   errors
+            // > Temporarily 'deactivate' runloop - this lets
+            //   us call m68k_go() without accessing frontend
+            //   features - specifically, it disables the audio
+            //   callback functionality
+            libretro_runloop_active = 0;
+            while (savestate_state && (frame_counter < max_frames))
+            {
+               // Note that retro_deserialize_file will be
+               // closed inside m68k_go() upon successful
+               // completion of the restore event
+               restart_pending = m68k_go(1, 1);
+               frame_counter++;
+            }
+            libretro_runloop_active = 1;
+
+            // If the above while loop times out, then
+            // everything is completely broken. We cannot
+            // handle this here, so just assume the restore
+            // completed successfully...
+            request_reset_drawing = true;
+            success               = true;
          }
          else
-            fclose(file);
+         {
+            zfile_fclose(retro_deserialize_file);
+            retro_deserialize_file = NULL;
+         }
       }
    }
-   return false;
+
+   return success;
 }
 
 void *retro_get_memory_data(unsigned id)

@@ -13,6 +13,8 @@
 #include <windows.h>
 #endif
 
+#include "zfile.h"
+
 extern int retrow;
 extern int retroh;
 extern int pix_bytes;
@@ -32,6 +34,8 @@ extern int retro_min_diwstart;
 extern int retro_max_diwstop;
 
 extern char retro_system_directory[512];
+
+extern struct zfile *retro_deserialize_file;
 
 #ifndef _WIN32
 #define TCHAR char /* from sysdeps.h */

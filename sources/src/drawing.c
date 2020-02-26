@@ -3605,6 +3605,7 @@ void vsync_handle_redraw (int long_frame, int lof_changed, uae_u16 bplcon0p, uae
 #endif
 
 		if (quit_program < 0) {
+#ifndef __LIBRETRO__
 #ifdef SAVESTATE
 			if (!savestate_state) {
 				if (currprefs.quitstatefile[0]) {
@@ -3612,6 +3613,7 @@ void vsync_handle_redraw (int long_frame, int lof_changed, uae_u16 bplcon0p, uae
 					save_state (currprefs.quitstatefile, _T(""));
 				}
 			}
+#endif
 #endif
 			quit_program = -quit_program;
 			set_inhibit_frame (IHF_QUIT_PROGRAM);
