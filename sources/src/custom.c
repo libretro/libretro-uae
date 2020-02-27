@@ -77,6 +77,9 @@
 
 #ifdef __LIBRETRO__
 #include "libretro-glue.h"
+extern bool retro_request_av_info_update;
+extern bool retro_av_info_change_timing;
+extern bool retro_av_info_is_ntsc;
 #endif
 
 /* internal prototypes */
@@ -3235,7 +3238,9 @@ void compute_framesync (void)
 	);
 
 #ifdef __LIBRETRO__
-	retro_update_av_info(true, isntsc);
+	retro_request_av_info_update = true;
+	retro_av_info_change_timing  = true;
+	retro_av_info_is_ntsc        = isntsc;
 #endif
 
 	config_changed = 1;

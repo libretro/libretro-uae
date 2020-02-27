@@ -20,8 +20,11 @@ extern int retroh;
 extern int pix_bytes;
 extern int zoomed_height;
 extern int imagename_timer;
-extern bool retro_update_av_info(bool, bool);
 extern void reset_drawing();
+
+extern bool retro_request_av_info_update;
+extern bool retro_av_info_change_timing;
+extern bool retro_av_info_is_ntsc;
 
 extern int vkey_pressed;
 extern int vkey_sticky;

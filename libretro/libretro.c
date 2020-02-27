@@ -95,7 +95,9 @@ bool filter_type_update = true;
 bool fake_ntsc = false;
 bool real_ntsc = false;
 bool forced_video = false;
-bool request_update_av_info = false;
+bool retro_request_av_info_update = false;
+bool retro_av_info_change_timing = false;
+bool retro_av_info_is_ntsc = false;
 bool request_reset_drawing = false;
 unsigned int request_init_custom_timer = 0;
 unsigned int request_check_prefs_timer = 0;
@@ -133,6 +135,7 @@ unsigned int video_config_geometry = 0;
 unsigned int video_config_allow_hz_change = 0;
 
 struct zfile *retro_deserialize_file = NULL;
+static size_t save_state_file_size = 0;
 
 #include "libretro-keyboard.i"
 int keyId(const char *val)
@@ -2399,7 +2402,7 @@ static void update_variables(void)
    }
 
    /* Always update av_info geometry */
-   request_update_av_info = true;
+   retro_request_av_info_update = true;
 
    /* Always trigger changed prefs */
    config_changed = 1;
@@ -2706,8 +2709,9 @@ void retro_init(void)
       environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &disk_interface);
 
    // Savestates
-   static uint64_t quirks = RETRO_SERIALIZATION_QUIRK_INCOMPLETE |
-         RETRO_SERIALIZATION_QUIRK_CORE_VARIABLE_SIZE;
+   // > Considered incomplete because runahead cannot
+   //   be enabled until content is full loaded
+   static uint64_t quirks = RETRO_SERIALIZATION_QUIRK_INCOMPLETE;
    environ_cb(RETRO_ENVIRONMENT_SET_SERIALIZATION_QUIRKS, &quirks);
 
    // > Ensure save state de-serialization file
@@ -2864,16 +2868,19 @@ float retro_get_aspect_ratio(int w, int h)
    return ar;
 }
 
-bool retro_update_av_info(bool change_timing, bool isntsc)
+static bool retro_update_av_info(void)
 {
-   /* Ignore request if run loop is not
-    * currently active */
-   if (!libretro_runloop_active)
-      return true;
+   bool av_log        = false;
+   bool change_timing = retro_av_info_change_timing;
+   bool isntsc        = retro_av_info_is_ntsc;
+   float hz           = currprefs.chipset_refreshrate;
 
-   bool av_log = false;
-   request_update_av_info = false;
-   float hz = currprefs.chipset_refreshrate;
+   /* Reset global parameters ready for the
+    * next update */
+   retro_request_av_info_update = false;
+   retro_av_info_change_timing  = false;
+   retro_av_info_is_ntsc        = false;
+
    if (av_log)
       fprintf(stdout, "[libretro-uae]: Trying to update AV timing:%d to: ntsc:%d hz:%0.4f, from video_config:%d, video_aspect:%d\n", change_timing, isntsc, hz, video_config, video_config_aspect);
 
@@ -4225,7 +4232,7 @@ void update_audiovideo(void)
 
       // Update av_info
       if (request_init_custom_timer > 0)
-         request_update_av_info = true;
+         retro_request_av_info_update = true;
    }
 
    // Automatic vertical offset
@@ -4241,12 +4248,12 @@ void update_audiovideo(void)
          if (abs(retro_thisframe_first_drawn_line_old - retro_thisframe_first_drawn_line) > 1)
          {
             retro_thisframe_first_drawn_line_old = retro_thisframe_first_drawn_line;
-            request_update_av_info = true;
+            retro_request_av_info_update = true;
          }
          if (abs(retro_thisframe_last_drawn_line_old - retro_thisframe_last_drawn_line) > 1)
          {
             retro_thisframe_last_drawn_line_old = retro_thisframe_last_drawn_line;
-            request_update_av_info = true;
+            retro_request_av_info_update = true;
          }
       }
    }
@@ -4272,7 +4279,7 @@ void update_audiovideo(void)
       {
          retro_min_diwstart_old = retro_min_diwstart;
          retro_max_diwstop_old = retro_max_diwstop;
-         request_update_av_info = true;
+         retro_request_av_info_update = true;
       }
    }
    else
@@ -4301,8 +4308,8 @@ void retro_run(void)
    update_audiovideo();
 
    // AV info change is requested
-   if (request_update_av_info)
-      retro_update_av_info(false, false);
+   if (retro_request_av_info_update)
+      retro_update_av_info();
 
    // Poll inputs
    retro_poll_event();
@@ -4423,11 +4430,17 @@ bool retro_load_game(const struct retro_game_info *info)
    // > Ensure that save state file path is empty,
    //   since we use memory based save states
    savestate_fname[0] = '\0';
-   // > TODO: Calculate and cache save state size,
-   //   so we don't have to create a save state inside
-   //   retro_serialize_size()
-   //   (note that size changes during run - need to
-   //   determine maximum possible size)
+   // > Get save state size
+   //   Here we use initial size + 5%
+   //   Should be sufficient in all cases
+   struct zfile *state_file = save_state("libretro");
+
+   if (state_file)
+   {
+      save_state_file_size  = (size_t)zfile_size(state_file);
+      save_state_file_size += (size_t)(((float)save_state_file_size * 0.05f) + 0.5f);
+      zfile_fclose(state_file);
+   }
 
    return true;
 }
@@ -4464,19 +4477,7 @@ bool retro_load_game_special(unsigned type, const struct retro_game_info *info, 
 
 size_t retro_serialize_size(void)
 {
-   // TODO: Determine save state size in
-   // retro_load_game() and return cached
-   // value here
-   struct zfile *state_file = save_state("libretro");
-
-   if (state_file)
-   {
-      uae_s64 state_file_size = zfile_size(state_file);
-      zfile_fclose(state_file);
-      return (size_t)state_file_size;
-   }
-
-   return 0;
+   return save_state_file_size;
 }
 
 bool retro_serialize(void *data_, size_t size)
@@ -4509,7 +4510,8 @@ bool retro_unserialize(const void *data_, size_t size)
    // we cannot restore a state until the system has
    // passed some level of initialisation - but the
    // point at which a restore becomes 'safe' is
-   // unknown...
+   // unknown (for CD32 content, for example, we have
+   // to wait ~300 frames before runahead can be enabled)
    bool success = false;
 
    // Cannot restore state while any 'savestate'
@@ -4533,7 +4535,7 @@ bool retro_unserialize(const void *data_, size_t size)
          retro_deserialize_file = NULL;
       }
 
-      retro_deserialize_file = zfile_fopen_empty(NULL, "libretro", 0);
+      retro_deserialize_file = zfile_fopen_empty(NULL, "libretro", size);
 
       if (retro_deserialize_file)
       {
