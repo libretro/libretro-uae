@@ -79,7 +79,7 @@ extern unsigned int video_config;
 extern unsigned int video_config_aspect;
 extern unsigned int zoom_mode_id;
 extern unsigned int opt_zoom_mode_id;
-extern bool request_update_av_info;
+extern bool retro_request_av_info_update;
 extern bool request_reset_drawing;
 extern bool opt_statusbar_enhanced;
 extern int opt_statusbar_position;
@@ -158,7 +158,7 @@ void emu_function(int function)
             video_config_aspect = PUAE_VIDEO_NTSC;
          else if (video_config_aspect == PUAE_VIDEO_NTSC)
             video_config_aspect = PUAE_VIDEO_PAL;
-         request_update_av_info = true;
+         retro_request_av_info_update = true;
          break;
       case EMU_ZOOM_MODE_TOGGLE:
          if (zoom_mode_id == 0 && opt_zoom_mode_id == 0)
@@ -167,7 +167,7 @@ void emu_function(int function)
             zoom_mode_id = 0;
          else if (zoom_mode_id == 0)
             zoom_mode_id = opt_zoom_mode_id;
-         request_update_av_info = true;
+         retro_request_av_info_update = true;
          break;
       case EMU_TURBO_FIRE_TOGGLE:
          if (turbo_fire_button_disabled == -1 && turbo_fire_button == -1)
