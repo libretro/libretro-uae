@@ -148,7 +148,9 @@ SOURCES_C += $(LIBRETRO)/libretro.c \
 				 $(LIBRETRO)/graph.c \
 				 $(LIBRETRO)/retro_files.c \
 				 $(LIBRETRO)/retro_strings.c \
-				 $(LIBRETRO)/retro_disk_control.c 
+				 $(LIBRETRO)/retro_disk_control.c \
+				 $(DEPS_DIR)/zlib/unzip.c \
+				 $(DEPS_DIR)/zlib/ioapi.c
 
 ifneq ($(STATIC_LINKING), 1)
 SOURCES_C += $(CORE_DIR)/libretro-include/file_path.c \
@@ -174,7 +176,5 @@ SOURCES_C += $(DEPS_DIR)/zlib/adler32.c \
 				 $(DEPS_DIR)/zlib/inftrees.c \
 				 $(DEPS_DIR)/zlib/trees.c \
 				 $(DEPS_DIR)/zlib/uncompr.c \
-				 $(DEPS_DIR)/zlib/unzip.c \
-				 $(DEPS_DIR)/zlib/ioapi.c \
 				 $(DEPS_DIR)/zlib/zutil.c
 endif
