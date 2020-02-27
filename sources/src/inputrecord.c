@@ -494,8 +494,10 @@ bool inprec_prepare_record (const TCHAR *statefilename)
 			_tcscpy (state, changed_prefs.inprecfile);
 		}
 		_tcscat (state, _T(".uss"));
+#ifndef __LIBRETRO__
 		savestate_initsave (state, 1, 1, true); 
 		save_state (state, _T("input recording test"));
+#endif
 		mode = 2;
 	}
 	input_record = INPREC_RECORD_NORMAL;

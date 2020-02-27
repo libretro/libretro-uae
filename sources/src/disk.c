@@ -978,9 +978,16 @@ static int drive_insert (drive * drv, struct uae_prefs *p, int dnum, const TCHAR
 	int size;
 	int canauto;
 	const TCHAR *ext;
+	/* Note: The UAE code keeps passing the same
+	 * pointer as the both the src and dst of string
+	 * copy operations. This is ridiculous - at best it
+	 * causes ASAN errors, at worst it causes crashes.
+	 * We implement a lazy fix here by copying the
+	 * input fname to a temporary buffer... */
+	TCHAR *filename = my_strdup (fname);
 
 	drive_image_free (drv);
-	DISK_validate_filename (p, fname, 1, &drv->wrprot, &drv->crc32, &drv->diskfile);
+	DISK_validate_filename (p, filename, 1, &drv->wrprot, &drv->crc32, &drv->diskfile);
 	drv->forcedwrprot = forcedwriteprotect;
 	if (drv->forcedwrprot)
 		drv->wrprot = true;
@@ -991,10 +998,10 @@ static int drive_insert (drive * drv, struct uae_prefs *p, int dnum, const TCHAR
 	drv->useturbo = 0;
 	drv->indexoffset = 0;
 
-	gui_disk_image_change (dnum, fname, drv->wrprot);
+	gui_disk_image_change (dnum, filename, drv->wrprot);
 
 	canauto = 0;
-	ext = _tcsrchr (fname, '.');
+	ext = _tcsrchr (filename, '.');
 	if (ext) {
 		if (!_tcsicmp (ext + 1, _T("adf")) || !_tcsicmp (ext + 1, _T("adz")) || !_tcsicmp (ext + 1, _T("st")) || !_tcsicmp (ext + 1, _T("ima")) || !_tcsicmp (ext + 1, _T("img"))) 
 			canauto = 1;
@@ -1011,18 +1018,18 @@ static int drive_insert (drive * drv, struct uae_prefs *p, int dnum, const TCHAR
 	}
 
 	if (!fake)
-		inprec_recorddiskchange (dnum, fname, drv->wrprot);
+		inprec_recorddiskchange (dnum, filename, drv->wrprot);
 
-	_tcsncpy (currprefs.floppyslots[dnum].df, fname, 255);
+	_tcsncpy (currprefs.floppyslots[dnum].df, filename, 255);
 	currprefs.floppyslots[dnum].df[255] = 0;
 	currprefs.floppyslots[dnum].forcedwriteprotect = forcedwriteprotect;
-	_tcsncpy (changed_prefs.floppyslots[dnum].df, fname, 255);
+	_tcsncpy (changed_prefs.floppyslots[dnum].df, filename, 255);
 	changed_prefs.floppyslots[dnum].df[255] = 0;
 	changed_prefs.floppyslots[dnum].forcedwriteprotect = forcedwriteprotect;
-	if (drv->newname != fname)
-		_tcscpy (drv->newname, fname);
+	_tcscpy (drv->newname, filename);
 	drv->newnamewriteprotected = forcedwriteprotect;
-	gui_filename (dnum, fname);
+	gui_filename (dnum, filename);
+	free (filename);
 
 	memset (buffer, 0, sizeof buffer);
 	size = 0;

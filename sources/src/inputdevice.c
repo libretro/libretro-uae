@@ -2874,6 +2874,7 @@ void inputdevice_handle_inputcode (void)
 		uae_reset (1, 1);
 		break;
 #ifdef SAVESTATE
+#ifndef __LIBRETRO__
 	case AKS_STATESAVEQUICK:
 	case AKS_STATESAVEQUICK1:
 	case AKS_STATESAVEQUICK2:
@@ -2898,6 +2899,7 @@ void inputdevice_handle_inputcode (void)
 	case AKS_STATERESTOREQUICK9:
 		savestate_quick ((code - AKS_STATERESTOREQUICK) / 2, 0);
 		break;
+#endif
 #endif
 	case AKS_TOGGLEDEFAULTSCREEN:
 		toggle_fullscreen (-1);

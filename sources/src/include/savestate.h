@@ -211,8 +211,13 @@ extern uae_u8 *restore_hrtmon (uae_u8 *);
 extern uae_u8 *save_hrtmon (int *, uae_u8 *);
 
 extern void savestate_initsave (const TCHAR *filename, int docompress, int nodialogs, bool save);
+#ifdef __LIBRETRO__
+extern struct zfile *save_state (const TCHAR *description);
+void restore_state (void);
+#else
 extern int save_state (const TCHAR *filename, const TCHAR *description);
 extern void restore_state (const TCHAR *filename);
+#endif
 extern bool savestate_restore_finish (void);
 extern void savestate_restore_final (void);
 extern void savestate_memorysave (void);
@@ -239,7 +244,9 @@ STATIC_INLINE bool isrestore (void)
 	return savestate_state == STATE_RESTORE || savestate_state == STATE_REWIND;
 }
 
+#ifndef __LIBRETRO__
 extern void savestate_quick (int slot, int save);
+#endif
 
 extern void savestate_capture (int);
 extern void savestate_free (void);

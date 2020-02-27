@@ -36,6 +36,7 @@ extern int pix_bytes;
 extern int defaultw;
 extern int defaulth;
 
+extern int libretro_runloop_active;
 extern int libretro_frame_end;
 
 unsigned short int clut[] = {
@@ -145,7 +146,7 @@ void retro_key_up(int key)
 /* retro */
 void retro_renderSound(short* samples, int sampleCount)
 {
-    if (sampleCount < 1)
+    if ((sampleCount < 1) || !libretro_runloop_active)
         return;
 #if 0
     for(int i=0; i<sampleCount; i+=2)

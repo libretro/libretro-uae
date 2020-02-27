@@ -66,6 +66,11 @@
 #include "disk.h"
 #include "misc.h"
 
+#ifdef __LIBRETRO__
+#include "libretro-glue.h"
+extern struct zfile *retro_deserialize_file;
+#endif
+
 int savestate_state = 0;
 static int savestate_first_capture;
 
@@ -502,8 +507,11 @@ static void restore_header (uae_u8 *src)
 }
 
 /* restore all subsystems */
-
+#ifdef __LIBRETRO__
+void restore_state (void)
+#else
 void restore_state (const TCHAR *filename)
+#endif
 {
 	struct zfile *f;
 	uae_u8 *chunk,*end;
@@ -514,7 +522,11 @@ void restore_state (const TCHAR *filename)
 	bool end_found = false;
 
 	chunk = 0;
+#ifdef __LIBRETRO__
+	f = retro_deserialize_file;
+#else
 	f = zfile_fopen (filename, _T("rb"), ZFD_NORMAL);
+#endif
 	if (!f)
 		goto error;
 	zfile_fseek (f, 0, SEEK_END);
@@ -524,11 +536,19 @@ void restore_state (const TCHAR *filename)
 	savestate_init ();
 
 	chunk = restore_chunk (f, name, &len, &totallen, &filepos);
+#ifdef __LIBRETRO__
+	if (!chunk || _tcsncmp (name, _T("ASF "), 4)) {
+		write_log (_T("libretro serialization data is not an AmigaStateFile\n"));
+		goto error;
+	}
+	write_log (_T("STATERESTORE: libretro serialization data\n"));
+#else
 	if (!chunk || _tcsncmp (name, _T("ASF "), 4)) {
 		write_log (_T("%s is not an AmigaStateFile\n"), filename);
 		goto error;
 	}
 	write_log (_T("STATERESTORE: '%s'\n"), filename);
+#endif
 	config_changed = 1;
 	savestate_file = f;
 	restore_header (chunk);
@@ -736,7 +756,9 @@ void restore_state (const TCHAR *filename)
 		if (name[0] == 0)
 			break;
 	}
+#ifndef __LIBRETRO__
 //	target_addtorecent (filename, 0);
+#endif
 	return;
 
 error:
@@ -744,8 +766,16 @@ error:
 	savestate_file = 0;
 	if (chunk)
 		xfree (chunk);
+#ifdef __LIBRETRO__
+	if (retro_deserialize_file)
+	{
+		zfile_fclose (retro_deserialize_file);
+		retro_deserialize_file = NULL;
+	}
+#else
 	if (f)
 		zfile_fclose (f);
+#endif
 }
 
 void savestate_restore_final(void)
@@ -762,7 +792,15 @@ bool savestate_restore_finish (void)
 {
 	if (!isrestore ())
 		return false;
+#ifdef __LIBRETRO__
+	if (retro_deserialize_file)
+	{
+		zfile_fclose (retro_deserialize_file);
+		retro_deserialize_file = NULL;
+	}
+#else
 	zfile_fclose (savestate_file);
+#endif
 	savestate_file = 0;
 	restore_cpu_finish ();
 	restore_audio_finish ();
@@ -1071,7 +1109,11 @@ static int save_state_internal (struct zfile *f, const TCHAR *description, int c
 	return 1;
 }
 
+#ifdef __LIBRETRO__
+struct zfile *save_state (const TCHAR *description)
+#else
 int save_state (const TCHAR *filename, const TCHAR *description)
+#endif
 {
 	struct zfile *f;
 #ifdef __LIBRETRO__
@@ -1085,15 +1127,27 @@ int save_state (const TCHAR *filename, const TCHAR *description)
 		state_incompatible_warn ();
 		if (!save_filesys_cando ()) {
 			gui_message (_T("Filesystem active. Try again later."));
+#ifdef __LIBRETRO__
+			return NULL;
+#else
 			return -1;
+#endif
 		}
 	}
 	new_blitter = false;
 	savestate_nodialogs = 0;
 	custom_prepare_savestate ();
+#ifdef __LIBRETRO__
+	f = zfile_fopen_empty (NULL, description, 0);
+#else
 	f = zfile_fopen (filename, _T("w+b"), 0);
+#endif
 	if (!f)
+#ifdef __LIBRETRO__
+		return NULL;
+#else
 		return 0;
+#endif
 	if (savestate_specialdump) {
 		size_t pos;
 		if (savestate_specialdump == 2)
@@ -1113,17 +1167,31 @@ int save_state (const TCHAR *filename, const TCHAR *description)
 			zfile_fwrite (tmp, len2, 1, f);
 			xfree (tmp);
 		}
+#ifdef __LIBRETRO__
+		zfile_fseek (f, 0, SEEK_SET);
+		return f;
+#else
 		zfile_fclose (f);
 		return 1;
+#endif
 	}
 	int v = save_state_internal (f, description, comp, true);
+#ifdef __LIBRETRO__
+	if (v)
+		write_log (_T("libretro serialization complete\n"));
+	savestate_state = 0;
+	zfile_fseek (f, 0, SEEK_SET);
+	return f;
+#else
 	if (v)
 		write_log (_T("Save of '%s' complete\n"), filename);
 	zfile_fclose (f);
 	savestate_state = 0;
 	return v;
+#endif
 }
 
+#ifndef __LIBRETRO__
 void savestate_quick (int slot, int save)
 {
 	int i, len = _tcslen (savestate_fname);
@@ -1155,6 +1223,7 @@ void savestate_quick (int slot, int save)
 		write_log (_T("staterestore starting '%s'\n"), savestate_fname);
 	}
 }
+#endif
 
 bool savestate_check (void)
 {
