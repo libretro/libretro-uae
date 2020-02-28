@@ -819,3 +819,135 @@ void gz_uncompress(gzFile in, FILE *out)
             fprintf(stderr, "Write error!\n");
     }
 }
+
+#include "deps/zlib/unzip.h"
+#include "file/file_path.h"
+void zip_uncompress(char *in, char *out)
+{
+    unzFile uf = NULL;
+    unz_file_info file_info;
+    uf = unzOpen(in);
+
+    uLong i;
+    unz_global_info gi;
+    int err;
+    err = unzGetGlobalInfo (uf, &gi);
+
+    const char* password;
+    int size_buf = 8192;
+
+    for (i = 0; i < gi.number_entry; i++)
+    {
+        char filename_inzip[256];
+        char* filename_withoutpath;
+        char* p;
+        unz_file_info file_info;
+        FILE *fout = NULL;
+        void* buf;
+
+        buf = (void*)malloc(size_buf);
+        if (buf == NULL)
+        {
+            fprintf(stderr, "Unzip: Error allocating memory\n");
+            return;
+        }
+
+        err = unzGetCurrentFileInfo(uf, &file_info, filename_inzip, sizeof(filename_inzip), NULL, 0, NULL, 0);
+
+        char filename_withpath[512];
+        snprintf(filename_withpath, sizeof(filename_withpath), "%s/%s", out, filename_inzip);
+
+        p = filename_withoutpath = filename_inzip;
+        while ((*p) != '\0')
+        {
+            if (((*p) == '/') || ((*p) == '\\'))
+                filename_withoutpath = p+1;
+            p++;
+        }
+
+        if ((*filename_withoutpath) == '\0')
+        {
+            fprintf(stdout, "Unzip mkdir:   %s\n", filename_withpath);
+            path_mkdir(filename_withpath);
+        }
+        else
+        {
+            const char* write_filename;
+            int skip = 0;
+
+            write_filename = filename_withpath;
+
+            err = unzOpenCurrentFilePassword(uf, password);
+            if (err != UNZ_OK)
+            {
+                fprintf(stderr, "Unzip: Error %d with zipfile in unzOpenCurrentFilePassword\n", err);
+            }
+
+            if ((skip == 0) && (err == UNZ_OK))
+            {
+                fout = fopen(write_filename, "wb");
+                if (fout == NULL)
+                {
+                    fprintf(stderr, "Unzip: Error opening %s\n", write_filename);
+                }
+            }
+
+            if (fout != NULL)
+            {
+                fprintf(stdout, "Unzip extract: %s\n", write_filename);
+
+                do
+                {
+                    err = unzReadCurrentFile(uf, buf, size_buf);
+                    if (err < 0)
+                    {
+                        fprintf(stderr, "Unzip: Error %d with zipfile in unzReadCurrentFile\n", err);
+                        break;
+                    }
+                    if (err > 0)
+                    {
+                        if (!fwrite(buf, err, 1, fout))
+                        {
+                            fprintf(stderr, "Unzip: Error in writing extracted file\n");
+                            err = UNZ_ERRNO;
+                            break;
+                        }
+                    }
+                }
+                while (err > 0);
+                if (fout)
+                    fclose(fout);
+            }
+
+            if (err == UNZ_OK)
+            {
+                err = unzCloseCurrentFile(uf);
+                if (err != UNZ_OK)
+                {
+                    fprintf(stderr, "Unzip: Error %d with zipfile in unzCloseCurrentFile\n", err);
+                }
+            }
+            else
+                unzCloseCurrentFile(uf);
+        }
+
+        free(buf);
+
+        if ((i+1) < gi.number_entry)
+        {
+            err = unzGoToNextFile(uf);
+            if (err != UNZ_OK)
+            {
+                fprintf(stderr, "Unzip: Error %d with zipfile in unzGoToNextFile\n", err);
+                break;
+            }
+        }
+    }
+
+    if (uf)
+    {
+        unzCloseCurrentFile(uf);
+        unzClose(uf);
+        uf = NULL;
+    }
+}

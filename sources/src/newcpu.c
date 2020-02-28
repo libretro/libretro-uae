@@ -1213,17 +1213,11 @@ static void update_68k_cycles (void)
 			else
 				cycles_mult /= 8;
 			cycles_mult /= 2;
-		} else if (currprefs.cpu_model >= 68030) {
-			if (!cycles_mult)
-				cycles_mult = CYCLES_DIV / 4;
-			else
-				cycles_mult /= 4;
 		} else if (currprefs.cpu_model >= 68020) {
 			if (!cycles_mult)
 				cycles_mult = CYCLES_DIV / 4;
 			else
 				cycles_mult /= 4;
-			cycles_mult *= 3;
 		}
 	}
 #else

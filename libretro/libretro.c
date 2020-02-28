@@ -8,9 +8,9 @@
 #include "retro_disk_control.h"
 #include "string/stdstring.h"
 #include "file/file_path.h"
-#include "deps/zlib/zlib.h"
 #include "uae_types.h"
 
+#include "retrodep/WHDLoad_files.zip.c"
 #include "retrodep/WHDLoad_hdf.gz.c"
 #include "retrodep/WHDSaves_hdf.gz.c"
 #include "retrodep/WHDLoad_prefs.gz.c"
@@ -49,8 +49,7 @@ unsigned int opt_audio_options_display;
 char opt_model[10];
 bool opt_video_resolution_auto = false;
 bool opt_video_vresolution_auto = false;
-bool opt_use_whdload_hdf = true;
-bool opt_use_whdsaves_hdf = true;
+unsigned int opt_use_whdload = 1;
 unsigned int opt_use_whdload_prefs = 0;
 bool opt_shared_nvram = 0;
 bool opt_statusbar_enhanced = true;
@@ -742,7 +741,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_shared_nvram",
          "Shared CD32 NVRAM",
-         "Disabled will save separate files per game. Enabled will use one shared file. Core restart required.",
+         "Disabled will save separate files per content. Enabled will use one shared file. Core restart required.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -752,29 +751,19 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_use_whdload",
-         "Use WHDLoad.hdf",
-         "Enables the use of WHDLoad hard drive images which only have the game files. Core restart required.",
+         "WHDLoad Support",
+         "Enable launching pre-installed WHDLoad installs. Creates a helper image for loading content and an empty image for saving. Core restart required.\n- 'Files' creates the data in directories\n- 'HDFs' contains the data in images",
          {
-            { "enabled", NULL },
             { "disabled", NULL },
+            { "files", "Files" },
+            { "hdfs", "HDFs" },
             { NULL, NULL },
          },
-         "enabled"
-      },
-      {
-         "puae_use_whdsaves",
-         "Use WHDSaves.hdf",
-         "Enabled will save WHDLoad saves to WHDSaves.hdf or WHDLoad.hdf. Disabled will save files directly to RA saves. Core restart required.",
-         {
-            { "enabled", NULL },
-            { "disabled", NULL },
-            { NULL, NULL },
-         },
-         "disabled"
+         "files"
       },
       {
          "puae_use_whdload_prefs",
-         "Use WHDLoad.prefs",
+         "WHDLoad.prefs Options",
          "WHDLoad.prefs in 'system/' required.\n'Config' shows the config screen only if the slave supports it. 'Splash' shows the splash screen always. Space/Enter/Fire work as a start button in 'Config'.\nCore restart required. Will not work with the old WHDLoad.hdf!",
          {
             { "disabled", NULL },
@@ -1886,16 +1875,9 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "enabled") == 0) opt_use_whdload_hdf = true;
-      if (strcmp(var.value, "disabled") == 0) opt_use_whdload_hdf = false;
-   }
-
-   var.key = "puae_use_whdsaves";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-      if (strcmp(var.value, "enabled") == 0) opt_use_whdsaves_hdf = true;
-      if (strcmp(var.value, "disabled") == 0) opt_use_whdsaves_hdf = false;
+      if (strcmp(var.value, "disabled") == 0) opt_use_whdload = 0;
+      else if (strcmp(var.value, "files") == 0) opt_use_whdload = 1;
+      else if (strcmp(var.value, "hdfs") == 0) opt_use_whdload = 2;
    }
 
    var.key = "puae_use_whdload_prefs";
@@ -1903,9 +1885,9 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (strcmp(var.value, "disabled") == 0) opt_use_whdload_prefs = 0;
-      if (strcmp(var.value, "config") == 0) opt_use_whdload_prefs = 1;
-      if (strcmp(var.value, "splash") == 0) opt_use_whdload_prefs = 2;
-      if (strcmp(var.value, "both") == 0) opt_use_whdload_prefs = 3;
+      else if (strcmp(var.value, "config") == 0) opt_use_whdload_prefs = 1;
+      else if (strcmp(var.value, "splash") == 0) opt_use_whdload_prefs = 2;
+      else if (strcmp(var.value, "both") == 0) opt_use_whdload_prefs = 3;
    }
 
    var.key = "puae_shared_nvram";
@@ -1913,7 +1895,7 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (strcmp(var.value, "enabled") == 0) opt_shared_nvram = true;
-      if (strcmp(var.value, "disabled") == 0) opt_shared_nvram = false;
+      else if (strcmp(var.value, "disabled") == 0) opt_shared_nvram = false;
    }
 
    var.key = "puae_analogmouse";
@@ -2309,6 +2291,8 @@ static void update_variables(void)
    option_display.visible = opt_video_options_display;
 
    option_display.key = "puae_video_resolution";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_video_vresolution";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_video_allow_hz_change";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
@@ -3397,7 +3381,8 @@ bool retro_create_config()
        || strendswith(full_path, HDF_FILE_EXT)
        || strendswith(full_path, HDZ_FILE_EXT)
        || strendswith(full_path, LHA_FILE_EXT)
-       || strendswith(full_path, M3U_FILE_EXT))
+       || strendswith(full_path, M3U_FILE_EXT)
+       || path_is_directory(full_path))
       {
 	     // Open tmp config file
 	     FILE * configfile;
@@ -3477,7 +3462,8 @@ bool retro_create_config()
                   // Hard disk defaults to A600
                   if (  strendswith(full_path, HDF_FILE_EXT)
                      || strendswith(full_path, HDZ_FILE_EXT)
-                     || strendswith(full_path, LHA_FILE_EXT))
+                     || strendswith(full_path, LHA_FILE_EXT)
+                     || path_is_directory(full_path))
                   {
                      uae_machine[0] = '\0';
                      strcat(uae_machine, A600_CONFIG);
@@ -3533,70 +3519,119 @@ bool retro_create_config()
             // If argument is a hard drive image file
             if (strendswith(full_path, HDF_FILE_EXT)
              || strendswith(full_path, HDZ_FILE_EXT)
-             || strendswith(full_path, LHA_FILE_EXT))
+             || strendswith(full_path, LHA_FILE_EXT)
+             || path_is_directory(full_path))
             {
                char *tmp_str = NULL;
 
-               if (opt_use_whdload_hdf)
+               // WHDLoad support
+               if (opt_use_whdload)
                {
-                  // Init WHDLoad
-                  char whdload_hdf[RETRO_PATH_MAX];
-                  path_join((char*)&whdload_hdf, retro_system_directory, "WHDLoad.hdf");
-
-                  // Verify WHDLoad
-                  // Windows needs double backslashes when paths are in quotes, hence the string_replace_substring()
-                  if (!file_exists(whdload_hdf))
-                     path_join((char*)&whdload_hdf, retro_save_directory, "WHDLoad.hdf");
-                  if (!file_exists(whdload_hdf))
+                  // WHDLoad HDF mode
+                  if (opt_use_whdload == 2)
                   {
-                     fprintf(stdout, "[libretro-uae]: WHDLoad image file '%s' not found, attempting to create one\n", (const char*)&whdload_hdf);
+                     // Init WHDLoad
+                     char whdload_hdf[RETRO_PATH_MAX];
+                     path_join((char*)&whdload_hdf, retro_system_directory, "WHDLoad.hdf");
 
-                     char whdload_hdf_gz[RETRO_PATH_MAX];
-                     path_join((char*)&whdload_hdf_gz, retro_save_directory, "WHDLoad.hdf.gz");
-
-                     FILE *whdload_hdf_gz_fp;
-                     if (whdload_hdf_gz_fp = fopen(whdload_hdf_gz, "wb"))
+                     // Verify WHDLoad
+                     // Windows needs double backslashes when paths are in quotes, hence the string_replace_substring()
+                     if (!file_exists(whdload_hdf))
+                        path_join((char*)&whdload_hdf, retro_save_directory, "WHDLoad.hdf");
+                     if (!file_exists(whdload_hdf))
                      {
-                        fwrite(___whdload_WHDLoad_hdf_gz, ___whdload_WHDLoad_hdf_gz_len, 1, whdload_hdf_gz_fp);
-                        fclose(whdload_hdf_gz_fp);
+                        fprintf(stdout, "[libretro-uae]: WHDLoad image file '%s' not found, attempting to create one\n", (const char*)&whdload_hdf);
 
-                        struct gzFile_s *whdload_hdf_gz_fp;
-                        if (whdload_hdf_gz_fp = gzopen(whdload_hdf_gz, "r"))
+                        char whdload_hdf_gz[RETRO_PATH_MAX];
+                        path_join((char*)&whdload_hdf_gz, retro_save_directory, "WHDLoad.hdf.gz");
+
+                        FILE *whdload_hdf_gz_fp;
+                        if (whdload_hdf_gz_fp = fopen(whdload_hdf_gz, "wb"))
                         {
-                           FILE *whdload_hdf_fp;
-                           if (whdload_hdf_fp = fopen(whdload_hdf, "wb"))
+                           // Write GZ
+                           fwrite(___whdload_WHDLoad_hdf_gz, ___whdload_WHDLoad_hdf_gz_len, 1, whdload_hdf_gz_fp);
+                           fclose(whdload_hdf_gz_fp);
+
+                           // Extract GZ
+                           struct gzFile_s *whdload_hdf_gz_fp;
+                           if (whdload_hdf_gz_fp = gzopen(whdload_hdf_gz, "r"))
                            {
-                              gz_uncompress(whdload_hdf_gz_fp, whdload_hdf_fp);
-                              fclose(whdload_hdf_fp);
+                              FILE *whdload_hdf_fp;
+                              if (whdload_hdf_fp = fopen(whdload_hdf, "wb"))
+                              {
+                                 gz_uncompress(whdload_hdf_gz_fp, whdload_hdf_fp);
+                                 fclose(whdload_hdf_fp);
+                              }
+                              gzclose(whdload_hdf_gz_fp);
                            }
-                           gzclose(whdload_hdf_gz_fp);
+                           remove(whdload_hdf_gz);
                         }
-                        remove(whdload_hdf_gz);
+                        else
+                           fprintf(stderr, "Error creating WHDLoad.hdf '%s'!\n", (const char*)&whdload_hdf);
+                     }
+                     if (file_exists(whdload_hdf))
+                     {
+                        tmp_str = string_replace_substring(whdload_hdf, "\\", "\\\\");
+                        fprintf(configfile, "hardfile2=rw,WHDLoad:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
+                        free(tmp_str);
+                        tmp_str = NULL;
                      }
                      else
-                        fprintf(stderr, "Error creating WHDLoad.hdf '%s'!\n", (const char*)&whdload_hdf);
+                        fprintf(stderr, "WHDLoad image file '%s' not found!\n", (const char*)&whdload_hdf);
                   }
-                  if (file_exists(whdload_hdf))
-                  {
-                     tmp_str = string_replace_substring(whdload_hdf, "\\", "\\\\");
-                     fprintf(configfile, "hardfile2=rw,WHDLoad:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
-                     free(tmp_str);
-                     tmp_str = NULL;
-                  }
+                  // WHDLoad File mode
                   else
-                     fprintf(stderr, "WHDLoad image file '%s' not found!\n", (const char*)&whdload_hdf);
+                  {
+                     char whdload_path[RETRO_PATH_MAX];
+                     path_join((char*)&whdload_path, retro_save_directory, "WHDLoad");
+
+                     char whdload_c_path[RETRO_PATH_MAX];
+                     path_join((char*)&whdload_c_path, retro_save_directory, "WHDLoad/C");
+
+                     if (!path_is_directory(whdload_path) || (path_is_directory(whdload_path) && !path_is_directory(whdload_c_path)))
+                     {
+                        fprintf(stdout, "[libretro-uae]: WHDLoad image directory '%s' not found, attempting to create one\n", (const char*)&whdload_path);
+                        path_mkdir(whdload_path);
+
+                        char whdload_files_zip[RETRO_PATH_MAX];
+                        path_join((char*)&whdload_files_zip, retro_save_directory, "WHDLoad_files.zip");
+
+                        FILE *whdload_files_zip_fp;
+                        if (whdload_files_zip_fp = fopen(whdload_files_zip, "wb"))
+                        {
+                           // Write ZIP
+                           fwrite(___whdload_WHDLoad_files_zip, ___whdload_WHDLoad_files_zip_len, 1, whdload_files_zip_fp);
+                           fclose(whdload_files_zip_fp);
+
+                           // Extract ZIP
+                           zip_uncompress(whdload_files_zip, whdload_path);
+                           remove(whdload_files_zip);
+                        }
+                        else
+                           fprintf(stderr, "Error extracting WHDLoad directory '%s'!\n", (const char*)&whdload_path);
+                     }
+                     if (path_is_directory(whdload_path) && path_is_directory(whdload_c_path))
+                     {
+                        tmp_str = string_replace_substring(whdload_path, "\\", "\\\\");
+                        fprintf(configfile, "filesystem2=rw,WHDLoad:WHDLoad:\"%s\",0\n", (const char*)tmp_str);
+                        free(tmp_str);
+                        tmp_str = NULL;
+                     }
+                     else
+                        fprintf(stderr, "Error creating WHDLoad directory in '%s'!\n", (const char*)&whdload_path);
+                  }
 
                   // Attach game image
                   tmp_str = string_replace_substring(full_path, "\\", "\\\\");
 
                   if (strendswith(full_path, LHA_FILE_EXT))
                      fprintf(configfile, "filesystem2=ro,DH0:LHA:\"%s\",0\n", (const char*)tmp_str);
+                  else if (path_is_directory(full_path))
+                     fprintf(configfile, "filesystem2=rw,DH0:%s:\"%s\",0\n", path_basename(tmp_str), (const char*)tmp_str);
                   else
                      fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae1\n", (const char*)tmp_str);
-
                   free(tmp_str);
                   tmp_str = NULL;
-
 
                   // Attach retro_system_directory as a read only hard drive for WHDLoad kickstarts/prefs/key
 #ifdef WIN32
@@ -3608,8 +3643,8 @@ bool retro_create_config()
                   // Force the ending slash to make sure the path is not treated as a file
                   fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s%s\",-128\n", retro_system_directory, "/");
 #endif
-
-                  if (opt_use_whdsaves_hdf)
+                  // WHDSaves HDF mode
+                  if (opt_use_whdload == 2)
                   {
                      // Attach WHDSaves.hdf if available
                      char whdsaves_hdf[RETRO_PATH_MAX];
@@ -3626,9 +3661,11 @@ bool retro_create_config()
                         FILE *whdsaves_hdf_gz_fp;
                         if (whdsaves_hdf_gz_fp = fopen(whdsaves_hdf_gz, "wb"))
                         {
+                           // Write GZ
                            fwrite(___whdload_WHDSaves_hdf_gz, ___whdload_WHDSaves_hdf_gz_len, 1, whdsaves_hdf_gz_fp);
                            fclose(whdsaves_hdf_gz_fp);
 
+                           // Extract GZ
                            struct gzFile_s *whdsaves_hdf_gz_fp;
                            if (whdsaves_hdf_gz_fp = gzopen(whdsaves_hdf_gz, "r"))
                            {
@@ -3653,6 +3690,7 @@ bool retro_create_config()
                         tmp_str = NULL;
                      }
                   }
+                  // WHDSaves file mode
                   else
                   {
                      char whdsaves_path[RETRO_PATH_MAX];
@@ -3702,9 +3740,11 @@ bool retro_create_config()
                      FILE *whdload_prefs_gz_fp;
                      if (whdload_prefs_gz_fp = fopen(whdload_prefs_gz, "wb"))
                      {
+                        // Write GZ
                         fwrite(___whdload_WHDLoad_prefs_gz, ___whdload_WHDLoad_prefs_gz_len, 1, whdload_prefs_gz_fp);
                         fclose(whdload_prefs_gz_fp);
 
+                        // Extract GZ
                         struct gzFile_s *whdload_prefs_gz_fp;
                         if (whdload_prefs_gz_fp = gzopen(whdload_prefs_gz, "r"))
                         {
@@ -3767,17 +3807,20 @@ bool retro_create_config()
                else
                {
                   tmp_str = string_replace_substring(full_path, "\\", "\\\\");
-                  fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
+                  if (path_is_directory(full_path))
+                     fprintf(configfile, "filesystem2=rw,DH0:%s:\"%s\",0\n", path_basename(tmp_str), (const char*)tmp_str);
+                  else
+                     fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
                   free(tmp_str);
                   tmp_str = NULL;
                }
             }
             else
             {
-               // If argument is a m3u playlist
+               // If argument is a M3U playlist
                if (strendswith(full_path, M3U_FILE_EXT))
                {
-                  // Parse the m3u file
+                  // Parse the M3U file
                   dc_parse_m3u(dc, full_path, retro_save_directory);
 
                   // Some debugging
@@ -3812,7 +3855,7 @@ bool retro_create_config()
                   fprintf(stdout, "[libretro-uae]: Disk (%d) inserted into drive DF0: '%s'\n", dc->index+1, dc->files[dc->index]);
                   fprintf(configfile, "floppy0=%s\n", dc->files[0]);
 
-                  // Append rest of the disks to the config if m3u is a MultiDrive-m3u
+                  // Append rest of the disks to the config if M3U is a MultiDrive-M3U
                   if (strstr(full_path, "(MD)") != NULL)
                   {
                      for (unsigned i = 1; i < dc->count; i++)

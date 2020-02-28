@@ -259,6 +259,9 @@ CFLAGS += -DRETRO=1 -DINLINE="inline" -std=gnu99
 
 include Makefile.common
 
+$(info CFLAGS: $(CFLAGS))
+$(info -------)
+
 OBJECTS += $(SOURCES_C:.c=.o) $(SOURCES_CXX:.cpp=.o) $(SOURCES_ASM:.S=.o)
 
 INCDIRS := $(EXTRA_INCLUDES) $(INCFLAGS)
