@@ -47,6 +47,12 @@ extern struct zfile *retro_deserialize_file;
 
 int umain (int argc, TCHAR **argv);
 
+#ifdef WIN32
+#define DIR_SEP_STR "\\"
+#else
+#define DIR_SEP_STR "/"
+#endif
+
 // VKBD
 #define NPLGN 11
 #define NLIGN 8

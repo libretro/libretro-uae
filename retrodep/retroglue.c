@@ -855,7 +855,7 @@ void zip_uncompress(char *in, char *out)
         err = unzGetCurrentFileInfo(uf, &file_info, filename_inzip, sizeof(filename_inzip), NULL, 0, NULL, 0);
 
         char filename_withpath[512];
-        snprintf(filename_withpath, sizeof(filename_withpath), "%s/%s", out, filename_inzip);
+        snprintf(filename_withpath, sizeof(filename_withpath), "%s%s%s", out, DIR_SEP_STR, filename_inzip);
 
         p = filename_withoutpath = filename_inzip;
         while ((*p) != '\0')
@@ -880,7 +880,7 @@ void zip_uncompress(char *in, char *out)
             err = unzOpenCurrentFilePassword(uf, password);
             if (err != UNZ_OK)
             {
-                fprintf(stderr, "Unzip: Error %d with zipfile in unzOpenCurrentFilePassword\n", err);
+                fprintf(stderr, "Unzip: Error %d with zipfile in unzOpenCurrentFilePassword: %s\n", err, write_filename);
             }
 
             if ((skip == 0) && (err == UNZ_OK))
