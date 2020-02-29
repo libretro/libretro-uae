@@ -155,12 +155,6 @@ extern int cd32_pad_enabled[NORMAL_JPORTS];
 int mapper_keys[31]={0};
 extern void display_current_image(const char *image, bool inserted);
 
-#ifdef WIN32
-#define DIR_SEP_STR "\\"
-#else
-#define DIR_SEP_STR "/"
-#endif
-
 static retro_video_refresh_t video_cb;
 static retro_audio_sample_t audio_cb;
 static retro_audio_sample_batch_t audio_batch_cb;
@@ -171,6 +165,7 @@ static char retro_save_directory[RETRO_PATH_MAX] = {0};
 // so cannot be static
 char retro_system_directory[512] = {0};
 static char retro_content_directory[RETRO_PATH_MAX] = {0};
+static char retro_temp_directory[RETRO_PATH_MAX] = {0};
 
 // Disk control context
 static dc_storage* dc;
@@ -2757,11 +2752,41 @@ void retro_init(void)
    update_variables();
 }
 
+static void remove_recurse(const char *path)
+{
+   struct dirent *dirp;
+   char filename[RETRO_PATH_MAX];
+   DIR *dir = opendir(path);
+   if (dir == NULL)
+      return;
+
+   while ((dirp = readdir(dir)) != NULL)
+   {
+      if (dirp->d_name[0] == '.')
+         continue;
+
+      sprintf(filename, "%s%s%s", path, DIR_SEP_STR, dirp->d_name);
+      fprintf(stdout, "Unzip clean: %s\n", filename);
+
+      if (path_is_directory(filename))
+         remove_recurse(filename);
+      else
+         remove(filename);
+   }
+
+   closedir(dir);
+   rmdir(path);
+}
+
 void retro_deinit(void)
 {	
-	// Clean the m3u storage
-	if (dc)
-		dc_free(dc);
+   // Clean the m3u storage
+   if (dc)
+      dc_free(dc);
+
+   // Clean ZIP temp
+   if (retro_temp_directory && path_is_directory(retro_temp_directory))
+      remove_recurse(retro_temp_directory);
 }
 
 unsigned retro_api_version(void)
@@ -2821,7 +2846,7 @@ void retro_get_system_info(struct retro_system_info *info)
    info->library_name     = "PUAE";
    info->library_version  = "2.6.1" GIT_VERSION;
    info->need_fullpath    = true;
-   info->block_extract    = false;	
+   info->block_extract    = true;
    info->valid_extensions = "adf|adz|dms|fdi|ipf|hdf|hdz|lha|cue|ccd|nrg|mds|iso|uae|m3u|zip";
 }
 
@@ -3370,8 +3395,70 @@ bool retro_create_config()
       strcpy(uae_kickstart, A500_ROM);
    }
 
-   if (!string_is_empty(full_path))
+   if (!string_is_empty(full_path) && file_exists(full_path))
    {
+      // Extract ZIP for examination
+      if (strendswith(full_path, "zip"))
+      {
+         char zip_basename[RETRO_PATH_MAX];
+         snprintf(zip_basename, sizeof(zip_basename), "%s", path_basename(full_path));
+         snprintf(zip_basename, sizeof(zip_basename), "%s", path_remove_extension(zip_basename));
+         snprintf(retro_temp_directory, sizeof(retro_temp_directory), "%s%s%s", retro_save_directory, DIR_SEP_STR, "ZIP");
+         char zip_path[RETRO_PATH_MAX];
+         snprintf(zip_path, sizeof(zip_path), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_basename);
+
+         path_mkdir(zip_path);
+         zip_uncompress(full_path, zip_path);
+
+         int zip_mode = 0;
+         FILE * zip_m3u;
+         char zip_m3u_path[RETRO_PATH_MAX];
+         snprintf(zip_m3u_path, sizeof(zip_m3u_path), "%s%s%s.m3u", zip_path, DIR_SEP_STR, zip_basename);
+         zip_m3u = fopen(zip_m3u_path, "w");
+
+         DIR *zip_dir;
+         struct dirent *zip_dirp;
+         zip_dir = opendir(zip_path);
+         while ((zip_dirp = readdir(zip_dir)) != NULL && zip_mode == 0)
+         {
+            if (zip_dirp->d_name[0] == '.' || strendswith(zip_dirp->d_name, M3U_FILE_EXT))
+               continue;
+
+            // Disk mode, create M3U
+            if (strendswith(zip_dirp->d_name, ADF_FILE_EXT)
+             || strendswith(zip_dirp->d_name, FDI_FILE_EXT)
+             || strendswith(zip_dirp->d_name, DMS_FILE_EXT)
+             || strendswith(zip_dirp->d_name, IPF_FILE_EXT))
+            {
+               fprintf(zip_m3u, "%s\n", zip_dirp->d_name);
+               snprintf(full_path, sizeof(full_path), "%s", zip_m3u_path);
+               zip_mode = 0;
+            }
+            // Single file mode
+            else if (strendswith(zip_dirp->d_name, HDF_FILE_EXT)
+                  || strendswith(zip_dirp->d_name, CUE_FILE_EXT)
+                  || strendswith(zip_dirp->d_name, CCD_FILE_EXT)
+                  || strendswith(zip_dirp->d_name, NRG_FILE_EXT)
+                  || strendswith(zip_dirp->d_name, MDS_FILE_EXT)
+                  || strendswith(zip_dirp->d_name, ISO_FILE_EXT))
+            {
+               snprintf(full_path, sizeof(full_path), "%s%s%s", zip_path, DIR_SEP_STR, zip_dirp->d_name);
+               zip_mode = 1;
+            }
+            // Directory mode
+            else
+            {
+               snprintf(full_path, sizeof(full_path), "%s", zip_path);
+               zip_mode = 2;
+            }
+         }
+
+         fclose(zip_m3u);
+         if (zip_mode > 0)
+            remove(zip_m3u_path);
+         closedir(zip_dir);
+      }
+
       // If argument is a disk or hard drive image file
       if (strendswith(full_path, ADF_FILE_EXT)
        || strendswith(full_path, ADZ_FILE_EXT)

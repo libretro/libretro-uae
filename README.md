@@ -158,12 +158,12 @@ You can pass a disk image, a hard drive image, or a playlist file for disk image
 
 Supported formats are:
 - **ADF**, **ADZ**, **IPF**, **DMS**, **FDI** for floppy disk images
-- **ISO**, **CUE**, **CCD**, **NRG**, **MDS** for CD images
+- **ISO**, **CUE**, **CCD**, **NRG**, **MDS** for compact disc images
 - **HDF**, **HDZ**, **LHA** for hard drive images
-- **M3U** for multiple disk image playlist
+- **M3U** for multiple floppy disk image playlist
+- **ZIP** for various content (FD, HDD, CD, WHDLoad)
 
-When passing these files as a parameter the core will generate a temporary uae configuration file in RetroArch saves directory 
-and use it to launch the content.
+When passing these files as a parameter the core will generate a temporary uae configuration file in RetroArch `saves` directory and use it to launch the content.
 
 ### Floppy drive sound
 For external floppy drive sounds to work, copy the files from https://github.com/libretro/libretro-uae/tree/master/sources/uae_data into a subdirectory called `uae_data` in your RetroArch system directory.
@@ -178,6 +178,14 @@ Compatible CAPSIMG libraries for Windows, macOS and Linux can be found at https:
 Compatible CAPSIMG libraries for Android can be found at https://github.com/rsn8887/capsimg/releases/latest
 
 Please be aware that there are 32-bits and 64-bits versions of the library. Choose the one corresponding to your RetroArch executable.
+
+### ZIP support
+ZIPs will be extracted to a temporary directory in RetroArch `saves` and then decided what to do with the content, bypassing the frontend extracting. The temporary directory will be removed on exit.
+
+- If the ZIP contains floppy disks, A M3U playlist will be created and launched.
+- Hard drive and CD images will be treated one by one and only the first file found is selected for launch.
+- If no disk/drive images are found, the ZIP will be treated as a directory.
+
 
 ### M3U support
 When you have a multi disk game, you can use a M3U file to specify each disk of the game and change them from the RetroArch Disk Control interface.
@@ -269,7 +277,7 @@ In this WHDLoad image you must have these Kickstart ROMs `kick34005.A500` & `kic
 4. ~~Place `WHDLoad.key` to RetroArch `system` if you have registered WHDLoad~~
 5. ~~Launch a LHA/HDF/HDZ, Kickstarts will be copied automatically~~
 
-- `WHDLoad.hdf` & `WHDSaves.hdf` will be generated to RetroArch saves and Kickstarts will be copied automatically
+- `WHDLoad.hdf` & `WHDSaves.hdf` will be generated to RetroArch `saves` and Kickstarts will be copied automatically
 - To update `WHDLoad.hdf` simply delete it
 
 - Hold fire button at boot for launch selector
@@ -311,9 +319,13 @@ In this WHDLoad image you must have these Kickstart ROMs `kick34005.A500` & `kic
 - Hold down fire button at boot for `.info` selector. Selector will be launched always when there is no exact match for `.slave`.
 - Hold down spacebar at boot for `Readme` and `MkCustom`.
 - `WHDLoad.hdf` + `WHDSaves.hdf` + `WHDLoad.prefs` baked in the core. No more separate downloads!
+- `WHDLoad:` and `WHDSaves:` volumes defaulted to directory mode.
 
 ### Create a HDF image for a game
-If you have a WHDLoad game in a ZIP or a directory, you will have to create an image file. WHDLoad specific LHA archives will work directly as a read only hard drive image.
+~~If you have a WHDLoad game in a ZIP or a directory, you will have to create an image file.~~
+- WHDLoad specific LHA archives will work directly as a read only hard drive image.
+- Directories will work as a regular hard drive image.
+- ZIP files will be extracted to a temporary directory and can contain any type of supported content.
 
 To do this you can use ADFOpus (http://adfopus.sourceforge.net/) or amitools (https://github.com/cnvogelg/amitools).
 
