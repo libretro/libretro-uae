@@ -51,6 +51,7 @@ bool opt_video_resolution_auto = false;
 bool opt_video_vresolution_auto = false;
 unsigned int opt_use_whdload = 1;
 unsigned int opt_use_whdload_prefs = 0;
+unsigned int opt_use_boot_hd = 0;
 bool opt_shared_nvram = 0;
 bool opt_statusbar_enhanced = true;
 bool opt_statusbar_minimal = false;
@@ -740,6 +741,22 @@ void retro_set_environment(retro_environment_t cb)
          {
             { "disabled", NULL },
             { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "disabled"
+      },
+      {
+         "puae_use_boot_hd",
+         "Global Boot HD",
+         "Keep a bootable hard drive attached with hard drive compatible setups. Enabling will change the automatic model to A600. Changing HDF sizes requires removing the old file manually.",
+         {
+            { "disabled", NULL },
+            { "files", "Files" },
+            { "hdf20", "HDF 20MB" },
+            { "hdf40", "HDF 40MB" },
+            { "hdf128", "HDF 128MB" },
+            { "hdf256", "HDF 256MB" },
+            { "hdf512", "HDF 512MB" },
             { NULL, NULL },
          },
          "disabled"
@@ -1870,27 +1887,40 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_use_whdload = 0;
-      else if (strcmp(var.value, "files") == 0) opt_use_whdload = 1;
-      else if (strcmp(var.value, "hdfs") == 0) opt_use_whdload = 2;
+      if (strcmp(var.value, "disabled") == 0) opt_use_whdload=0;
+      else if (strcmp(var.value, "files") == 0) opt_use_whdload=1;
+      else if (strcmp(var.value, "hdfs") == 0) opt_use_whdload=2;
    }
 
    var.key = "puae_use_whdload_prefs";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_use_whdload_prefs = 0;
-      else if (strcmp(var.value, "config") == 0) opt_use_whdload_prefs = 1;
-      else if (strcmp(var.value, "splash") == 0) opt_use_whdload_prefs = 2;
-      else if (strcmp(var.value, "both") == 0) opt_use_whdload_prefs = 3;
+      if (strcmp(var.value, "disabled") == 0) opt_use_whdload_prefs=0;
+      else if (strcmp(var.value, "config") == 0) opt_use_whdload_prefs=1;
+      else if (strcmp(var.value, "splash") == 0) opt_use_whdload_prefs=2;
+      else if (strcmp(var.value, "both") == 0) opt_use_whdload_prefs=3;
    }
 
    var.key = "puae_shared_nvram";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "enabled") == 0) opt_shared_nvram = true;
-      else if (strcmp(var.value, "disabled") == 0) opt_shared_nvram = false;
+      if (strcmp(var.value, "enabled") == 0) opt_shared_nvram=true;
+      else if (strcmp(var.value, "disabled") == 0) opt_shared_nvram=false;
+   }
+
+   var.key = "puae_use_boot_hd";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "disabled") == 0) opt_use_boot_hd=0;
+      else if (strcmp(var.value, "files") == 0) opt_use_boot_hd=1;
+      else if (strcmp(var.value, "hdf20") == 0) opt_use_boot_hd=2;
+      else if (strcmp(var.value, "hdf40") == 0) opt_use_boot_hd=3;
+      else if (strcmp(var.value, "hdf128") == 0) opt_use_boot_hd=4;
+      else if (strcmp(var.value, "hdf256") == 0) opt_use_boot_hd=5;
+      else if (strcmp(var.value, "hdf512") == 0) opt_use_boot_hd=6;
    }
 
    var.key = "puae_analogmouse";
@@ -3391,8 +3421,40 @@ bool retro_create_config()
    }
    else if (strcmp(opt_model, "auto") == 0)
    {
-      strcat(uae_machine, A500_CONFIG);
-      strcpy(uae_kickstart, A500_ROM);
+      if (opt_use_boot_hd)
+      {
+         strcat(uae_machine, A600_CONFIG);
+         strcpy(uae_kickstart, A600_ROM);
+      }
+      else
+      {
+         strcat(uae_machine, A500_CONFIG);
+         strcpy(uae_kickstart, A500_ROM);
+      }
+   }
+
+   char boothd_size[5] = {0};
+   snprintf(boothd_size, sizeof(boothd_size), "%dM", 0);
+   if (opt_use_boot_hd > 1)
+   {
+      switch (opt_use_boot_hd)
+      {
+         case 2:
+            snprintf(boothd_size, sizeof(boothd_size), "%dM", 20);
+            break;
+         case 3:
+            snprintf(boothd_size, sizeof(boothd_size), "%dM", 40);
+            break;
+         case 4:
+            snprintf(boothd_size, sizeof(boothd_size), "%dM", 128);
+            break;
+         case 5:
+            snprintf(boothd_size, sizeof(boothd_size), "%dM", 256);
+            break;
+         case 6:
+            snprintf(boothd_size, sizeof(boothd_size), "%dM", 512);
+            break;
+      }
    }
 
    if (!string_is_empty(full_path) && file_exists(full_path))
@@ -3546,22 +3608,32 @@ bool retro_create_config()
             {
                if (strcmp(opt_model, "auto") == 0)
                {
-                  // Hard disk defaults to A600
-                  if (  strendswith(full_path, HDF_FILE_EXT)
-                     || strendswith(full_path, HDZ_FILE_EXT)
-                     || strendswith(full_path, LHA_FILE_EXT)
-                     || path_is_directory(full_path))
+                  if (opt_use_boot_hd)
                   {
+                     // A600 required for a hard disk
                      uae_machine[0] = '\0';
                      strcat(uae_machine, A600_CONFIG);
                      strcpy(uae_kickstart, A600_ROM);
                   }
-                  // Floppy disk defaults to A500
                   else
                   {
-                     uae_machine[0] = '\0';
-                     strcat(uae_machine, A500_CONFIG);
-                     strcpy(uae_kickstart, A500_ROM);
+                     // Hard disk defaults to A600
+                     if (  strendswith(full_path, HDF_FILE_EXT)
+                        || strendswith(full_path, HDZ_FILE_EXT)
+                        || strendswith(full_path, LHA_FILE_EXT)
+                        || path_is_directory(full_path))
+                     {
+                        uae_machine[0] = '\0';
+                        strcat(uae_machine, A600_CONFIG);
+                        strcpy(uae_kickstart, A600_ROM);
+                     }
+                     // Floppy disk defaults to A500
+                     else
+                     {
+                        uae_machine[0] = '\0';
+                        strcat(uae_machine, A500_CONFIG);
+                        strcpy(uae_kickstart, A500_ROM);
+                     }
                   }
                }
 
@@ -3602,6 +3674,57 @@ bool retro_create_config()
             }
 
             fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
+
+            // Bootable HD exception
+            if (opt_use_boot_hd)
+            {
+               char *tmp_str = NULL;
+
+               // HDF mode
+               if (opt_use_boot_hd > 1)
+               {
+                  // Init Boot HD
+                  char boothd_hdf[RETRO_PATH_MAX];
+                  path_join((char*)&boothd_hdf, retro_save_directory, LIBRETRO_PUAE_PREFIX ".hdf");
+                  if (!file_exists(boothd_hdf))
+                  {
+                     fprintf(stdout, "[libretro-uae]: Boot HD image file '%s' not found, attempting to create one\n", (const char*)&boothd_hdf);
+
+                     if (make_hdf(boothd_hdf, boothd_size, "BOOT"))
+                        fprintf(stderr, "Error creating Boot HD image '%s'!\n", (const char*)&boothd_hdf);
+                  }
+                  if (file_exists(boothd_hdf))
+                  {
+                     tmp_str = string_replace_substring(boothd_hdf, "\\", "\\\\");
+                     fprintf(configfile, "hardfile2=rw,BOOT:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
+                     free(tmp_str);
+                     tmp_str = NULL;
+                  }
+                  else
+                     fprintf(stderr, "Boot HD image file '%s' not found!\n", (const char*)&boothd_hdf);
+               }
+               // Directory mode
+               else if (opt_use_boot_hd == 1)
+               {
+                  char boothd_path[RETRO_PATH_MAX];
+                  path_join((char*)&boothd_path, retro_save_directory, "BootHD");
+
+                  if (!path_is_directory(boothd_path))
+                  {
+                     fprintf(stdout, "[libretro-uae]: Boot HD image directory '%s' not found, attempting to create one\n", (const char*)&boothd_path);
+                     path_mkdir(boothd_path);
+                  }
+                  if (path_is_directory(boothd_path))
+                  {
+                     tmp_str = string_replace_substring(boothd_path, "\\", "\\\\");
+                     fprintf(configfile, "filesystem2=rw,BOOT:Boot:\"%s\",-1\n", (const char*)tmp_str);
+                     free(tmp_str);
+                     tmp_str = NULL;
+                  }
+                  else
+                     fprintf(stderr, "Error creating Boot HD directory in '%s'!\n", (const char*)&boothd_path);
+               }
+            }
 
             // If argument is a hard drive image file
             if (strendswith(full_path, HDF_FILE_EXT)
@@ -3964,6 +4087,8 @@ bool retro_create_config()
                            return false;
                         }
                      }
+                     // Reset index to first disk
+                     dc->index = 0;
                   }
                }
             }
@@ -4188,6 +4313,57 @@ bool retro_create_config()
 
          // Write common config
          fprintf(configfile, uae_config);
+
+         // Bootable HD exception
+         if (opt_use_boot_hd)
+         {
+            char *tmp_str = NULL;
+
+            // HDF mode
+            if (opt_use_boot_hd > 1)
+            {
+               // Init Boot HD
+               char boothd_hdf[RETRO_PATH_MAX];
+               path_join((char*)&boothd_hdf, retro_save_directory, LIBRETRO_PUAE_PREFIX ".hdf");
+               if (!file_exists(boothd_hdf))
+               {
+                  fprintf(stdout, "[libretro-uae]: Boot HD image file '%s' not found, attempting to create one\n", (const char*)&boothd_hdf);
+
+                  if (make_hdf(boothd_hdf, boothd_size, "BOOT"))
+                     fprintf(stderr, "Error creating Boot HD image '%s'!\n", (const char*)&boothd_hdf);
+               }
+               if (file_exists(boothd_hdf))
+               {
+                  tmp_str = string_replace_substring(boothd_hdf, "\\", "\\\\");
+                  fprintf(configfile, "hardfile2=rw,BOOT:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
+                  free(tmp_str);
+                  tmp_str = NULL;
+               }
+               else
+                  fprintf(stderr, "Boot HD image file '%s' not found!\n", (const char*)&boothd_hdf);
+            }
+            // Directory mode
+            else if (opt_use_boot_hd == 1)
+            {
+               char boothd_path[RETRO_PATH_MAX];
+               path_join((char*)&boothd_path, retro_save_directory, "BootHD");
+
+               if (!path_is_directory(boothd_path))
+               {
+                  fprintf(stdout, "[libretro-uae]: Boot HD image directory '%s' not found, attempting to create one\n", (const char*)&boothd_path);
+                  path_mkdir(boothd_path);
+               }
+               if (path_is_directory(boothd_path))
+               {
+                  tmp_str = string_replace_substring(boothd_path, "\\", "\\\\");
+                  fprintf(configfile, "filesystem2=rw,BOOT:Boot:\"%s\",-1\n", (const char*)tmp_str);
+                  free(tmp_str);
+                  tmp_str = NULL;
+               }
+               else
+                  fprintf(stderr, "Error creating Boot HD directory in '%s'!\n", (const char*)&boothd_path);
+            }
+         }
 
          // CD32 exception
          if (strcmp(opt_model, "CD32") == 0 || strcmp(opt_model, "CD32FR") == 0)
