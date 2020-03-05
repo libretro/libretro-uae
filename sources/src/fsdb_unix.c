@@ -77,69 +77,89 @@ int dos_errno (void)
 
 static int fsdb_name_invalid_2 (const TCHAR *n, int dir)
 {
-        int i;
-        static char s1[MAX_DPATH];
-        static TCHAR s2[MAX_DPATH];
-        TCHAR a = n[0];
-        TCHAR b = (a == '\0' ? a : n[1]);
-        TCHAR c = (b == '\0' ? b : n[2]);
-        int l = _tcslen (n);
+    int i;
+    static char s1[MAX_DPATH];
+    static TCHAR s2[MAX_DPATH];
+    TCHAR a = n[0];
+    TCHAR b = (a == '\0' ? a : n[1]);
+    TCHAR c = (b == '\0' ? b : n[2]);
+    TCHAR d = (b == '\0' ? c : n[3]);
+    int l = _tcslen (n), ll;
 
-        /* the reserved fsdb filename */
-        if (_tcscmp (n, FSDB_FILE) == 0)
-                return -1;
+    /* the reserved fsdb filename */
+    if (_tcscmp (n, FSDB_FILE) == 0)
+        return -1;
 
 #ifndef __LIBRETRO__
-        if (dir) {
+    if (dir) {
 #endif
-                if (n[0] == '.' && l == 1)
-                        return -1;
-                if (n[0] == '.' && n[1] == '.' && l == 2)
-                        return -1;
+        if (n[0] == '.' && l == 1)
+            return -1;
+        if (n[0] == '.' && n[1] == '.' && l == 2)
+            return -1;
 #ifndef __LIBRETRO__
-        }
+    }
 #endif
 
-        if (a >= 'a' && a <= 'z')
-                a -= 32;
-        if (b >= 'a' && b <= 'z')
-                b -= 32;
-        if (c >= 'a' && c <= 'z')
-                c -= 32;
+    if (a >= 'a' && a <= 'z')
+        a -= 32;
+    if (b >= 'a' && b <= 'z')
+        b -= 32;
+    if (c >= 'a' && c <= 'z')
+        c -= 32;
 
-        /* these characters are *never* allowed */
-        for (i = 0; i < NUM_EVILCHARS; i++) {
-                if (_tcschr (n, evilchars[i]) != 0)
-                        return 1;
-        }
+    s1[0] = 0;
+    s2[0] = 0;
+    ua_fs_copy (s1, MAX_DPATH, n, -1);
+    //strcpy (s1, n);
+    au_fs_copy (s2, MAX_DPATH, s1);
+    if (_tcscmp (s2, n) != 0)
+        return 1;
 
-        s1[0] = 0;
-        s2[0] = 0;
-        ua_fs_copy (s1, MAX_DPATH, n, -1);
-        strcpy (s1, n);
-        au_fs_copy (s2, MAX_DPATH, s1);
-        if (_tcscmp (s2, n) != 0)
-                return 1;
+#ifdef WIN32
+    /* reserved dos devices */
+    ll = 0;
+    if (a == 'A' && b == 'U' && c == 'X') ll = 3; /* AUX  */
+    if (a == 'C' && b == 'O' && c == 'N') ll = 3; /* CON  */
+    if (a == 'P' && b == 'R' && c == 'N') ll = 3; /* PRN  */
+    if (a == 'N' && b == 'U' && c == 'L') ll = 3; /* NUL  */
+    if (a == 'L' && b == 'P' && c == 'T'  && (d >= '0' && d <= '9')) ll = 4; /* LPT# */
+    if (a == 'C' && b == 'O' && c == 'M'  && (d >= '0' && d <= '9')) ll = 4; /* COM# */
+    /* AUX.anything, CON.anything etc.. are also illegal names */
+    if (ll && (l == ll || (l > ll && n[ll] == '.')))
+        return 3;
 
-        return 0; /* the filename passed all checks, now it should be ok */
+    /* spaces and periods at the end are a no-no */
+    i = l - 1;
+    if (n[i] == '.' || n[i] == ' ')
+        return 1;
+#endif
+
+    /* these characters are *never* allowed */
+    for (i = 0; i < NUM_EVILCHARS; i++) {
+        if (_tcschr (n, evilchars[i]) != 0)
+            return 2;
+    }
+
+    return 0; /* the filename passed all checks, now it should be ok */
 }
 
 int fsdb_name_invalid (const TCHAR *n)
 {
-        int v = fsdb_name_invalid_2 (n, 0);
-        if (v <= 0)
-                return v;
-        write_log (_T("FILESYS: '%s' illegal filename\n"), n);
+    int v = fsdb_name_invalid_2 (n, 0);
+    if (v <= 0)
         return v;
+    write_log (_T("FILESYS: '%s' illegal filename\n"), n);
+    return v;
 }
 
 int fsdb_name_invalid_dir (const TCHAR *n)
 {
-        int v = fsdb_name_invalid_2 (n, 1);
-        if (v <= 0)
-                return v;
-        write_log (_T("FILESYS: '%s' illegal filename\n"), n);
+    int v = fsdb_name_invalid_2 (n, 1);
+    if (v <= 0)
         return v;
+    write_log (_T("FILESYS: '%s' illegal filename\n"), n);
+    return v;
 }
 
 int fsdb_exists (const char *nname)
@@ -164,6 +184,9 @@ int fsdb_fill_file_attrs (a_inode *base, a_inode *aino)
     // Always give execute & read permission
     aino->amigaos_mode &= ~A_FIBF_EXECUTE;
     aino->amigaos_mode &= ~A_FIBF_READ;
+    // Force files under S as scripts
+    if (strstr(aino->nname, "/S/") && !strstr(aino->nname, ".doc") && !strstr(aino->nname, ".config") && !strstr(aino->nname, ".prefs"))
+        aino->amigaos_mode |= A_FIBF_SCRIPT;
 #endif
     return 1;
 }

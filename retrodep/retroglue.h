@@ -7,6 +7,6 @@ void gz_uncompress(gzFile in, void *out);
 #include "deps/zlib/unzip.h"
 void zip_uncompress(char *in, char *out);
 
+int make_hdf (char *hdf_path, char *hdf_size, char *device_name);
+
 #endif
-
-

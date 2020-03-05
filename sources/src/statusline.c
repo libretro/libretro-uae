@@ -200,6 +200,9 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
     if (gui_data.hd >= 0 || gui_data.cd >= 0 || gui_data.md >= 0)
         floppies = (opt_statusbar_enhanced) ? 1 : 0;
 
+    if (!gui_data.drive_disabled[0])
+        floppies = 1;
+
     for (led = 0; led < LED_MAX; led++) {
         int side, pos, num1 = -1, num2 = -1, num3 = -1, num4 = -1;
         int x, c, on = 0, am = 2;
@@ -214,13 +217,14 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
             int pled = led - LED_DF0;
             int track = gui_data.drive_track[pled];
             pos = 6 + pled;
-            if (gui_data.hd >= 0 || gui_data.cd >= 0 || gui_data.md >= 0)
+            if ((gui_data.hd >= 0 || gui_data.cd >= 0 || gui_data.md >= 0) && !gui_data.df[0][0] && !gui_data.df[1][0])
             {
                 on_rgb = BLACK;
                 on_rgb2 = BLACK;
                 off_rgb = BLACK;
-            } else {
-            //if (!gui_data.drive_disabled[pled]) {
+            }
+            else
+            {
                 if (currprefs.chipset_mask & CSMASK_MASK)
                 {
                     on_rgb = YELLOW_BRIGHT;
