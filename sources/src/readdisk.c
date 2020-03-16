@@ -30,6 +30,10 @@ typedef struct directory {
 
 static int secdatasize, secdataoffset;
 
+#ifdef VITA
+// FIXME: Find a way around the missing current working dir functionality
+#define chdir(name) 0
+#endif
 /* We can't use writelog.c, as this would pull in a plethora
  * of unnecessary dependencies, but want write_log to act
  * as known in other uae parts.

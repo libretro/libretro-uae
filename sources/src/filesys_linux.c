@@ -487,6 +487,10 @@ int my_issamevolume(const TCHAR *path1, const TCHAR *path2, TCHAR *path)
 
 int my_setcurrentdir (const TCHAR *curdir, TCHAR *oldcur)
 {
+#ifdef VITA
+/// FIXME: do not depend on current working dir on Vita
+    return 0;
+#else
     int ret = 0;
     if (oldcur)
         ret = getcwd (oldcur, MAX_DPATH) ? 0 : 1;
@@ -498,6 +502,7 @@ int my_setcurrentdir (const TCHAR *curdir, TCHAR *oldcur)
     }
     //write_log("curdir=\"%s\" oldcur=\"%s\" ret=%d\n", curdir, oldcur, ret);
     return ret;
+#endif
 }
 
 bool my_resolvesoftlink(TCHAR *linkfile, int size)

@@ -232,7 +232,7 @@ extern long     timezone;		/* not defined in time.h */
 #endif
 
 /* ------------------------------------------------------------------------ */
-#if (defined(FTIME) || defined(GETTIMEOFDAY) || defined(TZSET)) && !defined(__SWITCH__)
+#if (defined(FTIME) || defined(GETTIMEOFDAY) || defined(TZSET)) && !defined(__SWITCH__) && !defined(VITA)
 static long
 gettz()
 #ifdef TZSET
@@ -695,7 +695,7 @@ void init_header(char *name, struct stat *v_stat, LzHeader *hdr)
 		bcopy(LZHDIRS_METHOD, hdr->method, METHOD_TYPE_STRAGE);
 		hdr->attribute = GENERIC_DIRECTORY_ATTRIBUTE;
 		hdr->original_size = 0;
-#if !defined(ANDROID) && !defined(__SWITCH__) && !defined(WIIU)
+#if !defined(ANDROID) && !defined(__SWITCH__) && !defined(WIIU) && !defined(VITA)
 		len = readlink(name, lkname, 256);
 #endif
 		lkname[len] = (char)'\0';

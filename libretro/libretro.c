@@ -26,6 +26,13 @@
 #include "akiko.h"
 #include "blkdev.h"
 
+#ifdef VITA
+#include <psp2/types.h>
+#include <psp2/io/dirent.h>
+#include <psp2/kernel/threadmgr.h>
+#define rmdir(name) sceIoRmdir(name)
+#endif
+
 int libretro_runloop_active = 0;
 
 extern void check_changes(int unitnum);
@@ -244,7 +251,11 @@ void retro_set_environment(retro_environment_t cb)
             { "exact", "Cycle-exact" },
             { NULL, NULL },
          },
+#ifdef VITA
+         "normal"
+#else
          "exact"
+#endif
       },
       {
          "puae_cpu_throttle",
