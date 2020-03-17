@@ -1110,7 +1110,7 @@ static int save_state_internal (struct zfile *f, const TCHAR *description, int c
 }
 
 #ifdef __LIBRETRO__
-struct zfile *save_state (const TCHAR *description)
+struct zfile *save_state (const TCHAR *description, uae_u64 size)
 #else
 int save_state (const TCHAR *filename, const TCHAR *description)
 #endif
@@ -1138,7 +1138,7 @@ int save_state (const TCHAR *filename, const TCHAR *description)
 	savestate_nodialogs = 0;
 	custom_prepare_savestate ();
 #ifdef __LIBRETRO__
-	f = zfile_fopen_empty (NULL, description, 0);
+	f = zfile_fopen_empty (NULL, description, size);
 #else
 	f = zfile_fopen (filename, _T("w+b"), 0);
 #endif

@@ -19,6 +19,7 @@
 #include "retro_disk_control.h"
 #include "retro_strings.h"
 #include "retro_files.h"
+#include "libretro-glue.h"
 
 #include "sysconfig.h"
 #include "sysdeps.h"
@@ -117,6 +118,8 @@ void dc_reset(dc_storage* dc)
 		if (dc->labels[i])
 			free(dc->labels[i]);
 		dc->labels[i] = NULL;
+
+		dc->types[i] = DC_IMAGE_TYPE_NONE;
 	}
 	dc->count = 0;
 	dc->index = -1;
@@ -138,6 +141,7 @@ dc_storage* dc_create(void)
 		{
 			dc->files[i]  = NULL;
 			dc->labels[i] = NULL;
+			dc->types[i]  = DC_IMAGE_TYPE_NONE;
 		}
 	}
 	
@@ -153,13 +157,14 @@ bool dc_add_file_int(dc_storage* dc, char* filename, char* label)
 	if (!filename || (*filename == '\0'))
 		return false;
 
-	// If max size is not
+	// If max size is not exceeded...
 	if(dc->count < DC_MAX_SIZE)
 	{
 		// Add the file
 		dc->count++;
 		dc->files[dc->count-1]  = filename;
 		dc->labels[dc->count-1] = label;
+		dc->types[dc->count-1]  = dc_get_image_type(filename);
 		return true;
 	}
 	
@@ -446,4 +451,30 @@ void dc_free(dc_storage* dc)
 	free(dc);
 	dc = NULL;
 	return;
+}
+
+enum dc_image_type dc_get_image_type(const char* filename)
+{
+	// Missing file
+	if (!filename || (*filename == '\0'))
+		return DC_IMAGE_TYPE_NONE;
+
+	// Floppy image
+	if (strendswith(filename, ADF_FILE_EXT) ||
+	    strendswith(filename, ADZ_FILE_EXT) ||
+	    strendswith(filename, FDI_FILE_EXT) ||
+	    strendswith(filename, DMS_FILE_EXT) ||
+	    strendswith(filename, IPF_FILE_EXT))
+	   return DC_IMAGE_TYPE_FLOPPY;
+
+	// CD image
+	if (strendswith(filename, CUE_FILE_EXT) ||
+	    strendswith(filename, CCD_FILE_EXT) ||
+	    strendswith(filename, NRG_FILE_EXT) ||
+	    strendswith(filename, MDS_FILE_EXT) ||
+	    strendswith(filename, ISO_FILE_EXT))
+	   return DC_IMAGE_TYPE_CD;
+
+	// Fallback
+	return DC_IMAGE_TYPE_UNKNOWN;
 }
