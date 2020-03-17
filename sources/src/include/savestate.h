@@ -212,7 +212,7 @@ extern uae_u8 *save_hrtmon (int *, uae_u8 *);
 
 extern void savestate_initsave (const TCHAR *filename, int docompress, int nodialogs, bool save);
 #ifdef __LIBRETRO__
-extern struct zfile *save_state (const TCHAR *description);
+extern struct zfile *save_state (const TCHAR *description, uae_u64 size);
 void restore_state (void);
 #else
 extern int save_state (const TCHAR *filename, const TCHAR *description);

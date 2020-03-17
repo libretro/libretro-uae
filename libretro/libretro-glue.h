@@ -14,6 +14,7 @@
 #endif
 
 #include "zfile.h"
+#include "retro_disk_control.h"
 
 extern int retrow;
 extern int retroh;
@@ -39,6 +40,7 @@ extern int retro_max_diwstop;
 extern char retro_system_directory[512];
 
 extern struct zfile *retro_deserialize_file;
+extern dc_storage *retro_dc;
 
 #ifndef _WIN32
 #define TCHAR char /* from sysdeps.h */
