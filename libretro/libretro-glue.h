@@ -21,16 +21,12 @@ extern int retroh;
 extern int pix_bytes;
 extern int zoomed_height;
 extern int imagename_timer;
-extern void reset_drawing();
+extern void reset_drawing(void);
+extern void print_statusbar(void);
 
 extern bool retro_request_av_info_update;
 extern bool retro_av_info_change_timing;
 extern bool retro_av_info_is_ntsc;
-
-extern int vkey_pressed;
-extern int vkey_sticky;
-extern int vkey_sticky1;
-extern int vkey_sticky2;
 
 extern int retro_thisframe_first_drawn_line;
 extern int retro_thisframe_last_drawn_line;
@@ -59,6 +55,23 @@ int umain (int argc, TCHAR **argv);
 #define NPLGN 11
 #define NLIGN 8
 #define NLETT 9
+//#define POINTER_DEBUG
+#ifdef POINTER_DEBUG
+extern int pointer_x;
+extern int pointer_y;
+#endif
+
+extern int vkey_pos_x;
+extern int vkey_pos_y;
+extern int vkey_pressed;
+extern int vkey_sticky;
+extern int vkey_sticky1;
+extern int vkey_sticky2;
+
+extern int vkbd_x_min;
+extern int vkbd_x_max;
+extern int vkbd_y_min;
+extern int vkbd_y_max;
 
 // Colors
 #define RGB565(r, g, b) (((r) << (5+6)) | ((g) << 6) | (b))

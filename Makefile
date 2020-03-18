@@ -252,7 +252,7 @@ endif
 ifeq ($(DEBUG), 1)
    CFLAGS += -O0 -g
 else
-   CFLAGS += -O2
+   CFLAGS += -O3
    SHARED += -s
 endif
 

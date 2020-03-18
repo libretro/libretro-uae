@@ -1,7 +1,7 @@
 #ifndef VKBD_H
 #define VKBD_H
 
-extern void virtual_kbd(unsigned short int *pixels, int vx, int vy);
+extern void print_virtual_kbd(unsigned short int *pixels);
 extern int check_vkey(int x, int y);
 
 #endif
