@@ -3,6 +3,7 @@
 #include "libretro-mapper.h"
 #include "libretro-glue.h"
 #include "vkbd.h"
+#include "graph.h"
 #include "retro_files.h"
 #include "retro_strings.h"
 #include "retro_disk_control.h"
@@ -89,8 +90,6 @@ static int restart_pending = 0;
 unsigned short int retro_bmp[RETRO_BMP_SIZE];
 extern int SHIFTON;
 extern int STATUSON;
-extern void Print_Status(void);
-extern void DrawHline(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color);
 extern int prefs_changed;
 
 extern int turbo_fire_button;
@@ -4676,12 +4675,18 @@ void retro_run(void)
    restart_pending = m68k_go(1, 1);
 
    if (STATUSON == 1)
-      Print_Status();
+      print_statusbar();
    if (SHOWKEY == 1)
    {
       // Virtual keyboard requires a graceful redraw, blunt reset_drawing() interferes with zoom
       frame_redraw_necessary = 2;
-      virtual_kbd(retro_bmp, vkey_pos_x, vkey_pos_y);
+      print_virtual_kbd(retro_bmp);
+#ifdef POINTER_DEBUG
+      if (pix_bytes == 4)
+         DrawHlineBmp32((uint32_t *)retro_bmp, pointer_x, pointer_y, 2, 2, RGB888(30, 0, 30));
+      else
+         DrawHlineBmp(retro_bmp, pointer_x, pointer_y, 2, 2, RGB565(30, 0, 30));
+#endif
    }
    // Maximum 288p/576p PAL shenanigans:
    // Mask the last line(s), since UAE does not refresh the last line, and even its own OSD will leave trails

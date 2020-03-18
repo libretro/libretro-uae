@@ -55,8 +55,17 @@ extern int pix_bytes;
 extern bool fake_ntsc;
 extern bool real_ntsc;
 
+#ifdef POINTER_DEBUG
+int pointer_x = 0;
+int pointer_y = 0;
+#endif
 int vkey_pos_x = 0;
 int vkey_pos_y = 0;
+int vkbd_x_min = 0;
+int vkbd_x_max = 0;
+int vkbd_y_min = 0;
+int vkbd_y_max = 0;
+
 int vkflag[8] = {0};
 static int jflag[4][16] = {0};
 static int kjflag[2][16] = {0};
@@ -453,7 +462,7 @@ void display_current_image(const char *image, bool inserted)
         statusbar_text[0] = 9 | 0x80;
 }
 
-void Print_Status(void)
+void print_statusbar(void)
 {
    if (!opt_statusbar_enhanced)
       return;
@@ -1660,6 +1669,37 @@ void update_input(int disable_physical_cursor_keys)
       else if (vkey_pos_y > NLIGN-1)
          vkey_pos_y=0;
 
+      /* Absolute pointer */
+      int p_x = input_state_cb(0, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_X);
+      int p_y = input_state_cb(0, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_Y);
+
+      if (p_x != 0 && p_y != 0)
+      {
+         int px = (int)((p_x + 0x7fff) * retrow / 0xffff);
+         int py = (int)((p_y + 0x7fff) * zoomed_height / 0xffff);
+#ifdef POINTER_DEBUG
+         pointer_x = px;
+         pointer_y = py;
+#endif
+         if (px >= vkbd_x_min && px <= vkbd_x_max && py >= vkbd_y_min && py <= vkbd_y_max)
+         {
+            float vkey_width = (float)(vkbd_x_max - vkbd_x_min) / NPLGN;
+            vkey_pos_x = ((px - 2) / vkey_width);
+
+            float vkey_height = (float)(vkbd_y_max - vkbd_y_min) / NLIGN;
+            vkey_pos_y = ((py - vkbd_y_min) / vkey_height);
+
+            vkey_pos_x = (vkey_pos_x < 0) ? 0 : vkey_pos_x;
+            vkey_pos_x = (vkey_pos_x > NPLGN-1) ? NPLGN-1 : vkey_pos_x;
+            vkey_pos_y = (vkey_pos_y < 0) ? 0 : vkey_pos_y;
+            vkey_pos_y = (vkey_pos_y > NLIGN-1) ? NLIGN-1 : vkey_pos_y;
+
+#ifdef POINTER_DEBUG
+            printf("px:%d py:%d (%d,%d) vkey:%dx%d\n", p_x, p_y, px, py, vkey_pos_x, vkey_pos_y);
+#endif
+         }
+      }
+
       /* Press Return, RetroPad Start */
       i=RETRO_DEVICE_ID_JOYPAD_START;
       if (vkflag[7]==0 && (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i)))
@@ -1697,9 +1737,9 @@ void update_input(int disable_physical_cursor_keys)
          vkflag[5]=0;
       }
 
-      /* Key press, RetroPad B or Keyboard Enter */
+      /* Key press, RetroPad B joyports 1+2 / Keyboard Enter / Pointer */
       i=RETRO_DEVICE_ID_JOYPAD_B;
-      if (vkflag[4]==0 && (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_RETURN)))
+      if (vkflag[4]==0 && (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_RETURN) || input_state_cb(0, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_PRESSED)))
       {
          vkey_pressed = check_vkey(vkey_pos_x, vkey_pos_y);
          vkflag[4]=1;
@@ -1798,7 +1838,7 @@ void update_input(int disable_physical_cursor_keys)
             }
          }
       }
-      else if (vkflag[4]==1 && (!input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && !input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i) && !input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_RETURN)))
+      else if (vkflag[4]==1 && (!input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && !input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i) && !input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_RETURN) && !input_state_cb(0, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_PRESSED)))
       {
          vkey_pressed = -1;
          vkflag[4]=0;
@@ -1817,7 +1857,7 @@ void update_input(int disable_physical_cursor_keys)
                mflag[0][RETRO_DEVICE_ID_JOYPAD_RIGHT]=0;
          }
       }
-      else if (vkflag[4]==1 && (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_RETURN)))
+      else if (vkflag[4]==1 && (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_RETURN) || input_state_cb(0, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_PRESSED)))
       {
          if (now - last_vkey_pressed_time > 100)
          {
@@ -2034,22 +2074,24 @@ void retro_poll_event()
          }
       }
 
-      // Real mouse buttons
-      if (!uae_mouse_l[0] && !uae_mouse_r[0])
+      // Real mouse buttons only when virtual keyboard hidden
+      if (SHOWKEY==-1)
       {
-         uae_mouse_l[0] = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_LEFT);
-         uae_mouse_r[0] = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_RIGHT);
-         uae_mouse_m[0] = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_MIDDLE);
-      }
+         if (!uae_mouse_l[0] && !uae_mouse_r[0])
+         {
+            uae_mouse_l[0] = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_LEFT);
+            uae_mouse_r[0] = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_RIGHT);
+            uae_mouse_m[0] = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_MIDDLE);
+         }
 
-      // Second real mouse buttons only when enabled
-      if (opt_multimouse)
-         if (!uae_mouse_l[1] && !uae_mouse_r[1])
+         // Second real mouse buttons only when enabled
+         if (opt_multimouse && !uae_mouse_l[1] && !uae_mouse_r[1])
          {
             uae_mouse_l[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_LEFT);
             uae_mouse_r[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_RIGHT);
             uae_mouse_m[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_MIDDLE);
          }
+      }
 
       // Joypad movement only with digital mouse mode and virtual keyboard hidden
       if (MOUSEMODE==1 && SHOWKEY==-1)
@@ -2225,22 +2267,23 @@ void retro_poll_event()
          }
       }
 
-      // Real mouse movement
-      if (!uae_mouse_x[0] && !uae_mouse_y[0])
+      // Real mouse movement only when virtual keyboard hidden
+      if (SHOWKEY==-1)
       {
-         mouse_x[0] = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_X);
-         mouse_y[0] = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_Y);
-
-         if (mouse_x[0] || mouse_y[0])
+         if (!uae_mouse_x[0] && !uae_mouse_y[0])
          {
-            uae_mouse_x[0] = mouse_x[0];
-            uae_mouse_y[0] = mouse_y[0];
-         }
-      }
+            mouse_x[0] = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_X);
+            mouse_y[0] = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_Y);
 
-      // Second real mouse movement only when enabled
-      if (opt_multimouse)
-         if (!uae_mouse_x[1] && !uae_mouse_y[1])
+            if (mouse_x[0] || mouse_y[0])
+            {
+               uae_mouse_x[0] = mouse_x[0];
+               uae_mouse_y[0] = mouse_y[0];
+            }
+         }
+
+         // Second real mouse movement only when enabled
+         if (opt_multimouse && !uae_mouse_x[1] && !uae_mouse_y[1])
          {
             mouse_x[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_X);
             mouse_y[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_Y);
@@ -2251,6 +2294,7 @@ void retro_poll_event()
                uae_mouse_y[1] = mouse_y[1];
             }
          }
+      }
 
       // Ports 1 & 2
       for (j = 0; j < 2; j++)

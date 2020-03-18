@@ -7,12 +7,11 @@ extern int NPAGE;
 extern int SHOWKEYPOS;
 extern int SHOWKEYTRANS;
 extern int SHIFTON;
-extern int pix_bytes;
 extern int vkflag[8];
 extern unsigned int video_config_geometry;
 extern unsigned int opt_vkbd_alpha;
 
-void virtual_kbd(unsigned short int *pixels, int vx, int vy)
+void print_virtual_kbd(unsigned short int *pixels)
 {
    int x, y;
    bool shifted;
@@ -135,6 +134,12 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
    int XBASETEXT = ((XPADDING > 0) ? (XPADDING / 2) : 0) + (video_config_geometry & PUAE_VIDEO_SUPERHIRES) ? 12 : (video_config_geometry & PUAE_VIDEO_HIRES) ? 6 : 5;
    int YBASETEXT = YBASEKEY + ((video_config_geometry & PUAE_VIDEO_NTSC) ? 4 : 5);
 
+   /* Coordinates */
+   vkbd_x_min = XKEYSPACING;
+   vkbd_x_max = retrow - XKEYSPACING;
+   vkbd_y_min = YOFFSET + YBASEKEY + YKEYSPACING;
+   vkbd_y_max = YOFFSET + YBASEKEY + (YSIDE * NLIGN);
+
    /* Opacity */
    BKG_ALPHA = (SHOWKEYTRANS == -1) ? 255 : ALPHA;
 
@@ -234,10 +239,10 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
    }
 
    /* Selected key position */
-   XKEY  = XBASEKEY + (vx * XSIDE) + XOFFSET;
-   XTEXT = XBASETEXT + BKG_PADDING_X + (vx * XSIDE) + XOFFSET;
-   YKEY  = YOFFSET + YBASEKEY + (vy * YSIDE);
-   YTEXT = YOFFSET + YBASETEXT + BKG_PADDING_Y + (vy * YSIDE);
+   XKEY  = XBASEKEY + (vkey_pos_x * XSIDE) + XOFFSET;
+   XTEXT = XBASETEXT + BKG_PADDING_X + (vkey_pos_x * XSIDE) + XOFFSET;
+   YKEY  = YOFFSET + YBASEKEY + (vkey_pos_y * YSIDE);
+   YTEXT = YOFFSET + YBASETEXT + BKG_PADDING_Y + (vkey_pos_y * YSIDE);
 
    /* Pressed key background color */
    if (vkflag[4] == 1)
@@ -256,12 +261,12 @@ void virtual_kbd(unsigned short int *pixels, int vx, int vy)
    if (pix_bytes == 4)
    {
       Draw_text32((uint32_t *)pix, XTEXT, YTEXT, FONT_COLOR_SEL, 0, BKG_ALPHA, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
-         (!shifted) ? MVk[(vy * NPLGN) + vx + page].norml : MVk[(vy * NPLGN) + vx + page].shift);
+         (!shifted) ? MVk[(vkey_pos_y * NPLGN) + vkey_pos_x + page].norml : MVk[(vkey_pos_y * NPLGN) + vkey_pos_x + page].shift);
    }
    else
    {
       Draw_text(pix, XTEXT, YTEXT, FONT_COLOR_SEL, 0, BKG_ALPHA, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
-         (!shifted) ? MVk[(vy * NPLGN) + vx + page].norml : MVk[(vy * NPLGN) + vx + page].shift);
+         (!shifted) ? MVk[(vkey_pos_y * NPLGN) + vkey_pos_x + page].norml : MVk[(vkey_pos_y * NPLGN) + vkey_pos_x + page].shift);
    }
 }
 
