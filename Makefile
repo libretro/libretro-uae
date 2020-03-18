@@ -155,7 +155,7 @@ else ifeq ($(platform), vita)
    COMMONFLAGS += -DHAVE_STRTOUL -DVITA
    CFLAGS += $(COMMONFLAGS)
    PLATFLAGS += -DRETRO -DALIGN_DWORD -DARM
-   PLATFLAGS += -ffast-math -march=armv7-a -mfpu=neon -mfloat-abi=hard -mword-relocations -fno-optimize-sibling-calls -fno-rtti -fno-exceptions -O3
+   PLATFLAGS += -ffast-math -march=armv7-a -mfpu=neon -mfloat-abi=hard -mword-relocations -fno-optimize-sibling-calls -fno-exceptions
    STATIC_LINKING = 1
    STATIC_LINKING_LINK=1
 
