@@ -18,8 +18,8 @@ And of course for the RetroArch/Libretro team: "http://www.libretro.com/"
 
 |RetroPad button|Action|
 |---|---|
-|B|Fire button 1|
-|A|Fire button 2|
+|B|Fire button 1 / Red|
+|A|Fire button 2 / Blue|
 |L2|Left mouse button|
 |R2|Right mouse button|
 |SELECT|Toggle virtual keyboard|
@@ -126,7 +126,7 @@ Single Line combines interlaced fields into one field, which will keep the full 
 - Automatic Resolution defaults to Hires and selects SuperHires when needed (practically only in Workbench and Super Skidmarks).
 - Automatic Line Mode defaults to Single Line and selects Double Line on interlaced screens.
 
-## Games that need a specific model
+## Games that require specific hardware
 You can force a specific model if a game needs one (AGA games for instance).
 
 To do this just add the corresponding string to the filename:
@@ -277,13 +277,25 @@ In this WHDLoad image you must have these Kickstart ROMs `kick34005.A500` & `kic
 4. ~~Place `WHDLoad.key` to RetroArch `system` if you have registered WHDLoad~~
 5. ~~Launch a LHA/HDF/HDZ, Kickstarts will be copied automatically~~
 
-- `WHDLoad.hdf` & `WHDSaves.hdf` will be generated to RetroArch `saves` and Kickstarts will be copied automatically
-- To update `WHDLoad.hdf` simply delete it
+#### User intervention minimized
+  - WHDLoad helper files (Directory or HDF) will be generated to RetroArch `saves` and Kickstarts will be copied automatically
+  - To update `WHDLoad.hdf` simply delete the directory or the HDF
 
-- Hold fire button at boot for launch selector
-- Hold spacebar at boot to show `ReadMe` and start `MkCustom`
+#### Overrides at startup
+  - **(Red)** Hold fire button for launch selector
+    - For alternate `.info` launching
+  - **(Red+Blue)** Hold fire + 2nd fire for `ReadMe` + `MkCustom`
+    - For creating default CUSTOM parameters
 
-### New WHDLoad.hdf features
+#### + `WHDLoad Splash Screen` core option overrides
+  - **(Blue)** Hold 2nd fire for WHDLoad Config
+    - Waits for user input if the slave supports splash screen configurations
+  - **(LMB)** Hold left mouse button for WHDLoad Splash
+    - Briefly shows the splash screen while preloading (default WHDLoad behavior)
+  - **(RMB)** Hold right mouse button for WHDLoad Config+Splash
+    - Always waits for user input at the splash screen
+
+### New WHDLoad.hdf features for old users
 #### Major changes
 - Slave no longer needs to be renamed to game.slave. The first one is selected.
 - Kickstarts will be copied automatically from the system directory on the first run, so it might take a little longer than usual.
