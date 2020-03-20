@@ -764,6 +764,7 @@ void retro_set_environment(retro_environment_t cb)
             { "files", "Files" },
             { "hdf20", "HDF 20MB" },
             { "hdf40", "HDF 40MB" },
+            { "hdf80", "HDF 80MB" },
             { "hdf128", "HDF 128MB" },
             { "hdf256", "HDF 256MB" },
             { "hdf512", "HDF 512MB" },
@@ -785,13 +786,13 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_use_whdload_prefs",
-         "WHDLoad.prefs Options",
-         "WHDLoad.prefs in 'system/' required.\n'Config' shows the config screen only if the slave supports it. 'Splash' shows the splash screen always. Space/Enter/Fire work as a start button in 'Config'.\nCore restart required. Will not work with the old WHDLoad.hdf!",
+         "WHDLoad Splash Screen Options",
+         "Space/Enter/Fire work as the WHDLoad Start-button. Core restart required.\nOverride with buttons while booting:\n- 'Config': Hold 2nd fire / Blue.\n- 'Splash': Hold LMB.\n- 'Config + Splash': Hold RMB.",
          {
             { "disabled", NULL },
-            { "config", "Config" },
-            { "splash", "Splash" },
-            { "both", "Config + Splash" },
+            { "config", "Config (Show only if available)" },
+            { "splash", "Splash (Show briefly)" },
+            { "both", "Config + Splash (Wait for user input)" },
             { NULL, NULL },
          },
          "disabled"
@@ -1928,9 +1929,10 @@ static void update_variables(void)
       else if (strcmp(var.value, "files") == 0) opt_use_boot_hd=1;
       else if (strcmp(var.value, "hdf20") == 0) opt_use_boot_hd=2;
       else if (strcmp(var.value, "hdf40") == 0) opt_use_boot_hd=3;
-      else if (strcmp(var.value, "hdf128") == 0) opt_use_boot_hd=4;
-      else if (strcmp(var.value, "hdf256") == 0) opt_use_boot_hd=5;
-      else if (strcmp(var.value, "hdf512") == 0) opt_use_boot_hd=6;
+      else if (strcmp(var.value, "hdf80") == 0) opt_use_boot_hd=4;
+      else if (strcmp(var.value, "hdf128") == 0) opt_use_boot_hd=5;
+      else if (strcmp(var.value, "hdf256") == 0) opt_use_boot_hd=6;
+      else if (strcmp(var.value, "hdf512") == 0) opt_use_boot_hd=7;
    }
 
    var.key = "puae_analogmouse";
@@ -3446,18 +3448,21 @@ bool retro_create_config()
             snprintf(boothd_size, sizeof(boothd_size), "%dM", 40);
             break;
          case 4:
-            snprintf(boothd_size, sizeof(boothd_size), "%dM", 128);
+            snprintf(boothd_size, sizeof(boothd_size), "%dM", 80);
             break;
          case 5:
-            snprintf(boothd_size, sizeof(boothd_size), "%dM", 256);
+            snprintf(boothd_size, sizeof(boothd_size), "%dM", 128);
             break;
          case 6:
+            snprintf(boothd_size, sizeof(boothd_size), "%dM", 256);
+            break;
+         case 7:
             snprintf(boothd_size, sizeof(boothd_size), "%dM", 512);
             break;
       }
    }
 
-   if (!string_is_empty(full_path) && file_exists(full_path))
+   if (!string_is_empty(full_path) && (file_exists(full_path) || path_is_directory(full_path)))
    {
       // Extract ZIP for examination
       if (strendswith(full_path, "zip"))

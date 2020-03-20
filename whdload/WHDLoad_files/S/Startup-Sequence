@@ -66,6 +66,7 @@ IF NOT WARN
 ENDIF
 
 
+
 Devs:Monitors/NTSC
 Devs:Monitors/PAL
 
@@ -86,17 +87,17 @@ ELSE
       Assign WHDSaves: WHDLoad:WHDSaves
    ENDIF
 
-   KeyPressed 64
+   JoyPad RED BLUE PORT 1 QUIET
    IF WARN
       IF EXISTS ReadMe
          MultiView ReadMe
       ENDIF
       IF NOT "$SLAVE" EQ ""
-          Execute S:MkCustom
+         Execute S:MkCustom
       ENDIF
    ENDIF
 
-   JoyPad RED QUIET
+   JoyPad RED PORT 1 QUIET
    IF WARN
       Execute WBSelect
    ELSE
@@ -108,6 +109,22 @@ ELSE
          IF EXISTS WHDSaves:custom_$SLAVE
             SETENV CUSTOM `type WHDSaves:custom_$SLAVE`
          ENDIF
+      ENDIF
+
+      JoyPad BLUE PORT 1 QUIET
+      IF WARN
+         Echo "ConfigDelay=-1" >>S:WHDLoad.prefs
+      ENDIF
+
+      JoyPad RED PORT 0 QUIET
+      IF WARN
+         Echo "SplashDelay=150" >>S:WHDLoad.prefs
+      ENDIF
+
+      JoyPad BLUE PORT 0 QUIET
+      IF WARN
+         Echo "ConfigDelay=-1" >>S:WHDLoad.prefs
+         Echo "SplashDelay=-1" >>S:WHDLoad.prefs
       ENDIF
 
       IF "$CUSTOM" EQ ""
