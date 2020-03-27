@@ -16,10 +16,6 @@
 #include "zfile.h"
 #include "retro_disk_control.h"
 
-extern int retrow;
-extern int retroh;
-extern int pix_bytes;
-extern int zoomed_height;
 extern int imagename_timer;
 extern void reset_drawing(void);
 extern void print_statusbar(void);
@@ -74,8 +70,9 @@ extern int vkbd_y_min;
 extern int vkbd_y_max;
 
 // Colors
-#define RGB565(r, g, b) (((r) << (5+6)) | ((g) << 6) | (b))
+#define RGB565(r, g, b) ((((r>>3)<<11) | ((g>>2)<<5) | (b>>3)))
 #define RGB888(r, g, b) (((r * 255 / 31) << (16)) | ((g * 255 / 31) << 8) | (b * 255 / 31))
+#define ARGB888(a, r, g, b) ((a << 24) | (r << 16) | (g << 8) | b)
 
 // Amiga models
 // chipmem_size 1 = 0.5MB, 2 = 1MB, 4 = 2MB
@@ -224,5 +221,10 @@ fastmem_size=8\n\
 #define EMULATOR_MAX_HEIGHT     EMULATOR_DEF_HEIGHT
 
 #define RETRO_BMP_SIZE          (EMULATOR_DEF_WIDTH * EMULATOR_DEF_HEIGHT * 4) // 4x is big enough for 24-bit SuperHires double line
+extern unsigned short int retro_bmp[RETRO_BMP_SIZE];
+extern int pix_bytes;
+extern int retrow;
+extern int retroh;
+extern int zoomed_height;
 
 #endif /* LIBRETRO_GLUE_H */

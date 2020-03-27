@@ -66,6 +66,7 @@ bool opt_statusbar_minimal = false;
 int opt_statusbar_position = 0;
 int opt_statusbar_position_old = 0;
 int opt_statusbar_position_offset = 0;
+unsigned int opt_vkbd_theme = 0;
 unsigned int opt_vkbd_alpha = 204;
 bool opt_keyrahkeypad = false;
 bool opt_keyboard_pass_through = false;
@@ -546,6 +547,19 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "bottom"
+      },
+      {
+         "puae_vkbd_theme",
+         "Virtual Keyboard Theme",
+         "By default, the keyboard comes up with SELECT button or F11 key.",
+         {
+            { "0", "Classic" },
+            { "1", "CD32" },
+            { "2", "Dark" },
+            { "3", "Light" },
+            { NULL, NULL },
+         },
+         "0"
       },
       {
          "puae_vkbd_alpha",
@@ -1463,6 +1477,13 @@ static void update_variables(void)
       opt_statusbar_position_old = opt_statusbar_position;
    }
 
+   var.key = "puae_vkbd_theme";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      opt_vkbd_theme = atoi(var.value);
+   }
+
    var.key = "puae_vkbd_alpha";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -2352,6 +2373,8 @@ static void update_variables(void)
    option_display.key = "puae_gfx_framerate";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_statusbar";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_vkbd_theme";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_vkbd_alpha";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
@@ -4686,12 +4709,6 @@ void retro_run(void)
       // Virtual keyboard requires a graceful redraw, blunt reset_drawing() interferes with zoom
       frame_redraw_necessary = 2;
       print_virtual_kbd(retro_bmp);
-#ifdef POINTER_DEBUG
-      if (pix_bytes == 4)
-         DrawHlineBmp32((uint32_t *)retro_bmp, pointer_x, pointer_y, 2, 2, RGB888(30, 0, 30));
-      else
-         DrawHlineBmp(retro_bmp, pointer_x, pointer_y, 2, 2, RGB565(30, 0, 30));
-#endif
    }
    // Maximum 288p/576p PAL shenanigans:
    // Mask the last line(s), since UAE does not refresh the last line, and even its own OSD will leave trails
