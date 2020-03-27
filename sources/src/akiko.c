@@ -918,6 +918,8 @@ static void cdrom_return_data (void)
 		return;
 	if (cdcomrxinx == cdcomrxcmp)
 		return;
+	if (cdrom_rx_dma_delay > 0)
+		return;
 
 #if AKIKO_DEBUG_IO
 		write_log (_T("OUT IDX=0x%02X-0x%02X LEN=%d,%08x:"), cdcomrxinx, cdcomrxcmp, cdrom_receive_length, cmd_buf);
@@ -1103,7 +1105,7 @@ static int cdrom_command_multi (void)
 #endif
 		cdrom_data_offset = seekpos;
 		cdrom_seek_delay = abs (cdrom_current_sector - cdrom_data_offset);
-		if (cdrom_seek_delay < 100) {
+		if (cdrom_seek_delay < 100 || currprefs.cd_speed == 0) {
 			cdrom_seek_delay = 1;
 		} else {
 			cdrom_seek_delay /= 1000;
@@ -1441,20 +1443,28 @@ void AKIKO_hsync_handler (void)
 	if (!currprefs.cs_cd32cd || !akiko_inited)
 		return;
 
-	static float framecounter;
-	framecounter--;
-	if (framecounter <= 0) {
+	static float framecounter1, framecounter2;
+	framecounter1--;
+	if (framecounter1 <= 0) {
 		if (cdrom_seek_delay <= 0) {
 			cdrom_run_read ();
 		} else {
 			cdrom_seek_delay--;
 		}
-		framecounter += (float)maxvpos * vblank_hz / (75.0 * cdrom_speed);
+		framecounter1 += (float)maxvpos * vblank_hz / (75.0 * cdrom_speed);
+		if (currprefs.cd_speed == 0 || currprefs.turbo_emulation)
+			framecounter1 = 1;
+	}
+	framecounter2--;
+	if (framecounter2 <= 0) {
+		framecounter2 += (float)maxvpos * vblank_hz / (75.0 * cdrom_speed);
 		framesync = true;
 	}
 
 	if (cdrom_tx_dma_delay > 0)
 		cdrom_tx_dma_delay--;
+	if (cdrom_rx_dma_delay > 0)
+		cdrom_rx_dma_delay--;
 
 	subcodecounter--;
 	if (subcodecounter <= 0) {
@@ -1866,7 +1876,7 @@ static void akiko_bput2 (uaecptr addr, uae_u32 v, int msg)
 	case 0x1f:
 		cdrom_intreq &= ~CDINTERRUPT_RXDMADONE;
 		cdcomrxcmp = v;
-		cdrom_rx_dma_delay = 5;
+		cdrom_rx_dma_delay = 3;
 		break;
 	case 0x20:
 	case 0x21:

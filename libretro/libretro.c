@@ -758,6 +758,17 @@ void retro_set_environment(retro_environment_t cb)
          "100"
       },
       {
+         "puae_cd_speed",
+         "CD Speed",
+         "",
+         {
+            { "100", "1x" },
+            { "0", "Turbo" },
+            { NULL, NULL },
+         },
+         "100"
+      },
+      {
          "puae_shared_nvram",
          "Shared CD32 NVRAM",
          "Disabled will save separate files per content. Enabled will use one shared file. Core restart required.",
@@ -1662,6 +1673,18 @@ static void update_variables(void)
 
       if (libretro_runloop_active)
          changed_prefs.sound_volume_cd=val;
+   }
+
+   var.key = "puae_cd_speed";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      strcat(uae_config, "cd_speed=");
+      strcat(uae_config, var.value);
+      strcat(uae_config, "\n");
+
+      if (libretro_runloop_active)
+         changed_prefs.cd_speed=atoi(var.value);
    }
 
    var.key = "puae_floppy_speed";

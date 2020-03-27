@@ -2611,6 +2611,11 @@ void disk_insert_force (int num, const TCHAR *name, bool forcedwriteprotect)
 
 static void DISK_check_change (void)
 {
+#ifdef __LIBRETRO__
+	/* cd_speed check is not done anywhere in WinUAE, so why not just do it here */
+	if (currprefs.cd_speed != changed_prefs.cd_speed)
+		currprefs.cd_speed = changed_prefs.cd_speed;
+#endif
 	if (currprefs.floppy_speed != changed_prefs.floppy_speed)
 		currprefs.floppy_speed = changed_prefs.floppy_speed;
 	for (int i = 0; i < MAX_FLOPPY_DRIVES; i++) {
