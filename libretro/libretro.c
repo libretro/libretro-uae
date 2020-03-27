@@ -89,7 +89,6 @@ static char *uae_argv[] = { "puae", RPATH };
 static int restart_pending = 0;
 
 unsigned short int retro_bmp[RETRO_BMP_SIZE];
-extern int SHIFTON;
 extern int STATUSON;
 extern int prefs_changed;
 
@@ -1179,10 +1178,10 @@ void retro_set_environment(retro_environment_t cb)
          "RetroPad Face Button Options",
          "Rotate face buttons clockwise and/or make 2nd fire press up.",
          {
-            { "disabled", NULL },
-            { "rotate", "Rotate" },
-            { "jump", "2nd fire = Up" },
-            { "rotate_jump", "Rotate + 2nd fire = Up" },
+            { "disabled", "B = Fire, A = 2nd fire" },
+            { "jump", "B = Fire, A = Up" },
+            { "rotate", "Y = Fire, B = 2nd fire" },
+            { "rotate_jump", "Y = Fire, B = Up" },
             { NULL, NULL },
          },
          "disabled"
@@ -1192,10 +1191,10 @@ void retro_set_environment(retro_environment_t cb)
          "CD32 Pad Face Button Options",
          "Rotate face buttons clockwise and/or make blue button press up.",
          {
-            { "disabled", NULL },
-            { "rotate", "Rotate" },
-            { "jump", "Blue = Up" },
-            { "rotate_jump", "Rotate + Blue = Up" },
+            { "disabled", "B = Red, A = Blue" },
+            { "jump", "B = Red, A = Up" },
+            { "rotate", "Y = Red, B = Blue" },
+            { "rotate_jump", "Y = Red, B = Up" },
             { NULL, NULL },
          },
          "disabled"
