@@ -22,7 +22,7 @@ And of course for the RetroArch/Libretro team: "http://www.libretro.com/"
 |A|Fire button 2 / Blue|
 |L2|Left mouse button|
 |R2|Right mouse button|
-|SELECT|Toggle virtual keyboard|
+|Select|Toggle virtual keyboard|
 
 |Keyboard key|Action|
 |---|---|
@@ -37,6 +37,7 @@ Right analog stick controls the mouse by default.
 |---|---|
 |B / Enter|Keypress|
 |A|Toggle transparency|
+|Y|Toggle CapsLock|
 |X|Toggle position|
 |Start|Press Return|
 

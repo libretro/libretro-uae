@@ -953,6 +953,7 @@ void cfgfile_save_options (struct zfile *f, struct uae_prefs *p, int type)
 	cfgfile_write (f, _T("floppy_volume"), _T("%d"), p->dfxclickvolume);
 	cfgfile_dwrite (f, _T("floppy_channel_mask"), _T("0x%x"), p->dfxclickchannelmask);
 #endif
+	cfgfile_write (f, _T("cd_speed"), _T("%d"), p->cd_speed);
 	cfgfile_write_bool (f, _T("parallel_on_demand"), p->parallel_demand);
 	cfgfile_write_bool (f, _T("serial_on_demand"), p->serial_demand);
 	cfgfile_write_bool (f, _T("serial_hardware_ctsrts"), p->serial_hwctsrts);
@@ -3324,6 +3325,7 @@ static int cfgfile_parse_hardware (struct uae_prefs *p, const TCHAR *option, TCH
 		|| cfgfile_strval (option, value, _T("gfxcard_type"), &p->rtgmem_type, rtgtype, 0)
 		|| cfgfile_intval (option, value, _T("rtg_modes"), &p->picasso96_modeflags, 1)
 		|| cfgfile_intval (option, value, _T("floppy_speed"), &p->floppy_speed, 1)
+		|| cfgfile_intval (option, value, _T("cd_speed"), &p->cd_speed, 1)
 		|| cfgfile_intval (option, value, _T("floppy_write_length"), &p->floppy_write_length, 1)
 		|| cfgfile_intval (option, value, _T("floppy_random_bits_min"), &p->floppy_random_bits_min, 1)
 		|| cfgfile_intval (option, value, _T("floppy_random_bits_max"), &p->floppy_random_bits_max, 1)
@@ -5207,6 +5209,7 @@ void default_prefs (struct uae_prefs *p, int type)
 	p->dfxclickvolume = 33;
 	p->dfxclickchannelmask = 0xffff;
 #endif
+    p->cd_speed = 100;
 
 #ifdef SAVESTATE
 	p->statecapturebuffersize = 100;

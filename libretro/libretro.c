@@ -66,6 +66,7 @@ bool opt_statusbar_minimal = false;
 int opt_statusbar_position = 0;
 int opt_statusbar_position_old = 0;
 int opt_statusbar_position_offset = 0;
+unsigned int opt_vkbd_theme = 0;
 unsigned int opt_vkbd_alpha = 204;
 bool opt_keyrahkeypad = false;
 bool opt_keyboard_pass_through = false;
@@ -88,7 +89,6 @@ static char *uae_argv[] = { "puae", RPATH };
 static int restart_pending = 0;
 
 unsigned short int retro_bmp[RETRO_BMP_SIZE];
-extern int SHIFTON;
 extern int STATUSON;
 extern int prefs_changed;
 
@@ -548,6 +548,19 @@ void retro_set_environment(retro_environment_t cb)
          "bottom"
       },
       {
+         "puae_vkbd_theme",
+         "Virtual Keyboard Theme",
+         "By default, the keyboard comes up with SELECT button or F11 key.",
+         {
+            { "0", "Classic" },
+            { "1", "CD32" },
+            { "2", "Dark" },
+            { "3", "Light" },
+            { NULL, NULL },
+         },
+         "0"
+      },
+      {
          "puae_vkbd_alpha",
          "Virtual Keyboard Transparency",
          "",
@@ -739,6 +752,17 @@ void retro_set_environment(retro_environment_t cb)
             { "200", "2x" },
             { "400", "4x" },
             { "800", "8x" },
+            { "0", "Turbo" },
+            { NULL, NULL },
+         },
+         "100"
+      },
+      {
+         "puae_cd_speed",
+         "CD Speed",
+         "",
+         {
+            { "100", "1x" },
             { "0", "Turbo" },
             { NULL, NULL },
          },
@@ -1165,10 +1189,10 @@ void retro_set_environment(retro_environment_t cb)
          "RetroPad Face Button Options",
          "Rotate face buttons clockwise and/or make 2nd fire press up.",
          {
-            { "disabled", NULL },
-            { "rotate", "Rotate" },
-            { "jump", "2nd fire = Up" },
-            { "rotate_jump", "Rotate + 2nd fire = Up" },
+            { "disabled", "B = Fire, A = 2nd fire" },
+            { "jump", "B = Fire, A = Up" },
+            { "rotate", "Y = Fire, B = 2nd fire" },
+            { "rotate_jump", "Y = Fire, B = Up" },
             { NULL, NULL },
          },
          "disabled"
@@ -1178,10 +1202,10 @@ void retro_set_environment(retro_environment_t cb)
          "CD32 Pad Face Button Options",
          "Rotate face buttons clockwise and/or make blue button press up.",
          {
-            { "disabled", NULL },
-            { "rotate", "Rotate" },
-            { "jump", "Blue = Up" },
-            { "rotate_jump", "Rotate + Blue = Up" },
+            { "disabled", "B = Red, A = Blue" },
+            { "jump", "B = Red, A = Up" },
+            { "rotate", "Y = Red, B = Blue" },
+            { "rotate_jump", "Y = Red, B = Up" },
             { NULL, NULL },
          },
          "disabled"
@@ -1463,6 +1487,13 @@ static void update_variables(void)
       opt_statusbar_position_old = opt_statusbar_position;
    }
 
+   var.key = "puae_vkbd_theme";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      opt_vkbd_theme = atoi(var.value);
+   }
+
    var.key = "puae_vkbd_alpha";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -1642,6 +1673,18 @@ static void update_variables(void)
 
       if (libretro_runloop_active)
          changed_prefs.sound_volume_cd=val;
+   }
+
+   var.key = "puae_cd_speed";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      strcat(uae_config, "cd_speed=");
+      strcat(uae_config, var.value);
+      strcat(uae_config, "\n");
+
+      if (libretro_runloop_active)
+         changed_prefs.cd_speed=atoi(var.value);
    }
 
    var.key = "puae_floppy_speed";
@@ -2352,6 +2395,8 @@ static void update_variables(void)
    option_display.key = "puae_gfx_framerate";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_statusbar";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_vkbd_theme";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_vkbd_alpha";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
@@ -4686,12 +4731,6 @@ void retro_run(void)
       // Virtual keyboard requires a graceful redraw, blunt reset_drawing() interferes with zoom
       frame_redraw_necessary = 2;
       print_virtual_kbd(retro_bmp);
-#ifdef POINTER_DEBUG
-      if (pix_bytes == 4)
-         DrawHlineBmp32((uint32_t *)retro_bmp, pointer_x, pointer_y, 2, 2, RGB888(30, 0, 30));
-      else
-         DrawHlineBmp(retro_bmp, pointer_x, pointer_y, 2, 2, RGB565(30, 0, 30));
-#endif
    }
    // Maximum 288p/576p PAL shenanigans:
    // Mask the last line(s), since UAE does not refresh the last line, and even its own OSD will leave trails

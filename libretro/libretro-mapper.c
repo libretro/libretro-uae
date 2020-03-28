@@ -69,7 +69,7 @@ int vkbd_x_max = 0;
 int vkbd_y_min = 0;
 int vkbd_y_max = 0;
 
-int vkflag[8] = {0};
+int vkflag[9] = {0};
 static int jflag[4][16] = {0};
 static int kjflag[2][16] = {0};
 static int mflag[2][16] = {0};
@@ -1442,7 +1442,7 @@ void update_input(int disable_physical_cursor_keys)
                }
 
                /* Skip the VKBD buttons if VKBD is visible */
-               if (SHOWKEY==1 && (i==RETRO_DEVICE_ID_JOYPAD_B || i==RETRO_DEVICE_ID_JOYPAD_A || i==RETRO_DEVICE_ID_JOYPAD_X || i==RETRO_DEVICE_ID_JOYPAD_START))
+               if (SHOWKEY==1 && (i==RETRO_DEVICE_ID_JOYPAD_B || i==RETRO_DEVICE_ID_JOYPAD_A || i==RETRO_DEVICE_ID_JOYPAD_Y || i==RETRO_DEVICE_ID_JOYPAD_X || i==RETRO_DEVICE_ID_JOYPAD_START))
                   continue;
 
                if (input_state_cb(j, RETRO_DEVICE_JOYPAD, 0, i) && jbt[j][i]==0 && i!=turbo_fire_button)
@@ -1676,10 +1676,10 @@ void update_input(int disable_physical_cursor_keys)
       int p_x = input_state_cb(0, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_X);
       int p_y = input_state_cb(0, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_Y);
 
-      if (p_x !=0 && p_y != 0 && (p_x != last_pointer_x || p_y != last_pointer_y))
+      if (p_x != 0 && p_y != 0 && (p_x != last_pointer_x || p_y != last_pointer_y))
       {
          int px = (int)((p_x + 0x7fff) * retrow / 0xffff);
-         int py = (int)((p_y + 0x7fff) * zoomed_height / 0xffff);
+         int py = (int)((p_y + 0x7fff) * retroh / 0xffff);
          last_pointer_x = p_x;
          last_pointer_y = p_y;
 #ifdef POINTER_DEBUG
@@ -1689,7 +1689,7 @@ void update_input(int disable_physical_cursor_keys)
          if (px >= vkbd_x_min && px <= vkbd_x_max && py >= vkbd_y_min && py <= vkbd_y_max)
          {
             float vkey_width = (float)(vkbd_x_max - vkbd_x_min) / NPLGN;
-            vkey_pos_x = ((px - 2) / vkey_width);
+            vkey_pos_x = ((px - vkbd_x_min) / vkey_width);
 
             float vkey_height = (float)(vkbd_y_max - vkbd_y_min) / NLIGN;
             vkey_pos_y = ((py - vkbd_y_min) / vkey_height);
@@ -1707,15 +1707,27 @@ void update_input(int disable_physical_cursor_keys)
 
       /* Press Return, RetroPad Start */
       i=RETRO_DEVICE_ID_JOYPAD_START;
+      if (vkflag[8]==0 && (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i)))
+      {
+         vkflag[8]=1;
+         retro_key_down(AK_RET);
+      }
+      else if (vkflag[8]==1 && (!input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && !input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i)))
+      {
+         vkflag[8]=0;
+         retro_key_up(AK_RET);
+      }
+
+      /* CapsLock, RetroPad Y */
+      i=RETRO_DEVICE_ID_JOYPAD_Y;
       if (vkflag[7]==0 && (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i)))
       {
          vkflag[7]=1;
-         retro_key_down(AK_RET);
+         SHIFTON=-SHIFTON;
       }
       else if (vkflag[7]==1 && (!input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) && !input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i)))
       {
          vkflag[7]=0;
-         retro_key_up(AK_RET);
       }
 
       /* Position toggle, RetroPad X */

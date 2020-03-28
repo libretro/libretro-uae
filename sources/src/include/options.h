@@ -422,6 +422,7 @@ struct uae_prefs {
 	int floppy_random_bits_min;
 	int floppy_random_bits_max;
 	int floppy_auto_ext2;
+	int cd_speed;
 	bool tod_hack;
 	uae_u32 maprom;
 	bool rom_readwrite;
