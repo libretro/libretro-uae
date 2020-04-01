@@ -167,12 +167,10 @@ static retro_audio_sample_t audio_cb;
 static retro_audio_sample_batch_t audio_batch_cb;
 static retro_environment_t environ_cb;
 
-static char retro_save_directory[RETRO_PATH_MAX] = {0};
-// retro_system_directory is extern, used in caps.c and driveclick.c,
-// so cannot be static
-char retro_system_directory[512] = {0};
+char retro_save_directory[RETRO_PATH_MAX] = {0};
+char retro_temp_directory[RETRO_PATH_MAX] = {0};
+char retro_system_directory[RETRO_PATH_MAX] = {0};
 static char retro_content_directory[RETRO_PATH_MAX] = {0};
-static char retro_temp_directory[RETRO_PATH_MAX] = {0};
 
 // Disk control context
 dc_storage *retro_dc = NULL;
@@ -2605,18 +2603,120 @@ static bool disk_replace_image_index(unsigned index, const struct retro_game_inf
          if (!string_is_empty(info->path))
          {
             char image_label[RETRO_PATH_MAX];
-
             image_label[0] = '\0';
 
+            static char full_path_replace[512] = {0};
+            strcpy(full_path_replace, (char*)info->path);
+
+            // Confs & hard drive images
+            if (strendswith(full_path_replace, "uae") || strendswith(full_path_replace, "hdf") || strendswith(full_path_replace, "hdz") || strendswith(full_path_replace, "lha"))
+            {
+               dc_reset(retro_dc);
+               strcpy(full_path, (char*)info->path);
+               retro_reset();
+               return true;
+            }
+
+            // ZIP
+            else if (strendswith(full_path_replace, "zip"))
+            {
+               char zip_basename[RETRO_PATH_MAX] = {0};
+               snprintf(zip_basename, sizeof(zip_basename), "%s", path_basename(full_path_replace));
+               snprintf(zip_basename, sizeof(zip_basename), "%s", path_remove_extension(zip_basename));
+               snprintf(retro_temp_directory, sizeof(retro_temp_directory), "%s%s%s", retro_save_directory, DIR_SEP_STR, "ZIP");
+               char zip_path[RETRO_PATH_MAX] = {0};
+               snprintf(zip_path, sizeof(zip_path), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_basename);
+
+               path_mkdir(zip_path);
+               zip_uncompress(full_path_replace, zip_path, NULL);
+
+               // Default to directory mode
+               int zip_mode = 0;
+               snprintf(full_path_replace, sizeof(full_path_replace), "%s", zip_path);
+
+               FILE *zip_m3u;
+               char zip_m3u_buf[2048] = {0};
+               char zip_m3u_path[RETRO_PATH_MAX] = {0};
+               snprintf(zip_m3u_path, sizeof(zip_m3u_path), "%s%s%s.m3u", zip_path, DIR_SEP_STR, zip_basename);
+               int zip_m3u_num = 0;
+
+               DIR *zip_dir;
+               struct dirent *zip_dirp;
+               zip_dir = opendir(zip_path);
+               while ((zip_dirp = readdir(zip_dir)) != NULL)
+               {
+                  if (zip_dirp->d_name[0] == '.' || strendswith(zip_dirp->d_name, M3U_FILE_EXT) || zip_mode > 1)
+                     continue;
+
+                  // Disk mode, generate playlist
+                  if (dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_FLOPPY)
+                  {
+                     zip_mode = 1;
+                     zip_m3u_num++;
+                     snprintf(zip_m3u_buf+strlen(zip_m3u_buf), sizeof(zip_m3u_buf), "%s\n", zip_dirp->d_name);
+                  }
+                  // Single file image mode
+                  else if (dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_CD)
+                  {
+                     zip_mode = 2;
+                     snprintf(full_path_replace, sizeof(full_path_replace), "%s%s%s", zip_path, DIR_SEP_STR, zip_dirp->d_name);
+                  }
+               }
+               closedir(zip_dir);
+
+               switch (zip_mode)
+               {
+                  case 0: // Extracted path
+                     dc_reset(retro_dc);
+                     strcpy(full_path, (char*)info->path);
+                     retro_reset();
+                     return true;
+                     break;
+                  case 2: // Single CD image
+                     break;
+                  case 1: // Generated floppy playlist
+                     if (zip_m3u_num == 1)
+                     {
+                        zip_m3u_buf[strlen(zip_m3u_buf)-1] = '\0';
+                        snprintf(full_path_replace, sizeof(full_path_replace), "%s%s%s", zip_path, DIR_SEP_STR, zip_m3u_buf);
+                     }
+                     else
+                     {
+                        zip_m3u = fopen(zip_m3u_path, "w");
+                        fprintf(zip_m3u, "%s", zip_m3u_buf);
+                        fclose(zip_m3u);
+                        snprintf(full_path_replace, sizeof(full_path_replace), "%s", zip_m3u_path);
+                     }
+                     break;
+               }
+            }
+
+            // M3U
+            if (strendswith(full_path_replace, M3U_FILE_EXT))
+            {
+               // Parse the M3U file
+               dc_parse_m3u(retro_dc, full_path_replace, retro_save_directory);
+
+               // Some debugging
+               fprintf(stdout, "[libretro-uae]: M3U file parsed, %d file(s) found\n", retro_dc->count);
+               //for (unsigned i = 0; i < retro_dc->count; i++)
+                  //printf("File %d: %s\n", i+1, retro_dc->files[i]);
+
+               // Insert first disk
+               disk_set_image_index(0);
+               retro_dc->eject_state = false;
+               return true;
+            }
+
             // File path
-            retro_dc->files[index] = strdup(info->path);
+            retro_dc->files[index] = strdup(full_path_replace);
 
             // Image label
-            fill_short_pathname_representation(image_label, info->path, sizeof(image_label));
+            fill_short_pathname_representation(image_label, full_path_replace, sizeof(image_label));
             retro_dc->labels[index] = strdup(image_label);
 
             // Image type
-            retro_dc->types[index] = dc_get_image_type(info->path);
+            retro_dc->types[index] = dc_get_image_type(full_path_replace);
 
             return true;
          }
@@ -2857,7 +2957,7 @@ static void remove_recurse(const char *path)
 
 void retro_deinit(void)
 {	
-   // Clean the m3u storage
+   // Clean the M3U storage
    if (retro_dc)
       dc_free(retro_dc);
 
@@ -3512,63 +3612,60 @@ bool retro_create_config()
       // Extract ZIP for examination
       if (strendswith(full_path, "zip"))
       {
-         char zip_basename[RETRO_PATH_MAX];
+         char zip_basename[RETRO_PATH_MAX] = {0};
          snprintf(zip_basename, sizeof(zip_basename), "%s", path_basename(full_path));
          snprintf(zip_basename, sizeof(zip_basename), "%s", path_remove_extension(zip_basename));
          snprintf(retro_temp_directory, sizeof(retro_temp_directory), "%s%s%s", retro_save_directory, DIR_SEP_STR, "ZIP");
-         char zip_path[RETRO_PATH_MAX];
+         char zip_path[RETRO_PATH_MAX] = {0};
          snprintf(zip_path, sizeof(zip_path), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_basename);
 
          path_mkdir(zip_path);
-         zip_uncompress(full_path, zip_path);
+         zip_uncompress(full_path, zip_path, NULL);
 
+         // Default to directory mode
          int zip_mode = 0;
-         FILE * zip_m3u;
+         snprintf(full_path, sizeof(full_path), "%s", zip_path);
+
+         FILE *zip_m3u;
+         char zip_m3u_buf[2048] = {0};
          char zip_m3u_path[RETRO_PATH_MAX];
          snprintf(zip_m3u_path, sizeof(zip_m3u_path), "%s%s%s.m3u", zip_path, DIR_SEP_STR, zip_basename);
-         zip_m3u = fopen(zip_m3u_path, "w");
 
          DIR *zip_dir;
          struct dirent *zip_dirp;
          zip_dir = opendir(zip_path);
-         while ((zip_dirp = readdir(zip_dir)) != NULL && zip_mode == 0)
+         while ((zip_dirp = readdir(zip_dir)) != NULL)
          {
-            if (zip_dirp->d_name[0] == '.' || strendswith(zip_dirp->d_name, M3U_FILE_EXT))
+            if (zip_dirp->d_name[0] == '.' || strendswith(zip_dirp->d_name, M3U_FILE_EXT) || zip_mode > 1)
                continue;
 
-            // Disk mode, create M3U
-            if (strendswith(zip_dirp->d_name, ADF_FILE_EXT)
-             || strendswith(zip_dirp->d_name, FDI_FILE_EXT)
-             || strendswith(zip_dirp->d_name, DMS_FILE_EXT)
-             || strendswith(zip_dirp->d_name, IPF_FILE_EXT))
+            // Disk mode, generate playlist
+            if (dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_FLOPPY)
             {
-               fprintf(zip_m3u, "%s\n", zip_dirp->d_name);
-               snprintf(full_path, sizeof(full_path), "%s", zip_m3u_path);
-               zip_mode = 0;
-            }
-            // Single file mode
-            else if (strendswith(zip_dirp->d_name, HDF_FILE_EXT)
-                  || strendswith(zip_dirp->d_name, CUE_FILE_EXT)
-                  || strendswith(zip_dirp->d_name, CCD_FILE_EXT)
-                  || strendswith(zip_dirp->d_name, NRG_FILE_EXT)
-                  || strendswith(zip_dirp->d_name, MDS_FILE_EXT)
-                  || strendswith(zip_dirp->d_name, ISO_FILE_EXT))
-            {
-               snprintf(full_path, sizeof(full_path), "%s%s%s", zip_path, DIR_SEP_STR, zip_dirp->d_name);
                zip_mode = 1;
+               snprintf(zip_m3u_buf+strlen(zip_m3u_buf), sizeof(zip_m3u_buf), "%s\n", zip_dirp->d_name);
             }
-            // Directory mode
-            else
+            // Single file image mode
+            else if (dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_CD || strendswith(zip_dirp->d_name, HDF_FILE_EXT))
             {
-               snprintf(full_path, sizeof(full_path), "%s", zip_path);
                zip_mode = 2;
+               snprintf(full_path, sizeof(full_path), "%s%s%s", zip_path, DIR_SEP_STR, zip_dirp->d_name);
             }
          }
-
-         fclose(zip_m3u);
-         if (zip_mode > 0)
-            remove(zip_m3u_path);
          closedir(zip_dir);
+
+         switch (zip_mode)
+         {
+            case 0: // Extracted path
+            case 2: // Single HD/CD image
+               break;
+            case 1: // Generated floppy playlist
+               zip_m3u = fopen(zip_m3u_path, "w");
+               fprintf(zip_m3u, "%s", zip_m3u_buf);
+               fclose(zip_m3u);
+               snprintf(full_path, sizeof(full_path), "%s", zip_m3u_path);
+               break;
+         }
       }
 
       // If argument is a disk or hard drive image file
@@ -3864,7 +3961,7 @@ bool retro_create_config()
                            fclose(whdload_files_zip_fp);
 
                            // Extract ZIP
-                           zip_uncompress(whdload_files_zip, whdload_path);
+                           zip_uncompress(whdload_files_zip, whdload_path, NULL);
                            remove(whdload_files_zip);
                         }
                         else
