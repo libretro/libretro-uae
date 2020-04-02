@@ -510,26 +510,26 @@ void print_statusbar(void)
    BOX_Y = STAT_BASEY - BOX_PADDING;
 
    // Statusbar size
-   int BOX_LED_WIDTH = 20;
-   BOX_WIDTH = retrow - (BOX_LED_WIDTH * 5) - 2; // (LED-width * LED-num) - LED-border
+   int BOX_LED_WIDTH = 17;
+   BOX_WIDTH = retrow - (BOX_LED_WIDTH * 5); // (LED-width * LED-num)
    if (video_config & PUAE_VIDEO_HIRES && !(video_config & PUAE_VIDEO_DOUBLELINE))
-      BOX_WIDTH = retrow - ((BOX_LED_WIDTH * 2) * 5) - 2;
+      BOX_WIDTH = retrow - ((BOX_LED_WIDTH * 2) * 5);
    else if (video_config & PUAE_VIDEO_SUPERHIRES)
    {
       if (video_config & PUAE_VIDEO_DOUBLELINE)
-         BOX_WIDTH = retrow - ((BOX_LED_WIDTH * 2) * 5) - 2;
+         BOX_WIDTH = retrow - ((BOX_LED_WIDTH * 2) * 5);
       else
-         BOX_WIDTH = retrow - ((BOX_LED_WIDTH * 4) * 5) - 2;
+         BOX_WIDTH = retrow - ((BOX_LED_WIDTH * 4) * 5);
    }
 
    // Video resolution
-   int STAT_X_RESOLUTION = STAT_X+(FONT_SLOT*4);
+   int STAT_X_RESOLUTION = STAT_X+(FONT_SLOT*4)+(FONT_WIDTH*16);
    char RESOLUTION[10] = {0};
    snprintf(RESOLUTION, sizeof(RESOLUTION), "%4dx%3d", retrow, zoomed_height);
 
    // Model & memory
-   int STAT_X_MODEL  = STAT_X+(FONT_SLOT*5)+(FONT_WIDTH*52);
-   int STAT_X_MEMORY = STAT_X+(FONT_SLOT*5)+(FONT_WIDTH*24);
+   int STAT_X_MODEL  = STAT_X+(FONT_SLOT*6)+(FONT_WIDTH*30);
+   int STAT_X_MEMORY = STAT_X+(FONT_SLOT*6)+(FONT_WIDTH*5);
    char MODEL[10] = {0};
    char MEMORY[5] = {0};
    float mem_size = 0;
@@ -562,9 +562,9 @@ void print_statusbar(void)
    // Double line positions
    if (video_config & PUAE_VIDEO_DOUBLELINE)
    {
-      STAT_X_RESOLUTION = STAT_X+(FONT_SLOT*14)+(FONT_WIDTH*28);
-      STAT_X_MODEL      = STAT_X+(FONT_SLOT*15)+(FONT_WIDTH*72);
-      STAT_X_MEMORY     = STAT_X+(FONT_SLOT*15)+(FONT_WIDTH*48);
+      STAT_X_RESOLUTION = STAT_X+(FONT_SLOT*15)+(FONT_WIDTH*5);
+      STAT_X_MODEL      = STAT_X+(FONT_SLOT*17)+(FONT_WIDTH*15);
+      STAT_X_MEMORY     = STAT_X+(FONT_SLOT*16)+(FONT_WIDTH*25);
    }
 
    // Joy port indicators

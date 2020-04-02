@@ -180,9 +180,9 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
             num_multip = 4;
     }
 
-    int LED_WIDTH = 20;
-    int TD_WIDTH = LED_WIDTH * num_multip;
-    int TD_LED_WIDTH = LED_WIDTH * num_multip;
+    int LED_WIDTH = 17;
+    int TD_WIDTH = (LED_WIDTH * num_multip);
+    int TD_LED_WIDTH = TD_WIDTH;
 
     int x_start, j, led, border;
     uae_u32 c1, c2, cb;
@@ -198,10 +198,11 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
 
     int floppies = 1;
     if (gui_data.hd >= 0 || gui_data.cd >= 0 || gui_data.md >= 0)
+    {
         floppies = (opt_statusbar_enhanced) ? 1 : 0;
-
-    if (!gui_data.drive_disabled[0])
-        floppies = 1;
+        if (gui_data.df[0][0])
+            floppies = 1;
+    }
 
     for (led = 0; led < LED_MAX; led++) {
         int side, pos, num1 = -1, num2 = -1, num3 = -1, num4 = -1;
@@ -318,9 +319,9 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
                 int fps = (gui_data.fps + 5) / 10;
                 on_rgb = 0x000000;
                 off_rgb = gui_data.fps_color ? 0xcccc00 : 0x000000;
-                am = 3;
-                if (fps > 999) {
-                    num1 = 9;
+                am = 2;
+                if (fps > 99) {
+                    num1 = -1;
                     num2 = 9;
                     num3 = 9;
                 } else {
@@ -446,10 +447,10 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
             //border = 1;// Disable rounded borders
         }
 
-        x = x_start + pos * TD_WIDTH;
+        x = x_start + 1 + pos * TD_WIDTH;
         if (!border)
             putpixel (buf, bpp, x - 1, cb, 0);
-        for (j = 0; j < TD_LED_WIDTH; j++)
+        for (j = 0; j < TD_LED_WIDTH - 1; j++)
             putpixel (buf, bpp, x + j, c, 0);
         if (!border)
             putpixel (buf, bpp, x + j, cb, 0);
@@ -465,6 +466,8 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
                     write_tdnumber (buf, bpp, x, y - TD_PADY, num2, pen_rgb, c2);
                     x += TD_NUM_WIDTH * num_multip;
                 }
+                if (num_multip == 2)
+                    x--;
                 write_tdnumber (buf, bpp, x, y - TD_PADY, num3, pen_rgb, c2);
                 x += TD_NUM_WIDTH * num_multip;
                 if (num4 > -1)
