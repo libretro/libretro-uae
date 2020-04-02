@@ -232,6 +232,7 @@ void retro_set_environment(retro_environment_t cb)
             { "A1200", "A1200 (2MB Chip + 8MB Fast)" },
             { "A4030", "A4000/030 (2MB Chip + 8MB Fast)" },
             { "A4040", "A4000/040 (2MB Chip + 8MB Fast)" },
+            { "CDTV", "CDTV (1MB Chip)" },
             { "CD32", "CD32 (2MB Chip)" },
             { "CD32FR", "CD32 (2MB Chip + 8MB Fast)" },
             { NULL, NULL },
@@ -809,7 +810,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_use_whdload_prefs",
          "WHDLoad Splash Screen Options",
-         "Space/Enter/Fire work as the WHDLoad Start-button. Core restart required.\nOverride with buttons while booting:\n- 'Config': Hold 2nd fire / Blue.\n- 'Splash': Hold LMB.\n- 'Config + Splash': Hold RMB.",
+         "Space/Enter/Fire work as the WHDLoad Start-button. Core restart required.\nOverride with buttons while booting:\n- 'Config': Hold 2nd fire / Blue\n- 'Splash': Hold LMB\n- 'Config + Splash': Hold RMB\n- ReadMe + MkCustom: Hold Red+Blue",
          {
             { "disabled", NULL },
             { "config", "Config (Show only if available)" },
@@ -3554,6 +3555,12 @@ bool retro_create_config()
       strcat(uae_machine, A4040_CONFIG);
       strcpy(uae_kickstart, A4000_ROM);
    }
+   else if (strcmp(opt_model, "CDTV") == 0)
+   {
+      strcat(uae_machine, CDTV_CONFIG);
+      strcpy(uae_kickstart, A500_ROM);
+      strcpy(uae_kickstart_ext, CDTV_ROM);
+   }
    else if (strcmp(opt_model, "CD32") == 0)
    {
       strcat(uae_machine, CD32_CONFIG);
@@ -3691,7 +3698,7 @@ bool retro_create_config()
             {
                // Use A4000/030
                fprintf(stdout, "[libretro-uae]: Found '(A4030)' or '(030)' in filename '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Booting A4000/030 with Kickstart 3.1 r40.068\n");
+               fprintf(stdout, "[libretro-uae]: Booting A4000/030: '%s'\n", A4000_ROM);
                fprintf(configfile, A4030_CONFIG);
                path_join((char*)&kickstart, retro_system_directory, A4000_ROM);
             }
@@ -3699,7 +3706,7 @@ bool retro_create_config()
             {
                // Use A4000/040
                fprintf(stdout, "[libretro-uae]: Found '(A4040)' or '(040)' in filename '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Booting A4000/040 with Kickstart 3.1 r40.068\n");
+               fprintf(stdout, "[libretro-uae]: Booting A4000/040: '%s'\n", A4000_ROM);
                fprintf(configfile, A4040_CONFIG);
                path_join((char*)&kickstart, retro_system_directory, A4000_ROM);
             }
@@ -3707,7 +3714,7 @@ bool retro_create_config()
             {
                // Use A1200 barebone
                fprintf(stdout, "[libretro-uae]: Found '(A1200OG)' or '(A1200NF)' in filename '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Booting A1200 NoFast with Kickstart 3.1 r40.068\n");
+               fprintf(stdout, "[libretro-uae]: Booting A1200 NoFast: '%s'\n", A1200_ROM);
                fprintf(configfile, A1200OG_CONFIG);
                path_join((char*)&kickstart, retro_system_directory, A1200_ROM);
             }
@@ -3715,7 +3722,7 @@ bool retro_create_config()
             {
                // Use A1200
                fprintf(stdout, "[libretro-uae]: Found '(A1200)', 'AGA', 'CD32', or 'AmigaCD' in filename '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Booting A1200 with Kickstart 3.1 r40.068\n");
+               fprintf(stdout, "[libretro-uae]: Booting A1200: '%s'\n", A1200_ROM);
                fprintf(configfile, A1200_CONFIG);
                path_join((char*)&kickstart, retro_system_directory, A1200_ROM);
             }
@@ -3723,7 +3730,7 @@ bool retro_create_config()
             {
                // Use A600
                fprintf(stdout, "[libretro-uae]: Found '(A600)' or 'ECS' in filename '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Booting A600 with Kickstart 3.1 r40.063\n");
+               fprintf(stdout, "[libretro-uae]: Booting A600: '%s'\n", A600_ROM);
                fprintf(configfile, A600_CONFIG);
                path_join((char*)&kickstart, retro_system_directory, A600_ROM);
             }
@@ -3731,7 +3738,7 @@ bool retro_create_config()
             {
                // Use A500+
                fprintf(stdout, "[libretro-uae]: Found '(A500+)' or '(A500PLUS)' in filename '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Booting A500+ with Kickstart 2.04 r37.175\n");
+               fprintf(stdout, "[libretro-uae]: Booting A500+: '%s'\n", A500KS2_ROM);
                fprintf(configfile, A500PLUS_CONFIG);
                path_join((char*)&kickstart, retro_system_directory, A500KS2_ROM);
             }
@@ -3739,7 +3746,7 @@ bool retro_create_config()
             {
                // Use A500 barebone
                fprintf(stdout, "[libretro-uae]: Found '(A500OG)' or '(512K)' in filename '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Booting A500 512K with Kickstart 1.3 r34.005\n");
+               fprintf(stdout, "[libretro-uae]: Booting A500 512K: '%s'\n", A500_ROM);
                fprintf(configfile, A500OG_CONFIG);
                path_join((char*)&kickstart, retro_system_directory, A500_ROM);
             }
@@ -3747,7 +3754,7 @@ bool retro_create_config()
             {
                // Use A500
                fprintf(stdout, "[libretro-uae]: Found '(A500)' or 'OCS' in filename '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Booting A500 with Kickstart 1.3 r34.005\n");
+               fprintf(stdout, "[libretro-uae]: Booting A500: '%s'\n", A500_ROM);
                fprintf(configfile, A500_CONFIG);
                path_join((char*)&kickstart, retro_system_directory, A500_ROM);
             }
@@ -3786,7 +3793,7 @@ bool retro_create_config()
 
                // No machine specified
                fprintf(stdout, "[libretro-uae]: No machine specified in filename '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Booting default configuration\n");
+               fprintf(stdout, "[libretro-uae]: Booting default configuration: %s\n", uae_kickstart);
                fprintf(configfile, uae_machine);
                path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
             }
@@ -4267,7 +4274,7 @@ bool retro_create_config()
             {
                // Use CD32 with Fast RAM
                fprintf(stdout, "[libretro-uae]: Found '(CD32FR)' or 'FastRAM' in filename '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Booting CD32 FastRAM with Kickstart 3.1 r40.060\n");
+               fprintf(stdout, "[libretro-uae]: Booting CD32 FastRAM: '%s'\n", CD32_ROM);
                fprintf(configfile, CD32FR_CONFIG);
                path_join((char*)&kickstart, retro_system_directory, CD32_ROM);
                path_join((char*)&kickstart_ext, retro_system_directory, CD32_ROM_EXT);
@@ -4276,10 +4283,19 @@ bool retro_create_config()
             {
                // Use CD32 barebone
                fprintf(stdout, "[libretro-uae]: Found '(CD32)' or '(CD32NF)' in filename '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Booting CD32 with Kickstart 3.1 r40.060\n");
+               fprintf(stdout, "[libretro-uae]: Booting CD32: '%s'\n", CD32_ROM);
                fprintf(configfile, CD32_CONFIG);
                path_join((char*)&kickstart, retro_system_directory, CD32_ROM);
                path_join((char*)&kickstart_ext, retro_system_directory, CD32_ROM_EXT);
+            }
+            else if (strstr(full_path, "CDTV"))
+            {
+               // Use CDTV
+               fprintf(stdout, "[libretro-uae]: Found 'CDTV' in filename '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Booting CDTV: '%s'\n", CDTV_ROM);
+               fprintf(configfile, CDTV_CONFIG);
+               path_join((char*)&kickstart, retro_system_directory, A500_ROM);
+               path_join((char*)&kickstart_ext, retro_system_directory, CDTV_ROM);
             }
             else
             {
@@ -4293,7 +4309,7 @@ bool retro_create_config()
 
                // No machine specified
                fprintf(stdout, "[libretro-uae]: No machine specified in filename '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Booting default configuration\n");
+               fprintf(stdout, "[libretro-uae]: Booting default configuration: %s\n", uae_kickstart);
                fprintf(configfile, uae_machine);
                path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
                path_join((char*)&kickstart_ext, retro_system_directory, uae_kickstart_ext);
@@ -4335,7 +4351,7 @@ bool retro_create_config()
             stat(kickstart, &kickstart_st);
 
             // Verify extended ROM if external
-            if (kickstart_st.st_size == 524288)
+            if (kickstart_st.st_size <= 524288)
             {
                if (!file_exists(kickstart_ext))
                {
@@ -4355,6 +4371,10 @@ bool retro_create_config()
             {
                // Shared
                path_join((char*)&flash_file, retro_save_directory, LIBRETRO_PUAE_PREFIX);
+
+               // CDTV suffix
+               if (kickstart_st.st_size == 262144)
+                  snprintf(flash_file, sizeof(flash_file), "%s%s", flash_file, "_cdtv");
             }
             else
             {
@@ -4454,7 +4474,7 @@ bool retro_create_config()
          char kickstart[RETRO_PATH_MAX];
 
          // No machine specified
-         fprintf(stdout, "[libretro-uae]: Booting default configuration\n");
+         fprintf(stdout, "[libretro-uae]: Booting default configuration: %s\n", uae_kickstart);
          fprintf(configfile, uae_machine);
          path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
 
@@ -4513,7 +4533,7 @@ bool retro_create_config()
          }
 
          // CD32 exception
-         if (strcmp(opt_model, "CD32") == 0 || strcmp(opt_model, "CD32FR") == 0)
+         if (strcmp(opt_model, "CD32") == 0 || strcmp(opt_model, "CD32FR") == 0 || strcmp(opt_model, "CDTV") == 0)
          {
             char kickstart_ext[RETRO_PATH_MAX];
             path_join((char*)&kickstart_ext, retro_system_directory, uae_kickstart_ext);
@@ -4534,7 +4554,7 @@ bool retro_create_config()
             stat(kickstart, &kickstart_st);
 
             // Verify extended ROM if external
-            if (kickstart_st.st_size == 524288)
+            if (kickstart_st.st_size <= 524288)
             {
                if (!file_exists(kickstart_ext))
                {
@@ -4551,6 +4571,9 @@ bool retro_create_config()
             char flash_file[RETRO_PATH_MAX];
             char flash_filepath[RETRO_PATH_MAX];
             path_join((char*)&flash_file, retro_save_directory, LIBRETRO_PUAE_PREFIX);
+            // CDTV suffix
+            if (kickstart_st.st_size == 262144)
+               snprintf(flash_file, sizeof(flash_file), "%s%s", flash_file, "_cdtv");
             fprintf(stdout, "[libretro-uae]: Using Flash RAM: '%s.nvr'\n", flash_file);
             fprintf(configfile, "flash_file=%s.nvr\n", (const char*)&flash_file);
          }

@@ -554,6 +554,9 @@ void print_statusbar(void)
       case CP_A4000:
          snprintf(MODEL, sizeof(MODEL), "%s", "A4000");
          break;
+      case CP_CDTV:
+         snprintf(MODEL, sizeof(MODEL), "%s", " CDTV");
+         break;
       case CP_CD32:
          snprintf(MODEL, sizeof(MODEL), "%s", " CD32");
          break;
