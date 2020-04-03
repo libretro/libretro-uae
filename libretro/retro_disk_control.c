@@ -19,7 +19,9 @@
 #include "retro_disk_control.h"
 #include "retro_strings.h"
 #include "retro_files.h"
+#include "file/file_path.h"
 #include "libretro-glue.h"
+#include "retroglue.h"
 
 #include "sysconfig.h"
 #include "sysdeps.h"
@@ -41,6 +43,9 @@
 #define M3U_SAVEDISK "#SAVEDISK:"
 #define M3U_SAVEDISK_LABEL "SAVE DISK"
 #define M3U_PATH_DELIM '|'
+
+extern char retro_save_directory[RETRO_PATH_MAX];
+extern char retro_temp_directory[RETRO_PATH_MAX];
 
 // Return the directory name of filename 'filename'.
 char* dirname_int(const char* filename)
@@ -331,6 +336,22 @@ static bool dc_add_m3u_disk(
 				remove_file_extension(
 						file_name, disk_label, sizeof(disk_label));
 			}
+		}
+
+		// ZIP
+		if (strendswith(disk_file_path, "zip"))
+		{
+			char zip_basename[RETRO_PATH_MAX];
+			snprintf(zip_basename, sizeof(zip_basename), "%s", path_basename(disk_file_path));
+			snprintf(zip_basename, sizeof(zip_basename), "%s", path_remove_extension(zip_basename));
+			snprintf(retro_temp_directory, sizeof(retro_temp_directory), "%s%s%s", retro_save_directory, DIR_SEP_STR, "ZIP");
+			char zip_path[RETRO_PATH_MAX];
+			snprintf(zip_path, sizeof(zip_path), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_basename);
+			char lastfile[RETRO_PATH_MAX];
+
+			path_mkdir(zip_path);
+			zip_uncompress(disk_file_path, zip_path, lastfile);
+			snprintf(disk_file_path, RETRO_PATH_MAX, "%s%s%s", zip_path, DIR_SEP_STR, lastfile);
 		}
 		
 		// Add the file to the list

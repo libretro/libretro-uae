@@ -126,24 +126,6 @@ chipmem_size=4\n\
 fastmem_size=0\n\
 "
 
-#define CD32_CONFIG "\
-cpu_model=68020\n\
-chipset=aga\n\
-chipset_compatible=CD32\n\
-chipmem_size=4\n\
-fastmem_size=0\n\
-floppy0type=-1\n\
-"
-
-#define CD32FR_CONFIG "\
-cpu_model=68020\n\
-chipset=aga\n\
-chipset_compatible=CD32\n\
-chipmem_size=4\n\
-fastmem_size=8\n\
-floppy0type=-1\n\
-"
-
 #define A4030_CONFIG "\
 cpu_model=68030\n\
 fpu_model=68882\n\
@@ -162,12 +144,41 @@ chipmem_size=4\n\
 fastmem_size=8\n\
 "
 
+#define CDTV_CONFIG "\
+cpu_model=68000\n\
+chipset=ecs_agnus\n\
+chipset_compatible=CDTV\n\
+chipmem_size=2\n\
+bogomem_size=0\n\
+floppy0type=-1\n\
+"
+
+#define CD32_CONFIG "\
+cpu_model=68020\n\
+chipset=aga\n\
+chipset_compatible=CD32\n\
+chipmem_size=4\n\
+fastmem_size=0\n\
+floppy0type=-1\n\
+"
+
+#define CD32FR_CONFIG "\
+cpu_model=68020\n\
+chipset=aga\n\
+chipset_compatible=CD32\n\
+chipmem_size=4\n\
+fastmem_size=8\n\
+floppy0type=-1\n\
+"
+
+
 // Amiga kickstarts
 #define A500_ROM                "kick34005.A500"
 #define A500KS2_ROM             "kick37175.A500"
 #define A600_ROM                "kick40063.A600"
 #define A1200_ROM               "kick40068.A1200"
 #define A4000_ROM               "kick40068.A4000"
+#define CDTV_ROM                "kick34005.CDTV"
 #define CD32_ROM                "kick40060.CD32"
 #define CD32_ROM_EXT            "kick40060.CD32.ext"
 

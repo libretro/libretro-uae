@@ -60,6 +60,7 @@ The following models are provided:
 |A1200|Amiga 1200|AGA|2MB Chip RAM + 8MB Fast RAM|
 |A4030|Amiga 4000/030|AGA|2MB Chip RAM + 8MB Fast RAM|
 |A4040|Amiga 4000/040|AGA|2MB Chip RAM + 8MB Fast RAM|
+|CDTV|Amiga CDTV|ECS|1MB Chip RAM|
 |CD32|Amiga CD32|AGA|2MB Chip RAM|
 |CD32FR|Amiga CD32|AGA|2MB Chip RAM + 8MB Fast RAM|
 
@@ -77,6 +78,7 @@ It is critical to use Kickstarts with the correct MD5, otherwise the core might 
 |A600|KS v3.1 rev 40.063|**kick40063.A600**|524 288|e40a5dfb3d017ba8779faba30cbd1c8e|
 |A1200|KS v3.1 rev 40.068|**kick40068.A1200**|524 288|646773759326fbac3b2311fd8c8793ee|
 |A4000|KS v3.1 rev 40.068|**kick40068.A4000**|524 288|9bdedde6a4f33555b4a270c8ca53297d|
+|CDTV|CDTV extended ROM v1.00|**kick34005.CDTV**|262 144|89da1838a24460e4b93f4f0c5d92d48d|
 
 For CD32 you need either separate ROMs (Kickstart + extended ROM) or the combined ROM:
 
@@ -86,7 +88,6 @@ For CD32 you need either separate ROMs (Kickstart + extended ROM) or the combine
 | | | **OR** | | |
 |CD32|KS v3.1 rev 40.060|**kick40060.CD32**|524 288|5f8924d013dd57a89cf349f4cdedc6b1|
 |CD32|Extended ROM rev 40.060|**kick40060.CD32.ext**|524 288|bb72565701b1b6faece07d68ea5da639|
-
 
 ### Resolution and rendering
 These parameters control the output resolution of the core:
@@ -143,6 +144,7 @@ To do this just add the corresponding string to the filename:
 |**x**| |**(A4030)** or **(030)**|Amiga 4000/030, 2MB Chip RAM + 8MB Fast RAM|
 |**x**| |**(A4040)** or **(040)**|Amiga 4000/040, 2MB Chip RAM + 8MB Fast RAM|
 |**x**| |**(MD)**|*Insert each disk in a different drive (**Maximum 4 disks**)*|
+| |**x**|**CDTV**|Amiga CDTV, 1MB Chip RAM|
 | |**x**|**(CD32)** or **(CD32NF)**|Amiga CD32, 2MB Chip RAM|
 | |**x**|**(CD32FR)** or **FastRAM**|Amiga CD32, 2MB Chip RAM + 8MB Fast RAM|
 |**x**|**x**|**NTSC**|NTSC 60Hz|
@@ -186,7 +188,6 @@ ZIPs will be extracted to a temporary directory in RetroArch `saves` and then de
 - If the ZIP contains floppy disks, A M3U playlist will be created and launched.
 - Hard drive and CD images will be treated one by one and only the first file found is selected for launch.
 - If no disk/drive images are found, the ZIP will be treated as a directory.
-
 
 ### M3U support
 When you have a multi disk game, you can use a M3U file to specify each disk of the game and change them from the RetroArch Disk Control interface.
@@ -355,7 +356,9 @@ Note the size of the HDF specified by SIZE_OF_HDF must be greater than size of t
 ## Using configuration files
 You can pass an '.uae' configuration file and the core will load the settings and start emulation.
 
-Look at the temporary configuration file "puae_libretro.uae" in RetroArch saves as a starting point for your own configuration files.
+Look at the temporary configuration file `puae_libretro.uae` in RetroArch saves as a starting point for your own configuration files.
+
+If the file `puae_libretro_global.uae` exists in RetroArch saves it will be appended to the temporary configuration file.
 
 ***Note that the use of configuration files is no longer encouraged or necessary. The core has been modified to always use the core options as a base, so that all custom configurations will be appended to the created configuration, effectively overriding the core options. The problem with this is that changing any core option while the core is running will reset all duplicate configurations. Therefore only add configurations which will require a restart or do not exist in the core options, if you must use a custom uae. If there is an option missing that is a must have, please make an issue about it.***
 
