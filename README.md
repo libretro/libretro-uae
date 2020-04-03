@@ -208,8 +208,6 @@ When a game ask for it, you can change the current disk in the RetroArch 'Disk C
 - Select the right disk index
 - Insert the new disk with 'Disk Cycle Tray Status'
 
-Note: ZIP support is provided by RetroArch and is done before passing the game to the core. So, when using a M3U file, the specified disk image must be uncompressed (ADF, DMS, FDI, IPF file formats). ADZ (gzipped ADF) will work though.
-
 Append "(MD)" as in "MultiDrive" to the M3U filename to insert each disk in a different drive for games that support multiple drives. Only possible if there are no more than 4 disks.
 
 For games that require a dedicated save disk, one may be generated automatically by entering the following line in an M3U file: `#SAVEDISK:VolumeName`. `VolumeName` is optional and may be omitted. For example, this will create a blank, unlabelled disk image at disk index 5:
