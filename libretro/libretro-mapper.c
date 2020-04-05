@@ -1682,7 +1682,7 @@ void update_input(int disable_physical_cursor_keys)
       if (p_x != 0 && p_y != 0 && (p_x != last_pointer_x || p_y != last_pointer_y))
       {
          int px = (int)((p_x + 0x7fff) * retrow / 0xffff);
-         int py = (int)((p_y + 0x7fff) * retroh / 0xffff);
+         int py = (int)((p_y + 0x7fff) * zoomed_height / 0xffff);
          last_pointer_x = p_x;
          last_pointer_y = p_y;
 #ifdef POINTER_DEBUG
