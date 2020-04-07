@@ -77,6 +77,7 @@ unsigned int opt_analogmouse_deadzone = 15;
 float opt_analogmouse_speed = 1.0;
 unsigned int opt_cd32pad_options = 0;
 unsigned int opt_retropad_options = 0;
+char opt_joyport_order[5] = "1234";
 
 #if defined(NATMEM_OFFSET)
 extern uae_u8 *natmem_offset;
@@ -819,6 +820,19 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "disabled"
+      },
+      {
+         "puae_joyport_order",
+         "Joyport Order",
+         "Plug RetroPads in different ports. Useful for Arcadia system and games that support 4-player adapter.",
+         {
+            { "1234", "1-2-3-4" },
+            { "2143", "2-1-4-3" },
+            { "3412", "3-4-1-2" },
+            { "4321", "4-3-2-1" },
+            { NULL, NULL },
+         },
+         "1234"
       },
       {
          "puae_analogmouse",
@@ -2054,6 +2068,13 @@ static void update_variables(void)
    {
       if (strcmp(var.value, "disabled") == 0) opt_audio_options_display=0;
       else if (strcmp(var.value, "enabled") == 0) opt_audio_options_display=1;
+   }
+
+   var.key = "puae_joyport_order";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      snprintf(opt_joyport_order, sizeof(opt_joyport_order), "%s", var.value);
    }
 
    var.key = "puae_retropad_options";
