@@ -77,6 +77,7 @@ unsigned int opt_analogmouse_deadzone = 15;
 float opt_analogmouse_speed = 1.0;
 unsigned int opt_cd32pad_options = 0;
 unsigned int opt_retropad_options = 0;
+char opt_joyport_order[5] = "1234";
 
 #if defined(NATMEM_OFFSET)
 extern uae_u8 *natmem_offset;
@@ -109,11 +110,12 @@ unsigned int request_init_custom_timer = 0;
 unsigned int request_check_prefs_timer = 0;
 unsigned int zoom_mode_id = 0;
 unsigned int opt_zoom_mode_id = 0;
-int zoomed_height;
+int zoomed_height = 0;
 
 int opt_vertical_offset = 0;
 bool opt_vertical_offset_auto = true;
 extern int minfirstline;
+static int retro_thisframe_counter = 0;
 extern int retro_thisframe_first_drawn_line;
 static int retro_thisframe_first_drawn_line_old = -1;
 extern int retro_thisframe_last_drawn_line;
@@ -819,6 +821,19 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "disabled"
+      },
+      {
+         "puae_joyport_order",
+         "Joyport Order",
+         "Plug RetroPads in different ports. Useful for Arcadia system and games that support 4-player adapter.",
+         {
+            { "1234", "1-2-3-4" },
+            { "2143", "2-1-4-3" },
+            { "3412", "3-4-1-2" },
+            { "4321", "4-3-2-1" },
+            { NULL, NULL },
+         },
+         "1234"
       },
       {
          "puae_analogmouse",
@@ -2054,6 +2069,13 @@ static void update_variables(void)
    {
       if (strcmp(var.value, "disabled") == 0) opt_audio_options_display=0;
       else if (strcmp(var.value, "enabled") == 0) opt_audio_options_display=1;
+   }
+
+   var.key = "puae_joyport_order";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      snprintf(opt_joyport_order, sizeof(opt_joyport_order), "%s", var.value);
    }
 
    var.key = "puae_retropad_options";
@@ -3404,12 +3426,11 @@ static bool retro_update_av_info(void)
        && retro_thisframe_first_drawn_line > 0 && retro_thisframe_last_drawn_line > 0
        && (retro_thisframe_first_drawn_line < 150 || retro_thisframe_last_drawn_line > 150)
       )
-         thisframe_y_adjust_new = (retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line - zoomed_height_normal) / 2 + retro_thisframe_first_drawn_line; // Smart
-         //thisframe_y_adjust_new = retro_thisframe_first_drawn_line + ((retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line) - zoomed_height_normal) / 2; // Simple
+         thisframe_y_adjust_new = (retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line - zoomed_height_normal) / 2 + retro_thisframe_first_drawn_line;
 
       /* Sensible limits */
       thisframe_y_adjust_new = (thisframe_y_adjust_new < 0) ? 0 : thisframe_y_adjust_new;
-      thisframe_y_adjust_new = (thisframe_y_adjust_new > (minfirstline + 50)) ? (minfirstline + 50) : thisframe_y_adjust_new;
+      thisframe_y_adjust_new = (thisframe_y_adjust_new > (minfirstline + 60)) ? (minfirstline + 60) : thisframe_y_adjust_new;
       if (retro_thisframe_first_drawn_line == -1 && retro_thisframe_last_drawn_line == -1)
           thisframe_y_adjust_new = thisframe_y_adjust_old;
 
@@ -3442,10 +3463,7 @@ static bool retro_update_av_info(void)
        && retro_max_diwstop > max_diwstop_limit
        && (retro_max_diwstop - retro_min_diwstart) <= (retrow + 2*diw_multiplier)
       )
-      {
-         visible_left_border_new = (retro_max_diwstop - retro_min_diwstart - retrow) / 2 + retro_min_diwstart; // Smart
-         //visible_left_border_new = retro_max_diwstop - retrow - (retro_max_diwstop - retro_min_diwstart - retrow) / 2; // Simple
-      }
+         visible_left_border_new = (retro_max_diwstop - retro_min_diwstart - retrow) / 2 + retro_min_diwstart;
       else if (retro_min_diwstart == 30000 && retro_max_diwstop == 0)
          visible_left_border_new = visible_left_border;
 
@@ -4797,23 +4815,38 @@ void update_audiovideo(void)
    // Automatic vertical offset
    if (opt_vertical_offset_auto && zoom_mode_id != 0)
    {
-      if (((retro_thisframe_first_drawn_line != retro_thisframe_first_drawn_line_old)
-         ||(retro_thisframe_last_drawn_line  != retro_thisframe_last_drawn_line_old))
+      if (( retro_thisframe_first_drawn_line != retro_thisframe_first_drawn_line_old
+         || retro_thisframe_last_drawn_line  != retro_thisframe_last_drawn_line_old)
          && retro_thisframe_first_drawn_line != -1
          && retro_thisframe_last_drawn_line  != -1
+         && retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line > 20
+         && (abs(retro_thisframe_first_drawn_line_old - retro_thisframe_first_drawn_line) > 1 || abs(retro_thisframe_last_drawn_line_old - retro_thisframe_last_drawn_line) > 1)
       )
       {
+         //printf("thisframe first:%d old:%d last:%d old:%d\n", retro_thisframe_first_drawn_line, retro_thisframe_first_drawn_line_old, retro_thisframe_last_drawn_line, retro_thisframe_last_drawn_line_old);
          // Prevent interlace stuttering by requiring a change of at least 2 lines
+         // and also prevent sudden resolution switching by requiring the change to stabilize (count +-1 as stable) for a few frames
          if (abs(retro_thisframe_first_drawn_line_old - retro_thisframe_first_drawn_line) > 1)
          {
             retro_thisframe_first_drawn_line_old = retro_thisframe_first_drawn_line;
-            retro_request_av_info_update = true;
+            retro_thisframe_counter = 1;
          }
          if (abs(retro_thisframe_last_drawn_line_old - retro_thisframe_last_drawn_line) > 1)
          {
             retro_thisframe_last_drawn_line_old = retro_thisframe_last_drawn_line;
-            retro_request_av_info_update = true;
+            retro_thisframe_counter = 1;
          }
+      }
+      else if (abs(retro_thisframe_first_drawn_line_old - retro_thisframe_first_drawn_line) < 2 && abs(retro_thisframe_last_drawn_line_old - retro_thisframe_last_drawn_line) < 2)
+      {
+         if (retro_thisframe_counter > 0)
+            retro_thisframe_counter++;
+
+         if (retro_thisframe_counter > 4)
+            retro_request_av_info_update = true;
+
+         if (retro_request_av_info_update)
+            retro_thisframe_counter = 0;
       }
    }
    else
@@ -4833,12 +4866,18 @@ void update_audiovideo(void)
    // Automatic horizontal offset
    if (opt_horizontal_offset_auto)
    {
-      if ((retro_min_diwstart != retro_min_diwstart_old) ||
-          (retro_max_diwstop != retro_max_diwstop_old))
+      if (( retro_min_diwstart != retro_min_diwstart_old
+         || retro_max_diwstop  != retro_max_diwstop_old)
+         && retro_min_diwstart != 30000
+         && retro_max_diwstop  != 0
+      )
       {
+         //printf("diwstart:%d old:%d diwstop:%d old:%d\n", retro_min_diwstart, retro_min_diwstart_old, retro_max_diwstop, retro_max_diwstop_old);
          retro_min_diwstart_old = retro_min_diwstart;
          retro_max_diwstop_old = retro_max_diwstop;
-         retro_request_av_info_update = true;
+         // Not triggered in the middle of vertical offset stabilize count
+         if (retro_thisframe_counter == 0)
+            retro_request_av_info_update = true;
       }
    }
    else
