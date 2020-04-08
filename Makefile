@@ -169,6 +169,18 @@ else ifeq ($(platform), ps3)
    PLATFLAGS += -DRETRO -DALIGN_DWORD
    STATIC_LINKING=1
 
+else ifeq ($(platform), psl1ght)
+   TARGET := $(TARGET_NAME)_libretro_$(platform).a
+   CC = $(PS3DEV)/ppu/bin/ppu-gcc$(EXE_EXT)
+   CXX = $(PS3DEV)/ppu/bin/ppu-g++$(EXE_EXT)
+   CC_AS = $(PS3DEV)/ppu/bin/ppu-gcc$(EXE_EXT)
+   AR = $(PS3DEV)/ppu/bin/ppu-ar$(EXE_EXT)
+   ZLIB_DIR = $(LIBUTILS)/zlib/
+   LDFLAGS := -lm -lpthread -lc
+   CFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DMSB_FIRST -DBYTE_ORDER=BIG_ENDIAN -D__CELLOS_LV2__ -DHAVE_MEMALIGN -DHAVE_ASPRINTF -I$(ZLIB_DIR)
+   PLATFLAGS += -DRETRO -DALIGN_DWORD
+   STATIC_LINKING=1
+
 else ifeq ($(platform), emscripten)
    TARGET := $(TARGET_NAME)_libretro_$(platform).bc
    PLATFLAGS += -DRETRO -DALIGN_DWORD
