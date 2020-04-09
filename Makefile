@@ -13,8 +13,6 @@ else ifneq ($(findstring Darwin,$(shell uname -a)),)
    platform = osx
 else ifneq ($(findstring win,$(shell uname -a)),)
    platform = win
-else ifneq ($(findstring arm,$(shell uname -a)),)
-   PLATFLAGS += -DARM -marm
 endif
 endif
 
@@ -29,7 +27,6 @@ else ifeq ($(platform), rpi)
 	TARGET := $(TARGET_NAME)_libretro.so
 	fpic := -fPIC
 	LDFLAGS := -lpthread -lm -ldl
-	PLATFLAGS += -DARM -marm
 	SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--as-needed -Wl,--no-undefined
 
 # Classic Platforms ####################
@@ -43,7 +40,7 @@ else ifeq ($(platform), classic_armv7_a7)
 	fpic := -fPIC
     SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T  -Wl,--no-undefined
     LDFLAGS += -lm -lpthread
-    CFLAGS += -Ofast -DARM \
+    CFLAGS += -Ofast \
 	-flto=4 -fwhole-program -fuse-linker-plugin \
 	-fdata-sections -ffunction-sections -Wl,--gc-sections \
 	-fno-stack-protector -fno-ident -fomit-frame-pointer \
@@ -71,7 +68,7 @@ else ifeq ($(platform), classic_armv8_a35)
    fpic := -fPIC
    SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T  -Wl,--no-undefined
    LDFLAGS += -lm -lrt -lpthread -ldl
-   CFLAGS += -Ofast -DARM -flto=4 \
+   CFLAGS += -Ofast -flto=4 \
            -fmerge-all-constants -fno-math-errno -march=armv8-a \
            -marm -mtune=cortex-a35 -mfpu=neon-fp-armv8 -mfloat-abi=hard
    LDFLAGS += -static-libgcc -static-libstdc++
@@ -81,7 +78,7 @@ else ifeq ($(platform), osx)
    fpic := -fPIC -mmacosx-version-min=10.6
    LDFLAGS :=
    SHARED := -dynamiclib
-   PLATFLAGS +=  -DRETRO -DALIGN_DWORD -DUSE_NAMED_SEMAPHORES
+   PLATFLAGS += -DUSE_NAMED_SEMAPHORES
 
 else ifeq ($(platform), android-armv7)
    CC = arm-linux-androideabi-gcc
@@ -91,7 +88,7 @@ else ifeq ($(platform), android-armv7)
    fpic := -fPIC
    LDFLAGS := -lm
    SHARED := -Wl,--fix-cortex-a8 -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
-   PLATFLAGS += -DANDROID -DRETRO -DAND -DALIGN_DWORD
+   PLATFLAGS += -DANDROID
 
 else ifeq ($(platform), android)
    CC = arm-linux-androideabi-gcc
@@ -101,7 +98,7 @@ else ifeq ($(platform), android)
    fpic := -fPIC
    LDFLAGS :=
    SHARED := -Wl,--fix-cortex-a8 -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
-   PLATFLAGS += -DANDROID -DRETRO -DAND -DALIGN_DWORD -DARM_OPT_TEST=1
+   PLATFLAGS += -DANDROID
 
 # CTR(3DS)
 else ifeq ($(platform), ctr)
@@ -110,7 +107,6 @@ else ifeq ($(platform), ctr)
    CXX = $(DEVKITARM)/bin/arm-none-eabi-g++$(EXE_EXT)
    AR = $(DEVKITARM)/bin/arm-none-eabi-ar$(EXE_EXT)
    CFLAGS += -DARM11 -D_3DS -march=armv6k -mtune=mpcore -mfloat-abi=hard
-   PLATFLAGS += -DRETRO -DALIGN_DWORD
    STATIC_LINKING=1
    STATIC_LINKING_LINK=1
 
@@ -121,9 +117,8 @@ else ifneq (,$(filter $(platform), ngc wii wiiu))
    CXX = $(DEVKITPPC)/bin/powerpc-eabi-g++$(EXE_EXT)
    AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
    COMMONFLAGS += -DGEKKO -mcpu=750 -meabi -mhard-float -D__POWERPC__ -D__ppc__ -DMSB_FIRST -DWORDS_BIGENDIAN=1
-   COMMONFLAGS += -U__INT32_TYPE__ -U __UINT32_TYPE__ -D__INT32_TYPE__=int -DC68K_BIG_ENDIAN
+   COMMONFLAGS += -U__INT32_TYPE__ -U __UINT32_TYPE__ -D__INT32_TYPE__=int
    COMMONFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DBYTE_ORDER=BIG_ENDIAN
-   PLATFLAGS += -DRETRO -DALIGN_DWORD
    STATIC_LINKING=1
    STATIC_LINKING_LINK=1
    ifneq (,$(findstring wiiu,$(platform)))
@@ -141,7 +136,6 @@ else ifeq ($(platform), libnx)
    TARGET := $(TARGET_NAME)_libretro_$(platform).a
    CFLAGS += -D__SWITCH__ -DHAVE_LIBNX -I$(DEVKITPRO)/libnx/include/ -specs=$(DEVKITPRO)/libnx/switch.specs
    CFLAGS += -march=armv8-a -mtune=cortex-a57 -mtp=soft -mcpu=cortex-a57+crc+fp+simd -ffast-math -fPIE -ffunction-sections
-   PLATFLAGS += -DRETRO -DALIGN_DWORD -DARM
    STATIC_LINKING=1
    STATIC_LINKING_LINK=1
 
@@ -154,7 +148,6 @@ else ifeq ($(platform), vita)
    COMMONFLAGS += -U__INT32_TYPE__ -U __UINT32_TYPE__ -D__INT32_TYPE__=int
    COMMONFLAGS += -DHAVE_STRTOUL -DVITA
    CFLAGS += $(COMMONFLAGS)
-   PLATFLAGS += -DRETRO -DALIGN_DWORD -DARM
    PLATFLAGS += -ffast-math -march=armv7-a -mfpu=neon -mfloat-abi=hard -mword-relocations -fno-optimize-sibling-calls -fno-exceptions
    STATIC_LINKING = 1
    STATIC_LINKING_LINK=1
@@ -166,7 +159,6 @@ else ifeq ($(platform), ps3)
    ZLIB_DIR = $(LIBUTILS)/zlib/
    LDFLAGS := -lm -lpthread -lc
    CFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DMSB_FIRST -DBYTE_ORDER=BIG_ENDIAN -D__CELLOS_LV2__ -DHAVE_MEMALIGN -DHAVE_ASPRINTF -I$(ZLIB_DIR)
-   PLATFLAGS += -DRETRO -DALIGN_DWORD
    STATIC_LINKING=1
 
 else ifeq ($(platform), psl1ght)
@@ -178,18 +170,16 @@ else ifeq ($(platform), psl1ght)
    ZLIB_DIR = $(LIBUTILS)/zlib/
    LDFLAGS := -lm -lpthread -lc
    CFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DMSB_FIRST -DBYTE_ORDER=BIG_ENDIAN -D__CELLOS_LV2__ -DHAVE_MEMALIGN -DHAVE_ASPRINTF -I$(ZLIB_DIR)
-   PLATFLAGS += -DRETRO -DALIGN_DWORD
    STATIC_LINKING=1
 
 else ifeq ($(platform), emscripten)
    TARGET := $(TARGET_NAME)_libretro_$(platform).bc
-   PLATFLAGS += -DRETRO -DALIGN_DWORD
    CFLAGS    += -DHAVE_MEMALIGN -DHAVE_ASPRINTF -I$(ZLIB_DIR)
    STATIC_LINKING=1
 
 else ifneq (,$(findstring ios,$(platform)))
    TARGET := $(TARGET_NAME)_libretro_ios.dylib
-   COMMONFLAGS += -DHAVE_POSIX_MEMALIGN=1 -marm
+   COMMONFLAGS += -DHAVE_POSIX_MEMALIGN=1
    fpic := -fPIC
    SHARED := -dynamiclib
    COMMONFLAGS += -DIOS
@@ -212,17 +202,15 @@ else ifneq (,$(findstring ios,$(platform)))
       COMMONFLAGS += -miphoneos-version-min=5.0
    endif
    CFLAGS += $(COMMONFLAGS)
-   PLATFLAGS += -DRETRO -DALIGN_DWORD -DARM
 
 else ifeq ($(platform), tvos-arm64)
    TARGET := $(TARGET_NAME)_libretro_tvos.dylib
-   COMMONFLAGS += -DHAVE_POSIX_MEMALIGN=1 -marm
+   COMMONFLAGS += -DHAVE_POSIX_MEMALIGN=1
    fpic := -fPIC
    SHARED := -dynamiclib
    COMMONFLAGS += -DIOS
    PLATFLAGS += -Wno-error=implicit-function-declaration
    CFLAGS += $(COMMONFLAGS)
-   PLATFLAGS += -DRETRO -DALIGN_DWORD -DARM
    ifeq ($(IOSSDK),)
       IOSSDK := $(shell xcodebuild -version -sdk appletvos Path)
    endif
@@ -248,13 +236,12 @@ else ifneq (,$(findstring armv,$(platform)))
    else ifneq (,$(findstring hardfloat,$(platform)))
       CFLAGS += -mfloat-abi=hard
    endif
-   PLATFLAGS += -DRETRO -DALIGN_DWORD -DARM
 else
 
 ifneq ($(subplatform), 32)
    CFLAGS +=
 endif
-   PLATFLAGS += -DRETRO -DALIGN_DWORD -DWIN32
+   PLATFLAGS += -DWIN32
    TARGET := $(TARGET_NAME)_libretro.dll
    fpic := -fPIC
    SHARED := -shared -static-libgcc -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
