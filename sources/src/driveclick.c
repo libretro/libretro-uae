@@ -23,6 +23,7 @@
 #ifdef __LIBRETRO__
 #include "libretro-glue.h"
 extern char retro_system_directory[];
+extern bool opt_floppy_sound_empty_mute;
 #endif
 
 static struct drvsample drvs[4][DS_END];
@@ -320,6 +321,8 @@ static uae_s16 getsample (void)
 			if (div) {
 				int vol;
 				vol = currprefs.dfxclickvolume;
+				if (!drv_has_disk[i] && opt_floppy_sound_empty_mute)
+					vol = 100;
 				total_sample += (smp * (100 - vol) / 100) / div;
 				total_div++;
 			}

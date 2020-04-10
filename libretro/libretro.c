@@ -57,6 +57,7 @@ unsigned int opt_audio_options_display;
 char opt_model[10];
 bool opt_video_resolution_auto = false;
 bool opt_video_vresolution_auto = false;
+bool opt_floppy_sound_empty_mute = false;
 unsigned int opt_use_whdload = 1;
 unsigned int opt_use_whdload_prefs = 0;
 unsigned int opt_use_boot_hd = 0;
@@ -732,6 +733,17 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "100"
+      },
+      {
+         "puae_floppy_sound_empty_mute",
+         "Floppy Sound Empty Drive Mute",
+         "",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "disabled"
       },
       {
          "puae_floppy_sound_type",
@@ -1729,6 +1741,14 @@ static void update_variables(void)
          changed_prefs.dfxclickvolume=atoi(var.value);
    }
 
+   var.key = "puae_floppy_sound_empty_mute";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "disabled") == 0) opt_floppy_sound_empty_mute=false;
+      else opt_floppy_sound_empty_mute=true;
+   }
+
    var.key = "puae_floppy_sound_type";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -2385,6 +2405,8 @@ static void update_variables(void)
    option_display.key = "puae_sound_volume_cd";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_floppy_sound";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_floppy_sound_empty_mute";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_floppy_sound_type";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
