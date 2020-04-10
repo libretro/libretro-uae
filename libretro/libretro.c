@@ -2649,9 +2649,10 @@ static bool disk_replace_image_index(unsigned index, const struct retro_game_inf
                snprintf(retro_temp_directory, sizeof(retro_temp_directory), "%s%s%s", retro_save_directory, DIR_SEP_STR, "ZIP");
                char zip_path[RETRO_PATH_MAX] = {0};
                snprintf(zip_path, sizeof(zip_path), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_basename);
+               static char *zip_lastpath = {0};
 
                path_mkdir(zip_path);
-               zip_uncompress(full_path_replace, zip_path, NULL);
+               zip_uncompress(full_path_replace, zip_path, zip_lastpath);
 
                // Default to directory mode
                int zip_mode = 0;
@@ -3673,9 +3674,10 @@ bool retro_create_config()
          snprintf(retro_temp_directory, sizeof(retro_temp_directory), "%s%s%s", retro_save_directory, DIR_SEP_STR, "ZIP");
          char zip_path[RETRO_PATH_MAX] = {0};
          snprintf(zip_path, sizeof(zip_path), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_basename);
+         static char *zip_lastpath = {0};
 
          path_mkdir(zip_path);
-         zip_uncompress(full_path, zip_path, NULL);
+         zip_uncompress(full_path, zip_path, zip_lastpath);
 
          // Default to directory mode
          int zip_mode = 0;
