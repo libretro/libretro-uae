@@ -132,6 +132,7 @@ extern int retro_min_diwstart;
 static int retro_min_diwstart_old = -1;
 extern int retro_max_diwstop;
 static int retro_max_diwstop_old = -1;
+static int retro_diwstartstop_counter = 0;
 extern int visible_left_border;
 static int visible_left_border_old = 0;
 static int visible_left_border_update_frame_timer = 3;
@@ -3468,6 +3469,9 @@ static bool retro_update_av_info(void)
       else if (retro_min_diwstart == 30000 && retro_max_diwstop == 0)
          visible_left_border_new = visible_left_border;
 
+      /* Sensible limits */
+      visible_left_border_new = (visible_left_border_new < 0) ? 0 : visible_left_border_new;
+
       /* Change value only if altered */
       if (visible_left_border != visible_left_border_new)
          visible_left_border = visible_left_border_new;
@@ -4875,11 +4879,19 @@ void update_audiovideo(void)
       )
       {
          //printf("diwstart:%d old:%d diwstop:%d old:%d\n", retro_min_diwstart, retro_min_diwstart_old, retro_max_diwstop, retro_max_diwstop_old);
+         // Prevent centering of horizontal animations by requiring the change to stabilize
          retro_min_diwstart_old = retro_min_diwstart;
          retro_max_diwstop_old = retro_max_diwstop;
+         retro_diwstartstop_counter = 1;
+      }
+      else if (retro_min_diwstart == retro_min_diwstart_old && retro_max_diwstop == retro_max_diwstop_old)
+      {
          // Not triggered in the middle of vertical offset stabilize count
-         if (retro_thisframe_counter == 0)
+         if (retro_diwstartstop_counter > 0 && retro_thisframe_counter == 0)
             retro_request_av_info_update = true;
+
+         if (retro_request_av_info_update)
+            retro_diwstartstop_counter = 0;
       }
    }
    else
