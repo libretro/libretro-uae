@@ -1,6 +1,6 @@
 #if defined (__x86_64__)
 #include "../../sources/src/md-generic/m68kops.h"
-#elif defined (__i386__) && !defined(__PIC__)
+#elif defined (__i386__)
 #include "../../sources/src/md-i386-gcc/m68kops.h"
 #elif defined(__powerpc__)
 #include "../../sources/src/md-ppc-gcc/m68kops.h"
