@@ -833,13 +833,15 @@ void zip_uncompress(char *in, char *out, char *lastfile)
     int err;
     err = unzGetGlobalInfo (uf, &gi);
 
-    const char* password;
+    const char* password = NULL;
     int size_buf = 8192;
 
     for (i = 0; i < gi.number_entry; i++)
     {
         char filename_inzip[256];
         char filename_withpath[512];
+        filename_inzip[0] = '\0';
+        filename_withpath[0] = '\0';
         char* filename_withoutpath;
         char* p;
         unz_file_info file_info;
@@ -855,8 +857,8 @@ void zip_uncompress(char *in, char *out, char *lastfile)
 
         err = unzGetCurrentFileInfo(uf, &file_info, filename_inzip, sizeof(filename_inzip), NULL, 0, NULL, 0);
         snprintf(filename_withpath, sizeof(filename_withpath), "%s%s%s", out, DIR_SEP_STR, filename_inzip);
-        if (dc_get_image_type(filename_inzip) == DC_IMAGE_TYPE_FLOPPY)
-            snprintf(lastfile, sizeof(filename_inzip), "%s", filename_inzip);
+        if (dc_get_image_type(filename_inzip) == DC_IMAGE_TYPE_FLOPPY && lastfile != NULL)
+            snprintf(lastfile, sizeof(lastfile), "%s", filename_inzip);
 
         p = filename_withoutpath = filename_inzip;
         while ((*p) != '\0')
