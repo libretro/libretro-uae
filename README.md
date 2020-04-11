@@ -129,9 +129,11 @@ Single Line combines interlaced fields into one field, which will keep the full 
 - Automatic Line Mode defaults to Single Line and selects Double Line on interlaced screens.
 
 ## Games that require specific hardware
-You can force a specific model if a game needs one (AGA games for instance).
+You can force a specific model if a game needs one (AGA games for instance) either by the "Model" core option or by filename tags.
 
-To do this just add the corresponding string to the filename:
+The "Model" core option at "**Automatic**" will default to A500 when booting floppy disks, A600 when booting hard drives, and CD32 when booting CD images.
+
+The whole path (filename and directory) will be searched for the following tags if the model is "Automatic":
 
 |Floppy/HD/LHA|CD|String|Result|
 |---|---|---|---|
@@ -150,11 +152,9 @@ To do this just add the corresponding string to the filename:
 |**x**|**x**|**NTSC**|NTSC 60Hz|
 |**x**|**x**|**PAL**|PAL 50Hz|
 
-Example: When launching "Alien Breed 2 AGA.hdf" the core will use the Amiga 1200 model.
+Example: When launching "Alien Breed 2 AGA.hdf" or "AGA/Alien Breed 2.hdf" the model will be Amiga 1200.
 
 Note: **CD32** and **AmigaCD** are a bit misleading, since they have nothing to do with actual CDs. They are for automatically selecting the appropriate model with certain WHDLoad slaves and AmigaCD-to-HDF conversions.
-
-If no special string is found the core will use the model configured in the core options. The model core option at "**Automatic**" will select A500 when booting floppy disks and A600 when booting hard drives. CD32 will always be selected with CD images.
 
 ## Disk images, WHDLoad and M3U support
 You can pass a disk image, a hard drive image, or a playlist file for disk images.
