@@ -252,7 +252,6 @@ ifeq ($(DEBUG), 1)
    CFLAGS += -O0 -g
 else
    CFLAGS += -O3
-   SHARED += -s
 endif
 
 CFLAGS += -DRETRO=1 -DINLINE="inline" -std=gnu99

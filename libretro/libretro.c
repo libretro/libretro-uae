@@ -57,6 +57,7 @@ unsigned int opt_audio_options_display;
 char opt_model[10];
 bool opt_video_resolution_auto = false;
 bool opt_video_vresolution_auto = false;
+bool opt_floppy_sound_empty_mute = false;
 unsigned int opt_use_whdload = 1;
 unsigned int opt_use_whdload_prefs = 0;
 unsigned int opt_use_boot_hd = 0;
@@ -132,6 +133,7 @@ extern int retro_min_diwstart;
 static int retro_min_diwstart_old = -1;
 extern int retro_max_diwstop;
 static int retro_max_diwstop_old = -1;
+static int retro_diwstartstop_counter = 0;
 extern int visible_left_border;
 static int visible_left_border_old = 0;
 static int visible_left_border_update_frame_timer = 3;
@@ -731,6 +733,17 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "100"
+      },
+      {
+         "puae_floppy_sound_empty_mute",
+         "Floppy Sound Empty Drive Mute",
+         "",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "disabled"
       },
       {
          "puae_floppy_sound_type",
@@ -1728,6 +1741,14 @@ static void update_variables(void)
          changed_prefs.dfxclickvolume=atoi(var.value);
    }
 
+   var.key = "puae_floppy_sound_empty_mute";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "disabled") == 0) opt_floppy_sound_empty_mute=false;
+      else opt_floppy_sound_empty_mute=true;
+   }
+
    var.key = "puae_floppy_sound_type";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -2385,6 +2406,8 @@ static void update_variables(void)
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_floppy_sound";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_floppy_sound_empty_mute";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_floppy_sound_type";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
 
@@ -2649,9 +2672,10 @@ static bool disk_replace_image_index(unsigned index, const struct retro_game_inf
                snprintf(retro_temp_directory, sizeof(retro_temp_directory), "%s%s%s", retro_save_directory, DIR_SEP_STR, "ZIP");
                char zip_path[RETRO_PATH_MAX] = {0};
                snprintf(zip_path, sizeof(zip_path), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_basename);
+               static char *zip_lastpath = {0};
 
                path_mkdir(zip_path);
-               zip_uncompress(full_path_replace, zip_path, NULL);
+               zip_uncompress(full_path_replace, zip_path, zip_lastpath);
 
                // Default to directory mode
                int zip_mode = 0;
@@ -3467,6 +3491,9 @@ static bool retro_update_av_info(void)
       else if (retro_min_diwstart == 30000 && retro_max_diwstop == 0)
          visible_left_border_new = visible_left_border;
 
+      /* Sensible limits */
+      visible_left_border_new = (visible_left_border_new < 0) ? 0 : visible_left_border_new;
+
       /* Change value only if altered */
       if (visible_left_border != visible_left_border_new)
          visible_left_border = visible_left_border_new;
@@ -3673,9 +3700,10 @@ bool retro_create_config()
          snprintf(retro_temp_directory, sizeof(retro_temp_directory), "%s%s%s", retro_save_directory, DIR_SEP_STR, "ZIP");
          char zip_path[RETRO_PATH_MAX] = {0};
          snprintf(zip_path, sizeof(zip_path), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_basename);
+         static char *zip_lastpath = {0};
 
          path_mkdir(zip_path);
-         zip_uncompress(full_path, zip_path, NULL);
+         zip_uncompress(full_path, zip_path, zip_lastpath);
 
          // Default to directory mode
          int zip_mode = 0;
@@ -4873,11 +4901,19 @@ void update_audiovideo(void)
       )
       {
          //printf("diwstart:%d old:%d diwstop:%d old:%d\n", retro_min_diwstart, retro_min_diwstart_old, retro_max_diwstop, retro_max_diwstop_old);
+         // Prevent centering of horizontal animations by requiring the change to stabilize
          retro_min_diwstart_old = retro_min_diwstart;
          retro_max_diwstop_old = retro_max_diwstop;
+         retro_diwstartstop_counter = 1;
+      }
+      else if (retro_min_diwstart == retro_min_diwstart_old && retro_max_diwstop == retro_max_diwstop_old)
+      {
          // Not triggered in the middle of vertical offset stabilize count
-         if (retro_thisframe_counter == 0)
+         if (retro_diwstartstop_counter > 0 && retro_thisframe_counter == 0)
             retro_request_av_info_update = true;
+
+         if (retro_request_av_info_update)
+            retro_diwstartstop_counter = 0;
       }
    }
    else
