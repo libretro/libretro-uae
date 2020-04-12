@@ -119,8 +119,10 @@ extern int minfirstline;
 static int retro_thisframe_counter = 0;
 extern int retro_thisframe_first_drawn_line;
 static int retro_thisframe_first_drawn_line_old = -1;
+static int retro_thisframe_first_drawn_line_start = -1;
 extern int retro_thisframe_last_drawn_line;
 static int retro_thisframe_last_drawn_line_old = -1;
+static int retro_thisframe_last_drawn_line_start = -1;
 extern int thisframe_y_adjust;
 static int thisframe_y_adjust_old = 0;
 static int thisframe_y_adjust_update_frame_timer = 3;
@@ -1689,7 +1691,7 @@ static void update_variables(void)
          else if (strcmp(var.value, "enhanced") == 0) changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A1200;
          else if (strcmp(var.value, "auto") == 0)
          {
-            if (currprefs.cpu_model == 68020)
+            if (currprefs.cpu_model >= 68020)
                changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A1200;
             else
                changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A500;
@@ -4762,11 +4764,10 @@ void update_audiovideo(void)
    if (filter_type_update)
    {
       filter_type_update = false;
-      if (currprefs.cpu_model == 68020)
+      if (currprefs.cpu_model >= 68020)
          changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A1200;
       else
          changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A500;
-      config_changed = 0;
    }
 
    // Automatic video resolution
@@ -4873,17 +4874,25 @@ void update_audiovideo(void)
          // and also prevent sudden resolution switching by requiring the change to stabilize (count +-1 as stable) for a few frames
          if (abs(retro_thisframe_first_drawn_line_old - retro_thisframe_first_drawn_line) > 1)
          {
+            if (retro_thisframe_counter == 0)
+               retro_thisframe_first_drawn_line_start = retro_thisframe_first_drawn_line_old;
             retro_thisframe_first_drawn_line_old = retro_thisframe_first_drawn_line;
             retro_thisframe_counter = 1;
          }
          if (abs(retro_thisframe_last_drawn_line_old - retro_thisframe_last_drawn_line) > 1)
          {
+            if (retro_thisframe_counter == 0)
+               retro_thisframe_last_drawn_line_start = retro_thisframe_last_drawn_line_old;
             retro_thisframe_last_drawn_line_old = retro_thisframe_last_drawn_line;
             retro_thisframe_counter = 1;
          }
       }
       else if (abs(retro_thisframe_first_drawn_line_old - retro_thisframe_first_drawn_line) < 2 && abs(retro_thisframe_last_drawn_line_old - retro_thisframe_last_drawn_line) < 2)
       {
+         // Reset the counter if the values return to the starting point during counting
+         if (retro_thisframe_first_drawn_line == retro_thisframe_first_drawn_line_start && retro_thisframe_last_drawn_line == retro_thisframe_last_drawn_line_start)
+            retro_thisframe_counter = 0;
+
          if (retro_thisframe_counter > 0)
             retro_thisframe_counter++;
 
