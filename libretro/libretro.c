@@ -225,7 +225,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_model",
          "Model",
-         "Automatic defaults to A500 when booting floppy disks and to A600 when booting hard drives.\nCore restart required.",
+         "'Automatic' defaults to A500 with floppy disks, to A600 with hard drives and to CD32 with CD images. 'Automatic' can be overridden with filename and directory tags.\nCore restart required.",
          {
             { "auto", "Automatic" },
             { "A500OG", "A500 (512KB Chip)" },
@@ -341,7 +341,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_video_resolution",
          "Video Resolution",
-         "Output width:\n- Automatic defaults to High and switches to Super-High when needed.",
+         "Output width:\n- 'Automatic' defaults to 'High' and switches to 'Super-High' when needed.",
          {
             { "lores", "Low 360px" },
             { "hires", "High 720px" },
@@ -354,7 +354,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_video_vresolution",
          "Video Line Mode",
-         "Output height:\n- Automatic defaults to Single Line and switches to Double Line on interlaced screens.",
+         "Output height:\n- 'Automatic' defaults to 'Single Line' and switches to 'Double Line' on interlaced screens.",
          {
             { "single", "Single Line" },
             { "double", "Double Line" },
@@ -396,7 +396,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_vertical_pos",
          "Vertical Position",
-         "Automatic keeps zoom modes centered. Positive values force the screen upward and negative values downward.",
+         "'Automatic' keeps zoom modes centered. Positive values force the screen upward and negative values downward.",
          {
             { "auto", "Automatic" },
             { "0", NULL },
@@ -437,7 +437,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_horizontal_pos",
          "Horizontal Position",
-         "Automatic keeps screen centered. Positive values force the screen right and negative values left.",
+         "'Automatic' keeps screen centered. Positive values force the screen right and negative values left.",
          {
             { "auto", "Automatic" },
             { "0", NULL },
@@ -512,7 +512,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_immediate_blits",
          "Immediate/Waiting Blits",
-         "'Immediate Blitter' ignored with 'Cycle-exact'.",
+         "'Immediate Blitter' is ignored with 'Cycle-exact'.",
          {
             { "false", "disabled" },
             { "immediate", "Immediate Blitter" },
@@ -536,7 +536,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_statusbar",
          "Statusbar Position & Mode",
-         "",
+         "- Full: Joyports + Current image + LEDs\n- Basic: Current image + LEDs\n- Minimal: Track number + FPS hidden",
          {
             { "bottom", "Bottom Full" },
             { "bottom_minimal", "Bottom Full Minimal" },
@@ -656,8 +656,8 @@ void retro_set_environment(retro_environment_t cb)
          "",
          {
             { "emulated", "Emulated" },
-            { "off", "Always off" },
-            { "on", "Always on" },
+            { "off", "Off" },
+            { "on", "On" },
             { NULL, NULL },
          },
          "emulated"
@@ -784,8 +784,8 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_shared_nvram",
-         "Shared CD32 NVRAM",
-         "Disabled will save separate files per content. Enabled will use one shared file. Core restart required.",
+         "Shared CD32/CDTV NVRAM",
+         "Disabled will save separate files per content. Enabled will use one shared file. Starting without content uses the shared file. CD32 and CDTV will have separate shared files.\nCore restart required.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -796,7 +796,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_use_boot_hd",
          "Global Boot HD",
-         "Keep a bootable hard drive attached with hard drive compatible setups. Enabling will change the automatic model to A600. Changing HDF sizes requires removing the old file manually.",
+         "Keep a bootable hard drive attached with hard drive compatible setups. Enabling will change the automatic model to A600 when launching floppy disks. Changing HDF sizes requires removing the old file manually.",
          {
             { "disabled", NULL },
             { "files", "Files" },
@@ -3767,85 +3767,78 @@ bool retro_create_config()
 	     {
 	        char kickstart[RETRO_PATH_MAX];
 
-            // If a machine was specified in the name of the game
-            if (strstr(full_path, "(A4030)") != NULL || strstr(full_path, "(030)") != NULL)
+            // Check if a machine was specified in the path only on Automatic
+            if (strcmp(opt_model, "auto") == 0)
             {
-               // Use A4000/030
-               fprintf(stdout, "[libretro-uae]: Found '(A4030)' or '(030)' in filename: '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Booting A4000/030: '%s'\n", A4000_ROM);
-               fprintf(configfile, A4030_CONFIG);
-               path_join((char*)&kickstart, retro_system_directory, A4000_ROM);
-            }
-            else if (strstr(full_path, "(A4040)") != NULL || strstr(full_path, "(040)") != NULL)
-            {
-               // Use A4000/040
-               fprintf(stdout, "[libretro-uae]: Found '(A4040)' or '(040)' in filename: '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Booting A4000/040: '%s'\n", A4000_ROM);
-               fprintf(configfile, A4040_CONFIG);
-               path_join((char*)&kickstart, retro_system_directory, A4000_ROM);
-            }
-            else if (strstr(full_path, "(A1200OG)") != NULL || strstr(full_path, "(A1200NF)") != NULL)
-            {
-               // Use A1200 barebone
-               fprintf(stdout, "[libretro-uae]: Found '(A1200OG)' or '(A1200NF)' in filename: '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Booting A1200 NoFast: '%s'\n", A1200_ROM);
-               fprintf(configfile, A1200OG_CONFIG);
-               path_join((char*)&kickstart, retro_system_directory, A1200_ROM);
-            }
-            else if (strstr(full_path, "(A1200)") != NULL || strstr(full_path, "AGA") != NULL || strstr(full_path, "CD32") != NULL || strstr(full_path, "AmigaCD") != NULL)
-            {
-               // Use A1200
-               fprintf(stdout, "[libretro-uae]: Found '(A1200)', 'AGA', 'CD32', or 'AmigaCD' in filename: '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Booting A1200: '%s'\n", A1200_ROM);
-               fprintf(configfile, A1200_CONFIG);
-               path_join((char*)&kickstart, retro_system_directory, A1200_ROM);
-            }
-            else if (strstr(full_path, "(A600)") != NULL || strstr(full_path, "ECS") != NULL)
-            {
-               // Use A600
-               fprintf(stdout, "[libretro-uae]: Found '(A600)' or 'ECS' in filename: '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Booting A600: '%s'\n", A600_ROM);
-               fprintf(configfile, A600_CONFIG);
-               path_join((char*)&kickstart, retro_system_directory, A600_ROM);
-            }
-            else if (strstr(full_path, "(A500+)") != NULL || strstr(full_path, "(A500PLUS)") != NULL)
-            {
-               // Use A500+
-               fprintf(stdout, "[libretro-uae]: Found '(A500+)' or '(A500PLUS)' in filename: '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Booting A500+: '%s'\n", A500KS2_ROM);
-               fprintf(configfile, A500PLUS_CONFIG);
-               path_join((char*)&kickstart, retro_system_directory, A500KS2_ROM);
-            }
-            else if (strstr(full_path, "(A500OG)") != NULL || strstr(full_path, "(512K)") != NULL)
-            {
-               // Use A500 barebone
-               fprintf(stdout, "[libretro-uae]: Found '(A500OG)' or '(512K)' in filename: '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Booting A500 512K: '%s'\n", A500_ROM);
-               fprintf(configfile, A500OG_CONFIG);
-               path_join((char*)&kickstart, retro_system_directory, A500_ROM);
-            }
-            else if (strstr(full_path, "(A500)") != NULL || strstr(full_path, "OCS") != NULL)
-            {
-               // Use A500
-               fprintf(stdout, "[libretro-uae]: Found '(A500)' or 'OCS' in filename: '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Booting A500: '%s'\n", A500_ROM);
-               fprintf(configfile, A500_CONFIG);
-               path_join((char*)&kickstart, retro_system_directory, A500_ROM);
-            }
-            else
-            {
-               if (strcmp(opt_model, "auto") == 0)
+               if (strstr(full_path, "(A4030)") != NULL || strstr(full_path, "(030)") != NULL)
                {
-                  if (opt_use_boot_hd)
+                  // Use A4000/030
+                  fprintf(stdout, "[libretro-uae]: Found '(A4030)' or '(030)' in: '%s'\n", full_path);
+                  fprintf(stdout, "[libretro-uae]: Booting A4000/030: '%s'\n", A4000_ROM);
+                  fprintf(configfile, A4030_CONFIG);
+                  path_join((char*)&kickstart, retro_system_directory, A4000_ROM);
+               }
+               else if (strstr(full_path, "(A4040)") != NULL || strstr(full_path, "(040)") != NULL)
+               {
+                  // Use A4000/040
+                  fprintf(stdout, "[libretro-uae]: Found '(A4040)' or '(040)' in: '%s'\n", full_path);
+                  fprintf(stdout, "[libretro-uae]: Booting A4000/040: '%s'\n", A4000_ROM);
+                  fprintf(configfile, A4040_CONFIG);
+                  path_join((char*)&kickstart, retro_system_directory, A4000_ROM);
+               }
+               else if (strstr(full_path, "(A1200OG)") != NULL || strstr(full_path, "(A1200NF)") != NULL)
+               {
+                  // Use A1200 barebone
+                  fprintf(stdout, "[libretro-uae]: Found '(A1200OG)' or '(A1200NF)' in: '%s'\n", full_path);
+                  fprintf(stdout, "[libretro-uae]: Booting A1200 NoFast: '%s'\n", A1200_ROM);
+                  fprintf(configfile, A1200OG_CONFIG);
+                  path_join((char*)&kickstart, retro_system_directory, A1200_ROM);
+               }
+               else if (strstr(full_path, "(A1200)") != NULL || strstr(full_path, "AGA") != NULL || strstr(full_path, "CD32") != NULL || strstr(full_path, "AmigaCD") != NULL)
+               {
+                  // Use A1200
+                  fprintf(stdout, "[libretro-uae]: Found '(A1200)', 'AGA', 'CD32', or 'AmigaCD' in: '%s'\n", full_path);
+                  fprintf(stdout, "[libretro-uae]: Booting A1200: '%s'\n", A1200_ROM);
+                  fprintf(configfile, A1200_CONFIG);
+                  path_join((char*)&kickstart, retro_system_directory, A1200_ROM);
+               }
+               else if (strstr(full_path, "(A600)") != NULL || strstr(full_path, "ECS") != NULL)
+               {
+                  // Use A600
+                  fprintf(stdout, "[libretro-uae]: Found '(A600)' or 'ECS' in: '%s'\n", full_path);
+                  fprintf(stdout, "[libretro-uae]: Booting A600: '%s'\n", A600_ROM);
+                  fprintf(configfile, A600_CONFIG);
+                  path_join((char*)&kickstart, retro_system_directory, A600_ROM);
+               }
+               else if (strstr(full_path, "(A500+)") != NULL || strstr(full_path, "(A500PLUS)") != NULL)
+               {
+                  // Use A500+
+                  fprintf(stdout, "[libretro-uae]: Found '(A500+)' or '(A500PLUS)' in: '%s'\n", full_path);
+                  fprintf(stdout, "[libretro-uae]: Booting A500+: '%s'\n", A500KS2_ROM);
+                  fprintf(configfile, A500PLUS_CONFIG);
+                  path_join((char*)&kickstart, retro_system_directory, A500KS2_ROM);
+               }
+               else if (strstr(full_path, "(A500OG)") != NULL || strstr(full_path, "(512K)") != NULL)
+               {
+                  // Use A500 barebone
+                  fprintf(stdout, "[libretro-uae]: Found '(A500OG)' or '(512K)' in: '%s'\n", full_path);
+                  fprintf(stdout, "[libretro-uae]: Booting A500 512K: '%s'\n", A500_ROM);
+                  fprintf(configfile, A500OG_CONFIG);
+                  path_join((char*)&kickstart, retro_system_directory, A500_ROM);
+               }
+               else if (strstr(full_path, "(A500)") != NULL || strstr(full_path, "OCS") != NULL)
+               {
+                  // Use A500
+                  fprintf(stdout, "[libretro-uae]: Found '(A500)' or 'OCS' in: '%s'\n", full_path);
+                  fprintf(stdout, "[libretro-uae]: Booting A500: '%s'\n", A500_ROM);
+                  fprintf(configfile, A500_CONFIG);
+                  path_join((char*)&kickstart, retro_system_directory, A500_ROM);
+               }
+               else
+               {
+                  if (!opt_use_boot_hd)
                   {
-                     // A600 required for a hard disk
-                     uae_machine[0] = '\0';
-                     strcat(uae_machine, A600_CONFIG);
-                     strcpy(uae_kickstart, A600_ROM);
-                  }
-                  else
-                  {
-                     // Hard disk defaults to A600
+                     // Hard disks must default to A600
                      if (  strendswith(full_path, HDF_FILE_EXT)
                         || strendswith(full_path, HDZ_FILE_EXT)
                         || strendswith(full_path, LHA_FILE_EXT)
@@ -3855,19 +3848,19 @@ bool retro_create_config()
                         strcat(uae_machine, A600_CONFIG);
                         strcpy(uae_kickstart, A600_ROM);
                      }
-                     // Floppy disk defaults to A500
-                     else
-                     {
-                        uae_machine[0] = '\0';
-                        strcat(uae_machine, A500_CONFIG);
-                        strcpy(uae_kickstart, A500_ROM);
-                     }
                   }
-               }
 
-               // No machine specified
-               fprintf(stdout, "[libretro-uae]: No machine specified in filename: '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Booting default configuration: %s\n", uae_kickstart);
+                  // No machine specified
+                  fprintf(stdout, "[libretro-uae]: No machine specified in: '%s'\n", full_path);
+                  fprintf(stdout, "[libretro-uae]: Booting default model: '%s'\n", uae_kickstart);
+                  fprintf(configfile, uae_machine);
+                  path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
+               }
+            }
+            else
+            {
+               // Core option model
+               fprintf(stdout, "[libretro-uae]: Booting model: '%s'\n", uae_kickstart);
                fprintf(configfile, uae_machine);
                path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
             }
@@ -3875,10 +3868,10 @@ bool retro_create_config()
             // Write common config
             fprintf(configfile, uae_config);
 
-            // If region was specified in the name of the game
+            // If region was specified in the path
             if (strstr(full_path, "NTSC") != NULL)
             {
-               fprintf(stdout, "[libretro-uae]: Found 'NTSC' in filename: '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Found 'NTSC' in: '%s'\n", full_path);
                fprintf(stdout, "[libretro-uae]: Forcing NTSC mode\n");
                fprintf(configfile, "ntsc=true\n");
                real_ntsc=true;
@@ -3886,7 +3879,7 @@ bool retro_create_config()
             }
             else if (strstr(full_path, "PAL") != NULL)
             {
-               fprintf(stdout, "[libretro-uae]: Found 'PAL' in filename: '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Found 'PAL' in: '%s'\n", full_path);
                fprintf(stdout, "[libretro-uae]: Forcing PAL mode\n");
                fprintf(configfile, "ntsc=false\n");
                forced_video=true;
@@ -4362,47 +4355,56 @@ bool retro_create_config()
             char kickstart[RETRO_PATH_MAX];
             char kickstart_ext[RETRO_PATH_MAX];
 
-            // If a machine was specified in the name of the game
-            if (strstr(full_path, "(CD32FR)") != NULL || strstr(full_path, "FastRAM") != NULL)
+            // Check if a machine was specified in the path only on Automatic
+            if (strcmp(opt_model, "auto") == 0)
             {
-               // Use CD32 with Fast RAM
-               fprintf(stdout, "[libretro-uae]: Found '(CD32FR)' or 'FastRAM' in filename: '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Booting CD32 FastRAM: '%s'\n", CD32_ROM);
-               fprintf(configfile, CD32FR_CONFIG);
-               path_join((char*)&kickstart, retro_system_directory, CD32_ROM);
-               path_join((char*)&kickstart_ext, retro_system_directory, CD32_ROM_EXT);
-            }
-            else if (strstr(full_path, "(CD32)") != NULL || strstr(full_path, "(CD32NF)") != NULL)
-            {
-               // Use CD32 barebone
-               fprintf(stdout, "[libretro-uae]: Found '(CD32)' or '(CD32NF)' in filename: '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Booting CD32: '%s'\n", CD32_ROM);
-               fprintf(configfile, CD32_CONFIG);
-               path_join((char*)&kickstart, retro_system_directory, CD32_ROM);
-               path_join((char*)&kickstart_ext, retro_system_directory, CD32_ROM_EXT);
-            }
-            else if (strstr(full_path, "CDTV"))
-            {
-               // Use CDTV
-               fprintf(stdout, "[libretro-uae]: Found 'CDTV' in filename: '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Booting CDTV: '%s'\n", CDTV_ROM);
-               fprintf(configfile, CDTV_CONFIG);
-               path_join((char*)&kickstart, retro_system_directory, A500_ROM);
-               path_join((char*)&kickstart_ext, retro_system_directory, CDTV_ROM);
-            }
-            else
-            {
-               if (strcmp(opt_model, "auto") == 0)
+               if (strstr(full_path, "(CD32FR)") != NULL || strstr(full_path, "FastRAM") != NULL)
                {
+                  // Use CD32 with Fast RAM
+                  fprintf(stdout, "[libretro-uae]: Found '(CD32FR)' or 'FastRAM' in: '%s'\n", full_path);
+                  fprintf(stdout, "[libretro-uae]: Booting CD32 FastRAM: '%s'\n", CD32_ROM);
+                  fprintf(configfile, CD32FR_CONFIG);
+                  path_join((char*)&kickstart, retro_system_directory, CD32_ROM);
+                  path_join((char*)&kickstart_ext, retro_system_directory, CD32_ROM_EXT);
+               }
+               else if (strstr(full_path, "(CD32)") != NULL || strstr(full_path, "(CD32NF)") != NULL)
+               {
+                  // Use CD32 barebone
+                  fprintf(stdout, "[libretro-uae]: Found '(CD32)' or '(CD32NF)' in: '%s'\n", full_path);
+                  fprintf(stdout, "[libretro-uae]: Booting CD32: '%s'\n", CD32_ROM);
+                  fprintf(configfile, CD32_CONFIG);
+                  path_join((char*)&kickstart, retro_system_directory, CD32_ROM);
+                  path_join((char*)&kickstart_ext, retro_system_directory, CD32_ROM_EXT);
+               }
+               else if (strstr(full_path, "CDTV"))
+               {
+                  // Use CDTV
+                  fprintf(stdout, "[libretro-uae]: Found 'CDTV' in: '%s'\n", full_path);
+                  fprintf(stdout, "[libretro-uae]: Booting CDTV: '%s'\n", CDTV_ROM);
+                  fprintf(configfile, CDTV_CONFIG);
+                  path_join((char*)&kickstart, retro_system_directory, A500_ROM);
+                  path_join((char*)&kickstart_ext, retro_system_directory, CDTV_ROM);
+               }
+               else
+               {
+                  // CD32 fallback
                   uae_machine[0] = '\0';
                   strcat(uae_machine, CD32_CONFIG);
                   strcpy(uae_kickstart, CD32_ROM);
                   strcpy(uae_kickstart_ext, CD32_ROM_EXT);
-               }
 
-               // No machine specified
-               fprintf(stdout, "[libretro-uae]: No machine specified in filename: '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Booting default configuration: %s\n", uae_kickstart);
+                  // No machine specified
+                  fprintf(stdout, "[libretro-uae]: No machine specified in: '%s'\n", full_path);
+                  fprintf(stdout, "[libretro-uae]: Booting default model: '%s'\n", uae_kickstart);
+                  fprintf(configfile, uae_machine);
+                  path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
+                  path_join((char*)&kickstart_ext, retro_system_directory, uae_kickstart_ext);
+               }
+            }
+            else
+            {
+               // Core option model
+               fprintf(stdout, "[libretro-uae]: Booting model: '%s'\n", uae_kickstart);
                fprintf(configfile, uae_machine);
                path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
                path_join((char*)&kickstart_ext, retro_system_directory, uae_kickstart_ext);
@@ -4411,10 +4413,10 @@ bool retro_create_config()
             // Write common config
             fprintf(configfile, uae_config);
 
-            // If region was specified in the name of the game
+            // If region was specified in the path
             if (strstr(full_path, "NTSC") != NULL)
             {
-               fprintf(stdout, "[libretro-uae]: Found 'NTSC' in filename: '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Found 'NTSC' in: '%s'\n", full_path);
                fprintf(stdout, "[libretro-uae]: Forcing NTSC mode\n");
                fprintf(configfile, "ntsc=true\n");
                real_ntsc=true;
@@ -4422,7 +4424,7 @@ bool retro_create_config()
             }
             else if (strstr(full_path, "PAL") != NULL)
             {
-               fprintf(stdout, "[libretro-uae]: Found 'PAL' in filename: '%s'\n", full_path);
+               fprintf(stdout, "[libretro-uae]: Found 'PAL' in: '%s'\n", full_path);
                fprintf(stdout, "[libretro-uae]: Forcing PAL mode\n");
                fprintf(configfile, "ntsc=false\n");
                forced_video=true;
@@ -4601,7 +4603,7 @@ bool retro_create_config()
          char kickstart[RETRO_PATH_MAX];
 
          // No machine specified
-         fprintf(stdout, "[libretro-uae]: Booting default configuration: %s\n", uae_kickstart);
+         fprintf(stdout, "[libretro-uae]: Booting default model: '%s'\n", uae_kickstart);
          fprintf(configfile, uae_machine);
          path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
 
