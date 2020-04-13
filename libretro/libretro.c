@@ -36,7 +36,6 @@
 
 int libretro_runloop_active = 0;
 
-extern void check_changes(int unitnum);
 extern int frame_redraw_necessary;
 extern int bplcon0;
 extern int diwlastword_total;
@@ -61,7 +60,8 @@ bool opt_floppy_sound_empty_mute = false;
 unsigned int opt_use_whdload = 1;
 unsigned int opt_use_whdload_prefs = 0;
 unsigned int opt_use_boot_hd = 0;
-bool opt_shared_nvram = 0;
+bool opt_shared_nvram = false;
+bool opt_cd_startup_delayed_insert = false;
 bool opt_statusbar_enhanced = true;
 bool opt_statusbar_minimal = false;
 int opt_statusbar_position = 0;
@@ -119,8 +119,10 @@ extern int minfirstline;
 static int retro_thisframe_counter = 0;
 extern int retro_thisframe_first_drawn_line;
 static int retro_thisframe_first_drawn_line_old = -1;
+static int retro_thisframe_first_drawn_line_start = -1;
 extern int retro_thisframe_last_drawn_line;
 static int retro_thisframe_last_drawn_line_old = -1;
+static int retro_thisframe_last_drawn_line_start = -1;
 extern int thisframe_y_adjust;
 static int thisframe_y_adjust_old = 0;
 static int thisframe_y_adjust_update_frame_timer = 3;
@@ -781,6 +783,17 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "100"
+      },
+      {
+         "puae_cd_startup_delayed_insert",
+         "CD Startup Delayed Insert",
+         "Some games will not work if CD32/CDTV is powered on with the CD inserted. Enabled will insert the disc after the boot screen has appeared.",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "disabled"
       },
       {
          "puae_shared_nvram",
@@ -1678,7 +1691,7 @@ static void update_variables(void)
          else if (strcmp(var.value, "enhanced") == 0) changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A1200;
          else if (strcmp(var.value, "auto") == 0)
          {
-            if (currprefs.cpu_model == 68020)
+            if (currprefs.cpu_model >= 68020)
                changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A1200;
             else
                changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A500;
@@ -1989,6 +2002,14 @@ static void update_variables(void)
       else if (strcmp(var.value, "config") == 0) opt_use_whdload_prefs=1;
       else if (strcmp(var.value, "splash") == 0) opt_use_whdload_prefs=2;
       else if (strcmp(var.value, "both") == 0) opt_use_whdload_prefs=3;
+   }
+
+   var.key = "puae_cd_startup_delayed_insert";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "enabled") == 0) opt_cd_startup_delayed_insert=true;
+      else if (strcmp(var.value, "disabled") == 0) opt_cd_startup_delayed_insert=false;
    }
 
    var.key = "puae_shared_nvram";
@@ -2552,7 +2573,6 @@ static bool disk_set_eject_state(bool ejected)
             else if (retro_dc->types[retro_dc->index] == DC_IMAGE_TYPE_CD)
             {
                changed_prefs.cdslots[0].name[0] = 0;
-               check_changes(0);
             }
          }
       }
@@ -2568,7 +2588,6 @@ static bool disk_set_eject_state(bool ejected)
             else if (retro_dc->types[retro_dc->index] == DC_IMAGE_TYPE_CD)
             {
                strcpy (changed_prefs.cdslots[0].name, retro_dc->files[retro_dc->index]);
-               check_changes(0);
             }
          }
       }
@@ -4500,7 +4519,7 @@ bool retro_create_config()
             retro_dc->eject_state = false;
             display_current_image(retro_dc->labels[retro_dc->index], true);
             fprintf(stdout, "[libretro-uae]: CD (%d) inserted into drive CD0: '%s'\n", retro_dc->index+1, retro_dc->files[retro_dc->index]);
-            fprintf(configfile, "cdimage0=%s,\n", retro_dc->files[0]); // ","-suffix needed if filename contains ","
+            fprintf(configfile, "cdimage0=%s,%s\n", retro_dc->files[0], (opt_cd_startup_delayed_insert ? "delay" : "")); // ","-suffix needed if filename contains ","
 
             // Iterate global config file and append all rows to the temporary config
             char configfile_global_path[RETRO_PATH_MAX];
@@ -4745,11 +4764,10 @@ void update_audiovideo(void)
    if (filter_type_update)
    {
       filter_type_update = false;
-      if (currprefs.cpu_model == 68020)
+      if (currprefs.cpu_model >= 68020)
          changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A1200;
       else
          changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A500;
-      config_changed = 0;
    }
 
    // Automatic video resolution
@@ -4856,17 +4874,25 @@ void update_audiovideo(void)
          // and also prevent sudden resolution switching by requiring the change to stabilize (count +-1 as stable) for a few frames
          if (abs(retro_thisframe_first_drawn_line_old - retro_thisframe_first_drawn_line) > 1)
          {
+            if (retro_thisframe_counter == 0)
+               retro_thisframe_first_drawn_line_start = retro_thisframe_first_drawn_line_old;
             retro_thisframe_first_drawn_line_old = retro_thisframe_first_drawn_line;
             retro_thisframe_counter = 1;
          }
          if (abs(retro_thisframe_last_drawn_line_old - retro_thisframe_last_drawn_line) > 1)
          {
+            if (retro_thisframe_counter == 0)
+               retro_thisframe_last_drawn_line_start = retro_thisframe_last_drawn_line_old;
             retro_thisframe_last_drawn_line_old = retro_thisframe_last_drawn_line;
             retro_thisframe_counter = 1;
          }
       }
       else if (abs(retro_thisframe_first_drawn_line_old - retro_thisframe_first_drawn_line) < 2 && abs(retro_thisframe_last_drawn_line_old - retro_thisframe_last_drawn_line) < 2)
       {
+         // Reset the counter if the values return to the starting point during counting
+         if (retro_thisframe_first_drawn_line == retro_thisframe_first_drawn_line_start && retro_thisframe_last_drawn_line == retro_thisframe_last_drawn_line_start)
+            retro_thisframe_counter = 0;
+
          if (retro_thisframe_counter > 0)
             retro_thisframe_counter++;
 

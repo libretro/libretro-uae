@@ -600,11 +600,7 @@ void check_prefs_changed_cd (void)
 	currprefs.sound_volume_cd = changed_prefs.sound_volume_cd;
 }
 
-#ifdef __LIBRETRO__
-void check_changes (int unitnum)
-#else
 static void check_changes (int unitnum)
-#endif
 {
 	struct blkdevstate *st = &state[unitnum];
 	bool changed = false;
@@ -661,13 +657,11 @@ static void check_changes (int unitnum)
 			gotsem = false;
 		}
 	}
-#ifndef __LIBRETRO__
 	if (st->imagechangetime == 0)
 		return;
 	st->imagechangetime--;
 	if (st->imagechangetime > 0)
 		return;
-#endif
 	if (blkdevsema)
 		gotsem = getsem2 (unitnum, true);
 	_tcscpy (currprefs.cdslots[unitnum].name, st->newimagefile);
