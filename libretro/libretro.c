@@ -99,7 +99,7 @@ extern unsigned int turbo_pulse;
 unsigned int inputdevice_finalized = 0;
 int pix_bytes = 2;
 static bool pix_bytes_initialized = false;
-bool filter_type_update = true;
+bool automatic_sound_filter_type_update = true;
 bool fake_ntsc = false;
 bool real_ntsc = false;
 bool forced_video = false;
@@ -1680,6 +1680,7 @@ static void update_variables(void)
    {
       if (strcmp(var.value, "auto"))
       {
+         automatic_sound_filter_type_update = false;
          strcat(uae_config, "sound_filter_type=");
          strcat(uae_config, var.value);
          strcat(uae_config, "\n");
@@ -1689,13 +1690,7 @@ static void update_variables(void)
       {
          if (strcmp(var.value, "standard") == 0) changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A500;
          else if (strcmp(var.value, "enhanced") == 0) changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A1200;
-         else if (strcmp(var.value, "auto") == 0)
-         {
-            if (currprefs.cpu_model >= 68020)
-               changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A1200;
-            else
-               changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A500;
-         }
+         else if (strcmp(var.value, "auto") == 0) automatic_sound_filter_type_update = true;
       }
    }
 
@@ -4761,9 +4756,10 @@ void update_audiovideo(void)
       imagename_timer--;
 
    // Update audio settings
-   if (filter_type_update)
+   if (automatic_sound_filter_type_update)
    {
-      filter_type_update = false;
+      automatic_sound_filter_type_update = false;
+      config_changed = 1;
       if (currprefs.cpu_model >= 68020)
          changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A1200;
       else
