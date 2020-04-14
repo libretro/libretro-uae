@@ -4767,7 +4767,7 @@ void update_audiovideo(void)
    }
 
    // Automatic video resolution
-   if (opt_video_resolution_auto && request_init_custom_timer == 0)
+   if (opt_video_resolution_auto)
    {
       int current_resolution = GET_RES_DENISE (bplcon0);
       //printf("BPLCON0: %d, %d, %d %d\n", bplcon0, current_resolution, diwfirstword_total, diwlastword_total);
@@ -4818,7 +4818,7 @@ void update_audiovideo(void)
    }
 
    // Automatic video vresolution (Line Mode)
-   if (opt_video_vresolution_auto && request_init_custom_timer == 0)
+   if (opt_video_vresolution_auto)
    {
       int current_interlace = interlace_seen;
 
@@ -4855,7 +4855,7 @@ void update_audiovideo(void)
    }
 
    // Automatic vertical offset
-   if (opt_vertical_offset_auto && zoom_mode_id != 0)
+   if (opt_vertical_offset_auto && zoom_mode_id != 0 && !retro_request_av_info_update)
    {
       if (( retro_thisframe_first_drawn_line != retro_thisframe_first_drawn_line_old
          || retro_thisframe_last_drawn_line  != retro_thisframe_last_drawn_line_old)
@@ -4914,7 +4914,7 @@ void update_audiovideo(void)
    }
 
    // Automatic horizontal offset
-   if (opt_horizontal_offset_auto)
+   if (opt_horizontal_offset_auto && !retro_request_av_info_update)
    {
       if (( retro_min_diwstart != retro_min_diwstart_old
          || retro_max_diwstop  != retro_max_diwstop_old)

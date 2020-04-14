@@ -6668,6 +6668,21 @@ static void hsync_handler_post (bool onvsync)
 		nextline_how = nln_normal;
 		if (doflickerfix () && interlace_seen > 0) {
 			lineno *= 2;
+#ifdef __LIBRETRO__
+		} else if (currprefs.gfx_vresolution && (doublescan <= 0 || interlace_seen > 0)) {
+			lineno *= 2;
+			if (interlace_seen) {
+				if (!lof_current) {
+					lineno++;
+					nextline_how = nln_lower_black;
+				} else {
+					nextline_how = nln_upper_black;
+				}
+			} else {
+				nextline_how = nln_doubled;
+			}
+        }
+#else
 		} else if (currprefs.gfx_vresolution && (doublescan <= 0 || interlace_seen > 0)) {
 			lineno *= 2;
 			if (interlace_seen) {
@@ -6681,6 +6696,7 @@ static void hsync_handler_post (bool onvsync)
 				nextline_how = currprefs.gfx_vresolution > VRES_NONDOUBLE && currprefs.gfx_scanlines == false ? nln_doubled : nln_nblack;
 			}
 		}
+#endif
 		prev_lineno = next_lineno;
 		next_lineno = lineno;
 		reset_decisions ();
