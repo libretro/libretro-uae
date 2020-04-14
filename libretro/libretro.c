@@ -345,25 +345,25 @@ void retro_set_environment(retro_environment_t cb)
          "Video Resolution",
          "Output width:\n- 'Automatic' defaults to 'High' and switches to 'Super-High' when needed.",
          {
+            { "auto", "Automatic" },
             { "lores", "Low 360px" },
             { "hires", "High 720px" },
             { "superhires", "Super-High 1440px" },
-            { "automatic", "Automatic" },
             { NULL, NULL },
          },
-         "automatic"
+         "auto"
       },
       {
          "puae_video_vresolution",
          "Video Line Mode",
          "Output height:\n- 'Automatic' defaults to 'Single Line' and switches to 'Double Line' on interlaced screens.",
          {
+            { "auto", "Automatic" },
             { "single", "Single Line" },
             { "double", "Double Line" },
-            { "automatic", "Automatic" },
             { NULL, NULL },
          },
-         "automatic"
+         "auto"
       },
       {
          "puae_video_aspect",
@@ -488,28 +488,15 @@ void retro_set_environment(retro_environment_t cb)
          "auto"
       },
       {
-         "puae_gfx_colors",
-         "Color Depth",
-         "24-bit is slower and not available on all platforms. Full restart required.",
+         "puae_gfx_flickerfixer",
+         "Remove Interlace Artifacts",
+         "Best suited for stationary screens, Workbench etc.",
          {
-            { "16bit", "Thousands (16-bit)" },
-            { "24bit", "Millions (24-bit)" },
+            { "disabled", NULL },
+            { "enabled", NULL },
             { NULL, NULL },
          },
-         "16bit"
-      },
-      {
-         "puae_collision_level",
-         "Collision Level",
-         "'Sprites and Playfields' is recommended.",
-         {
-            { "playfields", "Sprites and Playfields" },
-            { "sprites", "Sprites only" },
-            { "full", "Full" },
-            { "none", "None" },
-            { NULL, NULL },
-         },
-         "playfields"
+         "disabled"
       },
       {
          "puae_immediate_blits",
@@ -524,6 +511,19 @@ void retro_set_environment(retro_environment_t cb)
          "waiting"
       },
       {
+         "puae_collision_level",
+         "Collision Level",
+         "'Sprites and Playfields' is recommended.",
+         {
+            { "none", "None" },
+            { "sprites", "Sprites only" },
+            { "playfields", "Sprites and Playfields" },
+            { "full", "Full" },
+            { NULL, NULL },
+         },
+         "playfields"
+      },
+      {
          "puae_gfx_framerate",
          "Frameskip",
          "Not compatible with 'Cycle-exact'.",
@@ -534,6 +534,17 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "disabled"
+      },
+      {
+         "puae_gfx_colors",
+         "Color Depth",
+         "24-bit is slower and not available on all platforms. Full restart required.",
+         {
+            { "16bit", "Thousands (16-bit)" },
+            { "24bit", "Millions (24-bit)" },
+            { NULL, NULL },
+         },
+         "16bit"
       },
       {
          "puae_statusbar",
@@ -1429,7 +1440,7 @@ static void update_variables(void)
          if (libretro_runloop_active)
             changed_prefs.gfx_resolution=RES_SUPERHIRES;
       }
-      else if (strcmp(var.value, "automatic") == 0)
+      else if (strcmp(var.value, "auto") == 0)
       {
          opt_video_resolution_auto = true;
 
@@ -1474,7 +1485,7 @@ static void update_variables(void)
          if (libretro_runloop_active)
             changed_prefs.gfx_vresolution=VRES_NONDOUBLE;
       }
-      else if (strcmp(var.value, "automatic") == 0)
+      else if (strcmp(var.value, "auto") == 0)
       {
          opt_video_vresolution_auto = true;
 
@@ -1493,7 +1504,7 @@ static void update_variables(void)
          }
       }
 
-      // Lores can not be double lined
+      /* Lores can not be double lined */
       if (retro_max_diwlastword < retro_max_diwlastword_hires)
       {
          video_config &= ~PUAE_VIDEO_DOUBLELINE;
@@ -1911,6 +1922,32 @@ static void update_variables(void)
       {
          if (strcmp(var.value, "16bit") == 0) pix_bytes=2;
          else if (strcmp(var.value, "24bit") == 0) pix_bytes=4;
+      }
+   }
+
+   var.key = "puae_gfx_flickerfixer";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "disabled") == 0)
+         strcat(uae_config, "gfx_flickerfixer=false\n");
+      else
+         strcat(uae_config, "gfx_flickerfixer=true\n");
+
+      if (libretro_runloop_active)
+      {
+         static int gfx_scandoubler_prev = -1;
+
+         if (strcmp(var.value, "disabled") == 0)
+            changed_prefs.gfx_scandoubler=0;
+         else
+            changed_prefs.gfx_scandoubler=1;
+
+         /* Change requires init_custom() */
+         if (gfx_scandoubler_prev != changed_prefs.gfx_scandoubler)
+            request_init_custom_timer = 3;
+
+         gfx_scandoubler_prev = changed_prefs.gfx_scandoubler;
       }
    }
 
@@ -2446,13 +2483,15 @@ static void update_variables(void)
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_horizontal_pos";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_gfx_colors";
-   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_collision_level";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_immediate_blits";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_gfx_flickerfixer";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_gfx_framerate";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_gfx_colors";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_statusbar";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);

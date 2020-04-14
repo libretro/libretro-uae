@@ -331,6 +331,9 @@ int check_prefs_changed_gfx (void)
     if (currprefs.gfx_vresolution      != changed_prefs.gfx_vresolution)
         currprefs.gfx_vresolution       = changed_prefs.gfx_vresolution;
 
+    if (currprefs.gfx_scandoubler      != changed_prefs.gfx_scandoubler)
+        currprefs.gfx_scandoubler       = changed_prefs.gfx_scandoubler;
+
     gfxvidinfo.width_allocated          = currprefs.gfx_size_win.width;
     gfxvidinfo.height_allocated         = currprefs.gfx_size_win.height;
     gfxvidinfo.rowbytes                 = gfxvidinfo.width_allocated * gfxvidinfo.pixbytes;
