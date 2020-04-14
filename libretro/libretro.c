@@ -105,6 +105,7 @@ bool real_ntsc = false;
 bool forced_video = false;
 bool retro_request_av_info_update = false;
 bool retro_av_info_change_timing = false;
+bool retro_av_info_change_geometry = true;
 bool retro_av_info_is_ntsc = false;
 bool request_reset_drawing = false;
 unsigned int request_init_custom_timer = 0;
@@ -3185,16 +3186,18 @@ float retro_get_aspect_ratio(int w, int h)
 
 static bool retro_update_av_info(void)
 {
-   bool av_log        = false;
-   bool change_timing = retro_av_info_change_timing;
-   bool isntsc        = retro_av_info_is_ntsc;
-   float hz           = currprefs.chipset_refreshrate;
+   bool av_log          = false;
+   bool isntsc          = retro_av_info_is_ntsc;
+   bool change_timing   = retro_av_info_change_timing;
+   bool change_geometry = retro_av_info_change_geometry;
+   float hz             = currprefs.chipset_refreshrate;
 
    /* Reset global parameters ready for the
     * next update */
-   retro_request_av_info_update = false;
-   retro_av_info_change_timing  = false;
-   retro_av_info_is_ntsc        = false;
+   retro_request_av_info_update  = false;
+   retro_av_info_is_ntsc         = false;
+   retro_av_info_change_timing   = false;
+   retro_av_info_change_geometry = true;
 
    if (av_log)
       fprintf(stdout, "[libretro-uae]: Trying to update AV timing:%d to: ntsc:%d hz:%0.4f, from video_config:%d, video_aspect:%d\n", change_timing, isntsc, hz, video_config, video_config_aspect);
@@ -3364,7 +3367,7 @@ static bool retro_update_av_info(void)
       new_av_info.timing.fps = hz;
       environ_cb(RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO, &new_av_info);
    }
-   else
+   else if (change_geometry)
       environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
 
    /* Ensure statusbar stays visible at the bottom */
@@ -3503,18 +3506,18 @@ static bool retro_update_av_info(void)
        && (retro_thisframe_first_drawn_line < 150 || retro_thisframe_last_drawn_line > 150)
       )
          thisframe_y_adjust_new = (retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line - zoomed_height_normal) / 2 + retro_thisframe_first_drawn_line;
+      else if (retro_thisframe_first_drawn_line == -1 && retro_thisframe_last_drawn_line == -1)
+         thisframe_y_adjust_new = thisframe_y_adjust_old;
 
       /* Sensible limits */
       thisframe_y_adjust_new = (thisframe_y_adjust_new < 0) ? 0 : thisframe_y_adjust_new;
       thisframe_y_adjust_new = (thisframe_y_adjust_new > (minfirstline + 60)) ? (minfirstline + 60) : thisframe_y_adjust_new;
-      if (retro_thisframe_first_drawn_line == -1 && retro_thisframe_last_drawn_line == -1)
-          thisframe_y_adjust_new = thisframe_y_adjust_old;
 
       /* Change value only if altered */
       if (thisframe_y_adjust != thisframe_y_adjust_new)
          thisframe_y_adjust = thisframe_y_adjust_new;
 
-      //fprintf(stdout, "FIRSTDRAWN:%6d LASTDRAWN:%6d   yadjust:%d old:%d zoomed_height:%d\n", retro_thisframe_first_drawn_line, retro_thisframe_last_drawn_line, thisframe_y_adjust, thisframe_y_adjust_old, zoomed_height);
+      //fprintf(stdout, "FIRSTDRAWN:%6d LASTDRAWN:%6d   yadjust:%3d old:%3d zoomed_height:%d\n", retro_thisframe_first_drawn_line, retro_thisframe_last_drawn_line, thisframe_y_adjust, thisframe_y_adjust_old, zoomed_height);
 
       /* Remember the previous value */
       thisframe_y_adjust_old = thisframe_y_adjust;
@@ -3550,7 +3553,7 @@ static bool retro_update_av_info(void)
       if (visible_left_border != visible_left_border_new)
          visible_left_border = visible_left_border_new;
 
-      //fprintf(stdout, "DIWSTART  :%6d DIWSTOP  :%6d   left_border:%d old:%d\n", retro_min_diwstart, retro_max_diwstop, visible_left_border, visible_left_border_old);
+      //fprintf(stdout, "DIWSTART  :%6d DIWSTOP  :%6d   lborder:%3d old:%3d\n", retro_min_diwstart, retro_max_diwstop, visible_left_border, visible_left_border_old);
 
       /* Remember the previous value */
       visible_left_border_old = visible_left_border;
@@ -3561,8 +3564,10 @@ static bool retro_update_av_info(void)
    {
       if (change_timing)
          fprintf(stdout, "[libretro-uae]: Update av_info: %dx%d %0.4fHz, zoomed_height:%d, video_config:%d\n", retrow, retroh, hz, zoomed_height, video_config_geometry);
-      else
+      else if (change_geometry)
          fprintf(stdout, "[libretro-uae]: Update geometry: %dx%d zoomed_height:%d, video_config:%d\n", retrow, retroh, zoomed_height, video_config_geometry);
+      else
+         fprintf(stdout, "[libretro-uae]: Update zoom: %dx%d zoomed_height:%d, video_config:%d\n", retrow, retroh, zoomed_height, video_config_geometry);
    }
 
    /* Triggers check_prefs_changed_gfx() in vsync_handle_check() */
@@ -4894,23 +4899,25 @@ void update_audiovideo(void)
    }
 
    // Automatic vertical offset
-   if (opt_vertical_offset_auto && zoom_mode_id != 0 && !retro_request_av_info_update)
+   if (opt_vertical_offset_auto && zoom_mode_id != 0)
    {
       if (( retro_thisframe_first_drawn_line != retro_thisframe_first_drawn_line_old
          || retro_thisframe_last_drawn_line  != retro_thisframe_last_drawn_line_old)
          && retro_thisframe_first_drawn_line != -1
          && retro_thisframe_last_drawn_line  != -1
-         && retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line > 20
+         && retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line > 1
          && (abs(retro_thisframe_first_drawn_line_old - retro_thisframe_first_drawn_line) > 1 || abs(retro_thisframe_last_drawn_line_old - retro_thisframe_last_drawn_line) > 1)
       )
       {
-         //printf("thisframe first:%d old:%d last:%d old:%d\n", retro_thisframe_first_drawn_line, retro_thisframe_first_drawn_line_old, retro_thisframe_last_drawn_line, retro_thisframe_last_drawn_line_old);
+         //printf("thisframe first:%3d old:%3d start:%3d last:%3d old:%3d start:%3d\n", retro_thisframe_first_drawn_line, retro_thisframe_first_drawn_line_old, retro_thisframe_first_drawn_line_start, retro_thisframe_last_drawn_line, retro_thisframe_last_drawn_line_old, retro_thisframe_last_drawn_line_start);
          // Prevent interlace stuttering by requiring a change of at least 2 lines
          // and also prevent sudden resolution switching by requiring the change to stabilize (count +-1 as stable) for a few frames
          if (abs(retro_thisframe_first_drawn_line_old - retro_thisframe_first_drawn_line) > 1)
          {
             if (retro_thisframe_counter == 0)
                retro_thisframe_first_drawn_line_start = retro_thisframe_first_drawn_line_old;
+            if (retro_thisframe_first_drawn_line_start == -1)
+               retro_thisframe_first_drawn_line_start = retro_thisframe_first_drawn_line;
             retro_thisframe_first_drawn_line_old = retro_thisframe_first_drawn_line;
             retro_thisframe_counter = 1;
          }
@@ -4918,15 +4925,18 @@ void update_audiovideo(void)
          {
             if (retro_thisframe_counter == 0)
                retro_thisframe_last_drawn_line_start = retro_thisframe_last_drawn_line_old;
+            if (retro_thisframe_last_drawn_line_start == -1)
+               retro_thisframe_last_drawn_line_start = retro_thisframe_last_drawn_line;
             retro_thisframe_last_drawn_line_old = retro_thisframe_last_drawn_line;
             retro_thisframe_counter = 1;
          }
       }
-      else if (abs(retro_thisframe_first_drawn_line_old - retro_thisframe_first_drawn_line) < 2 && abs(retro_thisframe_last_drawn_line_old - retro_thisframe_last_drawn_line) < 2)
+      //else if (abs(retro_thisframe_first_drawn_line_old - retro_thisframe_first_drawn_line) < 2 && abs(retro_thisframe_last_drawn_line_old - retro_thisframe_last_drawn_line) < 2)
+      else if (retro_thisframe_counter > 0 && retro_thisframe_first_drawn_line != -1 && retro_thisframe_last_drawn_line != -1)
       {
-         // Reset the counter if the values return to the starting point during counting
+         // Prevent geometry change but allow vertical centering if the values return to the starting point during counting
          if (retro_thisframe_first_drawn_line == retro_thisframe_first_drawn_line_start && retro_thisframe_last_drawn_line == retro_thisframe_last_drawn_line_start)
-            retro_thisframe_counter = 0;
+            retro_av_info_change_geometry = false;
 
          if (retro_thisframe_counter > 0)
             retro_thisframe_counter++;
@@ -4935,7 +4945,10 @@ void update_audiovideo(void)
             retro_request_av_info_update = true;
 
          if (retro_request_av_info_update)
-            retro_thisframe_counter = 0;
+         {
+            retro_thisframe_first_drawn_line_start = retro_thisframe_first_drawn_line;
+            retro_thisframe_last_drawn_line_start = retro_thisframe_last_drawn_line;
+         }
       }
    }
    else
@@ -4953,7 +4966,7 @@ void update_audiovideo(void)
    }
 
    // Automatic horizontal offset
-   if (opt_horizontal_offset_auto && !retro_request_av_info_update)
+   if (opt_horizontal_offset_auto)
    {
       if (( retro_min_diwstart != retro_min_diwstart_old
          || retro_max_diwstop  != retro_max_diwstop_old)
@@ -4961,20 +4974,19 @@ void update_audiovideo(void)
          && retro_max_diwstop  != 0
       )
       {
-         //printf("diwstart:%d old:%d diwstop:%d old:%d\n", retro_min_diwstart, retro_min_diwstart_old, retro_max_diwstop, retro_max_diwstop_old);
+         //printf("diwstart:%3d old:%3d diwstop:%3d old:%3d\n", retro_min_diwstart, retro_min_diwstart_old, retro_max_diwstop, retro_max_diwstop_old);
          // Prevent centering of horizontal animations by requiring the change to stabilize
          retro_min_diwstart_old = retro_min_diwstart;
          retro_max_diwstop_old = retro_max_diwstop;
          retro_diwstartstop_counter = 1;
       }
-      else if (retro_min_diwstart == retro_min_diwstart_old && retro_max_diwstop == retro_max_diwstop_old)
+      else if (retro_diwstartstop_counter > 0 && retro_min_diwstart == retro_min_diwstart_old && retro_max_diwstop == retro_max_diwstop_old)
       {
-         // Not triggered in the middle of vertical offset stabilize count
-         if (retro_diwstartstop_counter > 0 && retro_thisframe_counter == 0)
-            retro_request_av_info_update = true;
+         // Prevent geometry change but allow horizontal centering in the middle of vertical offset stabilize count
+         if (retro_thisframe_counter > 0)
+            retro_av_info_change_geometry = false;
 
-         if (retro_request_av_info_update)
-            retro_diwstartstop_counter = 0;
+         retro_request_av_info_update = true;
       }
    }
    else
@@ -4989,6 +5001,13 @@ void update_audiovideo(void)
             request_reset_drawing = true;
          }
       }
+   }
+
+   // Reset both counters on av_info_update
+   if (retro_request_av_info_update)
+   {
+      retro_thisframe_counter = 0;
+      retro_diwstartstop_counter = 0;
    }
 }
 
