@@ -1937,18 +1937,14 @@ static void update_variables(void)
 
       if (libretro_runloop_active)
       {
-         static int gfx_scandoubler_prev = -1;
-
          if (strcmp(var.value, "disabled") == 0)
             changed_prefs.gfx_scandoubler=0;
          else
             changed_prefs.gfx_scandoubler=1;
 
          /* Change requires init_custom() */
-         if (gfx_scandoubler_prev != changed_prefs.gfx_scandoubler)
+         if (changed_prefs.gfx_scandoubler != currprefs.gfx_scandoubler)
             request_init_custom_timer = 3;
-
-         gfx_scandoubler_prev = changed_prefs.gfx_scandoubler;
       }
    }
 
