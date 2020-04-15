@@ -3589,7 +3589,11 @@ bool vsync_handle_check (void)
 void vsync_handle_redraw (int long_frame, int lof_changed, uae_u16 bplcon0p, uae_u16 bplcon3p)
 {
 	last_redraw_point++;
+#ifdef __LIBRETRO__
+	if (true) {
+#else
 	if (lof_changed || interlace_seen <= 0 || last_redraw_point >= 2 || long_frame || doublescan < 0) {
+#endif
 		last_redraw_point = 0;
 
 		if (framecnt == 0)
@@ -3647,7 +3651,15 @@ void hsync_record_line_state (int lineno, enum nln_how how, int changed)
 		return;
 
 	state = linestate + lineno;
+#if 1
+	changed |= frame_redraw_necessary != 0 || (lineno >= lightpen_y1 && lineno <= lightpen_y2);
+#else
 	changed += frame_redraw_necessary + ((lineno >= lightpen_y1 && lineno <= lightpen_y2) ? 1 : 0);
+#endif
+	/*changed |= ad->frame_redraw_necessary != 0 || refresh_indicator_buffer != NULL ||
+		((lineno >= lightpen_y1[0] && lineno < lightpen_y2[0]) ||
+		(lineno >= lightpen_y1[1] && lineno < lightpen_y2[1]) ||
+		(lineno >= statusbar_y1 && lineno < statusbar_y2));*/
 
 	switch (how) {
 	case nln_normal:
@@ -3655,7 +3667,7 @@ void hsync_record_line_state (int lineno, enum nln_how how, int changed)
 		break;
 	case nln_doubled:
 		*state = changed ? LINE_DECIDED_DOUBLE : LINE_DONE;
-		changed += state[1] != LINE_REMEMBERED_AS_PREVIOUS;
+		changed |= state[1] != LINE_REMEMBERED_AS_PREVIOUS;
 		state[1] = changed ? LINE_AS_PREVIOUS : LINE_DONE_AS_PREVIOUS;
 		break;
 	case nln_nblack:
@@ -3664,8 +3676,9 @@ void hsync_record_line_state (int lineno, enum nln_how how, int changed)
 			state[1] = LINE_BLACK;
 		break;
 	case nln_lower:
-		if (state[-1] == LINE_UNDECIDED)
+		if (lineno > 0 && state[-1] == LINE_UNDECIDED) {
 			state[-1] = LINE_DECIDED; //LINE_BLACK;
+		}
 		*state = changed ? LINE_DECIDED : LINE_DONE;
 		break;
 	case nln_upper:
@@ -3674,6 +3687,38 @@ void hsync_record_line_state (int lineno, enum nln_how how, int changed)
 			|| state[1] == LINE_REMEMBERED_AS_PREVIOUS
 			|| state[1] == LINE_AS_PREVIOUS)
 			state[1] = LINE_DECIDED; //LINE_BLACK;
+		break;
+	case nln_lower_black_always:
+		state[1] = LINE_BLACK;
+		*state = LINE_DECIDED;
+//		if (lineno == (maxvpos + lof_store) * 2 - 1)
+//			*state = LINE_BLACK;
+		break;
+	case nln_lower_black:
+		changed |= state[0] != LINE_DONE;
+		state[1] = LINE_DONE;
+		*state = changed ? LINE_DECIDED : LINE_DONE;
+//		if (lineno == (maxvpos + lof_store) * 2 - 1)
+//			*state = LINE_BLACK;
+		break;
+	case nln_upper_black_always:
+		*state = LINE_DECIDED;
+		if (lineno > 0) {
+			state[-1] = LINE_BLACK;
+		}
+		if (!interlace_seen && lineno == (maxvpos + lof_store) * 2 - 2) {
+			state[1] = LINE_BLACK;
+		}
+		break;
+	case nln_upper_black:
+		changed |= state[0] != LINE_DONE;
+		*state = changed ? LINE_DECIDED : LINE_DONE;
+		if (lineno > 0) {
+			state[-1] = LINE_DONE;
+		}
+		if (!interlace_seen && lineno == (maxvpos + lof_store) * 2 - 2) {
+			state[1] = LINE_DONE;
+		}
 		break;
 	}
 }

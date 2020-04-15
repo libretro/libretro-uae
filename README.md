@@ -120,10 +120,10 @@ With these settings all the standard resolutions are available:
 When using low resolution mode, rendering will be halved horizontally and forced into Single Line mode. Scaling shaders looks great but high resolution games and Workbench are badly rendered.
 
 When using high resolution Double Line mode, rendering will be doubled vertically. It is compatible with high resolution games and Workbench, but scaling shaders will look ugly.
-Double Line shows interlaced fields separately in one frame, which will halve the framerate, and thus movement will be jerky.
+Double Line shows interlaced fields separately and is suited for deinterlacing shaders.
 
 When using high resolution Single Line mode, rendering is presented as is. It delivers the best of both worlds, and looks great with high resolution games, Workbench and shaders.
-Single Line combines interlaced fields into one field, which will keep the full framerate, but high resolution images will be blocky.
+Single Line combines interlaced fields into one field, which will make high resolution images blocky.
 
 - Automatic Resolution defaults to Hires and selects SuperHires when needed (practically only in Workbench and Super Skidmarks).
 - Automatic Line Mode defaults to Single Line and selects Double Line on interlaced screens.
@@ -374,7 +374,7 @@ filesystem2=rw,DH0:data:/emuroms/amiga/,0
 ```
 
 Windows tip:
-- If paths are enclosed with quotes, Windows needs double blackslashes: `filesystem2=rw,DH0:data:"c:\\emuroms\\amiga",0`.
+- If paths are enclosed with quotes, Windows needs double backslashes: `filesystem2=rw,DH0:data:"c:\\emuroms\\amiga",0`.
 
 Linux tip:
 - Leave the ending slash to the path to make sure UAE sees it as a directory.
