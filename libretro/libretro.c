@@ -3742,6 +3742,18 @@ bool retro_create_config()
       }
    }
 
+   // "Browsed" file in ZIP
+   char browsed_file[RETRO_PATH_MAX] = {0};
+   if (!string_is_empty(full_path) && strstr(full_path, ".zip#"))
+   {
+      char *token = strtok((char*)full_path, "#");
+      while (token != NULL)
+      {
+         snprintf(browsed_file, sizeof(browsed_file), "%s", token);
+         token = strtok(NULL, "#");
+      }
+   }
+
    if (!string_is_empty(full_path) && (file_exists(full_path) || path_is_directory(full_path)))
    {
       // Extract ZIP for examination
@@ -3771,7 +3783,7 @@ bool retro_create_config()
          zip_dir = opendir(zip_path);
          while ((zip_dirp = readdir(zip_dir)) != NULL)
          {
-            if (zip_dirp->d_name[0] == '.' || strendswith(zip_dirp->d_name, M3U_FILE_EXT) || zip_mode > 1)
+            if (zip_dirp->d_name[0] == '.' || strendswith(zip_dirp->d_name, M3U_FILE_EXT) || zip_mode > 1 || browsed_file[0] != '\0')
                continue;
 
             // Disk mode, generate playlist
@@ -3793,6 +3805,8 @@ bool retro_create_config()
          {
             case 0: // Extracted path
             case 2: // Single image
+               if (browsed_file[0] != '\0')
+                  snprintf(full_path, sizeof(full_path), "%s%s%s", zip_path, DIR_SEP_STR, browsed_file);
                break;
             case 1: // Generated playlist
                zip_m3u = fopen(zip_m3u_path, "w");
