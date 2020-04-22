@@ -26,6 +26,7 @@ extern int mouse_port[NORMAL_JPORTS];
 #include "libretro.h"
 #include "libretro-glue.h"
 #include "libretro-mapper.h"
+#include "retro_files.h"
 extern unsigned int uae_devices[4];
 extern unsigned int inputdevice_finalized;
 extern int pix_bytes;
@@ -861,7 +862,7 @@ void zip_uncompress(char *in, char *out, char *lastfile)
         err = unzGetCurrentFileInfo(uf, &file_info, filename_inzip, sizeof(filename_inzip), NULL, 0, NULL, 0);
         snprintf(filename_withpath, sizeof(filename_withpath), "%s%s%s", out, DIR_SEP_STR, filename_inzip);
         if (dc_get_image_type(filename_inzip) == DC_IMAGE_TYPE_FLOPPY && lastfile != NULL)
-            snprintf(lastfile, sizeof(lastfile), "%s", filename_inzip);
+            snprintf(lastfile, RETRO_PATH_MAX, "%s", filename_inzip);
 
         p = filename_withoutpath = filename_inzip;
         while ((*p) != '\0')
