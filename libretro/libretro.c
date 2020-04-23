@@ -3090,6 +3090,9 @@ void retro_deinit(void)
    // Clean ZIP temp
    if (retro_temp_directory && path_is_directory(retro_temp_directory))
       remove_recurse(retro_temp_directory);
+
+   // 'Reset' troublesome static variable
+   pix_bytes_initialized = false;
 }
 
 unsigned retro_api_version(void)

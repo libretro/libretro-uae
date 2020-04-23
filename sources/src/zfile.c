@@ -37,6 +37,8 @@ static struct zfile *zlist = 0;
 
 const TCHAR *uae_archive_extensions[] = { _T("zip"), _T("rar"), _T("7z"), _T("lha"), _T("lzh"), _T("lzx"), _T("tar"), NULL };
 
+static struct zvolume *zvolume_list = NULL;
+
 #define MAX_CACHE_ENTRIES 10
 
 struct zdisktrack
@@ -211,6 +213,7 @@ void zfile_exit (void)
 		zlist = l->next;
 		zfile_free (l);
 	}
+	zvolume_list = NULL;
 }
 
 void zfile_fclose (struct zfile *f)
@@ -2320,8 +2323,6 @@ uae_u32 zfile_crc32 (struct zfile *f)
 	xfree (p);
 	return crc;
 }
-
-static struct zvolume *zvolume_list;
 
 static void recurparent (TCHAR *newpath, struct znode *zn, int recurse)
 {
