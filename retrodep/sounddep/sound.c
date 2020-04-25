@@ -23,9 +23,6 @@
 #include "driveclick.h"
 #include "sounddep/sound.h"
 
-#define LOG_MSG(x) printf(x);
-#define LOG_MSG2(...)
-
 uae_u16 *paula_sndbuffer = NULL;
 uae_u16 *paula_sndbufpt;
 int paula_sndbufsize;
@@ -45,38 +42,22 @@ void sound_mute (int newmute)
 {
 }
 
-void set_volume (int volume, int mute)
+void sound_volume (int dir)
 {
-	config_changed = 1;
 }
 
-static int setget_master_volume_linux (int setvolume, int *volume, int *mute)
+void set_volume (int volume, int mute)
 {
-	unsigned int ok = 0;
-
-	if (setvolume) {
-		;//set
-	} else {
-		;//get
-	}
-
-	return ok;
 }
 
 static int set_master_volume (int volume, int mute)
 {
-	return setget_master_volume_linux (1, &volume, &mute);
+	return 0;
 }
 
 static int get_master_volume (int *volume, int *mute)
 {
-    *volume = 0;
-    *mute = 0;
-	return setget_master_volume_linux (0, volume, mute);
-}
-
-void sound_volume (int dir)
-{
+	return 0;
 }
 
 void master_sound_volume (int dir)
@@ -110,10 +91,8 @@ int init_sound (void)
         return 1;
     }
  
-    //LOG_MSG(("INIT SOUND\n"));
     sndbuffer = (uae_u16*) malloc(DEFAULT_SOUND_MINB);
     if (sndbuffer == NULL) {
-        LOG_MSG(("sound init failed\n"));
         return 0;
     }
    
@@ -125,7 +104,6 @@ int init_sound (void)
 
     //init_sound_table16();
     //scaled_sample_evtime = (unsigned long)(MAXHPOS_PAL * MAXVPOS_PAL * VBLANK_HZ_PAL + rate - 1) / DEFAULT_SOUND_FREQ;
-    //LOG_MSG2("bufsize=%i\n", sndbufsize);
 
 #ifdef DRIVESOUND
 	driveclick_init();
@@ -135,7 +113,6 @@ int init_sound (void)
 
 int setup_sound (void)
 {
-    //LOG_MSG(("setup_sound\n"));
     sound_available = 1;
     have_sound = 1;
     return 1;

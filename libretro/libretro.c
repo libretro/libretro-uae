@@ -259,11 +259,7 @@ void retro_set_environment(retro_environment_t cb)
             { "exact", "Cycle-exact" },
             { NULL, NULL },
          },
-#ifdef VITA
          "normal"
-#else
-         "exact"
-#endif
       },
       {
          "puae_cpu_throttle",
@@ -620,6 +616,7 @@ void retro_set_environment(retro_environment_t cb)
          },
          "disabled"
       },
+#if 0
       {
          "puae_sound_output",
          "Sound Output",
@@ -633,6 +630,7 @@ void retro_set_environment(retro_environment_t cb)
          },
          "exact"
       },
+#endif
       {
          "puae_sound_stereo_separation",
          "Sound Stereo Separation",
@@ -749,7 +747,7 @@ void retro_set_environment(retro_environment_t cb)
             { "0", "100\% volume" },
             { NULL, NULL },
          },
-         "100"
+         "80"
       },
       {
          "puae_floppy_sound_empty_mute",
@@ -1623,6 +1621,7 @@ static void update_variables(void)
          changed_prefs.cpu_clock_multiplier=atoi(var.value) * 256;
    }
 
+#if 0
    var.key = "puae_sound_output";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -1639,6 +1638,7 @@ static void update_variables(void)
          else if (strcmp(var.value, "exact") == 0) changed_prefs.produce_sound=3;
       }
    }
+#endif
 
    var.key = "puae_sound_stereo_separation";
    var.value = NULL;
@@ -2445,8 +2445,10 @@ static void update_variables(void)
    /* Audio options */
    option_display.visible = opt_audio_options_display;
 
+#if 0
    option_display.key = "puae_sound_output";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+#endif
    option_display.key = "puae_sound_stereo_separation";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_sound_interpol";
