@@ -16,13 +16,14 @@ else ifneq ($(findstring win,$(shell uname -a)),)
 endif
 endif
 
+# Unix
 ifneq (,$(findstring unix,$(platform)))
    TARGET := $(TARGET_NAME)_libretro.so
    fpic := -fPIC
    LDFLAGS += -lpthread
    SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T
 
-# use for raspberry pi
+# RPI
 else ifeq ($(platform), rpi)
 	TARGET := $(TARGET_NAME)_libretro.so
 	fpic := -fPIC
@@ -73,6 +74,7 @@ else ifeq ($(platform), classic_armv8_a35)
            -marm -mtune=cortex-a35 -mfpu=neon-fp-armv8 -mfloat-abi=hard
    LDFLAGS += -static-libgcc -static-libstdc++
 
+# OSX
 else ifeq ($(platform), osx)
    TARGET := $(TARGET_NAME)_libretro.dylib
    fpic := -fPIC -mmacosx-version-min=10.6
@@ -80,6 +82,7 @@ else ifeq ($(platform), osx)
    SHARED := -dynamiclib
    PLATFLAGS += -DUSE_NAMED_SEMAPHORES
 
+# Android
 else ifeq ($(platform), android-armv7)
    CC = arm-linux-androideabi-gcc
    AR = @arm-linux-androideabi-ar
@@ -152,6 +155,7 @@ else ifeq ($(platform), vita)
    STATIC_LINKING = 1
    STATIC_LINKING_LINK=1
 
+# PS3
 else ifeq ($(platform), ps3)
    TARGET := $(TARGET_NAME)_libretro_$(platform).a
    CC = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-gcc.exe
@@ -161,6 +165,7 @@ else ifeq ($(platform), ps3)
    CFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DMSB_FIRST -DBYTE_ORDER=BIG_ENDIAN -D__CELLOS_LV2__ -DHAVE_MEMALIGN -DHAVE_ASPRINTF -I$(ZLIB_DIR)
    STATIC_LINKING=1
 
+# Psl1ght
 else ifeq ($(platform), psl1ght)
    TARGET := $(TARGET_NAME)_libretro_$(platform).a
    CC = $(PS3DEV)/ppu/bin/ppu-gcc$(EXE_EXT)
@@ -172,11 +177,13 @@ else ifeq ($(platform), psl1ght)
    CFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DMSB_FIRST -DBYTE_ORDER=BIG_ENDIAN -D__CELLOS_LV2__ -DHAVE_MEMALIGN -DHAVE_ASPRINTF -I$(ZLIB_DIR)
    STATIC_LINKING=1
 
+# Emscripten
 else ifeq ($(platform), emscripten)
    TARGET := $(TARGET_NAME)_libretro_$(platform).bc
    CFLAGS    += -DHAVE_MEMALIGN -DHAVE_ASPRINTF -I$(ZLIB_DIR)
    STATIC_LINKING=1
 
+# iOS
 else ifneq (,$(findstring ios,$(platform)))
    TARGET := $(TARGET_NAME)_libretro_ios.dylib
    COMMONFLAGS += -DHAVE_POSIX_MEMALIGN=1
@@ -236,8 +243,9 @@ else ifneq (,$(findstring armv,$(platform)))
    else ifneq (,$(findstring hardfloat,$(platform)))
       CFLAGS += -mfloat-abi=hard
    endif
-else
 
+# Windows
+else
 ifneq ($(subplatform), 32)
    CFLAGS +=
 endif
@@ -248,17 +256,18 @@ endif
    LDFLAGS += -lm
 endif
 
+# Common
 ifeq ($(DEBUG), 1)
    CFLAGS += -O0 -g
 else
    CFLAGS += -O3
 endif
 
-CFLAGS += -DRETRO=1 -DINLINE="inline" -std=gnu99
+CFLAGS += -D__LIBRETRO__ -DINLINE="inline" -std=gnu99
 
 include Makefile.common
 
-$(info CFLAGS: $(CFLAGS))
+$(info CFLAGS:$(CFLAGS))
 $(info -------)
 
 OBJECTS += $(SOURCES_C:.c=.o) $(SOURCES_CXX:.cpp=.o) $(SOURCES_ASM:.S=.o)

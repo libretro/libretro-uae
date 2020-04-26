@@ -1,180 +1,174 @@
 EMU      = $(CORE_DIR)/sources/src
-LIBUTILS = $(CORE_DIR)/sources/utils
 LIBRETRO = $(CORE_DIR)/libretro
 DEPS_DIR = $(CORE_DIR)/deps
 RETRODEP = $(CORE_DIR)/retrodep
+LIBRETRO_COMM_DIR := $(CORE_DIR)/libretro-common
 
 GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
 ifneq ($(GIT_VERSION)," unknown")
     CFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
 endif
 
-CFLAGS += -D__LIBRETRO__
-INCFLAGS := -I$(EMU) -I$(EMU)/include -I$(LIBRETRO) -I$(CORE_DIR)/libretro-include -I$(RETRODEP) -I$(LIBUTILS) -I$(CORE_DIR) -I$(DEPS_DIR)/zlib
+INCFLAGS := -I$(EMU) -I$(EMU)/include -I$(LIBRETRO) -I$(LIBRETRO_COMM_DIR)/include -I$(RETRODEP) -I$(CORE_DIR) -I$(DEPS_DIR)/zlib
 
-SOURCES_C +=  $(EMU)/main.c \
-				  $(EMU)/newcpu.c \
-				  $(EMU)/memory.c \
-				  $(EMU)/rommgr.c \
-				  $(EMU)/custom.c \
-				  $(EMU)/serial.c \
-				  $(EMU)/dongle.c \
-				  $(EMU)/cia.c \
-				  $(EMU)/blitter.c \
-				  $(EMU)/blittable.c \
-				  $(EMU)/blitfunc.c \
-				  $(EMU)/autoconf.c \
-				  $(EMU)/traps.c\
-				  $(EMU)/keybuf.c \
-				  $(EMU)/expansion.c \
-				  $(EMU)/inputrecord.c \
-				  $(EMU)/keymap/keymap.c\
-				  $(EMU)/diskutil.c \
-				  $(EMU)/caps/caps.c \
-				  $(EMU)/caps/uae_dlopen.c \
-				  $(EMU)/zfile.c \
-				  $(EMU)/zfile_archive.c \
-				  $(EMU)/cfgfile.c \
-				  $(EMU)/inputdevice.c \
-				  $(EMU)/gfxutil.c \
-				  $(EMU)/gfxlib.c \
-				  $(EMU)/audio.c \
-				  $(EMU)/sinctable.c \
-				  $(EMU)/statusline.c \
-				  $(EMU)/drawing.c \
-				  $(EMU)/consolehook.c \
-				  $(EMU)/native2amiga.c \
-				  $(EMU)/disk.c \
-				  $(EMU)/crc32.c \
-				  $(EMU)/savestate.c \
-				  $(EMU)/arcadia.c \
-				  $(EMU)/cd32_fmv.c \
-				  $(EMU)/uaeexe.c \
-				  $(EMU)/uaelib.c \
-				  $(EMU)/uaeresource.c \
-				  $(EMU)/uaeserial.c \
-				  $(EMU)/fdi2raw.c\
-				  $(EMU)/hotkeys.c \
-				  $(EMU)/amax.c \
-				  $(EMU)/ar.c \
-				  $(EMU)/driveclick.c \
-				  $(EMU)/enforcer.c \
-				  $(EMU)/misc.c \
-				  $(EMU)/uaenet.c \
-				  $(EMU)/a2065.c \
-				  $(EMU)/missing.c \
-				  $(EMU)/readcpu.c \
-				  $(EMU)/hrtmon.rom.c \
-				  $(EMU)/events.c \
-				  $(EMU)/calc.c \
-				  $(EMU)/aros.rom.c \
-				  $(EMU)/specialmonitors.c \
-				  $(EMU)/writelog.c \
-				  $(EMU)/debug.c \
-				  $(EMU)/identify.c \
-				  $(RETRODEP)/memory.c \
-				  $(RETRODEP)/parser.c \
-				  $(RETRODEP)/main.c \
-				  $(EMU)/picasso96.c \
-				  $(EMU)/blkdev.c \
-				  $(EMU)/blkdev_cdimage.c \
-				  $(EMU)/gayle.c \
-				  $(EMU)/ncr_scsi.c \
-				  $(EMU)/scsi.c \
-				  $(EMU)/akiko.c \
-				  $(EMU)/cdtv.c \
-				  $(EMU)/cdrom.c \
-				  $(EMU)/cdrom-handler.c \
-				  $(EMU)/cda_play.c \
-				  $(EMU)/a2091.c
+SOURCES_C += $(EMU)/main.c \
+	$(EMU)/newcpu.c \
+	$(EMU)/memory.c \
+	$(EMU)/rommgr.c \
+	$(EMU)/custom.c \
+	$(EMU)/serial.c \
+	$(EMU)/dongle.c \
+	$(EMU)/cia.c \
+	$(EMU)/blitter.c \
+	$(EMU)/blittable.c \
+	$(EMU)/blitfunc.c \
+	$(EMU)/autoconf.c \
+	$(EMU)/traps.c\
+	$(EMU)/keybuf.c \
+	$(EMU)/expansion.c \
+	$(EMU)/inputrecord.c \
+	$(EMU)/keymap/keymap.c \
+	$(EMU)/diskutil.c \
+	$(EMU)/caps/caps.c \
+	$(EMU)/caps/uae_dlopen.c \
+	$(EMU)/zfile.c \
+	$(EMU)/zfile_archive.c \
+	$(EMU)/cfgfile.c \
+	$(EMU)/inputdevice.c \
+	$(EMU)/gfxutil.c \
+	$(EMU)/gfxlib.c \
+	$(EMU)/audio.c \
+	$(EMU)/sinctable.c \
+	$(EMU)/statusline.c \
+	$(EMU)/drawing.c \
+	$(EMU)/consolehook.c \
+	$(EMU)/native2amiga.c \
+	$(EMU)/disk.c \
+	$(EMU)/crc32.c \
+	$(EMU)/savestate.c \
+	$(EMU)/arcadia.c \
+	$(EMU)/cd32_fmv.c \
+	$(EMU)/uaeexe.c \
+	$(EMU)/uaelib.c \
+	$(EMU)/uaeresource.c \
+	$(EMU)/uaeserial.c \
+	$(EMU)/fdi2raw.c\
+	$(EMU)/hotkeys.c \
+	$(EMU)/amax.c \
+	$(EMU)/ar.c \
+	$(EMU)/driveclick.c \
+	$(EMU)/enforcer.c \
+	$(EMU)/misc.c \
+	$(EMU)/uaenet.c \
+	$(EMU)/a2065.c \
+	$(EMU)/missing.c \
+	$(EMU)/readcpu.c \
+	$(EMU)/hrtmon.rom.c \
+	$(EMU)/events.c \
+	$(EMU)/calc.c \
+	$(EMU)/aros.rom.c \
+	$(EMU)/specialmonitors.c \
+	$(EMU)/writelog.c \
+	$(EMU)/debug.c \
+	$(EMU)/identify.c \
+	$(EMU)/picasso96.c \
+	$(EMU)/blkdev.c \
+	$(EMU)/blkdev_cdimage.c \
+	$(EMU)/gayle.c \
+	$(EMU)/ncr_scsi.c \
+	$(EMU)/scsi.c \
+	$(EMU)/akiko.c \
+	$(EMU)/cdtv.c \
+	$(EMU)/cdrom.c \
+	$(EMU)/cdrom-handler.c \
+	$(EMU)/cda_play.c \
+	$(EMU)/a2091.c \
+	$(EMU)/hardfile.c \
+	$(EMU)/hardfile_unix.c \
+	$(EMU)/scsi-none.c \
+	$(EMU)/fsusage.c \
+	$(EMU)/filesys.c \
+	$(EMU)/filesys_unix.c \
+	$(EMU)/fsdb.c \
+	$(EMU)/fsdb_unix.c \
+	$(EMU)/bsdsocket.c \
+	$(EMU)/cpuemu_0.c \
+	$(EMU)/cpuemu_11.c \
+	$(EMU)/cpuemu_12.c \
+	$(EMU)/cpuemu_20.c \
+	$(EMU)/cpuemu_21.c \
+	$(EMU)/cpuemu_22.c \
+	$(EMU)/cpustbl.c \
+	$(EMU)/cpudefs.c \
+	$(EMU)/cpuemu_31.c \
+	$(EMU)/cpuemu_32.c  \
+	$(EMU)/cpuemu_33.c \
+	$(EMU)/cpummu.c \
+	$(EMU)/cpummu30.c \
+	$(EMU)/fpp.c \
+	$(RETRODEP)/memory.c \
+	$(RETRODEP)/parser.c \
+	$(RETRODEP)/main.c \
+	$(RETRODEP)/machdep/support.c \
+	$(RETRODEP)/gui.c \
+	$(RETRODEP)/retroglue.c \
+	$(RETRODEP)/sounddep/sound.c \
+	$(RETRODEP)/threaddep/thread.c
 
 SOURCES_C += $(EMU)/archivers/dms/crc_csum.c \
-				 $(EMU)/archivers/dms/getbits.c \
-				 $(EMU)/archivers/dms/maketbl.c \
-				 $(EMU)/archivers/dms/pfile.c \
-				 $(EMU)/archivers/dms/tables.c \
-				 $(EMU)/archivers/dms/u_deep.c \
-				 $(EMU)/archivers/dms/u_heavy.c \
-				 $(EMU)/archivers/dms/u_init.c  \
-				 $(EMU)/archivers/dms/u_medium.c \
-				 $(EMU)/archivers/dms/u_quick.c \
-				 $(EMU)/archivers/dms/u_rle.c \
-                 $(EMU)/archivers/lha/crcio.c \
-                 $(EMU)/archivers/lha/dhuf.c \
-                 $(EMU)/archivers/lha/header.c \
-                 $(EMU)/archivers/lha/huf.c \
-                 $(EMU)/archivers/lha/larc.c \
-                 $(EMU)/archivers/lha/lhamaketbl.c \
-                 $(EMU)/archivers/lha/lharc.c \
-                 $(EMU)/archivers/lha/shuf.c \
-                 $(EMU)/archivers/lha/slide.c \
-                 $(EMU)/archivers/lha/uae_lha.c \
-                 $(EMU)/archivers/lha/util.c
-
-
-SOURCES_C += $(EMU)/hardfile.c \
-				  $(EMU)/hardfile_unix.c \
-				  $(EMU)/scsi-none.c \
-				  $(EMU)/fsusage.c \
-				  $(EMU)/filesys.c \
-				  $(EMU)/filesys_unix.c \
-				  $(EMU)/fsdb.c \
-				  $(EMU)/fsdb_unix.c \
-				  $(EMU)/bsdsocket.c \
-				  $(EMU)/cpuemu_0.c \
-				  $(EMU)/cpuemu_11.c \
-				  $(EMU)/cpuemu_12.c \
-				  $(EMU)/cpuemu_20.c \
-				  $(EMU)/cpuemu_21.c \
-				  $(EMU)/cpuemu_22.c \
-				  $(EMU)/cpustbl.c \
-				  $(EMU)/cpudefs.c \
-				  $(EMU)/cpuemu_31.c \
-				  $(EMU)/cpuemu_32.c  \
-				  $(EMU)/cpuemu_33.c \
-				  $(EMU)/cpummu.c \
-				  $(EMU)/cpummu30.c \
-				  $(EMU)/fpp.c 
-
-SOURCES_C += $(RETRODEP)/machdep/support.c \
-				 $(RETRODEP)/gui.c \
-				 $(RETRODEP)/retroglue.c \
-				 $(RETRODEP)/sounddep/sound.c \
-				 $(RETRODEP)/threaddep/thread.c
+	$(EMU)/archivers/dms/getbits.c \
+	$(EMU)/archivers/dms/maketbl.c \
+	$(EMU)/archivers/dms/pfile.c \
+	$(EMU)/archivers/dms/tables.c \
+	$(EMU)/archivers/dms/u_deep.c \
+	$(EMU)/archivers/dms/u_heavy.c \
+	$(EMU)/archivers/dms/u_init.c  \
+	$(EMU)/archivers/dms/u_medium.c \
+	$(EMU)/archivers/dms/u_quick.c \
+	$(EMU)/archivers/dms/u_rle.c \
+	$(EMU)/archivers/lha/crcio.c \
+	$(EMU)/archivers/lha/dhuf.c \
+	$(EMU)/archivers/lha/header.c \
+	$(EMU)/archivers/lha/huf.c \
+	$(EMU)/archivers/lha/larc.c \
+	$(EMU)/archivers/lha/lhamaketbl.c \
+	$(EMU)/archivers/lha/lharc.c \
+	$(EMU)/archivers/lha/shuf.c \
+	$(EMU)/archivers/lha/slide.c \
+	$(EMU)/archivers/lha/uae_lha.c \
+	$(EMU)/archivers/lha/util.c
 
 SOURCES_C += $(LIBRETRO)/libretro.c \
-				 $(LIBRETRO)/libretro-mapper.c \
-				 $(LIBRETRO)/vkbd.c \
-				 $(LIBRETRO)/graph.c \
-				 $(LIBRETRO)/retro_files.c \
-				 $(LIBRETRO)/retro_strings.c \
-				 $(LIBRETRO)/retro_disk_control.c \
-				 $(DEPS_DIR)/zlib/unzip.c \
-				 $(DEPS_DIR)/zlib/ioapi.c
+	$(LIBRETRO)/libretro-mapper.c \
+	$(LIBRETRO)/vkbd.c \
+	$(LIBRETRO)/graph.c \
+	$(LIBRETRO)/retro_files.c \
+	$(LIBRETRO)/retro_strings.c \
+	$(LIBRETRO)/retro_disk_control.c \
+	$(DEPS_DIR)/zlib/unzip.c \
+	$(DEPS_DIR)/zlib/ioapi.c
 
 ifneq ($(STATIC_LINKING), 1)
-SOURCES_C += $(CORE_DIR)/libretro-include/file_path.c \
-				$(CORE_DIR)/libretro-include/stdstring.c \
-				$(CORE_DIR)/libretro-include/encoding_utf.c \
-				$(CORE_DIR)/libretro-include/fopen_utf8.c \
-				$(CORE_DIR)/libretro-include/compat_strl.c \
-				$(CORE_DIR)/libretro-include/compat_strcasestr.c \
-				$(CORE_DIR)/libretro-include/vfs_implementation.c
-endif
+SOURCES_C += $(LIBRETRO_COMM_DIR)/file/file_path.c \
+	$(LIBRETRO_COMM_DIR)/string/stdstring.c \
+	$(LIBRETRO_COMM_DIR)/encodings/encoding_utf.c \
+	$(LIBRETRO_COMM_DIR)/compat/fopen_utf8.c \
+	$(LIBRETRO_COMM_DIR)/compat/compat_strl.c \
+	$(LIBRETRO_COMM_DIR)/compat/compat_strcasestr.c \
+	$(LIBRETRO_COMM_DIR)/vfs/vfs_implementation.c
 
-ifneq ($(STATIC_LINKING), 1)
 SOURCES_C += $(DEPS_DIR)/zlib/adler32.c \
-				 $(DEPS_DIR)/zlib/compress.c \
-				 $(DEPS_DIR)/zlib/crc32.c \
-				 $(DEPS_DIR)/zlib/deflate.c \
-				 $(DEPS_DIR)/zlib/gzclose.c \
-				 $(DEPS_DIR)/zlib/gzlib.c \
-				 $(DEPS_DIR)/zlib/gzread.c \
-				 $(DEPS_DIR)/zlib/gzwrite.c \
-				 $(DEPS_DIR)/zlib/inffast.c \
-				 $(DEPS_DIR)/zlib/inflate.c \
-				 $(DEPS_DIR)/zlib/inftrees.c \
-				 $(DEPS_DIR)/zlib/trees.c \
-				 $(DEPS_DIR)/zlib/uncompr.c \
-				 $(DEPS_DIR)/zlib/zutil.c
+	$(DEPS_DIR)/zlib/compress.c \
+	$(DEPS_DIR)/zlib/crc32.c \
+	$(DEPS_DIR)/zlib/deflate.c \
+	$(DEPS_DIR)/zlib/gzclose.c \
+	$(DEPS_DIR)/zlib/gzlib.c \
+	$(DEPS_DIR)/zlib/gzread.c \
+	$(DEPS_DIR)/zlib/gzwrite.c \
+	$(DEPS_DIR)/zlib/inffast.c \
+	$(DEPS_DIR)/zlib/inflate.c \
+	$(DEPS_DIR)/zlib/inftrees.c \
+	$(DEPS_DIR)/zlib/trees.c \
+	$(DEPS_DIR)/zlib/uncompr.c \
+	$(DEPS_DIR)/zlib/zutil.c
 endif

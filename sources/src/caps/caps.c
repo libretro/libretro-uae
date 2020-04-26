@@ -31,6 +31,8 @@ static int caps_flags = DI_LOCK_DENVAR|DI_LOCK_DENNOISE|DI_LOCK_NOISE|DI_LOCK_UP
 #include "retro_files.h"
 #include "libretro-glue.h"
 extern char retro_system_directory[];
+extern bool retro_message;
+extern char retro_message_msg[1024];
 char CAPSLIB_PATH[RETRO_PATH_MAX];
 #endif
 
@@ -76,6 +78,11 @@ static int load_capslib (void)
 
 #ifdef __LIBRETRO__
     snprintf(CAPSLIB_PATH, RETRO_PATH_MAX, "%s%c%s", retro_system_directory, DIR_SEP_CHR, CAPSLIB_NAME);
+    if (!file_exists(CAPSLIB_PATH))
+    {
+        snprintf(retro_message_msg, sizeof(retro_message_msg), "CAPS library '%s' not found!", CAPSLIB_NAME);
+        retro_message = true;
+    }
     if ((capslib.handle = uae_dlopen(CAPSLIB_PATH))) {
 #else
     if ((capslib.handle = uae_dlopen(CAPSLIB_NAME))) {

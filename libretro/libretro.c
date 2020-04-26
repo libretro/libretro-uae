@@ -94,6 +94,9 @@ unsigned short int retro_bmp[RETRO_BMP_SIZE];
 extern int STATUSON;
 extern int prefs_changed;
 
+bool retro_message = false;
+char retro_message_msg[1024] = {0};
+
 extern int turbo_fire_button;
 extern unsigned int turbo_pulse;
 unsigned int inputdevice_finalized = 0;
@@ -256,11 +259,7 @@ void retro_set_environment(retro_environment_t cb)
             { "exact", "Cycle-exact" },
             { NULL, NULL },
          },
-#ifdef VITA
          "normal"
-#else
-         "exact"
-#endif
       },
       {
          "puae_cpu_throttle",
@@ -617,6 +616,7 @@ void retro_set_environment(retro_environment_t cb)
          },
          "disabled"
       },
+#if 0
       {
          "puae_sound_output",
          "Sound Output",
@@ -630,6 +630,7 @@ void retro_set_environment(retro_environment_t cb)
          },
          "exact"
       },
+#endif
       {
          "puae_sound_stereo_separation",
          "Sound Stereo Separation",
@@ -746,7 +747,7 @@ void retro_set_environment(retro_environment_t cb)
             { "0", "100\% volume" },
             { NULL, NULL },
          },
-         "100"
+         "80"
       },
       {
          "puae_floppy_sound_empty_mute",
@@ -1620,6 +1621,7 @@ static void update_variables(void)
          changed_prefs.cpu_clock_multiplier=atoi(var.value) * 256;
    }
 
+#if 0
    var.key = "puae_sound_output";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -1636,6 +1638,7 @@ static void update_variables(void)
          else if (strcmp(var.value, "exact") == 0) changed_prefs.produce_sound=3;
       }
    }
+#endif
 
    var.key = "puae_sound_stereo_separation";
    var.value = NULL;
@@ -2442,8 +2445,10 @@ static void update_variables(void)
    /* Audio options */
    option_display.visible = opt_audio_options_display;
 
+#if 0
    option_display.key = "puae_sound_output";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+#endif
    option_display.key = "puae_sound_stereo_separation";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_sound_interpol";
@@ -3962,10 +3967,12 @@ bool retro_create_config()
                // Kickstart ROM not found
                fprintf(stderr, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
                fclose(configfile);
-               return false;
-            }
 
-            fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
+               snprintf(retro_message_msg, sizeof(retro_message_msg), "Kickstart ROM '%s' not found!", path_basename((const char*)kickstart));
+               retro_message = true;
+            }
+            else
+               fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
 
             // Bootable HD exception
             if (opt_use_boot_hd)
@@ -4507,7 +4514,9 @@ bool retro_create_config()
                // Kickstart ROM not found
                fprintf(stderr, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
                fclose(configfile);
-               return false;
+
+               snprintf(retro_message_msg, sizeof(retro_message_msg), "Kickstart ROM '%s' not found!", path_basename((const char*)kickstart));
+               retro_message = true;
             }
             else
                fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
@@ -4524,7 +4533,9 @@ bool retro_create_config()
                   // Kickstart extended ROM not found
                   fprintf(stderr, "Kickstart extended ROM '%s' not found!\n", (const char*)&kickstart_ext);
                   fclose(configfile);
-                  return false;
+
+                  snprintf(retro_message_msg, sizeof(retro_message_msg), "Kickstart extended ROM '%s' not found!", path_basename((const char*)kickstart_ext));
+                  retro_message = true;
                }
                else
                   fprintf(configfile, "kickstart_ext_rom_file=%s\n", (const char*)&kickstart_ext);
@@ -4744,7 +4755,9 @@ bool retro_create_config()
                // Kickstart ROM not found
                fprintf(stderr, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
                fclose(configfile);
-               return false;
+
+               snprintf(retro_message_msg, sizeof(retro_message_msg), "Kickstart ROM '%s' not found!", path_basename((const char*)kickstart));
+               retro_message = true;
             }
             else
                fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
@@ -4761,7 +4774,9 @@ bool retro_create_config()
                   // Kickstart extended ROM not found
                   fprintf(stderr, "Kickstart extended ROM '%s' not found!\n", (const char*)&kickstart_ext);
                   fclose(configfile);
-                  return false;
+
+                  snprintf(retro_message_msg, sizeof(retro_message_msg), "Kickstart extended ROM '%s' not found!", path_basename((const char*)kickstart_ext));
+                  retro_message = true;
                }
                else
                   fprintf(configfile, "kickstart_ext_rom_file=%s\n", (const char*)&kickstart_ext);
@@ -4785,7 +4800,9 @@ bool retro_create_config()
                // Kickstart ROM not found
                fprintf(stderr, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
                fclose(configfile);
-               return false;
+
+               snprintf(retro_message_msg, sizeof(retro_message_msg), "Kickstart ROM '%s' not found!", path_basename((const char*)kickstart));
+               retro_message = true;
             }
             else
                fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
@@ -5095,6 +5112,17 @@ void retro_run(void)
    // Resume emulation for 1 frame
    restart_pending = m68k_go(1, 1);
 
+   // Warning messages
+   if (retro_message)
+   {
+      struct retro_message msg;
+      msg.msg = retro_message_msg;
+      msg.frames = 1000;
+      environ_cb(RETRO_ENVIRONMENT_SET_MESSAGE, &msg);
+      retro_message = false;
+   }
+
+   // Core overlays
    if (STATUSON == 1)
       print_statusbar();
    if (SHOWKEY == 1)
