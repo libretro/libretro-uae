@@ -6,7 +6,7 @@ SOURCES_C :=
 
 include $(CORE_DIR)/Makefile.common
 
-COREFLAGS := -DANDROID $(CFLAGS) $(INCFLAGS) -I$(LOCAL_PATH)/include
+COREFLAGS := -DANDROID -D__LIBRETRO__ $(CFLAGS) $(INCFLAGS) -I$(LOCAL_PATH)/include
 
 include $(CLEAR_VARS)
 LOCAL_MODULE    := retro
