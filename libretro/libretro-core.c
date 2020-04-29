@@ -27,13 +27,6 @@
 #include "akiko.h"
 #include "blkdev.h"
 
-#ifdef VITA
-#include <psp2/types.h>
-#include <psp2/io/dirent.h>
-#include <psp2/kernel/threadmgr.h>
-#define rmdir(name) sceIoRmdir(name)
-#endif
-
 int libretro_runloop_active = 0;
 
 extern int frame_redraw_necessary;
@@ -62,8 +55,7 @@ unsigned int opt_use_whdload_prefs = 0;
 unsigned int opt_use_boot_hd = 0;
 bool opt_shared_nvram = false;
 bool opt_cd_startup_delayed_insert = false;
-bool opt_statusbar_enhanced = true;
-bool opt_statusbar_minimal = false;
+int opt_statusbar = 0;
 int opt_statusbar_position = 0;
 int opt_statusbar_position_old = 0;
 int opt_statusbar_position_offset = 0;
@@ -1522,20 +1514,24 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
+      opt_statusbar = 0;
+
       if (strstr(var.value, "top"))
+      {
+         opt_statusbar |= STATUSBAR_TOP;
          opt_statusbar_position = -1;
-      else if (strstr(var.value, "bottom"))
+      }
+      else
+      {
+         opt_statusbar |= STATUSBAR_BOTTOM;
          opt_statusbar_position = 0;
+      }
 
       if (strstr(var.value, "basic"))
-         opt_statusbar_enhanced = false;
-      else
-         opt_statusbar_enhanced = true;
+         opt_statusbar |= STATUSBAR_BASIC;
 
       if (strstr(var.value, "minimal"))
-         opt_statusbar_minimal = true;
-      else
-         opt_statusbar_minimal = false;
+         opt_statusbar |= STATUSBAR_MINIMAL;
 
       opt_statusbar_position_old = opt_statusbar_position;
    }
@@ -2736,7 +2732,7 @@ static bool disk_replace_image_index(unsigned index, const struct retro_game_inf
                snprintf(full_path_replace, sizeof(full_path_replace), "%s", zip_path);
 
                FILE *zip_m3u;
-               char zip_m3u_buf[2048] = {0};
+               char zip_m3u_list[20][RETRO_PATH_MAX] = {0};
                char zip_m3u_path[RETRO_PATH_MAX] = {0};
                snprintf(zip_m3u_path, sizeof(zip_m3u_path), "%s%s%s.m3u", zip_path, DIR_SEP_STR, zip_basename);
                int zip_m3u_num = 0;
@@ -2749,12 +2745,12 @@ static bool disk_replace_image_index(unsigned index, const struct retro_game_inf
                   if (zip_dirp->d_name[0] == '.' || strendswith(zip_dirp->d_name, M3U_FILE_EXT) || zip_mode > 1)
                      continue;
 
-                  // Disk mode, generate playlist
+                  // Multi file mode, generate playlist
                   if (dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_FLOPPY)
                   {
                      zip_mode = 1;
                      zip_m3u_num++;
-                     snprintf(zip_m3u_buf+strlen(zip_m3u_buf), sizeof(zip_m3u_buf), "%s\n", zip_dirp->d_name);
+                     snprintf(zip_m3u_list[zip_m3u_num-1], RETRO_PATH_MAX, "%s", zip_dirp->d_name);
                   }
                   // Single file image mode
                   else if (dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_CD || strendswith(zip_dirp->d_name, HDF_FILE_EXT))
@@ -2778,13 +2774,14 @@ static bool disk_replace_image_index(unsigned index, const struct retro_game_inf
                   case 1: // Generated playlist
                      if (zip_m3u_num == 1)
                      {
-                        zip_m3u_buf[strlen(zip_m3u_buf)-1] = '\0';
-                        snprintf(full_path_replace, sizeof(full_path_replace), "%s%s%s", zip_path, DIR_SEP_STR, zip_m3u_buf);
+                        snprintf(full_path_replace, sizeof(full_path_replace), "%s%s%s", zip_path, DIR_SEP_STR, zip_m3u_list[0]);
                      }
                      else
                      {
                         zip_m3u = fopen(zip_m3u_path, "w");
-                        fprintf(zip_m3u, "%s", zip_m3u_buf);
+                        qsort(zip_m3u_list, zip_m3u_num, RETRO_PATH_MAX, qstrcmp);
+                        for (int l = 0; l < zip_m3u_num; l++)
+                           fprintf(zip_m3u, "%s\n", zip_m3u_list[l]);
                         fclose(zip_m3u);
                         snprintf(full_path_replace, sizeof(full_path_replace), "%s", zip_m3u_path);
                      }
@@ -3058,32 +3055,6 @@ void retro_init(void)
    memset(retro_bmp, 0, sizeof(retro_bmp));
 
    update_variables();
-}
-
-static void remove_recurse(const char *path)
-{
-   struct dirent *dirp;
-   char filename[RETRO_PATH_MAX];
-   DIR *dir = opendir(path);
-   if (dir == NULL)
-      return;
-
-   while ((dirp = readdir(dir)) != NULL)
-   {
-      if (dirp->d_name[0] == '.')
-         continue;
-
-      sprintf(filename, "%s%s%s", path, DIR_SEP_STR, dirp->d_name);
-      fprintf(stdout, "Unzip clean: %s\n", filename);
-
-      if (path_is_directory(filename))
-         remove_recurse(filename);
-      else
-         remove(filename);
-   }
-
-   closedir(dir);
-   rmdir(path);
 }
 
 void retro_deinit(void)
@@ -3782,9 +3753,10 @@ bool retro_create_config()
          snprintf(full_path, sizeof(full_path), "%s", zip_path);
 
          FILE *zip_m3u;
-         char zip_m3u_buf[2048] = {0};
+         char zip_m3u_list[20][RETRO_PATH_MAX] = {0};
          char zip_m3u_path[RETRO_PATH_MAX];
          snprintf(zip_m3u_path, sizeof(zip_m3u_path), "%s%s%s.m3u", zip_path, DIR_SEP_STR, zip_basename);
+         int zip_m3u_num = 0;
 
          DIR *zip_dir;
          struct dirent *zip_dirp;
@@ -3794,11 +3766,12 @@ bool retro_create_config()
             if (zip_dirp->d_name[0] == '.' || strendswith(zip_dirp->d_name, M3U_FILE_EXT) || zip_mode > 1 || browsed_file[0] != '\0')
                continue;
 
-            // Disk mode, generate playlist
+            // Multi file mode, generate playlist
             if (dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_FLOPPY)
             {
                zip_mode = 1;
-               snprintf(zip_m3u_buf+strlen(zip_m3u_buf), sizeof(zip_m3u_buf), "%s\n", zip_dirp->d_name);
+               zip_m3u_num++;
+               snprintf(zip_m3u_list[zip_m3u_num-1], RETRO_PATH_MAX, "%s", zip_dirp->d_name);
             }
             // Single file image mode
             else if (dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_CD || strendswith(zip_dirp->d_name, HDF_FILE_EXT))
@@ -3818,7 +3791,9 @@ bool retro_create_config()
                break;
             case 1: // Generated playlist
                zip_m3u = fopen(zip_m3u_path, "w");
-               fprintf(zip_m3u, "%s", zip_m3u_buf);
+               qsort(zip_m3u_list, zip_m3u_num, RETRO_PATH_MAX, qstrcmp);
+               for (int l = 0; l < zip_m3u_num; l++)
+                  fprintf(zip_m3u, "%s\n", zip_m3u_list[l]);
                fclose(zip_m3u);
                snprintf(full_path, sizeof(full_path), "%s", zip_m3u_path);
                break;
@@ -4828,6 +4803,8 @@ void update_audiovideo(void)
    // Statusbar disk display timer
    if (imagename_timer > 0)
       imagename_timer--;
+   if (STATUSON == 1 && imagename_timer == 0)
+      request_reset_drawing = true;
 
    // Update audio settings
    if (automatic_sound_filter_type_update)

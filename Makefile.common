@@ -138,7 +138,7 @@ SOURCES_C += $(EMU)/archivers/dms/crc_csum.c \
 	$(EMU)/archivers/lha/uae_lha.c \
 	$(EMU)/archivers/lha/util.c
 
-SOURCES_C += $(LIBRETRO)/libretro.c \
+SOURCES_C += $(LIBRETRO)/libretro-core.c \
 	$(LIBRETRO)/libretro-mapper.c \
 	$(LIBRETRO)/vkbd.c \
 	$(LIBRETRO)/graph.c \

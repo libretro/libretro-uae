@@ -8,5 +8,6 @@ void gz_uncompress(gzFile in, void *out);
 void zip_uncompress(char *in, char *out, char *lastfile);
 
 int make_hdf (char *hdf_path, char *hdf_size, char *device_name);
-
+int qstrcmp(const void *a, const void *b);
+void remove_recurse(const char *path);
 #endif
