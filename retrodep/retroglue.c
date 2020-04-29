@@ -863,7 +863,6 @@ void gz_uncompress(gzFile in, FILE *out)
 void zip_uncompress(char *in, char *out, char *lastfile)
 {
     unzFile uf = NULL;
-    unz_file_info file_info;
     uf = unzOpen(in);
 
     uLong i;

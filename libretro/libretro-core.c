@@ -1349,8 +1349,6 @@ static void update_variables(void)
    struct retro_variable var = {0};
    struct retro_core_option_display option_display;
 
-   static int video_config_region = 0;
-
    var.key = "puae_model";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -1376,7 +1374,6 @@ static void update_variables(void)
             strcat(uae_config, "ntsc=true\n");
             real_ntsc = true;
          }
-         video_config_region = video_config;
       }
       else if (!forced_video)
       {
@@ -1895,7 +1892,7 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      int val;
+      int val=0;
       if (strcmp(var.value, "disabled") == 0) val=1;
       else if (strcmp(var.value, "1") == 0) val=2;
       else if (strcmp(var.value, "2") == 0) val=3;
@@ -3064,7 +3061,7 @@ void retro_deinit(void)
       dc_free(retro_dc);
 
    // Clean ZIP temp
-   if (retro_temp_directory && path_is_directory(retro_temp_directory))
+   if (retro_temp_directory != NULL && path_is_directory(retro_temp_directory))
       remove_recurse(retro_temp_directory);
 
    // 'Reset' troublesome static variable
@@ -4517,26 +4514,25 @@ bool retro_create_config()
             }
 
             // NVRAM
-            char flash_file[RETRO_PATH_MAX];
+            char flash_filename[RETRO_PATH_MAX];
             char flash_filepath[RETRO_PATH_MAX];
             if (opt_shared_nvram)
             {
                // Shared
-               path_join((char*)&flash_file, retro_save_directory, LIBRETRO_PUAE_PREFIX);
-
+               snprintf(flash_filename, sizeof(flash_filename), "%s.nvr", LIBRETRO_PUAE_PREFIX);
                // CDTV suffix
                if (kickstart_st.st_size == 262144)
-                  snprintf(flash_file, sizeof(flash_file), "%s%s", flash_file, "_cdtv");
+                  snprintf(flash_filename, sizeof(flash_filename), "%s_cdtv.nvr", LIBRETRO_PUAE_PREFIX);
             }
             else
             {
                // Per game
-               snprintf(flash_filepath, RETRO_PATH_MAX, "%s", full_path);
-               path_remove_extension((char*)flash_filepath);
-               path_join((char*)&flash_file, retro_save_directory, path_basename(flash_filepath));
+               snprintf(flash_filename, RETRO_PATH_MAX, "%s", path_basename(full_path));
+               snprintf(flash_filename, RETRO_PATH_MAX, "%s.nvr", path_remove_extension(flash_filename));
             }
-            fprintf(stdout, "[libretro-uae]: Using Flash RAM: '%s.nvr'\n", flash_file);
-            fprintf(configfile, "flash_file=%s.nvr\n", (const char*)&flash_file);
+            path_join((char*)&flash_filepath, retro_save_directory, flash_filename);
+            fprintf(stdout, "[libretro-uae]: Using Flash RAM: '%s'\n", flash_filepath);
+            fprintf(configfile, "flash_file=%s\n", (const char*)&flash_filepath);
 
             // Add the file to disk control context
             char cd_image_label[RETRO_PATH_MAX];
@@ -4758,14 +4754,15 @@ bool retro_create_config()
             }
 
             // NVRAM always shared without content
-            char flash_file[RETRO_PATH_MAX];
+            char flash_filename[RETRO_PATH_MAX];
             char flash_filepath[RETRO_PATH_MAX];
-            path_join((char*)&flash_file, retro_save_directory, LIBRETRO_PUAE_PREFIX);
+            snprintf(flash_filename, sizeof(flash_filename), "%s.nvr", LIBRETRO_PUAE_PREFIX);
             // CDTV suffix
             if (kickstart_st.st_size == 262144)
-               snprintf(flash_file, sizeof(flash_file), "%s%s", flash_file, "_cdtv");
-            fprintf(stdout, "[libretro-uae]: Using Flash RAM: '%s.nvr'\n", flash_file);
-            fprintf(configfile, "flash_file=%s.nvr\n", (const char*)&flash_file);
+               snprintf(flash_filename, sizeof(flash_filename), "%s_cdtv.nvr", LIBRETRO_PUAE_PREFIX);
+            path_join((char*)&flash_filepath, retro_save_directory, flash_filename);
+            fprintf(stdout, "[libretro-uae]: Using Flash RAM: '%s'\n", flash_filepath);
+            fprintf(configfile, "flash_file=%s\n", (const char*)&flash_filepath);
          }
          else
          {
@@ -5100,8 +5097,7 @@ void retro_run(void)
    }
 
    // Core overlays
-   if (STATUSON == 1)
-      print_statusbar();
+   // print_statusbar() moved to drawing.c before leds_on_screen, for consistent background on variable LED counts
    if (SHOWKEY == 1)
    {
       // Virtual keyboard requires a graceful redraw, blunt reset_drawing() interferes with zoom

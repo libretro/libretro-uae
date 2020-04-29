@@ -511,17 +511,7 @@ void print_statusbar(void)
    BOX_Y = STAT_BASEY - BOX_PADDING;
 
    // Statusbar size
-   int BOX_LED_WIDTH = 17;
-   BOX_WIDTH = retrow - (BOX_LED_WIDTH * 5); // (LED-width * LED-num)
-   if (video_config & PUAE_VIDEO_HIRES && !(video_config & PUAE_VIDEO_DOUBLELINE))
-      BOX_WIDTH = retrow - ((BOX_LED_WIDTH * 2) * 5);
-   else if (video_config & PUAE_VIDEO_SUPERHIRES)
-   {
-      if (video_config & PUAE_VIDEO_DOUBLELINE)
-         BOX_WIDTH = retrow - ((BOX_LED_WIDTH * 2) * 5);
-      else
-         BOX_WIDTH = retrow - ((BOX_LED_WIDTH * 4) * 5);
-   }
+   BOX_WIDTH = retrow;
 
    // Video resolution
    int STAT_X_RESOLUTION = STAT_X+(FONT_SLOT*4)+(FONT_WIDTH*16);
