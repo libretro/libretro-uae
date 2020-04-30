@@ -48,6 +48,12 @@ IF NOT WARN
        ENDIF
     ENDIF
 
+    IF NOT EXISTS WHDLoad:Devs/Kickstarts/kick40063.A600
+       IF EXISTS RASystem:kick40063.A600
+          Copy RASystem:kick40063.A600 WHDLoad:Devs/Kickstarts/
+       ENDIF
+    ENDIF
+
     IF NOT EXISTS WHDLoad:Devs/Kickstarts/kick40068.A1200
        IF EXISTS RASystem:kick40068.A1200
           Copy RASystem:kick40068.A1200 WHDLoad:Devs/Kickstarts/

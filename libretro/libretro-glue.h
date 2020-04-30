@@ -13,6 +13,13 @@
 #include <windows.h>
 #endif
 
+#ifdef VITA
+#include <psp2/types.h>
+#include <psp2/io/dirent.h>
+#include <psp2/kernel/threadmgr.h>
+#define rmdir(name) sceIoRmdir(name)
+#endif
+
 #include "zfile.h"
 #include "retro_disk_control.h"
 
@@ -68,6 +75,12 @@ extern int vkbd_x_min;
 extern int vkbd_x_max;
 extern int vkbd_y_min;
 extern int vkbd_y_max;
+
+// Statusbar
+#define STATUSBAR_BOTTOM    0x01
+#define STATUSBAR_TOP       0x02
+#define STATUSBAR_BASIC     0x04
+#define STATUSBAR_MINIMAL   0x08
 
 // Colors
 #define RGB565(r, g, b) ((((r>>3)<<11) | ((g>>2)<<5) | (b>>3)))

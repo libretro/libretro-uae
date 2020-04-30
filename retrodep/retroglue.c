@@ -27,6 +27,7 @@ extern int mouse_port[NORMAL_JPORTS];
 #include "libretro-glue.h"
 #include "libretro-mapper.h"
 #include "retro_files.h"
+#include "file/file_path.h"
 extern unsigned int uae_devices[4];
 extern unsigned int inputdevice_finalized;
 extern int pix_bytes;
@@ -805,6 +806,39 @@ void uae_resume (void)
 {
 }
 
+int qstrcmp(const void *a, const void *b)
+{
+    const char *pa = (const char *)a;
+    const char *pb = (const char *)b;
+    return strcmp(pa, pb);
+}
+
+void remove_recurse(const char *path)
+{
+    struct dirent *dirp;
+    char filename[RETRO_PATH_MAX];
+    DIR *dir = opendir(path);
+    if (dir == NULL)
+        return;
+
+    while ((dirp = readdir(dir)) != NULL)
+    {
+        if (dirp->d_name[0] == '.')
+            continue;
+
+        sprintf(filename, "%s%s%s", path, DIR_SEP_STR, dirp->d_name);
+        fprintf(stdout, "Temp clean: %s\n", filename);
+
+        if (path_is_directory(filename))
+            remove_recurse(filename);
+        else
+            remove(filename);
+    }
+
+    closedir(dir);
+    rmdir(path);
+}
+
 #include "deps/zlib/zlib.h"
 void gz_uncompress(gzFile in, FILE *out)
 {
@@ -829,7 +863,6 @@ void gz_uncompress(gzFile in, FILE *out)
 void zip_uncompress(char *in, char *out, char *lastfile)
 {
     unzFile uf = NULL;
-    unz_file_info file_info;
     uf = unzOpen(in);
 
     uLong i;

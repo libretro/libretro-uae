@@ -50,6 +50,11 @@
 #include "inputdevice.h"
 #include "debug.h"
 
+#ifdef __LIBRETRO__
+#include "libretro-glue.h"
+extern int STATUSON;
+#endif
+
 /* internal prototypes */
 void get_custom_mouse_limits (int *pw, int *ph, int *pdx, int *pdy, int dbl);
 void init_aspect_maps (void);
@@ -3453,6 +3458,10 @@ void finish_drawing_frame (void)
 
 	draw_frame2 ();
 
+#ifdef __LIBRETRO__
+	if (STATUSON == 1)
+		print_statusbar();
+#endif
 	if (currprefs.leds_on_screen) {
 		int slx, sly;
 		statusline_getpos (&slx, &sly, gfxvidinfo.outwidth, gfxvidinfo.outheight);

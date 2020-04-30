@@ -93,7 +93,7 @@ extern unsigned int zoom_mode_id;
 extern unsigned int opt_zoom_mode_id;
 extern bool retro_request_av_info_update;
 extern bool request_reset_drawing;
-extern bool opt_statusbar_enhanced;
+extern int opt_statusbar;
 extern int opt_statusbar_position;
 extern unsigned int opt_analogmouse;
 extern unsigned int opt_analogmouse_deadzone;
@@ -468,7 +468,7 @@ void display_current_image(const char *image, bool inserted)
 
 void print_statusbar(void)
 {
-   if (!opt_statusbar_enhanced)
+   if (opt_statusbar & STATUSBAR_BASIC && imagename_timer == 0)
       return;
 
    int BOX_Y        = 0;
@@ -511,17 +511,7 @@ void print_statusbar(void)
    BOX_Y = STAT_BASEY - BOX_PADDING;
 
    // Statusbar size
-   int BOX_LED_WIDTH = 17;
-   BOX_WIDTH = retrow - (BOX_LED_WIDTH * 5); // (LED-width * LED-num)
-   if (video_config & PUAE_VIDEO_HIRES && !(video_config & PUAE_VIDEO_DOUBLELINE))
-      BOX_WIDTH = retrow - ((BOX_LED_WIDTH * 2) * 5);
-   else if (video_config & PUAE_VIDEO_SUPERHIRES)
-   {
-      if (video_config & PUAE_VIDEO_DOUBLELINE)
-         BOX_WIDTH = retrow - ((BOX_LED_WIDTH * 2) * 5);
-      else
-         BOX_WIDTH = retrow - ((BOX_LED_WIDTH * 4) * 5);
-   }
+   BOX_WIDTH = retrow;
 
    // Video resolution
    int STAT_X_RESOLUTION = STAT_X+(FONT_SLOT*4)+(FONT_WIDTH*16);
