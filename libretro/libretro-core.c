@@ -47,6 +47,7 @@ unsigned int opt_mapping_options_display;
 unsigned int opt_video_options_display;
 unsigned int opt_audio_options_display;
 char opt_model[10];
+bool opt_region_auto = true;
 bool opt_video_resolution_auto = false;
 bool opt_video_vresolution_auto = false;
 bool opt_floppy_sound_empty_mute = false;
@@ -324,13 +325,15 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_video_standard",
          "Video Standard",
-         "Output Hz & height:\n- Single Line / Double Line.",
+         "Output Hz & height:\n- Single Line / Double Line.\n- 'Automatic' switches region per filename and directory tags.",
          {
+            { "PAL auto", "Automatic PAL" },
+            { "NTSC auto", "Automatic NTSC" },
             { "PAL", "PAL 50Hz - 288px / 576px" },
             { "NTSC", "NTSC 60Hz - 240px / 480px" },
             { NULL, NULL },
          },
-         "PAL"
+         "PAL auto"
       },
       {
          "puae_video_resolution",
@@ -359,7 +362,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_video_aspect",
-         "Aspect Ratio",
+         "Pixel Aspect Ratio",
          "PAR:\n- PAL 1/1 = 1.000\n- NTSC 44/52 = 0.846",
          {
             { "auto", "Automatic" },
@@ -1043,7 +1046,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapper_aspect_ratio_toggle",
          "Hotkey: Toggle Aspect Ratio",
-         "Press the mapped key to toggle between PAL/NTSC aspect ratio.",
+         "Press the mapped key to toggle between PAL/NTSC pixel aspect ratio.",
          {{ NULL, NULL }},
          "---"
       },
@@ -1363,7 +1366,7 @@ static void update_variables(void)
       /* video_config change only at start */
       if (video_config_old == 0)
       {
-         if (strcmp(var.value, "PAL") == 0)
+         if (strstr(var.value, "PAL"))
          {
             video_config |= PUAE_VIDEO_PAL;
             strcat(uae_config, "ntsc=false\n");
@@ -1377,11 +1380,16 @@ static void update_variables(void)
       }
       else if (!forced_video)
       {
-         if (strcmp(var.value, "PAL") == 0)
+         if (strstr(var.value, "PAL"))
             changed_prefs.ntscmode=0;
          else
             changed_prefs.ntscmode=1;
       }
+
+      if (strstr(var.value, "auto"))
+         opt_region_auto = true;
+      else
+         opt_region_auto = false;
    }
 
    var.key = "puae_video_aspect";
@@ -3613,6 +3621,30 @@ void retro_audio_batch_cb(const int16_t *data, size_t frames)
    audio_batch_cb(data, frames);
 }
 
+void retro_force_region(FILE** configfile)
+{
+   // If region was specified in the path
+   if (strstr(full_path, "NTSC") != NULL || strstr(full_path, "(USA)") != NULL)
+   {
+      fprintf(stdout, "[libretro-uae]: Found 'NTSC' or '(USA)' in: '%s'\n", full_path);
+      fprintf(stdout, "[libretro-uae]: Forcing NTSC mode\n");
+      fprintf(*configfile, "ntsc=true\n");
+      real_ntsc=true;
+      forced_video=true;
+   }
+   else if (strstr(full_path, "PAL") != NULL || strstr(full_path, "(Europe)") != NULL
+         || strstr(full_path, "(France)") != NULL || strstr(full_path, "(Germany)") != NULL
+         || strstr(full_path, "(Italy)") != NULL || strstr(full_path, "(Spain)") != NULL
+         || strstr(full_path, "(Finland)") != NULL || strstr(full_path, "(Denmark)") != NULL
+         || strstr(full_path, "(Sweden)") != NULL)
+   {
+      fprintf(stdout, "[libretro-uae]: Found 'PAL', '(Europe)' or '(Denmark|Finland|France|Germany|Italy|Spain|Sweden)' in: '%s'\n", full_path);
+      fprintf(stdout, "[libretro-uae]: Forcing PAL mode\n");
+      fprintf(*configfile, "ntsc=false\n");
+      forced_video=true;
+   }
+}
+
 bool retro_create_config()
 {
    RPATH[0] = '\0';
@@ -3916,22 +3948,9 @@ bool retro_create_config()
             // Write common config
             fprintf(configfile, uae_config);
 
-            // If region was specified in the path
-            if (strstr(full_path, "NTSC") != NULL)
-            {
-               fprintf(stdout, "[libretro-uae]: Found 'NTSC' in: '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Forcing NTSC mode\n");
-               fprintf(configfile, "ntsc=true\n");
-               real_ntsc=true;
-               forced_video=true;
-            }
-            else if (strstr(full_path, "PAL") != NULL)
-            {
-               fprintf(stdout, "[libretro-uae]: Found 'PAL' in: '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Forcing PAL mode\n");
-               fprintf(configfile, "ntsc=false\n");
-               forced_video=true;
-            }
+            // Scan region tags only with automatic region
+            if (opt_region_auto)
+               retro_force_region(&configfile);
 
             // Verify Kickstart
             if (!file_exists(kickstart))
@@ -4463,22 +4482,9 @@ bool retro_create_config()
             // Write common config
             fprintf(configfile, uae_config);
 
-            // If region was specified in the path
-            if (strstr(full_path, "NTSC") != NULL)
-            {
-               fprintf(stdout, "[libretro-uae]: Found 'NTSC' in: '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Forcing NTSC mode\n");
-               fprintf(configfile, "ntsc=true\n");
-               real_ntsc=true;
-               forced_video=true;
-            }
-            else if (strstr(full_path, "PAL") != NULL)
-            {
-               fprintf(stdout, "[libretro-uae]: Found 'PAL' in: '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Forcing PAL mode\n");
-               fprintf(configfile, "ntsc=false\n");
-               forced_video=true;
-            }
+            // Scan region tags only with automatic region
+            if (opt_region_auto)
+               retro_force_region(&configfile);
 
             // Verify Kickstart
             if (!file_exists(kickstart))
