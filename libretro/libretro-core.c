@@ -180,10 +180,11 @@ static char retro_content_directory[RETRO_PATH_MAX] = {0};
 dc_storage *retro_dc = NULL;
 
 // Configs
-static char uae_machine[256];
-static char uae_kickstart[RETRO_PATH_MAX];
-static char uae_kickstart_ext[RETRO_PATH_MAX];
-static char uae_config[1024];
+static char uae_machine[256] = {0};
+static char uae_kickstart[RETRO_PATH_MAX] = {0};
+static char uae_kickstart_ext[RETRO_PATH_MAX] = {0};
+static char uae_config[1024] = {0};
+static char uae_custom_config[4096] = {0};
 
 void retro_set_environment(retro_environment_t cb)
 {
@@ -1916,7 +1917,7 @@ static void update_variables(void)
          strcat(uae_config, "\n");
       }
 
-      if (libretro_runloop_active)
+      if (libretro_runloop_active && !strstr(uae_custom_config, "gfx_framerate="))
          changed_prefs.gfx_framerate=val;
    }
 
@@ -3655,6 +3656,150 @@ void retro_force_region(FILE** configfile)
    }
 }
 
+char* emu_config_string(int config)
+{
+   switch (config)
+   {
+      case EMU_CONFIG_A500: return "A500";
+      case EMU_CONFIG_A500OG: return "A500OG";
+      case EMU_CONFIG_A500PLUS: return "A500PLUS";
+      case EMU_CONFIG_A600: return "A600";
+      case EMU_CONFIG_A1200: return "A1200";
+      case EMU_CONFIG_A1200OG: return "A1200OG";
+      case EMU_CONFIG_A4030: return "A4030";
+      case EMU_CONFIG_A4040: return "A4040";
+      case EMU_CONFIG_CDTV: return "CDTV";
+      case EMU_CONFIG_CD32: return "CD32";
+      case EMU_CONFIG_CD32FR: return "CD32FR";
+      default: return "";
+   }
+}
+
+char* emu_config(int config)
+{
+   char custom_config_path[RETRO_PATH_MAX] = {0};
+   char custom_config_file[RETRO_PATH_MAX] = {0};
+
+   snprintf(custom_config_file, sizeof(custom_config_file), "%s_%s.%s", LIBRETRO_PUAE_PREFIX, emu_config_string(config), "uae");
+   path_join(custom_config_path, retro_save_directory, custom_config_file);
+
+   if (file_exists(custom_config_path))
+   {
+      fprintf(stdout, "[libretro-uae]: Replacing configuration: '%s'\n", custom_config_path);
+
+      char filebuf[4096] = {0};
+      FILE * custom_config_fp;
+      if (custom_config_fp = fopen(custom_config_path, "r"))
+      {
+         while (fgets(filebuf, sizeof(filebuf), custom_config_fp))
+            strcat(uae_custom_config, filebuf);
+         fclose(custom_config_fp);
+      }
+      return uae_custom_config;
+   }
+
+   // chipmem_size (default 1): 1 = 0.5MB, 2 = 1MB, 4 = 2MB
+   // bogomem_size (default 0): 2 = 0.5MB, 4 = 1MB, 6 = 1.5MB, 7 = 1.8MB
+   // fastmem_size (default 0): 1 = 1.0MB, ...
+   switch (config)
+   {
+      case EMU_CONFIG_A500: return
+         "cpu_model=68000\n"
+         "chipset=ocs\n"
+         "chipset_compatible=A500\n"
+         "chipmem_size=1\n"
+         "bogomem_size=2\n"
+         "fastmem_size=0\n";
+
+      case EMU_CONFIG_A500OG: return
+         "cpu_model=68000\n"
+         "chipset=ocs\n"
+         "chipset_compatible=A500\n"
+         "chipmem_size=1\n"
+         "bogomem_size=0\n"
+         "fastmem_size=0\n";
+
+      case EMU_CONFIG_A500PLUS: return
+         "cpu_model=68000\n"
+         "chipset=ecs\n"
+         "chipset_compatible=A500+\n"
+         "chipmem_size=2\n"
+         "bogomem_size=0\n"
+         "fastmem_size=0\n";
+
+      case EMU_CONFIG_A600: return
+         "cpu_model=68000\n"
+         "chipset=ecs\n"
+         "chipset_compatible=A600\n"
+         "chipmem_size=4\n"
+         "bogomem_size=0\n"
+         "fastmem_size=8\n";
+
+      case EMU_CONFIG_A1200: return
+         "cpu_model=68020\n"
+         "chipset=aga\n"
+         "chipset_compatible=A1200\n"
+         "chipmem_size=4\n"
+         "bogomem_size=0\n"
+         "fastmem_size=8\n";
+
+      case EMU_CONFIG_A1200OG: return
+         "cpu_model=68020\n"
+         "chipset=aga\n"
+         "chipset_compatible=A1200\n"
+         "chipmem_size=4\n"
+         "bogomem_size=0\n"
+         "fastmem_size=0\n";
+
+      case EMU_CONFIG_A4030: return
+         "cpu_model=68030\n"
+         "fpu_model=68882\n"
+         "chipset=aga\n"
+         "chipset_compatible=A4000\n"
+         "chipmem_size=4\n"
+         "bogomem_size=0\n"
+         "fastmem_size=8\n";
+
+      case EMU_CONFIG_A4040: return
+         "cpu_model=68040\n"
+         "fpu_model=68040\n"
+         "chipset=aga\n"
+         "chipset_compatible=A4000\n"
+         "chipmem_size=4\n"
+         "bogomem_size=0\n"
+         "fastmem_size=8\n";
+
+      case EMU_CONFIG_CDTV: return
+         "cpu_model=68000\n"
+         "chipset=ecs_agnus\n"
+         "chipset_compatible=CDTV\n"
+         "chipmem_size=2\n"
+         "bogomem_size=0\n"
+         "fastmem_size=0\n"
+         "floppy0type=-1\n";
+
+      case EMU_CONFIG_CD32: return
+         "cpu_model=68020\n"
+         "chipset=aga\n"
+         "chipset_compatible=CD32\n"
+         "chipmem_size=4\n"
+         "bogomem_size=0\n"
+         "fastmem_size=0\n"
+         "floppy0type=-1\n";
+
+      case EMU_CONFIG_CD32FR: return
+         "cpu_model=68020\n"
+         "chipset=aga\n"
+         "chipset_compatible=CD32\n"
+         "chipmem_size=4\n"
+         "bogomem_size=0\n"
+         "fastmem_size=8\n"
+         "floppy0type=-1\n";
+
+      default: return "";
+   }
+}
+
 bool retro_create_config()
 {
    RPATH[0] = '\0';
@@ -3663,59 +3808,59 @@ bool retro_create_config()
 
    if (strcmp(opt_model, "A500") == 0)
    {
-      strcat(uae_machine, A500_CONFIG);
+      strcat(uae_machine, emu_config(EMU_CONFIG_A500));
       strcpy(uae_kickstart, A500_ROM);
    }
    else if (strcmp(opt_model, "A500OG") == 0)
    {
-      strcat(uae_machine, A500OG_CONFIG);
+      strcat(uae_machine, emu_config(EMU_CONFIG_A500OG));
       strcpy(uae_kickstart, A500_ROM);
    }
    else if (strcmp(opt_model, "A500PLUS") == 0)
    {
-      strcat(uae_machine, A500PLUS_CONFIG);
+      strcat(uae_machine, emu_config(EMU_CONFIG_A500PLUS));
       strcpy(uae_kickstart, A500KS2_ROM);
    }
    else if (strcmp(opt_model, "A600") == 0)
    {
-      strcat(uae_machine, A600_CONFIG);
+      strcat(uae_machine, emu_config(EMU_CONFIG_A600));
       strcpy(uae_kickstart, A600_ROM);
    }
    else if (strcmp(opt_model, "A1200") == 0)
    {
-      strcat(uae_machine, A1200_CONFIG);
+      strcat(uae_machine, emu_config(EMU_CONFIG_A1200));
       strcpy(uae_kickstart, A1200_ROM);
    }
    else if (strcmp(opt_model, "A1200OG") == 0)
    {
-      strcat(uae_machine, A1200OG_CONFIG);
+      strcat(uae_machine, emu_config(EMU_CONFIG_A1200OG));
       strcpy(uae_kickstart, A1200_ROM);
    }
    else if (strcmp(opt_model, "A4030") == 0)
    {
-      strcat(uae_machine, A4030_CONFIG);
+      strcat(uae_machine, emu_config(EMU_CONFIG_A4030));
       strcpy(uae_kickstart, A4000_ROM);
    }
    else if (strcmp(opt_model, "A4040") == 0)
    {
-      strcat(uae_machine, A4040_CONFIG);
+      strcat(uae_machine, emu_config(EMU_CONFIG_A4040));
       strcpy(uae_kickstart, A4000_ROM);
    }
    else if (strcmp(opt_model, "CDTV") == 0)
    {
-      strcat(uae_machine, CDTV_CONFIG);
+      strcat(uae_machine, emu_config(EMU_CONFIG_CDTV));
       strcpy(uae_kickstart, A500_ROM);
       strcpy(uae_kickstart_ext, CDTV_ROM);
    }
    else if (strcmp(opt_model, "CD32") == 0)
    {
-      strcat(uae_machine, CD32_CONFIG);
+      strcat(uae_machine, emu_config(EMU_CONFIG_CD32));
       strcpy(uae_kickstart, CD32_ROM);
       strcpy(uae_kickstart_ext, CD32_ROM_EXT);
    }
    else if (strcmp(opt_model, "CD32FR") == 0)
    {
-      strcat(uae_machine, CD32FR_CONFIG);
+      strcat(uae_machine, emu_config(EMU_CONFIG_CD32FR));
       strcpy(uae_kickstart, CD32_ROM);
       strcpy(uae_kickstart_ext, CD32_ROM_EXT);
    }
@@ -3723,12 +3868,12 @@ bool retro_create_config()
    {
       if (opt_use_boot_hd)
       {
-         strcat(uae_machine, A600_CONFIG);
+         strcat(uae_machine, emu_config(EMU_CONFIG_A600));
          strcpy(uae_kickstart, A600_ROM);
       }
       else
       {
-         strcat(uae_machine, A500_CONFIG);
+         strcat(uae_machine, emu_config(EMU_CONFIG_A500));
          strcpy(uae_kickstart, A500_ROM);
       }
    }
@@ -3865,7 +4010,7 @@ bool retro_create_config()
                   // Use A4000/030
                   fprintf(stdout, "[libretro-uae]: Found '(A4030)' or '(030)' in: '%s'\n", full_path);
                   fprintf(stdout, "[libretro-uae]: Booting A4000/030: '%s'\n", A4000_ROM);
-                  fprintf(configfile, A4030_CONFIG);
+                  fprintf(configfile, emu_config(EMU_CONFIG_A4030));
                   path_join((char*)&kickstart, retro_system_directory, A4000_ROM);
                }
                else if (strstr(full_path, "(A4040)") != NULL || strstr(full_path, "(040)") != NULL)
@@ -3873,7 +4018,7 @@ bool retro_create_config()
                   // Use A4000/040
                   fprintf(stdout, "[libretro-uae]: Found '(A4040)' or '(040)' in: '%s'\n", full_path);
                   fprintf(stdout, "[libretro-uae]: Booting A4000/040: '%s'\n", A4000_ROM);
-                  fprintf(configfile, A4040_CONFIG);
+                  fprintf(configfile, emu_config(EMU_CONFIG_A4040));
                   path_join((char*)&kickstart, retro_system_directory, A4000_ROM);
                }
                else if (strstr(full_path, "(A1200OG)") != NULL || strstr(full_path, "(A1200NF)") != NULL)
@@ -3881,7 +4026,7 @@ bool retro_create_config()
                   // Use A1200 barebone
                   fprintf(stdout, "[libretro-uae]: Found '(A1200OG)' or '(A1200NF)' in: '%s'\n", full_path);
                   fprintf(stdout, "[libretro-uae]: Booting A1200 NoFast: '%s'\n", A1200_ROM);
-                  fprintf(configfile, A1200OG_CONFIG);
+                  fprintf(configfile, emu_config(EMU_CONFIG_A1200OG));
                   path_join((char*)&kickstart, retro_system_directory, A1200_ROM);
                }
                else if (strstr(full_path, "(A1200)") != NULL || strstr(full_path, "AGA") != NULL || strstr(full_path, "CD32") != NULL || strstr(full_path, "AmigaCD") != NULL)
@@ -3889,7 +4034,7 @@ bool retro_create_config()
                   // Use A1200
                   fprintf(stdout, "[libretro-uae]: Found '(A1200)', 'AGA', 'CD32', or 'AmigaCD' in: '%s'\n", full_path);
                   fprintf(stdout, "[libretro-uae]: Booting A1200: '%s'\n", A1200_ROM);
-                  fprintf(configfile, A1200_CONFIG);
+                  fprintf(configfile, emu_config(EMU_CONFIG_A1200));
                   path_join((char*)&kickstart, retro_system_directory, A1200_ROM);
                }
                else if (strstr(full_path, "(A600)") != NULL || strstr(full_path, "ECS") != NULL)
@@ -3897,7 +4042,7 @@ bool retro_create_config()
                   // Use A600
                   fprintf(stdout, "[libretro-uae]: Found '(A600)' or 'ECS' in: '%s'\n", full_path);
                   fprintf(stdout, "[libretro-uae]: Booting A600: '%s'\n", A600_ROM);
-                  fprintf(configfile, A600_CONFIG);
+                  fprintf(configfile, emu_config(EMU_CONFIG_A600));
                   path_join((char*)&kickstart, retro_system_directory, A600_ROM);
                }
                else if (strstr(full_path, "(A500+)") != NULL || strstr(full_path, "(A500PLUS)") != NULL)
@@ -3905,7 +4050,7 @@ bool retro_create_config()
                   // Use A500+
                   fprintf(stdout, "[libretro-uae]: Found '(A500+)' or '(A500PLUS)' in: '%s'\n", full_path);
                   fprintf(stdout, "[libretro-uae]: Booting A500+: '%s'\n", A500KS2_ROM);
-                  fprintf(configfile, A500PLUS_CONFIG);
+                  fprintf(configfile, emu_config(EMU_CONFIG_A500PLUS));
                   path_join((char*)&kickstart, retro_system_directory, A500KS2_ROM);
                }
                else if (strstr(full_path, "(A500OG)") != NULL || strstr(full_path, "(512K)") != NULL)
@@ -3913,7 +4058,7 @@ bool retro_create_config()
                   // Use A500 barebone
                   fprintf(stdout, "[libretro-uae]: Found '(A500OG)' or '(512K)' in: '%s'\n", full_path);
                   fprintf(stdout, "[libretro-uae]: Booting A500 512K: '%s'\n", A500_ROM);
-                  fprintf(configfile, A500OG_CONFIG);
+                  fprintf(configfile, emu_config(EMU_CONFIG_A500OG));
                   path_join((char*)&kickstart, retro_system_directory, A500_ROM);
                }
                else if (strstr(full_path, "(A500)") != NULL || strstr(full_path, "OCS") != NULL)
@@ -3921,7 +4066,7 @@ bool retro_create_config()
                   // Use A500
                   fprintf(stdout, "[libretro-uae]: Found '(A500)' or 'OCS' in: '%s'\n", full_path);
                   fprintf(stdout, "[libretro-uae]: Booting A500: '%s'\n", A500_ROM);
-                  fprintf(configfile, A500_CONFIG);
+                  fprintf(configfile, emu_config(EMU_CONFIG_A500));
                   path_join((char*)&kickstart, retro_system_directory, A500_ROM);
                }
                else
@@ -3935,7 +4080,7 @@ bool retro_create_config()
                         || path_is_directory(full_path))
                      {
                         uae_machine[0] = '\0';
-                        strcat(uae_machine, A600_CONFIG);
+                        strcat(uae_machine, emu_config(EMU_CONFIG_A600));
                         strcpy(uae_kickstart, A600_ROM);
                      }
                   }
@@ -3954,6 +4099,9 @@ bool retro_create_config()
                fprintf(configfile, uae_machine);
                path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
             }
+
+            // Separator row for clarity
+            fprintf(configfile, "\n");
 
             // Write common config
             fprintf(configfile, uae_config);
@@ -4442,7 +4590,7 @@ bool retro_create_config()
                   // Use CD32 with Fast RAM
                   fprintf(stdout, "[libretro-uae]: Found '(CD32FR)' or 'FastRAM' in: '%s'\n", full_path);
                   fprintf(stdout, "[libretro-uae]: Booting CD32 FastRAM: '%s'\n", CD32_ROM);
-                  fprintf(configfile, CD32FR_CONFIG);
+                  fprintf(configfile, emu_config(EMU_CONFIG_CD32FR));
                   path_join((char*)&kickstart, retro_system_directory, CD32_ROM);
                   path_join((char*)&kickstart_ext, retro_system_directory, CD32_ROM_EXT);
                }
@@ -4451,7 +4599,7 @@ bool retro_create_config()
                   // Use CD32 barebone
                   fprintf(stdout, "[libretro-uae]: Found '(CD32)' or '(CD32NF)' in: '%s'\n", full_path);
                   fprintf(stdout, "[libretro-uae]: Booting CD32: '%s'\n", CD32_ROM);
-                  fprintf(configfile, CD32_CONFIG);
+                  fprintf(configfile, emu_config(EMU_CONFIG_CD32));
                   path_join((char*)&kickstart, retro_system_directory, CD32_ROM);
                   path_join((char*)&kickstart_ext, retro_system_directory, CD32_ROM_EXT);
                }
@@ -4460,7 +4608,7 @@ bool retro_create_config()
                   // Use CDTV
                   fprintf(stdout, "[libretro-uae]: Found 'CDTV' in: '%s'\n", full_path);
                   fprintf(stdout, "[libretro-uae]: Booting CDTV: '%s'\n", CDTV_ROM);
-                  fprintf(configfile, CDTV_CONFIG);
+                  fprintf(configfile, emu_config(EMU_CONFIG_CDTV));
                   path_join((char*)&kickstart, retro_system_directory, A500_ROM);
                   path_join((char*)&kickstart_ext, retro_system_directory, CDTV_ROM);
                }
@@ -4468,7 +4616,7 @@ bool retro_create_config()
                {
                   // CD32 fallback
                   uae_machine[0] = '\0';
-                  strcat(uae_machine, CD32_CONFIG);
+                  fprintf(configfile, emu_config(EMU_CONFIG_CD32));
                   strcpy(uae_kickstart, CD32_ROM);
                   strcpy(uae_kickstart_ext, CD32_ROM_EXT);
 
@@ -4488,6 +4636,9 @@ bool retro_create_config()
                path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
                path_join((char*)&kickstart_ext, retro_system_directory, uae_kickstart_ext);
             }
+
+            // Separator row for clarity
+            fprintf(configfile, "\n");
 
             // Write common config
             fprintf(configfile, uae_config);
@@ -4610,6 +4761,9 @@ bool retro_create_config()
 	        fprintf(configfile, uae_machine);
 	        path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
 
+	        // Separator row for clarity
+	        fprintf(configfile, "\n");
+
 	        // Write common config
 	        fprintf(configfile, uae_config);
 	        fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
@@ -4675,6 +4829,9 @@ bool retro_create_config()
          fprintf(stdout, "[libretro-uae]: Booting default model: '%s'\n", uae_kickstart);
          fprintf(configfile, uae_machine);
          path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
+
+         // Separator row for clarity
+         fprintf(configfile, "\n");
 
          // Write common config
          fprintf(configfile, uae_config);
