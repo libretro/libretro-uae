@@ -104,6 +104,7 @@ bool retro_av_info_change_timing = false;
 bool retro_av_info_change_geometry = true;
 bool retro_av_info_is_ntsc = false;
 bool request_reset_drawing = false;
+bool request_reset_soft = false;
 unsigned int request_init_custom_timer = 0;
 unsigned int request_check_prefs_timer = 0;
 unsigned int zoom_mode_id = 0;
@@ -1364,12 +1365,13 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       /* video_config change only at start */
-      if (video_config_old == 0)
+      if (video_config_old == 0 && !forced_video)
       {
          if (strstr(var.value, "PAL"))
          {
             video_config |= PUAE_VIDEO_PAL;
             strcat(uae_config, "ntsc=false\n");
+            real_ntsc = false;
          }
          else
          {
@@ -3239,7 +3241,7 @@ static bool retro_update_av_info(void)
          video_config |= PUAE_VIDEO_NTSC;
          video_config &= ~PUAE_VIDEO_PAL;
          video_config_geometry = video_config;
-         fake_ntsc=true;
+         fake_ntsc = true;
       }
 
       /* If still no change */
@@ -3321,6 +3323,13 @@ static bool retro_update_av_info(void)
          min_diwstart_limit = min_diwstart_limit_hires * 2;
          max_diwstop_limit = max_diwstop_limit_hires * 2;
          break;
+   }
+
+   /* Restore actual canvas dimension in real NTSC, otherwise aspect ratio toggling is broken */
+   if (real_ntsc && video_config_geometry & PUAE_VIDEO_PAL)
+   {
+      retrow = defaultw;
+      retroh = defaulth;
    }
 
    /* Exception for Dyna Blaster */
@@ -3629,8 +3638,8 @@ void retro_force_region(FILE** configfile)
       fprintf(stdout, "[libretro-uae]: Found 'NTSC' or '(USA)' in: '%s'\n", full_path);
       fprintf(stdout, "[libretro-uae]: Forcing NTSC mode\n");
       fprintf(*configfile, "ntsc=true\n");
-      real_ntsc=true;
-      forced_video=true;
+      real_ntsc = true;
+      forced_video = true;
    }
    else if (strstr(full_path, "PAL") != NULL || strstr(full_path, "(Europe)") != NULL
          || strstr(full_path, "(France)") != NULL || strstr(full_path, "(Germany)") != NULL
@@ -3641,7 +3650,8 @@ void retro_force_region(FILE** configfile)
       fprintf(stdout, "[libretro-uae]: Found 'PAL', '(Europe)' or '(Denmark|Finland|France|Germany|Italy|Spain|Sweden)' in: '%s'\n", full_path);
       fprintf(stdout, "[libretro-uae]: Forcing PAL mode\n");
       fprintf(*configfile, "ntsc=false\n");
-      forced_video=true;
+      real_ntsc = false;
+      forced_video = true;
    }
 }
 
@@ -4789,6 +4799,22 @@ bool retro_create_config()
          fclose(configfile);
       }
    }
+
+   // Scan for specific rows
+   FILE * configfile;
+   char filebuf[4096];
+   if (configfile = fopen(RPATH, "r"))
+   {
+      while (fgets(filebuf, sizeof(filebuf), configfile))
+      {
+         if (strstr(filebuf, "ntsc=true"))
+            real_ntsc = true;
+         if (strstr(filebuf, "ntsc=false"))
+            real_ntsc = false;
+      }
+      fclose(configfile);
+   }
+
    return true;
 }
 
@@ -4799,6 +4825,12 @@ void retro_reset(void)
    update_variables();
    retro_create_config();
    uae_restart(1, (const char*)&RPATH); /* 1=nogui */
+}
+
+void retro_reset_soft()
+{
+   fake_ntsc = false;
+   uae_reset(0, 0); /* hardreset, keyboardreset */
 }
 
 void update_audiovideo(void)
@@ -5028,6 +5060,13 @@ void retro_run(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
       update_variables();
 
+   // Soft reset requested
+   if (request_reset_soft)
+   {
+      request_reset_soft = false;
+      retro_reset_soft();
+   }
+
    // Handle statusbar text, audio filter type & video geometry + resolution
    update_audiovideo();
 
@@ -5151,6 +5190,11 @@ bool retro_load_game(const struct retro_game_info *info)
    fprintf(stderr, "[libretro-uae]: Resolution selected: %dx%d\n", defaultw, defaulth);
    retrow = defaultw;
    retroh = defaulth;
+
+   // Due to some unknown reason if the machine is started straight into NTSC,
+   // a soft reset is required for keeping the statusbar bottom position inside the screen
+   if (real_ntsc)
+      request_reset_soft = true;
 
    // Initialise emulation
    umain(sizeof(uae_argv)/sizeof(*uae_argv), uae_argv);
