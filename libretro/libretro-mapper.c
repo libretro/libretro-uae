@@ -94,6 +94,7 @@ extern bool retro_request_av_info_update;
 extern bool request_reset_drawing;
 extern int opt_statusbar;
 extern int opt_statusbar_position;
+extern bool mousemode_locked;
 extern unsigned int opt_analogmouse;
 extern unsigned int opt_analogmouse_deadzone;
 extern float opt_analogmouse_speed;
@@ -153,6 +154,7 @@ void emu_function(int function)
          request_reset_drawing = true;
          break;
       case EMU_MOUSE_TOGGLE:
+         mousemode_locked = true;
          MOUSEMODE = -MOUSEMODE;
          // Reset flags to prevent sticky keys
          memset(jflag, 0, 2*16*sizeof jflag[0][0]);

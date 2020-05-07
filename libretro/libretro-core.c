@@ -72,6 +72,8 @@ float opt_analogmouse_speed = 1.0;
 unsigned int opt_cd32pad_options = 0;
 unsigned int opt_retropad_options = 0;
 char opt_joyport_order[5] = "1234";
+bool mousemode_locked = false;
+extern int MOUSEMODE;
 
 #if defined(NATMEM_OFFSET)
 extern uae_u8 *natmem_offset;
@@ -859,8 +861,19 @@ void retro_set_environment(retro_environment_t cb)
          "disabled"
       },
       {
+         "puae_joyport",
+         "RetroPad Joystick/Mouse",
+         "Changes D-Pad control between joyports. Hotkey toggling will disable this option until core restart.",
+         {
+            { "joystick", "Joystick (Port 1)" },
+            { "mouse", "Mouse (Port 2)" },
+            { NULL, NULL },
+         },
+         "Joystick"
+      },
+      {
          "puae_joyport_order",
-         "Joyport Order",
+         "RetroPad Joyport Order",
          "Plug RetroPads in different ports. Useful for Arcadia system and games that support 4-player adapter.",
          {
             { "1234", "1-2-3-4" },
@@ -2147,6 +2160,14 @@ static void update_variables(void)
    {
       if (strcmp(var.value, "disabled") == 0) opt_audio_options_display=0;
       else if (strcmp(var.value, "enabled") == 0) opt_audio_options_display=1;
+   }
+
+   var.key = "puae_joyport";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "joystick") == 0 && !mousemode_locked) MOUSEMODE=-1;
+      else if (strcmp(var.value, "mouse") == 0 && !mousemode_locked) MOUSEMODE=1;
    }
 
    var.key = "puae_joyport_order";
