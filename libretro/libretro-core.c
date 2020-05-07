@@ -47,6 +47,7 @@ unsigned int opt_mapping_options_display;
 unsigned int opt_video_options_display;
 unsigned int opt_audio_options_display;
 char opt_model[10];
+bool opt_region_auto = true;
 bool opt_video_resolution_auto = false;
 bool opt_video_vresolution_auto = false;
 bool opt_floppy_sound_empty_mute = false;
@@ -71,6 +72,8 @@ float opt_analogmouse_speed = 1.0;
 unsigned int opt_cd32pad_options = 0;
 unsigned int opt_retropad_options = 0;
 char opt_joyport_order[5] = "1234";
+bool mousemode_locked = false;
+extern int MOUSEMODE;
 
 #if defined(NATMEM_OFFSET)
 extern uae_u8 *natmem_offset;
@@ -103,6 +106,7 @@ bool retro_av_info_change_timing = false;
 bool retro_av_info_change_geometry = true;
 bool retro_av_info_is_ntsc = false;
 bool request_reset_drawing = false;
+bool request_reset_soft = false;
 unsigned int request_init_custom_timer = 0;
 unsigned int request_check_prefs_timer = 0;
 unsigned int zoom_mode_id = 0;
@@ -178,10 +182,11 @@ static char retro_content_directory[RETRO_PATH_MAX] = {0};
 dc_storage *retro_dc = NULL;
 
 // Configs
-static char uae_machine[256];
-static char uae_kickstart[RETRO_PATH_MAX];
-static char uae_kickstart_ext[RETRO_PATH_MAX];
-static char uae_config[1024];
+static char uae_machine[256] = {0};
+static char uae_kickstart[RETRO_PATH_MAX] = {0};
+static char uae_kickstart_ext[RETRO_PATH_MAX] = {0};
+static char uae_config[1024] = {0};
+static char uae_custom_config[4096] = {0};
 
 void retro_set_environment(retro_environment_t cb)
 {
@@ -324,13 +329,15 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_video_standard",
          "Video Standard",
-         "Output Hz & height:\n- Single Line / Double Line.",
+         "Output Hz & height:\n- Single Line / Double Line.\n- 'Automatic' switches region per filename and directory tags.",
          {
+            { "PAL auto", "Automatic PAL" },
+            { "NTSC auto", "Automatic NTSC" },
             { "PAL", "PAL 50Hz - 288px / 576px" },
             { "NTSC", "NTSC 60Hz - 240px / 480px" },
             { NULL, NULL },
          },
-         "PAL"
+         "PAL auto"
       },
       {
          "puae_video_resolution",
@@ -359,7 +366,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_video_aspect",
-         "Aspect Ratio",
+         "Pixel Aspect Ratio",
          "PAR:\n- PAL 1/1 = 1.000\n- NTSC 44/52 = 0.846",
          {
             { "auto", "Automatic" },
@@ -854,8 +861,19 @@ void retro_set_environment(retro_environment_t cb)
          "disabled"
       },
       {
+         "puae_joyport",
+         "RetroPad Joystick/Mouse",
+         "Changes D-Pad control between joyports. Hotkey toggling will disable this option until core restart.",
+         {
+            { "joystick", "Joystick (Port 1)" },
+            { "mouse", "Mouse (Port 2)" },
+            { NULL, NULL },
+         },
+         "Joystick"
+      },
+      {
          "puae_joyport_order",
-         "Joyport Order",
+         "RetroPad Joyport Order",
          "Plug RetroPads in different ports. Useful for Arcadia system and games that support 4-player adapter.",
          {
             { "1234", "1-2-3-4" },
@@ -1043,7 +1061,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapper_aspect_ratio_toggle",
          "Hotkey: Toggle Aspect Ratio",
-         "Press the mapped key to toggle between PAL/NTSC aspect ratio.",
+         "Press the mapped key to toggle between PAL/NTSC pixel aspect ratio.",
          {{ NULL, NULL }},
          "---"
       },
@@ -1361,12 +1379,13 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       /* video_config change only at start */
-      if (video_config_old == 0)
+      if (video_config_old == 0 && !forced_video)
       {
-         if (strcmp(var.value, "PAL") == 0)
+         if (strstr(var.value, "PAL"))
          {
             video_config |= PUAE_VIDEO_PAL;
             strcat(uae_config, "ntsc=false\n");
+            real_ntsc = false;
          }
          else
          {
@@ -1377,11 +1396,16 @@ static void update_variables(void)
       }
       else if (!forced_video)
       {
-         if (strcmp(var.value, "PAL") == 0)
+         if (strstr(var.value, "PAL"))
             changed_prefs.ntscmode=0;
          else
             changed_prefs.ntscmode=1;
       }
+
+      if (strstr(var.value, "auto"))
+         opt_region_auto = true;
+      else
+         opt_region_auto = false;
    }
 
    var.key = "puae_video_aspect";
@@ -1906,7 +1930,7 @@ static void update_variables(void)
          strcat(uae_config, "\n");
       }
 
-      if (libretro_runloop_active)
+      if (libretro_runloop_active && !strstr(uae_custom_config, "gfx_framerate="))
          changed_prefs.gfx_framerate=val;
    }
 
@@ -2136,6 +2160,14 @@ static void update_variables(void)
    {
       if (strcmp(var.value, "disabled") == 0) opt_audio_options_display=0;
       else if (strcmp(var.value, "enabled") == 0) opt_audio_options_display=1;
+   }
+
+   var.key = "puae_joyport";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "joystick") == 0 && !mousemode_locked) MOUSEMODE=-1;
+      else if (strcmp(var.value, "mouse") == 0 && !mousemode_locked) MOUSEMODE=1;
    }
 
    var.key = "puae_joyport_order";
@@ -3231,7 +3263,7 @@ static bool retro_update_av_info(void)
          video_config |= PUAE_VIDEO_NTSC;
          video_config &= ~PUAE_VIDEO_PAL;
          video_config_geometry = video_config;
-         fake_ntsc=true;
+         fake_ntsc = true;
       }
 
       /* If still no change */
@@ -3313,6 +3345,13 @@ static bool retro_update_av_info(void)
          min_diwstart_limit = min_diwstart_limit_hires * 2;
          max_diwstop_limit = max_diwstop_limit_hires * 2;
          break;
+   }
+
+   /* Restore actual canvas dimension in real NTSC, otherwise aspect ratio toggling is broken */
+   if (real_ntsc && video_config_geometry & PUAE_VIDEO_PAL)
+   {
+      retrow = defaultw;
+      retroh = defaulth;
    }
 
    /* Exception for Dyna Blaster */
@@ -3613,6 +3652,175 @@ void retro_audio_batch_cb(const int16_t *data, size_t frames)
    audio_batch_cb(data, frames);
 }
 
+void retro_force_region(FILE** configfile)
+{
+   // If region was specified in the path
+   if (strstr(full_path, "NTSC") != NULL || strstr(full_path, "(USA)") != NULL)
+   {
+      fprintf(stdout, "[libretro-uae]: Found 'NTSC' or '(USA)' in: '%s'\n", full_path);
+      fprintf(stdout, "[libretro-uae]: Forcing NTSC mode\n");
+      fprintf(*configfile, "ntsc=true\n");
+      real_ntsc = true;
+      forced_video = true;
+   }
+   else if (strstr(full_path, "PAL") != NULL || strstr(full_path, "(Europe)") != NULL
+         || strstr(full_path, "(France)") != NULL || strstr(full_path, "(Germany)") != NULL
+         || strstr(full_path, "(Italy)") != NULL || strstr(full_path, "(Spain)") != NULL
+         || strstr(full_path, "(Finland)") != NULL || strstr(full_path, "(Denmark)") != NULL
+         || strstr(full_path, "(Sweden)") != NULL)
+   {
+      fprintf(stdout, "[libretro-uae]: Found 'PAL', '(Europe)' or '(Denmark|Finland|France|Germany|Italy|Spain|Sweden)' in: '%s'\n", full_path);
+      fprintf(stdout, "[libretro-uae]: Forcing PAL mode\n");
+      fprintf(*configfile, "ntsc=false\n");
+      real_ntsc = false;
+      forced_video = true;
+   }
+}
+
+char* emu_config_string(int config)
+{
+   switch (config)
+   {
+      case EMU_CONFIG_A500: return "A500";
+      case EMU_CONFIG_A500OG: return "A500OG";
+      case EMU_CONFIG_A500PLUS: return "A500PLUS";
+      case EMU_CONFIG_A600: return "A600";
+      case EMU_CONFIG_A1200: return "A1200";
+      case EMU_CONFIG_A1200OG: return "A1200OG";
+      case EMU_CONFIG_A4030: return "A4030";
+      case EMU_CONFIG_A4040: return "A4040";
+      case EMU_CONFIG_CDTV: return "CDTV";
+      case EMU_CONFIG_CD32: return "CD32";
+      case EMU_CONFIG_CD32FR: return "CD32FR";
+      default: return "";
+   }
+}
+
+char* emu_config(int config)
+{
+   char custom_config_path[RETRO_PATH_MAX] = {0};
+   char custom_config_file[RETRO_PATH_MAX] = {0};
+
+   snprintf(custom_config_file, sizeof(custom_config_file), "%s_%s.%s", LIBRETRO_PUAE_PREFIX, emu_config_string(config), "uae");
+   path_join(custom_config_path, retro_save_directory, custom_config_file);
+
+   if (file_exists(custom_config_path))
+   {
+      fprintf(stdout, "[libretro-uae]: Replacing configuration: '%s'\n", custom_config_path);
+
+      char filebuf[4096] = {0};
+      FILE * custom_config_fp;
+      if (custom_config_fp = fopen(custom_config_path, "r"))
+      {
+         while (fgets(filebuf, sizeof(filebuf), custom_config_fp))
+            strcat(uae_custom_config, filebuf);
+         fclose(custom_config_fp);
+      }
+      return uae_custom_config;
+   }
+
+   // chipmem_size (default 1): 1 = 0.5MB, 2 = 1MB, 4 = 2MB
+   // bogomem_size (default 0): 2 = 0.5MB, 4 = 1MB, 6 = 1.5MB, 7 = 1.8MB
+   // fastmem_size (default 0): 1 = 1.0MB, ...
+   switch (config)
+   {
+      case EMU_CONFIG_A500: return
+         "cpu_model=68000\n"
+         "chipset=ocs\n"
+         "chipset_compatible=A500\n"
+         "chipmem_size=1\n"
+         "bogomem_size=2\n"
+         "fastmem_size=0\n";
+
+      case EMU_CONFIG_A500OG: return
+         "cpu_model=68000\n"
+         "chipset=ocs\n"
+         "chipset_compatible=A500\n"
+         "chipmem_size=1\n"
+         "bogomem_size=0\n"
+         "fastmem_size=0\n";
+
+      case EMU_CONFIG_A500PLUS: return
+         "cpu_model=68000\n"
+         "chipset=ecs\n"
+         "chipset_compatible=A500+\n"
+         "chipmem_size=2\n"
+         "bogomem_size=0\n"
+         "fastmem_size=0\n";
+
+      case EMU_CONFIG_A600: return
+         "cpu_model=68000\n"
+         "chipset=ecs\n"
+         "chipset_compatible=A600\n"
+         "chipmem_size=4\n"
+         "bogomem_size=0\n"
+         "fastmem_size=8\n";
+
+      case EMU_CONFIG_A1200: return
+         "cpu_model=68020\n"
+         "chipset=aga\n"
+         "chipset_compatible=A1200\n"
+         "chipmem_size=4\n"
+         "bogomem_size=0\n"
+         "fastmem_size=8\n";
+
+      case EMU_CONFIG_A1200OG: return
+         "cpu_model=68020\n"
+         "chipset=aga\n"
+         "chipset_compatible=A1200\n"
+         "chipmem_size=4\n"
+         "bogomem_size=0\n"
+         "fastmem_size=0\n";
+
+      case EMU_CONFIG_A4030: return
+         "cpu_model=68030\n"
+         "fpu_model=68882\n"
+         "chipset=aga\n"
+         "chipset_compatible=A4000\n"
+         "chipmem_size=4\n"
+         "bogomem_size=0\n"
+         "fastmem_size=8\n";
+
+      case EMU_CONFIG_A4040: return
+         "cpu_model=68040\n"
+         "fpu_model=68040\n"
+         "chipset=aga\n"
+         "chipset_compatible=A4000\n"
+         "chipmem_size=4\n"
+         "bogomem_size=0\n"
+         "fastmem_size=8\n";
+
+      case EMU_CONFIG_CDTV: return
+         "cpu_model=68000\n"
+         "chipset=ecs_agnus\n"
+         "chipset_compatible=CDTV\n"
+         "chipmem_size=2\n"
+         "bogomem_size=0\n"
+         "fastmem_size=0\n"
+         "floppy0type=-1\n";
+
+      case EMU_CONFIG_CD32: return
+         "cpu_model=68020\n"
+         "chipset=aga\n"
+         "chipset_compatible=CD32\n"
+         "chipmem_size=4\n"
+         "bogomem_size=0\n"
+         "fastmem_size=0\n"
+         "floppy0type=-1\n";
+
+      case EMU_CONFIG_CD32FR: return
+         "cpu_model=68020\n"
+         "chipset=aga\n"
+         "chipset_compatible=CD32\n"
+         "chipmem_size=4\n"
+         "bogomem_size=0\n"
+         "fastmem_size=8\n"
+         "floppy0type=-1\n";
+
+      default: return "";
+   }
+}
+
 bool retro_create_config()
 {
    RPATH[0] = '\0';
@@ -3621,59 +3829,59 @@ bool retro_create_config()
 
    if (strcmp(opt_model, "A500") == 0)
    {
-      strcat(uae_machine, A500_CONFIG);
+      strcat(uae_machine, emu_config(EMU_CONFIG_A500));
       strcpy(uae_kickstart, A500_ROM);
    }
    else if (strcmp(opt_model, "A500OG") == 0)
    {
-      strcat(uae_machine, A500OG_CONFIG);
+      strcat(uae_machine, emu_config(EMU_CONFIG_A500OG));
       strcpy(uae_kickstart, A500_ROM);
    }
    else if (strcmp(opt_model, "A500PLUS") == 0)
    {
-      strcat(uae_machine, A500PLUS_CONFIG);
+      strcat(uae_machine, emu_config(EMU_CONFIG_A500PLUS));
       strcpy(uae_kickstart, A500KS2_ROM);
    }
    else if (strcmp(opt_model, "A600") == 0)
    {
-      strcat(uae_machine, A600_CONFIG);
+      strcat(uae_machine, emu_config(EMU_CONFIG_A600));
       strcpy(uae_kickstart, A600_ROM);
    }
    else if (strcmp(opt_model, "A1200") == 0)
    {
-      strcat(uae_machine, A1200_CONFIG);
+      strcat(uae_machine, emu_config(EMU_CONFIG_A1200));
       strcpy(uae_kickstart, A1200_ROM);
    }
    else if (strcmp(opt_model, "A1200OG") == 0)
    {
-      strcat(uae_machine, A1200OG_CONFIG);
+      strcat(uae_machine, emu_config(EMU_CONFIG_A1200OG));
       strcpy(uae_kickstart, A1200_ROM);
    }
    else if (strcmp(opt_model, "A4030") == 0)
    {
-      strcat(uae_machine, A4030_CONFIG);
+      strcat(uae_machine, emu_config(EMU_CONFIG_A4030));
       strcpy(uae_kickstart, A4000_ROM);
    }
    else if (strcmp(opt_model, "A4040") == 0)
    {
-      strcat(uae_machine, A4040_CONFIG);
+      strcat(uae_machine, emu_config(EMU_CONFIG_A4040));
       strcpy(uae_kickstart, A4000_ROM);
    }
    else if (strcmp(opt_model, "CDTV") == 0)
    {
-      strcat(uae_machine, CDTV_CONFIG);
+      strcat(uae_machine, emu_config(EMU_CONFIG_CDTV));
       strcpy(uae_kickstart, A500_ROM);
       strcpy(uae_kickstart_ext, CDTV_ROM);
    }
    else if (strcmp(opt_model, "CD32") == 0)
    {
-      strcat(uae_machine, CD32_CONFIG);
+      strcat(uae_machine, emu_config(EMU_CONFIG_CD32));
       strcpy(uae_kickstart, CD32_ROM);
       strcpy(uae_kickstart_ext, CD32_ROM_EXT);
    }
    else if (strcmp(opt_model, "CD32FR") == 0)
    {
-      strcat(uae_machine, CD32FR_CONFIG);
+      strcat(uae_machine, emu_config(EMU_CONFIG_CD32FR));
       strcpy(uae_kickstart, CD32_ROM);
       strcpy(uae_kickstart_ext, CD32_ROM_EXT);
    }
@@ -3681,12 +3889,12 @@ bool retro_create_config()
    {
       if (opt_use_boot_hd)
       {
-         strcat(uae_machine, A600_CONFIG);
+         strcat(uae_machine, emu_config(EMU_CONFIG_A600));
          strcpy(uae_kickstart, A600_ROM);
       }
       else
       {
-         strcat(uae_machine, A500_CONFIG);
+         strcat(uae_machine, emu_config(EMU_CONFIG_A500));
          strcpy(uae_kickstart, A500_ROM);
       }
    }
@@ -3823,7 +4031,7 @@ bool retro_create_config()
                   // Use A4000/030
                   fprintf(stdout, "[libretro-uae]: Found '(A4030)' or '(030)' in: '%s'\n", full_path);
                   fprintf(stdout, "[libretro-uae]: Booting A4000/030: '%s'\n", A4000_ROM);
-                  fprintf(configfile, A4030_CONFIG);
+                  fprintf(configfile, emu_config(EMU_CONFIG_A4030));
                   path_join((char*)&kickstart, retro_system_directory, A4000_ROM);
                }
                else if (strstr(full_path, "(A4040)") != NULL || strstr(full_path, "(040)") != NULL)
@@ -3831,7 +4039,7 @@ bool retro_create_config()
                   // Use A4000/040
                   fprintf(stdout, "[libretro-uae]: Found '(A4040)' or '(040)' in: '%s'\n", full_path);
                   fprintf(stdout, "[libretro-uae]: Booting A4000/040: '%s'\n", A4000_ROM);
-                  fprintf(configfile, A4040_CONFIG);
+                  fprintf(configfile, emu_config(EMU_CONFIG_A4040));
                   path_join((char*)&kickstart, retro_system_directory, A4000_ROM);
                }
                else if (strstr(full_path, "(A1200OG)") != NULL || strstr(full_path, "(A1200NF)") != NULL)
@@ -3839,7 +4047,7 @@ bool retro_create_config()
                   // Use A1200 barebone
                   fprintf(stdout, "[libretro-uae]: Found '(A1200OG)' or '(A1200NF)' in: '%s'\n", full_path);
                   fprintf(stdout, "[libretro-uae]: Booting A1200 NoFast: '%s'\n", A1200_ROM);
-                  fprintf(configfile, A1200OG_CONFIG);
+                  fprintf(configfile, emu_config(EMU_CONFIG_A1200OG));
                   path_join((char*)&kickstart, retro_system_directory, A1200_ROM);
                }
                else if (strstr(full_path, "(A1200)") != NULL || strstr(full_path, "AGA") != NULL || strstr(full_path, "CD32") != NULL || strstr(full_path, "AmigaCD") != NULL)
@@ -3847,7 +4055,7 @@ bool retro_create_config()
                   // Use A1200
                   fprintf(stdout, "[libretro-uae]: Found '(A1200)', 'AGA', 'CD32', or 'AmigaCD' in: '%s'\n", full_path);
                   fprintf(stdout, "[libretro-uae]: Booting A1200: '%s'\n", A1200_ROM);
-                  fprintf(configfile, A1200_CONFIG);
+                  fprintf(configfile, emu_config(EMU_CONFIG_A1200));
                   path_join((char*)&kickstart, retro_system_directory, A1200_ROM);
                }
                else if (strstr(full_path, "(A600)") != NULL || strstr(full_path, "ECS") != NULL)
@@ -3855,7 +4063,7 @@ bool retro_create_config()
                   // Use A600
                   fprintf(stdout, "[libretro-uae]: Found '(A600)' or 'ECS' in: '%s'\n", full_path);
                   fprintf(stdout, "[libretro-uae]: Booting A600: '%s'\n", A600_ROM);
-                  fprintf(configfile, A600_CONFIG);
+                  fprintf(configfile, emu_config(EMU_CONFIG_A600));
                   path_join((char*)&kickstart, retro_system_directory, A600_ROM);
                }
                else if (strstr(full_path, "(A500+)") != NULL || strstr(full_path, "(A500PLUS)") != NULL)
@@ -3863,7 +4071,7 @@ bool retro_create_config()
                   // Use A500+
                   fprintf(stdout, "[libretro-uae]: Found '(A500+)' or '(A500PLUS)' in: '%s'\n", full_path);
                   fprintf(stdout, "[libretro-uae]: Booting A500+: '%s'\n", A500KS2_ROM);
-                  fprintf(configfile, A500PLUS_CONFIG);
+                  fprintf(configfile, emu_config(EMU_CONFIG_A500PLUS));
                   path_join((char*)&kickstart, retro_system_directory, A500KS2_ROM);
                }
                else if (strstr(full_path, "(A500OG)") != NULL || strstr(full_path, "(512K)") != NULL)
@@ -3871,7 +4079,7 @@ bool retro_create_config()
                   // Use A500 barebone
                   fprintf(stdout, "[libretro-uae]: Found '(A500OG)' or '(512K)' in: '%s'\n", full_path);
                   fprintf(stdout, "[libretro-uae]: Booting A500 512K: '%s'\n", A500_ROM);
-                  fprintf(configfile, A500OG_CONFIG);
+                  fprintf(configfile, emu_config(EMU_CONFIG_A500OG));
                   path_join((char*)&kickstart, retro_system_directory, A500_ROM);
                }
                else if (strstr(full_path, "(A500)") != NULL || strstr(full_path, "OCS") != NULL)
@@ -3879,7 +4087,7 @@ bool retro_create_config()
                   // Use A500
                   fprintf(stdout, "[libretro-uae]: Found '(A500)' or 'OCS' in: '%s'\n", full_path);
                   fprintf(stdout, "[libretro-uae]: Booting A500: '%s'\n", A500_ROM);
-                  fprintf(configfile, A500_CONFIG);
+                  fprintf(configfile, emu_config(EMU_CONFIG_A500));
                   path_join((char*)&kickstart, retro_system_directory, A500_ROM);
                }
                else
@@ -3893,7 +4101,7 @@ bool retro_create_config()
                         || path_is_directory(full_path))
                      {
                         uae_machine[0] = '\0';
-                        strcat(uae_machine, A600_CONFIG);
+                        strcat(uae_machine, emu_config(EMU_CONFIG_A600));
                         strcpy(uae_kickstart, A600_ROM);
                      }
                   }
@@ -3913,25 +4121,15 @@ bool retro_create_config()
                path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
             }
 
+            // Separator row for clarity
+            fprintf(configfile, "\n");
+
             // Write common config
             fprintf(configfile, uae_config);
 
-            // If region was specified in the path
-            if (strstr(full_path, "NTSC") != NULL)
-            {
-               fprintf(stdout, "[libretro-uae]: Found 'NTSC' in: '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Forcing NTSC mode\n");
-               fprintf(configfile, "ntsc=true\n");
-               real_ntsc=true;
-               forced_video=true;
-            }
-            else if (strstr(full_path, "PAL") != NULL)
-            {
-               fprintf(stdout, "[libretro-uae]: Found 'PAL' in: '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Forcing PAL mode\n");
-               fprintf(configfile, "ntsc=false\n");
-               forced_video=true;
-            }
+            // Scan region tags only with automatic region
+            if (opt_region_auto)
+               retro_force_region(&configfile);
 
             // Verify Kickstart
             if (!file_exists(kickstart))
@@ -4413,7 +4611,7 @@ bool retro_create_config()
                   // Use CD32 with Fast RAM
                   fprintf(stdout, "[libretro-uae]: Found '(CD32FR)' or 'FastRAM' in: '%s'\n", full_path);
                   fprintf(stdout, "[libretro-uae]: Booting CD32 FastRAM: '%s'\n", CD32_ROM);
-                  fprintf(configfile, CD32FR_CONFIG);
+                  fprintf(configfile, emu_config(EMU_CONFIG_CD32FR));
                   path_join((char*)&kickstart, retro_system_directory, CD32_ROM);
                   path_join((char*)&kickstart_ext, retro_system_directory, CD32_ROM_EXT);
                }
@@ -4422,7 +4620,7 @@ bool retro_create_config()
                   // Use CD32 barebone
                   fprintf(stdout, "[libretro-uae]: Found '(CD32)' or '(CD32NF)' in: '%s'\n", full_path);
                   fprintf(stdout, "[libretro-uae]: Booting CD32: '%s'\n", CD32_ROM);
-                  fprintf(configfile, CD32_CONFIG);
+                  fprintf(configfile, emu_config(EMU_CONFIG_CD32));
                   path_join((char*)&kickstart, retro_system_directory, CD32_ROM);
                   path_join((char*)&kickstart_ext, retro_system_directory, CD32_ROM_EXT);
                }
@@ -4431,7 +4629,7 @@ bool retro_create_config()
                   // Use CDTV
                   fprintf(stdout, "[libretro-uae]: Found 'CDTV' in: '%s'\n", full_path);
                   fprintf(stdout, "[libretro-uae]: Booting CDTV: '%s'\n", CDTV_ROM);
-                  fprintf(configfile, CDTV_CONFIG);
+                  fprintf(configfile, emu_config(EMU_CONFIG_CDTV));
                   path_join((char*)&kickstart, retro_system_directory, A500_ROM);
                   path_join((char*)&kickstart_ext, retro_system_directory, CDTV_ROM);
                }
@@ -4439,7 +4637,7 @@ bool retro_create_config()
                {
                   // CD32 fallback
                   uae_machine[0] = '\0';
-                  strcat(uae_machine, CD32_CONFIG);
+                  fprintf(configfile, emu_config(EMU_CONFIG_CD32));
                   strcpy(uae_kickstart, CD32_ROM);
                   strcpy(uae_kickstart_ext, CD32_ROM_EXT);
 
@@ -4460,25 +4658,15 @@ bool retro_create_config()
                path_join((char*)&kickstart_ext, retro_system_directory, uae_kickstart_ext);
             }
 
+            // Separator row for clarity
+            fprintf(configfile, "\n");
+
             // Write common config
             fprintf(configfile, uae_config);
 
-            // If region was specified in the path
-            if (strstr(full_path, "NTSC") != NULL)
-            {
-               fprintf(stdout, "[libretro-uae]: Found 'NTSC' in: '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Forcing NTSC mode\n");
-               fprintf(configfile, "ntsc=true\n");
-               real_ntsc=true;
-               forced_video=true;
-            }
-            else if (strstr(full_path, "PAL") != NULL)
-            {
-               fprintf(stdout, "[libretro-uae]: Found 'PAL' in: '%s'\n", full_path);
-               fprintf(stdout, "[libretro-uae]: Forcing PAL mode\n");
-               fprintf(configfile, "ntsc=false\n");
-               forced_video=true;
-            }
+            // Scan region tags only with automatic region
+            if (opt_region_auto)
+               retro_force_region(&configfile);
 
             // Verify Kickstart
             if (!file_exists(kickstart))
@@ -4594,6 +4782,9 @@ bool retro_create_config()
 	        fprintf(configfile, uae_machine);
 	        path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
 
+	        // Separator row for clarity
+	        fprintf(configfile, "\n");
+
 	        // Write common config
 	        fprintf(configfile, uae_config);
 	        fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
@@ -4659,6 +4850,9 @@ bool retro_create_config()
          fprintf(stdout, "[libretro-uae]: Booting default model: '%s'\n", uae_kickstart);
          fprintf(configfile, uae_machine);
          path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
+
+         // Separator row for clarity
+         fprintf(configfile, "\n");
 
          // Write common config
          fprintf(configfile, uae_config);
@@ -4783,6 +4977,22 @@ bool retro_create_config()
          fclose(configfile);
       }
    }
+
+   // Scan for specific rows
+   FILE * configfile;
+   char filebuf[4096];
+   if (configfile = fopen(RPATH, "r"))
+   {
+      while (fgets(filebuf, sizeof(filebuf), configfile))
+      {
+         if (strstr(filebuf, "ntsc=true"))
+            real_ntsc = true;
+         if (strstr(filebuf, "ntsc=false"))
+            real_ntsc = false;
+      }
+      fclose(configfile);
+   }
+
    return true;
 }
 
@@ -4793,6 +5003,12 @@ void retro_reset(void)
    update_variables();
    retro_create_config();
    uae_restart(1, (const char*)&RPATH); /* 1=nogui */
+}
+
+void retro_reset_soft()
+{
+   fake_ntsc = false;
+   uae_reset(0, 0); /* hardreset, keyboardreset */
 }
 
 void update_audiovideo(void)
@@ -5022,6 +5238,13 @@ void retro_run(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
       update_variables();
 
+   // Soft reset requested
+   if (request_reset_soft)
+   {
+      request_reset_soft = false;
+      retro_reset_soft();
+   }
+
    // Handle statusbar text, audio filter type & video geometry + resolution
    update_audiovideo();
 
@@ -5145,6 +5368,11 @@ bool retro_load_game(const struct retro_game_info *info)
    fprintf(stderr, "[libretro-uae]: Resolution selected: %dx%d\n", defaultw, defaulth);
    retrow = defaultw;
    retroh = defaulth;
+
+   // Due to some unknown reason if the machine is started straight into NTSC,
+   // a soft reset is required for keeping the statusbar bottom position inside the screen
+   if (real_ntsc)
+      request_reset_soft = true;
 
    // Initialise emulation
    umain(sizeof(uae_argv)/sizeof(*uae_argv), uae_argv);

@@ -87,105 +87,23 @@ extern int vkbd_y_max;
 #define RGB888(r, g, b) (((r * 255 / 31) << (16)) | ((g * 255 / 31) << 8) | (b * 255 / 31))
 #define ARGB888(a, r, g, b) ((a << 24) | (r << 16) | (g << 8) | b)
 
-// Amiga models
-// chipmem_size 1 = 0.5MB, 2 = 1MB, 4 = 2MB
-// bogomem_size 2 = 0.5MB, 4 = 1MB, 6 = 1.5MB, 7 = 1.8MB
+// Configs
+enum EMU_CONFIG {
+   EMU_CONFIG_A500 = 0,
+   EMU_CONFIG_A500OG,
+   EMU_CONFIG_A500PLUS,
+   EMU_CONFIG_A600,
+   EMU_CONFIG_A1200,
+   EMU_CONFIG_A1200OG,
+   EMU_CONFIG_A4030,
+   EMU_CONFIG_A4040,
+   EMU_CONFIG_CDTV,
+   EMU_CONFIG_CD32,
+   EMU_CONFIG_CD32FR,
+   EMU_CONFIG_COUNT
+};
 
-#define A500_CONFIG "\
-cpu_model=68000\n\
-chipset=ocs\n\
-chipset_compatible=A500\n\
-chipmem_size=1\n\
-bogomem_size=2\n\
-"
-
-#define A500OG_CONFIG "\
-cpu_model=68000\n\
-chipset=ocs\n\
-chipset_compatible=A500\n\
-chipmem_size=1\n\
-bogomem_size=0\n\
-"
-
-#define A500PLUS_CONFIG "\
-cpu_model=68000\n\
-chipset=ecs\n\
-chipset_compatible=A500+\n\
-chipmem_size=2\n\
-bogomem_size=0\n\
-"
-
-#define A600_CONFIG "\
-cpu_model=68000\n\
-chipset=ecs\n\
-chipset_compatible=A600\n\
-chipmem_size=4\n\
-fastmem_size=8\n\
-"
-
-#define A1200_CONFIG "\
-cpu_model=68020\n\
-chipset=aga\n\
-chipset_compatible=A1200\n\
-chipmem_size=4\n\
-fastmem_size=8\n\
-"
-
-#define A1200OG_CONFIG "\
-cpu_model=68020\n\
-chipset=aga\n\
-chipset_compatible=A1200\n\
-chipmem_size=4\n\
-fastmem_size=0\n\
-"
-
-#define A4030_CONFIG "\
-cpu_model=68030\n\
-fpu_model=68882\n\
-chipset=aga\n\
-chipset_compatible=A4000\n\
-chipmem_size=4\n\
-fastmem_size=8\n\
-"
-
-#define A4040_CONFIG "\
-cpu_model=68040\n\
-fpu_model=68040\n\
-chipset=aga\n\
-chipset_compatible=A4000\n\
-chipmem_size=4\n\
-fastmem_size=8\n\
-"
-
-#define CDTV_CONFIG "\
-cpu_model=68000\n\
-chipset=ecs_agnus\n\
-chipset_compatible=CDTV\n\
-chipmem_size=2\n\
-bogomem_size=0\n\
-floppy0type=-1\n\
-"
-
-#define CD32_CONFIG "\
-cpu_model=68020\n\
-chipset=aga\n\
-chipset_compatible=CD32\n\
-chipmem_size=4\n\
-fastmem_size=0\n\
-floppy0type=-1\n\
-"
-
-#define CD32FR_CONFIG "\
-cpu_model=68020\n\
-chipset=aga\n\
-chipset_compatible=CD32\n\
-chipmem_size=4\n\
-fastmem_size=8\n\
-floppy0type=-1\n\
-"
-
-
-// Amiga kickstarts
+// Kickstarts
 #define A500_ROM                "kick34005.A500"
 #define A500KS2_ROM             "kick37175.A500"
 #define A600_ROM                "kick40063.A600"
@@ -195,7 +113,7 @@ floppy0type=-1\n\
 #define CD32_ROM                "kick40060.CD32"
 #define CD32_ROM_EXT            "kick40060.CD32.ext"
 
-// Amiga files
+// Supported files
 #define ADF_FILE_EXT            "adf"
 #define ADZ_FILE_EXT            "adz"
 #define FDI_FILE_EXT            "fdi"
@@ -213,7 +131,7 @@ floppy0type=-1\n\
 #define M3U_FILE_EXT            "m3u"
 #define LIBRETRO_PUAE_PREFIX    "puae_libretro"
 
-// Amiga video
+// Video
 #define PUAE_VIDEO_PAL          0x01
 #define PUAE_VIDEO_NTSC         0x02
 #define PUAE_VIDEO_HIRES        0x04

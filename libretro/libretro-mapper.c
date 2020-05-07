@@ -52,8 +52,7 @@ int MOUSEMODE=-1,SHOWKEY=-1,SHOWKEYPOS=-1,SHOWKEYTRANS=1;
 
 unsigned int mouse_speed[2]={0};
 extern int pix_bytes;
-extern bool fake_ntsc;
-extern bool real_ntsc;
+extern void retro_reset_soft();
 
 #ifdef POINTER_DEBUG
 int pointer_x = 0;
@@ -95,6 +94,7 @@ extern bool retro_request_av_info_update;
 extern bool request_reset_drawing;
 extern int opt_statusbar;
 extern int opt_statusbar_position;
+extern bool mousemode_locked;
 extern unsigned int opt_analogmouse;
 extern unsigned int opt_analogmouse_deadzone;
 extern float opt_analogmouse_speed;
@@ -154,17 +154,15 @@ void emu_function(int function)
          request_reset_drawing = true;
          break;
       case EMU_MOUSE_TOGGLE:
+         mousemode_locked = true;
          MOUSEMODE = -MOUSEMODE;
          // Reset flags to prevent sticky keys
          memset(jflag, 0, 2*16*sizeof jflag[0][0]);
          break;
       case EMU_RESET:
-         uae_reset(0, 1); /* hardreset, keyboardreset */
-         fake_ntsc = false;
+         retro_reset_soft();
          break;
       case EMU_ASPECT_RATIO_TOGGLE:
-         if (real_ntsc)
-            break;
          if (video_config_aspect == 0)
             video_config_aspect = (video_config & PUAE_VIDEO_NTSC) ? PUAE_VIDEO_PAL : PUAE_VIDEO_NTSC;
          else if (video_config_aspect == PUAE_VIDEO_PAL)
