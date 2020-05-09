@@ -1,0 +1,55 @@
+SETENV KSCOPY kick33180.A500
+SETENV KSSIZE 262144
+IF NOT EXISTS WHDLoad:Devs/Kickstarts/$KSCOPY
+   IF EXISTS RASystem:$KSCOPY
+      List RASystem:$KSCOPY QUICK NOHEAD LFORMAT %L TO ENV:KSCOPYSIZE
+      IF "$KSCOPYSIZE" EQ "$KSSIZE"
+         Copy RASystem:$KSCOPY WHDLoad:Devs/Kickstarts/
+      ELSE
+         Echo "ERROR: $KSCOPY not copied due to incorrect filesize!"
+      ENDIF
+   ENDIF
+ENDIF
+
+SETENV KSCOPY kick34005.A500
+SETENV KSSIZE 262144
+IF NOT EXISTS WHDLoad:Devs/Kickstarts/$KSCOPY
+   IF EXISTS RASystem:$KSCOPY
+      List RASystem:$KSCOPY QUICK NOHEAD LFORMAT %L TO ENV:KSCOPYSIZE
+      IF "$KSCOPYSIZE" EQ "$KSSIZE"
+         Copy RASystem:$KSCOPY WHDLoad:Devs/Kickstarts/
+      ELSE
+         Echo "ERROR: $KSCOPY not copied due to incorrect filesize!"
+      ENDIF
+   ENDIF
+ENDIF
+
+SETENV KSCOPY kick40063.A600
+SETENV KSSIZE 524288
+IF NOT EXISTS WHDLoad:Devs/Kickstarts/$KSCOPY
+   IF EXISTS RASystem:$KSCOPY
+      List RASystem:$KSCOPY QUICK NOHEAD LFORMAT %L TO ENV:KSCOPYSIZE
+      IF "$KSCOPYSIZE" EQ "$KSSIZE"
+         Copy RASystem:$KSCOPY WHDLoad:Devs/Kickstarts/
+      ELSE
+         Echo "ERROR: $KSCOPY not copied due to incorrect filesize!"
+      ENDIF
+   ENDIF
+ENDIF
+
+SETENV KSCOPY kick40068.A1200
+SETENV KSSIZE 524288
+IF NOT EXISTS WHDLoad:Devs/Kickstarts/$KSCOPY
+   IF EXISTS RASystem:$KSCOPY
+      List RASystem:$KSCOPY QUICK NOHEAD LFORMAT %L TO ENV:KSCOPYSIZE
+      IF "$KSCOPYSIZE" EQ "$KSSIZE"
+         Copy RASystem:$KSCOPY WHDLoad:Devs/Kickstarts/
+      ELSE
+         Echo "ERROR: $KSCOPY not copied due to incorrect filesize!"
+      ENDIF
+   ENDIF
+ENDIF
+
+UNSETENV KSCOPY
+UNSETENV KSSIZE
+UNSETENV KSCOPYSIZE
