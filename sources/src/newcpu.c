@@ -1205,22 +1205,7 @@ static void update_68k_cycles (void)
 			cycles_mult = (unsigned long)(CYCLES_DIV * 1000 / (1000 + currprefs.m68k_speed_throttle));
 		}
 	}
-#ifdef __LIBRETRO__
-	if (currprefs.m68k_speed == 0) {
-		if (currprefs.cpu_model >= 68040) {
-			if (!cycles_mult)
-				cycles_mult = CYCLES_DIV / 8;
-			else
-				cycles_mult /= 8;
-			cycles_mult /= 2;
-		} else if (currprefs.cpu_model >= 68020) {
-			if (!cycles_mult)
-				cycles_mult = CYCLES_DIV / 4;
-			else
-				cycles_mult /= 4;
-		}
-	}
-#else
+
 	if (currprefs.m68k_speed == 0) {
 		if (currprefs.cpu_model >= 68040) {
 			if (!cycles_mult)
@@ -1234,7 +1219,6 @@ static void update_68k_cycles (void)
 				cycles_mult /= 4;
 		}
 	}
-#endif
 
 	currprefs.cpu_clock_multiplier = changed_prefs.cpu_clock_multiplier;
 	currprefs.cpu_frequency = changed_prefs.cpu_frequency;
@@ -1252,17 +1236,6 @@ static void update_68k_cycles (void)
 	} else if (currprefs.cpu_frequency) {
 		cpucycleunit = CYCLE_UNIT * baseclock / currprefs.cpu_frequency;
 	} else if (currprefs.cpu_cycle_exact && currprefs.cpu_clock_multiplier == 0) {
-#ifdef __LIBRETRO__
-		if (currprefs.cpu_model >= 68040) {
-			cpucycleunit = CYCLE_UNIT / 28;
-		} else if (currprefs.cpu_model >= 68030) {
-			cpucycleunit = CYCLE_UNIT / 5;
-		} else if (currprefs.cpu_model == 68020) {
-			cpucycleunit = CYCLE_UNIT / 4;
-		} else {
-			cpucycleunit = CYCLE_UNIT / 2;
-		}
-#else
 		if (currprefs.cpu_model >= 68040) {
 			cpucycleunit = CYCLE_UNIT / 16;
 		} if (currprefs.cpu_model == 68030) {
@@ -1272,7 +1245,6 @@ static void update_68k_cycles (void)
 		} else {
 			cpucycleunit = CYCLE_UNIT / 2;
 		}
-#endif
 	}
 	if (cpucycleunit < 1)
 		cpucycleunit = 1;

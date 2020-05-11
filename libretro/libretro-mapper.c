@@ -1186,37 +1186,37 @@ static void process_turbofire(int retro_port, int i)
 static void process_key(int disable_physical_cursor_keys)
 {
    int i;
-   for (i=0;i<320;i++)
+   for (i = 8; i < 324; i++)
    {
-      key_state[i]=input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, i) ? 0x80 : 0;
+      key_state[i] = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, i) ? 0x80 : 0;
 
       /* CapsLock */
       if (keyboard_translation[i] == AK_CAPSLOCK)
       {
-         if (key_state[i] && key_state2[i]==0)
+         if (key_state[i] && !key_state2[i])
          {
             retro_key_down(keyboard_translation[i]);
             retro_key_up(keyboard_translation[i]);
             SHIFTON = -SHIFTON;
-            key_state2[i]=1;
+            key_state2[i] = 1;
          }
-         else if (!key_state[i] && key_state2[i]==1)
-            key_state2[i]=0;
+         else if (!key_state[i] && key_state2[i])
+            key_state2[i] = 0;
       }
       /* Special key (Right Alt) for overriding RetroPad cursor override */ 
       else if (keyboard_translation[i] == AK_RALT)
       {
-         if (key_state[i] && key_state2[i]==0)
+         if (key_state[i] && !key_state2[i])
          {
             ALTON = 1;
             retro_key_down(keyboard_translation[i]);
-            key_state2[i]=1;
+            key_state2[i] = 1;
          }
-         else if (!key_state[i] && key_state2[i]==1)
+         else if (!key_state[i] && key_state2[i])
          {
             ALTON = -1;
             retro_key_up(keyboard_translation[i]);
-            key_state2[i]=0;
+            key_state2[i] = 0;
          }
       }
       else
@@ -1243,7 +1243,7 @@ static void process_key(int disable_physical_cursor_keys)
             }
          }
 
-         if (key_state[i] && keyboard_translation[i]!=-1 && key_state2[i]==0)
+         if (key_state[i] && keyboard_translation[i] != -1 && key_state2[i] == 0)
          {
             /* Skip keydown if VKBD is active */
             if (SHOWKEY == 1)
@@ -1253,12 +1253,12 @@ static void process_key(int disable_physical_cursor_keys)
                retro_key_down(keyboard_translation[RETROK_LSHIFT]);
 
             retro_key_down(keyboard_translation[i]);
-            key_state2[i]=1;
+            key_state2[i] = 1;
          }
-         else if (!key_state[i] && keyboard_translation[i]!=-1 && key_state2[i]==1)
+         else if (!key_state[i] && keyboard_translation[i] != -1 && key_state2[i] == 1)
          {
             retro_key_up(keyboard_translation[i]);
-            key_state2[i]=0;
+            key_state2[i] = 0;
 
             if (SHIFTON == 1)
                retro_key_up(keyboard_translation[RETROK_LSHIFT]);
@@ -1534,6 +1534,8 @@ void update_input(int disable_physical_cursor_keys)
                   emu_function(EMU_VKBD);
                else if (mapper_keys[i] == -12) /* Statusbar */
                   emu_function(EMU_STATUSBAR);
+               else if (mapper_keys[i] == -13) /* Toggle mouse control */
+                  emu_function(EMU_MOUSE_TOGGLE);
                else /* Keyboard keys */
                   retro_key_down(keyboard_translation[mapper_keys[i]]);
             }
@@ -1584,6 +1586,8 @@ void update_input(int disable_physical_cursor_keys)
                else if (mapper_keys[i] == -11) /* Virtual keyboard */
                   ; /* nop */
                else if (mapper_keys[i] == -12) /* Statusbar */
+                  ; /* nop */
+               else if (mapper_keys[i] == -13) /* Toggle mouse control */
                   ; /* nop */
                else /* Keyboard keys */
                   retro_key_up(keyboard_translation[mapper_keys[i]]);
