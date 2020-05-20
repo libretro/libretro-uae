@@ -317,7 +317,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_video_allow_hz_change",
-         "Allow PAL/NTSC Hz Change",
+         "Video > Allow PAL/NTSC Hz Change",
          "Let Amiga decide the exact output Hz.",
          {
             { "enabled", NULL },
@@ -328,7 +328,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_video_standard",
-         "Video Standard",
+         "Video > Standard",
          "Output Hz & height:\n- 'PAL': 50Hz - 288px / 576px\n- 'NTSC': 60Hz - 240px / 480px\n- 'Automatic' switches region per filename and directory tags.",
          {
             { "PAL auto", "Automatic PAL" },
@@ -341,7 +341,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_video_resolution",
-         "Video Resolution",
+         "Video > Resolution",
          "Output width:\n- 'Automatic' defaults to 'High' and switches to 'Super-High' when needed.",
          {
             { "auto", "Automatic" },
@@ -354,7 +354,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_video_vresolution",
-         "Video Line Mode",
+         "Video > Line Mode",
          "Output height:\n- 'Automatic' defaults to 'Single Line' and switches to 'Double Line' on interlaced screens.",
          {
             { "auto", "Automatic" },
@@ -366,7 +366,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_video_aspect",
-         "Pixel Aspect Ratio",
+         "Video > Pixel Aspect Ratio",
          "- 'PAL': 1/1 = 1.000\n- 'NTSC': 44/52 = 0.846",
          {
             { "auto", "Automatic" },
@@ -378,7 +378,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_zoom_mode",
-         "Zoom Mode",
+         "Video > Zoom Mode",
          "Requirements in RetroArch settings:\n- Aspect Ratio: Core provided,\n- Integer Scale: Off.",
          {
             { "none", "disabled" },
@@ -396,7 +396,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_vertical_pos",
-         "Vertical Position",
+         "Video > Vertical Position",
          "'Automatic' keeps zoom modes centered. Positive values force the screen upward and negative values downward.",
          {
             { "auto", "Automatic" },
@@ -437,7 +437,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_horizontal_pos",
-         "Horizontal Position",
+         "Video > Horizontal Position",
          "'Automatic' keeps screen centered. Positive values force the screen right and negative values left.",
          {
             { "auto", "Automatic" },
@@ -488,7 +488,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_gfx_flickerfixer",
-         "Remove Interlace Artifacts",
+         "Video > Remove Interlace Artifacts",
          "Best suited for stationary screens, Workbench etc.",
          {
             { "disabled", NULL },
@@ -499,7 +499,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_immediate_blits",
-         "Immediate/Waiting Blits",
+         "Video > Immediate/Waiting Blits",
          "'Immediate Blitter' is ignored with 'Cycle-exact'.",
          {
             { "false", "disabled" },
@@ -511,7 +511,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_collision_level",
-         "Collision Level",
+         "Video > Collision Level",
          "'Sprites and Playfields' is recommended.",
          {
             { "none", "None" },
@@ -524,7 +524,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_gfx_framerate",
-         "Frameskip",
+         "Video > Frameskip",
          "Not compatible with 'Cycle-exact'.",
          {
             { "disabled", NULL },
@@ -535,19 +535,8 @@ void retro_set_environment(retro_environment_t cb)
          "disabled"
       },
       {
-         "puae_gfx_colors",
-         "Color Depth",
-         "'24-bit' is slower and not available on all platforms. Full restart required.",
-         {
-            { "16bit", "Thousands (16-bit)" },
-            { "24bit", "Millions (24-bit)" },
-            { NULL, NULL },
-         },
-         "16bit"
-      },
-      {
          "puae_statusbar",
-         "Statusbar Position & Mode",
+         "Video > Statusbar Position & Mode",
          "- 'Full': Joyports + Current image + LEDs\n- 'Basic': Current image + LEDs\n- 'Minimal': Track number + FPS hidden",
          {
             { "bottom", "Bottom Full" },
@@ -564,8 +553,8 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_vkbd_theme",
-         "Virtual Keyboard Theme",
-         "By default, the keyboard comes up with SELECT button or F11 key.",
+         "Video > Virtual KBD Theme",
+         "By default, the keyboard comes up with RetroPad Select or F11.",
          {
             { "0", "Classic" },
             { "1", "CD32" },
@@ -577,8 +566,8 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_vkbd_alpha",
-         "Virtual Keyboard Transparency",
-         "",
+         "Video > Virtual KBD Transparency",
+         "Keyboard transparency can be toggled with RetroPad A.",
          {
             { "0\%", NULL },
             { "5\%", NULL },
@@ -605,6 +594,17 @@ void retro_set_environment(retro_environment_t cb)
          "20\%"
       },
       {
+         "puae_gfx_colors",
+         "Video > Color Depth",
+         "'24-bit' is slower and not available on all platforms. Full restart required.",
+         {
+            { "16bit", "Thousands (16-bit)" },
+            { "24bit", "Millions (24-bit)" },
+            { NULL, NULL },
+         },
+         "16bit"
+      },
+      {
          "puae_audio_options_display",
          "Show Audio Options",
          "Core options page refresh required.",
@@ -617,7 +617,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_sound_stereo_separation",
-         "Sound Stereo Separation",
+         "Audio > Stereo Separation",
          "Paula sound chip channel panning.",
          {
             { "0\%", NULL },
@@ -637,7 +637,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_sound_interpol",
-         "Sound Interpolation",
+         "Audio > Interpolation",
          "",
          {
             { "none", "None" },
@@ -651,7 +651,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_sound_filter",
-         "Sound Filter",
+         "Audio > Filter",
          "",
          {
             { "emulated", "Emulated" },
@@ -663,7 +663,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_sound_filter_type",
-         "Sound Filter Type",
+         "Audio > Filter Type",
          "",
          {
             { "auto", "Automatic" },
@@ -675,7 +675,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_sound_volume_cd",
-         "CD Audio Volume",
+         "Audio > CD Audio Volume",
          "",
          {
             { "0\%", NULL },
@@ -705,7 +705,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_floppy_sound",
-         "Floppy Sound Emulation",
+         "Audio > Floppy Sound Emulation",
          "",
          {
             { "100", "disabled" },
@@ -735,8 +735,8 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_floppy_sound_empty_mute",
-         "Floppy Sound Empty Drive Mute",
-         "",
+         "Audio > Floppy Sound Mute Ejected",
+         "Mute the drive head clicking when the floppy is not inserted.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -746,7 +746,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_floppy_sound_type",
-         "Floppy Sound Emulation Type",
+         "Audio > Floppy Sound Type",
          "External file location is 'system/uae_data/'.",
          {
             { "internal", "Internal" },
@@ -844,30 +844,6 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "disabled"
-      },
-      {
-         "puae_joyport",
-         "RetroPad Joystick/Mouse",
-         "Changes D-Pad control between joyports. Hotkey toggling will disable this option until core restart.",
-         {
-            { "joystick", "Joystick (Port 1)" },
-            { "mouse", "Mouse (Port 2)" },
-            { NULL, NULL },
-         },
-         "Joystick"
-      },
-      {
-         "puae_joyport_order",
-         "RetroPad Joyport Order",
-         "Plug RetroPads in different ports. Useful for Arcadia system and games that support 4-player adapter.",
-         {
-            { "1234", "1-2-3-4" },
-            { "2143", "2-1-4-3" },
-            { "3412", "3-4-1-2" },
-            { "4321", "4-3-2-1" },
-            { NULL, NULL },
-         },
-         "1234"
       },
       {
          "puae_analogmouse",
@@ -1017,42 +993,42 @@ void retro_set_environment(retro_environment_t cb)
       /* Hotkeys */
       {
          "puae_mapper_vkbd",
-         "Hotkey: Toggle Virtual Keyboard",
+         "Hotkey > Toggle Virtual Keyboard",
          "Press the mapped key to toggle the virtual keyboard.",
          {{ NULL, NULL }},
          "RETROK_F11"
       },
       {
          "puae_mapper_statusbar",
-         "Hotkey: Toggle Statusbar",
+         "Hotkey > Toggle Statusbar",
          "Press the mapped key to toggle the statusbar.",
          {{ NULL, NULL }},
          "RETROK_F12"
       },
       {
          "puae_mapper_mouse_toggle",
-         "Hotkey: Toggle Joystick/Mouse",
+         "Hotkey > Toggle Joystick/Mouse",
          "Press the mapped key to toggle between joystick and mouse control.",
          {{ NULL, NULL }},
          "RETROK_RCTRL"
       },
       {
          "puae_mapper_reset",
-         "Hotkey: Reset",
+         "Hotkey > Reset",
          "Press the mapped key to trigger reset (Ctrl-Amiga-Amiga).",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_aspect_ratio_toggle",
-         "Hotkey: Toggle Aspect Ratio",
+         "Hotkey > Toggle Aspect Ratio",
          "Press the mapped key to toggle between PAL/NTSC pixel aspect ratio.",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_zoom_mode_toggle",
-         "Hotkey: Toggle Zoom Mode",
+         "Hotkey > Toggle Zoom Mode",
          "Press the mapped key to toggle zoom mode.",
          {{ NULL, NULL }},
          "---"
@@ -1231,6 +1207,30 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "4"
+      },
+      {
+         "puae_joyport",
+         "RetroPad Joystick/Mouse",
+         "Changes D-Pad control between joyports. Hotkey toggling will disable this option until core restart.",
+         {
+            { "joystick", "Joystick (Port 1)" },
+            { "mouse", "Mouse (Port 2)" },
+            { NULL, NULL },
+         },
+         "Joystick"
+      },
+      {
+         "puae_joyport_order",
+         "RetroPad Joyport Order",
+         "Plug RetroPads in different ports. Useful for Arcadia system and games that support 4-player adapter.",
+         {
+            { "1234", "1-2-3-4" },
+            { "2143", "2-1-4-3" },
+            { "3412", "3-4-1-2" },
+            { "4321", "4-3-2-1" },
+            { NULL, NULL },
+         },
+         "1234"
       },
       {
          "puae_retropad_options",
