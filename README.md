@@ -89,6 +89,19 @@ For CD32 you need either separate ROMs (Kickstart + extended ROM) or the combine
 |CD32|KS v3.1 rev 40.060|**kick40060.CD32**|524 288|5f8924d013dd57a89cf349f4cdedc6b1|
 |CD32|Extended ROM rev 40.060|**kick40060.CD32.ext**|524 288|bb72565701b1b6faece07d68ea5da639|
 
+You can also use legally purchased BIOS from Amiga Forever:
+
+|System|Version|Filename|Size|MD5|
+|---|---|---|---|---|
+|A500|amiga-os-130.rom|**kick34005.A500**|262 144|82a21c1890cae844b3df741f2762d48d|
+|A500+|amiga-os-204.rom|**kick37175.A500**|524 288|dc10d7bdd1b6f450773dfb558477c230|
+|A600|amiga-os-310-a600.rom|**kick40063.A600**|524 288|e40a5dfb3d017ba8779faba30cbd1c8e|
+|A1200|amiga-os-310-a1200.rom|**kick40068.A1200**|524 288|646773759326fbac3b2311fd8c8793ee|
+|A4000|amiga-os-310-a4000.rom|**kick40068.A4000**|524 288|9bdedde6a4f33555b4a270c8ca53297d|
+|CDTV|amiga-os-130-cdtv-ext.rom|**kick34005.CDTV**|262 144|89da1838a24460e4b93f4f0c5d92d48d|
+|CD32|amiga-os-310-cd32.rom|**kick40060.CD32**|524 288|5f8924d013dd57a89cf349f4cdedc6b1|
+|CD32|amiga-os-310-cd32-ext.rom|**kick40060.CD32.ext**|524 288|bb72565701b1b6faece07d68ea5da639|
+
 ### Resolution and rendering
 These parameters control the output resolution of the core:
 
