@@ -526,7 +526,7 @@ void retro_set_environment(retro_environment_t cb)
             { "waiting", "Wait for Blitter" },
             { NULL, NULL },
          },
-         "waiting"
+         "false"
       },
       {
          "puae_collision_level",
