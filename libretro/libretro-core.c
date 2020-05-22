@@ -1063,35 +1063,35 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapper_start",
          "RetroPad Start",
-         "",
+         "VKBD: Press 'Return'. Remapping to non-keyboard keys overrides VKBD function!",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_b",
          "RetroPad B",
-         "Unmapped will default to fire button.",
+         "Unmapped will default to fire button.\nVKBD: Press key.\n",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_a",
          "RetroPad A",
-         "Unmapped will default to 2nd fire button.",
+         "Unmapped will default to 2nd fire button.\nVKBD: Toggle transparency. Remapping to non-keyboard keys overrides VKBD function!",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_y",
          "RetroPad Y",
-         "",
+         "VKBD: Toggle 'CapsLock'. Remapping to non-keyboard keys overrides VKBD function!",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_x",
          "RetroPad X",
-         "",
+         "VKBD: Toggle position. Remapping to non-keyboard keys overrides VKBD function!",
          {{ NULL, NULL }},
          "---"
       },
