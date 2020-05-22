@@ -167,6 +167,7 @@ extern unsigned short int retro_bmp[RETRO_BMP_SIZE];
 extern int pix_bytes;
 extern int retrow;
 extern int retroh;
+extern int zoomed_width;
 extern int zoomed_height;
 
 #endif /* LIBRETRO_GLUE_H */

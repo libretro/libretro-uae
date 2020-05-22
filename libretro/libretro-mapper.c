@@ -52,6 +52,7 @@ int MOUSEMODE=-1,SHOWKEY=-1,SHOWKEYPOS=-1,SHOWKEYTRANS=1;
 
 unsigned int mouse_speed[2]={0};
 extern int pix_bytes;
+extern unsigned int width_multiplier;
 extern void retro_reset_soft();
 
 #ifdef POINTER_DEBUG
@@ -509,23 +510,32 @@ void print_statusbar(void)
    BOX_Y = STAT_BASEY - BOX_PADDING;
 
    // Statusbar size
-   BOX_WIDTH = retrow;
+   BOX_WIDTH = zoomed_width;
+   int ZOOMED_WIDTH_OFFSET = retrow - zoomed_width;
 
    // Video resolution
-   int STAT_X_RESOLUTION = STAT_X+(FONT_SLOT*4)+(FONT_WIDTH*16);
+   int STAT_X_RESOLUTION = STAT_X+(FONT_SLOT*4)+(FONT_WIDTH*16)-(ZOOMED_WIDTH_OFFSET/2);
    char RESOLUTION[10] = {0};
-   snprintf(RESOLUTION, sizeof(RESOLUTION), "%4dx%3d", retrow, zoomed_height);
+   snprintf(RESOLUTION, sizeof(RESOLUTION), "%4dx%3d", zoomed_width, zoomed_height);
 
    // Model & memory
-   int STAT_X_MODEL  = STAT_X+(FONT_SLOT*6)+(FONT_WIDTH*30);
-   int STAT_X_MEMORY = STAT_X+(FONT_SLOT*6)+(FONT_WIDTH*5);
+   int STAT_X_MODEL  = STAT_X+(FONT_SLOT*6)+(FONT_WIDTH*30)-ZOOMED_WIDTH_OFFSET;
+   int STAT_X_MEMORY = STAT_X+(FONT_SLOT*6)+(FONT_WIDTH*5)-ZOOMED_WIDTH_OFFSET;
+   // Sacrifice memory slot if there is not enough width
+   if (!(video_config & PUAE_VIDEO_DOUBLELINE))
+   {
+      if (STAT_X_MEMORY < (STAT_X_RESOLUTION + FONT_SLOT + (FONT_WIDTH*20)))
+         STAT_X_MEMORY = -1;
+   }
+
    char MODEL[10] = {0};
    char MEMORY[5] = {0};
    float mem_size = 0;
    mem_size = (float)(currprefs.chipmem_size / 0x80000) / 2;
    mem_size += (float)(currprefs.bogomem_size / 0x40000) / 4;
    mem_size += (float)(currprefs.fastmem_size / 0x100000);
-   snprintf(MEMORY, sizeof(MEMORY), "%2.0fM", floor(mem_size));
+   if (STAT_X_MEMORY > 0)
+      snprintf(MEMORY, sizeof(MEMORY), "%2.0fM", floor(mem_size));
    switch (currprefs.cs_compatible)
    {
       case CP_A500:
@@ -554,9 +564,9 @@ void print_statusbar(void)
    // Double line positions
    if (video_config & PUAE_VIDEO_DOUBLELINE)
    {
-      STAT_X_RESOLUTION = STAT_X+(FONT_SLOT*15)+(FONT_WIDTH*5);
-      STAT_X_MODEL      = STAT_X+(FONT_SLOT*17)+(FONT_WIDTH*15);
-      STAT_X_MEMORY     = STAT_X+(FONT_SLOT*16)+(FONT_WIDTH*25);
+      STAT_X_RESOLUTION = STAT_X+(FONT_SLOT*15)+(FONT_WIDTH*5)-ZOOMED_WIDTH_OFFSET;
+      STAT_X_MODEL      = STAT_X+(FONT_SLOT*17)+(FONT_WIDTH*15)-ZOOMED_WIDTH_OFFSET;
+      STAT_X_MEMORY     = STAT_X+(FONT_SLOT*16)+(FONT_WIDTH*25)-ZOOMED_WIDTH_OFFSET;
    }
 
    // Joy port indicators
@@ -1677,7 +1687,7 @@ void update_input(int disable_physical_cursor_keys)
 
       if (p_x != 0 && p_y != 0 && (p_x != last_pointer_x || p_y != last_pointer_y))
       {
-         int px = (int)((p_x + 0x7fff) * retrow / 0xffff);
+         int px = (int)((p_x + 0x7fff) * zoomed_width / 0xffff);
          int py = (int)((p_y + 0x7fff) * zoomed_height / 0xffff);
          last_pointer_x = p_x;
          last_pointer_y = p_y;

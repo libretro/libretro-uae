@@ -107,7 +107,7 @@ void print_virtual_kbd(unsigned short int *pixels)
          FONT_HEIGHT       = 2;
          XKEYSPACING       = 2;
          YKEYSPACING       = 2;
-         XOFFSET           = 2;
+         XOFFSET           = 0;
          YPADDING          = 10;
          YOFFSET           = 0;
          if (SHOWKEYPOS == 1 && zoomed_height > (retroh + (YPADDING * 3) - (zoomed_height / 2)))
@@ -120,7 +120,7 @@ void print_virtual_kbd(unsigned short int *pixels)
          // PUAE_VIDEO_HIRES
          FONT_WIDTH        = 2;
          XKEYSPACING       = 2;
-         XOFFSET           = 2;
+         XOFFSET           = 0;
          YPADDING          = 6;
          BKG_PADDING_Y     = -1;
          YOFFSET           = 0;
@@ -135,16 +135,17 @@ void print_virtual_kbd(unsigned short int *pixels)
       {
          FONT_WIDTH *= 2;
          XOFFSET *= 2;
+         XPADDING *= 2;
          XKEYSPACING *= 2;
       }
    }
    else
    {
       // PUAE_VIDEO_LORES
-      BKG_PADDING_X     = -2;
+      BKG_PADDING_X     = -1;
       BKG_PADDING_Y     = -1;
 
-      XOFFSET           = 3;
+      XOFFSET           = 0;
       YPADDING          = 6;
       YOFFSET           = 0;
       if (SHOWKEYPOS == 1 && zoomed_height > (retroh + (YPADDING * 3) - (zoomed_height / 2)))
@@ -153,18 +154,26 @@ void print_virtual_kbd(unsigned short int *pixels)
          YOFFSET = -(YPADDING * 2);
    }
 
-   int XSIDE = (retrow - XPADDING) / NPLGN;
+   int XSIDE = (zoomed_width - ((XPADDING > 0) ? XPADDING * 2 : 0)) / NPLGN;
    int YSIDE = (retroh - (zoomed_height / 2) - 15) / NLIGN;
-
-   int XBASEKEY = (XPADDING > 0) ? (XPADDING / 2) : 0;
+   int XBASEKEY = (XPADDING > 0) ? XPADDING : 0;
    int YBASEKEY = (zoomed_height - (NLIGN * YSIDE)) - (YPADDING / 2);
-
-   int XBASETEXT = ((XPADDING > 0) ? (XPADDING / 2) : 0) + (video_config_geometry & PUAE_VIDEO_SUPERHIRES) ? 12 : (video_config_geometry & PUAE_VIDEO_HIRES) ? 6 : 5;
+   int XBASETEXT = (XPADDING > 0) ? XPADDING : 0;
+   if (video_config_geometry & PUAE_VIDEO_SUPERHIRES)
+      XBASETEXT += 12;
+   else if (video_config_geometry & PUAE_VIDEO_HIRES)
+      XBASETEXT += 6;
+   else
+      XBASETEXT += 4;
    int YBASETEXT = YBASEKEY + ((video_config_geometry & PUAE_VIDEO_NTSC) ? 4 : 5);
+   if (FONT_WIDTH == 1)
+      XOFFSET = (zoomed_width - (XSIDE * NPLGN)) / 2;
+   else
+      XOFFSET = (zoomed_width - (XSIDE * NPLGN)) / 4;
 
    /* Coordinates */
-   vkbd_x_min = XBASEKEY + XKEYSPACING;
-   vkbd_x_max = retrow - XBASEKEY - XKEYSPACING;
+   vkbd_x_min = XOFFSET + XBASEKEY + XKEYSPACING;
+   vkbd_x_max = XOFFSET + zoomed_width - XBASEKEY - XKEYSPACING;
    vkbd_y_min = YOFFSET + YBASEKEY + YKEYSPACING;
    vkbd_y_max = YOFFSET + YBASEKEY + (YSIDE * NLIGN);
 
