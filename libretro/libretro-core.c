@@ -111,7 +111,10 @@ unsigned int request_init_custom_timer = 0;
 unsigned int request_check_prefs_timer = 0;
 unsigned int zoom_mode_id = 0;
 unsigned int opt_zoom_mode_id = 0;
+unsigned int zoom_mode_crop_id = 0;
+int zoomed_width = 0;
 int zoomed_height = 0;
+unsigned int width_multiplier = 1;
 
 int opt_vertical_offset = 0;
 bool opt_vertical_offset_auto = true;
@@ -317,7 +320,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_video_allow_hz_change",
-         "Allow PAL/NTSC Hz Change",
+         "Video > Allow PAL/NTSC Hz Change",
          "Let Amiga decide the exact output Hz.",
          {
             { "enabled", NULL },
@@ -328,7 +331,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_video_standard",
-         "Video Standard",
+         "Video > Standard",
          "Output Hz & height:\n- 'PAL': 50Hz - 288px / 576px\n- 'NTSC': 60Hz - 240px / 480px\n- 'Automatic' switches region per filename and directory tags.",
          {
             { "PAL auto", "Automatic PAL" },
@@ -341,7 +344,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_video_resolution",
-         "Video Resolution",
+         "Video > Resolution",
          "Output width:\n- 'Automatic' defaults to 'High' and switches to 'Super-High' when needed.",
          {
             { "auto", "Automatic" },
@@ -354,7 +357,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_video_vresolution",
-         "Video Line Mode",
+         "Video > Line Mode",
          "Output height:\n- 'Automatic' defaults to 'Single Line' and switches to 'Double Line' on interlaced screens.",
          {
             { "auto", "Automatic" },
@@ -366,7 +369,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_video_aspect",
-         "Pixel Aspect Ratio",
+         "Video > Pixel Aspect Ratio",
          "- 'PAL': 1/1 = 1.000\n- 'NTSC': 44/52 = 0.846",
          {
             { "auto", "Automatic" },
@@ -378,8 +381,8 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_zoom_mode",
-         "Zoom Mode",
-         "Requirements in RetroArch settings:\n- Aspect Ratio: Core provided,\n- Integer Scale: Off.",
+         "Video > Zoom Mode",
+         "Crops the borders for better screen estate usage. Requirements in RetroArch settings:\n- Aspect Ratio: Core provided,\n- Integer Scale: Off.",
          {
             { "none", "disabled" },
             { "minimum", "Minimum" },
@@ -395,8 +398,24 @@ void retro_set_environment(retro_environment_t cb)
          "none"
       },
       {
+         "puae_zoom_mode_crop",
+         "Video > Zoom Mode Crop",
+         "Cropping type presets for various host screens.",
+         {
+            { "both", "Horizontal + Vertical" },
+            { "horizontal", "Horizontal" },
+            { "vertical", "Vertical" },
+            { "16:9", "16:9" },
+            { "16:10", "16:10" },
+            { "4:3", "4:3" },
+            { "5:4", "5:4" },
+            { NULL, NULL },
+         },
+         "both"
+      },
+      {
          "puae_vertical_pos",
-         "Vertical Position",
+         "Video > Vertical Position",
          "'Automatic' keeps zoom modes centered. Positive values force the screen upward and negative values downward.",
          {
             { "auto", "Automatic" },
@@ -437,7 +456,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_horizontal_pos",
-         "Horizontal Position",
+         "Video > Horizontal Position",
          "'Automatic' keeps screen centered. Positive values force the screen right and negative values left.",
          {
             { "auto", "Automatic" },
@@ -488,7 +507,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_gfx_flickerfixer",
-         "Remove Interlace Artifacts",
+         "Video > Remove Interlace Artifacts",
          "Best suited for stationary screens, Workbench etc.",
          {
             { "disabled", NULL },
@@ -499,7 +518,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_immediate_blits",
-         "Immediate/Waiting Blits",
+         "Video > Immediate/Waiting Blits",
          "'Immediate Blitter' is ignored with 'Cycle-exact'.",
          {
             { "false", "disabled" },
@@ -507,11 +526,11 @@ void retro_set_environment(retro_environment_t cb)
             { "waiting", "Wait for Blitter" },
             { NULL, NULL },
          },
-         "waiting"
+         "false"
       },
       {
          "puae_collision_level",
-         "Collision Level",
+         "Video > Collision Level",
          "'Sprites and Playfields' is recommended.",
          {
             { "none", "None" },
@@ -524,7 +543,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_gfx_framerate",
-         "Frameskip",
+         "Video > Frameskip",
          "Not compatible with 'Cycle-exact'.",
          {
             { "disabled", NULL },
@@ -535,19 +554,8 @@ void retro_set_environment(retro_environment_t cb)
          "disabled"
       },
       {
-         "puae_gfx_colors",
-         "Color Depth",
-         "'24-bit' is slower and not available on all platforms. Full restart required.",
-         {
-            { "16bit", "Thousands (16-bit)" },
-            { "24bit", "Millions (24-bit)" },
-            { NULL, NULL },
-         },
-         "16bit"
-      },
-      {
          "puae_statusbar",
-         "Statusbar Position & Mode",
+         "Video > Statusbar Position & Mode",
          "- 'Full': Joyports + Current image + LEDs\n- 'Basic': Current image + LEDs\n- 'Minimal': Track number + FPS hidden",
          {
             { "bottom", "Bottom Full" },
@@ -564,8 +572,8 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_vkbd_theme",
-         "Virtual Keyboard Theme",
-         "By default, the keyboard comes up with SELECT button or F11 key.",
+         "Video > Virtual KBD Theme",
+         "By default, the keyboard comes up with RetroPad Select or F11.",
          {
             { "0", "Classic" },
             { "1", "CD32" },
@@ -577,8 +585,8 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_vkbd_alpha",
-         "Virtual Keyboard Transparency",
-         "",
+         "Video > Virtual KBD Transparency",
+         "Keyboard transparency can be toggled with RetroPad A.",
          {
             { "0\%", NULL },
             { "5\%", NULL },
@@ -605,6 +613,17 @@ void retro_set_environment(retro_environment_t cb)
          "20\%"
       },
       {
+         "puae_gfx_colors",
+         "Video > Color Depth",
+         "'24-bit' is slower and not available on all platforms. Full restart required.",
+         {
+            { "16bit", "Thousands (16-bit)" },
+            { "24bit", "Millions (24-bit)" },
+            { NULL, NULL },
+         },
+         "16bit"
+      },
+      {
          "puae_audio_options_display",
          "Show Audio Options",
          "Core options page refresh required.",
@@ -617,7 +636,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_sound_stereo_separation",
-         "Sound Stereo Separation",
+         "Audio > Stereo Separation",
          "Paula sound chip channel panning.",
          {
             { "0\%", NULL },
@@ -637,7 +656,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_sound_interpol",
-         "Sound Interpolation",
+         "Audio > Interpolation",
          "",
          {
             { "none", "None" },
@@ -651,7 +670,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_sound_filter",
-         "Sound Filter",
+         "Audio > Filter",
          "",
          {
             { "emulated", "Emulated" },
@@ -663,7 +682,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_sound_filter_type",
-         "Sound Filter Type",
+         "Audio > Filter Type",
          "",
          {
             { "auto", "Automatic" },
@@ -675,7 +694,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_sound_volume_cd",
-         "CD Audio Volume",
+         "Audio > CD Audio Volume",
          "",
          {
             { "0\%", NULL },
@@ -705,7 +724,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_floppy_sound",
-         "Floppy Sound Emulation",
+         "Audio > Floppy Sound Emulation",
          "",
          {
             { "100", "disabled" },
@@ -735,8 +754,8 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_floppy_sound_empty_mute",
-         "Floppy Sound Empty Drive Mute",
-         "",
+         "Audio > Floppy Sound Mute Ejected",
+         "Mute the drive head clicking when the floppy is not inserted.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -746,7 +765,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_floppy_sound_type",
-         "Floppy Sound Emulation Type",
+         "Audio > Floppy Sound Type",
          "External file location is 'system/uae_data/'.",
          {
             { "internal", "Internal" },
@@ -844,30 +863,6 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "disabled"
-      },
-      {
-         "puae_joyport",
-         "RetroPad Joystick/Mouse",
-         "Changes D-Pad control between joyports. Hotkey toggling will disable this option until core restart.",
-         {
-            { "joystick", "Joystick (Port 1)" },
-            { "mouse", "Mouse (Port 2)" },
-            { NULL, NULL },
-         },
-         "Joystick"
-      },
-      {
-         "puae_joyport_order",
-         "RetroPad Joyport Order",
-         "Plug RetroPads in different ports. Useful for Arcadia system and games that support 4-player adapter.",
-         {
-            { "1234", "1-2-3-4" },
-            { "2143", "2-1-4-3" },
-            { "3412", "3-4-1-2" },
-            { "4321", "4-3-2-1" },
-            { NULL, NULL },
-         },
-         "1234"
       },
       {
          "puae_analogmouse",
@@ -1017,42 +1012,42 @@ void retro_set_environment(retro_environment_t cb)
       /* Hotkeys */
       {
          "puae_mapper_vkbd",
-         "Hotkey: Toggle Virtual Keyboard",
+         "Hotkey > Toggle Virtual Keyboard",
          "Press the mapped key to toggle the virtual keyboard.",
          {{ NULL, NULL }},
          "RETROK_F11"
       },
       {
          "puae_mapper_statusbar",
-         "Hotkey: Toggle Statusbar",
+         "Hotkey > Toggle Statusbar",
          "Press the mapped key to toggle the statusbar.",
          {{ NULL, NULL }},
          "RETROK_F12"
       },
       {
          "puae_mapper_mouse_toggle",
-         "Hotkey: Toggle Joystick/Mouse",
+         "Hotkey > Toggle Joystick/Mouse",
          "Press the mapped key to toggle between joystick and mouse control.",
          {{ NULL, NULL }},
          "RETROK_RCTRL"
       },
       {
          "puae_mapper_reset",
-         "Hotkey: Reset",
+         "Hotkey > Reset",
          "Press the mapped key to trigger reset (Ctrl-Amiga-Amiga).",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_aspect_ratio_toggle",
-         "Hotkey: Toggle Aspect Ratio",
+         "Hotkey > Toggle Aspect Ratio",
          "Press the mapped key to toggle between PAL/NTSC pixel aspect ratio.",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_zoom_mode_toggle",
-         "Hotkey: Toggle Zoom Mode",
+         "Hotkey > Toggle Zoom Mode",
          "Press the mapped key to toggle zoom mode.",
          {{ NULL, NULL }},
          "---"
@@ -1068,35 +1063,35 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapper_start",
          "RetroPad Start",
-         "",
+         "VKBD: Press 'Return'. Remapping to non-keyboard keys overrides VKBD function!",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_b",
          "RetroPad B",
-         "Unmapped will default to fire button.",
+         "Unmapped will default to fire button.\nVKBD: Press key.\n",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_a",
          "RetroPad A",
-         "Unmapped will default to 2nd fire button.",
+         "Unmapped will default to 2nd fire button.\nVKBD: Toggle transparency. Remapping to non-keyboard keys overrides VKBD function!",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_y",
          "RetroPad Y",
-         "",
+         "VKBD: Toggle 'CapsLock'. Remapping to non-keyboard keys overrides VKBD function!",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_x",
          "RetroPad X",
-         "",
+         "VKBD: Toggle position. Remapping to non-keyboard keys overrides VKBD function!",
          {{ NULL, NULL }},
          "---"
       },
@@ -1231,6 +1226,30 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "4"
+      },
+      {
+         "puae_joyport",
+         "RetroPad Joystick/Mouse",
+         "Changes D-Pad control between joyports. Hotkey toggling will disable this option until core restart.",
+         {
+            { "joystick", "Joystick (Port 1)" },
+            { "mouse", "Mouse (Port 2)" },
+            { NULL, NULL },
+         },
+         "Joystick"
+      },
+      {
+         "puae_joyport_order",
+         "RetroPad Joyport Order",
+         "Plug RetroPads in different ports. Useful for Arcadia system and games that support 4-player adapter.",
+         {
+            { "1234", "1-2-3-4" },
+            { "2143", "2-1-4-3" },
+            { "3412", "3-4-1-2" },
+            { "4321", "4-3-2-1" },
+            { NULL, NULL },
+         },
+         "1234"
       },
       {
          "puae_retropad_options",
@@ -1421,6 +1440,7 @@ static void update_variables(void)
          video_config &= ~PUAE_VIDEO_HIRES;
          video_config &= ~PUAE_VIDEO_SUPERHIRES;
          retro_max_diwlastword = retro_max_diwlastword_hires / 2;
+         width_multiplier = 1;
          if (libretro_runloop_active)
             changed_prefs.gfx_resolution=RES_LORES;
       }
@@ -1429,6 +1449,7 @@ static void update_variables(void)
          video_config &= ~PUAE_VIDEO_SUPERHIRES;
          video_config |= PUAE_VIDEO_HIRES;
          retro_max_diwlastword = retro_max_diwlastword_hires;
+         width_multiplier = 2;
          if (libretro_runloop_active)
             changed_prefs.gfx_resolution=RES_HIRES;
       }
@@ -1437,6 +1458,7 @@ static void update_variables(void)
          video_config &= ~PUAE_VIDEO_HIRES;
          video_config |= PUAE_VIDEO_SUPERHIRES;
          retro_max_diwlastword = retro_max_diwlastword_hires * 2;
+         width_multiplier = 4;
          if (libretro_runloop_active)
             changed_prefs.gfx_resolution=RES_SUPERHIRES;
       }
@@ -1449,6 +1471,7 @@ static void update_variables(void)
             video_config &= ~PUAE_VIDEO_HIRES;
             video_config |= PUAE_VIDEO_SUPERHIRES;
             retro_max_diwlastword = retro_max_diwlastword_hires * 2;
+            width_multiplier = 4;
             if (libretro_runloop_active)
                changed_prefs.gfx_resolution=RES_SUPERHIRES;
          }
@@ -1457,6 +1480,7 @@ static void update_variables(void)
             video_config &= ~PUAE_VIDEO_SUPERHIRES;
             video_config |= PUAE_VIDEO_HIRES;
             retro_max_diwlastword = retro_max_diwlastword_hires;
+            width_multiplier = 2;
             if (libretro_runloop_active)
                changed_prefs.gfx_resolution=RES_HIRES;
          }
@@ -1951,6 +1975,21 @@ static void update_variables(void)
       opt_zoom_mode_id = zoom_mode_id;
    }
 
+   var.key = "puae_zoom_mode_crop";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      int zoom_mode_crop_id_prev = zoom_mode_crop_id;
+
+      if (strcmp(var.value, "both") == 0) zoom_mode_crop_id=0;
+      else if (strcmp(var.value, "vertical") == 0) zoom_mode_crop_id=1;
+      else if (strcmp(var.value, "horizontal") == 0) zoom_mode_crop_id=2;
+      else if (strcmp(var.value, "16:9") == 0) zoom_mode_crop_id=3;
+      else if (strcmp(var.value, "16:10") == 0) zoom_mode_crop_id=4;
+      else if (strcmp(var.value, "4:3") == 0) zoom_mode_crop_id=5;
+      else if (strcmp(var.value, "5:4") == 0) zoom_mode_crop_id=6;
+   }
+
    var.key = "puae_vertical_pos";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -1987,15 +2026,10 @@ static void update_variables(void)
       {
          opt_horizontal_offset_auto = false;
          int new_horizontal_offset = atoi(var.value);
-         int horizontal_multiplier = 1;
-         if (video_config & PUAE_VIDEO_HIRES)
-            horizontal_multiplier = 2;
-         else if (video_config & PUAE_VIDEO_SUPERHIRES)
-            horizontal_multiplier = 4;
          if (new_horizontal_offset >= -40 && new_horizontal_offset <= 40)
          {
             opt_horizontal_offset = new_horizontal_offset;
-            visible_left_border = retro_max_diwlastword - retrow - (opt_horizontal_offset * horizontal_multiplier);
+            visible_left_border = retro_max_diwlastword - retrow - (opt_horizontal_offset * width_multiplier);
          }
       }
    }
@@ -2467,6 +2501,8 @@ static void update_variables(void)
    option_display.key = "puae_video_aspect";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_zoom_mode";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_zoom_mode_crop";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_vertical_pos";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
@@ -3123,30 +3159,32 @@ void retro_get_system_info(struct retro_system_info *info)
    info->valid_extensions = "adf|adz|dms|fdi|ipf|hdf|hdz|lha|cue|ccd|nrg|mds|iso|uae|m3u|zip";
 }
 
-float retro_get_aspect_ratio(int w, int h)
+double retro_get_aspect_ratio(unsigned int width, unsigned int height, bool pixel_aspect)
 {
-   static float ar = 1;
+   double ar = 1;
+   double par = 1;
 
-   if (video_config_geometry & PUAE_VIDEO_NTSC)
-      ar = ((float)w / (float)h) * (44.0 / 52.0);
-   else
-      ar = ((float)w / (float)h);
+   if (video_config_geometry & PUAE_VIDEO_NTSC || video_config_aspect == PUAE_VIDEO_NTSC)
+      par = (double)44.0 / (double)52.0;
+   ar = ((double)width / (double)height) * par;
 
    if (video_config_geometry & PUAE_VIDEO_DOUBLELINE)
    {
       if (video_config_geometry & PUAE_VIDEO_HIRES)
          ;
       else if (video_config_geometry & PUAE_VIDEO_SUPERHIRES)
-         ar = ar / 2;
+         ar /= 2;
    }
    else
    {
       if (video_config_geometry & PUAE_VIDEO_HIRES)
-         ar = ar / 2;
+         ar /= 2;
       else if (video_config_geometry & PUAE_VIDEO_SUPERHIRES)
-         ar = ar / 4;
+         ar /= 4;
    }
 
+   if (pixel_aspect)
+      return par;
    return ar;
 }
 
@@ -3156,7 +3194,7 @@ static bool retro_update_av_info(void)
    bool isntsc          = retro_av_info_is_ntsc;
    bool change_timing   = retro_av_info_change_timing;
    bool change_geometry = retro_av_info_change_geometry;
-   float hz             = currprefs.chipset_refreshrate;
+   double hz            = currprefs.chipset_refreshrate;
 
    /* Reset global parameters ready for the
     * next update */
@@ -3256,16 +3294,19 @@ static bool retro_update_av_info(void)
    {
       min_diwstart_limit = min_diwstart_limit_hires * 2;
       max_diwstop_limit = max_diwstop_limit_hires * 2;
+      width_multiplier = 4;
    }
    else if (video_config & PUAE_VIDEO_HIRES)
    {
       min_diwstart_limit = min_diwstart_limit_hires;
       max_diwstop_limit = max_diwstop_limit_hires;
+      width_multiplier = 2;
    }
    else
    {
       min_diwstart_limit = min_diwstart_limit_hires / 2;
       max_diwstop_limit = max_diwstop_limit_hires / 2;
+      width_multiplier = 1;
    }
 
    /* Geometry dimensions */
@@ -3399,73 +3440,120 @@ static bool retro_update_av_info(void)
    switch (zoom_mode_id)
    {
       case 1:
-         if (video_config & PUAE_VIDEO_DOUBLELINE)
-            zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 480 : 540;
-         else
-            zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 240 : 270;
+         zoomed_width = 360;
+         zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 240 : 270;
          break;
       case 2:
-         if (video_config & PUAE_VIDEO_DOUBLELINE)
-            zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 474 : 524;
-         else
-            zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 237 : 262;
+         zoomed_width = 348;
+         zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 240 : 264;
          break;
       case 3:
-         if (video_config & PUAE_VIDEO_DOUBLELINE)
-            zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 470 : 512;
-         else
-            zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 235 : 256;
+         zoomed_width = 332;
+         zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 240 : 256;
          break;
       case 4:
-         if (video_config & PUAE_VIDEO_DOUBLELINE)
-            zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 460 : 480;
-         else
-            zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 230 : 240;
+         zoomed_width = 320;
+         zoomed_height = 240;
          break;
       case 5:
-         if (video_config & PUAE_VIDEO_DOUBLELINE)
-            zoomed_height = 448;
-         else
-            zoomed_height = 224;
+         zoomed_width = 320;
+         zoomed_height = 224;
          break;
       case 6:
-         if (video_config & PUAE_VIDEO_DOUBLELINE)
-            zoomed_height = 432;
-         else
-            zoomed_height = 216;
+         zoomed_width = 320;
+         zoomed_height = 216;
          break;
       case 7:
-         if (video_config & PUAE_VIDEO_DOUBLELINE)
-            zoomed_height = 400;
-         else
-            zoomed_height = 200;
+         zoomed_width = 320;
+         zoomed_height = 200;
          break;
       case 8:
-         if (retro_thisframe_first_drawn_line != retro_thisframe_last_drawn_line
-          && retro_thisframe_first_drawn_line > 0 && retro_thisframe_last_drawn_line > 0
-         )
-         {
-            zoomed_height = retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line + 1;
-            zoomed_height = (video_config & PUAE_VIDEO_DOUBLELINE) ? zoomed_height * 2 : zoomed_height;
-         }
+         if (retro_min_diwstart != retro_max_diwstop
+          && retro_min_diwstart > 0
+          && retro_max_diwstop > 0)
+            zoomed_width = (retro_max_diwstop / width_multiplier) - (retro_min_diwstart / width_multiplier);
+         zoomed_width = (zoomed_width < 320) ? 320 : zoomed_width;
 
-         if (video_config & PUAE_VIDEO_DOUBLELINE)
-            zoomed_height = (zoomed_height < 400) ? 400 : zoomed_height;
-         else
-            zoomed_height = (zoomed_height < 200) ? 200 : zoomed_height;
+         if (retro_thisframe_first_drawn_line != retro_thisframe_last_drawn_line
+          && retro_thisframe_first_drawn_line > 0
+          && retro_thisframe_last_drawn_line > 0)
+            zoomed_height = retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line + 1;
+         zoomed_height = (zoomed_height < 200) ? 200 : zoomed_height;
          break;
       default:
+         zoomed_width = retrow;
          zoomed_height = retroh;
          break;
    }
 
-   if (zoomed_height > retroh)
-      zoomed_height = retroh;
-
-   if (zoomed_height != retroh)
+   if (zoom_mode_id > 0)
    {
+      double zoom_dar = 0;
+      double zoom_par = retro_get_aspect_ratio(0, 0, true);
+      int zoomed_height_original = zoomed_height;
+
+      switch (zoom_mode_crop_id)
+      {
+         case 0: // Both
+            break;
+         case 1: // Vertical disables horizontal crop
+            zoomed_width = retrow;
+            break;
+         case 2: // Horizontal disables vertical crop
+            zoomed_height = retroh;
+            break;
+         case 3: // 16:9
+            zoom_dar = (double)16/9;
+            zoomed_width = retrow;
+            if (zoomed_height < ((int)zoomed_width / width_multiplier / zoom_dar * zoom_par))
+               zoomed_height = (int)(zoomed_width / width_multiplier / zoom_dar * zoom_par);
+            break;
+         case 4: // 16:10
+            zoom_dar = (double)16/10;
+            zoomed_width = retrow;
+            if (zoomed_height < ((int)zoomed_width / width_multiplier / zoom_dar * zoom_par))
+               zoomed_height = (int)(zoomed_width / width_multiplier / zoom_dar * zoom_par);
+            break;
+         case 5: // 4:3
+            zoom_dar = (double)4/3;
+            if (zoomed_height < ((int)zoomed_width * width_multiplier / zoom_dar * zoom_par))
+            {
+               zoomed_height = (int)(zoomed_width / zoom_dar * zoom_par);
+               if (zoomed_height < zoomed_height_original)
+                  zoomed_height = zoomed_height_original;
+               zoomed_width = (int)(zoomed_height * zoom_dar / zoom_par);
+            }
+            break;
+         case 6: // 5:4
+            zoom_dar = (double)5/4;
+            if (zoomed_height < ((int)zoomed_width * width_multiplier / zoom_dar * zoom_par))
+            {
+               zoomed_height = (int)(zoomed_width / zoom_dar * zoom_par);
+               if (zoomed_height < zoomed_height_original)
+                  zoomed_height = zoomed_height_original;
+               zoomed_width = (int)(zoomed_height * zoom_dar / zoom_par);
+            }
+            break;
+      }
+
+      if (video_config & PUAE_VIDEO_DOUBLELINE)
+         zoomed_height *= 2;
+
+      zoomed_width = (zoomed_width < 320) ? 320 : zoomed_width;
+      zoomed_width *= width_multiplier;
+
+      if (zoomed_height > retroh)
+         zoomed_height = retroh;
+
+      if (zoomed_width > retrow)
+         zoomed_width = retrow;
+   }
+
+   if (zoomed_height != retroh || zoomed_width != retrow)
+   {
+      new_av_info.geometry.base_width = zoomed_width;
       new_av_info.geometry.base_height = zoomed_height;
-      new_av_info.geometry.aspect_ratio = retro_get_aspect_ratio(retrow, zoomed_height);
+      new_av_info.geometry.aspect_ratio = retro_get_aspect_ratio(zoomed_width, zoomed_height, false);
       environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
 
       /* Ensure statusbar stays visible at the bottom */
@@ -3509,26 +3597,21 @@ static bool retro_update_av_info(void)
    /* Horizontal centering */
    if (opt_horizontal_offset_auto)
    {
-      int visible_left_border_new = retro_max_diwlastword - retrow;
-      int diw_multiplier = 1;
-      if (video_config_geometry & PUAE_VIDEO_HIRES)
-         diw_multiplier = 2;
-      else if (video_config_geometry & PUAE_VIDEO_SUPERHIRES)
-         diw_multiplier = 4;
+      int visible_left_border_new = retro_max_diwlastword - retrow + (retrow - zoomed_width) / 2;
 
       /* Need proper values for calculations */
       if (retro_min_diwstart != retro_max_diwstop
        && retro_min_diwstart > 0 && retro_max_diwstop > 0
        && retro_min_diwstart < min_diwstart_limit
        && retro_max_diwstop > max_diwstop_limit
-       && (retro_max_diwstop - retro_min_diwstart) <= (retrow + 2*diw_multiplier)
-      )
-         visible_left_border_new = (retro_max_diwstop - retro_min_diwstart - retrow) / 2 + retro_min_diwstart;
+       && (retro_max_diwstop - retro_min_diwstart) <= (zoomed_width + (2 * width_multiplier)))
+         visible_left_border_new = (retro_max_diwstop - retro_min_diwstart - zoomed_width) / 2 + retro_min_diwstart;
       else if (retro_min_diwstart == 30000 && retro_max_diwstop == 0)
          visible_left_border_new = visible_left_border;
 
       /* Sensible limits */
       visible_left_border_new = (visible_left_border_new < 0) ? 0 : visible_left_border_new;
+      visible_left_border_new = ((visible_left_border_new / width_multiplier) > 150) ? (150 * width_multiplier) : visible_left_border_new;
 
       /* Change value only if altered */
       if (visible_left_border != visible_left_border_new)
@@ -3544,11 +3627,11 @@ static bool retro_update_av_info(void)
    if (av_log)
    {
       if (change_timing)
-         fprintf(stdout, "[libretro-uae]: Update av_info: %dx%d %0.4fHz, zoomed_height:%d, video_config:%d\n", retrow, retroh, hz, zoomed_height, video_config_geometry);
+         fprintf(stdout, "[libretro-uae]: Update av_info: %dx%d %0.4fHz, zoomed: %dx%d, video_config:%d\n", retrow, retroh, hz, zoomed_width, zoomed_height, video_config_geometry);
       else if (change_geometry)
-         fprintf(stdout, "[libretro-uae]: Update geometry: %dx%d zoomed_height:%d, video_config:%d\n", retrow, retroh, zoomed_height, video_config_geometry);
+         fprintf(stdout, "[libretro-uae]: Update geometry: %dx%d, zoomed: %dx%d, video_config:%d\n", retrow, retroh, zoomed_width, zoomed_height, video_config_geometry);
       else
-         fprintf(stdout, "[libretro-uae]: Update zoom: %dx%d zoomed_height:%d, video_config:%d\n", retrow, retroh, zoomed_height, video_config_geometry);
+         fprintf(stdout, "[libretro-uae]: Update zoom: %dx%d, zoomed: %dx%d, video_config:%d\n", retrow, retroh, zoomed_width, zoomed_height, video_config_geometry);
    }
 
    /* Triggers check_prefs_changed_gfx() in vsync_handle_check() */
@@ -3590,7 +3673,7 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
    geom.base_height = retroh;
    geom.max_width = EMULATOR_MAX_WIDTH;
    geom.max_height = EMULATOR_MAX_HEIGHT;
-   geom.aspect_ratio = retro_get_aspect_ratio(retrow, retroh);
+   geom.aspect_ratio = retro_get_aspect_ratio(retrow, retroh, false);
 
    info->geometry = geom;
    info->timing.sample_rate = 44100.0;
@@ -5270,7 +5353,7 @@ void retro_run(void)
       libretro_do_restart(sizeof(uae_argv)/sizeof(*uae_argv), uae_argv);
       // Re-run emulation first pass
       restart_pending = m68k_go(1, 0);
-      video_cb(retro_bmp, retrow, zoomed_height, retrow << (pix_bytes / 2));
+      video_cb(retro_bmp, zoomed_width, zoomed_height, retrow << (pix_bytes / 2));
       return;
    }
 
@@ -5303,23 +5386,23 @@ void retro_run(void)
       {
          if (interlace_seen)
          {
-            DrawHline(retro_bmp, 0, 572, retrow, 0, 0);
-            DrawHline(retro_bmp, 0, 573, retrow, 0, 0);
-            DrawHline(retro_bmp, 0, 574, retrow, 0, 0);
-            DrawHline(retro_bmp, 0, 575, retrow, 0, 0);
+            DrawHline(retro_bmp, 0, 572, zoomed_width, 0, 0);
+            DrawHline(retro_bmp, 0, 573, zoomed_width, 0, 0);
+            DrawHline(retro_bmp, 0, 574, zoomed_width, 0, 0);
+            DrawHline(retro_bmp, 0, 575, zoomed_width, 0, 0);
          }
          else
          {
-            DrawHline(retro_bmp, 0, 574, retrow, 0, 0);
-            DrawHline(retro_bmp, 0, 575, retrow, 0, 0);
+            DrawHline(retro_bmp, 0, 574, zoomed_width, 0, 0);
+            DrawHline(retro_bmp, 0, 575, zoomed_width, 0, 0);
          }
       }
       else
       {
-         DrawHline(retro_bmp, 0, 287, retrow, 0, 0);
+         DrawHline(retro_bmp, 0, 287, zoomed_width, 0, 0);
       }
    }
-   video_cb(retro_bmp, retrow, zoomed_height, retrow << (pix_bytes / 2));
+   video_cb(retro_bmp, zoomed_width, zoomed_height, retrow << (pix_bytes / 2));
 }
 
 bool retro_load_game(const struct retro_game_info *info)

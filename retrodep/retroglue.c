@@ -806,11 +806,29 @@ void uae_resume (void)
 {
 }
 
+int sensible_strcmp(char *a, char *b)
+{
+   int i;
+   for (i = 0; a[i] == b[i]; i++)
+      if (a[i] == '\0')
+         return 0;
+   // Replace " " (32) with "/" (47) when comparing for more natural sorting, such as:
+   // 1. Turrican
+   // 2. Turrican II
+   // 3. Turrican III
+   // Because "/" (47) is bigger than "," (44) and "." (46), and it is not used in filenames
+   if (a[i] == 32)
+      return (47 < (unsigned char)b[i]) ? -1 : 1;
+   if (b[i] == 32)
+      return ((unsigned char)a[i] < 47) ? -1 : 1;
+   return ((unsigned char)a[i] < (unsigned char)b[i]) ? -1 : 1;
+}
+
 int qstrcmp(const void *a, const void *b)
 {
-    const char *pa = (const char *)a;
-    const char *pb = (const char *)b;
-    return strcmp(pa, pb);
+    char *pa = (char *)a;
+    char *pb = (char *)b;
+    return sensible_strcmp(pa, pb);
 }
 
 void remove_recurse(const char *path)

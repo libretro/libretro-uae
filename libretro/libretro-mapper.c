@@ -52,6 +52,7 @@ int MOUSEMODE=-1,SHOWKEY=-1,SHOWKEYPOS=-1,SHOWKEYTRANS=1;
 
 unsigned int mouse_speed[2]={0};
 extern int pix_bytes;
+extern unsigned int width_multiplier;
 extern void retro_reset_soft();
 
 #ifdef POINTER_DEBUG
@@ -75,6 +76,7 @@ static int mflag[2][16] = {0};
 static int aflag[2][16] = {0};
 static int jbt[2][24] = {0};
 static int kbt[16] = {0};
+static int mapper_flag[4][16] = {0};
 
 extern unsigned short int retro_bmp[RETRO_BMP_SIZE];
 extern void retro_key_up(int);
@@ -509,23 +511,32 @@ void print_statusbar(void)
    BOX_Y = STAT_BASEY - BOX_PADDING;
 
    // Statusbar size
-   BOX_WIDTH = retrow;
+   BOX_WIDTH = zoomed_width;
+   int ZOOMED_WIDTH_OFFSET = retrow - zoomed_width;
 
    // Video resolution
-   int STAT_X_RESOLUTION = STAT_X+(FONT_SLOT*4)+(FONT_WIDTH*16);
+   int STAT_X_RESOLUTION = STAT_X+(FONT_SLOT*4)+(FONT_WIDTH*16)-(ZOOMED_WIDTH_OFFSET/2);
    char RESOLUTION[10] = {0};
-   snprintf(RESOLUTION, sizeof(RESOLUTION), "%4dx%3d", retrow, zoomed_height);
+   snprintf(RESOLUTION, sizeof(RESOLUTION), "%4dx%3d", zoomed_width, zoomed_height);
 
    // Model & memory
-   int STAT_X_MODEL  = STAT_X+(FONT_SLOT*6)+(FONT_WIDTH*30);
-   int STAT_X_MEMORY = STAT_X+(FONT_SLOT*6)+(FONT_WIDTH*5);
+   int STAT_X_MODEL  = STAT_X+(FONT_SLOT*6)+(FONT_WIDTH*30)-ZOOMED_WIDTH_OFFSET;
+   int STAT_X_MEMORY = STAT_X+(FONT_SLOT*6)+(FONT_WIDTH*5)-ZOOMED_WIDTH_OFFSET;
+   // Sacrifice memory slot if there is not enough width
+   if (!(video_config & PUAE_VIDEO_DOUBLELINE))
+   {
+      if (STAT_X_MEMORY < (STAT_X_RESOLUTION + FONT_SLOT + (FONT_WIDTH*20)))
+         STAT_X_MEMORY = -1;
+   }
+
    char MODEL[10] = {0};
    char MEMORY[5] = {0};
    float mem_size = 0;
    mem_size = (float)(currprefs.chipmem_size / 0x80000) / 2;
    mem_size += (float)(currprefs.bogomem_size / 0x40000) / 4;
    mem_size += (float)(currprefs.fastmem_size / 0x100000);
-   snprintf(MEMORY, sizeof(MEMORY), "%2.0fM", floor(mem_size));
+   if (STAT_X_MEMORY > 0)
+      snprintf(MEMORY, sizeof(MEMORY), "%2.0fM", floor(mem_size));
    switch (currprefs.cs_compatible)
    {
       case CP_A500:
@@ -554,9 +565,9 @@ void print_statusbar(void)
    // Double line positions
    if (video_config & PUAE_VIDEO_DOUBLELINE)
    {
-      STAT_X_RESOLUTION = STAT_X+(FONT_SLOT*15)+(FONT_WIDTH*5);
-      STAT_X_MODEL      = STAT_X+(FONT_SLOT*17)+(FONT_WIDTH*15);
-      STAT_X_MEMORY     = STAT_X+(FONT_SLOT*16)+(FONT_WIDTH*25);
+      STAT_X_RESOLUTION = STAT_X+(FONT_SLOT*15)+(FONT_WIDTH*5)-ZOOMED_WIDTH_OFFSET;
+      STAT_X_MODEL      = STAT_X+(FONT_SLOT*17)+(FONT_WIDTH*15)-ZOOMED_WIDTH_OFFSET;
+      STAT_X_MEMORY     = STAT_X+(FONT_SLOT*16)+(FONT_WIDTH*25)-ZOOMED_WIDTH_OFFSET;
    }
 
    // Joy port indicators
@@ -1108,12 +1119,14 @@ static void process_controller(int retro_port, int i)
             ))
                ;// no-op
             else
+            {
                retro_joystick_button(retro_port_uae, uae_button, 1);
-            jflag[retro_port_uae][i]=1;
-            aflag[retro_port][i]=1;
+               jflag[retro_port_uae][i]=1;
+               aflag[retro_port][i]=1;
+            }
          }
          else
-         if (!input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, i) && jflag[retro_port_uae][i]==1)
+         if (!input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, i) && jflag[retro_port_uae][i]==1 && mapper_flag[retro_port][i]!=1)
          {
             // Skip RetroPad face button handling if keymapped
             if ((uae_devices[retro_port] == RETRO_DEVICE_JOYPAD
@@ -1126,9 +1139,11 @@ static void process_controller(int retro_port, int i)
             ))
                ;// no-op
             else
+            {
                retro_joystick_button(retro_port_uae, uae_button, 0);
-            jflag[retro_port_uae][i]=0;
-            aflag[retro_port][i]=0;
+               jflag[retro_port_uae][i]=0;
+               aflag[retro_port][i]=0;
+            }
          }
       }
    }
@@ -1436,9 +1451,21 @@ void update_input(int disable_physical_cursor_keys)
                      continue;
                }
 
-               /* Skip the VKBD buttons if VKBD is visible */
-               if (SHOWKEY==1 && (i==RETRO_DEVICE_ID_JOYPAD_B || i==RETRO_DEVICE_ID_JOYPAD_A || i==RETRO_DEVICE_ID_JOYPAD_Y || i==RETRO_DEVICE_ID_JOYPAD_X || i==RETRO_DEVICE_ID_JOYPAD_START))
-                  continue;
+               /* Skip the VKBD buttons if VKBD is visible and buttons are mapped to keyboard keys */
+               if (SHOWKEY==1)
+               {
+                  switch (i)
+                  {
+                     case RETRO_DEVICE_ID_JOYPAD_B:
+                     case RETRO_DEVICE_ID_JOYPAD_Y:
+                     case RETRO_DEVICE_ID_JOYPAD_A:
+                     case RETRO_DEVICE_ID_JOYPAD_X:
+                     case RETRO_DEVICE_ID_JOYPAD_START:
+                        if (mapper_keys[i] >= 0)
+                           continue;
+                        break;
+                  }
+               }
 
                if (input_state_cb(j, RETRO_DEVICE_JOYPAD, 0, i) && jbt[j][i]==0 && i!=turbo_fire_button)
                   just_pressed = 1;
@@ -1523,12 +1550,18 @@ void update_input(int disable_physical_cursor_keys)
                else if (mapper_keys[i] == -7) /* Joystick fire button */
                {
                   retro_joystick_button(j, 0, 1);
-                  jflag[j][RETRO_DEVICE_ID_JOYPAD_B]=1;
+                  if (opt_retropad_options == 1 || opt_retropad_options == 3)
+                     jflag[j][RETRO_DEVICE_ID_JOYPAD_Y] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_Y] = 1;
+                  else
+                     jflag[j][RETRO_DEVICE_ID_JOYPAD_B] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_B] = 1;
                }
                else if (mapper_keys[i] == -8) /* Joystick 2nd fire button */
                {
                   retro_joystick_button(j, 1, 1);
-                  jflag[j][RETRO_DEVICE_ID_JOYPAD_A]=1;
+                  if (opt_retropad_options == 1 || opt_retropad_options == 3)
+                     jflag[j][RETRO_DEVICE_ID_JOYPAD_B] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_B] = 1;
+                  else
+                     jflag[j][RETRO_DEVICE_ID_JOYPAD_A] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_A] = 1;
                }
                else if (mapper_keys[i] == -11) /* Virtual keyboard */
                   emu_function(EMU_VKBD);
@@ -1576,12 +1609,18 @@ void update_input(int disable_physical_cursor_keys)
                else if (mapper_keys[i] == -7) /* Joystick fire button */
                {
                   retro_joystick_button(j, 0, 0);
-                  jflag[j][RETRO_DEVICE_ID_JOYPAD_B]=0;
+                  if (opt_retropad_options == 1 || opt_retropad_options == 3)
+                     jflag[j][RETRO_DEVICE_ID_JOYPAD_Y] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_Y] = 0;
+                  else
+                     jflag[j][RETRO_DEVICE_ID_JOYPAD_B] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_B] = 0;
                }
                else if (mapper_keys[i] == -8) /* Joystick 2nd fire button */
                {
                   retro_joystick_button(j, 1, 0);
-                  jflag[j][RETRO_DEVICE_ID_JOYPAD_A]=0;
+                  if (opt_retropad_options == 1 || opt_retropad_options == 3)
+                     jflag[j][RETRO_DEVICE_ID_JOYPAD_B] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_B] = 0;
+                  else
+                     jflag[j][RETRO_DEVICE_ID_JOYPAD_A] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_A] = 0;
                }
                else if (mapper_keys[i] == -11) /* Virtual keyboard */
                   ; /* nop */
@@ -1677,7 +1716,7 @@ void update_input(int disable_physical_cursor_keys)
 
       if (p_x != 0 && p_y != 0 && (p_x != last_pointer_x || p_y != last_pointer_y))
       {
-         int px = (int)((p_x + 0x7fff) * retrow / 0xffff);
+         int px = (int)((p_x + 0x7fff) * zoomed_width / 0xffff);
          int py = (int)((p_y + 0x7fff) * zoomed_height / 0xffff);
          last_pointer_x = p_x;
          last_pointer_y = p_y;
@@ -1706,7 +1745,7 @@ void update_input(int disable_physical_cursor_keys)
 
       /* Press Return, RetroPad Start */
       i=RETRO_DEVICE_ID_JOYPAD_START;
-      if (vkflag[8]==0 && (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i)))
+      if (vkflag[8]==0 && mapper_keys[i] >= 0 && (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i)))
       {
          vkflag[8]=1;
          retro_key_down(AK_RET);
@@ -1719,7 +1758,7 @@ void update_input(int disable_physical_cursor_keys)
 
       /* CapsLock, RetroPad Y */
       i=RETRO_DEVICE_ID_JOYPAD_Y;
-      if (vkflag[7]==0 && (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i)))
+      if (vkflag[7]==0 && mapper_keys[i] >= 0 && (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i)))
       {
          vkflag[7]=1;
          SHIFTON=-SHIFTON;
@@ -1731,7 +1770,7 @@ void update_input(int disable_physical_cursor_keys)
 
       /* Position toggle, RetroPad X */
       i=RETRO_DEVICE_ID_JOYPAD_X;
-      if (vkflag[6]==0 && (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i)))
+      if (vkflag[6]==0 && mapper_keys[i] >= 0 && (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i)))
       {
          vkflag[6]=1;
          SHOWKEYPOS=-SHOWKEYPOS;
@@ -1743,7 +1782,7 @@ void update_input(int disable_physical_cursor_keys)
 
       /* Transparency toggle, RetroPad A */
       i=RETRO_DEVICE_ID_JOYPAD_A;
-      if (vkflag[5]==0 && (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i)))
+      if (vkflag[5]==0 && mapper_keys[i] >= 0 && (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i) || input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, i)))
       {
          vkflag[5]=1;
          SHOWKEYTRANS=-SHOWKEYTRANS;

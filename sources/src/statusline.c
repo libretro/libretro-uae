@@ -169,6 +169,7 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
     if (LEDON==-1)
         return;
 
+    totalwidth = zoomed_width;
     num_multip = 1;
     if (currprefs.gfx_resolution == RES_HIRES && currprefs.gfx_vresolution == VRES_NONDOUBLE)
         num_multip = 2;
