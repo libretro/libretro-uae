@@ -9,7 +9,7 @@
 #include "retro_disk_control.h"
 #include "string/stdstring.h"
 #include "file/file_path.h"
-#include "uae_types.h"
+#include "encodings/utf.h"
 
 #include "retrodep/WHDLoad_files.zip.c"
 #include "retrodep/WHDLoad_hdf.gz.c"
@@ -18,6 +18,7 @@
 
 #include "sysdeps.h"
 #include "uae.h"
+#include "uae_types.h"
 #include "options.h"
 #include "inputdevice.h"
 #include "savestate.h"
@@ -526,7 +527,7 @@ void retro_set_environment(retro_environment_t cb)
             { "waiting", "Wait for Blitter" },
             { NULL, NULL },
          },
-         "false"
+         "waiting"
       },
       {
          "puae_collision_level",
@@ -979,7 +980,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_keyrah_keypad_mappings",
          "Keyrah Keypad Mappings",
-         "Hardcoded keypad to joy mappings for Keyrah hardware.",
+         "Hardcoded keypad to joyport mappings for Keyrah hardware.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -5407,9 +5408,23 @@ void retro_run(void)
 
 bool retro_load_game(const struct retro_game_info *info)
 {
-   // UAE config
+   // Content
+   char *local_path;
    if (info)
-      strcpy(full_path, (char*)info->path);
+   {
+      // Special unicode chars won't work without conversion
+      local_path = utf8_to_local_string_alloc(info->path);
+      if (local_path)
+      {
+         strcpy(full_path, local_path);
+         free(local_path);
+         local_path = NULL;
+      }
+      else
+         return false;
+   }
+
+   // UAE config
    static bool retro_return;
    retro_return = retro_create_config();
    if (!retro_return)
