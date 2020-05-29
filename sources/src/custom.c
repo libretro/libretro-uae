@@ -8184,7 +8184,9 @@ uae_u8 *save_cycles (int *len, uae_u8 *dstptr)
 	save_u32 (CYCLE_UNIT);
 	save_u64 (get_cycles ());
 	save_u32 (extra_cycle);
+#ifndef __LIBRETRO__
 	write_log (_T("SAVECYCLES %08lX\n"), get_cycles ());
+#endif
 	*len = dst - dstbak;
 	return dstbak;
 }
@@ -8196,7 +8198,9 @@ uae_u8 *restore_cycles (uae_u8 *src)
 	restore_u32 ();
 	start_cycles = restore_u64 ();
 	extra_cycle = restore_u32 ();
+#ifndef __LIBRETRO__
 	write_log (_T("RESTORECYCLES %08lX\n"), start_cycles);
+#endif
 	return src;
 }
 

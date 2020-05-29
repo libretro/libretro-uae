@@ -3007,10 +3007,6 @@ void retro_init(void)
             sizeof(retro_save_directory));
    }
 
-   //printf("Retro SYSTEM_DIRECTORY %s\n",retro_system_directory);
-   //printf("Retro SAVE_DIRECTORY %s\n",retro_save_directory);
-   //printf("Retro CONTENT_DIRECTORY %s\n",retro_content_directory);
-
    // Disk control interface
    retro_dc = dc_create();
 
@@ -3112,6 +3108,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
       int uae_port;
       uae_port = (port==0) ? 1 : 0;
       cd32_pad_enabled[uae_port] = 0;
+#if 0
       switch (device)
       {
          case RETRO_DEVICE_JOYPAD:
@@ -3120,7 +3117,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 
          case RETRO_DEVICE_UAE_CD32PAD:
             fprintf(stdout, "[libretro-uae]: Controller %u: CD32 Pad\n", (port+1));
-            cd32_pad_enabled[uae_port]=1;
+            cd32_pad_enabled[uae_port] = 1;
             break;
 
          case RETRO_DEVICE_UAE_ANALOG:
@@ -3136,9 +3133,13 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
             break;
 
          case RETRO_DEVICE_NONE:
-            fprintf(stdout, "[libretro-uae]: Controller %u: Unplugged\n", (port+1));
+            fprintf(stdout, "[libretro-uae]: Controller %u: None\n", (port+1));
             break;
       }
+#else
+      if (device == RETRO_DEVICE_UAE_CD32PAD)
+         cd32_pad_enabled[uae_port] = 1;
+#endif
 
       /* After startup input_get_default_joystick will need to be refreshed for cd32<>joystick change to work.
          Doing updateconfig straight from boot will crash, hence inputdevice_finalized */
