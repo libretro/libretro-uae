@@ -499,8 +499,10 @@ static void restore_header (uae_u8 *src)
 	emuname = restore_string ();
 	emuversion = restore_string ();
 	description = restore_string ();
+#if OPEN_LOG > 0
 	write_log (_T("Saved with: '%s %s', description: '%s'\n"),
 		emuname, emuversion, description);
+#endif
 	xfree (description);
 	xfree (emuversion);
 	xfree (emuname);
@@ -538,16 +540,20 @@ void restore_state (const TCHAR *filename)
 	chunk = restore_chunk (f, name, &len, &totallen, &filepos);
 #ifdef __LIBRETRO__
 	if (!chunk || _tcsncmp (name, _T("ASF "), 4)) {
-		write_log (_T("libretro serialization data is not an AmigaStateFile\n"));
+		write_log (_T("STATERESTORE libretro serialization data is not an AmigaStateFile\n"));
 		goto error;
 	}
-	write_log (_T("STATERESTORE: libretro serialization data\n"));
+#if OPEN_LOG > 0
+	write_log (_T("STATERESTORE libretro serialization data:\n"));
+#endif
 #else
 	if (!chunk || _tcsncmp (name, _T("ASF "), 4)) {
 		write_log (_T("%s is not an AmigaStateFile\n"), filename);
 		goto error;
 	}
+#if OPEN_LOG > 0
 	write_log (_T("STATERESTORE: '%s'\n"), filename);
+#endif
 #endif
 	config_changed = 1;
 	savestate_file = f;
@@ -1178,13 +1184,17 @@ int save_state (const TCHAR *filename, const TCHAR *description)
 	int v = save_state_internal (f, description, comp, true);
 #ifdef __LIBRETRO__
 	if (v)
-		write_log (_T("libretro serialization complete\n"));
+#if OPEN_LOG > 0
+		write_log (_T("STATESAVE libretro serialization complete\n"));
+#endif
 	savestate_state = 0;
 	zfile_fseek (f, 0, SEEK_SET);
 	return f;
 #else
 	if (v)
+#if OPEN_LOG > 0
 		write_log (_T("Save of '%s' complete\n"), filename);
+#endif
 	zfile_fclose (f);
 	savestate_state = 0;
 	return v;
@@ -1767,10 +1777,12 @@ retry2:
 			staterecords_first -= staterecords_max;
 	}
 
+#if OPEN_LOG > 0
 	write_log (_T("state capture %d (%010d/%03d,%d/%d) (%d bytes, alloc %d)\n"),
 		replaycounter, hsync_counter, vsync_counter,
 		hsync_counter % current_maxvpos (), current_maxvpos (),
 		st->end - st->data, statefile_alloc);
+#endif
 
 	if (firstcapture) {
 		savestate_memorysave ();

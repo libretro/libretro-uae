@@ -9,7 +9,7 @@
 #include "retro_disk_control.h"
 #include "string/stdstring.h"
 #include "file/file_path.h"
-#include "uae_types.h"
+#include "encodings/utf.h"
 
 #include "retrodep/WHDLoad_files.zip.c"
 #include "retrodep/WHDLoad_hdf.gz.c"
@@ -18,6 +18,7 @@
 
 #include "sysdeps.h"
 #include "uae.h"
+#include "uae_types.h"
 #include "options.h"
 #include "inputdevice.h"
 #include "savestate.h"
@@ -526,7 +527,7 @@ void retro_set_environment(retro_environment_t cb)
             { "waiting", "Wait for Blitter" },
             { NULL, NULL },
          },
-         "false"
+         "waiting"
       },
       {
          "puae_collision_level",
@@ -979,7 +980,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_keyrah_keypad_mappings",
          "Keyrah Keypad Mappings",
-         "Hardcoded keypad to joy mappings for Keyrah hardware.",
+         "Hardcoded keypad to joyport mappings for Keyrah hardware.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -3006,10 +3007,6 @@ void retro_init(void)
             sizeof(retro_save_directory));
    }
 
-   //printf("Retro SYSTEM_DIRECTORY %s\n",retro_system_directory);
-   //printf("Retro SAVE_DIRECTORY %s\n",retro_save_directory);
-   //printf("Retro CONTENT_DIRECTORY %s\n",retro_content_directory);
-
    // Disk control interface
    retro_dc = dc_create();
 
@@ -3111,6 +3108,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
       int uae_port;
       uae_port = (port==0) ? 1 : 0;
       cd32_pad_enabled[uae_port] = 0;
+#if 0
       switch (device)
       {
          case RETRO_DEVICE_JOYPAD:
@@ -3119,7 +3117,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 
          case RETRO_DEVICE_UAE_CD32PAD:
             fprintf(stdout, "[libretro-uae]: Controller %u: CD32 Pad\n", (port+1));
-            cd32_pad_enabled[uae_port]=1;
+            cd32_pad_enabled[uae_port] = 1;
             break;
 
          case RETRO_DEVICE_UAE_ANALOG:
@@ -3135,9 +3133,13 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
             break;
 
          case RETRO_DEVICE_NONE:
-            fprintf(stdout, "[libretro-uae]: Controller %u: Unplugged\n", (port+1));
+            fprintf(stdout, "[libretro-uae]: Controller %u: None\n", (port+1));
             break;
       }
+#else
+      if (device == RETRO_DEVICE_UAE_CD32PAD)
+         cd32_pad_enabled[uae_port] = 1;
+#endif
 
       /* After startup input_get_default_joystick will need to be refreshed for cd32<>joystick change to work.
          Doing updateconfig straight from boot will crash, hence inputdevice_finalized */
@@ -5179,37 +5181,54 @@ void update_audiovideo(void)
          || retro_thisframe_last_drawn_line  != retro_thisframe_last_drawn_line_old)
          && retro_thisframe_first_drawn_line != -1
          && retro_thisframe_last_drawn_line  != -1
-         && retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line > 1
-         && (abs(retro_thisframe_first_drawn_line_old - retro_thisframe_first_drawn_line) > 1 || abs(retro_thisframe_last_drawn_line_old - retro_thisframe_last_drawn_line) > 1)
+         && retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line > 40
+         && (abs(retro_thisframe_first_drawn_line_old - retro_thisframe_first_drawn_line) >= 1
+          || abs(retro_thisframe_last_drawn_line_old - retro_thisframe_last_drawn_line) >= 1)
       )
       {
          //printf("thisframe first:%3d old:%3d start:%3d last:%3d old:%3d start:%3d\n", retro_thisframe_first_drawn_line, retro_thisframe_first_drawn_line_old, retro_thisframe_first_drawn_line_start, retro_thisframe_last_drawn_line, retro_thisframe_last_drawn_line_old, retro_thisframe_last_drawn_line_start);
          // Prevent interlace stuttering by requiring a change of at least 2 lines
          // and also prevent sudden resolution switching by requiring the change to stabilize (count +-1 as stable) for a few frames
-         if (abs(retro_thisframe_first_drawn_line_old - retro_thisframe_first_drawn_line) > 1)
+         if (abs(retro_thisframe_first_drawn_line_old - retro_thisframe_first_drawn_line) > 1
+          || abs(retro_thisframe_last_drawn_line_old - retro_thisframe_last_drawn_line) > 1)
          {
             if (retro_thisframe_counter == 0)
-               retro_thisframe_first_drawn_line_start = retro_thisframe_first_drawn_line_old;
-            if (retro_thisframe_first_drawn_line_start == -1)
-               retro_thisframe_first_drawn_line_start = retro_thisframe_first_drawn_line;
-            retro_thisframe_first_drawn_line_old = retro_thisframe_first_drawn_line;
+            {
+               if (abs(retro_thisframe_first_drawn_line_old - retro_thisframe_first_drawn_line) > 1)
+                  retro_thisframe_first_drawn_line_start = retro_thisframe_first_drawn_line_old;
+               if (retro_thisframe_first_drawn_line_start == -1)
+                  retro_thisframe_first_drawn_line_start = retro_thisframe_first_drawn_line;
+
+               if (abs(retro_thisframe_last_drawn_line_old - retro_thisframe_last_drawn_line) > 1)
+                  retro_thisframe_last_drawn_line_start = retro_thisframe_last_drawn_line_old;
+               if (retro_thisframe_last_drawn_line_start == -1)
+                  retro_thisframe_last_drawn_line_start = retro_thisframe_last_drawn_line;
+            }
             retro_thisframe_counter = 1;
          }
-         if (abs(retro_thisframe_last_drawn_line_old - retro_thisframe_last_drawn_line) > 1)
-         {
-            if (retro_thisframe_counter == 0)
-               retro_thisframe_last_drawn_line_start = retro_thisframe_last_drawn_line_old;
-            if (retro_thisframe_last_drawn_line_start == -1)
-               retro_thisframe_last_drawn_line_start = retro_thisframe_last_drawn_line;
-            retro_thisframe_last_drawn_line_old = retro_thisframe_last_drawn_line;
+         else if (abs(retro_thisframe_first_drawn_line_old - retro_thisframe_first_drawn_line) == 1
+               || abs(retro_thisframe_last_drawn_line_old - retro_thisframe_last_drawn_line) == 1)
             retro_thisframe_counter = 1;
-         }
+
+         retro_thisframe_first_drawn_line_old = retro_thisframe_first_drawn_line;
+         retro_thisframe_last_drawn_line_old = retro_thisframe_last_drawn_line;
       }
-      //else if (abs(retro_thisframe_first_drawn_line_old - retro_thisframe_first_drawn_line) < 2 && abs(retro_thisframe_last_drawn_line_old - retro_thisframe_last_drawn_line) < 2)
-      else if (retro_thisframe_counter > 0 && retro_thisframe_first_drawn_line != -1 && retro_thisframe_last_drawn_line != -1)
+      else if (retro_thisframe_counter > 0
+            && retro_thisframe_first_drawn_line != -1
+            && retro_thisframe_last_drawn_line  != -1
+            && retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line > 40
+      )
       {
+         //printf("thiscnt %d first:%3d old:%3d start:%3d last:%3d old:%3d start:%3d\n", retro_thisframe_counter, retro_thisframe_first_drawn_line, retro_thisframe_first_drawn_line_old, retro_thisframe_first_drawn_line_start, retro_thisframe_last_drawn_line, retro_thisframe_last_drawn_line_old, retro_thisframe_last_drawn_line_start);
+         // Reset counter if the first drawn line changes while the last line stays the same
+         if (retro_thisframe_first_drawn_line != retro_thisframe_first_drawn_line_start
+          && retro_thisframe_last_drawn_line  == retro_thisframe_last_drawn_line_start
+          && abs(retro_thisframe_first_drawn_line_start - retro_thisframe_first_drawn_line) < 40)
+            retro_thisframe_counter = 0;
+
          // Prevent geometry change but allow vertical centering if the values return to the starting point during counting
-         if (retro_thisframe_first_drawn_line == retro_thisframe_first_drawn_line_start && retro_thisframe_last_drawn_line == retro_thisframe_last_drawn_line_start)
+         if (retro_thisframe_first_drawn_line == retro_thisframe_first_drawn_line_start
+          && retro_thisframe_last_drawn_line  == retro_thisframe_last_drawn_line_start)
             retro_av_info_change_geometry = false;
 
          if (retro_thisframe_counter > 0)
@@ -5407,9 +5426,23 @@ void retro_run(void)
 
 bool retro_load_game(const struct retro_game_info *info)
 {
-   // UAE config
+   // Content
+   char *local_path;
    if (info)
-      strcpy(full_path, (char*)info->path);
+   {
+      // Special unicode chars won't work without conversion
+      local_path = utf8_to_local_string_alloc(info->path);
+      if (local_path)
+      {
+         strcpy(full_path, local_path);
+         free(local_path);
+         local_path = NULL;
+      }
+      else
+         return false;
+   }
+
+   // UAE config
    static bool retro_return;
    retro_return = retro_create_config();
    if (!retro_return)
