@@ -5057,7 +5057,7 @@ void retro_reset(void)
    video_config_old = 0;
    update_variables();
    retro_create_config();
-   uae_restart(1, (const char*)&RPATH); /* 1=nogui */
+   uae_restart(1, RPATH); /* 1=nogui */
 }
 
 void retro_reset_soft()

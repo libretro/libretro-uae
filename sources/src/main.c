@@ -623,10 +623,12 @@ void uae_restart (int opengui, const TCHAR *cfgfile)
 {
 	uae_quit ();
 	restart_program = opengui > 0 ? 1 : (opengui == 0 ? 2 : 3);
+#ifndef __LIBRETRO__
 	restart_config[0] = 0;
 	default_config = 0;
 	if (cfgfile)
 		_tcscpy (restart_config, cfgfile);
+#endif
 	target_restart ();
 }
 
@@ -828,10 +830,6 @@ static void parse_cmdline (int argc, TCHAR **argv)
 }
 #endif
 
-#ifdef __LIBRETRO__
-#undef OPTIONS_IN_HOME
-#endif
-
 static void parse_cmdline_and_init_file (int argc, TCHAR **argv)
 {
 
@@ -859,8 +857,9 @@ _tcscat (optionsfile, _T("/"));
 #endif
 	parse_cmdline_2 (argc, argv);
 
+#ifndef __LIBRETRO__
 	_tcscat (optionsfile, restart_config);
-
+#endif
 
 	if (argc > 1 && ! target_cfgfile_load (&currprefs, argv[1], 0, default_config)) {
 		write_log (_T("failed to load config '%s'\n"), optionsfile);
@@ -924,17 +923,6 @@ void reset_all_systems (void)
 #endif
     device_func_reset();
 }
-
-#ifdef __LIBRETRO__
-//RETRO FIXME
-const char* get_current_config_name() {
-	if (restart_config[0] == 0) {
-		return optionsfile;
-	} else {
-		return restart_config;
-	}
-}
-#endif
 
 /* Okay, this stuff looks strange, but it is here to encourage people who
 * port UAE to re-use as much of this code as possible. Functions that you
@@ -1230,7 +1218,9 @@ void real_main (int argc, TCHAR **argv)
 	show_version_full ();
 	restart_program = 1;
 
+#ifndef __LIBRETRO__
 	fetch_configurationpath (restart_config, sizeof (restart_config) / sizeof (TCHAR));
+#endif
 
 	if(argc>1) {
 		_tcscat (restart_config, argv[1]);
