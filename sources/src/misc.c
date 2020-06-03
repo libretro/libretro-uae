@@ -495,60 +495,37 @@ void setid_af (struct uae_input_device *uid, int i, int slot, int sub, int port,
 		uid[i].flags[slot][sub] |= ID_FLAG_TOGGLE;
 }
 
-// win32
 void target_quit (void)
 {
-        //shellexecute (currprefs.win32_commandpathend);
 }
 
 void target_fixup_options (struct uae_prefs *p)
 {
-
 }
 
 TCHAR start_path_data[MAX_DPATH];
 
 void fetch_path (TCHAR *name, TCHAR *out, int size)
 {
-	/// REMOVEME: unused: int size2 = size;
-
-	_tcscpy (start_path_data, "./");
-        _tcscpy (out, start_path_data);
-        if (!name)
-                return;
-/*        if (!_tcscmp (name, "FloppyPath"))
-                _tcscat (out, "../shared/adf/");
-        if (!_tcscmp (name, "CDPath"))
-                _tcscat (out, "../shared/cd/");
-        if (!_tcscmp (name, "hdfPath"))
-                _tcscat (out, "../shared/hdf/");
-        if (!_tcscmp (name, "KickstartPath"))
-                _tcscat (out, "../shared/rom/");
-        if (!_tcscmp (name, "ConfigurationPath"))
-                _tcscat (out, "Configurations/");
-*/
-        if (!_tcscmp (name, "FloppyPath"))
-                _tcscat (out, "./");
-        if (!_tcscmp (name, "CDPath"))
-                _tcscat (out, "./");
-        if (!_tcscmp (name, "hdfPath"))
-                _tcscat (out, "./");
-        if (!_tcscmp (name, "KickstartPath"))
-                _tcscat (out, "./");
-        if (!_tcscmp (name, "ConfigurationPath"))
-                _tcscat (out, "./");
-
+    _tcscpy (start_path_data, "./");
+    _tcscpy (out, start_path_data);
+    if (!name)
+        return;
+    if (!_tcscmp (name, "FloppyPath"))
+        _tcscat (out, "./");
+    else if (!_tcscmp (name, "CDPath"))
+        _tcscat (out, "./");
+    if (!_tcscmp (name, "hdfPath"))
+        _tcscat (out, "./");
+    if (!_tcscmp (name, "KickstartPath"))
+        _tcscat (out, "./");
+    if (!_tcscmp (name, "ConfigurationPath"))
+        _tcscat (out, "./");
 }
 
 void fetch_saveimagepath (TCHAR *out, int size, int dir)
 {
-/*        assert (size > MAX_DPATH);
-        fetch_path ("SaveimagePath", out, size);
-        if (dir) {
-                out[_tcslen (out) - 1] = 0;
-                createdir (out);*/
-                fetch_path ("SaveimagePath", out, size);
-//        }
+    fetch_path ("SaveimagePath", out, size);
 }
 
 void fetch_configurationpath (TCHAR *out, int size)

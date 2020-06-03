@@ -6,9 +6,9 @@
   * Copyright 1997 Bernd Schmidt
   */
 
-#if !defined(__CELLOS_LV2__) && !defined(WIIU)
+#define TARGET_NAME "libretro"
 
-#define TARGET_NAME "unix"
+#if !defined(__CELLOS_LV2__) && !defined(WIIU)
 
 #define TARGET_ROM_PATH         "~/"
 #define TARGET_FLOPPY_PATH      "~/"
@@ -19,17 +19,15 @@
 # ifdef __APPLE__
 #  define OPTIONSFILENAME "default.uaerc"
 # else
-#  define OPTIONSFILENAME ".uaerc"
+#  define OPTIONSFILENAME "uaerc"
 # endif
 #endif
-#define OPTIONS_IN_HOME
+//#define OPTIONS_IN_HOME
 
 #define DEFPRTNAME "lpr"
 #define DEFSERNAME "/dev/ttyS1"
 
 #elif defined(WIIU)
-
-#define TARGET_NAME "RETRO"
 
 #define TARGET_ROM_PATH "sd:/"
 #define TARGET_FLOPPY_PATH "sd:/"
@@ -44,8 +42,6 @@
 #define DEFSERNAME "null"
 
 #else
-
-#define TARGET_NAME "RETRO"
 
 #define TARGET_ROM_PATH ""
 #define TARGET_FLOPPY_PATH ""
