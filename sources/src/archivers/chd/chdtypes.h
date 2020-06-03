@@ -1,5 +1,3 @@
-
-
 #ifndef UAE_CHD
 #define UAE_CHD
 
@@ -9,13 +7,17 @@
 #include "zfile.h"
 #endif
 
+#define NO_MEM_TRACKING
+
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #define DECL_NORETURN			__declspec(noreturn)
 #else
 #define DECL_NORETURN
 #endif
 
+#ifndef INLINE
 #define INLINE __inline
+#endif
 
 #ifndef MIN
 #define MIN(x,y)			((x) < (y) ? (x) : (y))
@@ -24,11 +26,17 @@
 #define MAX(x,y)			((x) > (y) ? (x) : (y))
 #endif
 
+#ifndef ARRAY_LENGTH
 #define ARRAY_LENGTH(x)		(sizeof(x) / sizeof(x[0]))
+#endif
 
+#ifndef CLIB_DECL
 #define CLIB_DECL __cdecl
+#endif
 
-#define FLAC__NO_DLL
+#ifndef FLAC_API_EXPORTS
+#define FLAC_API_EXPORTS
+#endif
 
 /* Macros for normalizing data into big or little endian formats */
 #define FLIPENDIAN_INT16(x)	(((((UINT16) (x)) >> 8) | ((x) << 8)) & 0xffff)
