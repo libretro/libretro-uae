@@ -163,7 +163,7 @@ The whole path (filename and directory) will be searched for the following tags 
 | |**x**|**(CD32)** or **(CD32NF)**|Amiga CD32, 2MB Chip RAM|
 | |**x**|**(CD32FR)** or **FastRAM**|Amiga CD32, 2MB Chip RAM + 8MB Fast RAM|
 |**x**|**x**|**NTSC** or **(USA)**|NTSC 60Hz|
-|**x**|**x**|**PAL** or **(Europe)** or **(Denmark\|Finland\|France\|Germany\|Italy\|Spain\|Sweden)**|PAL 50Hz|
+|**x**|**x**|**PAL** or **(Europe)** or **(Denmark)** or **(Finland)** or **(France)** or **(Germany)** or **(Italy)** or **(Spain)** or **(Sweden)**|PAL 50Hz|
 
 Example: When launching "Alien Breed 2 AGA.hdf" or "AGA/Alien Breed 2.hdf" the model will be Amiga 1200.
 
