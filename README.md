@@ -20,6 +20,7 @@ And of course for the RetroArch/Libretro team: "http://www.libretro.com/"
 |---|---|
 |B|Fire button 1 / Red|
 |A|Fire button 2 / Blue|
+|X|Space|
 |L2|Left mouse button|
 |R2|Right mouse button|
 |Select|Toggle virtual keyboard|
