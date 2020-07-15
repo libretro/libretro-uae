@@ -3158,7 +3158,7 @@ void retro_get_system_info(struct retro_system_info *info)
    info->library_version  = "2.6.1" GIT_VERSION;
    info->need_fullpath    = true;
    info->block_extract    = true;
-   info->valid_extensions = "adf|adz|dms|fdi|ipf|hdf|hdz|lha|cue|ccd|nrg|mds|iso|uae|m3u|zip";
+   info->valid_extensions = "adf|adz|dms|fdi|ipf|hdf|hdz|lha|slave|cue|ccd|nrg|mds|iso|uae|m3u|zip";
 }
 
 double retro_get_aspect_ratio(unsigned int width, unsigned int height, bool pixel_aspect)
@@ -4070,6 +4070,7 @@ bool retro_create_config()
        || strendswith(full_path, HDZ_FILE_EXT)
        || strendswith(full_path, LHA_FILE_EXT)
        || strendswith(full_path, M3U_FILE_EXT)
+       || strendswith(full_path, "slave")
        || path_is_directory(full_path))
       {
 	     // Open tmp config file
@@ -4153,6 +4154,7 @@ bool retro_create_config()
                      if (  strendswith(full_path, HDF_FILE_EXT)
                         || strendswith(full_path, HDZ_FILE_EXT)
                         || strendswith(full_path, LHA_FILE_EXT)
+                        || strendswith(full_path, "slave")
                         || path_is_directory(full_path))
                      {
                         uae_machine[0] = '\0';
@@ -4254,6 +4256,7 @@ bool retro_create_config()
             if (strendswith(full_path, HDF_FILE_EXT)
              || strendswith(full_path, HDZ_FILE_EXT)
              || strendswith(full_path, LHA_FILE_EXT)
+             || strendswith(full_path, "slave")
              || path_is_directory(full_path))
             {
                char *tmp_str = NULL;
@@ -4357,10 +4360,12 @@ bool retro_create_config()
 
                   // Attach game image
                   tmp_str = string_replace_substring(full_path, "\\", "\\\\");
+                  if (strendswith(full_path, "slave"))
+                     path_parent_dir(tmp_str);
 
                   if (strendswith(full_path, LHA_FILE_EXT))
                      fprintf(configfile, "filesystem2=ro,DH0:LHA:\"%s\",0\n", (const char*)tmp_str);
-                  else if (path_is_directory(full_path))
+                  else if (path_is_directory(full_path) || strendswith(full_path, "slave"))
                      fprintf(configfile, "filesystem2=rw,DH0:%s:\"%s\",0\n", path_basename(tmp_str), (const char*)tmp_str);
                   else
                      fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae1\n", (const char*)tmp_str);
