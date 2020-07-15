@@ -14,9 +14,14 @@
 #include "fsdb.h"
 #include "misc.h"
 
+#ifdef __LIBRETRO__
+#include "string/stdstring.h"
+#endif
+
 /* these are deadly (but I think allowed on the Amiga): */
-#define NUM_EVILCHARS 7
-static TCHAR evilchars[NUM_EVILCHARS] = { '\\', '*', '?', '\"', '<', '>', '|' };
+#define NUM_EVILCHARS 9
+static TCHAR evilchars[NUM_EVILCHARS] = { '%', '\\', '*', '?', '\"', '/', '<', '>', '|' };
+static char hex_chars[] = "0123456789abcdef";
 
 #define UAEFSDB_BEGINS "__uae___"
 #define UAEFSDB_BEGINSX "__uae___*"
@@ -37,6 +42,16 @@ static TCHAR evilchars[NUM_EVILCHARS] = { '\\', '*', '?', '\"', '<', '>', '|' };
 * Offset 1118, 257 * 2 bytes, nname
 *        1632
 */
+
+typedef struct fsdb_file_info {
+    int type;
+    uint32_t mode;
+    int days;
+    int mins;
+    int ticks;
+    char *comment;
+
+} fsdb_file_info;
 
 #define TRACING_ENABLED 0
 #if TRACING_ENABLED
@@ -162,6 +177,11 @@ int fsdb_name_invalid_dir (const TCHAR *n)
     return v;
 }
 
+static uae_u32 filesys_parse_mask(uae_u32 mask)
+{
+    return mask ^ 0xf;
+}
+
 int fsdb_exists (const char *nname)
 {
     struct stat statbuf;
@@ -267,35 +287,256 @@ int fsdb_mode_representable_p (const a_inode *aino, int amigaos_mode)
         return 0;
 }
 
-char *fsdb_create_unique_nname (a_inode *base, const char *suggestion)
+char *aname_to_nname(const char *aname, int ascii)
 {
-	TCHAR *c;
-	TCHAR tmp[256] = UAEFSDB_BEGINS;
-	int i;
+    size_t len = strlen(aname);
+    unsigned int repl_1 = UINT_MAX;
+    unsigned int repl_2 = UINT_MAX;
 
-	_tcsncat (tmp, suggestion, 240);
+    TCHAR a = aname[0];
+    TCHAR b = (a == '\0' ? a : aname[1]);
+    TCHAR c = (b == '\0' ? b : aname[2]);
+    TCHAR d = (c == '\0' ? c : aname[3]);
 
-        /* replace the evil ones... */
-        for (i = 0; i < NUM_EVILCHARS; i++)
-                while ((c = _tcschr (tmp, evilchars[i])) != 0)
-                        *c = '_';
+    if (a >= 'a' && a <= 'z') a -= 32;
+    if (b >= 'a' && b <= 'z') b -= 32;
+    if (c >= 'a' && c <= 'z') c -= 32;
 
-        while ((c = _tcschr (tmp, '.')) != 0)
-                *c = '_';
-        while ((c = _tcschr (tmp, ' ')) != 0)
-                *c = '_';
+    // reserved dos devices in Windows
+    size_t ll = 0;
+    if (a == 'A' && b == 'U' && c == 'X') ll = 3; // AUX
+    if (a == 'C' && b == 'O' && c == 'N') ll = 3; // CON
+    if (a == 'P' && b == 'R' && c == 'N') ll = 3; // PRN
+    if (a == 'N' && b == 'U' && c == 'L') ll = 3; // NUL
+    if (a == 'L' && b == 'P' && c == 'T' && (d >= '0' && d <= '9')) ll = 4; // LPT#
+    if (a == 'C' && b == 'O' && c == 'M' && (d >= '0' && d <= '9')) ll = 4; // COM#
+    // AUX.anything, CON.anything etc.. are also illegal names in Windows
+    if (ll && (len == ll || (len > ll && aname[ll] == '.'))) {
+        repl_1 = 2;
+    }
 
-        for (;;) {
-                TCHAR *p = build_nname (base->nname, tmp);
-                if (!fsdb_exists (p)) {
-                        write_log (_T("unique name: %s\n"), p);
-                        return p;
-                }
-                xfree (p);
-                /* tmpnam isn't reentrant and I don't really want to hack configure
-                * right now to see whether tmpnam_r is available...  */
-                for (i = 0; i < 8; i++) {
-                        tmp[i+8] = "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[rand () % 63];
-                }
+    // spaces and periods at the end are a no-no in Windows
+    int ei = len - 1;
+    if (aname[ei] == '.' || aname[ei] == ' ') {
+        repl_2 = ei;
+    }
+
+    // allocating for worst-case scenario here (max replacements)
+    char *buf = (char*) malloc(len * 3 + 1);
+    char *p = buf;
+
+    int repl, j;
+    unsigned char x;
+    for (unsigned int i = 0; i < len; i++) {
+        x = (unsigned char) aname[i];
+        repl = 0;
+        if (i == repl_1) {
+            repl = 1;
         }
+        else if (i == repl_2) {
+            repl = 2;
+        }
+        else if (x < 32) {
+            // these are not allowed on Windows
+            repl = 1;
+        }
+        else if (ascii && x > 127) {
+            repl = 1;
+        }
+        for (j = 0; j < NUM_EVILCHARS; j++) {
+            if (x == evilchars[j]) {
+                repl = 1;
+                break;
+            }
+        }
+        if (i == len - 1) {
+            // last character, we can now check the file ending
+            if (len >= 5 && strncasecmp(aname + len - 5, ".uaem", 5) == 0) {
+                // we don't allow Amiga files ending with .uaem, so we replace
+                // the last character
+                repl = 1;
+            }
+        }
+        if (repl) {
+            //*p++ = '%';
+            //*p++ = hex_chars[(x & 0xf0) >> 4];
+            //*p++ = hex_chars[x & 0xf];
+            *p++ = x;
+        }
+        else {
+            *p++ = x;
+        }
+    }
+    *p++ = '\0';
+
+    if (ascii) {
+        return buf;
+    }
+
+    char* result = ua(buf);
+    if (ll > 0) {
+        _tcscpy(result, UAEFSDB_BEGINS);
+        _tcscat(result, buf);
+    }
+
+    free(buf);
+
+    //write_log("aname_to_nname %s => %s\n", aname, result);
+    return result;
+}
+
+static unsigned char char_to_hex(unsigned char c)
+{
+    if (c >= '0' && c <= '9') {
+        return c - '0';
+    }
+    if (c >= 'a' && c <= 'f') {
+        return 10 + c - 'a';
+    }
+    if (c >= 'A' && c <= 'F') {
+        return 10 + c - 'A';
+    }
+    return 0;
+}
+
+static char *nname_to_aname(const char *nname, int noconvert)
+{
+    char *cresult;
+    int len = strlen(nname);
+    cresult = strdup(nname);
+    if (!cresult) {
+        write_log("[WARNING] nname_to_aname %s => Failed\n", nname);
+        return NULL;
+    }
+
+    char *result = strdup(cresult);
+    unsigned char *p = (unsigned char *) result;
+    for (int i = 0; i < len; i++) {
+        unsigned char c = cresult[i];
+        if (c == '%' && i < len - 2) {
+            *p++ = (char_to_hex(cresult[i + 1]) << 4) |
+                    char_to_hex(cresult[i + 2]);
+            i += 2;
+        } else {
+            *p++ = c;
+        }
+    }
+    *p++ = '\0';
+    free(cresult);
+
+    result = string_replace_substring(result, UAEFSDB_BEGINS, "");
+    //write_log("nname_to_aname %s => %s\n", nname, result);
+    return result;
+}
+
+TCHAR *fsdb_create_unique_nname(a_inode *base, const TCHAR *suggestion)
+{
+    char *nname = aname_to_nname(suggestion, 0);
+    TCHAR *p = build_nname(base->nname, nname);
+    free(nname);
+    return p;
+}
+
+/* Return 1 if the nname is a special host-only name which must be translated
+ * to aname using fsdb.
+ */
+a_inode *custom_fsdb_lookup_aino_nname(a_inode *base, const TCHAR *aname);
+int custom_fsdb_used_as_nname(a_inode *base, const TCHAR *nname)
+{
+    if (custom_fsdb_lookup_aino_nname (base, nname))
+        return 1;
+    return 0;
+}
+
+static int fsdb_get_file_info(const char *nname, fsdb_file_info *info)
+{
+    int error = 0;
+    info->comment = NULL;
+    info->type = my_existsdir(nname) ? 2 : 1;
+    info->mode = 15;
+    return error;
+}
+
+a_inode *custom_fsdb_lookup_aino_aname(a_inode *base, const TCHAR *aname)
+{
+    char *nname = aname_to_nname(aname, 0);
+    //find_nname_case(base->nname, &nname);
+    char *full_nname = build_nname(base->nname, nname);
+    if (!my_existsfile(full_nname) || !fsdb_name_invalid(aname))
+        return 0;
+
+    fsdb_file_info info;
+    fsdb_get_file_info(full_nname, &info);
+    if (!info.type) {
+        if (info.comment) {
+            free(info.comment);
+            info.comment = NULL;
+        }
+        free(full_nname);
+        free(nname);
+        return NULL;
+    }
+    a_inode *aino = xcalloc (a_inode, 1);
+    aino->aname = nname_to_aname(nname, 0);
+    free(nname);
+    aino->nname = full_nname;
+#if 0
+    if (info.comment) {
+        aino->comment = nname_to_aname(info.comment, 1);
+        free(info.comment);
+    }
+    else {
+        aino->comment = NULL;
+    }
+#endif
+    aino->amigaos_mode = filesys_parse_mask(info.mode);
+    aino->dir = info.type == 2;
+    aino->has_dbentry = 0;
+    aino->dirty = 0;
+    aino->db_offset = 0;
+    return aino;
+}
+
+a_inode *custom_fsdb_lookup_aino_nname(a_inode *base, const TCHAR *nname)
+{
+    char *tmp_nname = string_replace_substring(nname, UAEFSDB_BEGINS, "");
+    char *full_nname = build_nname(base->nname, nname);
+    if (fsdb_name_invalid(nname)) {
+        _tcscpy(tmp_nname, UAEFSDB_BEGINS);
+        _tcscat(tmp_nname, nname);
+        full_nname = build_nname(base->nname, tmp_nname);
+    }
+
+    if (_tcscmp(tmp_nname, nname) == 0)
+        return 0;
+
+    fsdb_file_info info;
+    fsdb_get_file_info(full_nname, &info);
+    if (!info.type) {
+        if (info.comment) {
+            free(info.comment);
+            info.comment = NULL;
+        }
+        free(full_nname);
+        return NULL;
+    }
+
+    a_inode *aino = xcalloc (a_inode, 1);
+    aino->aname = nname_to_aname(nname, 0);
+    aino->nname = full_nname;
+#if 0
+    if (info.comment) {
+        aino->comment = nname_to_aname(info.comment, 1);
+        free(info.comment);
+    }
+    else {
+        aino->comment = NULL;
+    }
+#endif
+    aino->amigaos_mode = filesys_parse_mask(info.mode);
+    aino->dir = info.type == 2;
+    aino->has_dbentry = 0;
+    aino->dirty = 0;
+    aino->db_offset = 0;
+    return aino;
 }
