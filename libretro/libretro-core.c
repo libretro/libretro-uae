@@ -3507,18 +3507,18 @@ static bool retro_update_av_info(void)
          case 3: // 16:9
             zoom_dar = (double)16/9;
             zoomed_width = retrow;
-            if (zoomed_height < ((int)zoomed_width / width_multiplier / zoom_dar * zoom_par))
-               zoomed_height = (int)(zoomed_width / width_multiplier / zoom_dar * zoom_par);
+            if (zoomed_height < (int)(zoomed_width * width_multiplier / zoom_dar * zoom_par))
+               zoomed_width = (int)(zoomed_height * zoom_dar / zoom_par);
             break;
          case 4: // 16:10
             zoom_dar = (double)16/10;
             zoomed_width = retrow;
-            if (zoomed_height < ((int)zoomed_width / width_multiplier / zoom_dar * zoom_par))
-               zoomed_height = (int)(zoomed_width / width_multiplier / zoom_dar * zoom_par);
+            if (zoomed_height < (int)(zoomed_width * width_multiplier / zoom_dar * zoom_par))
+               zoomed_width = (int)(zoomed_height * zoom_dar / zoom_par);
             break;
          case 5: // 4:3
             zoom_dar = (double)4/3;
-            if (zoomed_height < ((int)zoomed_width * width_multiplier / zoom_dar * zoom_par))
+            if (zoomed_height < (int)(zoomed_width * width_multiplier / zoom_dar * zoom_par))
             {
                zoomed_height = (int)(zoomed_width / zoom_dar * zoom_par);
                if (zoomed_height < zoomed_height_original)
@@ -3528,7 +3528,7 @@ static bool retro_update_av_info(void)
             break;
          case 6: // 5:4
             zoom_dar = (double)5/4;
-            if (zoomed_height < ((int)zoomed_width * width_multiplier / zoom_dar * zoom_par))
+            if (zoomed_height < (int)(zoomed_width * width_multiplier / zoom_dar * zoom_par))
             {
                zoomed_height = (int)(zoomed_width / zoom_dar * zoom_par);
                if (zoomed_height < zoomed_height_original)
