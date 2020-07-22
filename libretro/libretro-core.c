@@ -3158,7 +3158,7 @@ void retro_get_system_info(struct retro_system_info *info)
    info->library_version  = "2.6.1" GIT_VERSION;
    info->need_fullpath    = true;
    info->block_extract    = true;
-   info->valid_extensions = "adf|adz|dms|fdi|ipf|hdf|hdz|lha|slave|cue|ccd|nrg|mds|iso|uae|m3u|zip";
+   info->valid_extensions = "adf|adz|dms|fdi|ipf|hdf|hdz|lha|slave|info|cue|ccd|nrg|mds|iso|uae|m3u|zip";
 }
 
 double retro_get_aspect_ratio(unsigned int width, unsigned int height, bool pixel_aspect)
@@ -4071,6 +4071,7 @@ bool retro_create_config()
        || strendswith(full_path, LHA_FILE_EXT)
        || strendswith(full_path, M3U_FILE_EXT)
        || strendswith(full_path, "slave")
+       || strendswith(full_path, "info")
        || path_is_directory(full_path))
       {
 	     // Open tmp config file
@@ -4155,6 +4156,7 @@ bool retro_create_config()
                         || strendswith(full_path, HDZ_FILE_EXT)
                         || strendswith(full_path, LHA_FILE_EXT)
                         || strendswith(full_path, "slave")
+                        || strendswith(full_path, "info")
                         || path_is_directory(full_path))
                      {
                         uae_machine[0] = '\0';
@@ -4257,6 +4259,7 @@ bool retro_create_config()
              || strendswith(full_path, HDZ_FILE_EXT)
              || strendswith(full_path, LHA_FILE_EXT)
              || strendswith(full_path, "slave")
+             || strendswith(full_path, "info")
              || path_is_directory(full_path))
             {
                char *tmp_str = NULL;
@@ -4360,13 +4363,23 @@ bool retro_create_config()
 
                   // Attach game image
                   tmp_str = string_replace_substring(full_path, "\\", "\\\\");
-                  if (strendswith(full_path, "slave"))
+                  char tmp_str_name[RETRO_PATH_MAX];
+                  char tmp_str_path[RETRO_PATH_MAX];
+                  if (strendswith(full_path, "slave") || strendswith(full_path, "info"))
+                  {
+                     snprintf(tmp_str_name, sizeof(tmp_str_name), "%s", path_basename(tmp_str));
+                     snprintf(tmp_str_name, sizeof(tmp_str_name), "%s", path_remove_extension(tmp_str_name));
                      path_parent_dir(tmp_str);
-
+                     snprintf(tmp_str_path, sizeof(tmp_str_path), "%s%s", tmp_str, tmp_str_name);
+                     if (!path_is_directory(tmp_str_path))
+                        snprintf(tmp_str_path, sizeof(tmp_str_path), "%s", tmp_str);
+                  }
                   if (strendswith(full_path, LHA_FILE_EXT))
                      fprintf(configfile, "filesystem2=ro,DH0:LHA:\"%s\",0\n", (const char*)tmp_str);
-                  else if (path_is_directory(full_path) || strendswith(full_path, "slave"))
+                  else if (path_is_directory(full_path))
                      fprintf(configfile, "filesystem2=rw,DH0:%s:\"%s\",0\n", path_basename(tmp_str), (const char*)tmp_str);
+                  else if (strendswith(full_path, "slave") || strendswith(full_path, "info"))
+                     fprintf(configfile, "filesystem2=rw,DH0:%s:\"%s\",0\n", tmp_str_name, tmp_str_path);
                   else
                      fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae1\n", (const char*)tmp_str);
                   free(tmp_str);
