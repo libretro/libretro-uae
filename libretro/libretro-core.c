@@ -1008,7 +1008,7 @@ void retro_set_environment(retro_environment_t cb)
             { "enabled", NULL },
             { NULL, NULL },
          },
-         "disabled"
+         "enabled"
       },
       /* Hotkeys */
       {
@@ -1094,7 +1094,7 @@ void retro_set_environment(retro_environment_t cb)
          "RetroPad X",
          "VKBD: Toggle position. Remapping to non-keyboard keys overrides VKBD function!",
          {{ NULL, NULL }},
-         "---"
+         "RETROK_SPACE"
       },
       {
          "puae_mapper_l",
@@ -1202,6 +1202,7 @@ void retro_set_environment(retro_environment_t cb)
          "Replaces the mapped button with a turbo fire button.",
          {
             { "disabled", NULL },
+            { "B", "RetroPad B" },
             { "A", "RetroPad A" },
             { "Y", "RetroPad Y" },
             { "X", "RetroPad X" },
@@ -2203,6 +2204,7 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (strcmp(var.value, "disabled") == 0) turbo_fire_button=-1;
+      else if (strcmp(var.value, "B") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_B;
       else if (strcmp(var.value, "A") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_A;
       else if (strcmp(var.value, "Y") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_Y;
       else if (strcmp(var.value, "X") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_X;
@@ -2210,8 +2212,6 @@ static void update_variables(void)
       else if (strcmp(var.value, "R") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_R;
       else if (strcmp(var.value, "L2") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_L2;
       else if (strcmp(var.value, "R2") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_R2;
-      else if (strcmp(var.value, "L3") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_L3;
-      else if (strcmp(var.value, "R3") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_R3;
    }
 
    var.key = "puae_turbo_pulse";
@@ -3158,7 +3158,7 @@ void retro_get_system_info(struct retro_system_info *info)
    info->library_version  = "2.6.1" GIT_VERSION;
    info->need_fullpath    = true;
    info->block_extract    = true;
-   info->valid_extensions = "adf|adz|dms|fdi|ipf|hdf|hdz|lha|cue|ccd|nrg|mds|iso|uae|m3u|zip";
+   info->valid_extensions = "adf|adz|dms|fdi|ipf|hdf|hdz|lha|slave|cue|ccd|nrg|mds|iso|uae|m3u|zip";
 }
 
 double retro_get_aspect_ratio(unsigned int width, unsigned int height, bool pixel_aspect)
@@ -4070,6 +4070,7 @@ bool retro_create_config()
        || strendswith(full_path, HDZ_FILE_EXT)
        || strendswith(full_path, LHA_FILE_EXT)
        || strendswith(full_path, M3U_FILE_EXT)
+       || strendswith(full_path, "slave")
        || path_is_directory(full_path))
       {
 	     // Open tmp config file
@@ -4153,6 +4154,7 @@ bool retro_create_config()
                      if (  strendswith(full_path, HDF_FILE_EXT)
                         || strendswith(full_path, HDZ_FILE_EXT)
                         || strendswith(full_path, LHA_FILE_EXT)
+                        || strendswith(full_path, "slave")
                         || path_is_directory(full_path))
                      {
                         uae_machine[0] = '\0';
@@ -4254,6 +4256,7 @@ bool retro_create_config()
             if (strendswith(full_path, HDF_FILE_EXT)
              || strendswith(full_path, HDZ_FILE_EXT)
              || strendswith(full_path, LHA_FILE_EXT)
+             || strendswith(full_path, "slave")
              || path_is_directory(full_path))
             {
                char *tmp_str = NULL;
@@ -4357,10 +4360,12 @@ bool retro_create_config()
 
                   // Attach game image
                   tmp_str = string_replace_substring(full_path, "\\", "\\\\");
+                  if (strendswith(full_path, "slave"))
+                     path_parent_dir(tmp_str);
 
                   if (strendswith(full_path, LHA_FILE_EXT))
                      fprintf(configfile, "filesystem2=ro,DH0:LHA:\"%s\",0\n", (const char*)tmp_str);
-                  else if (path_is_directory(full_path))
+                  else if (path_is_directory(full_path) || strendswith(full_path, "slave"))
                      fprintf(configfile, "filesystem2=rw,DH0:%s:\"%s\",0\n", path_basename(tmp_str), (const char*)tmp_str);
                   else
                      fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae1\n", (const char*)tmp_str);

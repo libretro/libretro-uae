@@ -183,14 +183,15 @@ static a_inode *aino_from_buf (a_inode *base, uae_u8 *buf, long off)
 	return aino;
 }
 
+a_inode *custom_fsdb_lookup_aino_aname(a_inode *base, const TCHAR *aname);
 a_inode *fsdb_lookup_aino_aname (a_inode *base, const TCHAR *aname)
 {
 	FILE *f;
 
 	f = get_fsdb (base, _T("r+b"));
 	if (f == 0) {
-//		if (currprefs.filesys_custom_uaefsdb && (base->volflags & MYVOLUMEINFO_STREAMS))
-//			return custom_fsdb_lookup_aino_aname (base, aname);
+		if (currprefs.filesys_custom_uaefsdb && (base->volflags & MYVOLUMEINFO_STREAMS))
+			return custom_fsdb_lookup_aino_aname (base, aname);
 		return 0;
 	}
 	for (;;) {
@@ -211,6 +212,7 @@ a_inode *fsdb_lookup_aino_aname (a_inode *base, const TCHAR *aname)
     return 0;
 }
 
+a_inode *custom_fsdb_lookup_aino_nname(a_inode *base, const TCHAR *nname);
 a_inode *fsdb_lookup_aino_nname (a_inode *base, const TCHAR *nname)
 {
 	FILE *f;
@@ -218,8 +220,8 @@ a_inode *fsdb_lookup_aino_nname (a_inode *base, const TCHAR *nname)
 
 	f = get_fsdb (base, _T("r+b"));
 	if (f == 0) {
-//		if (currprefs.filesys_custom_uaefsdb && (base->volflags & MYVOLUMEINFO_STREAMS))
-//			return custom_fsdb_lookup_aino_nname (base, nname);
+		if (currprefs.filesys_custom_uaefsdb && (base->volflags & MYVOLUMEINFO_STREAMS))
+			return custom_fsdb_lookup_aino_nname (base, nname);
 		return 0;
 	}
 	s = ua (nname);
@@ -239,6 +241,7 @@ a_inode *fsdb_lookup_aino_nname (a_inode *base, const TCHAR *nname)
 	return 0;
 }
 
+int custom_fsdb_used_as_nname(a_inode *base, const TCHAR *nname);
 int fsdb_used_as_nname (a_inode *base, const TCHAR *nname)
 {
 	FILE *f;
@@ -246,8 +249,8 @@ int fsdb_used_as_nname (a_inode *base, const TCHAR *nname)
 
 	f = get_fsdb (base, _T("r+b"));
 	if (f == 0) {
-//		if (currprefs.filesys_custom_uaefsdb && (base->volflags & MYVOLUMEINFO_STREAMS))
-//			return custom_fsdb_used_as_nname (base, nname);
+		if (currprefs.filesys_custom_uaefsdb && (base->volflags & MYVOLUMEINFO_STREAMS))
+			return custom_fsdb_used_as_nname (base, nname);
 		return 0;
 	}
 	for (;;) {
