@@ -151,7 +151,7 @@ else ifeq ($(platform), vita)
    COMMONFLAGS += -U__INT32_TYPE__ -U __UINT32_TYPE__ -D__INT32_TYPE__=int
    COMMONFLAGS += -DHAVE_STRTOUL -DVITA
    CFLAGS += $(COMMONFLAGS)
-   PLATFLAGS += -ffast-math -march=armv7-a -mfpu=neon -mfloat-abi=hard -mword-relocations -fno-optimize-sibling-calls -fno-exceptions
+   PLATFLAGS += -ffast-math -march=armv7-a -mfpu=neon -mfloat-abi=hard -mword-relocations -fno-optimize-sibling-calls -fno-exceptions -fcommon
    STATIC_LINKING = 1
    STATIC_LINKING_LINK=1
 
