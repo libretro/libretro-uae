@@ -126,7 +126,6 @@ static int fsdb_name_invalid_2 (const TCHAR *n, int dir)
     s1[0] = 0;
     s2[0] = 0;
     ua_fs_copy (s1, MAX_DPATH, n, -1);
-    //strcpy (s1, n);
     au_fs_copy (s2, MAX_DPATH, s1);
     if (_tcscmp (s2, n) != 0)
         return 1;
@@ -287,7 +286,7 @@ int fsdb_mode_representable_p (const a_inode *aino, int amigaos_mode)
         return 0;
 }
 
-char *aname_to_nname(const char *aname, int ascii)
+static char *aname_to_nname(const char *aname, int ascii)
 {
     size_t len = strlen(aname);
     unsigned int repl_1 = UINT_MAX;
@@ -463,7 +462,11 @@ a_inode *custom_fsdb_lookup_aino_aname(a_inode *base, const TCHAR *aname)
     //find_nname_case(base->nname, &nname);
     char *full_nname = build_nname(base->nname, nname);
     if (!my_existsfile(full_nname) || !fsdb_name_invalid(aname))
+    {
+        free(full_nname);
+        free(nname);
         return 0;
+    }
 
     fsdb_file_info info;
     fsdb_get_file_info(full_nname, &info);
@@ -478,7 +481,6 @@ a_inode *custom_fsdb_lookup_aino_aname(a_inode *base, const TCHAR *aname)
     }
     a_inode *aino = xcalloc (a_inode, 1);
     aino->aname = nname_to_aname(nname, 0);
-    free(nname);
     aino->nname = full_nname;
 #if 0
     if (info.comment) {
@@ -499,17 +501,10 @@ a_inode *custom_fsdb_lookup_aino_aname(a_inode *base, const TCHAR *aname)
 
 a_inode *custom_fsdb_lookup_aino_nname(a_inode *base, const TCHAR *nname)
 {
-    char *tmp_nname = string_replace_substring(nname, UAEFSDB_BEGINS, "");
-    char *full_nname = build_nname(base->nname, nname);
-    if (fsdb_name_invalid(nname)) {
-        _tcscpy(tmp_nname, UAEFSDB_BEGINS);
-        _tcscat(tmp_nname, nname);
-        full_nname = build_nname(base->nname, tmp_nname);
-    }
-
-    if (_tcscmp(tmp_nname, nname) == 0)
+    if (!strstr(nname, UAEFSDB_BEGINS))
         return 0;
 
+    char *full_nname = build_nname(base->nname, nname);
     fsdb_file_info info;
     fsdb_get_file_info(full_nname, &info);
     if (!info.type) {
@@ -520,10 +515,11 @@ a_inode *custom_fsdb_lookup_aino_nname(a_inode *base, const TCHAR *nname)
         free(full_nname);
         return NULL;
     }
+    free(full_nname);
 
     a_inode *aino = xcalloc (a_inode, 1);
     aino->aname = nname_to_aname(nname, 0);
-    aino->nname = full_nname;
+    aino->nname = build_nname(base->nname, nname);
 #if 0
     if (info.comment) {
         aino->comment = nname_to_aname(info.comment, 1);
