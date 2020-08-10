@@ -288,7 +288,8 @@ int fsdb_mode_representable_p (const a_inode *aino, int amigaos_mode)
 
 static char *aname_to_nname(const char *aname, int ascii)
 {
-    size_t len = strlen(aname);
+    size_t len          = strlen(aname);
+    size_t result_len   = (len * 3) + sizeof((UAEFSDB_BEGINS));
     unsigned int repl_1 = UINT_MAX;
     unsigned int repl_2 = UINT_MAX;
 
@@ -321,14 +322,15 @@ static char *aname_to_nname(const char *aname, int ascii)
     }
 
     // allocating for worst-case scenario here (max replacements)
-    char *buf = (char*) malloc(len * 3 + 1);
+    char *buf = (char*) malloc(result_len);
     char *p = buf;
 
-    int repl, j;
+    int repl, is_evil, j;
     unsigned char x;
     for (unsigned int i = 0; i < len; i++) {
         x = (unsigned char) aname[i];
-        repl = 0;
+        repl    = 0;
+        is_evil = 0;
         if (i == repl_1) {
             repl = 1;
         }
@@ -344,7 +346,8 @@ static char *aname_to_nname(const char *aname, int ascii)
         }
         for (j = 0; j < NUM_EVILCHARS; j++) {
             if (x == evilchars[j]) {
-                repl = 1;
+                repl    = 1;
+                is_evil = 1;
                 break;
             }
         }
@@ -360,7 +363,8 @@ static char *aname_to_nname(const char *aname, int ascii)
             //*p++ = '%';
             //*p++ = hex_chars[(x & 0xf0) >> 4];
             //*p++ = hex_chars[x & 0xf];
-            *p++ = x;
+            *p++ = is_evil ? '_' : x;
+            ll = 1;
         }
         else {
             *p++ = x;
@@ -372,10 +376,12 @@ static char *aname_to_nname(const char *aname, int ascii)
         return buf;
     }
 
-    char* result = ua(buf);
+    char *result = (char*) malloc(result_len);
     if (ll > 0) {
         _tcscpy(result, UAEFSDB_BEGINS);
         _tcscat(result, buf);
+    } else {
+        _tcscpy(result, buf);
     }
 
     free(buf);
@@ -461,7 +467,7 @@ a_inode *custom_fsdb_lookup_aino_aname(a_inode *base, const TCHAR *aname)
     char *nname = aname_to_nname(aname, 0);
     //find_nname_case(base->nname, &nname);
     char *full_nname = build_nname(base->nname, nname);
-    if (!my_existsfile(full_nname) || !fsdb_name_invalid(aname))
+    if (!fsdb_name_invalid(aname))
     {
         free(full_nname);
         free(nname);
