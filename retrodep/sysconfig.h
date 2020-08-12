@@ -7,7 +7,7 @@
 #define CAPS /* CAPS-image support */
 #define FDI2RAW /* FDI 1.0 and 2.x image support */
 //#define WITH_CHD
-//#define A_ZIP
+#define A_ZIP
 //#define A_RAR
 //#define A_7Z
 #define A_LHA

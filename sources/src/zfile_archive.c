@@ -22,7 +22,11 @@
 
 #include "options.h"
 #include "zfile.h"
+#ifdef __LIBRETRO__
+#include "deps/zlib/unzip.h"
+#else
 #include "archivers/zip/unzip.h"
+#endif
 #include "archivers/dms/pfile.h"
 #include "crc32.h"
 #include "zarchive.h"
@@ -381,7 +385,11 @@ struct zvolume *archive_directory_zip (struct zfile *z)
 	struct zvolume *zv;
 	int err;
 
+#ifdef __LIBRETRO__
+	uz = unzOpen (z->name);
+#else
 	uz = unzOpen (z);
+#endif
 	if (!uz)
 		return 0;
 	if (unzGoToFirstFile (uz) != UNZ_OK)
@@ -440,7 +448,11 @@ static struct zfile *archive_do_zip (struct znode *zn, struct zfile *z, int flag
 	TCHAR *name = z ? z->archiveparent->name : zn->volume->root.fullname;
 	char *s;
 
+#ifdef __LIBRETRO__
+	uz = unzOpen (name);
+#else
 	uz = unzOpen (z ? z->archiveparent : zn->volume->archive);
+#endif
 	if (!uz)
 		return 0;
 	if (z)
