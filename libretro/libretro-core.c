@@ -2733,8 +2733,11 @@ static bool disk_replace_image_index(unsigned index, const struct retro_game_inf
             static char full_path_replace[512] = {0};
             strcpy(full_path_replace, (char*)info->path);
 
-            // Confs & hard drive images
-            if (strendswith(full_path_replace, "uae") || strendswith(full_path_replace, "hdf") || strendswith(full_path_replace, "hdz") || strendswith(full_path_replace, "lha"))
+            // Confs & hard drive images will replace full_path and requires restarting
+            if (strendswith(full_path_replace, "uae")
+             || strendswith(full_path_replace, "hdf")
+             || strendswith(full_path_replace, "hdz")
+             || strendswith(full_path_replace, "lha"))
             {
                dc_reset(retro_dc);
                strcpy(full_path, (char*)info->path);
@@ -2770,7 +2773,7 @@ static bool disk_replace_image_index(unsigned index, const struct retro_game_inf
                zip_dir = opendir(zip_path);
                while ((zip_dirp = readdir(zip_dir)) != NULL)
                {
-                  if (zip_dirp->d_name[0] == '.' || strendswith(zip_dirp->d_name, M3U_FILE_EXT) || zip_mode > 1)
+                  if (zip_dirp->d_name[0] == '.' || strendswith(zip_dirp->d_name, "m3u") || zip_mode > 1)
                      continue;
 
                   // Multi file mode, generate playlist
@@ -2781,7 +2784,8 @@ static bool disk_replace_image_index(unsigned index, const struct retro_game_inf
                      snprintf(zip_m3u_list[zip_m3u_num-1], RETRO_PATH_MAX, "%s", zip_dirp->d_name);
                   }
                   // Single file image mode
-                  else if (dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_CD || strendswith(zip_dirp->d_name, HDF_FILE_EXT))
+                  else if (dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_CD
+                        || dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_HD)
                   {
                      zip_mode = 2;
                      snprintf(full_path_replace, sizeof(full_path_replace), "%s%s%s", zip_path, DIR_SEP_STR, zip_dirp->d_name);
@@ -2818,7 +2822,7 @@ static bool disk_replace_image_index(unsigned index, const struct retro_game_inf
             }
 
             // M3U
-            if (strendswith(full_path_replace, M3U_FILE_EXT))
+            if (strendswith(full_path_replace, "m3u"))
             {
                // Eject all floppy drives
                for (unsigned i = 0; i < 4; i++)
@@ -4023,7 +4027,7 @@ bool retro_create_config()
          zip_dir = opendir(zip_path);
          while ((zip_dirp = readdir(zip_dir)) != NULL)
          {
-            if (zip_dirp->d_name[0] == '.' || strendswith(zip_dirp->d_name, M3U_FILE_EXT) || zip_mode > 1 || browsed_file[0] != '\0')
+            if (zip_dirp->d_name[0] == '.' || strendswith(zip_dirp->d_name, "m3u") || zip_mode > 1 || browsed_file[0] != '\0')
                continue;
 
             // Multi file mode, generate playlist
@@ -4034,7 +4038,8 @@ bool retro_create_config()
                snprintf(zip_m3u_list[zip_m3u_num-1], RETRO_PATH_MAX, "%s", zip_dirp->d_name);
             }
             // Single file image mode
-            else if (dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_CD || strendswith(zip_dirp->d_name, HDF_FILE_EXT))
+            else if (dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_CD
+                  || dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_HD)
             {
                zip_mode = 2;
                snprintf(full_path, sizeof(full_path), "%s%s%s", zip_path, DIR_SEP_STR, zip_dirp->d_name);
@@ -4060,19 +4065,11 @@ bool retro_create_config()
          }
       }
 
-      // If argument is a disk or hard drive image file
-      if (strendswith(full_path, ADF_FILE_EXT)
-       || strendswith(full_path, ADZ_FILE_EXT)
-       || strendswith(full_path, FDI_FILE_EXT)
-       || strendswith(full_path, DMS_FILE_EXT)
-       || strendswith(full_path, IPF_FILE_EXT)
-       || strendswith(full_path, HDF_FILE_EXT)
-       || strendswith(full_path, HDZ_FILE_EXT)
-       || strendswith(full_path, LHA_FILE_EXT)
-       || strendswith(full_path, M3U_FILE_EXT)
-       || strendswith(full_path, "slave")
-       || strendswith(full_path, "info")
-       || path_is_directory(full_path))
+      // If argument is a disk, hard drive, whdload or playlist file
+      if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_FLOPPY
+       || dc_get_image_type(full_path) == DC_IMAGE_TYPE_HD
+       || dc_get_image_type(full_path) == DC_IMAGE_TYPE_WHDLOAD
+       || strendswith(full_path, "m3u"))
       {
 	     // Open tmp config file
 	     FILE * configfile;
@@ -4152,12 +4149,8 @@ bool retro_create_config()
                   if (!opt_use_boot_hd)
                   {
                      // Hard disks must default to A600
-                     if (  strendswith(full_path, HDF_FILE_EXT)
-                        || strendswith(full_path, HDZ_FILE_EXT)
-                        || strendswith(full_path, LHA_FILE_EXT)
-                        || strendswith(full_path, "slave")
-                        || strendswith(full_path, "info")
-                        || path_is_directory(full_path))
+                     if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_HD
+                      || dc_get_image_type(full_path) == DC_IMAGE_TYPE_WHDLOAD)
                      {
                         uae_machine[0] = '\0';
                         strcat(uae_machine, emu_config(EMU_CONFIG_A600));
@@ -4254,13 +4247,9 @@ bool retro_create_config()
                }
             }
 
-            // If argument is a hard drive image file
-            if (strendswith(full_path, HDF_FILE_EXT)
-             || strendswith(full_path, HDZ_FILE_EXT)
-             || strendswith(full_path, LHA_FILE_EXT)
-             || strendswith(full_path, "slave")
-             || strendswith(full_path, "info")
-             || path_is_directory(full_path))
+            // If argument is a hard drive image or whdload file
+            if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_HD
+             || dc_get_image_type(full_path) == DC_IMAGE_TYPE_WHDLOAD)
             {
                char *tmp_str = NULL;
 
@@ -4374,7 +4363,7 @@ bool retro_create_config()
                      if (!path_is_directory(tmp_str_path))
                         snprintf(tmp_str_path, sizeof(tmp_str_path), "%s", tmp_str);
                   }
-                  if (strendswith(full_path, LHA_FILE_EXT))
+                  if (strendswith(full_path, "lha"))
                      fprintf(configfile, "filesystem2=ro,DH0:LHA:\"%s\",0\n", (const char*)tmp_str);
                   else if (path_is_directory(full_path))
                      fprintf(configfile, "filesystem2=rw,DH0:%s:\"%s\",0\n", path_basename(tmp_str), (const char*)tmp_str);
@@ -4570,7 +4559,7 @@ bool retro_create_config()
             else
             {
                // If argument is a M3U playlist
-               if (strendswith(full_path, M3U_FILE_EXT))
+               if (strendswith(full_path, "m3u"))
                {
                   // Parse the M3U file
                   dc_parse_m3u(retro_dc, full_path, retro_save_directory);
@@ -4663,11 +4652,7 @@ bool retro_create_config()
          }
       }
       // If argument is a CD image
-      else if (strendswith(full_path, CUE_FILE_EXT)
-            || strendswith(full_path, CCD_FILE_EXT)
-            || strendswith(full_path, NRG_FILE_EXT)
-            || strendswith(full_path, MDS_FILE_EXT)
-            || strendswith(full_path, ISO_FILE_EXT))
+      else if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_CD)
       {
          // Open tmp config file
          FILE * configfile;
@@ -4844,35 +4829,73 @@ bool retro_create_config()
          }
       }
       // If argument is a config file
-	  else if (strendswith(full_path, UAE_FILE_EXT))
-	  {
-	     // Open tmp config file
-	     FILE * configfile;
-	     if (configfile = fopen(RPATH, "w"))
-	     {
-	        char kickstart[RETRO_PATH_MAX];
+      else if (strendswith(full_path, "uae"))
+      {
+         // Open tmp config file
+         FILE * configfile;
+         if (configfile = fopen(RPATH, "w"))
+         {
+            char kickstart[RETRO_PATH_MAX] = {0};
+            char disk_image[RETRO_PATH_MAX] = {0};
 
-	        fprintf(configfile, uae_machine);
-	        path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
+            fprintf(configfile, uae_machine);
+            path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
 
-	        // Separator row for clarity
-	        fprintf(configfile, "\n");
+            // Separator row for clarity
+            fprintf(configfile, "\n");
 
-	        // Write common config
-	        fprintf(configfile, uae_config);
-	        fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
+            // Write common config
+            fprintf(configfile, uae_config);
+            fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
 
-	        // Separator row for clarity
-	        fprintf(configfile, "\n");
+            // Separator row for clarity
+            fprintf(configfile, "\n");
 
-	        // Iterate parsed file and append all rows to the temporary config
-	        FILE * configfile_custom;
-	        char filebuf[4096];
-	        if (configfile_custom = fopen(full_path, "r"))
-	        {
-	           while (fgets(filebuf, sizeof(filebuf), configfile_custom))
-	              fprintf(configfile, filebuf);
+            // Must reset disk control struct here,
+            // otherwise duplicate entries will be
+            // added when calling retro_reset()
+            dc_reset(retro_dc);
+
+            // Iterate parsed file and append all rows to the temporary config
+            FILE * configfile_custom;
+            char filebuf[4096];
+            if (configfile_custom = fopen(full_path, "r"))
+            {
+               while (fgets(filebuf, sizeof(filebuf), configfile_custom))
+               {
+                  fprintf(configfile, filebuf);
+
+                  // Parse diskimage-rows for disk control
+                  if (strstr(filebuf, "diskimage") && filebuf[0] == 'd')
+                  {
+                     char *token = strtok((char*)filebuf, "=");
+                     while (token != NULL)
+                     {
+                        snprintf(disk_image, sizeof(disk_image), "%s", token);
+                        token = strtok(NULL, "=");
+                     }
+                     strtok(disk_image, "\n");
+                     if (!string_is_empty(disk_image) && file_exists(disk_image))
+                     {
+                        // Add the file to disk control context
+                        char disk_image_label[RETRO_PATH_MAX];
+                        disk_image_label[0] = '\0';
+                        fill_short_pathname_representation(disk_image_label, disk_image, sizeof(disk_image_label));
+                        dc_add_file(retro_dc, disk_image, disk_image_label);
+                     }
+                  }
+               }
                fclose(configfile_custom);
+            }
+
+            // Init only existing disks
+            if (!string_is_empty(disk_image) && retro_dc->count)
+            {
+               // Init first disk
+               retro_dc->index = 0;
+               retro_dc->eject_state = false;
+               display_current_image(retro_dc->labels[retro_dc->index], true);
+               fprintf(stdout, "[libretro-uae]: Disk (%d) inserted into drive DF0: '%s'\n", retro_dc->index+1, retro_dc->files[retro_dc->index]);
             }
 
             // Iterate global config file and append all rows to the temporary config

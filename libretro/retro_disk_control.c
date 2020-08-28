@@ -478,23 +478,36 @@ enum dc_image_type dc_get_image_type(const char* filename)
 {
 	// Missing file
 	if (!filename || (*filename == '\0'))
-		return DC_IMAGE_TYPE_NONE;
+	   return DC_IMAGE_TYPE_NONE;
 
 	// Floppy image
-	if (strendswith(filename, ADF_FILE_EXT) ||
-	    strendswith(filename, ADZ_FILE_EXT) ||
-	    strendswith(filename, FDI_FILE_EXT) ||
-	    strendswith(filename, DMS_FILE_EXT) ||
-	    strendswith(filename, IPF_FILE_EXT))
+	if (strendswith(filename, "adf") ||
+	    strendswith(filename, "adz") ||
+	    strendswith(filename, "fdi") ||
+	    strendswith(filename, "dms") ||
+	    strendswith(filename, "ipf") ||
+	    strendswith(filename, "zip"))
 	   return DC_IMAGE_TYPE_FLOPPY;
 
 	// CD image
-	if (strendswith(filename, CUE_FILE_EXT) ||
-	    strendswith(filename, CCD_FILE_EXT) ||
-	    strendswith(filename, NRG_FILE_EXT) ||
-	    strendswith(filename, MDS_FILE_EXT) ||
-	    strendswith(filename, ISO_FILE_EXT))
+	if (strendswith(filename, "cue") ||
+	    strendswith(filename, "ccd") ||
+	    strendswith(filename, "nrg") ||
+	    strendswith(filename, "mds") ||
+	    strendswith(filename, "iso"))
 	   return DC_IMAGE_TYPE_CD;
+
+	// HD image
+	if (strendswith(filename, "hdf") ||
+	    strendswith(filename, "hdz"))
+	   return DC_IMAGE_TYPE_HD;
+
+	// WHDLoad
+	if (strendswith(filename, "lha") ||
+	    strendswith(filename, "slave") ||
+	    strendswith(filename, "info") ||
+	    path_is_directory(filename))
+	   return DC_IMAGE_TYPE_WHDLOAD;
 
 	// Fallback
 	return DC_IMAGE_TYPE_UNKNOWN;

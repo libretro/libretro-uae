@@ -113,22 +113,7 @@ enum EMU_CONFIG {
 #define CD32_ROM                "kick40060.CD32"
 #define CD32_ROM_EXT            "kick40060.CD32.ext"
 
-// Supported files
-#define ADF_FILE_EXT            "adf"
-#define ADZ_FILE_EXT            "adz"
-#define FDI_FILE_EXT            "fdi"
-#define DMS_FILE_EXT            "dms"
-#define IPF_FILE_EXT            "ipf"
-#define HDF_FILE_EXT            "hdf"
-#define HDZ_FILE_EXT            "hdz"
-#define LHA_FILE_EXT            "lha"
-#define CUE_FILE_EXT            "cue"
-#define CCD_FILE_EXT            "ccd"
-#define NRG_FILE_EXT            "nrg"
-#define MDS_FILE_EXT            "mds"
-#define ISO_FILE_EXT            "iso"
-#define UAE_FILE_EXT            "uae"
-#define M3U_FILE_EXT            "m3u"
+// Support files
 #define LIBRETRO_PUAE_PREFIX    "puae_libretro"
 
 // Video
