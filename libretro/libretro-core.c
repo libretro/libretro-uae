@@ -4382,7 +4382,7 @@ bool retro_create_config()
                         fprintf(stderr, "Error creating WHDLoad directory: '%s'!\n", (const char*)&whdload_path);
                   }
 
-                  // Attach game image
+                  // Attach hard drive
                   tmp_str = string_replace_substring(full_path, "\\", "\\\\");
                   char tmp_str_name[RETRO_PATH_MAX];
                   char tmp_str_path[RETRO_PATH_MAX];
