@@ -1,18 +1,18 @@
 # P-UAE LIBRETRO
 
-Based on P-UAE 2.6.1, Git Commit: 0186c1b16f7181ffa02d73e6920d3180ce457c46, Credits to Mustafa 'GnoStiC' TUFAN
+Based on P-UAE 2.6.1, git commit `0186c1b16f7181ffa02d73e6920d3180ce457c46`
 
-All credits to: Richard Drummond "http://www.rcdrummond.net/uae/"
+Credits to
+- Mustafa 'GnoStiC' TUFAN
+- Richard Drummond, [http://www.rcdrummond.net/uae/](http://www.rcdrummond.net/uae/)
+
+This port was based at start on PS3 version E-UAE 0.8.29-WIP4 release 8
+(so also credits to Ole.)
 
 E-UAE is based on the work of dozens of contributors including Bernd
 Schmidt (the original author and maintainer of UAE), Bernie Meyer (the
 author of the x86 JIT compiler), Toni Wilen (the current maintainer of
 WinUAE), and many more.
-
-This port was based at start on PS3 version E-UAE 0.8.29-WIP4 release 8
-(so also credits to Ole.)
-
-And of course for the RetroArch/Libretro team: "http://www.libretro.com/"
 
 ## Default controls
 
@@ -179,16 +179,16 @@ Supported formats are:
 When passing these files as a parameter the core will generate a temporary uae configuration file in RetroArch `saves` directory and use it to launch the content.
 
 ### Floppy drive sounds
-The core has embedded internal floppy drive samples. External sound samples have to be copied from `https://github.com/libretro/libretro-uae/tree/master/sources/uae_data` into a directory named `uae_data` in RetroArch `system` directory.
+The core has embedded internal floppy drive samples. External sound samples have to be copied from [https://github.com/libretro/libretro-uae/tree/master/sources/uae_data](https://github.com/libretro/libretro-uae/tree/master/sources/uae_data) into a directory named `uae_data` in RetroArch `system` directory.
 
 ### IPF support
 Most full-price commercial Amiga games had some form of custom disk format and/or copy protection. For this reason, most commercial Amiga games cannot be stored in ADF files unaltered, but there is an alternative called Interchangeable Preservation Format (IPF) which was specifically designed for this purpose.
 
 IPF support is done through CAPSIMG library. To enable it you have to put the dynamic library called `capsimg.dll` (Windows) or `capsimg.so` (Linux, macOS) in RetroArch `system` or executable directory.
 
-Compatible CAPSIMG libraries for Windows, macOS and Linux can be found at `http://www.softpres.org/download` and `https://fs-uae.net/download#plugins`
+Compatible CAPSIMG libraries for Windows, macOS and Linux can be found at [http://www.softpres.org/download](http://www.softpres.org/download) and [https://fs-uae.net/download#plugins](https://fs-uae.net/download#plugins)
 
-Compatible CAPSIMG libraries for Android can be found at `https://github.com/rsn8887/capsimg/releases/latest`
+Compatible CAPSIMG libraries for Android can be found at [https://github.com/rsn8887/capsimg/releases/latest](https://github.com/rsn8887/capsimg/releases/latest)
 
 Please be aware that there are 32-bits and 64-bits versions of the library. Choose the one corresponding to your RetroArch executable.
 
@@ -200,9 +200,9 @@ ZIPs will be extracted to a temporary directory in RetroArch `saves`, bypassing 
 - If no disk/drive images are found, the ZIP will be treated as a directory.
 
 ### M3U support
-When you have a multi disk game, you can use a M3U file to be able to change disks via RetroArch Disc Control interface.
+When you have a multi disk game, you can use a M3U playlist file to be able to change disks via RetroArch Disc Control interface.
 
-A M3U file is a simple text file with one disk per line (see `https://en.wikipedia.org/wiki/M3U`).
+A M3U file is a simple text file with one disk per line ([Wikipedia](https://en.wikipedia.org/wiki/M3U)).
 
 Example:
 
@@ -213,7 +213,7 @@ Simpsons, The - Bart vs. The Space Mutants_Disk2.adf
 ```
 Path can be absolute or relative to the location of the M3U file.
 
-When a game ask for it, you can change the current disk in the RetroArch "Disc Control" menu:
+When the game asks for it, you can change the current disk in the RetroArch "Disc Control" menu:
 - Eject the current disk with "Eject Disc"
 - Select the right disk index with "Current Disc Index"
 - Insert the new disk with "Insert Disc"
@@ -336,7 +336,7 @@ Pre-installed WHDLoad LHA archives can be launched directly without any kind of 
 - ZIP files will be extracted to a temporary directory and can contain any type of supported content.
 
 #### But if you must:
-To do this you can use ADFOpus (http://adfopus.sourceforge.net/) or amitools (https://github.com/cnvogelg/amitools).
+To do this you can use [ADF Opus](http://adfopus.sourceforge.net) or [amitools](https://github.com/cnvogelg/amitools).
 
 Example, to create a HDF file from a zipped WHDLoad game:
 - Extract files from the ZIP to a directory
