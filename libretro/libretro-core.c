@@ -27,6 +27,7 @@
 #include "drawing.h"
 #include "akiko.h"
 #include "blkdev.h"
+#include "disk.h"
 
 int libretro_runloop_active = 0;
 
@@ -779,23 +780,34 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_floppy_speed",
          "Floppy Speed",
-         "",
+         "'Turbo' removes disk rotation emulation.",
          {
-            { "100", "1x" },
-            { "200", "2x" },
-            { "400", "4x" },
-            { "800", "8x" },
+            { "100", "Default (300RPM)" },
+            { "200", "2x (600RPM)" },
+            { "400", "4x (1200RPM)" },
+            { "800", "8x (2400RPM)" },
             { "0", "Turbo" },
             { NULL, NULL },
          },
          "100"
       },
       {
+         "puae_floppy_write_protection",
+         "Floppy Write Protection",
+         "Changing this while the emulation is running ejects and reinsert all disks.",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "disabled"
+      },
+      {
          "puae_cd_speed",
          "CD Speed",
-         "",
+         "Transfer rate in CD32 is 300KB/s (double-speed), CDTV is 150KB/s (single-speed). 'Turbo' removes seek delay emulation.",
          {
-            { "100", "1x" },
+            { "100", "Default" },
             { "0", "Turbo" },
             { NULL, NULL },
          },
@@ -804,7 +816,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_cd_startup_delayed_insert",
          "CD Startup Delayed Insert",
-         "Some games will not work if CD32/CDTV is powered on with the CD inserted. Enabled will insert the disc after the boot screen has appeared.",
+         "Some games fail to load if CD32/CDTV is powered on with the CD inserted. 'ON' inserts the CD during the boot animation.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -815,7 +827,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_shared_nvram",
          "Shared CD32/CDTV NVRAM",
-         "Disabled will save separate files per content. Enabled will use one shared file. Starting without content uses the shared file. CD32 and CDTV will have separate shared files.\nCore restart required.",
+         "'OFF' saves separate files per content, 'ON' shares the same file. Starting without content uses the shared file. CD32 and CDTV use separate shared files.\nCore restart required.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -826,7 +838,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_use_boot_hd",
          "Global Boot HD",
-         "Keep a bootable hard drive attached with hard drive compatible setups. Enabling will change the automatic model to A600 when launching floppy disks. Changing HDF sizes requires removing the old file manually.",
+         "Keep a bootable hard drive attached with hard drive compatible setups. Enabling changes the automatic model to A600 when launching floppy disks. Changing HDF size requires removing the old file manually.",
          {
             { "disabled", NULL },
             { "files", "Files" },
@@ -1071,14 +1083,14 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapper_b",
          "RetroPad B",
-         "Unmapped will default to fire button.\nVKBD: Press key.\n",
+         "Unmapped defaults to fire button.\nVKBD: Press key.\n",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_a",
          "RetroPad A",
-         "Unmapped will default to 2nd fire button.\nVKBD: Toggle transparency. Remapping to non-keyboard keys overrides VKBD function!",
+         "Unmapped defaults to 2nd fire button.\nVKBD: Toggle transparency. Remapping to non-keyboard keys overrides VKBD function!",
          {{ NULL, NULL }},
          "---"
       },
@@ -1232,7 +1244,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_joyport",
          "RetroPad Joystick/Mouse",
-         "Changes D-Pad control between joyports. Hotkey toggling will disable this option until core restart.",
+         "Changes D-Pad control between joyports. Hotkey toggling disables this option until core restart.",
          {
             { "joystick", "Joystick (Port 1)" },
             { "mouse", "Mouse (Port 2)" },
@@ -1756,6 +1768,29 @@ static void update_variables(void)
 
       if (libretro_runloop_active)
          changed_prefs.floppy_speed=atoi(var.value);
+   }
+
+   var.key = "puae_floppy_write_protection";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      char confbuf[20];
+      int val = 0;
+      if (strcmp(var.value, "enabled") == 0) val = 1;
+
+      if (val)
+         strcat(uae_config, "floppy_write_protected=true\n");
+
+      if (libretro_runloop_active)
+      {
+         changed_prefs.floppy_read_only=val;
+         if (changed_prefs.floppy_read_only != currprefs.floppy_read_only)
+         {
+            currprefs.floppy_read_only=val;
+            for (int i = 0; i < 4; i++)
+               DISK_reinsert(i);
+         }
+      }
    }
 
    var.key = "puae_floppy_sound";
@@ -2606,9 +2641,6 @@ static void update_variables(void)
 //*****************************************************************************
 //*****************************************************************************
 // Disk control
-extern void DISK_reinsert(int num);
-extern void disk_eject (int num);
-
 static bool disk_set_eject_state(bool ejected)
 {
    if (retro_dc)
