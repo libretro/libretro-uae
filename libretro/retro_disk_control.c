@@ -499,14 +499,14 @@ enum dc_image_type dc_get_image_type(const char* filename)
 
 	// HD image
 	if (strendswith(filename, "hdf") ||
-	    strendswith(filename, "hdz"))
+	    strendswith(filename, "hdz") ||
+	    path_is_directory(filename))
 	   return DC_IMAGE_TYPE_HD;
 
 	// WHDLoad
 	if (strendswith(filename, "lha") ||
 	    strendswith(filename, "slave") ||
-	    strendswith(filename, "info") ||
-	    path_is_directory(filename))
+	    strendswith(filename, "info"))
 	   return DC_IMAGE_TYPE_WHDLOAD;
 
 	// Fallback
