@@ -312,7 +312,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_video_options_display",
          "Show Video Options",
-         "Core options page refresh required.",
+         "Shows/hides video related options.\nCore options page refresh required.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -628,7 +628,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_audio_options_display",
          "Show Audio Options",
-         "Core options page refresh required.",
+         "Shows/hides audio related options.\nCore options page refresh required.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -757,7 +757,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_floppy_sound_empty_mute",
          "Audio > Floppy Sound Mute Ejected",
-         "Mute the drive head clicking when the floppy is not inserted.",
+         "Mutes drive head clicking when floppy is not inserted.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -768,7 +768,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_floppy_sound_type",
          "Audio > Floppy Sound Type",
-         "External file location is 'system/uae_data/'.",
+         "External files go in 'system/uae_data/'.",
          {
             { "internal", "Internal" },
             { "A500", "External: A500" },
@@ -794,7 +794,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_floppy_write_protection",
          "Floppy Write Protection",
-         "Changing this while the emulation is running ejects and reinsert all disks.",
+         "Makes all drives read only. Changing this while emulation is running ejects and reinserts all disks.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -1003,7 +1003,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_physical_keyboard_pass_through",
          "Physical Keyboard Pass-through",
-         "Pass all physical keyboard events to the core. Disable this to prevent cursor keys and fire key from generating key events.",
+         "'ON' passes all physical keyboard events to the core. 'OFF' prevents RetroPad keys from generating keyboard events.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -1014,7 +1014,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapping_options_display",
          "Show Mapping Options",
-         "Show options for hotkeys & RetroPad mappings.\nCore option page refresh required.",
+         "Shows/hides hotkey & RetroPad mapping options.\nCore options page refresh required.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -1047,7 +1047,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapper_reset",
          "Hotkey > Reset",
-         "Press the mapped key to trigger reset (Ctrl-Amiga-Amiga).",
+         "Press the mapped key to trigger soft reset (Ctrl-Amiga-Amiga).",
          {{ NULL, NULL }},
          "---"
       },
@@ -1083,7 +1083,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapper_b",
          "RetroPad B",
-         "Unmapped defaults to fire button.\nVKBD: Press key.\n",
+         "Unmapped defaults to fire button.\nVKBD: Press selected key.\n",
          {{ NULL, NULL }},
          "---"
       },
@@ -1211,7 +1211,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_turbo_fire_button",
          "RetroPad Turbo Fire",
-         "Replaces the mapped button with a turbo fire button.",
+         "Replaces the mapped button with turbo fire button.",
          {
             { "disabled", NULL },
             { "B", "RetroPad B" },
@@ -1255,7 +1255,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_joyport_order",
          "RetroPad Joyport Order",
-         "Plug RetroPads in different ports. Useful for Arcadia system and games that support 4-player adapter.",
+         "Plugs RetroPads in different ports. Useful for Arcadia system and games that uses the 4-player adapter.",
          {
             { "1234", "1-2-3-4" },
             { "2143", "2-1-4-3" },
@@ -1268,7 +1268,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_retropad_options",
          "RetroPad Face Button Options",
-         "Rotate face buttons clockwise and/or make 2nd fire press up.",
+         "Rotates face buttons clockwise and/or makes 2nd fire press up.",
          {
             { "disabled", "B = Fire, A = 2nd fire" },
             { "jump", "B = Fire, A = Up" },
@@ -1281,7 +1281,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_cd32pad_options",
          "CD32 Pad Face Button Options",
-         "Rotate face buttons clockwise and/or make blue button press up.",
+         "Rotates face buttons clockwise and/or makes blue button press up.",
          {
             { "disabled", "B = Red, A = Blue" },
             { "jump", "B = Red, A = Up" },
