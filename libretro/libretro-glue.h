@@ -149,7 +149,7 @@ enum EMU_CONFIG {
 
 #define RETRO_BMP_SIZE          (EMULATOR_DEF_WIDTH * EMULATOR_DEF_HEIGHT * 4) // 4x is big enough for 24-bit SuperHires double line
 extern unsigned short int retro_bmp[RETRO_BMP_SIZE];
-extern int pix_bytes;
+extern unsigned int pix_bytes;
 extern int retrow;
 extern int retroh;
 extern int zoomed_width;

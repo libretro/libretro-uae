@@ -30,7 +30,6 @@ extern int mouse_port[NORMAL_JPORTS];
 #include "file/file_path.h"
 extern unsigned int uae_devices[4];
 extern unsigned int inputdevice_finalized;
-extern int pix_bytes;
 
 #define LOG_MSG(...) 
 #define LOG_MSG2(...) 
