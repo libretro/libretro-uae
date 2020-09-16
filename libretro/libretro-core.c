@@ -1494,33 +1494,29 @@ static void update_variables(void)
       }
       else if (!forced_video)
       {
-         if (strstr(var.value, "PAL"))
-            changed_prefs.ntscmode=0;
-         else
-            changed_prefs.ntscmode=1;
+         if (strstr(var.value, "PAL")) changed_prefs.ntscmode = 0;
+         else                          changed_prefs.ntscmode = 1;
       }
 
-      if (strstr(var.value, "auto"))
-         opt_region_auto = true;
-      else
-         opt_region_auto = false;
+      if (strstr(var.value, "auto")) opt_region_auto = true;
+      else                           opt_region_auto = false;
    }
 
    var.key = "puae_video_aspect";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "PAL") == 0) video_config_aspect = PUAE_VIDEO_PAL;
-      else if (strcmp(var.value, "NTSC") == 0) video_config_aspect = PUAE_VIDEO_NTSC;
-      else video_config_aspect = 0;
+      if (!strcmp(var.value, "PAL"))       video_config_aspect = PUAE_VIDEO_PAL;
+      else if (!strcmp(var.value, "NTSC")) video_config_aspect = PUAE_VIDEO_NTSC;
+      else                                 video_config_aspect = 0;
    }
 
    var.key = "puae_video_allow_hz_change";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "enabled") == 0) video_config_allow_hz_change = 1;
-      else if (strcmp(var.value, "disabled") == 0) video_config_allow_hz_change = 0;
+      if (!strcmp(var.value, "enabled"))       video_config_allow_hz_change = 1;
+      else if (!strcmp(var.value, "disabled")) video_config_allow_hz_change = 0;
    }
 
    var.key = "puae_video_resolution";
@@ -1529,34 +1525,34 @@ static void update_variables(void)
    {
       opt_video_resolution_auto = false;
 
-      if (strcmp(var.value, "lores") == 0)
+      if (!strcmp(var.value, "lores"))
       {
          video_config &= ~PUAE_VIDEO_HIRES;
          video_config &= ~PUAE_VIDEO_SUPERHIRES;
          retro_max_diwlastword = retro_max_diwlastword_hires / 2;
          width_multiplier = 1;
          if (libretro_runloop_active)
-            changed_prefs.gfx_resolution=RES_LORES;
+            changed_prefs.gfx_resolution = RES_LORES;
       }
-      else if (strcmp(var.value, "hires") == 0)
+      else if (!strcmp(var.value, "hires"))
       {
          video_config &= ~PUAE_VIDEO_SUPERHIRES;
          video_config |= PUAE_VIDEO_HIRES;
          retro_max_diwlastword = retro_max_diwlastword_hires;
          width_multiplier = 2;
          if (libretro_runloop_active)
-            changed_prefs.gfx_resolution=RES_HIRES;
+            changed_prefs.gfx_resolution = RES_HIRES;
       }
-      else if (strcmp(var.value, "superhires") == 0)
+      else if (!strcmp(var.value, "superhires"))
       {
          video_config &= ~PUAE_VIDEO_HIRES;
          video_config |= PUAE_VIDEO_SUPERHIRES;
          retro_max_diwlastword = retro_max_diwlastword_hires * 2;
          width_multiplier = 4;
          if (libretro_runloop_active)
-            changed_prefs.gfx_resolution=RES_SUPERHIRES;
+            changed_prefs.gfx_resolution = RES_SUPERHIRES;
       }
-      else if (strcmp(var.value, "auto") == 0)
+      else if (!strcmp(var.value, "auto"))
       {
          opt_video_resolution_auto = true;
 
@@ -1567,7 +1563,7 @@ static void update_variables(void)
             retro_max_diwlastword = retro_max_diwlastword_hires * 2;
             width_multiplier = 4;
             if (libretro_runloop_active)
-               changed_prefs.gfx_resolution=RES_SUPERHIRES;
+               changed_prefs.gfx_resolution = RES_SUPERHIRES;
          }
          else
          {
@@ -1576,7 +1572,7 @@ static void update_variables(void)
             retro_max_diwlastword = retro_max_diwlastword_hires;
             width_multiplier = 2;
             if (libretro_runloop_active)
-               changed_prefs.gfx_resolution=RES_HIRES;
+               changed_prefs.gfx_resolution = RES_HIRES;
          }
       }
 
@@ -1591,19 +1587,19 @@ static void update_variables(void)
    {
       opt_video_vresolution_auto = false;
 
-      if (strcmp(var.value, "double") == 0)
+      if (!strcmp(var.value, "double"))
       {
          video_config |= PUAE_VIDEO_DOUBLELINE;
          if (libretro_runloop_active)
-            changed_prefs.gfx_vresolution=VRES_DOUBLE;
+            changed_prefs.gfx_vresolution = VRES_DOUBLE;
       }
-      else if (strcmp(var.value, "single") == 0)
+      else if (!strcmp(var.value, "single"))
       {
          video_config &= ~PUAE_VIDEO_DOUBLELINE;
          if (libretro_runloop_active)
-            changed_prefs.gfx_vresolution=VRES_NONDOUBLE;
+            changed_prefs.gfx_vresolution = VRES_NONDOUBLE;
       }
-      else if (strcmp(var.value, "auto") == 0)
+      else if (!strcmp(var.value, "auto"))
       {
          opt_video_vresolution_auto = true;
 
@@ -1612,12 +1608,12 @@ static void update_variables(void)
             if (video_config_old & PUAE_VIDEO_DOUBLELINE)
             {
                video_config |= PUAE_VIDEO_DOUBLELINE;
-               changed_prefs.gfx_vresolution=VRES_DOUBLE;
+               changed_prefs.gfx_vresolution = VRES_DOUBLE;
             }
             else
             {
                video_config &= ~PUAE_VIDEO_DOUBLELINE;
-               changed_prefs.gfx_vresolution=VRES_NONDOUBLE;
+               changed_prefs.gfx_vresolution = VRES_NONDOUBLE;
             }
          }
       }
@@ -1626,7 +1622,7 @@ static void update_variables(void)
       if (retro_max_diwlastword < retro_max_diwlastword_hires)
       {
          video_config &= ~PUAE_VIDEO_DOUBLELINE;
-         changed_prefs.gfx_vresolution=VRES_NONDOUBLE;
+         changed_prefs.gfx_vresolution = VRES_NONDOUBLE;
       }
 
       /* Resolution change needs init_custom() to be done after reset_drawing() is done */
@@ -1678,17 +1674,17 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "normal") == 0)
+      if (!strcmp(var.value, "normal"))
       {
          strcat(uae_config, "cpu_compatible=false\n");
          strcat(uae_config, "cycle_exact=false\n");
       }
-      else if (strcmp(var.value, "compatible") == 0)
+      else if (!strcmp(var.value, "compatible"))
       {
          strcat(uae_config, "cpu_compatible=true\n");
          strcat(uae_config, "cycle_exact=false\n");
       }
-      else if (strcmp(var.value, "exact") == 0)
+      else if (!strcmp(var.value, "exact"))
       {
          strcat(uae_config, "cpu_compatible=true\n");
          strcat(uae_config, "cycle_exact=true\n");
@@ -1696,23 +1692,23 @@ static void update_variables(void)
 
       if (libretro_runloop_active)
       {
-         if (strcmp(var.value, "normal") == 0)
+         if (!strcmp(var.value, "normal"))
          {
-            changed_prefs.cpu_compatible=0;
-            changed_prefs.cpu_cycle_exact=0;
-            changed_prefs.blitter_cycle_exact=0;
+            changed_prefs.cpu_compatible = 0;
+            changed_prefs.cpu_cycle_exact = 0;
+            changed_prefs.blitter_cycle_exact = 0;
          }
-         else if (strcmp(var.value, "compatible") == 0)
+         else if (!strcmp(var.value, "compatible"))
          {
-            changed_prefs.cpu_compatible=1;
-            changed_prefs.cpu_cycle_exact=0;
-            changed_prefs.blitter_cycle_exact=0;
+            changed_prefs.cpu_compatible = 1;
+            changed_prefs.cpu_cycle_exact = 0;
+            changed_prefs.blitter_cycle_exact = 0;
          }
-         else if (strcmp(var.value, "exact") == 0)
+         else if (!strcmp(var.value, "exact"))
          {
-            changed_prefs.cpu_compatible=1;
-            changed_prefs.cpu_cycle_exact=1;
-            changed_prefs.blitter_cycle_exact=1;
+            changed_prefs.cpu_compatible = 1;
+            changed_prefs.cpu_cycle_exact = 1;
+            changed_prefs.blitter_cycle_exact = 1;
          }
       }
    }
@@ -1726,7 +1722,7 @@ static void update_variables(void)
       strcat(uae_config, "\n");
 
       if (libretro_runloop_active)
-         changed_prefs.m68k_speed_throttle=atof(var.value);
+         changed_prefs.m68k_speed_throttle = atof(var.value);
    }
 
    var.key = "puae_cpu_multiplier";
@@ -1738,7 +1734,7 @@ static void update_variables(void)
       strcat(uae_config, "\n");
 
       if (libretro_runloop_active)
-         changed_prefs.cpu_clock_multiplier=atoi(var.value) * 256;
+         changed_prefs.cpu_clock_multiplier = atoi(var.value) * 256;
    }
 
    var.key = "puae_sound_stereo_separation";
@@ -1746,14 +1742,15 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       int val = atoi(var.value) / 10;
-      char valbuf[10];
-      snprintf(valbuf, 10, "%d", val);
+      char valbuf[4];
+      snprintf(valbuf, 4, "%d", val);
+
       strcat(uae_config, "sound_stereo_separation=");
       strcat(uae_config, valbuf);
       strcat(uae_config, "\n");
 
       if (libretro_runloop_active)
-         changed_prefs.sound_stereo_separation=val;
+         changed_prefs.sound_stereo_separation = val;
    }
 
    var.key = "puae_sound_interpol";
@@ -1766,11 +1763,11 @@ static void update_variables(void)
 
       if (libretro_runloop_active)
       {
-         if (strcmp(var.value, "none") == 0) changed_prefs.sound_interpol=0;
-         else if (strcmp(var.value, "anti") == 0) changed_prefs.sound_interpol=1;
-         else if (strcmp(var.value, "sinc") == 0) changed_prefs.sound_interpol=2;
-         else if (strcmp(var.value, "rh") == 0) changed_prefs.sound_interpol=3;
-         else if (strcmp(var.value, "crux") == 0) changed_prefs.sound_interpol=4;
+         if (!strcmp(var.value, "none"))      changed_prefs.sound_interpol = 0;
+         else if (!strcmp(var.value, "anti")) changed_prefs.sound_interpol = 1;
+         else if (!strcmp(var.value, "sinc")) changed_prefs.sound_interpol = 2;
+         else if (!strcmp(var.value, "rh"))   changed_prefs.sound_interpol = 3;
+         else if (!strcmp(var.value, "crux")) changed_prefs.sound_interpol = 4;
       }
    }
 
@@ -1784,9 +1781,9 @@ static void update_variables(void)
       
       if (libretro_runloop_active)
       {
-         if (strcmp(var.value, "emulated") == 0) changed_prefs.sound_filter=FILTER_SOUND_EMUL;
-         else if (strcmp(var.value, "off") == 0) changed_prefs.sound_filter=FILTER_SOUND_OFF;
-         else if (strcmp(var.value, "on") == 0) changed_prefs.sound_filter=FILTER_SOUND_ON;
+         if (!strcmp(var.value, "emulated")) changed_prefs.sound_filter = FILTER_SOUND_EMUL;
+         else if (!strcmp(var.value, "off")) changed_prefs.sound_filter = FILTER_SOUND_OFF;
+         else if (!strcmp(var.value, "on"))  changed_prefs.sound_filter = FILTER_SOUND_ON;
       }
    }
 
@@ -1804,9 +1801,9 @@ static void update_variables(void)
 
       if (libretro_runloop_active)
       {
-         if (strcmp(var.value, "standard") == 0) changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A500;
-         else if (strcmp(var.value, "enhanced") == 0) changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A1200;
-         else if (strcmp(var.value, "auto") == 0) automatic_sound_filter_type_update = true;
+         if (!strcmp(var.value, "standard"))      changed_prefs.sound_filter_type = FILTER_SOUND_TYPE_A500;
+         else if (!strcmp(var.value, "enhanced")) changed_prefs.sound_filter_type = FILTER_SOUND_TYPE_A1200;
+         else if (!strcmp(var.value, "auto"))     automatic_sound_filter_type_update = true;
       }
    }
 
@@ -1816,14 +1813,15 @@ static void update_variables(void)
    {
       /* 100 is mute, 0 is max */
       int val = 100 - atoi(var.value);
-      char valbuf[10];
-      snprintf(valbuf, 10, "%d", val);
+      char valbuf[4];
+      snprintf(valbuf, 4, "%d", val);
+
       strcat(uae_config, "sound_volume_cd=");
       strcat(uae_config, valbuf);
       strcat(uae_config, "\n");
 
       if (libretro_runloop_active)
-         changed_prefs.sound_volume_cd=val;
+         changed_prefs.sound_volume_cd = val;
    }
 
    var.key = "puae_cd_speed";
@@ -1835,7 +1833,7 @@ static void update_variables(void)
       strcat(uae_config, "\n");
 
       if (libretro_runloop_active)
-         changed_prefs.cd_speed=atoi(var.value);
+         changed_prefs.cd_speed = atoi(var.value);
    }
 
    var.key = "puae_floppy_speed";
@@ -1847,27 +1845,26 @@ static void update_variables(void)
       strcat(uae_config, "\n");
 
       if (libretro_runloop_active)
-         changed_prefs.floppy_speed=atoi(var.value);
+         changed_prefs.floppy_speed = atoi(var.value);
    }
 
    var.key = "puae_floppy_write_protection";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      char confbuf[20];
       int val = 0;
-      if (strcmp(var.value, "enabled") == 0) val = 1;
+      if (!strcmp(var.value, "enabled")) val = 1;
 
       if (val)
          strcat(uae_config, "floppy_write_protected=true\n");
 
       if (libretro_runloop_active)
       {
-         changed_prefs.floppy_read_only=val;
+         changed_prefs.floppy_read_only = val;
          if (changed_prefs.floppy_read_only != currprefs.floppy_read_only)
          {
-            currprefs.floppy_read_only=val;
-            for (int i = 0; i < 4; i++)
+            currprefs.floppy_read_only = val;
+            for (unsigned i = 0; i < 4; i++)
                DISK_reinsert(i);
          }
       }
@@ -1885,22 +1882,22 @@ static void update_variables(void)
 
       /* Setting volume in realtime will crash on first pass */
       if (libretro_runloop_active)
-         changed_prefs.dfxclickvolume=atoi(var.value);
+         changed_prefs.dfxclickvolume = atoi(var.value);
    }
 
    var.key = "puae_floppy_sound_empty_mute";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_floppy_sound_empty_mute=false;
-      else opt_floppy_sound_empty_mute=true;
+      if (!strcmp(var.value, "disabled"))     opt_floppy_sound_empty_mute = false;
+      else if (!strcmp(var.value, "enabled")) opt_floppy_sound_empty_mute = true;
    }
 
    var.key = "puae_floppy_sound_type";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "internal") == 0)
+      if (!strcmp(var.value, "internal"))
       {
          strcat(uae_config, "floppy0sound=1\n");
          strcat(uae_config, "floppy1sound=1\n");
@@ -1930,16 +1927,16 @@ static void update_variables(void)
 
       if (libretro_runloop_active)
       {
-         if (strcmp(var.value, "internal") == 0)
+         if (!strcmp(var.value, "internal"))
          {
-            for (int i = 0; i < 4; i++)
-               changed_prefs.floppyslots[i].dfxclick=1;
+            for (unsigned i = 0; i < 4; i++)
+               changed_prefs.floppyslots[i].dfxclick = 1;
          }
          else
          {
-            for (int i = 0; i < 4; i++)
+            for (unsigned i = 0; i < 4; i++)
             {
-               changed_prefs.floppyslots[i].dfxclick=-1;
+               changed_prefs.floppyslots[i].dfxclick = -1;
                _tcscpy(changed_prefs.floppyslots[i].dfxclickexternal, var.value);
             }
          }
@@ -1956,9 +1953,9 @@ static void update_variables(void)
 
       if (libretro_runloop_active)
       {
-         int val;
+         int val = 0;
          val = atoi(var.value);
-         changed_prefs.input_mouse_speed=val;
+         changed_prefs.input_mouse_speed = val;
       }
    }
 
@@ -1966,17 +1963,17 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "false") == 0)
+      if (!strcmp(var.value, "false"))
       {
          strcat(uae_config, "immediate_blits=false\n");
          strcat(uae_config, "waiting_blits=false\n");
       }
-      else if (strcmp(var.value, "immediate") == 0)
+      else if (!strcmp(var.value, "immediate"))
       {
          strcat(uae_config, "immediate_blits=true\n");
          strcat(uae_config, "waiting_blits=disabled\n");
       }
-      else if (strcmp(var.value, "waiting") == 0)
+      else if (!strcmp(var.value, "waiting"))
       {
          strcat(uae_config, "immediate_blits=false\n");
          strcat(uae_config, "waiting_blits=automatic\n");
@@ -1984,20 +1981,20 @@ static void update_variables(void)
 
       if (libretro_runloop_active)
       {
-         if (strcmp(var.value, "false") == 0)
+         if (!strcmp(var.value, "false"))
          {
-            changed_prefs.immediate_blits=0;
-            changed_prefs.waiting_blits=0;
+            changed_prefs.immediate_blits = 0;
+            changed_prefs.waiting_blits = 0;
          }
-         else if (strcmp(var.value, "immediate") == 0)
+         else if (!strcmp(var.value, "immediate"))
          {
-            changed_prefs.immediate_blits=1;
-            changed_prefs.waiting_blits=0;
+            changed_prefs.immediate_blits = 1;
+            changed_prefs.waiting_blits = 0;
          }
-         else if (strcmp(var.value, "waiting") == 0)
+         else if (!strcmp(var.value, "waiting"))
          {
-            changed_prefs.immediate_blits=0;
-            changed_prefs.waiting_blits=1;
+            changed_prefs.immediate_blits = 0;
+            changed_prefs.waiting_blits = 1;
          }
       }
    }
@@ -2012,10 +2009,10 @@ static void update_variables(void)
 
       if (libretro_runloop_active)
       {
-         if (strcmp(var.value, "none") == 0) changed_prefs.collision_level=0;
-         else if (strcmp(var.value, "sprites") == 0) changed_prefs.collision_level=1;
-         else if (strcmp(var.value, "playfields") == 0) changed_prefs.collision_level=2;
-         else if (strcmp(var.value, "full") == 0) changed_prefs.collision_level=3;
+         if (!strcmp(var.value, "none"))            changed_prefs.collision_level = 0;
+         else if (!strcmp(var.value, "sprites"))    changed_prefs.collision_level = 1;
+         else if (!strcmp(var.value, "playfields")) changed_prefs.collision_level = 2;
+         else if (!strcmp(var.value, "full"))       changed_prefs.collision_level = 3;
       }
    }
 
@@ -2023,22 +2020,22 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      int val=0;
-      if (strcmp(var.value, "disabled") == 0) val=1;
-      else if (strcmp(var.value, "1") == 0) val=2;
-      else if (strcmp(var.value, "2") == 0) val=3;
+      int val = 0;
+      if (!strcmp(var.value, "disabled")) val = 1;
+      else if (!strcmp(var.value, "1"))   val = 2;
+      else if (!strcmp(var.value, "2"))   val = 3;
 
       if (val>1)
       {
-         char valbuf[10];
-         snprintf(valbuf, 10, "%d", val);
+         char valbuf[4];
+         snprintf(valbuf, 4, "%d", val);
          strcat(uae_config, "gfx_framerate=");
          strcat(uae_config, valbuf);
          strcat(uae_config, "\n");
       }
 
       if (libretro_runloop_active && !strstr(uae_custom_config, "gfx_framerate="))
-         changed_prefs.gfx_framerate=val;
+         changed_prefs.gfx_framerate = val;
    }
 
    var.key = "puae_gfx_colors";
@@ -2048,8 +2045,8 @@ static void update_variables(void)
       // Only allow screenmode change after restart
       if (!pix_bytes_initialized)
       {
-         if (strcmp(var.value, "16bit") == 0) pix_bytes=2;
-         else if (strcmp(var.value, "24bit") == 0) pix_bytes=4;
+         if (!strcmp(var.value, "16bit"))      pix_bytes = 2;
+         else if (!strcmp(var.value, "24bit")) pix_bytes = 4;
       }
    }
 
@@ -2057,17 +2054,17 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0)
+      if (!strcmp(var.value, "disabled"))
          strcat(uae_config, "gfx_flickerfixer=false\n");
       else
          strcat(uae_config, "gfx_flickerfixer=true\n");
 
       if (libretro_runloop_active)
       {
-         if (strcmp(var.value, "disabled") == 0)
-            changed_prefs.gfx_scandoubler=0;
+         if (!strcmp(var.value, "disabled"))
+            changed_prefs.gfx_scandoubler = 0;
          else
-            changed_prefs.gfx_scandoubler=1;
+            changed_prefs.gfx_scandoubler = 1;
 
          /* Change requires init_custom() */
          if (changed_prefs.gfx_scandoubler != currprefs.gfx_scandoubler)
@@ -2079,15 +2076,15 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "none") == 0) zoom_mode_id=0;
-      else if (strcmp(var.value, "minimum") == 0) zoom_mode_id=1;
-      else if (strcmp(var.value, "smaller") == 0) zoom_mode_id=2;
-      else if (strcmp(var.value, "small") == 0) zoom_mode_id=3;
-      else if (strcmp(var.value, "medium") == 0) zoom_mode_id=4;
-      else if (strcmp(var.value, "large") == 0) zoom_mode_id=5;
-      else if (strcmp(var.value, "larger") == 0) zoom_mode_id=6;
-      else if (strcmp(var.value, "maximum") == 0) zoom_mode_id=7;
-      else if (strcmp(var.value, "auto") == 0) zoom_mode_id=8;
+      if (!strcmp(var.value, "none"))         zoom_mode_id = 0;
+      else if (!strcmp(var.value, "minimum")) zoom_mode_id = 1;
+      else if (!strcmp(var.value, "smaller")) zoom_mode_id = 2;
+      else if (!strcmp(var.value, "small"))   zoom_mode_id = 3;
+      else if (!strcmp(var.value, "medium"))  zoom_mode_id = 4;
+      else if (!strcmp(var.value, "large"))   zoom_mode_id = 5;
+      else if (!strcmp(var.value, "larger"))  zoom_mode_id = 6;
+      else if (!strcmp(var.value, "maximum")) zoom_mode_id = 7;
+      else if (!strcmp(var.value, "auto"))    zoom_mode_id = 8;
 
       opt_zoom_mode_id = zoom_mode_id;
    }
@@ -2098,13 +2095,13 @@ static void update_variables(void)
    {
       int zoom_mode_crop_id_prev = zoom_mode_crop_id;
 
-      if (strcmp(var.value, "both") == 0) zoom_mode_crop_id=0;
-      else if (strcmp(var.value, "vertical") == 0) zoom_mode_crop_id=1;
-      else if (strcmp(var.value, "horizontal") == 0) zoom_mode_crop_id=2;
-      else if (strcmp(var.value, "16:9") == 0) zoom_mode_crop_id=3;
-      else if (strcmp(var.value, "16:10") == 0) zoom_mode_crop_id=4;
-      else if (strcmp(var.value, "4:3") == 0) zoom_mode_crop_id=5;
-      else if (strcmp(var.value, "5:4") == 0) zoom_mode_crop_id=6;
+      if (!strcmp(var.value, "both"))            zoom_mode_crop_id = 0;
+      else if (!strcmp(var.value, "vertical"))   zoom_mode_crop_id = 1;
+      else if (!strcmp(var.value, "horizontal")) zoom_mode_crop_id = 2;
+      else if (!strcmp(var.value, "16:9"))       zoom_mode_crop_id = 3;
+      else if (!strcmp(var.value, "16:10"))      zoom_mode_crop_id = 4;
+      else if (!strcmp(var.value, "4:3"))        zoom_mode_crop_id = 5;
+      else if (!strcmp(var.value, "5:4"))        zoom_mode_crop_id = 6;
    }
 
    var.key = "puae_vertical_pos";
@@ -2112,7 +2109,7 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       opt_vertical_offset = 0;
-      if (strcmp(var.value, "auto") == 0)
+      if (!strcmp(var.value, "auto"))
       {
          opt_vertical_offset_auto = true;
          thisframe_y_adjust = minfirstline;
@@ -2135,7 +2132,7 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       opt_horizontal_offset = 0;
-      if (strcmp(var.value, "auto") == 0)
+      if (!strcmp(var.value, "auto"))
       {
          opt_horizontal_offset_auto = true;
       }
@@ -2155,59 +2152,59 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_use_whdload=0;
-      else if (strcmp(var.value, "files") == 0) opt_use_whdload=1;
-      else if (strcmp(var.value, "hdfs") == 0) opt_use_whdload=2;
+      if (!strcmp(var.value, "disabled"))   opt_use_whdload = 0;
+      else if (!strcmp(var.value, "files")) opt_use_whdload = 1;
+      else if (!strcmp(var.value, "hdfs"))  opt_use_whdload = 2;
    }
 
    var.key = "puae_use_whdload_prefs";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_use_whdload_prefs=0;
-      else if (strcmp(var.value, "config") == 0) opt_use_whdload_prefs=1;
-      else if (strcmp(var.value, "splash") == 0) opt_use_whdload_prefs=2;
-      else if (strcmp(var.value, "both") == 0) opt_use_whdload_prefs=3;
+      if (!strcmp(var.value, "disabled"))    opt_use_whdload_prefs = 0;
+      else if (!strcmp(var.value, "config")) opt_use_whdload_prefs = 1;
+      else if (!strcmp(var.value, "splash")) opt_use_whdload_prefs = 2;
+      else if (!strcmp(var.value, "both"))   opt_use_whdload_prefs = 3;
    }
 
    var.key = "puae_cd_startup_delayed_insert";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "enabled") == 0) opt_cd_startup_delayed_insert=true;
-      else if (strcmp(var.value, "disabled") == 0) opt_cd_startup_delayed_insert=false;
+      if (!strcmp(var.value, "enabled"))       opt_cd_startup_delayed_insert = true;
+      else if (!strcmp(var.value, "disabled")) opt_cd_startup_delayed_insert = false;
    }
 
    var.key = "puae_shared_nvram";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "enabled") == 0) opt_shared_nvram=true;
-      else if (strcmp(var.value, "disabled") == 0) opt_shared_nvram=false;
+      if (!strcmp(var.value, "enabled"))       opt_shared_nvram = true;
+      else if (!strcmp(var.value, "disabled")) opt_shared_nvram = false;
    }
 
    var.key = "puae_use_boot_hd";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_use_boot_hd=0;
-      else if (strcmp(var.value, "files") == 0) opt_use_boot_hd=1;
-      else if (strcmp(var.value, "hdf20") == 0) opt_use_boot_hd=2;
-      else if (strcmp(var.value, "hdf40") == 0) opt_use_boot_hd=3;
-      else if (strcmp(var.value, "hdf80") == 0) opt_use_boot_hd=4;
-      else if (strcmp(var.value, "hdf128") == 0) opt_use_boot_hd=5;
-      else if (strcmp(var.value, "hdf256") == 0) opt_use_boot_hd=6;
-      else if (strcmp(var.value, "hdf512") == 0) opt_use_boot_hd=7;
+      if (!strcmp(var.value, "disabled"))    opt_use_boot_hd = 0;
+      else if (!strcmp(var.value, "files"))  opt_use_boot_hd = 1;
+      else if (!strcmp(var.value, "hdf20"))  opt_use_boot_hd = 2;
+      else if (!strcmp(var.value, "hdf40"))  opt_use_boot_hd = 3;
+      else if (!strcmp(var.value, "hdf80"))  opt_use_boot_hd = 4;
+      else if (!strcmp(var.value, "hdf128")) opt_use_boot_hd = 5;
+      else if (!strcmp(var.value, "hdf256")) opt_use_boot_hd = 6;
+      else if (!strcmp(var.value, "hdf512")) opt_use_boot_hd = 7;
    }
 
    var.key = "puae_analogmouse";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_analogmouse=0;
-      else if (strcmp(var.value, "left") == 0) opt_analogmouse=1;
-      else if (strcmp(var.value, "right") == 0) opt_analogmouse=2;
-      else if (strcmp(var.value, "both") == 0) opt_analogmouse=3;
+      if (!strcmp(var.value, "disabled"))   opt_analogmouse = 0;
+      else if (!strcmp(var.value, "left"))  opt_analogmouse = 1;
+      else if (!strcmp(var.value, "right")) opt_analogmouse = 2;
+      else if (!strcmp(var.value, "both"))  opt_analogmouse = 3;
    }
 
    var.key = "puae_analogmouse_deadzone";
@@ -2235,64 +2232,64 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_multimouse=false;
-      else if (strcmp(var.value, "enabled") == 0) opt_multimouse=true;
+      if (!strcmp(var.value, "disabled"))     opt_multimouse = false;
+      else if (!strcmp(var.value, "enabled")) opt_multimouse = true;
    }
 
    var.key = "puae_keyrah_keypad_mappings";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_keyrahkeypad=false;
-      else if (strcmp(var.value, "enabled") == 0) opt_keyrahkeypad=true;
+      if (!strcmp(var.value, "disabled"))     opt_keyrahkeypad = false;
+      else if (!strcmp(var.value, "enabled")) opt_keyrahkeypad = true;
    }
 
    var.key = "puae_physical_keyboard_pass_through";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_keyboard_pass_through=false;
-      else if (strcmp(var.value, "enabled") == 0) opt_keyboard_pass_through=true;
+      if (!strcmp(var.value, "disabled"))     opt_keyboard_pass_through = false;
+      else if (!strcmp(var.value, "enabled")) opt_keyboard_pass_through = true;
    }
 
    var.key = "puae_model_options_display";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_model_options_display=0;
-      else if (strcmp(var.value, "enabled") == 0) opt_model_options_display=1;
+      if (!strcmp(var.value, "disabled"))     opt_model_options_display = 0;
+      else if (!strcmp(var.value, "enabled")) opt_model_options_display = 1;
    }
 
    var.key = "puae_mapping_options_display";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_mapping_options_display=0;
-      else if (strcmp(var.value, "enabled") == 0) opt_mapping_options_display=1;
+      if (!strcmp(var.value, "disabled"))     opt_mapping_options_display = 0;
+      else if (!strcmp(var.value, "enabled")) opt_mapping_options_display = 1;
    }
 
    var.key = "puae_video_options_display";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_video_options_display=0;
-      else if (strcmp(var.value, "enabled") == 0) opt_video_options_display=1;
+      if (!strcmp(var.value, "disabled"))     opt_video_options_display = 0;
+      else if (!strcmp(var.value, "enabled")) opt_video_options_display = 1;
    }
 
    var.key = "puae_audio_options_display";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_audio_options_display=0;
-      else if (strcmp(var.value, "enabled") == 0) opt_audio_options_display=1;
+      if (!strcmp(var.value, "disabled"))     opt_audio_options_display = 0;
+      else if (!strcmp(var.value, "enabled")) opt_audio_options_display = 1;
    }
 
    var.key = "puae_joyport";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "joystick") == 0 && !mousemode_locked) MOUSEMODE=-1;
-      else if (strcmp(var.value, "mouse") == 0 && !mousemode_locked) MOUSEMODE=1;
+      if (!strcmp(var.value, "joystick") && !mousemode_locked)   MOUSEMODE = -1;
+      else if (!strcmp(var.value, "mouse") && !mousemode_locked) MOUSEMODE = 1;
    }
 
    var.key = "puae_joyport_order";
@@ -2306,47 +2303,42 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_retropad_options=0;
-      else if (strcmp(var.value, "rotate") == 0) opt_retropad_options=1;
-      else if (strcmp(var.value, "jump") == 0) opt_retropad_options=2;
-      else if (strcmp(var.value, "rotate_jump") == 0) opt_retropad_options=3;
+      if (!strcmp(var.value, "disabled"))         opt_retropad_options = 0;
+      else if (!strcmp(var.value, "rotate"))      opt_retropad_options = 1;
+      else if (!strcmp(var.value, "jump"))        opt_retropad_options = 2;
+      else if (!strcmp(var.value, "rotate_jump")) opt_retropad_options = 3;
    }
 
    var.key = "puae_cd32pad_options";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_cd32pad_options=0;
-      else if (strcmp(var.value, "rotate") == 0) opt_cd32pad_options=1;
-      else if (strcmp(var.value, "jump") == 0) opt_cd32pad_options=2;
-      else if (strcmp(var.value, "rotate_jump") == 0) opt_cd32pad_options=3;
+      if (!strcmp(var.value, "disabled"))         opt_cd32pad_options = 0;
+      else if (!strcmp(var.value, "rotate"))      opt_cd32pad_options = 1;
+      else if (!strcmp(var.value, "jump"))        opt_cd32pad_options = 2;
+      else if (!strcmp(var.value, "rotate_jump")) opt_cd32pad_options = 3;
    }
 
    var.key = "puae_turbo_fire_button";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) turbo_fire_button=-1;
-      else if (strcmp(var.value, "B") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_B;
-      else if (strcmp(var.value, "A") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_A;
-      else if (strcmp(var.value, "Y") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_Y;
-      else if (strcmp(var.value, "X") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_X;
-      else if (strcmp(var.value, "L") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_L;
-      else if (strcmp(var.value, "R") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_R;
-      else if (strcmp(var.value, "L2") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_L2;
-      else if (strcmp(var.value, "R2") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_R2;
+      if (!strcmp(var.value, "disabled")) turbo_fire_button = -1;
+      else if (!strcmp(var.value, "B"))   turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_B;
+      else if (!strcmp(var.value, "A"))   turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_A;
+      else if (!strcmp(var.value, "Y"))   turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_Y;
+      else if (!strcmp(var.value, "X"))   turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_X;
+      else if (!strcmp(var.value, "L"))   turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_L;
+      else if (!strcmp(var.value, "R"))   turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_R;
+      else if (!strcmp(var.value, "L2"))  turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_L2;
+      else if (!strcmp(var.value, "R2"))  turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_R2;
    }
 
    var.key = "puae_turbo_pulse";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "2") == 0) turbo_pulse=2;
-      else if (strcmp(var.value, "4") == 0) turbo_pulse=4;
-      else if (strcmp(var.value, "6") == 0) turbo_pulse=6;
-      else if (strcmp(var.value, "8") == 0) turbo_pulse=8;
-      else if (strcmp(var.value, "10") == 0) turbo_pulse=10;
-      else if (strcmp(var.value, "12") == 0) turbo_pulse=12;
+      turbo_pulse = atoi(var.value);
    }
 
    /* Mapper */
@@ -2860,7 +2852,7 @@ static bool disk_replace_image_index(unsigned index, const struct retro_game_inf
             char image_label[RETRO_PATH_MAX];
             image_label[0] = '\0';
 
-            static char full_path_replace[512] = {0};
+            static char full_path_replace[RETRO_PATH_MAX] = {0};
             strcpy(full_path_replace, (char*)info->path);
 
             // Confs & hard drive images will replace full_path and requires restarting
