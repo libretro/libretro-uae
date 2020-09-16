@@ -3945,12 +3945,77 @@ static void retro_use_boot_hd(FILE** configfile)
       if (path_is_directory(boothd_path))
       {
          tmp_str = string_replace_substring(boothd_path, "\\", "\\\\");
-         fprintf(*configfile, "filesystem2=rw,BOOT:Boot:\"%s\",-1\n", (const char*)tmp_str);
+         fprintf(*configfile, "filesystem2=rw,BOOT:Boot:\"%s\",0\n", (const char*)tmp_str);
          free(tmp_str);
          tmp_str = NULL;
       }
       else
          log_cb(RETRO_LOG_ERROR, "Unable to create Boot HD directory: '%s'\n", (const char*)&boothd_path);
+   }
+}
+
+static void retro_print_kickstart(FILE** configfile)
+{
+   char kickstart[RETRO_PATH_MAX];
+   path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
+
+   // Main Kickstart
+   if (!file_exists(kickstart))
+   {
+      // Kickstart ROM not found
+      log_cb(RETRO_LOG_ERROR, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
+      snprintf(retro_message_msg, sizeof(retro_message_msg),
+               "Kickstart ROM '%s' not found!", path_basename((const char*)kickstart));
+      retro_message = true;
+   }
+   else
+      fprintf(*configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
+
+   // Extended KS + NVRAM
+   if (!string_is_empty(uae_kickstart_ext))
+   {
+      char kickstart_ext[RETRO_PATH_MAX];
+      path_join((char*)&kickstart_ext, retro_system_directory, uae_kickstart_ext);
+
+      // Decide if CD32 ROM is combined based on filesize
+      struct stat kickstart_st;
+      stat(kickstart, &kickstart_st);
+
+      // Verify extended ROM if external
+      if (kickstart_st.st_size <= 524288)
+      {
+         if (!file_exists(kickstart_ext))
+         {
+            // Kickstart extended ROM not found
+            log_cb(RETRO_LOG_ERROR, "Kickstart extended ROM '%s' not found!\n", (const char*)&kickstart_ext);
+            snprintf(retro_message_msg, sizeof(retro_message_msg),
+                     "Kickstart extended ROM '%s' not found!", path_basename((const char*)kickstart_ext));
+            retro_message = true;
+         }
+         else
+            fprintf(*configfile, "kickstart_ext_rom_file=%s\n", (const char*)&kickstart_ext);
+      }
+
+      // NVRAM
+      char flash_filename[RETRO_PATH_MAX];
+      char flash_filepath[RETRO_PATH_MAX];
+      if (opt_shared_nvram || string_is_empty(full_path))
+      {
+         // Shared
+         snprintf(flash_filename, sizeof(flash_filename), "%s.nvr", LIBRETRO_PUAE_PREFIX);
+         // CDTV suffix
+         if (kickstart_st.st_size == 262144)
+            snprintf(flash_filename, sizeof(flash_filename), "%s_cdtv.nvr", LIBRETRO_PUAE_PREFIX);
+      }
+      else
+      {
+         // Per game
+         snprintf(flash_filename, sizeof(flash_filename), "%s", path_basename(full_path));
+         snprintf(flash_filename, sizeof(flash_filename), "%s.nvr", path_remove_extension(flash_filename));
+      }
+      path_join((char*)&flash_filepath, retro_save_directory, flash_filename);
+      log_cb(RETRO_LOG_INFO, "Using Flash RAM: '%s'\n", flash_filepath);
+      fprintf(*configfile, "flash_file=%s\n", (const char*)&flash_filepath);
    }
 }
 
@@ -4195,7 +4260,6 @@ static bool retro_create_config()
    FILE * configfile;
    if (!(configfile = fopen(RPATH, "w")))
    {
-      // Error
       log_cb(RETRO_LOG_ERROR, "Unable to write file: '%s'\n", (const char*)&RPATH);
       return false;
    }
@@ -4268,14 +4332,12 @@ static bool retro_create_config()
          }
       }
 
-      // If argument is a disk, hard drive, whdload or playlist file
+      // Floppy disk, hard drive, WHDLoad or playlist
       if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_FLOPPY
        || dc_get_image_type(full_path) == DC_IMAGE_TYPE_HD
        || dc_get_image_type(full_path) == DC_IMAGE_TYPE_WHDLOAD
        || strendswith(full_path, "m3u"))
       {
-         char kickstart[RETRO_PATH_MAX];
-
          // Check if model is specified in the path on 'Automatic'
          if (!strcmp(opt_model, "auto"))
          {
@@ -4367,23 +4429,13 @@ static bool retro_create_config()
          fprintf(configfile, "\n");
 
          // Verify and write Kickstart
-         path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
-         if (!file_exists(kickstart))
-         {
-            // Kickstart ROM not found
-            log_cb(RETRO_LOG_ERROR, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
-            snprintf(retro_message_msg, sizeof(retro_message_msg),
-                     "Kickstart ROM '%s' not found!", path_basename((const char*)kickstart));
-            retro_message = true;
-         }
-         else
-            fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
+         retro_print_kickstart(&configfile);
 
          // Bootable HD exception
          if (opt_use_boot_hd)
             retro_use_boot_hd(&configfile);
 
-         // If argument is a hard drive image or whdload file
+         // Hard drive or WHDLoad image
          if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_HD
           || dc_get_image_type(full_path) == DC_IMAGE_TYPE_WHDLOAD)
          {
@@ -4434,6 +4486,7 @@ static bool retro_create_config()
                      else
                         log_cb(RETRO_LOG_ERROR, "Unable to create WHDLoad image file: '%s'\n", (const char*)&whdload_hdf);
                   }
+                  // Attach HDF
                   if (file_exists(whdload_hdf))
                   {
                      tmp_str = string_replace_substring(whdload_hdf, "\\", "\\\\");
@@ -4442,7 +4495,7 @@ static bool retro_create_config()
                      tmp_str = NULL;
                   }
                }
-               // WHDLoad File mode
+               // WHDLoad file mode
                else
                {
                   char whdload_path[RETRO_PATH_MAX];
@@ -4473,6 +4526,7 @@ static bool retro_create_config()
                      else
                         log_cb(RETRO_LOG_ERROR, "Unable to create WHDLoad image directory: '%s'\n", (const char*)&whdload_path);
                   }
+                  // Attach directory
                   if (path_is_directory(whdload_path) && path_is_directory(whdload_c_path))
                   {
                      tmp_str = string_replace_substring(whdload_path, "\\", "\\\\");
@@ -4555,6 +4609,7 @@ static bool retro_create_config()
                      else
                         log_cb(RETRO_LOG_ERROR, "Unable to create WHDSaves image file: '%s'\n", (const char*)&whdsaves_hdf);
                   }
+                  // Attach HDF
                   if (file_exists(whdsaves_hdf))
                   {
                      tmp_str = string_replace_substring(whdsaves_hdf, "\\", "\\\\");
@@ -4570,6 +4625,7 @@ static bool retro_create_config()
                   path_join((char*)&whdsaves_path, retro_save_directory, "WHDSaves");
                   if (!path_is_directory(whdsaves_path))
                      path_mkdir(whdsaves_path);
+                  // Attach directory
                   if (path_is_directory(whdsaves_path))
                   {
                      tmp_str = string_replace_substring(whdsaves_path, "\\", "\\\\");
@@ -4688,7 +4744,7 @@ static bool retro_create_config()
          }
          else
          {
-            // If argument is a M3U playlist
+            // M3U playlist
             if (strendswith(full_path, "m3u"))
             {
                // Parse the M3U file
@@ -4699,6 +4755,7 @@ static bool retro_create_config()
                //for (unsigned i = 0; i < retro_dc->count; i++)
                   //log_cb(RETRO_LOG_INFO, "File %d: %s\n", i+1, retro_dc->files[i]);
             }
+            // Single file
             else
             {
                // Add the file to disk control context
@@ -4760,12 +4817,9 @@ static bool retro_create_config()
          // Write common config
          fprintf(configfile, uae_config);
       }
-      // If argument is a CD image
+      // CD image
       else if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_CD)
       {
-         char kickstart[RETRO_PATH_MAX];
-         char kickstart_ext[RETRO_PATH_MAX];
-
          // Check if model is specified in the path on 'Automatic'
          if (!strcmp(opt_model, "auto"))
          {
@@ -4817,58 +4871,7 @@ static bool retro_create_config()
          fprintf(configfile, "\n");
 
          // Verify and write Kickstart
-         path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
-         path_join((char*)&kickstart_ext, retro_system_directory, uae_kickstart_ext);
-         if (!file_exists(kickstart))
-         {
-            // Kickstart ROM not found
-            log_cb(RETRO_LOG_ERROR, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
-            snprintf(retro_message_msg, sizeof(retro_message_msg),
-                     "Kickstart ROM '%s' not found!", path_basename((const char*)kickstart));
-            retro_message = true;
-         }
-         else
-            fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
-
-         // Decide if CD32 ROM is combined based on filesize
-         struct stat kickstart_st;
-         stat(kickstart, &kickstart_st);
-
-         // Verify extended ROM if external
-         if (kickstart_st.st_size <= 524288)
-         {
-            if (!file_exists(kickstart_ext))
-            {
-               // Kickstart extended ROM not found
-               log_cb(RETRO_LOG_ERROR, "Kickstart extended ROM '%s' not found!\n", (const char*)&kickstart_ext);
-               snprintf(retro_message_msg, sizeof(retro_message_msg),
-                        "Kickstart extended ROM '%s' not found!", path_basename((const char*)kickstart_ext));
-               retro_message = true;
-            }
-            else
-               fprintf(configfile, "kickstart_ext_rom_file=%s\n", (const char*)&kickstart_ext);
-         }
-
-         // NVRAM
-         char flash_filename[RETRO_PATH_MAX];
-         char flash_filepath[RETRO_PATH_MAX];
-         if (opt_shared_nvram)
-         {
-            // Shared
-            snprintf(flash_filename, sizeof(flash_filename), "%s.nvr", LIBRETRO_PUAE_PREFIX);
-            // CDTV suffix
-            if (kickstart_st.st_size == 262144)
-               snprintf(flash_filename, sizeof(flash_filename), "%s_cdtv.nvr", LIBRETRO_PUAE_PREFIX);
-         }
-         else
-         {
-            // Per game
-            snprintf(flash_filename, sizeof(flash_filename), "%s", path_basename(full_path));
-            snprintf(flash_filename, sizeof(flash_filename), "%s.nvr", path_remove_extension(flash_filename));
-         }
-         path_join((char*)&flash_filepath, retro_save_directory, flash_filename);
-         log_cb(RETRO_LOG_INFO, "Using Flash RAM: '%s'\n", flash_filepath);
-         fprintf(configfile, "flash_file=%s\n", (const char*)&flash_filepath);
+         retro_print_kickstart(&configfile);
 
          // Add the file to disk control context
          char cd_image_label[RETRO_PATH_MAX];
@@ -4897,10 +4900,9 @@ static bool retro_create_config()
          // Write common config
          fprintf(configfile, uae_config);
       }
-      // If argument is a config file
+      // UAE config file
       else if (strendswith(full_path, "uae"))
       {
-         char kickstart[RETRO_PATH_MAX] = {0};
          char disk_image[RETRO_PATH_MAX] = {0};
 
          // Write model preset
@@ -4909,9 +4911,8 @@ static bool retro_create_config()
          // Separator row for clarity
          fprintf(configfile, "\n");
 
-         // Write Kickstart
-         path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
-         fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
+         // Verify and write Kickstart
+         retro_print_kickstart(&configfile);
 
          // Separator row for clarity
          fprintf(configfile, "\n");
@@ -4969,14 +4970,17 @@ static bool retro_create_config()
             log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF0: '%s'\n", retro_dc->index+1, retro_dc->files[retro_dc->index]);
          }
       }
-      // Other extensions
+      // Unknown extensions
       else
       {
-         char kickstart[RETRO_PATH_MAX];
-         path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
-
          // Write model preset
          fprintf(configfile, uae_model);
+
+         // Separator row for clarity
+         fprintf(configfile, "\n");
+
+         // Verify and write Kickstart
+         retro_print_kickstart(&configfile);
 
          // Separator row for clarity
          fprintf(configfile, "\n");
@@ -4993,9 +4997,6 @@ static bool retro_create_config()
    // Empty content
    else
    {
-      char kickstart[RETRO_PATH_MAX];
-      path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
-
       // No model specified
       log_cb(RETRO_LOG_INFO, "Booting model: '%s'\n", uae_kickstart);
 
@@ -5005,72 +5006,13 @@ static bool retro_create_config()
       // Separator row for clarity
       fprintf(configfile, "\n");
 
-      // CD32 exception
-      if (!strcmp(opt_model, "CD32") || !strcmp(opt_model, "CD32FR") || !strcmp(opt_model, "CDTV"))
-      {
-         char kickstart_ext[RETRO_PATH_MAX];
-         path_join((char*)&kickstart_ext, retro_system_directory, uae_kickstart_ext);
+      // Verify and write Kickstart
+      retro_print_kickstart(&configfile);
 
-         // Verify kickstart
-         if (!file_exists(kickstart))
-         {
-            // Kickstart ROM not found
-            log_cb(RETRO_LOG_ERROR, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
-            snprintf(retro_message_msg, sizeof(retro_message_msg),
-                     "Kickstart ROM '%s' not found!", path_basename((const char*)kickstart));
-            retro_message = true;
-         }
-         else
-            fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
-
-         // Decide if CD32 ROM is combined based on filesize
-         struct stat kickstart_st;
-         stat(kickstart, &kickstart_st);
-
-         // Verify extended ROM if external
-         if (kickstart_st.st_size <= 524288)
-         {
-            if (!file_exists(kickstart_ext))
-            {
-               // Kickstart extended ROM not found
-               log_cb(RETRO_LOG_ERROR, "Kickstart extended ROM '%s' not found!\n", (const char*)&kickstart_ext);
-               snprintf(retro_message_msg, sizeof(retro_message_msg),
-                        "Kickstart extended ROM '%s' not found!", path_basename((const char*)kickstart_ext));
-               retro_message = true;
-            }
-            else
-               fprintf(configfile, "kickstart_ext_rom_file=%s\n", (const char*)&kickstart_ext);
-         }
-
-         // NVRAM always shared without content
-         char flash_filename[RETRO_PATH_MAX];
-         char flash_filepath[RETRO_PATH_MAX];
-         snprintf(flash_filename, sizeof(flash_filename), "%s.nvr", LIBRETRO_PUAE_PREFIX);
-         // CDTV suffix
-         if (kickstart_st.st_size == 262144)
-            snprintf(flash_filename, sizeof(flash_filename), "%s_cdtv.nvr", LIBRETRO_PUAE_PREFIX);
-         path_join((char*)&flash_filepath, retro_save_directory, flash_filename);
-         log_cb(RETRO_LOG_INFO, "Using Flash RAM: '%s'\n", flash_filepath);
-         fprintf(configfile, "flash_file=%s\n", (const char*)&flash_filepath);
-      }
-      else
-      {
-         // Verify and write Kickstart
-         if (!file_exists(kickstart))
-         {
-            // Kickstart ROM not found
-            log_cb(RETRO_LOG_ERROR, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
-            snprintf(retro_message_msg, sizeof(retro_message_msg),
-                     "Kickstart ROM '%s' not found!", path_basename((const char*)kickstart));
-            retro_message = true;
-         }
-         else
-            fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
-
-         // Bootable HD exception
-         if (opt_use_boot_hd)
+      // Bootable HD exception, not for CD systems
+      if (opt_use_boot_hd)
+         if (strcmp(opt_model, "CD32") && strcmp(opt_model, "CD32FR") && strcmp(opt_model, "CDTV"))
             retro_use_boot_hd(&configfile);
-      }
 
       // Separator row for clarity
       fprintf(configfile, "\n");
