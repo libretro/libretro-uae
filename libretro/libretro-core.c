@@ -369,6 +369,106 @@ void retro_set_environment(retro_environment_t cb)
          "0"
       },
       {
+         "puae_floppy_speed",
+         "Floppy Speed",
+         "'Turbo' removes disk rotation emulation.",
+         {
+            { "100", "Default (300RPM)" },
+            { "200", "2x (600RPM)" },
+            { "400", "4x (1200RPM)" },
+            { "800", "8x (2400RPM)" },
+            { "0", "Turbo" },
+            { NULL, NULL },
+         },
+         "100"
+      },
+      {
+         "puae_floppy_write_protection",
+         "Floppy Write Protection",
+         "Makes all drives read only. Changing this while emulation is running ejects and reinserts all disks.",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "disabled"
+      },
+      {
+         "puae_cd_speed",
+         "CD Speed",
+         "Transfer rate in CD32 is 300KB/s (double-speed), CDTV is 150KB/s (single-speed). 'Turbo' removes seek delay emulation.",
+         {
+            { "100", "Default" },
+            { "0", "Turbo" },
+            { NULL, NULL },
+         },
+         "100"
+      },
+      {
+         "puae_cd_startup_delayed_insert",
+         "CD Startup Delayed Insert",
+         "Some games fail to load if CD32/CDTV is powered on with the CD inserted. 'ON' inserts the CD during the boot animation.",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "disabled"
+      },
+      {
+         "puae_shared_nvram",
+         "Shared CD32/CDTV NVRAM",
+         "'OFF' saves separate files per content, 'ON' shares the same file. Starting without content uses the shared file. CD32 and CDTV use separate shared files.\nCore restart required.",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "disabled"
+      },
+      {
+         "puae_use_boot_hd",
+         "Global Boot HD",
+         "Attach a bootable hard drive. Enabling forces a model with HD interface. Changing HDF size will not replace or edit the previous HDF.\nCore restart required.",
+         {
+            { "disabled", NULL },
+            { "files", "Files" },
+            { "hdf20", "HDF 20MB" },
+            { "hdf40", "HDF 40MB" },
+            { "hdf80", "HDF 80MB" },
+            { "hdf128", "HDF 128MB" },
+            { "hdf256", "HDF 256MB" },
+            { "hdf512", "HDF 512MB" },
+            { NULL, NULL },
+         },
+         "disabled"
+      },
+      {
+         "puae_use_whdload",
+         "WHDLoad Support",
+         "Enable launching pre-installed WHDLoad installs. Creates a helper image for loading content and an empty image for saving. Core restart required.\n- 'Files' creates the data in directories\n- 'HDFs' contains the data in images",
+         {
+            { "disabled", NULL },
+            { "files", "Files" },
+            { "hdfs", "HDFs" },
+            { NULL, NULL },
+         },
+         "files"
+      },
+      {
+         "puae_use_whdload_prefs",
+         "WHDLoad Splash Screen Options",
+         "Space/Enter/Fire work as the WHDLoad Start-button. Core restart required.\nOverride with buttons while booting:\n- 'Config': Hold 2nd fire / Blue\n- 'Splash': Hold LMB\n- 'Config + Splash': Hold RMB\n- ReadMe + MkCustom: Hold Red+Blue",
+         {
+            { "disabled", NULL },
+            { "config", "Config (Show only if available)" },
+            { "splash", "Splash (Show briefly)" },
+            { "both", "Config + Splash (Wait for user input)" },
+            { NULL, NULL },
+         },
+         "disabled"
+      },
+      {
          "puae_video_options_display",
          "Show Video Options",
          "Shows/hides video related options.\nCore options page refresh required.",
@@ -835,106 +935,6 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "internal"
-      },
-      {
-         "puae_floppy_speed",
-         "Floppy Speed",
-         "'Turbo' removes disk rotation emulation.",
-         {
-            { "100", "Default (300RPM)" },
-            { "200", "2x (600RPM)" },
-            { "400", "4x (1200RPM)" },
-            { "800", "8x (2400RPM)" },
-            { "0", "Turbo" },
-            { NULL, NULL },
-         },
-         "100"
-      },
-      {
-         "puae_floppy_write_protection",
-         "Floppy Write Protection",
-         "Makes all drives read only. Changing this while emulation is running ejects and reinserts all disks.",
-         {
-            { "disabled", NULL },
-            { "enabled", NULL },
-            { NULL, NULL },
-         },
-         "disabled"
-      },
-      {
-         "puae_cd_speed",
-         "CD Speed",
-         "Transfer rate in CD32 is 300KB/s (double-speed), CDTV is 150KB/s (single-speed). 'Turbo' removes seek delay emulation.",
-         {
-            { "100", "Default" },
-            { "0", "Turbo" },
-            { NULL, NULL },
-         },
-         "100"
-      },
-      {
-         "puae_cd_startup_delayed_insert",
-         "CD Startup Delayed Insert",
-         "Some games fail to load if CD32/CDTV is powered on with the CD inserted. 'ON' inserts the CD during the boot animation.",
-         {
-            { "disabled", NULL },
-            { "enabled", NULL },
-            { NULL, NULL },
-         },
-         "disabled"
-      },
-      {
-         "puae_shared_nvram",
-         "Shared CD32/CDTV NVRAM",
-         "'OFF' saves separate files per content, 'ON' shares the same file. Starting without content uses the shared file. CD32 and CDTV use separate shared files.\nCore restart required.",
-         {
-            { "disabled", NULL },
-            { "enabled", NULL },
-            { NULL, NULL },
-         },
-         "disabled"
-      },
-      {
-         "puae_use_boot_hd",
-         "Global Boot HD",
-         "Attach a bootable hard drive. Enabling forces a model with HD interface. Changing HDF size will not replace or edit the previous HDF.\nCore restart required.",
-         {
-            { "disabled", NULL },
-            { "files", "Files" },
-            { "hdf20", "HDF 20MB" },
-            { "hdf40", "HDF 40MB" },
-            { "hdf80", "HDF 80MB" },
-            { "hdf128", "HDF 128MB" },
-            { "hdf256", "HDF 256MB" },
-            { "hdf512", "HDF 512MB" },
-            { NULL, NULL },
-         },
-         "disabled"
-      },
-      {
-         "puae_use_whdload",
-         "WHDLoad Support",
-         "Enable launching pre-installed WHDLoad installs. Creates a helper image for loading content and an empty image for saving. Core restart required.\n- 'Files' creates the data in directories\n- 'HDFs' contains the data in images",
-         {
-            { "disabled", NULL },
-            { "files", "Files" },
-            { "hdfs", "HDFs" },
-            { NULL, NULL },
-         },
-         "files"
-      },
-      {
-         "puae_use_whdload_prefs",
-         "WHDLoad Splash Screen Options",
-         "Space/Enter/Fire work as the WHDLoad Start-button. Core restart required.\nOverride with buttons while booting:\n- 'Config': Hold 2nd fire / Blue\n- 'Splash': Hold LMB\n- 'Config + Splash': Hold RMB\n- ReadMe + MkCustom: Hold Red+Blue",
-         {
-            { "disabled", NULL },
-            { "config", "Config (Show only if available)" },
-            { "splash", "Splash (Show briefly)" },
-            { "both", "Config + Splash (Wait for user input)" },
-            { NULL, NULL },
-         },
-         "disabled"
       },
       {
          "puae_analogmouse",
