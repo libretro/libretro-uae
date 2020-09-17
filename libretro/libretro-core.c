@@ -1314,7 +1314,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_joyport_order",
          "RetroPad Joyport Order",
-         "Plugs RetroPads in different ports. Useful for Arcadia system and games that uses the 4-player adapter.",
+         "Plugs RetroPads in different ports. Useful for Arcadia system and games that use the 4-player adapter.",
          {
             { "1234", "1-2-3-4" },
             { "2143", "2-1-4-3" },
@@ -2171,16 +2171,16 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (!strcmp(var.value, "enabled"))       opt_cd_startup_delayed_insert = true;
-      else if (!strcmp(var.value, "disabled")) opt_cd_startup_delayed_insert = false;
+      if (!strcmp(var.value, "disabled"))     opt_cd_startup_delayed_insert = false;
+      else if (!strcmp(var.value, "enabled")) opt_cd_startup_delayed_insert = true;
    }
 
    var.key = "puae_shared_nvram";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (!strcmp(var.value, "enabled"))       opt_shared_nvram = true;
-      else if (!strcmp(var.value, "disabled")) opt_shared_nvram = false;
+      if (!strcmp(var.value, "disabled"))     opt_shared_nvram = false;
+      else if (!strcmp(var.value, "enabled")) opt_shared_nvram = true;
    }
 
    var.key = "puae_use_boot_hd";
@@ -2764,12 +2764,12 @@ static bool disk_set_eject_state(bool ejected)
          {
             if (retro_dc->types[retro_dc->index] == DC_IMAGE_TYPE_FLOPPY)
             {
-               strcpy (changed_prefs.floppyslots[0].df, retro_dc->files[retro_dc->index]);
+               strcpy(changed_prefs.floppyslots[0].df, retro_dc->files[retro_dc->index]);
                DISK_reinsert(0);
             }
             else if (retro_dc->types[retro_dc->index] == DC_IMAGE_TYPE_CD)
             {
-               strcpy (changed_prefs.cdslots[0].name, retro_dc->files[retro_dc->index]);
+               strcpy(changed_prefs.cdslots[0].name, retro_dc->files[retro_dc->index]);
             }
          }
       }
@@ -2971,7 +2971,7 @@ static bool disk_replace_image_index(unsigned index, const struct retro_game_inf
                      if (i <= 3)
                      {
                         log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF%d: '%s'\n", retro_dc->index+1, i, retro_dc->files[retro_dc->index]);
-                        strcpy (changed_prefs.floppyslots[i].df, retro_dc->files[i]);
+                        strcpy(changed_prefs.floppyslots[i].df, retro_dc->files[i]);
 
                         // By default only DF0: is enabled, so floppyXtype needs to be set on the extra drives
                         if (i > 0)
@@ -4028,7 +4028,6 @@ static char* emu_config_string(char* mode, int config)
          case EMU_CONFIG_CDTV:      return "CDTV";
          case EMU_CONFIG_CD32:      return "CD32";
          case EMU_CONFIG_CD32FR:    return "CD32FR";
-         default: return "";
       }
    }
    else if (!strcmp(mode, "kickstart"))
@@ -4046,7 +4045,6 @@ static char* emu_config_string(char* mode, int config)
          case EMU_CONFIG_CDTV:      return A500_ROM;
          case EMU_CONFIG_CD32:      return CD32_ROM;
          case EMU_CONFIG_CD32FR:    return CD32_ROM;
-         default: return "";
       }
    }
    else if (!strcmp(mode, "kickstart_ext"))
@@ -4064,9 +4062,9 @@ static char* emu_config_string(char* mode, int config)
          case EMU_CONFIG_CDTV:      return CDTV_ROM;
          case EMU_CONFIG_CD32:      return CD32_ROM_EXT;
          case EMU_CONFIG_CD32FR:    return CD32_ROM_EXT;
-         default: return "";
       }
    }
+   return "";
 }
 
 static int emu_config_int(char* model)
@@ -4338,64 +4336,56 @@ static bool retro_create_config()
                // Use A4000/030
                log_cb(RETRO_LOG_INFO, "Found '(A4030)' or '(030)' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting A4000/030: '%s'\n", A4000_ROM);
-               strcpy(uae_model, emu_config(EMU_CONFIG_A4030));
-               strcpy(uae_kickstart, A4000_ROM);
+               retro_build_preset("A4030");
             }
             else if (strstr(full_path, "(A4040)") || strstr(full_path, "(040)"))
             {
                // Use A4000/040
                log_cb(RETRO_LOG_INFO, "Found '(A4040)' or '(040)' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting A4000/040: '%s'\n", A4000_ROM);
-               strcpy(uae_model, emu_config(EMU_CONFIG_A4040));
-               strcpy(uae_kickstart, A4000_ROM);
+               retro_build_preset("A4040");
             }
             else if (strstr(full_path, "(A1200OG)") || strstr(full_path, "(A1200NF)"))
             {
                // Use A1200 barebone
                log_cb(RETRO_LOG_INFO, "Found '(A1200OG)' or '(A1200NF)' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting A1200 NoFast: '%s'\n", A1200_ROM);
-               strcpy(uae_model, emu_config(EMU_CONFIG_A1200OG));
-               strcpy(uae_kickstart, A1200_ROM);
+               retro_build_preset("A1200OG");
             }
             else if (strstr(full_path, "(A1200)") || strstr(full_path, "AGA") || strstr(full_path, "CD32") || strstr(full_path, "AmigaCD"))
             {
                // Use A1200
                log_cb(RETRO_LOG_INFO, "Found '(A1200)', 'AGA', 'CD32', or 'AmigaCD' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting A1200: '%s'\n", A1200_ROM);
-               strcpy(uae_model, emu_config(EMU_CONFIG_A1200));
-               strcpy(uae_kickstart, A1200_ROM);
+               retro_build_preset("A1200");
             }
             else if (strstr(full_path, "(A600)") || strstr(full_path, "ECS"))
             {
                // Use A600
                log_cb(RETRO_LOG_INFO, "Found '(A600)' or 'ECS' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting A600: '%s'\n", A600_ROM);
-               strcpy(uae_model, emu_config(EMU_CONFIG_A600));
-               strcpy(uae_kickstart, A600_ROM);
+               retro_build_preset("A600");
             }
             else if (strstr(full_path, "(A500+)") || strstr(full_path, "(A500PLUS)"))
             {
                // Use A500+
                log_cb(RETRO_LOG_INFO, "Found '(A500+)' or '(A500PLUS)' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting A500+: '%s'\n", A500KS2_ROM);
-               strcpy(uae_model, emu_config(EMU_CONFIG_A500PLUS));
-               strcpy(uae_kickstart, A500KS2_ROM);
+               retro_build_preset("A500PLUS");
             }
             else if (strstr(full_path, "(A500OG)") || strstr(full_path, "(512K)"))
             {
                // Use A500 barebone
                log_cb(RETRO_LOG_INFO, "Found '(A500OG)' or '(512K)' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting A500 512K: '%s'\n", A500_ROM);
-               strcpy(uae_model, emu_config(EMU_CONFIG_A500OG));
-               strcpy(uae_kickstart, A500_ROM);
+               retro_build_preset("A500OG");
             }
             else if (strstr(full_path, "(A500)") || strstr(full_path, "OCS"))
             {
                // Use A500
                log_cb(RETRO_LOG_INFO, "Found '(A500)' or 'OCS' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting A500: '%s'\n", A500_ROM);
-               strcpy(uae_model, emu_config(EMU_CONFIG_A500));
-               strcpy(uae_kickstart, A500_ROM);
+               retro_build_preset("A500");
             }
             else
             {
@@ -4820,27 +4810,21 @@ static bool retro_create_config()
                // Use CD32 with Fast RAM
                log_cb(RETRO_LOG_INFO, "Found '(CD32FR)' or 'FastRAM' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting CD32 FastRAM: '%s'\n", CD32_ROM);
-               strcpy(uae_model, emu_config(EMU_CONFIG_CD32FR));
-               strcpy(uae_kickstart, CD32_ROM);
-               strcpy(uae_kickstart_ext, CD32_ROM_EXT);
+               retro_build_preset("CD32FR");
             }
             else if (strstr(full_path, "(CD32)") || strstr(full_path, "(CD32NF)"))
             {
                // Use CD32 barebone
                log_cb(RETRO_LOG_INFO, "Found '(CD32)' or '(CD32NF)' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting CD32: '%s'\n", CD32_ROM);
-               strcpy(uae_model, emu_config(EMU_CONFIG_CD32));
-               strcpy(uae_kickstart, CD32_ROM);
-               strcpy(uae_kickstart_ext, CD32_ROM_EXT);
+               retro_build_preset("CD32");
             }
             else if (strstr(full_path, "CDTV"))
             {
                // Use CDTV
                log_cb(RETRO_LOG_INFO, "Found 'CDTV' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting CDTV: '%s'\n", CDTV_ROM);
-               strcpy(uae_model, emu_config(EMU_CONFIG_CDTV));
-               strcpy(uae_kickstart, A500_ROM);
-               strcpy(uae_kickstart_ext, CDTV_ROM);
+               retro_build_preset("CDTV");
             }
             else
             {
