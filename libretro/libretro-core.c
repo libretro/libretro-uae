@@ -45,10 +45,14 @@ int retroh = 0;
 char key_state[512];
 char key_state2[512];
 
-unsigned int opt_mapping_options_display;
-unsigned int opt_video_options_display;
-unsigned int opt_audio_options_display;
-char opt_model[10];
+unsigned int opt_model_options_display = 0;
+unsigned int opt_audio_options_display = 0;
+unsigned int opt_video_options_display = 0;
+unsigned int opt_mapping_options_display = 1;
+char opt_model[10] = {0};
+char opt_model_fd[10] = {0};
+char opt_model_hd[10] = {0};
+char opt_model_cd[10] = {0};
 bool opt_region_auto = true;
 bool opt_video_resolution_auto = false;
 bool opt_video_vresolution_auto = false;
@@ -97,7 +101,7 @@ char retro_message_msg[1024] = {0};
 extern int turbo_fire_button;
 extern unsigned int turbo_pulse;
 unsigned int inputdevice_finalized = 0;
-int pix_bytes = 2;
+unsigned int pix_bytes = 2;
 static bool pix_bytes_initialized = false;
 bool automatic_sound_filter_type_update = true;
 bool fake_ntsc = false;
@@ -173,6 +177,7 @@ extern int cd32_pad_enabled[NORMAL_JPORTS];
 int mapper_keys[31]={0};
 extern void display_current_image(const char *image, bool inserted);
 
+retro_log_printf_t log_cb;
 static retro_video_refresh_t video_cb;
 static retro_audio_sample_t audio_cb;
 static retro_audio_sample_batch_t audio_batch_cb;
@@ -187,10 +192,10 @@ static char retro_content_directory[RETRO_PATH_MAX] = {0};
 dc_storage *retro_dc = NULL;
 
 // Configs
-static char uae_machine[256] = {0};
+static char uae_model[256] = {0};
 static char uae_kickstart[RETRO_PATH_MAX] = {0};
 static char uae_kickstart_ext[RETRO_PATH_MAX] = {0};
-static char uae_config[1024] = {0};
+static char uae_config[4096] = {0};
 static char uae_custom_config[4096] = {0};
 
 void retro_set_environment(retro_environment_t cb)
@@ -252,6 +257,60 @@ void retro_set_environment(retro_environment_t cb)
          "auto"
       },
       {
+         "puae_model_options_display",
+         "Show Automatic Model Options",
+         "Shows/hides default model options (Floppy/HD/CD) for 'Automatic' model.\nCore options page refresh required.",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "disabled"
+      },
+      {
+         "puae_model_fd",
+         "Automatic Floppy Model",
+         "Default model when floppies are launched with 'Automatic' model.\nCore restart required.",
+         {
+            { "A500OG", "A500 (512KB Chip)" },
+            { "A500", "A500 (512KB Chip + 512KB Slow)" },
+            { "A500PLUS", "A500+ (1MB Chip)" },
+            { "A600", "A600 (2MB Chip + 8MB Fast)" },
+            { "A1200OG", "A1200 (2MB Chip)" },
+            { "A1200", "A1200 (2MB Chip + 8MB Fast)" },
+            { "A4030", "A4000/030 (2MB Chip + 8MB Fast)" },
+            { "A4040", "A4000/040 (2MB Chip + 8MB Fast)" },
+            { NULL, NULL },
+         },
+         "A500"
+      },
+      {
+         "puae_model_hd",
+         "Automatic HD Model",
+         "Default model when HD interface is used with 'Automatic' model. Affects WHDLoad installs and other hard drive images.\nCore restart required.",
+         {
+            { "A600", "A600 (2MB Chip + 8MB Fast)" },
+            { "A1200OG", "A1200 (2MB Chip)" },
+            { "A1200", "A1200 (2MB Chip + 8MB Fast)" },
+            { "A4030", "A4000/030 (2MB Chip + 8MB Fast)" },
+            { "A4040", "A4000/040 (2MB Chip + 8MB Fast)" },
+            { NULL, NULL },
+         },
+         "A600"
+      },
+      {
+         "puae_model_cd",
+         "Automatic CD Model",
+         "Default model when optical discs are launched with 'Automatic' model.\nCore restart required.",
+         {
+            { "CDTV", "CDTV (1MB Chip)" },
+            { "CD32", "CD32 (2MB Chip)" },
+            { "CD32FR", "CD32 (2MB Chip + 8MB Fast)" },
+            { NULL, NULL },
+         },
+         "CD32"
+      },
+      {
          "puae_cpu_compatibility",
          "CPU Compatibility",
          "",
@@ -310,9 +369,109 @@ void retro_set_environment(retro_environment_t cb)
          "0"
       },
       {
+         "puae_floppy_speed",
+         "Floppy Speed",
+         "'Turbo' removes disk rotation emulation.",
+         {
+            { "100", "Default (300RPM)" },
+            { "200", "2x (600RPM)" },
+            { "400", "4x (1200RPM)" },
+            { "800", "8x (2400RPM)" },
+            { "0", "Turbo" },
+            { NULL, NULL },
+         },
+         "100"
+      },
+      {
+         "puae_floppy_write_protection",
+         "Floppy Write Protection",
+         "Makes all drives read only. Changing this while emulation is running ejects and reinserts all disks.",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "disabled"
+      },
+      {
+         "puae_cd_speed",
+         "CD Speed",
+         "Transfer rate in CD32 is 300KB/s (double-speed), CDTV is 150KB/s (single-speed). 'Turbo' removes seek delay emulation.",
+         {
+            { "100", "Default" },
+            { "0", "Turbo" },
+            { NULL, NULL },
+         },
+         "100"
+      },
+      {
+         "puae_cd_startup_delayed_insert",
+         "CD Startup Delayed Insert",
+         "Some games fail to load if CD32/CDTV is powered on with the CD inserted. 'ON' inserts the CD during the boot animation.",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "disabled"
+      },
+      {
+         "puae_shared_nvram",
+         "Shared CD32/CDTV NVRAM",
+         "'OFF' saves separate files per content, 'ON' shares the same file. Starting without content uses the shared file. CD32 and CDTV use separate shared files.\nCore restart required.",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "disabled"
+      },
+      {
+         "puae_use_boot_hd",
+         "Global Boot HD",
+         "Attach a bootable hard drive. Enabling forces a model with HD interface. Changing HDF size will not replace or edit the previous HDF.\nCore restart required.",
+         {
+            { "disabled", NULL },
+            { "files", "Files" },
+            { "hdf20", "HDF 20MB" },
+            { "hdf40", "HDF 40MB" },
+            { "hdf80", "HDF 80MB" },
+            { "hdf128", "HDF 128MB" },
+            { "hdf256", "HDF 256MB" },
+            { "hdf512", "HDF 512MB" },
+            { NULL, NULL },
+         },
+         "disabled"
+      },
+      {
+         "puae_use_whdload",
+         "WHDLoad Support",
+         "Enable launching pre-installed WHDLoad installs. Creates a helper image for loading content and an empty image for saving. Core restart required.\n- 'Files' creates the data in directories\n- 'HDFs' contains the data in images",
+         {
+            { "disabled", NULL },
+            { "files", "Files" },
+            { "hdfs", "HDFs" },
+            { NULL, NULL },
+         },
+         "files"
+      },
+      {
+         "puae_use_whdload_prefs",
+         "WHDLoad Splash Screen Options",
+         "Space/Enter/Fire work as the WHDLoad Start-button. Core restart required.\nOverride with buttons while booting:\n- 'Config': Hold 2nd fire / Blue\n- 'Splash': Hold LMB\n- 'Config + Splash': Hold RMB\n- ReadMe + MkCustom: Hold Red+Blue",
+         {
+            { "disabled", NULL },
+            { "config", "Config (Show only if available)" },
+            { "splash", "Splash (Show briefly)" },
+            { "both", "Config + Splash (Wait for user input)" },
+            { NULL, NULL },
+         },
+         "disabled"
+      },
+      {
          "puae_video_options_display",
          "Show Video Options",
-         "Core options page refresh required.",
+         "Shows/hides video related options.\nCore options page refresh required.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -628,7 +787,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_audio_options_display",
          "Show Audio Options",
-         "Core options page refresh required.",
+         "Shows/hides audio related options.\nCore options page refresh required.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -757,7 +916,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_floppy_sound_empty_mute",
          "Audio > Floppy Sound Mute Ejected",
-         "Mute the drive head clicking when the floppy is not inserted.",
+         "Mutes drive head clicking when floppy is not inserted.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -768,7 +927,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_floppy_sound_type",
          "Audio > Floppy Sound Type",
-         "External file location is 'system/uae_data/'.",
+         "External files go in 'system/uae_data/'.",
          {
             { "internal", "Internal" },
             { "A500", "External: A500" },
@@ -776,106 +935,6 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "internal"
-      },
-      {
-         "puae_floppy_speed",
-         "Floppy Speed",
-         "'Turbo' removes disk rotation emulation.",
-         {
-            { "100", "Default (300RPM)" },
-            { "200", "2x (600RPM)" },
-            { "400", "4x (1200RPM)" },
-            { "800", "8x (2400RPM)" },
-            { "0", "Turbo" },
-            { NULL, NULL },
-         },
-         "100"
-      },
-      {
-         "puae_floppy_write_protection",
-         "Floppy Write Protection",
-         "Changing this while the emulation is running ejects and reinsert all disks.",
-         {
-            { "disabled", NULL },
-            { "enabled", NULL },
-            { NULL, NULL },
-         },
-         "disabled"
-      },
-      {
-         "puae_cd_speed",
-         "CD Speed",
-         "Transfer rate in CD32 is 300KB/s (double-speed), CDTV is 150KB/s (single-speed). 'Turbo' removes seek delay emulation.",
-         {
-            { "100", "Default" },
-            { "0", "Turbo" },
-            { NULL, NULL },
-         },
-         "100"
-      },
-      {
-         "puae_cd_startup_delayed_insert",
-         "CD Startup Delayed Insert",
-         "Some games fail to load if CD32/CDTV is powered on with the CD inserted. 'ON' inserts the CD during the boot animation.",
-         {
-            { "disabled", NULL },
-            { "enabled", NULL },
-            { NULL, NULL },
-         },
-         "disabled"
-      },
-      {
-         "puae_shared_nvram",
-         "Shared CD32/CDTV NVRAM",
-         "'OFF' saves separate files per content, 'ON' shares the same file. Starting without content uses the shared file. CD32 and CDTV use separate shared files.\nCore restart required.",
-         {
-            { "disabled", NULL },
-            { "enabled", NULL },
-            { NULL, NULL },
-         },
-         "disabled"
-      },
-      {
-         "puae_use_boot_hd",
-         "Global Boot HD",
-         "Keep a bootable hard drive attached with hard drive compatible setups. Enabling changes the automatic model to A600 when launching floppy disks. Changing HDF size requires removing the old file manually.",
-         {
-            { "disabled", NULL },
-            { "files", "Files" },
-            { "hdf20", "HDF 20MB" },
-            { "hdf40", "HDF 40MB" },
-            { "hdf80", "HDF 80MB" },
-            { "hdf128", "HDF 128MB" },
-            { "hdf256", "HDF 256MB" },
-            { "hdf512", "HDF 512MB" },
-            { NULL, NULL },
-         },
-         "disabled"
-      },
-      {
-         "puae_use_whdload",
-         "WHDLoad Support",
-         "Enable launching pre-installed WHDLoad installs. Creates a helper image for loading content and an empty image for saving. Core restart required.\n- 'Files' creates the data in directories\n- 'HDFs' contains the data in images",
-         {
-            { "disabled", NULL },
-            { "files", "Files" },
-            { "hdfs", "HDFs" },
-            { NULL, NULL },
-         },
-         "files"
-      },
-      {
-         "puae_use_whdload_prefs",
-         "WHDLoad Splash Screen Options",
-         "Space/Enter/Fire work as the WHDLoad Start-button. Core restart required.\nOverride with buttons while booting:\n- 'Config': Hold 2nd fire / Blue\n- 'Splash': Hold LMB\n- 'Config + Splash': Hold RMB\n- ReadMe + MkCustom: Hold Red+Blue",
-         {
-            { "disabled", NULL },
-            { "config", "Config (Show only if available)" },
-            { "splash", "Splash (Show briefly)" },
-            { "both", "Config + Splash (Wait for user input)" },
-            { NULL, NULL },
-         },
-         "disabled"
       },
       {
          "puae_analogmouse",
@@ -1003,7 +1062,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_physical_keyboard_pass_through",
          "Physical Keyboard Pass-through",
-         "Pass all physical keyboard events to the core. Disable this to prevent cursor keys and fire key from generating key events.",
+         "'ON' passes all physical keyboard events to the core. 'OFF' prevents RetroPad keys from generating keyboard events.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -1014,7 +1073,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapping_options_display",
          "Show Mapping Options",
-         "Show options for hotkeys & RetroPad mappings.\nCore option page refresh required.",
+         "Shows/hides hotkey & RetroPad mapping options.\nCore options page refresh required.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -1047,7 +1106,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapper_reset",
          "Hotkey > Reset",
-         "Press the mapped key to trigger reset (Ctrl-Amiga-Amiga).",
+         "Press the mapped key to trigger soft reset (Ctrl-Amiga-Amiga).",
          {{ NULL, NULL }},
          "---"
       },
@@ -1083,7 +1142,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapper_b",
          "RetroPad B",
-         "Unmapped defaults to fire button.\nVKBD: Press key.\n",
+         "Unmapped defaults to fire button.\nVKBD: Press selected key.\n",
          {{ NULL, NULL }},
          "---"
       },
@@ -1211,7 +1270,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_turbo_fire_button",
          "RetroPad Turbo Fire",
-         "Replaces the mapped button with a turbo fire button.",
+         "Replaces the mapped button with turbo fire button.",
          {
             { "disabled", NULL },
             { "B", "RetroPad B" },
@@ -1255,7 +1314,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_joyport_order",
          "RetroPad Joyport Order",
-         "Plug RetroPads in different ports. Useful for Arcadia system and games that support 4-player adapter.",
+         "Plugs RetroPads in different ports. Useful for Arcadia system and games that uses the 4-player adapter.",
          {
             { "1234", "1-2-3-4" },
             { "2143", "2-1-4-3" },
@@ -1268,7 +1327,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_retropad_options",
          "RetroPad Face Button Options",
-         "Rotate face buttons clockwise and/or make 2nd fire press up.",
+         "Rotates face buttons clockwise and/or makes 2nd fire press up.",
          {
             { "disabled", "B = Fire, A = 2nd fire" },
             { "jump", "B = Fire, A = Up" },
@@ -1281,7 +1340,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_cd32pad_options",
          "CD32 Pad Face Button Options",
-         "Rotate face buttons clockwise and/or make blue button press up.",
+         "Rotates face buttons clockwise and/or makes blue button press up.",
          {
             { "disabled", "B = Red, A = Blue" },
             { "jump", "B = Red, A = Up" },
@@ -1379,7 +1438,7 @@ void retro_set_environment(retro_environment_t cb)
 
 static void update_variables(void)
 {
-   uae_machine[0] = '\0';
+   uae_model[0] = '\0';
    uae_config[0] = '\0';
 
    struct retro_variable var = {0};
@@ -1390,6 +1449,27 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       _tcscpy(opt_model, var.value);
+   }
+
+   var.key = "puae_model_fd";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      _tcscpy(opt_model_fd, var.value);
+   }
+
+   var.key = "puae_model_hd";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      _tcscpy(opt_model_hd, var.value);
+   }
+
+   var.key = "puae_model_cd";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      _tcscpy(opt_model_cd, var.value);
    }
 
    var.key = "puae_video_standard";
@@ -1414,33 +1494,29 @@ static void update_variables(void)
       }
       else if (!forced_video)
       {
-         if (strstr(var.value, "PAL"))
-            changed_prefs.ntscmode=0;
-         else
-            changed_prefs.ntscmode=1;
+         if (strstr(var.value, "PAL")) changed_prefs.ntscmode = 0;
+         else                          changed_prefs.ntscmode = 1;
       }
 
-      if (strstr(var.value, "auto"))
-         opt_region_auto = true;
-      else
-         opt_region_auto = false;
+      if (strstr(var.value, "auto")) opt_region_auto = true;
+      else                           opt_region_auto = false;
    }
 
    var.key = "puae_video_aspect";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "PAL") == 0) video_config_aspect = PUAE_VIDEO_PAL;
-      else if (strcmp(var.value, "NTSC") == 0) video_config_aspect = PUAE_VIDEO_NTSC;
-      else video_config_aspect = 0;
+      if (!strcmp(var.value, "PAL"))       video_config_aspect = PUAE_VIDEO_PAL;
+      else if (!strcmp(var.value, "NTSC")) video_config_aspect = PUAE_VIDEO_NTSC;
+      else                                 video_config_aspect = 0;
    }
 
    var.key = "puae_video_allow_hz_change";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "enabled") == 0) video_config_allow_hz_change = 1;
-      else if (strcmp(var.value, "disabled") == 0) video_config_allow_hz_change = 0;
+      if (!strcmp(var.value, "enabled"))       video_config_allow_hz_change = 1;
+      else if (!strcmp(var.value, "disabled")) video_config_allow_hz_change = 0;
    }
 
    var.key = "puae_video_resolution";
@@ -1449,34 +1525,34 @@ static void update_variables(void)
    {
       opt_video_resolution_auto = false;
 
-      if (strcmp(var.value, "lores") == 0)
+      if (!strcmp(var.value, "lores"))
       {
          video_config &= ~PUAE_VIDEO_HIRES;
          video_config &= ~PUAE_VIDEO_SUPERHIRES;
          retro_max_diwlastword = retro_max_diwlastword_hires / 2;
          width_multiplier = 1;
          if (libretro_runloop_active)
-            changed_prefs.gfx_resolution=RES_LORES;
+            changed_prefs.gfx_resolution = RES_LORES;
       }
-      else if (strcmp(var.value, "hires") == 0)
+      else if (!strcmp(var.value, "hires"))
       {
          video_config &= ~PUAE_VIDEO_SUPERHIRES;
          video_config |= PUAE_VIDEO_HIRES;
          retro_max_diwlastword = retro_max_diwlastword_hires;
          width_multiplier = 2;
          if (libretro_runloop_active)
-            changed_prefs.gfx_resolution=RES_HIRES;
+            changed_prefs.gfx_resolution = RES_HIRES;
       }
-      else if (strcmp(var.value, "superhires") == 0)
+      else if (!strcmp(var.value, "superhires"))
       {
          video_config &= ~PUAE_VIDEO_HIRES;
          video_config |= PUAE_VIDEO_SUPERHIRES;
          retro_max_diwlastword = retro_max_diwlastword_hires * 2;
          width_multiplier = 4;
          if (libretro_runloop_active)
-            changed_prefs.gfx_resolution=RES_SUPERHIRES;
+            changed_prefs.gfx_resolution = RES_SUPERHIRES;
       }
-      else if (strcmp(var.value, "auto") == 0)
+      else if (!strcmp(var.value, "auto"))
       {
          opt_video_resolution_auto = true;
 
@@ -1487,7 +1563,7 @@ static void update_variables(void)
             retro_max_diwlastword = retro_max_diwlastword_hires * 2;
             width_multiplier = 4;
             if (libretro_runloop_active)
-               changed_prefs.gfx_resolution=RES_SUPERHIRES;
+               changed_prefs.gfx_resolution = RES_SUPERHIRES;
          }
          else
          {
@@ -1496,7 +1572,7 @@ static void update_variables(void)
             retro_max_diwlastword = retro_max_diwlastword_hires;
             width_multiplier = 2;
             if (libretro_runloop_active)
-               changed_prefs.gfx_resolution=RES_HIRES;
+               changed_prefs.gfx_resolution = RES_HIRES;
          }
       }
 
@@ -1511,19 +1587,19 @@ static void update_variables(void)
    {
       opt_video_vresolution_auto = false;
 
-      if (strcmp(var.value, "double") == 0)
+      if (!strcmp(var.value, "double"))
       {
          video_config |= PUAE_VIDEO_DOUBLELINE;
          if (libretro_runloop_active)
-            changed_prefs.gfx_vresolution=VRES_DOUBLE;
+            changed_prefs.gfx_vresolution = VRES_DOUBLE;
       }
-      else if (strcmp(var.value, "single") == 0)
+      else if (!strcmp(var.value, "single"))
       {
          video_config &= ~PUAE_VIDEO_DOUBLELINE;
          if (libretro_runloop_active)
-            changed_prefs.gfx_vresolution=VRES_NONDOUBLE;
+            changed_prefs.gfx_vresolution = VRES_NONDOUBLE;
       }
-      else if (strcmp(var.value, "auto") == 0)
+      else if (!strcmp(var.value, "auto"))
       {
          opt_video_vresolution_auto = true;
 
@@ -1532,12 +1608,12 @@ static void update_variables(void)
             if (video_config_old & PUAE_VIDEO_DOUBLELINE)
             {
                video_config |= PUAE_VIDEO_DOUBLELINE;
-               changed_prefs.gfx_vresolution=VRES_DOUBLE;
+               changed_prefs.gfx_vresolution = VRES_DOUBLE;
             }
             else
             {
                video_config &= ~PUAE_VIDEO_DOUBLELINE;
-               changed_prefs.gfx_vresolution=VRES_NONDOUBLE;
+               changed_prefs.gfx_vresolution = VRES_NONDOUBLE;
             }
          }
       }
@@ -1546,7 +1622,7 @@ static void update_variables(void)
       if (retro_max_diwlastword < retro_max_diwlastword_hires)
       {
          video_config &= ~PUAE_VIDEO_DOUBLELINE;
-         changed_prefs.gfx_vresolution=VRES_NONDOUBLE;
+         changed_prefs.gfx_vresolution = VRES_NONDOUBLE;
       }
 
       /* Resolution change needs init_custom() to be done after reset_drawing() is done */
@@ -1598,17 +1674,17 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "normal") == 0)
+      if (!strcmp(var.value, "normal"))
       {
          strcat(uae_config, "cpu_compatible=false\n");
          strcat(uae_config, "cycle_exact=false\n");
       }
-      else if (strcmp(var.value, "compatible") == 0)
+      else if (!strcmp(var.value, "compatible"))
       {
          strcat(uae_config, "cpu_compatible=true\n");
          strcat(uae_config, "cycle_exact=false\n");
       }
-      else if (strcmp(var.value, "exact") == 0)
+      else if (!strcmp(var.value, "exact"))
       {
          strcat(uae_config, "cpu_compatible=true\n");
          strcat(uae_config, "cycle_exact=true\n");
@@ -1616,23 +1692,23 @@ static void update_variables(void)
 
       if (libretro_runloop_active)
       {
-         if (strcmp(var.value, "normal") == 0)
+         if (!strcmp(var.value, "normal"))
          {
-            changed_prefs.cpu_compatible=0;
-            changed_prefs.cpu_cycle_exact=0;
-            changed_prefs.blitter_cycle_exact=0;
+            changed_prefs.cpu_compatible = 0;
+            changed_prefs.cpu_cycle_exact = 0;
+            changed_prefs.blitter_cycle_exact = 0;
          }
-         else if (strcmp(var.value, "compatible") == 0)
+         else if (!strcmp(var.value, "compatible"))
          {
-            changed_prefs.cpu_compatible=1;
-            changed_prefs.cpu_cycle_exact=0;
-            changed_prefs.blitter_cycle_exact=0;
+            changed_prefs.cpu_compatible = 1;
+            changed_prefs.cpu_cycle_exact = 0;
+            changed_prefs.blitter_cycle_exact = 0;
          }
-         else if (strcmp(var.value, "exact") == 0)
+         else if (!strcmp(var.value, "exact"))
          {
-            changed_prefs.cpu_compatible=1;
-            changed_prefs.cpu_cycle_exact=1;
-            changed_prefs.blitter_cycle_exact=1;
+            changed_prefs.cpu_compatible = 1;
+            changed_prefs.cpu_cycle_exact = 1;
+            changed_prefs.blitter_cycle_exact = 1;
          }
       }
    }
@@ -1646,7 +1722,7 @@ static void update_variables(void)
       strcat(uae_config, "\n");
 
       if (libretro_runloop_active)
-         changed_prefs.m68k_speed_throttle=atof(var.value);
+         changed_prefs.m68k_speed_throttle = atof(var.value);
    }
 
    var.key = "puae_cpu_multiplier";
@@ -1658,7 +1734,7 @@ static void update_variables(void)
       strcat(uae_config, "\n");
 
       if (libretro_runloop_active)
-         changed_prefs.cpu_clock_multiplier=atoi(var.value) * 256;
+         changed_prefs.cpu_clock_multiplier = atoi(var.value) * 256;
    }
 
    var.key = "puae_sound_stereo_separation";
@@ -1666,14 +1742,15 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       int val = atoi(var.value) / 10;
-      char valbuf[10];
-      snprintf(valbuf, 10, "%d", val);
+      char valbuf[4];
+      snprintf(valbuf, 4, "%d", val);
+
       strcat(uae_config, "sound_stereo_separation=");
       strcat(uae_config, valbuf);
       strcat(uae_config, "\n");
 
       if (libretro_runloop_active)
-         changed_prefs.sound_stereo_separation=val;
+         changed_prefs.sound_stereo_separation = val;
    }
 
    var.key = "puae_sound_interpol";
@@ -1686,11 +1763,11 @@ static void update_variables(void)
 
       if (libretro_runloop_active)
       {
-         if (strcmp(var.value, "none") == 0) changed_prefs.sound_interpol=0;
-         else if (strcmp(var.value, "anti") == 0) changed_prefs.sound_interpol=1;
-         else if (strcmp(var.value, "sinc") == 0) changed_prefs.sound_interpol=2;
-         else if (strcmp(var.value, "rh") == 0) changed_prefs.sound_interpol=3;
-         else if (strcmp(var.value, "crux") == 0) changed_prefs.sound_interpol=4;
+         if (!strcmp(var.value, "none"))      changed_prefs.sound_interpol = 0;
+         else if (!strcmp(var.value, "anti")) changed_prefs.sound_interpol = 1;
+         else if (!strcmp(var.value, "sinc")) changed_prefs.sound_interpol = 2;
+         else if (!strcmp(var.value, "rh"))   changed_prefs.sound_interpol = 3;
+         else if (!strcmp(var.value, "crux")) changed_prefs.sound_interpol = 4;
       }
    }
 
@@ -1704,9 +1781,9 @@ static void update_variables(void)
       
       if (libretro_runloop_active)
       {
-         if (strcmp(var.value, "emulated") == 0) changed_prefs.sound_filter=FILTER_SOUND_EMUL;
-         else if (strcmp(var.value, "off") == 0) changed_prefs.sound_filter=FILTER_SOUND_OFF;
-         else if (strcmp(var.value, "on") == 0) changed_prefs.sound_filter=FILTER_SOUND_ON;
+         if (!strcmp(var.value, "emulated")) changed_prefs.sound_filter = FILTER_SOUND_EMUL;
+         else if (!strcmp(var.value, "off")) changed_prefs.sound_filter = FILTER_SOUND_OFF;
+         else if (!strcmp(var.value, "on"))  changed_prefs.sound_filter = FILTER_SOUND_ON;
       }
    }
 
@@ -1724,9 +1801,9 @@ static void update_variables(void)
 
       if (libretro_runloop_active)
       {
-         if (strcmp(var.value, "standard") == 0) changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A500;
-         else if (strcmp(var.value, "enhanced") == 0) changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A1200;
-         else if (strcmp(var.value, "auto") == 0) automatic_sound_filter_type_update = true;
+         if (!strcmp(var.value, "standard"))      changed_prefs.sound_filter_type = FILTER_SOUND_TYPE_A500;
+         else if (!strcmp(var.value, "enhanced")) changed_prefs.sound_filter_type = FILTER_SOUND_TYPE_A1200;
+         else if (!strcmp(var.value, "auto"))     automatic_sound_filter_type_update = true;
       }
    }
 
@@ -1736,14 +1813,15 @@ static void update_variables(void)
    {
       /* 100 is mute, 0 is max */
       int val = 100 - atoi(var.value);
-      char valbuf[10];
-      snprintf(valbuf, 10, "%d", val);
+      char valbuf[4];
+      snprintf(valbuf, 4, "%d", val);
+
       strcat(uae_config, "sound_volume_cd=");
       strcat(uae_config, valbuf);
       strcat(uae_config, "\n");
 
       if (libretro_runloop_active)
-         changed_prefs.sound_volume_cd=val;
+         changed_prefs.sound_volume_cd = val;
    }
 
    var.key = "puae_cd_speed";
@@ -1755,7 +1833,7 @@ static void update_variables(void)
       strcat(uae_config, "\n");
 
       if (libretro_runloop_active)
-         changed_prefs.cd_speed=atoi(var.value);
+         changed_prefs.cd_speed = atoi(var.value);
    }
 
    var.key = "puae_floppy_speed";
@@ -1767,27 +1845,26 @@ static void update_variables(void)
       strcat(uae_config, "\n");
 
       if (libretro_runloop_active)
-         changed_prefs.floppy_speed=atoi(var.value);
+         changed_prefs.floppy_speed = atoi(var.value);
    }
 
    var.key = "puae_floppy_write_protection";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      char confbuf[20];
       int val = 0;
-      if (strcmp(var.value, "enabled") == 0) val = 1;
+      if (!strcmp(var.value, "enabled")) val = 1;
 
       if (val)
          strcat(uae_config, "floppy_write_protected=true\n");
 
       if (libretro_runloop_active)
       {
-         changed_prefs.floppy_read_only=val;
+         changed_prefs.floppy_read_only = val;
          if (changed_prefs.floppy_read_only != currprefs.floppy_read_only)
          {
-            currprefs.floppy_read_only=val;
-            for (int i = 0; i < 4; i++)
+            currprefs.floppy_read_only = val;
+            for (unsigned i = 0; i < 4; i++)
                DISK_reinsert(i);
          }
       }
@@ -1805,22 +1882,22 @@ static void update_variables(void)
 
       /* Setting volume in realtime will crash on first pass */
       if (libretro_runloop_active)
-         changed_prefs.dfxclickvolume=atoi(var.value);
+         changed_prefs.dfxclickvolume = atoi(var.value);
    }
 
    var.key = "puae_floppy_sound_empty_mute";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_floppy_sound_empty_mute=false;
-      else opt_floppy_sound_empty_mute=true;
+      if (!strcmp(var.value, "disabled"))     opt_floppy_sound_empty_mute = false;
+      else if (!strcmp(var.value, "enabled")) opt_floppy_sound_empty_mute = true;
    }
 
    var.key = "puae_floppy_sound_type";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "internal") == 0)
+      if (!strcmp(var.value, "internal"))
       {
          strcat(uae_config, "floppy0sound=1\n");
          strcat(uae_config, "floppy1sound=1\n");
@@ -1850,16 +1927,16 @@ static void update_variables(void)
 
       if (libretro_runloop_active)
       {
-         if (strcmp(var.value, "internal") == 0)
+         if (!strcmp(var.value, "internal"))
          {
-            for (int i = 0; i < 4; i++)
-               changed_prefs.floppyslots[i].dfxclick=1;
+            for (unsigned i = 0; i < 4; i++)
+               changed_prefs.floppyslots[i].dfxclick = 1;
          }
          else
          {
-            for (int i = 0; i < 4; i++)
+            for (unsigned i = 0; i < 4; i++)
             {
-               changed_prefs.floppyslots[i].dfxclick=-1;
+               changed_prefs.floppyslots[i].dfxclick = -1;
                _tcscpy(changed_prefs.floppyslots[i].dfxclickexternal, var.value);
             }
          }
@@ -1876,9 +1953,9 @@ static void update_variables(void)
 
       if (libretro_runloop_active)
       {
-         int val;
+         int val = 0;
          val = atoi(var.value);
-         changed_prefs.input_mouse_speed=val;
+         changed_prefs.input_mouse_speed = val;
       }
    }
 
@@ -1886,17 +1963,17 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "false") == 0)
+      if (!strcmp(var.value, "false"))
       {
          strcat(uae_config, "immediate_blits=false\n");
          strcat(uae_config, "waiting_blits=false\n");
       }
-      else if (strcmp(var.value, "immediate") == 0)
+      else if (!strcmp(var.value, "immediate"))
       {
          strcat(uae_config, "immediate_blits=true\n");
          strcat(uae_config, "waiting_blits=disabled\n");
       }
-      else if (strcmp(var.value, "waiting") == 0)
+      else if (!strcmp(var.value, "waiting"))
       {
          strcat(uae_config, "immediate_blits=false\n");
          strcat(uae_config, "waiting_blits=automatic\n");
@@ -1904,20 +1981,20 @@ static void update_variables(void)
 
       if (libretro_runloop_active)
       {
-         if (strcmp(var.value, "false") == 0)
+         if (!strcmp(var.value, "false"))
          {
-            changed_prefs.immediate_blits=0;
-            changed_prefs.waiting_blits=0;
+            changed_prefs.immediate_blits = 0;
+            changed_prefs.waiting_blits = 0;
          }
-         else if (strcmp(var.value, "immediate") == 0)
+         else if (!strcmp(var.value, "immediate"))
          {
-            changed_prefs.immediate_blits=1;
-            changed_prefs.waiting_blits=0;
+            changed_prefs.immediate_blits = 1;
+            changed_prefs.waiting_blits = 0;
          }
-         else if (strcmp(var.value, "waiting") == 0)
+         else if (!strcmp(var.value, "waiting"))
          {
-            changed_prefs.immediate_blits=0;
-            changed_prefs.waiting_blits=1;
+            changed_prefs.immediate_blits = 0;
+            changed_prefs.waiting_blits = 1;
          }
       }
    }
@@ -1932,10 +2009,10 @@ static void update_variables(void)
 
       if (libretro_runloop_active)
       {
-         if (strcmp(var.value, "none") == 0) changed_prefs.collision_level=0;
-         else if (strcmp(var.value, "sprites") == 0) changed_prefs.collision_level=1;
-         else if (strcmp(var.value, "playfields") == 0) changed_prefs.collision_level=2;
-         else if (strcmp(var.value, "full") == 0) changed_prefs.collision_level=3;
+         if (!strcmp(var.value, "none"))            changed_prefs.collision_level = 0;
+         else if (!strcmp(var.value, "sprites"))    changed_prefs.collision_level = 1;
+         else if (!strcmp(var.value, "playfields")) changed_prefs.collision_level = 2;
+         else if (!strcmp(var.value, "full"))       changed_prefs.collision_level = 3;
       }
    }
 
@@ -1943,22 +2020,22 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      int val=0;
-      if (strcmp(var.value, "disabled") == 0) val=1;
-      else if (strcmp(var.value, "1") == 0) val=2;
-      else if (strcmp(var.value, "2") == 0) val=3;
+      int val = 0;
+      if (!strcmp(var.value, "disabled")) val = 1;
+      else if (!strcmp(var.value, "1"))   val = 2;
+      else if (!strcmp(var.value, "2"))   val = 3;
 
       if (val>1)
       {
-         char valbuf[10];
-         snprintf(valbuf, 10, "%d", val);
+         char valbuf[4];
+         snprintf(valbuf, 4, "%d", val);
          strcat(uae_config, "gfx_framerate=");
          strcat(uae_config, valbuf);
          strcat(uae_config, "\n");
       }
 
       if (libretro_runloop_active && !strstr(uae_custom_config, "gfx_framerate="))
-         changed_prefs.gfx_framerate=val;
+         changed_prefs.gfx_framerate = val;
    }
 
    var.key = "puae_gfx_colors";
@@ -1968,8 +2045,8 @@ static void update_variables(void)
       // Only allow screenmode change after restart
       if (!pix_bytes_initialized)
       {
-         if (strcmp(var.value, "16bit") == 0) pix_bytes=2;
-         else if (strcmp(var.value, "24bit") == 0) pix_bytes=4;
+         if (!strcmp(var.value, "16bit"))      pix_bytes = 2;
+         else if (!strcmp(var.value, "24bit")) pix_bytes = 4;
       }
    }
 
@@ -1977,17 +2054,17 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0)
+      if (!strcmp(var.value, "disabled"))
          strcat(uae_config, "gfx_flickerfixer=false\n");
       else
          strcat(uae_config, "gfx_flickerfixer=true\n");
 
       if (libretro_runloop_active)
       {
-         if (strcmp(var.value, "disabled") == 0)
-            changed_prefs.gfx_scandoubler=0;
+         if (!strcmp(var.value, "disabled"))
+            changed_prefs.gfx_scandoubler = 0;
          else
-            changed_prefs.gfx_scandoubler=1;
+            changed_prefs.gfx_scandoubler = 1;
 
          /* Change requires init_custom() */
          if (changed_prefs.gfx_scandoubler != currprefs.gfx_scandoubler)
@@ -1999,15 +2076,15 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "none") == 0) zoom_mode_id=0;
-      else if (strcmp(var.value, "minimum") == 0) zoom_mode_id=1;
-      else if (strcmp(var.value, "smaller") == 0) zoom_mode_id=2;
-      else if (strcmp(var.value, "small") == 0) zoom_mode_id=3;
-      else if (strcmp(var.value, "medium") == 0) zoom_mode_id=4;
-      else if (strcmp(var.value, "large") == 0) zoom_mode_id=5;
-      else if (strcmp(var.value, "larger") == 0) zoom_mode_id=6;
-      else if (strcmp(var.value, "maximum") == 0) zoom_mode_id=7;
-      else if (strcmp(var.value, "auto") == 0) zoom_mode_id=8;
+      if (!strcmp(var.value, "none"))         zoom_mode_id = 0;
+      else if (!strcmp(var.value, "minimum")) zoom_mode_id = 1;
+      else if (!strcmp(var.value, "smaller")) zoom_mode_id = 2;
+      else if (!strcmp(var.value, "small"))   zoom_mode_id = 3;
+      else if (!strcmp(var.value, "medium"))  zoom_mode_id = 4;
+      else if (!strcmp(var.value, "large"))   zoom_mode_id = 5;
+      else if (!strcmp(var.value, "larger"))  zoom_mode_id = 6;
+      else if (!strcmp(var.value, "maximum")) zoom_mode_id = 7;
+      else if (!strcmp(var.value, "auto"))    zoom_mode_id = 8;
 
       opt_zoom_mode_id = zoom_mode_id;
    }
@@ -2018,13 +2095,13 @@ static void update_variables(void)
    {
       int zoom_mode_crop_id_prev = zoom_mode_crop_id;
 
-      if (strcmp(var.value, "both") == 0) zoom_mode_crop_id=0;
-      else if (strcmp(var.value, "vertical") == 0) zoom_mode_crop_id=1;
-      else if (strcmp(var.value, "horizontal") == 0) zoom_mode_crop_id=2;
-      else if (strcmp(var.value, "16:9") == 0) zoom_mode_crop_id=3;
-      else if (strcmp(var.value, "16:10") == 0) zoom_mode_crop_id=4;
-      else if (strcmp(var.value, "4:3") == 0) zoom_mode_crop_id=5;
-      else if (strcmp(var.value, "5:4") == 0) zoom_mode_crop_id=6;
+      if (!strcmp(var.value, "both"))            zoom_mode_crop_id = 0;
+      else if (!strcmp(var.value, "vertical"))   zoom_mode_crop_id = 1;
+      else if (!strcmp(var.value, "horizontal")) zoom_mode_crop_id = 2;
+      else if (!strcmp(var.value, "16:9"))       zoom_mode_crop_id = 3;
+      else if (!strcmp(var.value, "16:10"))      zoom_mode_crop_id = 4;
+      else if (!strcmp(var.value, "4:3"))        zoom_mode_crop_id = 5;
+      else if (!strcmp(var.value, "5:4"))        zoom_mode_crop_id = 6;
    }
 
    var.key = "puae_vertical_pos";
@@ -2032,7 +2109,7 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       opt_vertical_offset = 0;
-      if (strcmp(var.value, "auto") == 0)
+      if (!strcmp(var.value, "auto"))
       {
          opt_vertical_offset_auto = true;
          thisframe_y_adjust = minfirstline;
@@ -2055,7 +2132,7 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       opt_horizontal_offset = 0;
-      if (strcmp(var.value, "auto") == 0)
+      if (!strcmp(var.value, "auto"))
       {
          opt_horizontal_offset_auto = true;
       }
@@ -2075,59 +2152,59 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_use_whdload=0;
-      else if (strcmp(var.value, "files") == 0) opt_use_whdload=1;
-      else if (strcmp(var.value, "hdfs") == 0) opt_use_whdload=2;
+      if (!strcmp(var.value, "disabled"))   opt_use_whdload = 0;
+      else if (!strcmp(var.value, "files")) opt_use_whdload = 1;
+      else if (!strcmp(var.value, "hdfs"))  opt_use_whdload = 2;
    }
 
    var.key = "puae_use_whdload_prefs";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_use_whdload_prefs=0;
-      else if (strcmp(var.value, "config") == 0) opt_use_whdload_prefs=1;
-      else if (strcmp(var.value, "splash") == 0) opt_use_whdload_prefs=2;
-      else if (strcmp(var.value, "both") == 0) opt_use_whdload_prefs=3;
+      if (!strcmp(var.value, "disabled"))    opt_use_whdload_prefs = 0;
+      else if (!strcmp(var.value, "config")) opt_use_whdload_prefs = 1;
+      else if (!strcmp(var.value, "splash")) opt_use_whdload_prefs = 2;
+      else if (!strcmp(var.value, "both"))   opt_use_whdload_prefs = 3;
    }
 
    var.key = "puae_cd_startup_delayed_insert";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "enabled") == 0) opt_cd_startup_delayed_insert=true;
-      else if (strcmp(var.value, "disabled") == 0) opt_cd_startup_delayed_insert=false;
+      if (!strcmp(var.value, "enabled"))       opt_cd_startup_delayed_insert = true;
+      else if (!strcmp(var.value, "disabled")) opt_cd_startup_delayed_insert = false;
    }
 
    var.key = "puae_shared_nvram";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "enabled") == 0) opt_shared_nvram=true;
-      else if (strcmp(var.value, "disabled") == 0) opt_shared_nvram=false;
+      if (!strcmp(var.value, "enabled"))       opt_shared_nvram = true;
+      else if (!strcmp(var.value, "disabled")) opt_shared_nvram = false;
    }
 
    var.key = "puae_use_boot_hd";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_use_boot_hd=0;
-      else if (strcmp(var.value, "files") == 0) opt_use_boot_hd=1;
-      else if (strcmp(var.value, "hdf20") == 0) opt_use_boot_hd=2;
-      else if (strcmp(var.value, "hdf40") == 0) opt_use_boot_hd=3;
-      else if (strcmp(var.value, "hdf80") == 0) opt_use_boot_hd=4;
-      else if (strcmp(var.value, "hdf128") == 0) opt_use_boot_hd=5;
-      else if (strcmp(var.value, "hdf256") == 0) opt_use_boot_hd=6;
-      else if (strcmp(var.value, "hdf512") == 0) opt_use_boot_hd=7;
+      if (!strcmp(var.value, "disabled"))    opt_use_boot_hd = 0;
+      else if (!strcmp(var.value, "files"))  opt_use_boot_hd = 1;
+      else if (!strcmp(var.value, "hdf20"))  opt_use_boot_hd = 2;
+      else if (!strcmp(var.value, "hdf40"))  opt_use_boot_hd = 3;
+      else if (!strcmp(var.value, "hdf80"))  opt_use_boot_hd = 4;
+      else if (!strcmp(var.value, "hdf128")) opt_use_boot_hd = 5;
+      else if (!strcmp(var.value, "hdf256")) opt_use_boot_hd = 6;
+      else if (!strcmp(var.value, "hdf512")) opt_use_boot_hd = 7;
    }
 
    var.key = "puae_analogmouse";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_analogmouse=0;
-      else if (strcmp(var.value, "left") == 0) opt_analogmouse=1;
-      else if (strcmp(var.value, "right") == 0) opt_analogmouse=2;
-      else if (strcmp(var.value, "both") == 0) opt_analogmouse=3;
+      if (!strcmp(var.value, "disabled"))   opt_analogmouse = 0;
+      else if (!strcmp(var.value, "left"))  opt_analogmouse = 1;
+      else if (!strcmp(var.value, "right")) opt_analogmouse = 2;
+      else if (!strcmp(var.value, "both"))  opt_analogmouse = 3;
    }
 
    var.key = "puae_analogmouse_deadzone";
@@ -2155,56 +2232,64 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_multimouse=false;
-      else if (strcmp(var.value, "enabled") == 0) opt_multimouse=true;
+      if (!strcmp(var.value, "disabled"))     opt_multimouse = false;
+      else if (!strcmp(var.value, "enabled")) opt_multimouse = true;
    }
 
    var.key = "puae_keyrah_keypad_mappings";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_keyrahkeypad=false;
-      else if (strcmp(var.value, "enabled") == 0) opt_keyrahkeypad=true;
+      if (!strcmp(var.value, "disabled"))     opt_keyrahkeypad = false;
+      else if (!strcmp(var.value, "enabled")) opt_keyrahkeypad = true;
    }
 
    var.key = "puae_physical_keyboard_pass_through";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_keyboard_pass_through=false;
-      else if (strcmp(var.value, "enabled") == 0) opt_keyboard_pass_through=true;
+      if (!strcmp(var.value, "disabled"))     opt_keyboard_pass_through = false;
+      else if (!strcmp(var.value, "enabled")) opt_keyboard_pass_through = true;
+   }
+
+   var.key = "puae_model_options_display";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (!strcmp(var.value, "disabled"))     opt_model_options_display = 0;
+      else if (!strcmp(var.value, "enabled")) opt_model_options_display = 1;
    }
 
    var.key = "puae_mapping_options_display";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_mapping_options_display=0;
-      else if (strcmp(var.value, "enabled") == 0) opt_mapping_options_display=1;
+      if (!strcmp(var.value, "disabled"))     opt_mapping_options_display = 0;
+      else if (!strcmp(var.value, "enabled")) opt_mapping_options_display = 1;
    }
 
    var.key = "puae_video_options_display";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_video_options_display=0;
-      else if (strcmp(var.value, "enabled") == 0) opt_video_options_display=1;
+      if (!strcmp(var.value, "disabled"))     opt_video_options_display = 0;
+      else if (!strcmp(var.value, "enabled")) opt_video_options_display = 1;
    }
 
    var.key = "puae_audio_options_display";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_audio_options_display=0;
-      else if (strcmp(var.value, "enabled") == 0) opt_audio_options_display=1;
+      if (!strcmp(var.value, "disabled"))     opt_audio_options_display = 0;
+      else if (!strcmp(var.value, "enabled")) opt_audio_options_display = 1;
    }
 
    var.key = "puae_joyport";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "joystick") == 0 && !mousemode_locked) MOUSEMODE=-1;
-      else if (strcmp(var.value, "mouse") == 0 && !mousemode_locked) MOUSEMODE=1;
+      if (!strcmp(var.value, "joystick") && !mousemode_locked)   MOUSEMODE = -1;
+      else if (!strcmp(var.value, "mouse") && !mousemode_locked) MOUSEMODE = 1;
    }
 
    var.key = "puae_joyport_order";
@@ -2218,47 +2303,42 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_retropad_options=0;
-      else if (strcmp(var.value, "rotate") == 0) opt_retropad_options=1;
-      else if (strcmp(var.value, "jump") == 0) opt_retropad_options=2;
-      else if (strcmp(var.value, "rotate_jump") == 0) opt_retropad_options=3;
+      if (!strcmp(var.value, "disabled"))         opt_retropad_options = 0;
+      else if (!strcmp(var.value, "rotate"))      opt_retropad_options = 1;
+      else if (!strcmp(var.value, "jump"))        opt_retropad_options = 2;
+      else if (!strcmp(var.value, "rotate_jump")) opt_retropad_options = 3;
    }
 
    var.key = "puae_cd32pad_options";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) opt_cd32pad_options=0;
-      else if (strcmp(var.value, "rotate") == 0) opt_cd32pad_options=1;
-      else if (strcmp(var.value, "jump") == 0) opt_cd32pad_options=2;
-      else if (strcmp(var.value, "rotate_jump") == 0) opt_cd32pad_options=3;
+      if (!strcmp(var.value, "disabled"))         opt_cd32pad_options = 0;
+      else if (!strcmp(var.value, "rotate"))      opt_cd32pad_options = 1;
+      else if (!strcmp(var.value, "jump"))        opt_cd32pad_options = 2;
+      else if (!strcmp(var.value, "rotate_jump")) opt_cd32pad_options = 3;
    }
 
    var.key = "puae_turbo_fire_button";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "disabled") == 0) turbo_fire_button=-1;
-      else if (strcmp(var.value, "B") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_B;
-      else if (strcmp(var.value, "A") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_A;
-      else if (strcmp(var.value, "Y") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_Y;
-      else if (strcmp(var.value, "X") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_X;
-      else if (strcmp(var.value, "L") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_L;
-      else if (strcmp(var.value, "R") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_R;
-      else if (strcmp(var.value, "L2") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_L2;
-      else if (strcmp(var.value, "R2") == 0) turbo_fire_button=RETRO_DEVICE_ID_JOYPAD_R2;
+      if (!strcmp(var.value, "disabled")) turbo_fire_button = -1;
+      else if (!strcmp(var.value, "B"))   turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_B;
+      else if (!strcmp(var.value, "A"))   turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_A;
+      else if (!strcmp(var.value, "Y"))   turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_Y;
+      else if (!strcmp(var.value, "X"))   turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_X;
+      else if (!strcmp(var.value, "L"))   turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_L;
+      else if (!strcmp(var.value, "R"))   turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_R;
+      else if (!strcmp(var.value, "L2"))  turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_L2;
+      else if (!strcmp(var.value, "R2"))  turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_R2;
    }
 
    var.key = "puae_turbo_pulse";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (strcmp(var.value, "2") == 0) turbo_pulse=2;
-      else if (strcmp(var.value, "4") == 0) turbo_pulse=4;
-      else if (strcmp(var.value, "6") == 0) turbo_pulse=6;
-      else if (strcmp(var.value, "8") == 0) turbo_pulse=8;
-      else if (strcmp(var.value, "10") == 0) turbo_pulse=10;
-      else if (strcmp(var.value, "12") == 0) turbo_pulse=12;
+      turbo_pulse = atoi(var.value);
    }
 
    /* Mapper */
@@ -2447,6 +2527,74 @@ static void update_variables(void)
 
    /*** Options display ***/
 
+   /* Model options */
+   option_display.visible = opt_model_options_display;
+
+   option_display.key = "puae_model_fd";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_model_hd";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_model_cd";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+   /* Video options */
+   option_display.visible = opt_video_options_display;
+
+   option_display.key = "puae_video_resolution";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_video_vresolution";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_video_allow_hz_change";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_video_standard";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_video_aspect";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_zoom_mode";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_zoom_mode_crop";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_vertical_pos";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_horizontal_pos";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_collision_level";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_immediate_blits";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_gfx_flickerfixer";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_gfx_framerate";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_gfx_colors";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_statusbar";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_vkbd_theme";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_vkbd_alpha";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+   /* Audio options */
+   option_display.visible = opt_audio_options_display;
+
+   option_display.key = "puae_sound_stereo_separation";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_sound_interpol";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_sound_filter";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_sound_filter_type";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_sound_volume_cd";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_floppy_sound";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_floppy_sound_empty_mute";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_floppy_sound_type";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
    /* Mapping options */
    option_display.visible = opt_mapping_options_display;
 
@@ -2501,64 +2649,6 @@ static void update_variables(void)
    option_display.key = "puae_mapper_aspect_ratio_toggle";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_mapper_zoom_mode_toggle";
-   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-
-   /* Audio options */
-   option_display.visible = opt_audio_options_display;
-
-   option_display.key = "puae_sound_stereo_separation";
-   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_sound_interpol";
-   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_sound_filter";
-   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_sound_filter_type";
-   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_sound_volume_cd";
-   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_floppy_sound";
-   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_floppy_sound_empty_mute";
-   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_floppy_sound_type";
-   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-
-   /* Video options */
-   option_display.visible = opt_video_options_display;
-
-   option_display.key = "puae_video_resolution";
-   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_video_vresolution";
-   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_video_allow_hz_change";
-   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_video_standard";
-   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_video_aspect";
-   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_zoom_mode";
-   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_zoom_mode_crop";
-   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_vertical_pos";
-   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_horizontal_pos";
-   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_collision_level";
-   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_immediate_blits";
-   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_gfx_flickerfixer";
-   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_gfx_framerate";
-   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_gfx_colors";
-   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_statusbar";
-   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_vkbd_theme";
-   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_vkbd_alpha";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
 
    /* Setting resolution */
@@ -2717,7 +2807,7 @@ static bool disk_set_image_index(unsigned index)
       {
          retro_dc->index = index;
          display_current_image(retro_dc->labels[retro_dc->index], false);
-         fprintf(stdout, "[libretro-uae]: Disk (%d) inserted into drive DF0: '%s'\n", retro_dc->index+1, retro_dc->files[retro_dc->index]);
+         log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF0: '%s'\n", retro_dc->index+1, retro_dc->files[retro_dc->index]);
          return true;
       }
    }
@@ -2762,7 +2852,7 @@ static bool disk_replace_image_index(unsigned index, const struct retro_game_inf
             char image_label[RETRO_PATH_MAX];
             image_label[0] = '\0';
 
-            static char full_path_replace[512] = {0};
+            static char full_path_replace[RETRO_PATH_MAX] = {0};
             strcpy(full_path_replace, (char*)info->path);
 
             // Confs & hard drive images will replace full_path and requires restarting
@@ -2864,9 +2954,9 @@ static bool disk_replace_image_index(unsigned index, const struct retro_game_inf
                dc_parse_m3u(retro_dc, full_path_replace, retro_save_directory);
 
                // Some debugging
-               fprintf(stdout, "[libretro-uae]: M3U parsed, %d file(s) found\n", retro_dc->count);
+               log_cb(RETRO_LOG_INFO, "M3U parsed, %d file(s) found\n", retro_dc->count);
                //for (unsigned i = 0; i < retro_dc->count; i++)
-                  //printf("File %d: %s\n", i+1, retro_dc->files[i]);
+                  //log_cb(RETRO_LOG_INFO, "File %d: %s\n", i+1, retro_dc->files[i]);
 
                // Insert first disk
                disk_set_image_index(0);
@@ -2880,7 +2970,7 @@ static bool disk_replace_image_index(unsigned index, const struct retro_game_inf
                      retro_dc->index = i;
                      if (i <= 3)
                      {
-                        fprintf(stdout, "[libretro-uae]: Disk (%d) inserted into drive DF%d: '%s'\n", retro_dc->index+1, i, retro_dc->files[retro_dc->index]);
+                        log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF%d: '%s'\n", retro_dc->index+1, i, retro_dc->files[retro_dc->index]);
                         strcpy (changed_prefs.floppyslots[i].df, retro_dc->files[i]);
 
                         // By default only DF0: is enabled, so floppyXtype needs to be set on the extra drives
@@ -2889,7 +2979,9 @@ static bool disk_replace_image_index(unsigned index, const struct retro_game_inf
                      }
                      else
                      {
-                        fprintf(stderr, "Too many disks for MultiDrive!\n");
+                        log_cb(RETRO_LOG_WARN, "Too many disks for MultiDrive!\n");
+                        snprintf(retro_message_msg, sizeof(retro_message_msg), "Too many disks for MultiDrive!");
+                        retro_message = true;
                         return false;
                      }
                   }
@@ -3000,10 +3092,23 @@ static struct retro_disk_control_ext_callback disk_interface_ext = {
 
 //*****************************************************************************
 //*****************************************************************************
+
+static void fallback_log(enum retro_log_level level, const char *fmt, ...)
+{
+   (void)level;
+   va_list va;
+   va_start(va, fmt);
+   vfprintf(stderr, fmt, va);
+   va_end(va);
+}
+
 // Init
 void retro_init(void)
 {
-   libretro_runloop_active = 0;
+   struct retro_log_callback log;
+   log_cb = fallback_log;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log))
+      log_cb = log.log;
 
    const char *system_dir = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &system_dir) && system_dir)
@@ -3069,51 +3174,52 @@ void retro_init(void)
    }
 
    // Inputs
-   #define RETRO_DESCRIPTOR_BLOCK( _user )                                            \
-   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "A / 2nd fire / Blue" },\
-   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "B / Fire / Red" },  \
-   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "X / Yellow" },      \
-   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "Y / Green" },       \
-   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Select" },     \
-   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Start / Play" },\
-   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "Right" },       \
-   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT, "Left" },         \
-   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP, "Up" },             \
-   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN, "Down" },         \
-   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R, "R / Forward" },         \
-   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L, "L / Rewind" },         \
-   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2, "R2" },             \
-   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2, "L2" },             \
-   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3, "R3" },             \
-   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3, "L3" },             \
-   { _user, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X, "Left Analog X" },               \
-   { _user, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y, "Left Analog Y" },               \
-   { _user, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X, "Right Analog X" },             \
+   #define RETRO_DESCRIPTOR_BLOCK(_user)                                                                        \
+   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP, "Up" },                                          \
+   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN, "Down" },                                      \
+   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT, "Left" },                                      \
+   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "Right" },                                    \
+   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "B / Fire / Red" },                               \
+   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "A / 2nd fire / Blue" },                          \
+   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "Y / Green" },                                    \
+   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "X / Yellow" },                                   \
+   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Select" },                                  \
+   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Start / Play" },                             \
+   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L, "L / Rewind" },                                   \
+   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R, "R / Forward" },                                  \
+   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2, "L2" },                                          \
+   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2, "R2" },                                          \
+   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3, "L3" },                                          \
+   { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3, "R3" },                                          \
+   { _user, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X, "Left Analog X" },   \
+   { _user, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y, "Left Analog Y" },   \
+   { _user, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X, "Right Analog X" }, \
    { _user, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y, "Right Analog Y" }
 
    static struct retro_input_descriptor input_descriptors[] =
    {
-      RETRO_DESCRIPTOR_BLOCK( 0 ),
-      RETRO_DESCRIPTOR_BLOCK( 1 ),
-      RETRO_DESCRIPTOR_BLOCK( 2 ),
-      RETRO_DESCRIPTOR_BLOCK( 3 ),
-      { 0 },
+      RETRO_DESCRIPTOR_BLOCK(0),
+      RETRO_DESCRIPTOR_BLOCK(1),
+      RETRO_DESCRIPTOR_BLOCK(2),
+      RETRO_DESCRIPTOR_BLOCK(3),
+      {0},
    };
    #undef RETRO_DESCRIPTOR_BLOCK
    environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, &input_descriptors);
 
-   memset(key_state, 0, sizeof(key_state));
-   memset(key_state2, 0, sizeof(key_state2));
-
    enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
    if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
    {
-      fprintf(stderr, "[libretro-uae]: RGB565 is not supported.\n");
-      exit(0);//return false;
+      log_cb(RETRO_LOG_ERROR, "RGB565 is not supported.\n");
+      environ_cb(RETRO_ENVIRONMENT_SHUTDOWN, NULL);
+      return;
    }
 
    memset(retro_bmp, 0, sizeof(retro_bmp));
+   memset(key_state, 0, sizeof(key_state));
+   memset(key_state2, 0, sizeof(key_state2));
 
+   libretro_runloop_active = 0;
    update_variables();
 }
 
@@ -3140,36 +3246,36 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 {
    if (port<4)
    {
-      uae_devices[port] = device;
       int uae_port;
       uae_port = (port==0) ? 1 : 0;
       cd32_pad_enabled[uae_port] = 0;
+      uae_devices[port] = device;
 #if 0
       switch (device)
       {
          case RETRO_DEVICE_JOYPAD:
-            fprintf(stdout, "[libretro-uae]: Controller %u: RetroPad\n", (port+1));
+            log_cb(RETRO_LOG_INFO, "Controller %u: RetroPad\n", (port+1));
             break;
 
          case RETRO_DEVICE_UAE_CD32PAD:
-            fprintf(stdout, "[libretro-uae]: Controller %u: CD32 Pad\n", (port+1));
+            log_cb(RETRO_LOG_INFO, "Controller %u: CD32 Pad\n", (port+1));
             cd32_pad_enabled[uae_port] = 1;
             break;
 
          case RETRO_DEVICE_UAE_ANALOG:
-            fprintf(stdout, "[libretro-uae]: Controller %u: Analog Joystick\n", (port+1));
+            log_cb(RETRO_LOG_INFO, "Controller %u: Analog Joystick\n", (port+1));
             break;
 
          case RETRO_DEVICE_UAE_JOYSTICK:
-            fprintf(stdout, "[libretro-uae]: Controller %u: Joystick\n", (port+1));
+            log_cb(RETRO_LOG_INFO, "Controller %u: Joystick\n", (port+1));
             break;
 
          case RETRO_DEVICE_UAE_KEYBOARD:
-            fprintf(stdout, "[libretro-uae]: Controller %u: Keyboard\n", (port+1));
+            log_cb(RETRO_LOG_INFO, "Controller %u: Keyboard\n", (port+1));
             break;
 
          case RETRO_DEVICE_NONE:
-            fprintf(stdout, "[libretro-uae]: Controller %u: None\n", (port+1));
+            log_cb(RETRO_LOG_INFO, "Controller %u: None\n", (port+1));
             break;
       }
 #else
@@ -3242,7 +3348,7 @@ static bool retro_update_av_info(void)
    retro_av_info_change_geometry = true;
 
    if (av_log)
-      fprintf(stdout, "[libretro-uae]: Trying to update AV timing:%d to: ntsc:%d hz:%0.4f, from video_config:%d, video_aspect:%d\n", change_timing, isntsc, hz, video_config, video_config_aspect);
+      fprintf(stdout, "* Trying to update AV timing:%d to: ntsc:%d hz:%0.4f, from video_config:%d, video_aspect:%d\n", change_timing, isntsc, hz, video_config, video_config_aspect);
 
    /* Change PAL/NTSC with a twist, thanks to Dyna Blaster
 
@@ -3318,7 +3424,7 @@ static bool retro_update_av_info(void)
       if (video_config_old == video_config)
       {
          if (av_log)
-            fprintf(stdout, "[libretro-uae]: Already at wanted AV\n");
+            fprintf(stdout, "* Already at wanted AV\n");
          change_timing = false; // Allow other calculations but don't alter timing
       }
    }
@@ -3665,11 +3771,11 @@ static bool retro_update_av_info(void)
    if (av_log)
    {
       if (change_timing)
-         fprintf(stdout, "[libretro-uae]: Update av_info: %dx%d %0.4fHz, zoomed: %dx%d, video_config:%d\n", retrow, retroh, hz, zoomed_width, zoomed_height, video_config_geometry);
+         fprintf(stdout, "* Update av_info: %dx%d %0.4fHz, zoomed: %dx%d, video_config:%d\n", retrow, retroh, hz, zoomed_width, zoomed_height, video_config_geometry);
       else if (change_geometry)
-         fprintf(stdout, "[libretro-uae]: Update geometry: %dx%d, zoomed: %dx%d, video_config:%d\n", retrow, retroh, zoomed_width, zoomed_height, video_config_geometry);
+         fprintf(stdout, "* Update geometry: %dx%d, zoomed: %dx%d, video_config:%d\n", retrow, retroh, zoomed_width, zoomed_height, video_config_geometry);
       else
-         fprintf(stdout, "[libretro-uae]: Update zoom: %dx%d, zoomed: %dx%d, video_config:%d\n", retrow, retroh, zoomed_width, zoomed_height, video_config_geometry);
+         fprintf(stdout, "* Update zoom: %dx%d, zoomed: %dx%d, video_config:%d\n", retrow, retroh, zoomed_width, zoomed_height, video_config_geometry);
    }
 
    /* Triggers check_prefs_changed_gfx() in vsync_handle_check() */
@@ -3695,11 +3801,11 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
          if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
          {
             pix_bytes = 2;
-            fprintf(stderr, "[libretro-uae]: XRGB8888 is not supported. Trying RGB565\n");
+            log_cb(RETRO_LOG_INFO, "XRGB8888 is not supported. Trying RGB565.\n");
             fmt = RETRO_PIXEL_FORMAT_RGB565;
             if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
             {
-               fprintf(stderr, "[libretro-uae]: RGB565 is not supported\n");
+               log_cb(RETRO_LOG_INFO, "RGB565 is not supported.\n");
                exit(0);//return false;
             }
          }
@@ -3743,63 +3849,256 @@ void retro_audio_batch_cb(const int16_t *data, size_t frames)
    audio_batch_cb(data, frames);
 }
 
-void retro_force_region(FILE** configfile)
+static void retro_force_region(FILE** configfile)
 {
    // If region was specified in the path
-   if (strstr(full_path, "NTSC") != NULL || strstr(full_path, "(USA)") != NULL)
+   if (strstr(full_path, "NTSC") || strstr(full_path, "(USA)"))
    {
-      fprintf(stdout, "[libretro-uae]: Found 'NTSC' or '(USA)' in: '%s'\n", full_path);
-      fprintf(stdout, "[libretro-uae]: Forcing NTSC mode\n");
+      log_cb(RETRO_LOG_INFO, "Forcing NTSC mode\n");
       fprintf(*configfile, "ntsc=true\n");
       real_ntsc = true;
       forced_video = true;
    }
-   else if (strstr(full_path, "PAL") != NULL || strstr(full_path, "(Europe)") != NULL
-         || strstr(full_path, "(France)") != NULL || strstr(full_path, "(Germany)") != NULL
-         || strstr(full_path, "(Italy)") != NULL || strstr(full_path, "(Spain)") != NULL
-         || strstr(full_path, "(Finland)") != NULL || strstr(full_path, "(Denmark)") != NULL
-         || strstr(full_path, "(Sweden)") != NULL)
+   else if (strstr(full_path, "PAL") || strstr(full_path, "(Europe)")
+         || strstr(full_path, "(France)") || strstr(full_path, "(Germany)")
+         || strstr(full_path, "(Italy)") || strstr(full_path, "(Spain)")
+         || strstr(full_path, "(Finland)") || strstr(full_path, "(Denmark)")
+         || strstr(full_path, "(Sweden)"))
    {
-      fprintf(stdout, "[libretro-uae]: Found 'PAL', '(Europe)' or '(Denmark|Finland|France|Germany|Italy|Spain|Sweden)' in: '%s'\n", full_path);
-      fprintf(stdout, "[libretro-uae]: Forcing PAL mode\n");
+      log_cb(RETRO_LOG_INFO, "Forcing PAL mode\n");
       fprintf(*configfile, "ntsc=false\n");
       real_ntsc = false;
       forced_video = true;
    }
 }
 
-char* emu_config_string(int config)
+static void retro_use_boot_hd(FILE** configfile)
 {
-   switch (config)
+   char *tmp_str = NULL;
+   char boothd_size[5] = {0};
+
+   snprintf(boothd_size, sizeof(boothd_size), "%dM", 0);
+   if (opt_use_boot_hd > 1)
    {
-      case EMU_CONFIG_A500: return "A500";
-      case EMU_CONFIG_A500OG: return "A500OG";
-      case EMU_CONFIG_A500PLUS: return "A500PLUS";
-      case EMU_CONFIG_A600: return "A600";
-      case EMU_CONFIG_A1200: return "A1200";
-      case EMU_CONFIG_A1200OG: return "A1200OG";
-      case EMU_CONFIG_A4030: return "A4030";
-      case EMU_CONFIG_A4040: return "A4040";
-      case EMU_CONFIG_CDTV: return "CDTV";
-      case EMU_CONFIG_CD32: return "CD32";
-      case EMU_CONFIG_CD32FR: return "CD32FR";
-      default: return "";
+      switch (opt_use_boot_hd)
+      {
+         case 2:
+            snprintf(boothd_size, sizeof(boothd_size), "%dM", 20);
+            break;
+         case 3:
+            snprintf(boothd_size, sizeof(boothd_size), "%dM", 40);
+            break;
+         case 4:
+            snprintf(boothd_size, sizeof(boothd_size), "%dM", 80);
+            break;
+         case 5:
+            snprintf(boothd_size, sizeof(boothd_size), "%dM", 128);
+            break;
+         case 6:
+            snprintf(boothd_size, sizeof(boothd_size), "%dM", 256);
+            break;
+         case 7:
+            snprintf(boothd_size, sizeof(boothd_size), "%dM", 512);
+            break;
+      }
+   }
+
+   // HDF mode
+   if (opt_use_boot_hd > 1)
+   {
+      // Init Boot HD
+      char boothd_hdf[RETRO_PATH_MAX];
+      path_join((char*)&boothd_hdf, retro_save_directory, LIBRETRO_PUAE_PREFIX ".hdf");
+      if (!file_exists(boothd_hdf))
+      {
+         log_cb(RETRO_LOG_INFO, "Boot HD image file '%s' not found, attempting to create one\n", (const char*)&boothd_hdf);
+         if (make_hdf(boothd_hdf, boothd_size, "BOOT"))
+            log_cb(RETRO_LOG_ERROR, "Unable to create Boot HD image: '%s'\n", (const char*)&boothd_hdf);
+      }
+      if (file_exists(boothd_hdf))
+      {
+         tmp_str = string_replace_substring(boothd_hdf, "\\", "\\\\");
+         fprintf(*configfile, "hardfile2=rw,BOOT:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
+         free(tmp_str);
+         tmp_str = NULL;
+      }
+   }
+   // Directory mode
+   else if (opt_use_boot_hd == 1)
+   {
+      char boothd_path[RETRO_PATH_MAX];
+      path_join((char*)&boothd_path, retro_save_directory, "BootHD");
+
+      if (!path_is_directory(boothd_path))
+      {
+         log_cb(RETRO_LOG_INFO, "Boot HD image directory '%s' not found, attempting to create one\n", (const char*)&boothd_path);
+         path_mkdir(boothd_path);
+      }
+      if (path_is_directory(boothd_path))
+      {
+         tmp_str = string_replace_substring(boothd_path, "\\", "\\\\");
+         fprintf(*configfile, "filesystem2=rw,BOOT:Boot:\"%s\",0\n", (const char*)tmp_str);
+         free(tmp_str);
+         tmp_str = NULL;
+      }
+      else
+         log_cb(RETRO_LOG_ERROR, "Unable to create Boot HD directory: '%s'\n", (const char*)&boothd_path);
    }
 }
 
-char* emu_config(int config)
+static void retro_print_kickstart(FILE** configfile)
+{
+   char kickstart[RETRO_PATH_MAX];
+   path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
+
+   // Main Kickstart
+   if (!file_exists(kickstart))
+   {
+      // Kickstart ROM not found
+      log_cb(RETRO_LOG_ERROR, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
+      snprintf(retro_message_msg, sizeof(retro_message_msg),
+               "Kickstart ROM '%s' not found!", path_basename((const char*)kickstart));
+      retro_message = true;
+   }
+   else
+      fprintf(*configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
+
+   // Extended KS + NVRAM
+   if (!string_is_empty(uae_kickstart_ext))
+   {
+      char kickstart_ext[RETRO_PATH_MAX];
+      path_join((char*)&kickstart_ext, retro_system_directory, uae_kickstart_ext);
+
+      // Decide if CD32 ROM is combined based on filesize
+      struct stat kickstart_st;
+      stat(kickstart, &kickstart_st);
+
+      // Verify extended ROM if external
+      if (kickstart_st.st_size <= 524288)
+      {
+         if (!file_exists(kickstart_ext))
+         {
+            // Kickstart extended ROM not found
+            log_cb(RETRO_LOG_ERROR, "Kickstart extended ROM '%s' not found!\n", (const char*)&kickstart_ext);
+            snprintf(retro_message_msg, sizeof(retro_message_msg),
+                     "Kickstart extended ROM '%s' not found!", path_basename((const char*)kickstart_ext));
+            retro_message = true;
+         }
+         else
+            fprintf(*configfile, "kickstart_ext_rom_file=%s\n", (const char*)&kickstart_ext);
+      }
+
+      // NVRAM
+      char flash_filename[RETRO_PATH_MAX];
+      char flash_filepath[RETRO_PATH_MAX];
+      if (opt_shared_nvram || string_is_empty(full_path))
+      {
+         // Shared
+         snprintf(flash_filename, sizeof(flash_filename), "%s.nvr", LIBRETRO_PUAE_PREFIX);
+         // CDTV suffix
+         if (kickstart_st.st_size == 262144)
+            snprintf(flash_filename, sizeof(flash_filename), "%s_cdtv.nvr", LIBRETRO_PUAE_PREFIX);
+      }
+      else
+      {
+         // Per game
+         snprintf(flash_filename, sizeof(flash_filename), "%s", path_basename(full_path));
+         snprintf(flash_filename, sizeof(flash_filename), "%s.nvr", path_remove_extension(flash_filename));
+      }
+      path_join((char*)&flash_filepath, retro_save_directory, flash_filename);
+      log_cb(RETRO_LOG_INFO, "Using Flash RAM: '%s'\n", flash_filepath);
+      fprintf(*configfile, "flash_file=%s\n", (const char*)&flash_filepath);
+   }
+}
+
+static char* emu_config_string(char* mode, int config)
+{
+   if (!strcmp(mode, "model"))
+   {
+      switch (config)
+      {
+         case EMU_CONFIG_A500:      return "A500";
+         case EMU_CONFIG_A500OG:    return "A500OG";
+         case EMU_CONFIG_A500PLUS:  return "A500PLUS";
+         case EMU_CONFIG_A600:      return "A600";
+         case EMU_CONFIG_A1200:     return "A1200";
+         case EMU_CONFIG_A1200OG:   return "A1200OG";
+         case EMU_CONFIG_A4030:     return "A4030";
+         case EMU_CONFIG_A4040:     return "A4040";
+         case EMU_CONFIG_CDTV:      return "CDTV";
+         case EMU_CONFIG_CD32:      return "CD32";
+         case EMU_CONFIG_CD32FR:    return "CD32FR";
+         default: return "";
+      }
+   }
+   else if (!strcmp(mode, "kickstart"))
+   {
+      switch (config)
+      {
+         case EMU_CONFIG_A500:      return A500_ROM;
+         case EMU_CONFIG_A500OG:    return A500_ROM;
+         case EMU_CONFIG_A500PLUS:  return A500KS2_ROM;
+         case EMU_CONFIG_A600:      return A600_ROM;
+         case EMU_CONFIG_A1200:     return A1200_ROM;
+         case EMU_CONFIG_A1200OG:   return A1200_ROM;
+         case EMU_CONFIG_A4030:     return A4000_ROM;
+         case EMU_CONFIG_A4040:     return A4000_ROM;
+         case EMU_CONFIG_CDTV:      return A500_ROM;
+         case EMU_CONFIG_CD32:      return CD32_ROM;
+         case EMU_CONFIG_CD32FR:    return CD32_ROM;
+         default: return "";
+      }
+   }
+   else if (!strcmp(mode, "kickstart_ext"))
+   {
+      switch (config)
+      {
+         case EMU_CONFIG_A500:      return "";
+         case EMU_CONFIG_A500OG:    return "";
+         case EMU_CONFIG_A500PLUS:  return "";
+         case EMU_CONFIG_A600:      return "";
+         case EMU_CONFIG_A1200:     return "";
+         case EMU_CONFIG_A1200OG:   return "";
+         case EMU_CONFIG_A4030:     return "";
+         case EMU_CONFIG_A4040:     return "";
+         case EMU_CONFIG_CDTV:      return CDTV_ROM;
+         case EMU_CONFIG_CD32:      return CD32_ROM_EXT;
+         case EMU_CONFIG_CD32FR:    return CD32_ROM_EXT;
+         default: return "";
+      }
+   }
+}
+
+static int emu_config_int(char* model)
+{
+   if (!strcmp(model, "A500"))          return EMU_CONFIG_A500;
+   else if (!strcmp(model, "A500OG"))   return EMU_CONFIG_A500OG;
+   else if (!strcmp(model, "A500PLUS")) return EMU_CONFIG_A500PLUS;
+   else if (!strcmp(model, "A600"))     return EMU_CONFIG_A600;
+   else if (!strcmp(model, "A1200"))    return EMU_CONFIG_A1200;
+   else if (!strcmp(model, "A1200OG"))  return EMU_CONFIG_A1200OG;
+   else if (!strcmp(model, "A4030"))    return EMU_CONFIG_A4030;
+   else if (!strcmp(model, "A4040"))    return EMU_CONFIG_A4040;
+   else if (!strcmp(model, "CDTV"))     return EMU_CONFIG_CDTV;
+   else if (!strcmp(model, "CD32"))     return EMU_CONFIG_CD32;
+   else if (!strcmp(model, "CD32FR"))   return EMU_CONFIG_CD32FR;
+   else return -1;
+}
+
+static char* emu_config(int config)
 {
    char custom_config_path[RETRO_PATH_MAX] = {0};
    char custom_config_file[RETRO_PATH_MAX] = {0};
 
-   snprintf(custom_config_file, sizeof(custom_config_file), "%s_%s.%s", LIBRETRO_PUAE_PREFIX, emu_config_string(config), "uae");
+   snprintf(custom_config_file, sizeof(custom_config_file),
+            "%s_%s.%s", LIBRETRO_PUAE_PREFIX, emu_config_string("model", config), "uae");
    path_join(custom_config_path, retro_save_directory, custom_config_file);
 
    if (file_exists(custom_config_path))
    {
-      fprintf(stdout, "[libretro-uae]: Replacing configuration: '%s'\n", custom_config_path);
+      log_cb(RETRO_LOG_INFO, "Replacing model preset with: '%s'\n", custom_config_path);
 
-      char filebuf[4096] = {0};
+      char filebuf[512] = {0};
       FILE * custom_config_fp;
       if (custom_config_fp = fopen(custom_config_path, "r"))
       {
@@ -3912,110 +4211,30 @@ char* emu_config(int config)
    }
 }
 
-bool retro_create_config()
+static void retro_build_preset(char* model)
+{
+   int model_int = emu_config_int(model);
+   strcpy(uae_model, emu_config(model_int));
+   strcpy(uae_kickstart, emu_config_string("kickstart", model_int));
+   strcpy(uae_kickstart_ext, emu_config_string("kickstart_ext", model_int));
+}
+
+static bool retro_create_config()
 {
    RPATH[0] = '\0';
    path_join((char*)&RPATH, retro_save_directory, LIBRETRO_PUAE_PREFIX ".uae");
-   fprintf(stdout, "[libretro-uae]: Generating temporary config file: '%s'\n", (const char*)&RPATH);
+   log_cb(RETRO_LOG_INFO, "Generating config file: '%s'\n", (const char*)&RPATH);
 
-   if (strcmp(opt_model, "A500") == 0)
-   {
-      strcat(uae_machine, emu_config(EMU_CONFIG_A500));
-      strcpy(uae_kickstart, A500_ROM);
-   }
-   else if (strcmp(opt_model, "A500OG") == 0)
-   {
-      strcat(uae_machine, emu_config(EMU_CONFIG_A500OG));
-      strcpy(uae_kickstart, A500_ROM);
-   }
-   else if (strcmp(opt_model, "A500PLUS") == 0)
-   {
-      strcat(uae_machine, emu_config(EMU_CONFIG_A500PLUS));
-      strcpy(uae_kickstart, A500KS2_ROM);
-   }
-   else if (strcmp(opt_model, "A600") == 0)
-   {
-      strcat(uae_machine, emu_config(EMU_CONFIG_A600));
-      strcpy(uae_kickstart, A600_ROM);
-   }
-   else if (strcmp(opt_model, "A1200") == 0)
-   {
-      strcat(uae_machine, emu_config(EMU_CONFIG_A1200));
-      strcpy(uae_kickstart, A1200_ROM);
-   }
-   else if (strcmp(opt_model, "A1200OG") == 0)
-   {
-      strcat(uae_machine, emu_config(EMU_CONFIG_A1200OG));
-      strcpy(uae_kickstart, A1200_ROM);
-   }
-   else if (strcmp(opt_model, "A4030") == 0)
-   {
-      strcat(uae_machine, emu_config(EMU_CONFIG_A4030));
-      strcpy(uae_kickstart, A4000_ROM);
-   }
-   else if (strcmp(opt_model, "A4040") == 0)
-   {
-      strcat(uae_machine, emu_config(EMU_CONFIG_A4040));
-      strcpy(uae_kickstart, A4000_ROM);
-   }
-   else if (strcmp(opt_model, "CDTV") == 0)
-   {
-      strcat(uae_machine, emu_config(EMU_CONFIG_CDTV));
-      strcpy(uae_kickstart, A500_ROM);
-      strcpy(uae_kickstart_ext, CDTV_ROM);
-   }
-   else if (strcmp(opt_model, "CD32") == 0)
-   {
-      strcat(uae_machine, emu_config(EMU_CONFIG_CD32));
-      strcpy(uae_kickstart, CD32_ROM);
-      strcpy(uae_kickstart_ext, CD32_ROM_EXT);
-   }
-   else if (strcmp(opt_model, "CD32FR") == 0)
-   {
-      strcat(uae_machine, emu_config(EMU_CONFIG_CD32FR));
-      strcpy(uae_kickstart, CD32_ROM);
-      strcpy(uae_kickstart_ext, CD32_ROM_EXT);
-   }
-   else if (strcmp(opt_model, "auto") == 0)
+   // Model preset
+   if (!strcmp(opt_model, "auto"))
    {
       if (opt_use_boot_hd)
-      {
-         strcat(uae_machine, emu_config(EMU_CONFIG_A600));
-         strcpy(uae_kickstart, A600_ROM);
-      }
+         retro_build_preset(opt_model_hd);
       else
-      {
-         strcat(uae_machine, emu_config(EMU_CONFIG_A500));
-         strcpy(uae_kickstart, A500_ROM);
-      }
+         retro_build_preset(opt_model_fd);
    }
-
-   char boothd_size[5] = {0};
-   snprintf(boothd_size, sizeof(boothd_size), "%dM", 0);
-   if (opt_use_boot_hd > 1)
-   {
-      switch (opt_use_boot_hd)
-      {
-         case 2:
-            snprintf(boothd_size, sizeof(boothd_size), "%dM", 20);
-            break;
-         case 3:
-            snprintf(boothd_size, sizeof(boothd_size), "%dM", 40);
-            break;
-         case 4:
-            snprintf(boothd_size, sizeof(boothd_size), "%dM", 80);
-            break;
-         case 5:
-            snprintf(boothd_size, sizeof(boothd_size), "%dM", 128);
-            break;
-         case 6:
-            snprintf(boothd_size, sizeof(boothd_size), "%dM", 256);
-            break;
-         case 7:
-            snprintf(boothd_size, sizeof(boothd_size), "%dM", 512);
-            break;
-      }
-   }
+   else
+      retro_build_preset(opt_model);
 
    // "Browsed" file in ZIP
    char browsed_file[RETRO_PATH_MAX] = {0};
@@ -4027,6 +4246,14 @@ bool retro_create_config()
          snprintf(browsed_file, sizeof(browsed_file), "%s", token);
          token = strtok(NULL, "#");
       }
+   }
+
+   // Open tmp config file
+   FILE * configfile;
+   if (!(configfile = fopen(RPATH, "w")))
+   {
+      log_cb(RETRO_LOG_ERROR, "Unable to write file: '%s'\n", (const char*)&RPATH);
+      return false;
    }
 
    if (!string_is_empty(full_path) && (file_exists(full_path) || path_is_directory(full_path)))
@@ -4097,887 +4324,587 @@ bool retro_create_config()
          }
       }
 
-      // If argument is a disk, hard drive, whdload or playlist file
+      // Floppy disk, hard drive, WHDLoad or playlist
       if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_FLOPPY
        || dc_get_image_type(full_path) == DC_IMAGE_TYPE_HD
        || dc_get_image_type(full_path) == DC_IMAGE_TYPE_WHDLOAD
        || strendswith(full_path, "m3u"))
       {
-	     // Open tmp config file
-	     FILE * configfile;
-	     if (configfile = fopen(RPATH, "w"))
-	     {
-	        char kickstart[RETRO_PATH_MAX];
-
-            // Check if a machine was specified in the path only on Automatic
-            if (strcmp(opt_model, "auto") == 0)
+         // Check if model is specified in the path on 'Automatic'
+         if (!strcmp(opt_model, "auto"))
+         {
+            if (strstr(full_path, "(A4030)") || strstr(full_path, "(030)"))
             {
-               if (strstr(full_path, "(A4030)") != NULL || strstr(full_path, "(030)") != NULL)
-               {
-                  // Use A4000/030
-                  fprintf(stdout, "[libretro-uae]: Found '(A4030)' or '(030)' in: '%s'\n", full_path);
-                  fprintf(stdout, "[libretro-uae]: Booting A4000/030: '%s'\n", A4000_ROM);
-                  fprintf(configfile, emu_config(EMU_CONFIG_A4030));
-                  path_join((char*)&kickstart, retro_system_directory, A4000_ROM);
-               }
-               else if (strstr(full_path, "(A4040)") != NULL || strstr(full_path, "(040)") != NULL)
-               {
-                  // Use A4000/040
-                  fprintf(stdout, "[libretro-uae]: Found '(A4040)' or '(040)' in: '%s'\n", full_path);
-                  fprintf(stdout, "[libretro-uae]: Booting A4000/040: '%s'\n", A4000_ROM);
-                  fprintf(configfile, emu_config(EMU_CONFIG_A4040));
-                  path_join((char*)&kickstart, retro_system_directory, A4000_ROM);
-               }
-               else if (strstr(full_path, "(A1200OG)") != NULL || strstr(full_path, "(A1200NF)") != NULL)
-               {
-                  // Use A1200 barebone
-                  fprintf(stdout, "[libretro-uae]: Found '(A1200OG)' or '(A1200NF)' in: '%s'\n", full_path);
-                  fprintf(stdout, "[libretro-uae]: Booting A1200 NoFast: '%s'\n", A1200_ROM);
-                  fprintf(configfile, emu_config(EMU_CONFIG_A1200OG));
-                  path_join((char*)&kickstart, retro_system_directory, A1200_ROM);
-               }
-               else if (strstr(full_path, "(A1200)") != NULL || strstr(full_path, "AGA") != NULL || strstr(full_path, "CD32") != NULL || strstr(full_path, "AmigaCD") != NULL)
-               {
-                  // Use A1200
-                  fprintf(stdout, "[libretro-uae]: Found '(A1200)', 'AGA', 'CD32', or 'AmigaCD' in: '%s'\n", full_path);
-                  fprintf(stdout, "[libretro-uae]: Booting A1200: '%s'\n", A1200_ROM);
-                  fprintf(configfile, emu_config(EMU_CONFIG_A1200));
-                  path_join((char*)&kickstart, retro_system_directory, A1200_ROM);
-               }
-               else if (strstr(full_path, "(A600)") != NULL || strstr(full_path, "ECS") != NULL)
-               {
-                  // Use A600
-                  fprintf(stdout, "[libretro-uae]: Found '(A600)' or 'ECS' in: '%s'\n", full_path);
-                  fprintf(stdout, "[libretro-uae]: Booting A600: '%s'\n", A600_ROM);
-                  fprintf(configfile, emu_config(EMU_CONFIG_A600));
-                  path_join((char*)&kickstart, retro_system_directory, A600_ROM);
-               }
-               else if (strstr(full_path, "(A500+)") != NULL || strstr(full_path, "(A500PLUS)") != NULL)
-               {
-                  // Use A500+
-                  fprintf(stdout, "[libretro-uae]: Found '(A500+)' or '(A500PLUS)' in: '%s'\n", full_path);
-                  fprintf(stdout, "[libretro-uae]: Booting A500+: '%s'\n", A500KS2_ROM);
-                  fprintf(configfile, emu_config(EMU_CONFIG_A500PLUS));
-                  path_join((char*)&kickstart, retro_system_directory, A500KS2_ROM);
-               }
-               else if (strstr(full_path, "(A500OG)") != NULL || strstr(full_path, "(512K)") != NULL)
-               {
-                  // Use A500 barebone
-                  fprintf(stdout, "[libretro-uae]: Found '(A500OG)' or '(512K)' in: '%s'\n", full_path);
-                  fprintf(stdout, "[libretro-uae]: Booting A500 512K: '%s'\n", A500_ROM);
-                  fprintf(configfile, emu_config(EMU_CONFIG_A500OG));
-                  path_join((char*)&kickstart, retro_system_directory, A500_ROM);
-               }
-               else if (strstr(full_path, "(A500)") != NULL || strstr(full_path, "OCS") != NULL)
-               {
-                  // Use A500
-                  fprintf(stdout, "[libretro-uae]: Found '(A500)' or 'OCS' in: '%s'\n", full_path);
-                  fprintf(stdout, "[libretro-uae]: Booting A500: '%s'\n", A500_ROM);
-                  fprintf(configfile, emu_config(EMU_CONFIG_A500));
-                  path_join((char*)&kickstart, retro_system_directory, A500_ROM);
-               }
-               else
-               {
-                  if (!opt_use_boot_hd)
-                  {
-                     // Hard disks must default to A600
-                     if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_HD
-                      || dc_get_image_type(full_path) == DC_IMAGE_TYPE_WHDLOAD)
-                     {
-                        uae_machine[0] = '\0';
-                        strcat(uae_machine, emu_config(EMU_CONFIG_A600));
-                        strcpy(uae_kickstart, A600_ROM);
-                     }
-                  }
-
-                  // No machine specified
-                  fprintf(stdout, "[libretro-uae]: No machine specified in: '%s'\n", full_path);
-                  fprintf(stdout, "[libretro-uae]: Booting default model: '%s'\n", uae_kickstart);
-                  fprintf(configfile, uae_machine);
-                  path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
-               }
+               // Use A4000/030
+               log_cb(RETRO_LOG_INFO, "Found '(A4030)' or '(030)' in: '%s'\n", full_path);
+               log_cb(RETRO_LOG_INFO, "Booting A4000/030: '%s'\n", A4000_ROM);
+               strcpy(uae_model, emu_config(EMU_CONFIG_A4030));
+               strcpy(uae_kickstart, A4000_ROM);
+            }
+            else if (strstr(full_path, "(A4040)") || strstr(full_path, "(040)"))
+            {
+               // Use A4000/040
+               log_cb(RETRO_LOG_INFO, "Found '(A4040)' or '(040)' in: '%s'\n", full_path);
+               log_cb(RETRO_LOG_INFO, "Booting A4000/040: '%s'\n", A4000_ROM);
+               strcpy(uae_model, emu_config(EMU_CONFIG_A4040));
+               strcpy(uae_kickstart, A4000_ROM);
+            }
+            else if (strstr(full_path, "(A1200OG)") || strstr(full_path, "(A1200NF)"))
+            {
+               // Use A1200 barebone
+               log_cb(RETRO_LOG_INFO, "Found '(A1200OG)' or '(A1200NF)' in: '%s'\n", full_path);
+               log_cb(RETRO_LOG_INFO, "Booting A1200 NoFast: '%s'\n", A1200_ROM);
+               strcpy(uae_model, emu_config(EMU_CONFIG_A1200OG));
+               strcpy(uae_kickstart, A1200_ROM);
+            }
+            else if (strstr(full_path, "(A1200)") || strstr(full_path, "AGA") || strstr(full_path, "CD32") || strstr(full_path, "AmigaCD"))
+            {
+               // Use A1200
+               log_cb(RETRO_LOG_INFO, "Found '(A1200)', 'AGA', 'CD32', or 'AmigaCD' in: '%s'\n", full_path);
+               log_cb(RETRO_LOG_INFO, "Booting A1200: '%s'\n", A1200_ROM);
+               strcpy(uae_model, emu_config(EMU_CONFIG_A1200));
+               strcpy(uae_kickstart, A1200_ROM);
+            }
+            else if (strstr(full_path, "(A600)") || strstr(full_path, "ECS"))
+            {
+               // Use A600
+               log_cb(RETRO_LOG_INFO, "Found '(A600)' or 'ECS' in: '%s'\n", full_path);
+               log_cb(RETRO_LOG_INFO, "Booting A600: '%s'\n", A600_ROM);
+               strcpy(uae_model, emu_config(EMU_CONFIG_A600));
+               strcpy(uae_kickstart, A600_ROM);
+            }
+            else if (strstr(full_path, "(A500+)") || strstr(full_path, "(A500PLUS)"))
+            {
+               // Use A500+
+               log_cb(RETRO_LOG_INFO, "Found '(A500+)' or '(A500PLUS)' in: '%s'\n", full_path);
+               log_cb(RETRO_LOG_INFO, "Booting A500+: '%s'\n", A500KS2_ROM);
+               strcpy(uae_model, emu_config(EMU_CONFIG_A500PLUS));
+               strcpy(uae_kickstart, A500KS2_ROM);
+            }
+            else if (strstr(full_path, "(A500OG)") || strstr(full_path, "(512K)"))
+            {
+               // Use A500 barebone
+               log_cb(RETRO_LOG_INFO, "Found '(A500OG)' or '(512K)' in: '%s'\n", full_path);
+               log_cb(RETRO_LOG_INFO, "Booting A500 512K: '%s'\n", A500_ROM);
+               strcpy(uae_model, emu_config(EMU_CONFIG_A500OG));
+               strcpy(uae_kickstart, A500_ROM);
+            }
+            else if (strstr(full_path, "(A500)") || strstr(full_path, "OCS"))
+            {
+               // Use A500
+               log_cb(RETRO_LOG_INFO, "Found '(A500)' or 'OCS' in: '%s'\n", full_path);
+               log_cb(RETRO_LOG_INFO, "Booting A500: '%s'\n", A500_ROM);
+               strcpy(uae_model, emu_config(EMU_CONFIG_A500));
+               strcpy(uae_kickstart, A500_ROM);
             }
             else
             {
-               // Core option model
-               fprintf(stdout, "[libretro-uae]: Booting model: '%s'\n", uae_kickstart);
-               fprintf(configfile, uae_machine);
-               path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
+               // Hard disks must default to a machine with HD interface
+               if (!opt_use_boot_hd &&
+                   (dc_get_image_type(full_path) == DC_IMAGE_TYPE_HD ||
+                    dc_get_image_type(full_path) == DC_IMAGE_TYPE_WHDLOAD))
+                  retro_build_preset(opt_model_hd);
+
+               // No model specified
+               log_cb(RETRO_LOG_INFO, "No model specified in: '%s'\n", full_path);
+               log_cb(RETRO_LOG_INFO, "Booting default model: '%s'\n", uae_kickstart);
             }
+         }
+         else
+            // Core option model
+            log_cb(RETRO_LOG_INFO, "Booting model: '%s'\n", uae_kickstart);
 
-            // Separator row for clarity
-            fprintf(configfile, "\n");
+         // Write model preset
+         fprintf(configfile, uae_model);
 
-            // Write common config
-            fprintf(configfile, uae_config);
+         // Separator row for clarity
+         fprintf(configfile, "\n");
 
-            // Scan region tags only with automatic region
-            if (opt_region_auto)
-               retro_force_region(&configfile);
+         // Verify and write Kickstart
+         retro_print_kickstart(&configfile);
 
-            // Verify Kickstart
-            if (!file_exists(kickstart))
+         // Bootable HD exception
+         if (opt_use_boot_hd)
+            retro_use_boot_hd(&configfile);
+
+         // Hard drive or WHDLoad image
+         if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_HD
+          || dc_get_image_type(full_path) == DC_IMAGE_TYPE_WHDLOAD)
+         {
+            char *tmp_str = NULL;
+
+            // WHDLoad support
+            if (opt_use_whdload)
             {
-               // Kickstart ROM not found
-               fprintf(stderr, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
-               fclose(configfile);
-
-               snprintf(retro_message_msg, sizeof(retro_message_msg), "Kickstart ROM '%s' not found!", path_basename((const char*)kickstart));
-               retro_message = true;
-            }
-            else
-               fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
-
-            // Bootable HD exception
-            if (opt_use_boot_hd)
-            {
-               char *tmp_str = NULL;
-
-               // HDF mode
-               if (opt_use_boot_hd > 1)
+               // WHDLoad HDF mode
+               if (opt_use_whdload == 2)
                {
-                  // Init Boot HD
-                  char boothd_hdf[RETRO_PATH_MAX];
-                  path_join((char*)&boothd_hdf, retro_save_directory, LIBRETRO_PUAE_PREFIX ".hdf");
-                  if (!file_exists(boothd_hdf))
+                  // Init WHDLoad
+                  char whdload_hdf[RETRO_PATH_MAX];
+                  path_join((char*)&whdload_hdf, retro_system_directory, "WHDLoad.hdf");
+
+                  // Verify WHDLoad
+                  // Windows needs double backslashes when paths are in quotes, hence the string_replace_substring()
+                  if (!file_exists(whdload_hdf))
+                     path_join((char*)&whdload_hdf, retro_save_directory, "WHDLoad.hdf");
+                  if (!file_exists(whdload_hdf))
                   {
-                     fprintf(stdout, "[libretro-uae]: Boot HD image file '%s' not found, attempting to create one\n", (const char*)&boothd_hdf);
+                     log_cb(RETRO_LOG_INFO, "WHDLoad image file '%s' not found, attempting to create one\n", (const char*)&whdload_hdf);
 
-                     if (make_hdf(boothd_hdf, boothd_size, "BOOT"))
-                        fprintf(stderr, "Error creating Boot HD image: '%s'!\n", (const char*)&boothd_hdf);
-                  }
-                  if (file_exists(boothd_hdf))
-                  {
-                     tmp_str = string_replace_substring(boothd_hdf, "\\", "\\\\");
-                     fprintf(configfile, "hardfile2=rw,BOOT:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
-                     free(tmp_str);
-                     tmp_str = NULL;
-                  }
-                  else
-                     fprintf(stderr, "Boot HD image file '%s' not found!\n", (const char*)&boothd_hdf);
-               }
-               // Directory mode
-               else if (opt_use_boot_hd == 1)
-               {
-                  char boothd_path[RETRO_PATH_MAX];
-                  path_join((char*)&boothd_path, retro_save_directory, "BootHD");
+                     char whdload_hdf_gz[RETRO_PATH_MAX];
+                     path_join((char*)&whdload_hdf_gz, retro_save_directory, "WHDLoad.hdf.gz");
 
-                  if (!path_is_directory(boothd_path))
-                  {
-                     fprintf(stdout, "[libretro-uae]: Boot HD image directory '%s' not found, attempting to create one\n", (const char*)&boothd_path);
-                     path_mkdir(boothd_path);
-                  }
-                  if (path_is_directory(boothd_path))
-                  {
-                     tmp_str = string_replace_substring(boothd_path, "\\", "\\\\");
-                     fprintf(configfile, "filesystem2=rw,BOOT:Boot:\"%s\",-1\n", (const char*)tmp_str);
-                     free(tmp_str);
-                     tmp_str = NULL;
-                  }
-                  else
-                     fprintf(stderr, "Error creating Boot HD directory: '%s'!\n", (const char*)&boothd_path);
-               }
-            }
-
-            // If argument is a hard drive image or whdload file
-            if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_HD
-             || dc_get_image_type(full_path) == DC_IMAGE_TYPE_WHDLOAD)
-            {
-               char *tmp_str = NULL;
-
-               // WHDLoad support
-               if (opt_use_whdload)
-               {
-                  // WHDLoad HDF mode
-                  if (opt_use_whdload == 2)
-                  {
-                     // Init WHDLoad
-                     char whdload_hdf[RETRO_PATH_MAX];
-                     path_join((char*)&whdload_hdf, retro_system_directory, "WHDLoad.hdf");
-
-                     // Verify WHDLoad
-                     // Windows needs double backslashes when paths are in quotes, hence the string_replace_substring()
-                     if (!file_exists(whdload_hdf))
-                        path_join((char*)&whdload_hdf, retro_save_directory, "WHDLoad.hdf");
-                     if (!file_exists(whdload_hdf))
-                     {
-                        fprintf(stdout, "[libretro-uae]: WHDLoad image file '%s' not found, attempting to create one\n", (const char*)&whdload_hdf);
-
-                        char whdload_hdf_gz[RETRO_PATH_MAX];
-                        path_join((char*)&whdload_hdf_gz, retro_save_directory, "WHDLoad.hdf.gz");
-
-                        FILE *whdload_hdf_gz_fp;
-                        if (whdload_hdf_gz_fp = fopen(whdload_hdf_gz, "wb"))
-                        {
-                           // Write GZ
-                           fwrite(___whdload_WHDLoad_hdf_gz, ___whdload_WHDLoad_hdf_gz_len, 1, whdload_hdf_gz_fp);
-                           fclose(whdload_hdf_gz_fp);
-
-                           // Extract GZ
-                           struct gzFile_s *whdload_hdf_gz_fp;
-                           if (whdload_hdf_gz_fp = gzopen(whdload_hdf_gz, "r"))
-                           {
-                              FILE *whdload_hdf_fp;
-                              if (whdload_hdf_fp = fopen(whdload_hdf, "wb"))
-                              {
-                                 gz_uncompress(whdload_hdf_gz_fp, whdload_hdf_fp);
-                                 fclose(whdload_hdf_fp);
-                              }
-                              gzclose(whdload_hdf_gz_fp);
-                           }
-                           remove(whdload_hdf_gz);
-                        }
-                        else
-                           fprintf(stderr, "Error creating WHDLoad.hdf: '%s'!\n", (const char*)&whdload_hdf);
-                     }
-                     if (file_exists(whdload_hdf))
-                     {
-                        tmp_str = string_replace_substring(whdload_hdf, "\\", "\\\\");
-                        fprintf(configfile, "hardfile2=rw,WHDLoad:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
-                        free(tmp_str);
-                        tmp_str = NULL;
-                     }
-                     else
-                        fprintf(stderr, "WHDLoad image file '%s' not found!\n", (const char*)&whdload_hdf);
-                  }
-                  // WHDLoad File mode
-                  else
-                  {
-                     char whdload_path[RETRO_PATH_MAX];
-                     path_join((char*)&whdload_path, retro_save_directory, "WHDLoad");
-
-                     char whdload_c_path[RETRO_PATH_MAX];
-                     path_join((char*)&whdload_c_path, retro_save_directory, "WHDLoad/C");
-
-                     if (!path_is_directory(whdload_path) || (path_is_directory(whdload_path) && !path_is_directory(whdload_c_path)))
-                     {
-                        fprintf(stdout, "[libretro-uae]: WHDLoad image directory '%s' not found, attempting to create one\n", (const char*)&whdload_path);
-                        path_mkdir(whdload_path);
-
-                        char whdload_files_zip[RETRO_PATH_MAX];
-                        path_join((char*)&whdload_files_zip, retro_save_directory, "WHDLoad_files.zip");
-
-                        FILE *whdload_files_zip_fp;
-                        if (whdload_files_zip_fp = fopen(whdload_files_zip, "wb"))
-                        {
-                           // Write ZIP
-                           fwrite(___whdload_WHDLoad_files_zip, ___whdload_WHDLoad_files_zip_len, 1, whdload_files_zip_fp);
-                           fclose(whdload_files_zip_fp);
-
-                           // Extract ZIP
-                           zip_uncompress(whdload_files_zip, whdload_path, NULL);
-                           remove(whdload_files_zip);
-                        }
-                        else
-                           fprintf(stderr, "Error extracting WHDLoad directory: '%s'!\n", (const char*)&whdload_path);
-                     }
-                     if (path_is_directory(whdload_path) && path_is_directory(whdload_c_path))
-                     {
-                        tmp_str = string_replace_substring(whdload_path, "\\", "\\\\");
-                        fprintf(configfile, "filesystem2=rw,WHDLoad:WHDLoad:\"%s\",0\n", (const char*)tmp_str);
-                        free(tmp_str);
-                        tmp_str = NULL;
-                     }
-                     else
-                        fprintf(stderr, "Error creating WHDLoad directory: '%s'!\n", (const char*)&whdload_path);
-                  }
-
-                  // Attach hard drive
-                  tmp_str = string_replace_substring(full_path, "\\", "\\\\");
-                  char tmp_str_name[RETRO_PATH_MAX];
-                  char tmp_str_path[RETRO_PATH_MAX];
-                  if (strendswith(full_path, "slave") || strendswith(full_path, "info"))
-                  {
-                     snprintf(tmp_str_name, sizeof(tmp_str_name), "%s", path_basename(tmp_str));
-                     snprintf(tmp_str_name, sizeof(tmp_str_name), "%s", path_remove_extension(tmp_str_name));
-                     path_parent_dir(tmp_str);
-                     snprintf(tmp_str_path, sizeof(tmp_str_path), "%s%s", tmp_str, tmp_str_name);
-                     if (!path_is_directory(tmp_str_path))
-                        snprintf(tmp_str_path, sizeof(tmp_str_path), "%s", tmp_str);
-                  }
-                  if (strendswith(full_path, "lha"))
-                     fprintf(configfile, "filesystem2=ro,DH0:LHA:\"%s\",0\n", (const char*)tmp_str);
-                  else if (path_is_directory(full_path))
-                     fprintf(configfile, "filesystem2=rw,DH0:%s:\"%s\",0\n", path_basename(tmp_str), (const char*)tmp_str);
-                  else if (strendswith(full_path, "slave") || strendswith(full_path, "info"))
-                     fprintf(configfile, "filesystem2=rw,DH0:%s:\"%s\",0\n", tmp_str_name, tmp_str_path);
-                  else
-                     fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae1\n", (const char*)tmp_str);
-                  free(tmp_str);
-                  tmp_str = NULL;
-
-                  // Attach retro_system_directory as a read only hard drive for WHDLoad kickstarts/prefs/key
-#ifdef WIN32
-                  tmp_str = string_replace_substring(retro_system_directory, "\\", "\\\\");
-                  fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s\",-128\n", (const char*)tmp_str);
-                  free(tmp_str);
-                  tmp_str = NULL;
-#else
-                  // Force the ending slash to make sure the path is not treated as a file
-                  fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s%s\",-128\n", retro_system_directory, "/");
-#endif
-                  // WHDSaves HDF mode
-                  if (opt_use_whdload == 2)
-                  {
-                     // Attach WHDSaves.hdf if available
-                     char whdsaves_hdf[RETRO_PATH_MAX];
-                     path_join((char*)&whdsaves_hdf, retro_system_directory, "WHDSaves.hdf");
-                     if (!file_exists(whdsaves_hdf))
-                        path_join((char*)&whdsaves_hdf, retro_save_directory, "WHDSaves.hdf");
-                     if (!file_exists(whdsaves_hdf))
-                     {
-                        fprintf(stdout, "[libretro-uae]: WHDSaves image file '%s' not found, attempting to create one\n", (const char*)&whdsaves_hdf);
-
-                        char whdsaves_hdf_gz[RETRO_PATH_MAX];
-                        path_join((char*)&whdsaves_hdf_gz, retro_save_directory, "WHDSaves.hdf.gz");
-
-                        FILE *whdsaves_hdf_gz_fp;
-                        if (whdsaves_hdf_gz_fp = fopen(whdsaves_hdf_gz, "wb"))
-                        {
-                           // Write GZ
-                           fwrite(___whdload_WHDSaves_hdf_gz, ___whdload_WHDSaves_hdf_gz_len, 1, whdsaves_hdf_gz_fp);
-                           fclose(whdsaves_hdf_gz_fp);
-
-                           // Extract GZ
-                           struct gzFile_s *whdsaves_hdf_gz_fp;
-                           if (whdsaves_hdf_gz_fp = gzopen(whdsaves_hdf_gz, "r"))
-                           {
-                              FILE *whdsaves_hdf_fp;
-                              if (whdsaves_hdf_fp = fopen(whdsaves_hdf, "wb"))
-                              {
-                                 gz_uncompress(whdsaves_hdf_gz_fp, whdsaves_hdf_fp);
-                                 fclose(whdsaves_hdf_fp);
-                              }
-                              gzclose(whdsaves_hdf_gz_fp);
-                           }
-                           remove(whdsaves_hdf_gz);
-                        }
-                        else
-                           fprintf(stderr, "Error creating WHDSaves.hdf: '%s'!\n", (const char*)&whdsaves_hdf);
-                     }
-                     if (file_exists(whdsaves_hdf))
-                     {
-                        tmp_str = string_replace_substring(whdsaves_hdf, "\\", "\\\\");
-                        fprintf(configfile, "hardfile2=rw,WHDSaves:\"%s\",32,1,2,512,0,,uae2\n", (const char*)tmp_str);
-                        free(tmp_str);
-                        tmp_str = NULL;
-                     }
-                  }
-                  // WHDSaves file mode
-                  else
-                  {
-                     char whdsaves_path[RETRO_PATH_MAX];
-                     path_join((char*)&whdsaves_path, retro_save_directory, "WHDSaves");
-                     if (!path_is_directory(whdsaves_path))
-                        path_mkdir(whdsaves_path);
-                     if (path_is_directory(whdsaves_path))
-                     {
-                        tmp_str = string_replace_substring(whdsaves_path, "\\", "\\\\");
-                        fprintf(configfile, "filesystem2=rw,WHDSaves:WHDSaves:\"%s\",-128\n", (const char*)tmp_str);
-                        free(tmp_str);
-                        tmp_str = NULL;
-                     }
-                     else
-                        fprintf(stderr, "Error creating WHDSaves directory: '%s'!\n", (const char*)&whdsaves_path);
-                  }
-
-                  // Manipulate WHDLoad.prefs
-                  int WHDLoad_ConfigDelay = 0;
-                  int WHDLoad_SplashDelay = 0;
-
-                  switch (opt_use_whdload_prefs)
-                  {
-                     case 1:
-                        WHDLoad_ConfigDelay = -1;
-                        break;
-                     case 2:
-                        WHDLoad_SplashDelay = 150;
-                        break;
-                     case 3:
-                        WHDLoad_ConfigDelay = -1;
-                        WHDLoad_SplashDelay = -1;
-                        break;
-                  }
-
-                  FILE *whdload_prefs;
-                  char whdload_prefs_path[RETRO_PATH_MAX];
-                  path_join((char*)&whdload_prefs_path, retro_system_directory, "WHDLoad.prefs");
-
-                  if (!file_exists(whdload_prefs_path))
-                  {
-                     fprintf(stdout, "[libretro-uae]: WHDLoad prefs '%s' not found, attempting to create one\n", (const char*)&whdload_prefs_path);
-
-                     char whdload_prefs_gz[RETRO_PATH_MAX];
-                     path_join((char*)&whdload_prefs_gz, retro_system_directory, "WHDLoad.prefs.gz");
-
-                     FILE *whdload_prefs_gz_fp;
-                     if (whdload_prefs_gz_fp = fopen(whdload_prefs_gz, "wb"))
+                     FILE *whdload_hdf_gz_fp;
+                     if (whdload_hdf_gz_fp = fopen(whdload_hdf_gz, "wb"))
                      {
                         // Write GZ
-                        fwrite(___whdload_WHDLoad_prefs_gz, ___whdload_WHDLoad_prefs_gz_len, 1, whdload_prefs_gz_fp);
-                        fclose(whdload_prefs_gz_fp);
+                        fwrite(___whdload_WHDLoad_hdf_gz, ___whdload_WHDLoad_hdf_gz_len, 1, whdload_hdf_gz_fp);
+                        fclose(whdload_hdf_gz_fp);
 
                         // Extract GZ
-                        struct gzFile_s *whdload_prefs_gz_fp;
-                        if (whdload_prefs_gz_fp = gzopen(whdload_prefs_gz, "r"))
+                        struct gzFile_s *whdload_hdf_gz_fp;
+                        if (whdload_hdf_gz_fp = gzopen(whdload_hdf_gz, "r"))
                         {
-                           FILE *whdload_prefs_fp;
-                           if (whdload_prefs_fp = fopen(whdload_prefs_path, "wb"))
+                           FILE *whdload_hdf_fp;
+                           if (whdload_hdf_fp = fopen(whdload_hdf, "wb"))
                            {
-                              gz_uncompress(whdload_prefs_gz_fp, whdload_prefs_fp);
-                              fclose(whdload_prefs_fp);
+                              gz_uncompress(whdload_hdf_gz_fp, whdload_hdf_fp);
+                              fclose(whdload_hdf_fp);
                            }
-                           gzclose(whdload_prefs_gz_fp);
+                           gzclose(whdload_hdf_gz_fp);
                         }
-                        remove(whdload_prefs_gz);
+                        remove(whdload_hdf_gz);
                      }
                      else
-                        fprintf(stderr, "Error creating WHDLoad prefs: '%s'!\n", (const char*)&whdload_prefs_path);
+                        log_cb(RETRO_LOG_ERROR, "Unable to create WHDLoad image file: '%s'\n", (const char*)&whdload_hdf);
                   }
-
-                  FILE *whdload_prefs_new;
-                  char whdload_prefs_new_path[RETRO_PATH_MAX];
-                  path_join((char*)&whdload_prefs_new_path, retro_system_directory, "WHDLoad.prefs_new");
-
-                  char whdload_prefs_backup_path[RETRO_PATH_MAX];
-                  path_join((char*)&whdload_prefs_backup_path, retro_system_directory, "WHDLoad.prefs_backup");
-
-                  char whdload_filebuf[4096];
-                  if (whdload_prefs = fopen(whdload_prefs_path, "r"))
+                  // Attach HDF
+                  if (file_exists(whdload_hdf))
                   {
-                     if (whdload_prefs_new = fopen(whdload_prefs_new_path, "w"))
+                     tmp_str = string_replace_substring(whdload_hdf, "\\", "\\\\");
+                     fprintf(configfile, "hardfile2=rw,WHDLoad:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
+                     free(tmp_str);
+                     tmp_str = NULL;
+                  }
+               }
+               // WHDLoad file mode
+               else
+               {
+                  char whdload_path[RETRO_PATH_MAX];
+                  path_join((char*)&whdload_path, retro_save_directory, "WHDLoad");
+
+                  char whdload_c_path[RETRO_PATH_MAX];
+                  path_join((char*)&whdload_c_path, retro_save_directory, "WHDLoad/C");
+
+                  if (!path_is_directory(whdload_path) || (path_is_directory(whdload_path) && !path_is_directory(whdload_c_path)))
+                  {
+                     log_cb(RETRO_LOG_INFO, "WHDLoad image directory '%s' not found, attempting to create one\n", (const char*)&whdload_path);
+                     path_mkdir(whdload_path);
+
+                     char whdload_files_zip[RETRO_PATH_MAX];
+                     path_join((char*)&whdload_files_zip, retro_save_directory, "WHDLoad_files.zip");
+
+                     FILE *whdload_files_zip_fp;
+                     if (whdload_files_zip_fp = fopen(whdload_files_zip, "wb"))
                      {
-                        while (fgets(whdload_filebuf, sizeof(whdload_filebuf), whdload_prefs))
-                        {
-                           if (strstr(whdload_filebuf, ";ConfigDelay=") || strstr(whdload_filebuf, ";SplashDelay="))
-                              fprintf(whdload_prefs_new, whdload_filebuf);
-                           else if (strstr(whdload_filebuf, "ConfigDelay="))
-                              fprintf(whdload_prefs_new, "%s%d\n", "ConfigDelay=", WHDLoad_ConfigDelay);
-                           else if (strstr(whdload_filebuf, "SplashDelay="))
-                              fprintf(whdload_prefs_new, "%s%d\n", "SplashDelay=", WHDLoad_SplashDelay);
-                           else
-                              fprintf(whdload_prefs_new, whdload_filebuf);
-                        }
-                        fclose(whdload_prefs_new);
-                        fclose(whdload_prefs);
+                        // Write ZIP
+                        fwrite(___whdload_WHDLoad_files_zip, ___whdload_WHDLoad_files_zip_len, 1, whdload_files_zip_fp);
+                        fclose(whdload_files_zip_fp);
 
-                        // Remove backup config
-                        remove(whdload_prefs_backup_path);
-
-                        // Replace old and new config
-                        rename(whdload_prefs_path, whdload_prefs_backup_path);
-                        rename(whdload_prefs_new_path, whdload_prefs_path);
+                        // Extract ZIP
+                        zip_uncompress(whdload_files_zip, whdload_path, NULL);
+                        remove(whdload_files_zip);
                      }
                      else
+                        log_cb(RETRO_LOG_ERROR, "Unable to create WHDLoad image directory: '%s'\n", (const char*)&whdload_path);
+                  }
+                  // Attach directory
+                  if (path_is_directory(whdload_path) && path_is_directory(whdload_c_path))
+                  {
+                     tmp_str = string_replace_substring(whdload_path, "\\", "\\\\");
+                     fprintf(configfile, "filesystem2=rw,WHDLoad:WHDLoad:\"%s\",0\n", (const char*)tmp_str);
+                     free(tmp_str);
+                     tmp_str = NULL;
+                  }
+               }
+
+               // Attach hard drive
+               tmp_str = string_replace_substring(full_path, "\\", "\\\\");
+               char tmp_str_name[RETRO_PATH_MAX];
+               char tmp_str_path[RETRO_PATH_MAX];
+               if (strendswith(full_path, "slave") || strendswith(full_path, "info"))
+               {
+                  snprintf(tmp_str_name, sizeof(tmp_str_name), "%s", path_basename(tmp_str));
+                  snprintf(tmp_str_name, sizeof(tmp_str_name), "%s", path_remove_extension(tmp_str_name));
+                  path_parent_dir(tmp_str);
+                  snprintf(tmp_str_path, sizeof(tmp_str_path), "%s%s", tmp_str, tmp_str_name);
+                  if (!path_is_directory(tmp_str_path))
+                     snprintf(tmp_str_path, sizeof(tmp_str_path), "%s", tmp_str);
+               }
+               if (strendswith(full_path, "lha"))
+                  fprintf(configfile, "filesystem2=ro,DH0:LHA:\"%s\",0\n", (const char*)tmp_str);
+               else if (path_is_directory(full_path))
+                  fprintf(configfile, "filesystem2=rw,DH0:%s:\"%s\",0\n", path_basename(tmp_str), (const char*)tmp_str);
+               else if (strendswith(full_path, "slave") || strendswith(full_path, "info"))
+                  fprintf(configfile, "filesystem2=rw,DH0:%s:\"%s\",0\n", tmp_str_name, tmp_str_path);
+               else
+                  fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae1\n", (const char*)tmp_str);
+               free(tmp_str);
+               tmp_str = NULL;
+
+               // Attach retro_system_directory as a read only hard drive for WHDLoad kickstarts/prefs/key
+#ifdef WIN32
+               tmp_str = string_replace_substring(retro_system_directory, "\\", "\\\\");
+               fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s\",-128\n", (const char*)tmp_str);
+               free(tmp_str);
+               tmp_str = NULL;
+#else
+               // Force the ending slash to make sure the path is not treated as a file
+               fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s%s\",-128\n", retro_system_directory, "/");
+#endif
+               // WHDSaves HDF mode
+               if (opt_use_whdload == 2)
+               {
+                  // Attach WHDSaves.hdf if available
+                  char whdsaves_hdf[RETRO_PATH_MAX];
+                  path_join((char*)&whdsaves_hdf, retro_system_directory, "WHDSaves.hdf");
+                  if (!file_exists(whdsaves_hdf))
+                     path_join((char*)&whdsaves_hdf, retro_save_directory, "WHDSaves.hdf");
+                  if (!file_exists(whdsaves_hdf))
+                  {
+                     log_cb(RETRO_LOG_INFO, "WHDSaves image file '%s' not found, attempting to create one\n", (const char*)&whdsaves_hdf);
+
+                     char whdsaves_hdf_gz[RETRO_PATH_MAX];
+                     path_join((char*)&whdsaves_hdf_gz, retro_save_directory, "WHDSaves.hdf.gz");
+
+                     FILE *whdsaves_hdf_gz_fp;
+                     if (whdsaves_hdf_gz_fp = fopen(whdsaves_hdf_gz, "wb"))
                      {
-                        fprintf(stderr, "Error creating new WHDLoad.prefs: '%s'!\n", (const char*)&whdload_prefs_new_path);
-                        fclose(whdload_prefs);
+                        // Write GZ
+                        fwrite(___whdload_WHDSaves_hdf_gz, ___whdload_WHDSaves_hdf_gz_len, 1, whdsaves_hdf_gz_fp);
+                        fclose(whdsaves_hdf_gz_fp);
+
+                        // Extract GZ
+                        struct gzFile_s *whdsaves_hdf_gz_fp;
+                        if (whdsaves_hdf_gz_fp = gzopen(whdsaves_hdf_gz, "r"))
+                        {
+                           FILE *whdsaves_hdf_fp;
+                           if (whdsaves_hdf_fp = fopen(whdsaves_hdf, "wb"))
+                           {
+                              gz_uncompress(whdsaves_hdf_gz_fp, whdsaves_hdf_fp);
+                              fclose(whdsaves_hdf_fp);
+                           }
+                           gzclose(whdsaves_hdf_gz_fp);
+                        }
+                        remove(whdsaves_hdf_gz);
                      }
+                     else
+                        log_cb(RETRO_LOG_ERROR, "Unable to create WHDSaves image file: '%s'\n", (const char*)&whdsaves_hdf);
+                  }
+                  // Attach HDF
+                  if (file_exists(whdsaves_hdf))
+                  {
+                     tmp_str = string_replace_substring(whdsaves_hdf, "\\", "\\\\");
+                     fprintf(configfile, "hardfile2=rw,WHDSaves:\"%s\",32,1,2,512,0,,uae2\n", (const char*)tmp_str);
+                     free(tmp_str);
+                     tmp_str = NULL;
+                  }
+               }
+               // WHDSaves file mode
+               else
+               {
+                  char whdsaves_path[RETRO_PATH_MAX];
+                  path_join((char*)&whdsaves_path, retro_save_directory, "WHDSaves");
+                  if (!path_is_directory(whdsaves_path))
+                     path_mkdir(whdsaves_path);
+                  // Attach directory
+                  if (path_is_directory(whdsaves_path))
+                  {
+                     tmp_str = string_replace_substring(whdsaves_path, "\\", "\\\\");
+                     fprintf(configfile, "filesystem2=rw,WHDSaves:WHDSaves:\"%s\",-128\n", (const char*)tmp_str);
+                     free(tmp_str);
+                     tmp_str = NULL;
                   }
                   else
-                     fprintf(stderr, "WHDLoad.prefs '%s' not found!\n", (const char*)&whdload_prefs_path);
-               }
-               else
-               {
-                  tmp_str = string_replace_substring(full_path, "\\", "\\\\");
-                  if (path_is_directory(full_path))
-                     fprintf(configfile, "filesystem2=rw,DH0:%s:\"%s\",0\n", path_basename(tmp_str), (const char*)tmp_str);
-                  else
-                     fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
-                  free(tmp_str);
-                  tmp_str = NULL;
-               }
-            }
-            else
-            {
-               // If argument is a M3U playlist
-               if (strendswith(full_path, "m3u"))
-               {
-                  // Parse the M3U file
-                  dc_parse_m3u(retro_dc, full_path, retro_save_directory);
-
-                  // Some debugging
-                  fprintf(stdout, "[libretro-uae]: M3U parsed, %d file(s) found\n", retro_dc->count);
-                  //for (unsigned i = 0; i < retro_dc->count; i++)
-                     //printf("File %d: %s\n", i+1, retro_dc->files[i]);
-               }
-               else
-               {
-                  // Add the file to disk control context
-                  char disk_image_label[RETRO_PATH_MAX];
-                  disk_image_label[0] = '\0';
-
-                  if (!string_is_empty(full_path))
-                     fill_short_pathname_representation(
-                           disk_image_label, full_path, sizeof(disk_image_label));
-
-                  // Must reset disk control struct here,
-                  // otherwise duplicate entries will be
-                  // added when calling retro_reset()
-                  dc_reset(retro_dc);
-                  dc_add_file(retro_dc, full_path, disk_image_label);
+                     log_cb(RETRO_LOG_ERROR, "Unable to create WHDSaves image directory: '%s'\n", (const char*)&whdsaves_path);
                }
 
-               // Init only existing disks
-               if (retro_dc->count)
-               {
-                  // Init first disk
-                  retro_dc->index = 0;
-                  retro_dc->eject_state = false;
-                  display_current_image(retro_dc->labels[retro_dc->index], true);
-                  fprintf(stdout, "[libretro-uae]: Disk (%d) inserted into drive DF0: '%s'\n", retro_dc->index+1, retro_dc->files[retro_dc->index]);
-                  fprintf(configfile, "floppy0=%s\n", retro_dc->files[0]);
+               // Manipulate WHDLoad.prefs
+               int WHDLoad_ConfigDelay = 0;
+               int WHDLoad_SplashDelay = 0;
 
-                  // Append rest of the disks to the config if M3U is a MultiDrive-M3U
-                  if (strstr(full_path, "(MD)") != NULL)
+               switch (opt_use_whdload_prefs)
+               {
+                  case 1:
+                     WHDLoad_ConfigDelay = -1;
+                     break;
+                  case 2:
+                     WHDLoad_SplashDelay = 150;
+                     break;
+                  case 3:
+                     WHDLoad_ConfigDelay = -1;
+                     WHDLoad_SplashDelay = -1;
+                     break;
+               }
+
+               FILE *whdload_prefs;
+               char whdload_prefs_path[RETRO_PATH_MAX];
+               path_join((char*)&whdload_prefs_path, retro_system_directory, "WHDLoad.prefs");
+
+               if (!file_exists(whdload_prefs_path))
+               {
+                  log_cb(RETRO_LOG_INFO, "WHDLoad.prefs '%s' not found, attempting to create one\n", (const char*)&whdload_prefs_path);
+
+                  char whdload_prefs_gz[RETRO_PATH_MAX];
+                  path_join((char*)&whdload_prefs_gz, retro_system_directory, "WHDLoad.prefs.gz");
+
+                  FILE *whdload_prefs_gz_fp;
+                  if (whdload_prefs_gz_fp = fopen(whdload_prefs_gz, "wb"))
                   {
-                     for (unsigned i = 1; i < retro_dc->count; i++)
-                     {
-                        retro_dc->index = i;
-                        if (i <= 3)
-                        {
-                           fprintf(stdout, "[libretro-uae]: Disk (%d) inserted into drive DF%d: '%s'\n", retro_dc->index+1, i, retro_dc->files[retro_dc->index]);
-                           fprintf(configfile, "floppy%d=%s\n", i, retro_dc->files[i]);
+                     // Write GZ
+                     fwrite(___whdload_WHDLoad_prefs_gz, ___whdload_WHDLoad_prefs_gz_len, 1, whdload_prefs_gz_fp);
+                     fclose(whdload_prefs_gz_fp);
 
-                           // By default only DF0: is enabled, so floppyXtype needs to be set on the extra drives
-                           if (i > 0)
-                              fprintf(configfile, "floppy%dtype=%d\n", i, 0); // 0 = 3.5" DD
+                     // Extract GZ
+                     struct gzFile_s *whdload_prefs_gz_fp;
+                     if (whdload_prefs_gz_fp = gzopen(whdload_prefs_gz, "r"))
+                     {
+                        FILE *whdload_prefs_fp;
+                        if (whdload_prefs_fp = fopen(whdload_prefs_path, "wb"))
+                        {
+                           gz_uncompress(whdload_prefs_gz_fp, whdload_prefs_fp);
+                           fclose(whdload_prefs_fp);
                         }
+                        gzclose(whdload_prefs_gz_fp);
+                     }
+                     remove(whdload_prefs_gz);
+                  }
+                  else
+                     log_cb(RETRO_LOG_ERROR, "Unable to create WHDLoad.prefs: '%s'\n", (const char*)&whdload_prefs_path);
+               }
+
+               FILE *whdload_prefs_new;
+               char whdload_prefs_new_path[RETRO_PATH_MAX];
+               path_join((char*)&whdload_prefs_new_path, retro_system_directory, "WHDLoad.prefs_new");
+
+               char whdload_prefs_backup_path[RETRO_PATH_MAX];
+               path_join((char*)&whdload_prefs_backup_path, retro_system_directory, "WHDLoad.prefs_backup");
+
+               char whdload_filebuf[512];
+               if (whdload_prefs = fopen(whdload_prefs_path, "r"))
+               {
+                  if (whdload_prefs_new = fopen(whdload_prefs_new_path, "w"))
+                  {
+                     while (fgets(whdload_filebuf, sizeof(whdload_filebuf), whdload_prefs))
+                     {
+                        if (strstr(whdload_filebuf, ";ConfigDelay=") || strstr(whdload_filebuf, ";SplashDelay="))
+                           fprintf(whdload_prefs_new, whdload_filebuf);
+                        else if (strstr(whdload_filebuf, "ConfigDelay="))
+                           fprintf(whdload_prefs_new, "%s%d\n", "ConfigDelay=", WHDLoad_ConfigDelay);
+                        else if (strstr(whdload_filebuf, "SplashDelay="))
+                           fprintf(whdload_prefs_new, "%s%d\n", "SplashDelay=", WHDLoad_SplashDelay);
                         else
-                        {
-                           fprintf(stderr, "Too many disks for MultiDrive!\n");
-                           fclose(configfile);
-                           return false;
-                        }
+                           fprintf(whdload_prefs_new, whdload_filebuf);
                      }
-                     // Reset index to first disk
-                     retro_dc->index = 0;
+                     fclose(whdload_prefs_new);
+                     fclose(whdload_prefs);
+
+                     // Remove backup config
+                     remove(whdload_prefs_backup_path);
+
+                     // Replace old and new config
+                     rename(whdload_prefs_path, whdload_prefs_backup_path);
+                     rename(whdload_prefs_new_path, whdload_prefs_path);
                   }
-               }
-            }
-
-            // Iterate global config file and append all rows to the temporary config
-            char configfile_global_path[RETRO_PATH_MAX];
-            path_join((char*)&configfile_global_path, retro_save_directory, LIBRETRO_PUAE_PREFIX "_global.uae");
-            if (file_exists(configfile_global_path))
-            {
-               fprintf(stdout, "[libretro-uae]: Appending global configuration: '%s'\n", configfile_global_path);
-               // Separator row for clarity
-               fprintf(configfile, "\n");
-
-               FILE * configfile_global;
-               char filebuf[4096];
-               if (configfile_global = fopen(configfile_global_path, "r"))
-               {
-                  while (fgets(filebuf, sizeof(filebuf), configfile_global))
-                     fprintf(configfile, filebuf);
-                  fclose(configfile_global);
-               }
-            }
-            fclose(configfile);
-         }
-         else
-         {
-            // Error
-            fprintf(stderr, "Error while writing file: '%s'!\n", (const char*)&RPATH);
-            return false;
-         }
-      }
-      // If argument is a CD image
-      else if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_CD)
-      {
-         // Open tmp config file
-         FILE * configfile;
-         if (configfile = fopen(RPATH, "w"))
-         {
-            char kickstart[RETRO_PATH_MAX];
-            char kickstart_ext[RETRO_PATH_MAX];
-
-            // Check if a machine was specified in the path only on Automatic
-            if (strcmp(opt_model, "auto") == 0)
-            {
-               if (strstr(full_path, "(CD32FR)") != NULL || strstr(full_path, "FastRAM") != NULL)
-               {
-                  // Use CD32 with Fast RAM
-                  fprintf(stdout, "[libretro-uae]: Found '(CD32FR)' or 'FastRAM' in: '%s'\n", full_path);
-                  fprintf(stdout, "[libretro-uae]: Booting CD32 FastRAM: '%s'\n", CD32_ROM);
-                  fprintf(configfile, emu_config(EMU_CONFIG_CD32FR));
-                  path_join((char*)&kickstart, retro_system_directory, CD32_ROM);
-                  path_join((char*)&kickstart_ext, retro_system_directory, CD32_ROM_EXT);
-               }
-               else if (strstr(full_path, "(CD32)") != NULL || strstr(full_path, "(CD32NF)") != NULL)
-               {
-                  // Use CD32 barebone
-                  fprintf(stdout, "[libretro-uae]: Found '(CD32)' or '(CD32NF)' in: '%s'\n", full_path);
-                  fprintf(stdout, "[libretro-uae]: Booting CD32: '%s'\n", CD32_ROM);
-                  fprintf(configfile, emu_config(EMU_CONFIG_CD32));
-                  path_join((char*)&kickstart, retro_system_directory, CD32_ROM);
-                  path_join((char*)&kickstart_ext, retro_system_directory, CD32_ROM_EXT);
-               }
-               else if (strstr(full_path, "CDTV"))
-               {
-                  // Use CDTV
-                  fprintf(stdout, "[libretro-uae]: Found 'CDTV' in: '%s'\n", full_path);
-                  fprintf(stdout, "[libretro-uae]: Booting CDTV: '%s'\n", CDTV_ROM);
-                  fprintf(configfile, emu_config(EMU_CONFIG_CDTV));
-                  path_join((char*)&kickstart, retro_system_directory, A500_ROM);
-                  path_join((char*)&kickstart_ext, retro_system_directory, CDTV_ROM);
-               }
-               else
-               {
-                  // CD32 fallback
-                  uae_machine[0] = '\0';
-                  fprintf(configfile, emu_config(EMU_CONFIG_CD32));
-                  strcpy(uae_kickstart, CD32_ROM);
-                  strcpy(uae_kickstart_ext, CD32_ROM_EXT);
-
-                  // No machine specified
-                  fprintf(stdout, "[libretro-uae]: No machine specified in: '%s'\n", full_path);
-                  fprintf(stdout, "[libretro-uae]: Booting default model: '%s'\n", uae_kickstart);
-                  fprintf(configfile, uae_machine);
-                  path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
-                  path_join((char*)&kickstart_ext, retro_system_directory, uae_kickstart_ext);
-               }
-            }
-            else
-            {
-               // Core option model
-               fprintf(stdout, "[libretro-uae]: Booting model: '%s'\n", uae_kickstart);
-               fprintf(configfile, uae_machine);
-               path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
-               path_join((char*)&kickstart_ext, retro_system_directory, uae_kickstart_ext);
-            }
-
-            // Separator row for clarity
-            fprintf(configfile, "\n");
-
-            // Write common config
-            fprintf(configfile, uae_config);
-
-            // Scan region tags only with automatic region
-            if (opt_region_auto)
-               retro_force_region(&configfile);
-
-            // Verify Kickstart
-            if (!file_exists(kickstart))
-            {
-               // Kickstart ROM not found
-               fprintf(stderr, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
-               fclose(configfile);
-
-               snprintf(retro_message_msg, sizeof(retro_message_msg), "Kickstart ROM '%s' not found!", path_basename((const char*)kickstart));
-               retro_message = true;
-            }
-            else
-               fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
-
-            // Decide if CD32 ROM is combined based on filesize
-            struct stat kickstart_st;
-            stat(kickstart, &kickstart_st);
-
-            // Verify extended ROM if external
-            if (kickstart_st.st_size <= 524288)
-            {
-               if (!file_exists(kickstart_ext))
-               {
-                  // Kickstart extended ROM not found
-                  fprintf(stderr, "Kickstart extended ROM '%s' not found!\n", (const char*)&kickstart_ext);
-                  fclose(configfile);
-
-                  snprintf(retro_message_msg, sizeof(retro_message_msg), "Kickstart extended ROM '%s' not found!", path_basename((const char*)kickstart_ext));
-                  retro_message = true;
-               }
-               else
-                  fprintf(configfile, "kickstart_ext_rom_file=%s\n", (const char*)&kickstart_ext);
-            }
-
-            // NVRAM
-            char flash_filename[RETRO_PATH_MAX];
-            char flash_filepath[RETRO_PATH_MAX];
-            if (opt_shared_nvram)
-            {
-               // Shared
-               snprintf(flash_filename, sizeof(flash_filename), "%s.nvr", LIBRETRO_PUAE_PREFIX);
-               // CDTV suffix
-               if (kickstart_st.st_size == 262144)
-                  snprintf(flash_filename, sizeof(flash_filename), "%s_cdtv.nvr", LIBRETRO_PUAE_PREFIX);
-            }
-            else
-            {
-               // Per game
-               snprintf(flash_filename, RETRO_PATH_MAX, "%s", path_basename(full_path));
-               snprintf(flash_filename, RETRO_PATH_MAX, "%s.nvr", path_remove_extension(flash_filename));
-            }
-            path_join((char*)&flash_filepath, retro_save_directory, flash_filename);
-            fprintf(stdout, "[libretro-uae]: Using Flash RAM: '%s'\n", flash_filepath);
-            fprintf(configfile, "flash_file=%s\n", (const char*)&flash_filepath);
-
-            // Add the file to disk control context
-            char cd_image_label[RETRO_PATH_MAX];
-            cd_image_label[0] = '\0';
-
-            if (!string_is_empty(full_path))
-               fill_short_pathname_representation(
-                     cd_image_label, full_path, sizeof(cd_image_label));
-
-            // Must reset disk control struct here,
-            // otherwise duplicate entries will be
-            // added when calling retro_reset()
-            dc_reset(retro_dc);
-            dc_add_file(retro_dc, full_path, cd_image_label);
-
-            // Init first disk
-            retro_dc->index = 0;
-            retro_dc->eject_state = false;
-            display_current_image(retro_dc->labels[retro_dc->index], true);
-            fprintf(stdout, "[libretro-uae]: CD (%d) inserted into drive CD0: '%s'\n", retro_dc->index+1, retro_dc->files[retro_dc->index]);
-            fprintf(configfile, "cdimage0=%s,%s\n", retro_dc->files[0], (opt_cd_startup_delayed_insert ? "delay" : "")); // ","-suffix needed if filename contains ","
-
-            // Iterate global config file and append all rows to the temporary config
-            char configfile_global_path[RETRO_PATH_MAX];
-            path_join((char*)&configfile_global_path, retro_save_directory, LIBRETRO_PUAE_PREFIX "_global.uae");
-            if (file_exists(configfile_global_path))
-            {
-               fprintf(stdout, "[libretro-uae]: Appending global configuration: '%s'\n", configfile_global_path);
-               // Separator row for clarity
-               fprintf(configfile, "\n");
-
-               FILE * configfile_global;
-               char filebuf[4096];
-               if (configfile_global = fopen(configfile_global_path, "r"))
-               {
-                  while (fgets(filebuf, sizeof(filebuf), configfile_global))
-                     fprintf(configfile, filebuf);
-                  fclose(configfile_global);
-               }
-            }
-            fclose(configfile);
-         }
-         else
-         {
-            // Error
-            fprintf(stderr, "Error while writing file: '%s'!\n", (const char*)&RPATH);
-            return false;
-         }
-      }
-      // If argument is a config file
-      else if (strendswith(full_path, "uae"))
-      {
-         // Open tmp config file
-         FILE * configfile;
-         if (configfile = fopen(RPATH, "w"))
-         {
-            char kickstart[RETRO_PATH_MAX] = {0};
-            char disk_image[RETRO_PATH_MAX] = {0};
-
-            fprintf(configfile, uae_machine);
-            path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
-
-            // Separator row for clarity
-            fprintf(configfile, "\n");
-
-            // Write common config
-            fprintf(configfile, uae_config);
-            fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
-
-            // Separator row for clarity
-            fprintf(configfile, "\n");
-
-            // Must reset disk control struct here,
-            // otherwise duplicate entries will be
-            // added when calling retro_reset()
-            dc_reset(retro_dc);
-
-            // Iterate parsed file and append all rows to the temporary config
-            FILE * configfile_custom;
-            char filebuf[4096];
-            if (configfile_custom = fopen(full_path, "r"))
-            {
-               while (fgets(filebuf, sizeof(filebuf), configfile_custom))
-               {
-                  fprintf(configfile, filebuf);
-
-                  // Parse diskimage-rows for disk control
-                  if (strstr(filebuf, "diskimage") && filebuf[0] == 'd')
+                  else
                   {
-                     char *token = strtok((char*)filebuf, "=");
-                     while (token != NULL)
-                     {
-                        snprintf(disk_image, sizeof(disk_image), "%s", token);
-                        token = strtok(NULL, "=");
-                     }
-                     strtok(disk_image, "\n");
-                     if (!string_is_empty(disk_image) && file_exists(disk_image))
-                     {
-                        // Add the file to disk control context
-                        char disk_image_label[RETRO_PATH_MAX];
-                        disk_image_label[0] = '\0';
-                        fill_short_pathname_representation(disk_image_label, disk_image, sizeof(disk_image_label));
-                        dc_add_file(retro_dc, disk_image, disk_image_label);
-                     }
+                     log_cb(RETRO_LOG_ERROR, "Unable to create new WHDLoad.prefs: '%s'\n", (const char*)&whdload_prefs_new_path);
+                     fclose(whdload_prefs);
                   }
                }
-               fclose(configfile_custom);
+            }
+            else
+            {
+               tmp_str = string_replace_substring(full_path, "\\", "\\\\");
+               if (path_is_directory(full_path))
+                  fprintf(configfile, "filesystem2=rw,DH0:%s:\"%s\",0\n", path_basename(tmp_str), (const char*)tmp_str);
+               else
+                  fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
+               free(tmp_str);
+               tmp_str = NULL;
+            }
+         }
+         else
+         {
+            // M3U playlist
+            if (strendswith(full_path, "m3u"))
+            {
+               // Parse the M3U file
+               dc_parse_m3u(retro_dc, full_path, retro_save_directory);
+
+               // Some debugging
+               log_cb(RETRO_LOG_INFO, "M3U parsed, %d file(s) found\n", retro_dc->count);
+               //for (unsigned i = 0; i < retro_dc->count; i++)
+                  //log_cb(RETRO_LOG_INFO, "File %d: %s\n", i+1, retro_dc->files[i]);
+            }
+            // Single file
+            else
+            {
+               // Add the file to disk control context
+               char disk_image_label[RETRO_PATH_MAX];
+               disk_image_label[0] = '\0';
+
+               if (!string_is_empty(full_path))
+                  fill_short_pathname_representation(
+                        disk_image_label, full_path, sizeof(disk_image_label));
+
+               // Must reset disk control struct here,
+               // otherwise duplicate entries will be
+               // added when calling retro_reset()
+               dc_reset(retro_dc);
+               dc_add_file(retro_dc, full_path, disk_image_label);
             }
 
             // Init only existing disks
-            if (!string_is_empty(disk_image) && retro_dc->count)
+            if (retro_dc->count)
             {
                // Init first disk
                retro_dc->index = 0;
                retro_dc->eject_state = false;
                display_current_image(retro_dc->labels[retro_dc->index], true);
-               fprintf(stdout, "[libretro-uae]: Disk (%d) inserted into drive DF0: '%s'\n", retro_dc->index+1, retro_dc->files[retro_dc->index]);
-            }
+               log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF0: '%s'\n", retro_dc->index+1, retro_dc->files[retro_dc->index]);
+               fprintf(configfile, "floppy0=%s\n", retro_dc->files[0]);
 
-            // Iterate global config file and append all rows to the temporary config
-            char configfile_global_path[RETRO_PATH_MAX];
-            path_join((char*)&configfile_global_path, retro_save_directory, LIBRETRO_PUAE_PREFIX "_global.uae");
-            if (file_exists(configfile_global_path))
-            {
-               fprintf(stdout, "[libretro-uae]: Appending global configuration: '%s'\n", configfile_global_path);
-               // Separator row for clarity
-               fprintf(configfile, "\n");
-
-               FILE * configfile_global;
-               char filebuf[4096];
-               if (configfile_global = fopen(configfile_global_path, "r"))
+               // Append rest of the disks to the config if M3U is a MultiDrive-M3U
+               if (strstr(full_path, "(MD)") != NULL)
                {
-                  while (fgets(filebuf, sizeof(filebuf), configfile_global))
-                     fprintf(configfile, filebuf);
-                  fclose(configfile_global);
+                  for (unsigned i = 1; i < retro_dc->count; i++)
+                  {
+                     retro_dc->index = i;
+                     if (i <= 3)
+                     {
+                        log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF%d: '%s'\n", retro_dc->index+1, i, retro_dc->files[retro_dc->index]);
+                        fprintf(configfile, "floppy%d=%s\n", i, retro_dc->files[i]);
+
+                        // By default only DF0: is enabled, so floppyXtype needs to be set on the extra drives
+                        if (i > 0)
+                           fprintf(configfile, "floppy%dtype=%d\n", i, 0); // 0 = 3.5" DD
+                     }
+                     else
+                     {
+                        log_cb(RETRO_LOG_WARN, "Too many disks for MultiDrive!\n");
+                        snprintf(retro_message_msg, sizeof(retro_message_msg), "Too many disks for MultiDrive!");
+                        retro_message = true;
+                     }
+                  }
+                  // Reset index to first disk
+                  retro_dc->index = 0;
                }
             }
-            fclose(configfile);
+         }
+
+         // Separator row for clarity
+         fprintf(configfile, "\n");
+
+         // Write common config
+         fprintf(configfile, uae_config);
+      }
+      // CD image
+      else if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_CD)
+      {
+         // Check if model is specified in the path on 'Automatic'
+         if (!strcmp(opt_model, "auto"))
+         {
+            if (strstr(full_path, "(CD32FR)") || strstr(full_path, "FastRAM"))
+            {
+               // Use CD32 with Fast RAM
+               log_cb(RETRO_LOG_INFO, "Found '(CD32FR)' or 'FastRAM' in: '%s'\n", full_path);
+               log_cb(RETRO_LOG_INFO, "Booting CD32 FastRAM: '%s'\n", CD32_ROM);
+               strcpy(uae_model, emu_config(EMU_CONFIG_CD32FR));
+               strcpy(uae_kickstart, CD32_ROM);
+               strcpy(uae_kickstart_ext, CD32_ROM_EXT);
+            }
+            else if (strstr(full_path, "(CD32)") || strstr(full_path, "(CD32NF)"))
+            {
+               // Use CD32 barebone
+               log_cb(RETRO_LOG_INFO, "Found '(CD32)' or '(CD32NF)' in: '%s'\n", full_path);
+               log_cb(RETRO_LOG_INFO, "Booting CD32: '%s'\n", CD32_ROM);
+               strcpy(uae_model, emu_config(EMU_CONFIG_CD32));
+               strcpy(uae_kickstart, CD32_ROM);
+               strcpy(uae_kickstart_ext, CD32_ROM_EXT);
+            }
+            else if (strstr(full_path, "CDTV"))
+            {
+               // Use CDTV
+               log_cb(RETRO_LOG_INFO, "Found 'CDTV' in: '%s'\n", full_path);
+               log_cb(RETRO_LOG_INFO, "Booting CDTV: '%s'\n", CDTV_ROM);
+               strcpy(uae_model, emu_config(EMU_CONFIG_CDTV));
+               strcpy(uae_kickstart, A500_ROM);
+               strcpy(uae_kickstart_ext, CDTV_ROM);
+            }
+            else
+            {
+               // Default CD model
+               retro_build_preset(opt_model_cd);
+
+               // No model specified
+               log_cb(RETRO_LOG_INFO, "No model specified in: '%s'\n", full_path);
+               log_cb(RETRO_LOG_INFO, "Booting default model: '%s'\n", uae_kickstart);
+            }
          }
          else
-         {
-            // Error
-            fprintf(stderr, "Error while writing file: '%s'!\n", (const char*)&RPATH);
-            return false;
-         }
-      }
-	  // Other extensions
-	  else
-	  {
-	     // Unsupported file format
-	     fprintf(stderr, "Unsupported file format: '%s'!\n", full_path);
-	     return false;
-	  }
-   }
-   // Empty content
-   else
-   {
-      // Open tmp config file
-      FILE * configfile;
-      if (configfile = fopen(RPATH, "w"))
-      {
-         char kickstart[RETRO_PATH_MAX];
+            // Core option model
+            log_cb(RETRO_LOG_INFO, "Booting model: '%s'\n", uae_kickstart);
 
-         // No machine specified
-         fprintf(stdout, "[libretro-uae]: Booting default model: '%s'\n", uae_kickstart);
-         fprintf(configfile, uae_machine);
-         path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
+         // Write model preset
+         fprintf(configfile, uae_model);
+
+         // Separator row for clarity
+         fprintf(configfile, "\n");
+
+         // Verify and write Kickstart
+         retro_print_kickstart(&configfile);
+
+         // Add the file to disk control context
+         char cd_image_label[RETRO_PATH_MAX];
+         cd_image_label[0] = '\0';
+
+         if (!string_is_empty(full_path))
+            fill_short_pathname_representation(
+                  cd_image_label, full_path, sizeof(cd_image_label));
+
+         // Must reset disk control struct here,
+         // otherwise duplicate entries will be
+         // added when calling retro_reset()
+         dc_reset(retro_dc);
+         dc_add_file(retro_dc, full_path, cd_image_label);
+
+         // Init first disk
+         retro_dc->index = 0;
+         retro_dc->eject_state = false;
+         display_current_image(retro_dc->labels[retro_dc->index], true);
+         log_cb(RETRO_LOG_INFO, "CD (%d) inserted in drive CD0: '%s'\n", retro_dc->index+1, retro_dc->files[retro_dc->index]);
+         fprintf(configfile, "cdimage0=%s,%s\n", retro_dc->files[0], (opt_cd_startup_delayed_insert ? "delay" : "")); // ","-suffix needed if filename contains ","
+
+         // Separator row for clarity
+         fprintf(configfile, "\n");
+
+         // Write common config
+         fprintf(configfile, uae_config);
+      }
+      // UAE config file
+      else if (strendswith(full_path, "uae"))
+      {
+         char disk_image[RETRO_PATH_MAX] = {0};
+
+         // Write model preset
+         fprintf(configfile, uae_model);
+
+         // Separator row for clarity
+         fprintf(configfile, "\n");
+
+         // Verify and write Kickstart
+         retro_print_kickstart(&configfile);
 
          // Separator row for clarity
          fprintf(configfile, "\n");
@@ -4985,137 +4912,145 @@ bool retro_create_config()
          // Write common config
          fprintf(configfile, uae_config);
 
-         // Bootable HD exception
-         if (opt_use_boot_hd)
+         // Separator row for clarity
+         fprintf(configfile, "\n");
+
+         // Must reset disk control struct here,
+         // otherwise duplicate entries will be
+         // added when calling retro_reset()
+         dc_reset(retro_dc);
+
+         // Iterate parsed file and append all rows to the temporary config
+         FILE * configfile_custom;
+         char filebuf[512];
+         if (configfile_custom = fopen(full_path, "r"))
          {
-            char *tmp_str = NULL;
-
-            // HDF mode
-            if (opt_use_boot_hd > 1)
+            while (fgets(filebuf, sizeof(filebuf), configfile_custom))
             {
-               // Init Boot HD
-               char boothd_hdf[RETRO_PATH_MAX];
-               path_join((char*)&boothd_hdf, retro_save_directory, LIBRETRO_PUAE_PREFIX ".hdf");
-               if (!file_exists(boothd_hdf))
-               {
-                  fprintf(stdout, "[libretro-uae]: Boot HD image file '%s' not found, attempting to create one\n", (const char*)&boothd_hdf);
+               fprintf(configfile, filebuf);
 
-                  if (make_hdf(boothd_hdf, boothd_size, "BOOT"))
-                     fprintf(stderr, "Error creating Boot HD image: '%s'!\n", (const char*)&boothd_hdf);
-               }
-               if (file_exists(boothd_hdf))
+               // Parse diskimage-rows for disk control
+               if (strstr(filebuf, "diskimage") && filebuf[0] == 'd')
                {
-                  tmp_str = string_replace_substring(boothd_hdf, "\\", "\\\\");
-                  fprintf(configfile, "hardfile2=rw,BOOT:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
-                  free(tmp_str);
-                  tmp_str = NULL;
+                  char *token = strtok((char*)filebuf, "=");
+                  while (token != NULL)
+                  {
+                     snprintf(disk_image, sizeof(disk_image), "%s", token);
+                     token = strtok(NULL, "=");
+                  }
+                  strtok(disk_image, "\n");
+                  if (!string_is_empty(disk_image) && file_exists(disk_image))
+                  {
+                     // Add the file to disk control context
+                     char disk_image_label[RETRO_PATH_MAX];
+                     disk_image_label[0] = '\0';
+                     fill_short_pathname_representation(disk_image_label, disk_image, sizeof(disk_image_label));
+                     dc_add_file(retro_dc, disk_image, disk_image_label);
+                  }
                }
-               else
-                  fprintf(stderr, "Boot HD image file '%s' not found!\n", (const char*)&boothd_hdf);
             }
-            // Directory mode
-            else if (opt_use_boot_hd == 1)
-            {
-               char boothd_path[RETRO_PATH_MAX];
-               path_join((char*)&boothd_path, retro_save_directory, "BootHD");
-
-               if (!path_is_directory(boothd_path))
-               {
-                  fprintf(stdout, "[libretro-uae]: Boot HD image directory '%s' not found, attempting to create one\n", (const char*)&boothd_path);
-                  path_mkdir(boothd_path);
-               }
-               if (path_is_directory(boothd_path))
-               {
-                  tmp_str = string_replace_substring(boothd_path, "\\", "\\\\");
-                  fprintf(configfile, "filesystem2=rw,BOOT:Boot:\"%s\",-1\n", (const char*)tmp_str);
-                  free(tmp_str);
-                  tmp_str = NULL;
-               }
-               else
-                  fprintf(stderr, "Error creating Boot HD directory: '%s'!\n", (const char*)&boothd_path);
-            }
+            fclose(configfile_custom);
          }
 
-         // CD32 exception
-         if (strcmp(opt_model, "CD32") == 0 || strcmp(opt_model, "CD32FR") == 0 || strcmp(opt_model, "CDTV") == 0)
+         // Init only existing disks
+         if (!string_is_empty(disk_image) && retro_dc->count)
          {
-            char kickstart_ext[RETRO_PATH_MAX];
-            path_join((char*)&kickstart_ext, retro_system_directory, uae_kickstart_ext);
-
-            // Verify kickstart
-            if (!file_exists(kickstart))
-            {
-               // Kickstart ROM not found
-               fprintf(stderr, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
-               fclose(configfile);
-
-               snprintf(retro_message_msg, sizeof(retro_message_msg), "Kickstart ROM '%s' not found!", path_basename((const char*)kickstart));
-               retro_message = true;
-            }
-            else
-               fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
-
-            // Decide if CD32 ROM is combined based on filesize
-            struct stat kickstart_st;
-            stat(kickstart, &kickstart_st);
-
-            // Verify extended ROM if external
-            if (kickstart_st.st_size <= 524288)
-            {
-               if (!file_exists(kickstart_ext))
-               {
-                  // Kickstart extended ROM not found
-                  fprintf(stderr, "Kickstart extended ROM '%s' not found!\n", (const char*)&kickstart_ext);
-                  fclose(configfile);
-
-                  snprintf(retro_message_msg, sizeof(retro_message_msg), "Kickstart extended ROM '%s' not found!", path_basename((const char*)kickstart_ext));
-                  retro_message = true;
-               }
-               else
-                  fprintf(configfile, "kickstart_ext_rom_file=%s\n", (const char*)&kickstart_ext);
-            }
-
-            // NVRAM always shared without content
-            char flash_filename[RETRO_PATH_MAX];
-            char flash_filepath[RETRO_PATH_MAX];
-            snprintf(flash_filename, sizeof(flash_filename), "%s.nvr", LIBRETRO_PUAE_PREFIX);
-            // CDTV suffix
-            if (kickstart_st.st_size == 262144)
-               snprintf(flash_filename, sizeof(flash_filename), "%s_cdtv.nvr", LIBRETRO_PUAE_PREFIX);
-            path_join((char*)&flash_filepath, retro_save_directory, flash_filename);
-            fprintf(stdout, "[libretro-uae]: Using Flash RAM: '%s'\n", flash_filepath);
-            fprintf(configfile, "flash_file=%s\n", (const char*)&flash_filepath);
+            // Init first disk
+            retro_dc->index = 0;
+            retro_dc->eject_state = false;
+            display_current_image(retro_dc->labels[retro_dc->index], true);
+            log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF0: '%s'\n", retro_dc->index+1, retro_dc->files[retro_dc->index]);
          }
-         else
-         {
-            // Verify Kickstart
-            if (!file_exists(kickstart))
-            {
-               // Kickstart ROM not found
-               fprintf(stderr, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
-               fclose(configfile);
+      }
+      // Unknown extensions
+      else
+      {
+         // Write model preset
+         fprintf(configfile, uae_model);
 
-               snprintf(retro_message_msg, sizeof(retro_message_msg), "Kickstart ROM '%s' not found!", path_basename((const char*)kickstart));
-               retro_message = true;
-            }
-            else
-               fprintf(configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
-         }
+         // Separator row for clarity
+         fprintf(configfile, "\n");
 
-         fclose(configfile);
+         // Verify and write Kickstart
+         retro_print_kickstart(&configfile);
+
+         // Separator row for clarity
+         fprintf(configfile, "\n");
+
+         // Write common config
+         fprintf(configfile, uae_config);
+
+         // Unsupported file format
+         log_cb(RETRO_LOG_ERROR, "Unsupported file format: '%s'\n", full_path);
+         snprintf(retro_message_msg, sizeof(retro_message_msg), "Unsupported file format: '%s'", path_get_extension(full_path));
+         retro_message = true;
+      }
+   }
+   // Empty content
+   else
+   {
+      // No model specified
+      log_cb(RETRO_LOG_INFO, "Booting model: '%s'\n", uae_kickstart);
+
+      // Write model preset
+      fprintf(configfile, uae_model);
+
+      // Separator row for clarity
+      fprintf(configfile, "\n");
+
+      // Verify and write Kickstart
+      retro_print_kickstart(&configfile);
+
+      // Bootable HD exception, not for CD systems
+      if (opt_use_boot_hd)
+         if (strcmp(opt_model, "CD32") && strcmp(opt_model, "CD32FR") && strcmp(opt_model, "CDTV"))
+            retro_use_boot_hd(&configfile);
+
+      // Separator row for clarity
+      fprintf(configfile, "\n");
+
+      // Write common config
+      fprintf(configfile, uae_config);
+   }
+
+   // Separator row for clarity
+   fprintf(configfile, "\n");
+
+   // Iterate global config file and append all rows to the temporary config
+   char configfile_global_path[RETRO_PATH_MAX];
+   path_join((char*)&configfile_global_path, retro_save_directory, LIBRETRO_PUAE_PREFIX "_global.uae");
+   if (file_exists(configfile_global_path))
+   {
+      log_cb(RETRO_LOG_INFO, "Appending global configuration: '%s'\n", configfile_global_path);
+      // Separator row for clarity
+      fprintf(configfile, "\n");
+
+      FILE * configfile_global;
+      char filebuf[512];
+      if (configfile_global = fopen(configfile_global_path, "r"))
+      {
+         while (fgets(filebuf, sizeof(filebuf), configfile_global))
+            fprintf(configfile, filebuf);
+         fclose(configfile_global);
       }
    }
 
+   // Scan region tags only with automatic region
+   if (opt_region_auto)
+      retro_force_region(&configfile);
+
+   // Close tmp config
+   fclose(configfile);
+
    // Scan for specific rows
-   FILE * configfile;
-   char filebuf[4096];
+   char filebuf[512];
    if (configfile = fopen(RPATH, "r"))
    {
       while (fgets(filebuf, sizeof(filebuf), configfile))
       {
-         if (strstr(filebuf, "ntsc=true"))
+         if (strstr(filebuf, "ntsc=true") && filebuf[0] == 'n')
             real_ntsc = true;
-         if (strstr(filebuf, "ntsc=false"))
+         if (strstr(filebuf, "ntsc=false") && filebuf[0] == 'n')
             real_ntsc = false;
       }
       fclose(configfile);
@@ -5514,7 +5449,7 @@ bool retro_load_game(const struct retro_game_info *info)
       return false;
 
    // Screen resolution
-   fprintf(stderr, "[libretro-uae]: Resolution selected: %dx%d\n", defaultw, defaulth);
+   log_cb(RETRO_LOG_INFO, "Resolution selected: %dx%d\n", defaultw, defaulth);
    retrow = defaultw;
    retroh = defaulth;
 

@@ -1,5 +1,8 @@
 const char* keyDesc[] = {
 "---",//0,
+"TOGGLE_VKBD",//-11,
+"TOGGLE_STATUSBAR",//-12,
+"SWITCH_JOYMOUSE",//-13,
 "MOUSE_LEFT_BUTTON",//-2,
 "MOUSE_RIGHT_BUTTON",//-3,
 "MOUSE_MIDDLE_BUTTON",//-4,
@@ -7,9 +10,6 @@ const char* keyDesc[] = {
 "MOUSE_FASTER",//-6,
 "JOYSTICK_FIRE",//-7
 "JOYSTICK_2ND_FIRE",//-8
-"TOGGLE_VKBD",//-11,
-"TOGGLE_STATUSBAR",//-12,
-"SWITCH_JOYMOUSE",//-13,
 "RETROK_BACKSPACE",//8,
 "RETROK_TAB",//9,
 //"RETROK_CLEAR",//12,
@@ -150,6 +150,9 @@ NULL
 
 int keyVal[] = {
 0,
+-11,
+-12,
+-13,
 -2,
 -3,
 -4,
@@ -157,9 +160,6 @@ int keyVal[] = {
 -6,
 -7,
 -8,
--11,
--12,
--13,
 8,
 9,
 //12,
@@ -302,6 +302,9 @@ int keyVal[] = {
 
 const char* keyDescHotkeys[] = {
 "---",//0,
+//"TOGGLE_VKBD",//-11,
+//"TOGGLE_STATUSBAR",//-12,
+//"SWITCH_JOYMOUSE",//-13,
 //"MOUSE_LEFT_BUTTON",//-2,
 //"MOUSE_RIGHT_BUTTON",//-3,
 //"MOUSE_MIDDLE_BUTTON",//-4,
@@ -309,9 +312,6 @@ const char* keyDescHotkeys[] = {
 //"MOUSE_FASTER",//-6,
 //"JOYSTICK_FIRE",//-7
 //"JOYSTICK_2ND_FIRE",//-8
-//"TOGGLE_VKBD",//-11,
-//"TOGGLE_STATUSBAR",//-12,
-//"SWITCH_JOYMOUSE",//-13,
 "RETROK_BACKSPACE",//8,
 "RETROK_TAB",//9,
 //"RETROK_CLEAR",//12,
@@ -452,6 +452,9 @@ NULL
 
 int keyValHotkeys[] = {
 0,
+//-11,
+//-12,
+//-13,
 //-2,
 //-3,
 //-4,
@@ -459,9 +462,6 @@ int keyValHotkeys[] = {
 //-6,
 //-7,
 //-8,
-//-11,
-//-12,
-//-13,
 8,
 9,
 //12,
