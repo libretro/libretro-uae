@@ -166,7 +166,7 @@ static void write_tdnumber (uae_u8 *buf, int bpp, int x, int y, int num, uae_u32
 
 void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u32 *rc, uae_u32 *gc, uae_u32 *bc, uae_u32 *alpha)
 {
-    if (LEDON==-1)
+    if (LEDON == -1)
         return;
 
     totalwidth = zoomed_width;
@@ -181,7 +181,7 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
             num_multip = 4;
     }
 
-    int LED_WIDTH = 17;
+    int LED_WIDTH = 16;
     int TD_WIDTH = (LED_WIDTH * num_multip);
     int TD_LED_WIDTH = TD_WIDTH;
 
@@ -249,7 +249,7 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
                     on_rgb2 = RED_DIM;
                 }
                 half = gui_data.drive_side ? 1 : -1;
-                if (gui_data.df[pled][0] == 0)
+                if (!gui_data.df[pled][0])
                 {
                     if (currprefs.chipset_mask & CSMASK_MASK)
                     {
@@ -284,7 +284,7 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
                     on_rgb &= 0xfefefe;
                     on_rgb >>= 1;
                 }
-                if (currprefs.cdslots[0].name[0] == 0)
+                if (!currprefs.cdslots[0].name[0])
                 {
                     pen_rgb = ledcolor (YELLOW_DIM, rc, gc, bc, alpha);
                     off_rgb = YELLOW_DISABLED;
@@ -448,13 +448,40 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
             //border = 1;// Disable rounded borders
         }
 
-        x = x_start + 1 + pos * TD_WIDTH;
+        x = x_start - num_multip + 1 + pos * TD_WIDTH;
         if (!border)
-            putpixel (buf, bpp, x - 1, cb, 0);
-        for (j = 0; j < TD_LED_WIDTH - 1; j++)
+        {
+            putpixel (buf, bpp, x, cb, 0);
+            switch (num_multip)
+            {
+                case 2:
+                    putpixel (buf, bpp, x + 1, cb, 0);
+                    break;
+                case 4:
+                    putpixel (buf, bpp, x + 1, cb, 0);
+                    putpixel (buf, bpp, x + 2, cb, 0);
+                    putpixel (buf, bpp, x + 3, cb, 0);
+                    break;
+            }
+        }
+        x = x + (num_multip);
+        for (j = 0; j < TD_LED_WIDTH - num_multip; j++)
             putpixel (buf, bpp, x + j, c, 0);
         if (!border)
+        {
             putpixel (buf, bpp, x + j, cb, 0);
+            switch (num_multip)
+            {
+                case 2:
+                    putpixel (buf, bpp, x + 1 + j, cb, 0);
+                    break;
+                case 4:
+                    putpixel (buf, bpp, x + 1 + j, cb, 0);
+                    putpixel (buf, bpp, x + 2 + j, cb, 0);
+                    putpixel (buf, bpp, x + 3 + j, cb, 0);
+                    break;
+            }
+        }
 
         if (y >= TD_PADY && y - TD_PADY < TD_NUM_HEIGHT) {
             if (num3 >= 0) {
@@ -467,8 +494,7 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
                     write_tdnumber (buf, bpp, x, y - TD_PADY, num2, pen_rgb, c2);
                     x += TD_NUM_WIDTH * num_multip;
                 }
-                if (num_multip == 2)
-                    x--;
+                x = x - (num_multip);
                 write_tdnumber (buf, bpp, x, y - TD_PADY, num3, pen_rgb, c2);
                 x += TD_NUM_WIDTH * num_multip;
                 if (num4 > -1)
