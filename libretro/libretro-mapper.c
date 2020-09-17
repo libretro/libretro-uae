@@ -1208,6 +1208,7 @@ static void process_turbofire(int retro_port, int i)
 static void process_key(int disable_physical_cursor_keys)
 {
    int i;
+
    for (i = RETROK_BACKSPACE; i < RETROK_LAST; i++)
    {
       key_state[i] = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, i) ? 0x80 : 0;
@@ -1225,7 +1226,7 @@ static void process_key(int disable_physical_cursor_keys)
          else if (!key_state[i] && key_state2[i])
             key_state2[i] = 0;
       }
-      else
+      else if (keyboard_translation[i] != -1)
       {
          /* Override cursor keys if used as a RetroPad */
          if (disable_physical_cursor_keys && (i == RETROK_DOWN || i == RETROK_UP || i == RETROK_LEFT || i == RETROK_RIGHT))
@@ -1234,7 +1235,8 @@ static void process_key(int disable_physical_cursor_keys)
          /* Skip numpad if Keyrah is active */
          if (opt_keyrahkeypad)
          {
-            switch(i) {
+            switch (i)
+            {
                case RETROK_KP1:
                case RETROK_KP2:
                case RETROK_KP3:
@@ -1249,7 +1251,7 @@ static void process_key(int disable_physical_cursor_keys)
             }
          }
 
-         if (key_state[i] && keyboard_translation[i] != -1 && key_state2[i] == 0)
+         if (key_state[i] && !key_state2[i])
          {
             /* Skip keydown if VKBD is active */
             if (SHOWKEY == 1)
@@ -1261,7 +1263,7 @@ static void process_key(int disable_physical_cursor_keys)
             retro_key_down(keyboard_translation[i]);
             key_state2[i] = 1;
          }
-         else if (!key_state[i] && keyboard_translation[i] != -1 && key_state2[i] == 1)
+         else if (!key_state[i] && key_state2[i])
          {
             retro_key_up(keyboard_translation[i]);
             key_state2[i] = 0;
@@ -2014,6 +2016,7 @@ void retro_poll_event()
    {
       if (MOUSEMODE == 1)
          continue;
+
       switch (uae_devices[retro_port])
       {
          case RETRO_DEVICE_JOYPAD:

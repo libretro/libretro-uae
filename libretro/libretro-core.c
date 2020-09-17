@@ -4028,7 +4028,6 @@ static char* emu_config_string(char* mode, int config)
          case EMU_CONFIG_CDTV:      return "CDTV";
          case EMU_CONFIG_CD32:      return "CD32";
          case EMU_CONFIG_CD32FR:    return "CD32FR";
-         default: return "";
       }
    }
    else if (!strcmp(mode, "kickstart"))
@@ -4046,7 +4045,6 @@ static char* emu_config_string(char* mode, int config)
          case EMU_CONFIG_CDTV:      return A500_ROM;
          case EMU_CONFIG_CD32:      return CD32_ROM;
          case EMU_CONFIG_CD32FR:    return CD32_ROM;
-         default: return "";
       }
    }
    else if (!strcmp(mode, "kickstart_ext"))
@@ -4064,9 +4062,9 @@ static char* emu_config_string(char* mode, int config)
          case EMU_CONFIG_CDTV:      return CDTV_ROM;
          case EMU_CONFIG_CD32:      return CD32_ROM_EXT;
          case EMU_CONFIG_CD32FR:    return CD32_ROM_EXT;
-         default: return "";
       }
    }
+   return "";
 }
 
 static int emu_config_int(char* model)
