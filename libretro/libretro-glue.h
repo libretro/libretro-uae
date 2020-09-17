@@ -64,6 +64,7 @@ extern int pointer_x;
 extern int pointer_y;
 #endif
 
+extern int SHOWKEY;
 extern int vkey_pos_x;
 extern int vkey_pos_y;
 extern int vkey_pressed;
