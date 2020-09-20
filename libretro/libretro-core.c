@@ -177,11 +177,12 @@ extern int cd32_pad_enabled[NORMAL_JPORTS];
 int mapper_keys[31]={0};
 extern void display_current_image(const char *image, bool inserted);
 
-retro_log_printf_t log_cb;
-static retro_video_refresh_t video_cb;
-static retro_audio_sample_t audio_cb;
-static retro_audio_sample_batch_t audio_batch_cb;
-static retro_environment_t environ_cb;
+retro_log_printf_t log_cb = NULL;
+static retro_set_led_state_t led_state_cb = NULL;
+static retro_video_refresh_t video_cb = NULL;
+static retro_audio_sample_t audio_cb = NULL;
+static retro_audio_sample_batch_t audio_batch_cb = NULL;
+static retro_environment_t environ_cb = NULL;
 
 char retro_save_directory[RETRO_PATH_MAX] = {0};
 char retro_temp_directory[RETRO_PATH_MAX] = {0};
@@ -197,6 +198,11 @@ static char uae_kickstart[RETRO_PATH_MAX] = {0};
 static char uae_kickstart_ext[RETRO_PATH_MAX] = {0};
 static char uae_config[4096] = {0};
 static char uae_custom_config[4096] = {0};
+
+void retro_set_led(unsigned led)
+{
+   led_state_cb(0, led);
+}
 
 void retro_set_environment(retro_environment_t cb)
 {
@@ -1399,6 +1405,8 @@ void retro_set_environment(retro_environment_t cb)
    }
 
    environ_cb = cb;
+   cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, (void*)ports);
+
    unsigned version = 0;
    if (cb(RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION, &version) && (version == 1))
       cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS, core_options);
@@ -1433,7 +1441,11 @@ void retro_set_environment(retro_environment_t cb)
    static bool allowNoGameMode;
    allowNoGameMode = true;
    cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &allowNoGameMode);
-   cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, (void*)ports);
+
+   static struct retro_led_interface led_interface;
+   cb(RETRO_ENVIRONMENT_GET_LED_INTERFACE, &led_interface);
+   if (led_interface.set_led_state)
+      led_state_cb = led_interface.set_led_state;
 }
 
 static void update_variables(void)
