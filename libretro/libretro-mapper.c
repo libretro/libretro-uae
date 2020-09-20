@@ -105,7 +105,7 @@ extern unsigned int opt_analogmouse_deadzone;
 extern float opt_analogmouse_speed;
 extern unsigned int opt_dpadmouse_speed;
 extern bool opt_multimouse;
-extern bool opt_keyrahkeypad;
+extern bool opt_keyrah_keypad;
 extern bool opt_keyboard_pass_through;
 extern int opt_cd32pad_options;
 extern int opt_retropad_options;
@@ -206,8 +206,8 @@ void emu_function(int function)
    }
 }
 
-extern char key_state[512];
-extern char key_state2[512];
+extern char key_state[RETROK_LAST];
+extern char key_state2[RETROK_LAST];
 
 static retro_input_state_t input_state_cb;
 static retro_input_poll_t input_poll_cb;
@@ -616,7 +616,7 @@ void print_statusbar(void)
       sprintf(JOYPORT2, "%2s%3s", "A2", joystick_value_human(aflag[1], 4));
 
    // Keyrah joyflags
-   if (opt_keyrahkeypad)
+   if (opt_keyrah_keypad)
    {
       if (!flag_empty(kjflag[0]))
          sprintf(JOYPORT1, "%2s%3s", "K1", joystick_value_human(kjflag[0], 0));
@@ -1233,7 +1233,7 @@ static void process_key(int disable_physical_cursor_keys)
             continue;
 
          /* Skip numpad if Keyrah is active */
-         if (opt_keyrahkeypad)
+         if (opt_keyrah_keypad)
          {
             switch (i)
             {
@@ -1406,7 +1406,7 @@ void update_input(int disable_physical_cursor_keys)
    if (processkey && disable_physical_cursor_keys != 2)
       process_key(disable_physical_cursor_keys);
 
-   if (opt_keyrahkeypad)
+   if (opt_keyrah_keypad)
       process_keyrah();
 
    /* RetroPad hotkeys for ports 1 & 2 */

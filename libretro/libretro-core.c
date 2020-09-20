@@ -42,8 +42,8 @@ int defaultw = EMULATOR_DEF_WIDTH;
 int defaulth = EMULATOR_DEF_HEIGHT;
 int retrow = 0;
 int retroh = 0;
-char key_state[512];
-char key_state2[512];
+char key_state[RETROK_LAST];
+char key_state2[RETROK_LAST];
 
 unsigned int opt_model_options_display = 0;
 unsigned int opt_audio_options_display = 0;
@@ -68,7 +68,7 @@ int opt_statusbar_position_old = 0;
 int opt_statusbar_position_offset = 0;
 unsigned int opt_vkbd_theme = 0;
 unsigned int opt_vkbd_alpha = 204;
-bool opt_keyrahkeypad = false;
+bool opt_keyrah_keypad = false;
 bool opt_keyboard_pass_through = false;
 bool opt_multimouse = false;
 unsigned int opt_dpadmouse_speed = 4;
@@ -2252,8 +2252,8 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (!strcmp(var.value, "disabled"))     opt_keyrahkeypad = false;
-      else if (!strcmp(var.value, "enabled")) opt_keyrahkeypad = true;
+      if (!strcmp(var.value, "disabled"))     opt_keyrah_keypad = false;
+      else if (!strcmp(var.value, "enabled")) opt_keyrah_keypad = true;
    }
 
    var.key = "puae_physical_keyboard_pass_through";
