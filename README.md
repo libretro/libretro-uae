@@ -206,7 +206,7 @@ A M3U file is a simple text file with one disk per line ([Wikipedia](https://en.
 
 Example:
 
-Simpsons, The - Bart vs. The Space Mutants.m3u
+`Simpsons, The - Bart vs. The Space Mutants.m3u`
 ```
 Simpsons, The - Bart vs. The Space Mutants_Disk1.adf
 Simpsons, The - Bart vs. The Space Mutants_Disk2.adf
@@ -222,7 +222,7 @@ For games that support multiple disk drives, append "**(MD)**" as in "MultiDrive
 
 For games that require a dedicated save disk, one may be generated automatically by entering the following line in an M3U file: `#SAVEDISK:VolumeName`. `VolumeName` is optional and may be omitted. For example, this will create a blank, unlabelled disk image at disk index 5:
 
-Secret of Monkey Island.m3u
+`Secret of Monkey Island.m3u`
 ```
 Secret of Monkey Island_Disk 1.adf
 Secret of Monkey Island_Disk 2.adf
@@ -233,7 +233,7 @@ Secret of Monkey Island_Disk 4.adf
 
 Some games require save disks to have a specific label - for example, `It Came from the Desert` will only save to a disk named `DSAVE`:
 
-It Came from the Desert.m3u
+`It Came from the Desert.m3u`
 ```
 It Came from the Desert_Disk 1.adf
 It Came from the Desert_Disk 2.adf
@@ -245,7 +245,7 @@ Although one save disk is normally sufficient, an arbitrary number of `#SAVEDISK
 
 By default, RetroArch will display the filename (without extension) of each M3U entry when selecting a disk via the `Current Disc Index` drop-down menu. Custom display labels may be set for each disk using the syntax: `DISK_FILE|DISK_LABEL`. For example, the following M3U file:
 
-Valhalla & the Fortress of Eve.m3u
+`Valhalla & the Fortress of Eve.m3u`
 ```
 Valhalla & the Fortress of Eve_Disk1.adf|Game Disk
 Valhalla & the Fortress of Eve_Disk2.adf|Data Disk
@@ -295,7 +295,7 @@ Pre-installed WHDLoad LHA archives can be launched directly without any kind of 
 ### New WHDLoad.hdf features for old users
 #### Major changes
 - Slave no longer needs to be renamed to game.slave. The first one is selected.
-- Kickstarts will be copied automatically from `system` if they don't exist in the helper image.
+- Kickstarts will be copied automatically from `system` if they do not exist in the helper image.
 - `WHDLoad.key` will be copied from `system` if it does not exist in the helper image.
 - `WHDLoad.prefs` will be copied from `system` on every run.
 - Supports a file named `custom` in the root of the game.hdf for passing specific WHDLoad parameters when the slave does not support the config screen or when it should be the default, for example `Custom1=1`. It always overrides `WHDLoad.prefs`.
@@ -308,7 +308,7 @@ Pre-installed WHDLoad LHA archives can be launched directly without any kind of 
 
 #### Minor changes
 - Both HDF-files (`WHDLoad.hdf` & `WHDSaves.hdf`) can be located in either RA `system` or `saves`.
-- "Use WHDLoad.hdf" core option does not need to be disabled when launching a non-WHDLoad HDF which has `S/startup-sequence`.
+- "WHDLoad Support" core option does not need to be disabled when launching a non-WHDLoad HDF which has `S/startup-sequence`.
 - `NTSC` parameter can be used with WHDLoad.
 - Included `ClickNot` for suppressing drive clicking when drive sound emulation is enabled.
 - Included `MEmacs` for file editing (`custom` & `load`).
