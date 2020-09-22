@@ -42,8 +42,8 @@ int defaultw = EMULATOR_DEF_WIDTH;
 int defaulth = EMULATOR_DEF_HEIGHT;
 int retrow = 0;
 int retroh = 0;
-char key_state[RETROK_LAST];
-char key_state2[RETROK_LAST];
+char retro_key_state[RETROK_LAST];
+char retro_key_state_old[RETROK_LAST];
 
 unsigned int opt_model_options_display = 0;
 unsigned int opt_audio_options_display = 0;
@@ -3228,11 +3228,16 @@ void retro_init(void)
    }
 
    memset(retro_bmp, 0, sizeof(retro_bmp));
-   memset(key_state, 0, sizeof(key_state));
-   memset(key_state2, 0, sizeof(key_state2));
+   memset(retro_key_state, 0, sizeof(retro_key_state));
+   memset(retro_key_state_old, 0, sizeof(retro_key_state_old));
 
    libretro_runloop_active = 0;
    update_variables();
+
+   // Screen resolution
+   //log_cb(RETRO_LOG_INFO, "Resolution selected: %dx%d\n", defaultw, defaulth);
+   retrow = defaultw;
+   retroh = defaulth;
 }
 
 void retro_deinit(void)
@@ -5443,11 +5448,6 @@ bool retro_load_game(const struct retro_game_info *info)
    retro_return = retro_create_config();
    if (!retro_return)
       return false;
-
-   // Screen resolution
-   log_cb(RETRO_LOG_INFO, "Resolution selected: %dx%d\n", defaultw, defaulth);
-   retrow = defaultw;
-   retroh = defaulth;
 
    // Initialise emulation
    umain(sizeof(uae_argv)/sizeof(*uae_argv), uae_argv);

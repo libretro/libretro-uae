@@ -206,8 +206,8 @@ void emu_function(int function)
    }
 }
 
-extern char key_state[RETROK_LAST];
-extern char key_state2[RETROK_LAST];
+extern char retro_key_state[RETROK_LAST];
+extern char retro_key_state_old[RETROK_LAST];
 
 static retro_input_state_t input_state_cb;
 static retro_input_poll_t input_poll_cb;
@@ -1211,20 +1211,20 @@ static void process_key(int disable_physical_cursor_keys)
 
    for (i = RETROK_BACKSPACE; i < RETROK_LAST; i++)
    {
-      key_state[i] = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, i) ? 0x80 : 0;
+      retro_key_state[i] = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, i);
 
       /* CapsLock */
       if (keyboard_translation[i] == AK_CAPSLOCK)
       {
-         if (key_state[i] && !key_state2[i])
+         if (retro_key_state[i] && !retro_key_state_old[i])
          {
             retro_key_down(keyboard_translation[i]);
             retro_key_up(keyboard_translation[i]);
             SHIFTON = -SHIFTON;
-            key_state2[i] = 1;
+            retro_key_state_old[i] = 1;
          }
-         else if (!key_state[i] && key_state2[i])
-            key_state2[i] = 0;
+         else if (!retro_key_state[i] && retro_key_state_old[i])
+            retro_key_state_old[i] = 0;
       }
       else if (keyboard_translation[i] != -1)
       {
@@ -1251,7 +1251,7 @@ static void process_key(int disable_physical_cursor_keys)
             }
          }
 
-         if (key_state[i] && !key_state2[i])
+         if (retro_key_state[i] && !retro_key_state_old[i])
          {
             /* Skip keydown if VKBD is active */
             if (SHOWKEY == 1)
@@ -1261,12 +1261,12 @@ static void process_key(int disable_physical_cursor_keys)
                retro_key_down(keyboard_translation[RETROK_LSHIFT]);
 
             retro_key_down(keyboard_translation[i]);
-            key_state2[i] = 1;
+            retro_key_state_old[i] = 1;
          }
-         else if (!key_state[i] && key_state2[i])
+         else if (!retro_key_state[i] && retro_key_state_old[i])
          {
             retro_key_up(keyboard_translation[i]);
-            key_state2[i] = 0;
+            retro_key_state_old[i] = 0;
 
             if (SHIFTON == 1)
                retro_key_up(keyboard_translation[RETROK_LSHIFT]);
