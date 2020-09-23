@@ -42,8 +42,8 @@ int defaultw = EMULATOR_DEF_WIDTH;
 int defaulth = EMULATOR_DEF_HEIGHT;
 int retrow = 0;
 int retroh = 0;
-char key_state[RETROK_LAST];
-char key_state2[RETROK_LAST];
+char retro_key_state[RETROK_LAST];
+char retro_key_state_old[RETROK_LAST];
 
 unsigned int opt_model_options_display = 0;
 unsigned int opt_audio_options_display = 0;
@@ -86,10 +86,11 @@ extern uae_u8 *natmem_offset;
 extern uae_u32 natmem_size;
 #endif
 
-static char RPATH[512] = {0};
-static char full_path[512] = {0};
+static char RPATH[RETRO_PATH_MAX] = {0};
+static char full_path[RETRO_PATH_MAX] = {0};
 static char *uae_argv[] = { "puae", RPATH };
 static int restart_pending = 0;
+static char* core_options_legacy_strings = NULL;
 
 unsigned short int retro_bmp[RETRO_BMP_SIZE];
 extern int STATUSON;
@@ -1408,34 +1409,62 @@ void retro_set_environment(retro_environment_t cb)
    cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, (void*)ports);
 
    unsigned version = 0;
-   if (cb(RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION, &version) && (version == 1))
+   if (!cb(RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION, &version))
+   {
+      if (log_cb)
+         log_cb(RETRO_LOG_INFO, "retro_set_environment: GET_CORE_OPTIONS_VERSION failed, not setting CORE_OPTIONS now.\n");
+   }
+   else if (version == 1)
+   {
       cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS, core_options);
+   }
    else
    {
       /* Fallback for older API */
-      static char buf[sizeof(core_options) / sizeof(core_options[0])][4096] = { 0 };
-      static struct retro_variable variables[sizeof(core_options) / sizeof(core_options[0])] = { 0 };
-      i = 0;
-      while (core_options[i].key)
+      /* Use define because C doesn't care about const. */
+#define NUM_CORE_OPTIONS ( sizeof(core_options)/sizeof(core_options[0])-1 )
+      static struct retro_variable variables[NUM_CORE_OPTIONS+1];
+
+      /* Only generate variables once, it's as static as core_options */
+      if (!core_options_legacy_strings)
       {
-         buf[i][0] = 0;
-         variables[i].key = core_options[i].key;
-         strcpy(buf[i], core_options[i].desc);
-         strcat(buf[i], "; ");
-         strcat(buf[i], core_options[i].default_value);
-         j = 0;
-         while (core_options[i].values[j].value && j < RETRO_NUM_CORE_OPTION_VALUES_MAX)
+         /* First pass: Calculate size of string-buffer required */
+         unsigned buf_len;
+         char *buf;
          {
-            strcat(buf[i], "|");
-            strcat(buf[i], core_options[i].values[j].value);
-            ++j;
-         };
-         variables[i].value = buf[i];
-         ++i;
-      };
-      variables[i].key = NULL;
-      variables[i].value = NULL;
+            unsigned alloc_len = 0;
+            struct retro_core_option_definition *o = core_options + NUM_CORE_OPTIONS - 1;
+            struct retro_variable *rv = variables + NUM_CORE_OPTIONS - 1;
+            for (; o >= core_options; --o, --rv)
+            {
+               int l = snprintf(0, 0, "%s; %s", o->desc, o->default_value);
+               for (struct retro_core_option_value *v = o->values; v->value; ++v)
+                  l += snprintf(0, 0, "|%s", v->value);
+               alloc_len += l + 1;
+            }
+            buf = core_options_legacy_strings = (char *)malloc(alloc_len);
+            buf_len = alloc_len;
+         }
+         /* Second pass: Fill string-buffer */
+         struct retro_core_option_definition *o = core_options + NUM_CORE_OPTIONS - 1;
+         struct retro_variable *rv = variables + NUM_CORE_OPTIONS;
+         rv->key = rv->value = 0;
+         --rv;
+         for (; o >= core_options; --o, --rv)
+         {
+            int l = snprintf(buf, buf_len, "%s; %s", o->desc, o->default_value);
+            for (struct retro_core_option_value *v = o->values; v->value; ++v)
+               if (v->value != o->default_value)
+                  l += snprintf(buf+l, buf_len, "|%s", v->value);
+            rv->key = o->key;
+            rv->value = buf;
+            ++l;
+            buf += l;
+            buf_len -= l;
+         }
+      }
       cb(RETRO_ENVIRONMENT_SET_VARIABLES, variables);
+#undef NUM_CORE_OPTIONS
    }
 
    static bool allowNoGameMode;
@@ -3228,11 +3257,16 @@ void retro_init(void)
    }
 
    memset(retro_bmp, 0, sizeof(retro_bmp));
-   memset(key_state, 0, sizeof(key_state));
-   memset(key_state2, 0, sizeof(key_state2));
+   memset(retro_key_state, 0, sizeof(retro_key_state));
+   memset(retro_key_state_old, 0, sizeof(retro_key_state_old));
 
    libretro_runloop_active = 0;
    update_variables();
+
+   // Screen resolution
+   //log_cb(RETRO_LOG_INFO, "Resolution selected: %dx%d\n", defaultw, defaulth);
+   retrow = defaultw;
+   retroh = defaulth;
 }
 
 void retro_deinit(void)
@@ -3241,8 +3275,12 @@ void retro_deinit(void)
    if (retro_dc)
       dc_free(retro_dc);
 
+   // Clean legacy strings
+   if (core_options_legacy_strings)
+      free(core_options_legacy_strings);
+
    // Clean ZIP temp
-   if (retro_temp_directory != NULL && path_is_directory(retro_temp_directory))
+   if (!string_is_empty(retro_temp_directory) && path_is_directory(retro_temp_directory))
       remove_recurse(retro_temp_directory);
 
    // 'Reset' troublesome static variable
@@ -4018,7 +4056,7 @@ static void retro_print_kickstart(FILE** configfile)
          snprintf(flash_filename, sizeof(flash_filename), "%s.nvr", path_remove_extension(flash_filename));
       }
       path_join((char*)&flash_filepath, retro_save_directory, flash_filename);
-      log_cb(RETRO_LOG_INFO, "Using Flash RAM: '%s'\n", flash_filepath);
+      log_cb(RETRO_LOG_INFO, "Using NVRAM: '%s'\n", flash_filepath);
       fprintf(*configfile, "flash_file=%s\n", (const char*)&flash_filepath);
    }
 }
@@ -5443,11 +5481,6 @@ bool retro_load_game(const struct retro_game_info *info)
    retro_return = retro_create_config();
    if (!retro_return)
       return false;
-
-   // Screen resolution
-   log_cb(RETRO_LOG_INFO, "Resolution selected: %dx%d\n", defaultw, defaulth);
-   retrow = defaultw;
-   retroh = defaulth;
 
    // Initialise emulation
    umain(sizeof(uae_argv)/sizeof(*uae_argv), uae_argv);

@@ -17,6 +17,27 @@
 #include "uae_types.h"
 #include "writelog.h"
 
+#ifdef __LIBRETRO__
+#include "libretro.h"
+extern retro_log_printf_t log_cb;
+void write_log (const char *fmt, ...)
+{
+    char text[512];
+    va_list ap;
+
+    if (fmt == NULL)
+       return;
+
+    va_start (ap, fmt);
+    vsprintf(text, fmt, ap);
+    va_end(ap);
+
+    if (text[strlen(text)-1] == '\n')
+       text[strlen(text)-1] = ' ';
+
+    log_cb(RETRO_LOG_INFO, "%s\n", text);
+}
+#else
 void write_log (const char *fmt, ...)
 {
     va_list ap;
@@ -39,6 +60,7 @@ void write_log (const char *fmt, ...)
     }
 #endif
 }
+#endif
 
 #ifdef JIT
 void jit_abort (const char *fmt, ...)

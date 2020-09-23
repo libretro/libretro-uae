@@ -3905,15 +3905,15 @@ static int cfgfile_load_2 (struct uae_prefs *p, const TCHAR *filename, bool real
 		//reset_inputdevice_config (p);
 	}
 
-	write_log ("Opening cfgfile '%s': ", filename);
+	write_log ("Opening cfgfile '%s' ", filename);
 	fh = zfile_fopen (filename, _T("r"), ZFD_NORMAL);
 #ifndef	SINGLEFILE
 	if (! fh) {
-		write_log ("failed\n");
+		//write_log ("failed\n");
 		return 0;
 	}
 #endif
-	write_log ("OK\n");
+	//write_log ("OK\n");
 
 	while (cfg_fgets (linea, sizeof (linea), fh) != 0) {
 		trimwsa (linea);

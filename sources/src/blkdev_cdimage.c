@@ -2155,6 +2155,8 @@ static int parse_image (struct cdunit *cdu, const TCHAR *img)
 	for (i = 0; i <= cdu->tracks; i++) {
 		struct cdtoc *t = &cdu->toc[i];
 		uae_u32 msf;
+		char toc_row[64] = {0};
+		char toc_tmp[64] = {0};
 		if (t->pregap) {
 			msf = lsn2msf (t->pregap - 150);
 			write_log (_T("   PREGAP : %02d:%02d:%02d\n"), (msf >> 16) & 0x7fff, (msf >> 8) & 0xff, (msf >> 0) & 0xff);
@@ -2164,33 +2166,45 @@ static int parse_image (struct cdunit *cdu, const TCHAR *img)
 			write_log (_T("   INDEX1 : %02d:%02d:%02d\n"), (msf >> 16) & 0x7fff, (msf >> 8) & 0xff, (msf >> 0) & 0xff);
 		}
 		if (i < cdu->tracks)
-			write_log (_T("%2d: "), i + 1);
+			//write_log (_T("%2d: "), i + 1);
+			snprintf(toc_tmp, sizeof(toc_tmp), "%2d: ", i + 1);
 		else
-			write_log (_T("    "));
-        msf = lsn2msf (t->address);
-		write_log (_T("%7d %02d:%02d:%02d"),
+			//write_log (_T("    "));
+			snprintf(toc_tmp, sizeof(toc_tmp), "    ");
+		strcat(toc_row, toc_tmp);
+		msf = lsn2msf (t->address);
+		//write_log (_T("%7d %02d:%02d:%02d"),
+		snprintf(toc_tmp, sizeof(toc_tmp), "%7d %02d:%02d:%02d",
 			t->address, (msf >> 16) & 0x7fff, (msf >> 8) & 0xff, (msf >> 0) & 0xff);
+		strcat(toc_row, toc_tmp);
 		if (i < cdu->tracks) {
-			write_log (_T(" %s %x %10lld %10lld %s%s"),
+			//write_log (_T(" %s %x %10lld %10lld %s%s"),
+			snprintf(toc_tmp, sizeof(toc_tmp), " %s %x %10lld %10lld %s%s",
 				(t->ctrl & 4) ? _T("DATA    ") : (t->subcode ? _T("CDA+SUB") : _T("CDA     ")),
 				t->ctrl, t->offset, t->filesize,
 				t->extrainfo ? t->extrainfo : _T(""),
 				t->handle == NULL && t->enctype != ENC_CHD ? _T("[FILE ERROR]") : _T(""));
+			strcat(toc_row, toc_tmp);
 		}
+#if 0
 		write_log (_T("\n"));
 		if (i < cdu->tracks)
 			write_log (_T(" - %s\n"), t->fname);
+#endif
 		if (t->handle && !t->filesize)
 			t->filesize = zfile_size (t->handle);
 		if (t->postgap) {
 			msf = lsn2msf (t->postgap - 150);
-			write_log (_T("   POSTGAP: %02d:%02d:%02d\n"), (msf >> 16) & 0x7fff, (msf >> 8) & 0xff, (msf >> 0) & 0xff);
+			//write_log (_T("   POSTGAP: %02d:%02d:%02d\n"), (msf >> 16) & 0x7fff, (msf >> 8) & 0xff, (msf >> 0) & 0xff);
+			snprintf(toc_tmp, sizeof(toc_tmp), "   POSTGAP: %02d:%02d:%02d",
+				(msf >> 16) & 0x7fff, (msf >> 8) & 0xff, (msf >> 0) & 0xff);
+			strcat(toc_row, toc_tmp);
 		}
+		write_log(toc_row);
 	}
 
 	cdu->blocksize = 2048;
 	cdu->cdsize = (uae_u64)cdu->toc[cdu->tracks].address * cdu->blocksize;
-	
 
 	zfile_fclose (zcue);
 	return 1;
@@ -2346,7 +2360,7 @@ static int open_bus (int flags)
 	}
 	bus_open = 1;
 	uae_sem_init(&play_sem, 0, 1);
-	write_log (_T("Image driver open.\n"));
+	write_log (_T("IMAGE driver open.\n"));
 	return 1;
 }
 

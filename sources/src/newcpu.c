@@ -1317,6 +1317,10 @@ void check_prefs_changed_cpu (void)
 void init_m68k (void)
 {
 	int i;
+#ifdef __LIBRETRO__
+	char cpu_table_config[512] = {0};
+	char cpu_table_temp[64] = {0};
+#endif
 
 	prefs_changed_cpu ();
 	update_68k_cycles ();
@@ -1347,6 +1351,39 @@ void init_m68k (void)
 		}
 	}
 #endif
+#ifdef __LIBRETRO__
+	regs.address_space_mask = 0xffffffff;
+	if (currprefs.cpu_compatible) {
+		if (currprefs.address_space_24 && currprefs.cpu_model >= 68030)
+			currprefs.address_space_24 = false;
+	}
+	if (currprefs.fpu_model > 0) {
+		snprintf(cpu_table_temp, sizeof(cpu_table_temp), "/%d", currprefs.fpu_model);
+		strcat(cpu_table_config, cpu_table_temp);
+	}
+	if (currprefs.cpu_cycle_exact) {
+		if (currprefs.cpu_model == 68000)
+			strcat(cpu_table_config, " prefetch and cycle-exact");
+		else
+			strcat(cpu_table_config, " ~cycle-exact");
+	} else if (currprefs.cpu_compatible) {
+		if (currprefs.cpu_model <= 68020)
+			strcat(cpu_table_config, " prefetch");
+		else
+			strcat(cpu_table_config, " fake prefetch");
+	}
+	if (currprefs.int_no_unimplemented && currprefs.cpu_model == 68060) {
+		strcat(cpu_table_config, " no unimplemented integer instructions");
+	}
+	if (currprefs.fpu_no_unimplemented && currprefs.fpu_model) {
+		strcat(cpu_table_config, " no unimplemented floating point instructions");
+	}
+	if (currprefs.address_space_24) {
+		regs.address_space_mask = 0x00ffffff;
+		strcat(cpu_table_config, " 24-bit");
+	}
+	write_log (_T("Building CPU table for configuration: %d%s"), currprefs.cpu_model, cpu_table_config);
+#else
 	write_log (_T("Building CPU table for configuration: %d"), currprefs.cpu_model);
 	regs.address_space_mask = 0xffffffff;
 	if (currprefs.cpu_compatible) {
@@ -1378,6 +1415,7 @@ void init_m68k (void)
 		write_log (_T(" 24-bit"));
 	}
 	write_log (_T("\n"));
+#endif
 
 	read_table68k ();
 	do_merges ();

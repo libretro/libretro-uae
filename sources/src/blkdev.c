@@ -174,7 +174,7 @@ static void install_driver (int flags)
 					} else {
 						driver_installed[j] = 1;
 					}
-					write_log (_T("%s driver installed, ok=%d\n"), st->device_func->name, ok);
+					//write_log (_T("%s driver installed, ok=%d\n"), st->device_func->name, ok);
 					break;
 				}
 			}
