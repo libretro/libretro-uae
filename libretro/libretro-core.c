@@ -4023,7 +4023,7 @@ static void retro_print_kickstart(FILE** configfile)
          snprintf(flash_filename, sizeof(flash_filename), "%s.nvr", path_remove_extension(flash_filename));
       }
       path_join((char*)&flash_filepath, retro_save_directory, flash_filename);
-      log_cb(RETRO_LOG_INFO, "Using Flash RAM: '%s'\n", flash_filepath);
+      log_cb(RETRO_LOG_INFO, "Using NVRAM: '%s'\n", flash_filepath);
       fprintf(*configfile, "flash_file=%s\n", (const char*)&flash_filepath);
    }
 }

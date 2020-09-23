@@ -1999,7 +1999,8 @@ static int flush_cache (Unit *unit, int num)
 	int i = 0;
 	int cnt = 100;
 
-	//write_log (_T("FILESYS: flushing cache unit %d (max %d items)\n"), unit->unit, num);
+	if (log_filesys)
+	    write_log (_T("FILESYS: flushing cache unit %d (max %d items)\n"), unit->unit, num);
 	if (num == 0)
 		num = -1;
 	while (i < num || num < 0) {
@@ -3016,7 +3017,8 @@ static void do_info (Unit *unit, dpacket packet, uaecptr info, bool disk_info)
 	} else {
 		uae_s64 numblocks, inuse;
 		get_usedblocks(&fsu, fs, &blocksize, &numblocks, &inuse, true);
-		//write_log(_T("total %lld avail %lld Blocks %lld Inuse %lld blocksize %d\n"), fsu.total, fsu.avail, numblocks, inuse, blocksize);
+		if (log_filesys)
+		    write_log(_T("total %lld avail %lld Blocks %lld Inuse %lld blocksize %d\n"), fsu.total, fsu.avail, numblocks, inuse, blocksize);
 		put_long (info + 12, (uae_u32)numblocks); /* numblocks */
 		put_long (info + 16, (uae_u32)inuse); /* inuse */
 		put_long (info + 20, blocksize); /* bytesperblock */
@@ -3715,7 +3717,7 @@ static void move_exkeys (Unit *unit, a_inode *from, a_inode *to)
 		}
 	}
 	if (tmp != from->exnext_count)
-		write_log (_T("filesys.c: Bug in ExNext bookkeeping.  BAD.\n"));
+		write_log (_T("filesys.c: Bug in ExNext bookkeeping. BAD.\n"));
 	to->exnext_count = from->exnext_count;
 	to->locked_children = from->locked_children;
 	from->exnext_count = 0;
@@ -3968,7 +3970,8 @@ static int action_lock_record (Unit *unit, dpacket packet, uae_u32 msg)
 	bool exclusive = mode == REC_EXCLUSIVE || mode == REC_EXCLUSIVE_IMMED;
 #endif
 
-	write_log (_T("action_lock_record('%s',%d,%d,%d,%d)\n"), k ? k->aino->nname : _T("null"), pos, len, mode, timeout);
+	if (log_filesys)
+	    write_log (_T("action_lock_record('%s',%d,%d,%d,%d)\n"), k ? k->aino->nname : _T("null"), pos, len, mode, timeout);
 
 	if (!k || mode > REC_SHARED_IMMED) {
 		PUT_PCK_RES1 (packet, DOS_FALSE);
@@ -3989,12 +3992,14 @@ static int action_lock_record (Unit *unit, dpacket packet, uae_u32 msg)
 			} else {
 				unit->waitingrecords = lr;
 			}
-			write_log (_T("-> collision, timeout queued\n"));
+			if (log_filesys)
+			    write_log (_T("-> collision, timeout queued\n"));
 			return -1;
 		}
 		PUT_PCK_RES1 (packet, DOS_FALSE);
 		PUT_PCK_RES2 (packet, ERROR_LOCK_COLLISION);
-		write_log (_T("-> ERROR_LOCK_COLLISION\n"));
+		if (log_filesys)
+		    write_log (_T("-> ERROR_LOCK_COLLISION\n"));
 		return 1;
 	}
 
@@ -4006,7 +4011,8 @@ static int action_lock_record (Unit *unit, dpacket packet, uae_u32 msg)
 		k->record = lr;
 	}
 	PUT_PCK_RES1 (packet, DOS_TRUE);
-	write_log (_T("-> OK\n"));
+	if (log_filesys)
+	    write_log (_T("-> OK\n"));
 	return 1;
 }
 
@@ -4016,7 +4022,8 @@ static void action_free_record (Unit *unit, dpacket packet)
 	uae_u32 pos = GET_PCK_ARG2 (packet);
 	uae_u32 len = GET_PCK_ARG3 (packet);
 
-	write_log (_T("action_free_record('%s',%d,%d)\n"), k ? k->aino->nname : _T("null"), pos, len);
+	if (log_filesys)
+	    write_log (_T("action_free_record('%s',%d,%d)\n"), k ? k->aino->nname : _T("null"), pos, len);
 
 	if (!k) {
 		PUT_PCK_RES1 (packet, DOS_FALSE);
@@ -4033,13 +4040,15 @@ static void action_free_record (Unit *unit, dpacket packet)
 			else
 				k->record = lr->next;
 			xfree (lr);
-			write_log (_T("->OK\n"));
+			if (log_filesys)
+			    write_log (_T("->OK\n"));
 			record_check_waiting (unit);
 			PUT_PCK_RES1 (packet, DOS_TRUE);
 			return;
 		}
 	}
-	write_log (_T("-> ERROR_RECORD_NOT_LOCKED\n"));
+	if (log_filesys)
+	    write_log (_T("-> ERROR_RECORD_NOT_LOCKED\n"));
 	PUT_PCK_RES1 (packet, DOS_FALSE);
 	PUT_PCK_RES2 (packet, ERROR_RECORD_NOT_LOCKED);
 }
@@ -8011,7 +8020,8 @@ static uae_u8 *restore_notify (UnitInfo *ui, Unit *u, uae_u8 *src)
 	hash = notifyhash (n->fullname);
 	n->next = u->notifyhash[hash];
 	u->notifyhash[hash] = n;
-	write_log (_T("FS: notify %08X '%s' '%s'\n"), n->notifyrequest, n->fullname, n->partname);
+	if (log_filesys)
+	    write_log (_T("FS: notify %08X '%s' '%s'\n"), n->notifyrequest, n->fullname, n->partname);
 	return src;
 }
 
@@ -8097,7 +8107,8 @@ static int recurse_aino (UnitInfo *ui, a_inode *a, int cnt, uae_u8 **dstp)
 	if (dstp)
 		dst = *dstp;
 	while (a) {
-		//write_log("recurse '%s' '%s' %d %08x\n", a->aname, a->nname, a->uniq, a->parent);
+		if (log_filesys)
+		    write_log("recurse '%s' '%s' %d %08x\n", a->aname, a->nname, a->uniq, a->parent);
 		if (a->elock || a->shlock || a->uniq == 0) {
 			if (dst) {
 				TCHAR *fn = NULL;
@@ -8146,8 +8157,9 @@ static uae_u8 *save_key (uae_u8 *dst, Key *k)
 	save_string (fn);
 	save_u64 (k->file_pos);
 	save_u64 (size);
-	write_log (_T("'%s' uniq=%d size=%lld seekpos=%lld mode=%d dosmode=%d\n"),
-		fn, k->uniq, size, k->file_pos, k->createmode, k->dosmode);
+	if (log_filesys)
+	    write_log (_T("'%s' uniq=%d size=%lld seekpos=%lld mode=%d dosmode=%d\n"),
+		    fn, k->uniq, size, k->file_pos, k->createmode, k->dosmode);
 	xfree (fn);
 	return dst;
 }
@@ -8160,7 +8172,8 @@ static uae_u8 *save_notify (UnitInfo *ui, uae_u8 *dst, Notify *n)
 	if (_tcslen (s) >= _tcslen (ui->volname) && !_tcsncmp (n->fullname, ui->volname, _tcslen (ui->volname)))
 		s = n->fullname + _tcslen (ui->volname) + 1;
 	save_string (s);
-	write_log (_T("FS: notify %08X '%s'\n"), n->notifyrequest, n->fullname);
+	if (log_filesys)
+	    write_log (_T("FS: notify %08X '%s'\n"), n->notifyrequest, n->fullname);
 	return dst;
 }
 
