@@ -104,6 +104,7 @@ extern unsigned int turbo_pulse;
 unsigned int inputdevice_finalized = 0;
 unsigned int pix_bytes = 2;
 static bool pix_bytes_initialized = false;
+static bool cpu_cycle_exact_force = false;
 bool automatic_sound_filter_type_update = true;
 bool fake_ntsc = false;
 bool real_ntsc = false;
@@ -1731,7 +1732,7 @@ static void update_variables(void)
          strcat(uae_config, "cycle_exact=true\n");
       }
 
-      if (libretro_runloop_active)
+      if (libretro_runloop_active && !cpu_cycle_exact_force)
       {
          if (!strcmp(var.value, "normal"))
          {
@@ -4893,6 +4894,10 @@ static bool retro_create_config()
    if (opt_region_auto)
       retro_force_region(&configfile);
 
+   // Forced Cycle-exact
+   if (strstr(full_path, "(CE)"))
+      fprintf(configfile, "cycle_exact=true\n");
+
    // Close tmp config
    fclose(configfile);
 
@@ -4906,6 +4911,8 @@ static bool retro_create_config()
             real_ntsc = true;
          if (strstr(filebuf, "ntsc=false") && filebuf[0] == 'n')
             real_ntsc = false;
+         if (strstr(filebuf, "cycle_exact=true") && filebuf[0] == 'c')
+            cpu_cycle_exact_force = true;
       }
       fclose(configfile);
    }
