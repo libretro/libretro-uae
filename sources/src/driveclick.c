@@ -21,7 +21,7 @@
 #include "driveclick.h"
 
 #ifdef __LIBRETRO__
-#include "libretro-glue.h"
+#include "libretro-core.h"
 extern char retro_system_directory[];
 extern bool opt_floppy_sound_empty_mute;
 #endif

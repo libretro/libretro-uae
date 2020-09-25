@@ -76,7 +76,7 @@
 #endif
 
 #ifdef __LIBRETRO__
-#include "libretro-glue.h"
+#include "libretro-core.h"
 extern bool retro_request_av_info_update;
 extern bool retro_av_info_change_timing;
 extern bool retro_av_info_is_ntsc;

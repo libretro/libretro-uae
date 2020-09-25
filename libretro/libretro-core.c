@@ -1,7 +1,7 @@
 #include "libretro.h"
 #include "retrodep/retroglue.h"
 #include "libretro-mapper.h"
-#include "libretro-glue.h"
+#include "libretro-core.h"
 #include "vkbd.h"
 #include "graph.h"
 #include "retro_files.h"

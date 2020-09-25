@@ -1,5 +1,5 @@
-#ifndef LIBRETRO_GLUE_H
-#define LIBRETRO_GLUE_H
+#ifndef LIBRETRO_CORE_H
+#define LIBRETRO_CORE_H
 
 #include <stdint.h>
 #include <string.h>
@@ -158,4 +158,4 @@ extern int retroh;
 extern int zoomed_width;
 extern int zoomed_height;
 
-#endif /* LIBRETRO_GLUE_H */
+#endif /* LIBRETRO_CORE_H */

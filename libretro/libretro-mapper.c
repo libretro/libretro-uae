@@ -1,5 +1,5 @@
 #include "libretro.h"
-#include "libretro-glue.h"
+#include "libretro-core.h"
 #include "graph.h"
 #include "vkbd.h"
 #include "retro_files.h"

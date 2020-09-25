@@ -4,10 +4,8 @@
 #include <math.h>
 
 #include "libretro.h"
-
+#include "libretro-core.h"
 #include "graph.h"
-#include "libretro-glue.h"
-
 
 unsigned short blend(unsigned short fg, unsigned short bg, unsigned int alpha)
 {

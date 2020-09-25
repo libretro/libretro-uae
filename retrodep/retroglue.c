@@ -1,9 +1,3 @@
-/********************************************
-
-        RETRO GLUE
-
-*********************************************/
- 
 #include "sysconfig.h"
 #include "sysdeps.h"
 
@@ -24,15 +18,12 @@ extern int mouse_port[NORMAL_JPORTS];
 #include "hotkeys.h"
 
 #include "libretro.h"
-#include "libretro-glue.h"
+#include "libretro-core.h"
 #include "libretro-mapper.h"
 #include "retro_files.h"
 #include "file/file_path.h"
 extern unsigned int uae_devices[4];
 extern unsigned int inputdevice_finalized;
-
-#define LOG_MSG(...) 
-#define LOG_MSG2(...) 
 
 extern int defaultw;
 extern int defaulth;
@@ -212,15 +203,6 @@ int graphics_init(void) {
 	opt_scrw = currprefs.gfx_size_win.width;
 	opt_scrh = currprefs.gfx_size_win.height;
 
-	//if (currprefs.gfx_size_win.width>= 640) {
-	//currprefs.gfx_lores = 0;
-	//} else {
-	//	currprefs.gfx_lores = 1;
-	//}
-	//vsync_enabled = currprefs.gfx_vsync;
-	//LOG_MSG2("screen w=%i", currprefs.gfx_size_win.width);
-	//LOG_MSG2("screen h=%i", currprefs.gfx_size_win.height);
-
 #ifdef ENABLE_LOG_SCREEN
 	pixbuf = (unsigned int*) malloc(currprefs.gfx_size_win.width * 576 * pix_bytes);
 #else
@@ -231,7 +213,6 @@ int graphics_init(void) {
 		printf("Error: not enough memory to initialize screen buffer!\n");
 		return -1;
 	}
-	//memset(pixbuf, 0x80, currprefs.gfx_size_win.width * currprefs.gfx_size_win.height * pix_bytes);
 
 	gfxvidinfo.width_allocated = currprefs.gfx_size_win.width;
 	gfxvidinfo.height_allocated = currprefs.gfx_size_win.height;

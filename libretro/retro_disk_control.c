@@ -20,7 +20,7 @@
 #include "retro_strings.h"
 #include "retro_files.h"
 #include "file/file_path.h"
-#include "libretro-glue.h"
+#include "libretro-core.h"
 #include "retroglue.h"
 
 #include "sysconfig.h"
