@@ -518,8 +518,8 @@ void print_statusbar(void)
    snprintf(RESOLUTION, sizeof(RESOLUTION), "%4dx%3d", zoomed_width, zoomed_height);
 
    // Model & memory
-   int STAT_X_MODEL  = STAT_X + (FONT_SLOT*6) + (FONT_WIDTH*30) - ZOOMED_WIDTH_OFFSET;
-   int STAT_X_MEMORY = STAT_X + (FONT_SLOT*6) + (FONT_WIDTH*5) - ZOOMED_WIDTH_OFFSET;
+   int STAT_X_MODEL  = STAT_X + (FONT_SLOT*6) + (FONT_WIDTH*32) - ZOOMED_WIDTH_OFFSET;
+   int STAT_X_MEMORY = STAT_X + (FONT_SLOT*6) + (FONT_WIDTH*6) - ZOOMED_WIDTH_OFFSET;
    // Sacrifice memory slot if there is not enough width
    if (!(video_config & PUAE_VIDEO_DOUBLELINE))
    {
