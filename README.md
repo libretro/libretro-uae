@@ -18,6 +18,9 @@ WinUAE), and many more.
 
 |RetroPad button|Action|
 |---|---|
+|D-Pad|Joystick|
+|Left Analog|Mouse|
+|Right Analog|Mouse|
 |B|Fire button 1 / Red|
 |A|Fire button 2 / Blue|
 |X|Space|
@@ -30,8 +33,6 @@ WinUAE), and many more.
 |F11|Toggle virtual keyboard|
 |F12|Toggle statusbar|
 |RControl|Toggle between joystick/mouse|
-
-Right analog stick controls the mouse by default.
 
 ### Virtual keyboard controls
 |Button|Action|

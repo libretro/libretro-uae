@@ -61,9 +61,9 @@ int disk_debug_track = -1;
 #include <ctype.h>
 
 #ifdef __LIBRETRO__
-#include "libretro-glue.h"
+#include "libretro-core.h"
 #include "retro_strings.h"
-extern dc_storage *retro_dc;
+extern dc_storage *dc;
 #endif
 
 #undef CATWEASEL
@@ -3889,20 +3889,20 @@ void restore_disk_finish (void)
 		if (currprefs.floppyslots[i].dfxtype >= 0) {
 #ifdef __LIBRETRO__
 			/* Attempt to restore frontend 'current disk index' */
-			if ((i == 0) && retro_dc && (retro_dc->count > 0)) {
+			if ((i == 0) && dc && (dc->count > 0)) {
 				const char *restored_df = changed_prefs.floppyslots[i].df;
 				/* Ensure restored disk path is valid */
 				if (restored_df && (*restored_df != '\0')) {
-					/* Loop over all images in retro_dc struct */
-					for (int dc_index = 0; dc_index < retro_dc->count; dc_index++) {
+					/* Loop over all images in dc struct */
+					for (int dc_index = 0; dc_index < dc->count; dc_index++) {
 						/* Only consider floppy images... */
-						if (retro_dc->types[dc_index] == DC_IMAGE_TYPE_FLOPPY) {
-							const char *retro_dc_df = retro_dc->files[dc_index];
-							/* Check whether image in retro_dc struct matches
+						if (dc->types[dc_index] == DC_IMAGE_TYPE_FLOPPY) {
+							const char *dc_df = dc->files[dc_index];
+							/* Check whether image in dc struct matches
 							 * restored image */
-							if (retro_dc_df && (*retro_dc_df != '\0') &&
-								 !strcmp (restored_df, retro_dc_df)) {
-								retro_dc->index = dc_index;
+							if (dc_df && (*dc_df != '\0') &&
+								 !strcmp (restored_df, dc_df)) {
+								dc->index = dc_index;
 								break;
 							}
 						}

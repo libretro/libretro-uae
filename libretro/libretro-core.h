@@ -1,5 +1,5 @@
-#ifndef LIBRETRO_GLUE_H
-#define LIBRETRO_GLUE_H
+#ifndef LIBRETRO_CORE_H
+#define LIBRETRO_CORE_H
 
 #include <stdint.h>
 #include <string.h>
@@ -21,11 +21,14 @@
 #endif
 
 #include "zfile.h"
+#include "libretro.h"
 #include "retro_disk_control.h"
 
 extern int imagename_timer;
 extern void reset_drawing(void);
 extern void print_statusbar(void);
+extern bool retro_message;
+extern char retro_message_msg[1024];
 
 extern bool retro_request_av_info_update;
 extern bool retro_av_info_change_timing;
@@ -37,14 +40,13 @@ extern int retro_min_diwstart;
 extern int retro_max_diwstop;
 
 extern char retro_system_directory[512];
-
 extern struct zfile *retro_deserialize_file;
 extern dc_storage *retro_dc;
+extern retro_log_printf_t log_cb;
 
 #ifndef _WIN32
 #define TCHAR char /* from sysdeps.h */
 #endif
-#define LOGI printf
 
 int umain (int argc, TCHAR **argv);
 
@@ -156,4 +158,4 @@ extern int retroh;
 extern int zoomed_width;
 extern int zoomed_height;
 
-#endif /* LIBRETRO_GLUE_H */
+#endif /* LIBRETRO_CORE_H */

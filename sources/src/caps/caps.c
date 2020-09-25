@@ -29,7 +29,7 @@ static int caps_flags = DI_LOCK_DENVAR|DI_LOCK_DENNOISE|DI_LOCK_NOISE|DI_LOCK_UP
 
 #ifdef __LIBRETRO__
 #include "retro_files.h"
-#include "libretro-glue.h"
+#include "libretro-core.h"
 extern char retro_system_directory[];
 extern bool retro_message;
 extern char retro_message_msg[1024];

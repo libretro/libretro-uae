@@ -67,7 +67,7 @@
 #include "misc.h"
 
 #ifdef __LIBRETRO__
-#include "libretro-glue.h"
+#include "libretro-core.h"
 extern struct zfile *retro_deserialize_file;
 #endif
 

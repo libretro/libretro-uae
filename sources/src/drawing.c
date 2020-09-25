@@ -51,7 +51,7 @@
 #include "debug.h"
 
 #ifdef __LIBRETRO__
-#include "libretro-glue.h"
+#include "libretro-core.h"
 extern int STATUSON;
 extern void retro_set_led(unsigned);
 static unsigned led_on_prev = 0;

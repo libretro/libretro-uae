@@ -42,14 +42,17 @@ struct dc_storage {
 	unsigned count;
 	int index;
 	bool eject_state;
+	bool replace;
 };
 
 typedef struct dc_storage dc_storage;
 dc_storage* dc_create(void);
 void dc_parse_m3u(dc_storage* dc, const char* m3u_file, const char* save_dir);
 bool dc_add_file(dc_storage* dc, const char* filename, const char* label);
-void dc_reset(dc_storage* dc);
 void dc_free(dc_storage* dc);
+void dc_reset(dc_storage* dc);
+bool dc_replace_file(dc_storage* dc, int index, const char* filename);
+bool dc_remove_file(dc_storage* dc, int index);
 enum dc_image_type dc_get_image_type(const char* filename);
 
 #endif

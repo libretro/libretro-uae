@@ -14,7 +14,7 @@
 #include "statusline.h"
 
 #ifdef __LIBRETRO__
-#include "libretro-glue.h"
+#include "libretro-core.h"
 extern int opt_statusbar;
 extern int opt_statusbar_position;
 extern int LEDON;
