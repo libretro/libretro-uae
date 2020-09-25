@@ -87,7 +87,7 @@ extern uae_u32 natmem_size;
 #endif
 
 static char RPATH[RETRO_PATH_MAX] = {0};
-static char full_path[RETRO_PATH_MAX] = {0};
+char full_path[RETRO_PATH_MAX] = {0};
 static char *uae_argv[] = { "puae", RPATH };
 static int restart_pending = 0;
 static char* core_options_legacy_strings = NULL;
@@ -190,8 +190,8 @@ char retro_temp_directory[RETRO_PATH_MAX] = {0};
 char retro_system_directory[RETRO_PATH_MAX] = {0};
 static char retro_content_directory[RETRO_PATH_MAX] = {0};
 
-// Disk control context
-dc_storage *retro_dc = NULL;
+// Disk Control context
+dc_storage *dc = NULL;
 
 // Configs
 static char uae_model[256] = {0};
@@ -2764,31 +2764,30 @@ static void update_variables(void)
    config_changed = 0;
 }
 
-//*****************************************************************************
-//*****************************************************************************
-// Disk control
-static bool disk_set_eject_state(bool ejected)
+/*****************************************************************************/
+/* Disk Control */
+static bool retro_disk_set_eject_state(bool ejected)
 {
-   if (retro_dc)
+   if (dc)
    {
-      if (retro_dc->eject_state == ejected)
+      if (dc->eject_state == ejected)
          return true;
       else
-         retro_dc->eject_state = ejected;
+         dc->eject_state = ejected;
 
-      if (retro_dc->files[retro_dc->index] > 0 && file_exists(retro_dc->files[retro_dc->index]))
-          display_current_image(((!retro_dc->eject_state) ? retro_dc->labels[retro_dc->index] : ""), !retro_dc->eject_state);
+      if (dc->files[dc->index] > 0 && file_exists(dc->files[dc->index]))
+          display_current_image(((!dc->eject_state) ? dc->labels[dc->index] : ""), !dc->eject_state);
 
-      if (retro_dc->eject_state)
+      if (dc->eject_state)
       {
-         if (retro_dc->files[retro_dc->index] > 0)
+         if (dc->files[dc->index] > 0)
          {
-            if (retro_dc->types[retro_dc->index] == DC_IMAGE_TYPE_FLOPPY)
+            if (dc->types[dc->index] == DC_IMAGE_TYPE_FLOPPY)
             {
                changed_prefs.floppyslots[0].df[0] = 0;
                disk_eject(0);
             }
-            else if (retro_dc->types[retro_dc->index] == DC_IMAGE_TYPE_CD)
+            else if (dc->types[dc->index] == DC_IMAGE_TYPE_CD)
             {
                changed_prefs.cdslots[0].name[0] = 0;
             }
@@ -2796,54 +2795,58 @@ static bool disk_set_eject_state(bool ejected)
       }
       else
       {
-         if (retro_dc->files[retro_dc->index] > 0 && file_exists(retro_dc->files[retro_dc->index]))
+         if (dc->files[dc->index] > 0 && file_exists(dc->files[dc->index]))
          {
-            if (retro_dc->types[retro_dc->index] == DC_IMAGE_TYPE_FLOPPY)
+            if (dc->types[dc->index] == DC_IMAGE_TYPE_FLOPPY)
             {
-               strcpy(changed_prefs.floppyslots[0].df, retro_dc->files[retro_dc->index]);
+               strcpy(changed_prefs.floppyslots[0].df, dc->files[dc->index]);
                DISK_reinsert(0);
             }
-            else if (retro_dc->types[retro_dc->index] == DC_IMAGE_TYPE_CD)
+            else if (dc->types[dc->index] == DC_IMAGE_TYPE_CD)
             {
-               strcpy(changed_prefs.cdslots[0].name, retro_dc->files[retro_dc->index]);
+               strcpy(changed_prefs.cdslots[0].name, dc->files[dc->index]);
             }
          }
       }
    }
-   return true;
-}
-
-static bool disk_get_eject_state(void)
-{
-   if (retro_dc)
-      return retro_dc->eject_state;
 
    return true;
 }
 
-static unsigned disk_get_image_index(void)
+static bool retro_disk_get_eject_state(void)
 {
-   if (retro_dc)
-      return retro_dc->index;
+   if (dc)
+      return dc->eject_state;
+
+   return true;
+}
+
+static unsigned retro_disk_get_image_index(void)
+{
+   if (dc)
+      return dc->index;
 
    return 0;
 }
 
-static bool disk_set_image_index(unsigned index)
+bool retro_disk_set_image_index(unsigned index)
 {
-   // Insert disk
-   if (retro_dc)
+   if (dc)
    {
-      // Same disk...
-      // This can mess things in the emu
-      if (index == retro_dc->index)
+      if (index == dc->index)
          return true;
 
-      if ((index < retro_dc->count) && (retro_dc->files[index]))
+      if (dc->replace)
       {
-         retro_dc->index = index;
-         display_current_image(retro_dc->labels[retro_dc->index], false);
-         log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF0: '%s'\n", retro_dc->index+1, retro_dc->files[retro_dc->index]);
+         dc->replace = false;
+         index = 0;
+      }
+
+      if (index < dc->count && dc->files[index])
+      {
+         dc->index = index;
+         display_current_image(dc->labels[dc->index], false);
+         log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF0: '%s'\n", dc->index+1, dc->files[dc->index]);
          return true;
       }
    }
@@ -2851,211 +2854,38 @@ static bool disk_set_image_index(unsigned index)
    return false;
 }
 
-static unsigned disk_get_num_images(void)
+static unsigned retro_disk_get_num_images(void)
 {
-   if (retro_dc)
-      return retro_dc->count;
+   if (dc)
+      return dc->count;
 
    return 0;
 }
 
-static bool disk_replace_image_index(unsigned index, const struct retro_game_info *info)
+static bool retro_disk_replace_image_index(unsigned index, const struct retro_game_info *info)
 {
-   if (retro_dc)
+   if (dc)
    {
-      if (index >= retro_dc->count)
-         return false;
-
-      if (retro_dc->files[index])
-      {
-         free(retro_dc->files[index]);
-         retro_dc->files[index] = NULL;
-      }
-
-      if (retro_dc->labels[index])
-      {
-         free(retro_dc->labels[index]);
-         retro_dc->labels[index] = NULL;
-      }
-
-      retro_dc->types[index] = DC_IMAGE_TYPE_NONE;
-
-      // TODO : Handling removing of a disk image when info = NULL
       if (info != NULL)
-      {
-         if (!string_is_empty(info->path))
-         {
-            char image_label[RETRO_PATH_MAX];
-            image_label[0] = '\0';
-
-            static char full_path_replace[RETRO_PATH_MAX] = {0};
-            strcpy(full_path_replace, (char*)info->path);
-
-            // Confs & hard drive images will replace full_path and requires restarting
-            if (strendswith(full_path_replace, "uae")
-             || strendswith(full_path_replace, "hdf")
-             || strendswith(full_path_replace, "hdz")
-             || strendswith(full_path_replace, "lha"))
-            {
-               dc_reset(retro_dc);
-               strcpy(full_path, (char*)info->path);
-               display_current_image(full_path, true);
-               return true;
-            }
-
-            // ZIP
-            else if (strendswith(full_path_replace, "zip"))
-            {
-               char zip_basename[RETRO_PATH_MAX] = {0};
-               snprintf(zip_basename, sizeof(zip_basename), "%s", path_basename(full_path_replace));
-               snprintf(zip_basename, sizeof(zip_basename), "%s", path_remove_extension(zip_basename));
-               snprintf(retro_temp_directory, sizeof(retro_temp_directory), "%s%s%s", retro_save_directory, DIR_SEP_STR, "ZIP");
-               char zip_path[RETRO_PATH_MAX] = {0};
-               snprintf(zip_path, sizeof(zip_path), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_basename);
-
-               path_mkdir(zip_path);
-               zip_uncompress(full_path_replace, zip_path, NULL);
-
-               // Default to directory mode
-               int zip_mode = 0;
-               snprintf(full_path_replace, sizeof(full_path_replace), "%s", zip_path);
-
-               FILE *zip_m3u;
-               char zip_m3u_list[20][RETRO_PATH_MAX] = {0};
-               char zip_m3u_path[RETRO_PATH_MAX] = {0};
-               snprintf(zip_m3u_path, sizeof(zip_m3u_path), "%s%s%s.m3u", zip_path, DIR_SEP_STR, zip_basename);
-               int zip_m3u_num = 0;
-
-               DIR *zip_dir;
-               struct dirent *zip_dirp;
-               zip_dir = opendir(zip_path);
-               while ((zip_dirp = readdir(zip_dir)) != NULL)
-               {
-                  if (zip_dirp->d_name[0] == '.' || strendswith(zip_dirp->d_name, "m3u") || zip_mode > 1)
-                     continue;
-
-                  // Multi file mode, generate playlist
-                  if (dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_FLOPPY)
-                  {
-                     zip_mode = 1;
-                     zip_m3u_num++;
-                     snprintf(zip_m3u_list[zip_m3u_num-1], RETRO_PATH_MAX, "%s", zip_dirp->d_name);
-                  }
-                  // Single file image mode
-                  else if (dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_CD
-                        || dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_HD)
-                  {
-                     zip_mode = 2;
-                     snprintf(full_path_replace, sizeof(full_path_replace), "%s%s%s", zip_path, DIR_SEP_STR, zip_dirp->d_name);
-                  }
-               }
-               closedir(zip_dir);
-
-               switch (zip_mode)
-               {
-                  case 0: // Extracted path
-                     dc_reset(retro_dc);
-                     strcpy(full_path, (char*)info->path);
-                     display_current_image(full_path, true);
-                     return true;
-                     break;
-                  case 2: // Single image
-                     break;
-                  case 1: // Generated playlist
-                     if (zip_m3u_num == 1)
-                     {
-                        snprintf(full_path_replace, sizeof(full_path_replace), "%s%s%s", zip_path, DIR_SEP_STR, zip_m3u_list[0]);
-                     }
-                     else
-                     {
-                        zip_m3u = fopen(zip_m3u_path, "w");
-                        qsort(zip_m3u_list, zip_m3u_num, RETRO_PATH_MAX, qstrcmp);
-                        for (int l = 0; l < zip_m3u_num; l++)
-                           fprintf(zip_m3u, "%s\n", zip_m3u_list[l]);
-                        fclose(zip_m3u);
-                        snprintf(full_path_replace, sizeof(full_path_replace), "%s", zip_m3u_path);
-                     }
-                     break;
-               }
-            }
-
-            // M3U
-            if (strendswith(full_path_replace, "m3u"))
-            {
-               // Eject all floppy drives
-               for (unsigned i = 0; i < 4; i++)
-                  changed_prefs.floppyslots[i].df[0] = 0;
-
-               // Parse the M3U file
-               dc_parse_m3u(retro_dc, full_path_replace, retro_save_directory);
-
-               // Some debugging
-               log_cb(RETRO_LOG_INFO, "M3U parsed, %d file(s) found\n", retro_dc->count);
-               //for (unsigned i = 0; i < retro_dc->count; i++)
-                  //log_cb(RETRO_LOG_INFO, "File %d: %s\n", i+1, retro_dc->files[i]);
-
-               // Insert first disk
-               disk_set_image_index(0);
-               retro_dc->eject_state = false;
-
-               // Append rest of the disks to the config if M3U is a MultiDrive-M3U
-               if (strstr(full_path_replace, "(MD)") != NULL)
-               {
-                  for (unsigned i = 1; i < retro_dc->count; i++)
-                  {
-                     retro_dc->index = i;
-                     if (i <= 3)
-                     {
-                        log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF%d: '%s'\n", retro_dc->index+1, i, retro_dc->files[retro_dc->index]);
-                        strcpy(changed_prefs.floppyslots[i].df, retro_dc->files[i]);
-
-                        // By default only DF0: is enabled, so floppyXtype needs to be set on the extra drives
-                        if (i > 0)
-                           changed_prefs.floppyslots[i].dfxtype=0; // 0 = 3.5" DD
-                     }
-                     else
-                     {
-                        log_cb(RETRO_LOG_WARN, "Too many disks for MultiDrive!\n");
-                        snprintf(retro_message_msg, sizeof(retro_message_msg), "Too many disks for MultiDrive!");
-                        retro_message = true;
-                        return false;
-                     }
-                  }
-                  // Reset index to first disk
-                  retro_dc->index = 0;
-               }
-
-               return true;
-            }
-
-            // File path
-            retro_dc->files[index] = strdup(full_path_replace);
-
-            // Image label
-            fill_short_pathname_representation(image_label, full_path_replace, sizeof(image_label));
-            retro_dc->labels[index] = strdup(image_label);
-
-            // Image type
-            retro_dc->types[index] = dc_get_image_type(full_path_replace);
-
-            return true;
-         }
-      }
+         dc_replace_file(dc, index, info->path);
+      else
+         dc_remove_file(dc, index);
+      return true;
    }
 
    return false;
 }
 
-static bool disk_add_image_index(void)
+static bool retro_disk_add_image_index(void)
 {
-   if (retro_dc)
+   if (dc)
    {
-      if (retro_dc->count <= DC_MAX_SIZE)
+      if (dc->count <= DC_MAX_SIZE)
       {
-         retro_dc->files[retro_dc->count]  = NULL;
-         retro_dc->labels[retro_dc->count] = NULL;
-         retro_dc->types[retro_dc->count]  = DC_IMAGE_TYPE_NONE;
-         retro_dc->count++;
+         dc->files[dc->count]  = NULL;
+         dc->labels[dc->count] = NULL;
+         dc->types[dc->count]  = DC_IMAGE_TYPE_NONE;
+         dc->count++;
          return true;
       }
    }
@@ -3063,18 +2893,18 @@ static bool disk_add_image_index(void)
    return false;
 }
 
-static bool disk_get_image_path(unsigned index, char *path, size_t len)
+static bool retro_disk_get_image_path(unsigned index, char *path, size_t len)
 {
    if (len < 1)
       return false;
 
-   if (retro_dc)
+   if (dc)
    {
-      if (index < retro_dc->count)
+      if (index < dc->count)
       {
-         if (!string_is_empty(retro_dc->files[index]))
+         if (!string_is_empty(dc->files[index]))
          {
-            strlcpy(path, retro_dc->files[index], len);
+            strlcpy(path, dc->files[index], len);
             return true;
          }
       }
@@ -3083,18 +2913,18 @@ static bool disk_get_image_path(unsigned index, char *path, size_t len)
    return false;
 }
 
-static bool disk_get_image_label(unsigned index, char *label, size_t len)
+static bool retro_disk_get_image_label(unsigned index, char *label, size_t len)
 {
    if (len < 1)
       return false;
 
-   if (retro_dc)
+   if (dc)
    {
-      if (index < retro_dc->count)
+      if (index < dc->count)
       {
-         if (!string_is_empty(retro_dc->labels[index]))
+         if (!string_is_empty(dc->labels[index]))
          {
-            strlcpy(label, retro_dc->labels[index], len);
+            strlcpy(label, dc->labels[index], len);
             return true;
          }
       }
@@ -3104,30 +2934,29 @@ static bool disk_get_image_label(unsigned index, char *label, size_t len)
 }
 
 static struct retro_disk_control_callback disk_interface = {
-   disk_set_eject_state,
-   disk_get_eject_state,
-   disk_get_image_index,
-   disk_set_image_index,
-   disk_get_num_images,
-   disk_replace_image_index,
-   disk_add_image_index,
+   retro_disk_set_eject_state,
+   retro_disk_get_eject_state,
+   retro_disk_get_image_index,
+   retro_disk_set_image_index,
+   retro_disk_get_num_images,
+   retro_disk_replace_image_index,
+   retro_disk_add_image_index,
 };
 
 static struct retro_disk_control_ext_callback disk_interface_ext = {
-   disk_set_eject_state,
-   disk_get_eject_state,
-   disk_get_image_index,
-   disk_set_image_index,
-   disk_get_num_images,
-   disk_replace_image_index,
-   disk_add_image_index,
+   retro_disk_set_eject_state,
+   retro_disk_get_eject_state,
+   retro_disk_get_image_index,
+   retro_disk_set_image_index,
+   retro_disk_get_num_images,
+   retro_disk_replace_image_index,
+   retro_disk_add_image_index,
    NULL, // set_initial_image
-   disk_get_image_path,
-   disk_get_image_label,
+   retro_disk_get_image_path,
+   retro_disk_get_image_label,
 };
 
-//*****************************************************************************
-//*****************************************************************************
+/*****************************************************************************/
 
 static void fallback_log(enum retro_log_level level, const char *fmt, ...)
 {
@@ -3185,7 +3014,7 @@ void retro_init(void)
    }
 
    // Disk control interface
-   retro_dc = dc_create();
+   dc = dc_create();
 
    unsigned dci_version = 0;
    if (environ_cb(RETRO_ENVIRONMENT_GET_DISK_CONTROL_INTERFACE_VERSION, &dci_version) && (dci_version >= 1))
@@ -3267,8 +3096,8 @@ void retro_init(void)
 void retro_deinit(void)
 {	
    // Clean the M3U storage
-   if (retro_dc)
-      dc_free(retro_dc);
+   if (dc)
+      dc_free(dc);
 
    // Clean legacy strings
    if (core_options_legacy_strings)
@@ -4775,12 +4604,12 @@ static bool retro_create_config()
             if (strendswith(full_path, "m3u"))
             {
                // Parse the M3U file
-               dc_parse_m3u(retro_dc, full_path, retro_save_directory);
+               dc_parse_m3u(dc, full_path, retro_save_directory);
 
                // Some debugging
-               log_cb(RETRO_LOG_INFO, "M3U parsed, %d file(s) found\n", retro_dc->count);
-               //for (unsigned i = 0; i < retro_dc->count; i++)
-                  //log_cb(RETRO_LOG_INFO, "File %d: %s\n", i+1, retro_dc->files[i]);
+               log_cb(RETRO_LOG_INFO, "M3U parsed, %d file(s) found\n", dc->count);
+               //for (unsigned i = 0; i < dc->count; i++)
+                  //log_cb(RETRO_LOG_INFO, "File %d: %s\n", i+1, dc->files[i]);
             }
             // Single file
             else
@@ -4796,34 +4625,32 @@ static bool retro_create_config()
                // Must reset disk control struct here,
                // otherwise duplicate entries will be
                // added when calling retro_reset()
-               dc_reset(retro_dc);
-               dc_add_file(retro_dc, full_path, disk_image_label);
+               dc_reset(dc);
+               dc_add_file(dc, full_path, disk_image_label);
             }
 
             // Init only existing disks
-            if (retro_dc->count)
+            if (dc->count)
             {
                // Init first disk
-               retro_dc->index = 0;
-               retro_dc->eject_state = false;
-               display_current_image(retro_dc->labels[retro_dc->index], true);
-               log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF0: '%s'\n", retro_dc->index+1, retro_dc->files[retro_dc->index]);
-               fprintf(configfile, "floppy0=%s\n", retro_dc->files[0]);
+               dc->index = 0;
+               dc->eject_state = false;
+               display_current_image(dc->labels[dc->index], true);
+               log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF0: '%s'\n", dc->index+1, dc->files[dc->index]);
+               fprintf(configfile, "floppy0=%s\n", dc->files[0]);
 
                // Append rest of the disks to the config if M3U is a MultiDrive-M3U
                if (strstr(full_path, "(MD)") != NULL)
                {
-                  for (unsigned i = 1; i < retro_dc->count; i++)
+                  for (unsigned i = 1; i < dc->count; i++)
                   {
-                     retro_dc->index = i;
-                     if (i <= 3)
+                     if (i < 4)
                      {
-                        log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF%d: '%s'\n", retro_dc->index+1, i, retro_dc->files[retro_dc->index]);
-                        fprintf(configfile, "floppy%d=%s\n", i, retro_dc->files[i]);
+                        log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF%d: '%s'\n", i+1, i, dc->files[i]);
+                        fprintf(configfile, "floppy%d=%s\n", i, dc->files[i]);
 
                         // By default only DF0: is enabled, so floppyXtype needs to be set on the extra drives
-                        if (i > 0)
-                           fprintf(configfile, "floppy%dtype=%d\n", i, 0); // 0 = 3.5" DD
+                        fprintf(configfile, "floppy%dtype=%d\n", i, 0); // 0 = 3.5" DD
                      }
                      else
                      {
@@ -4832,8 +4659,6 @@ static bool retro_create_config()
                         retro_message = true;
                      }
                   }
-                  // Reset index to first disk
-                  retro_dc->index = 0;
                }
             }
          }
@@ -4905,15 +4730,15 @@ static bool retro_create_config()
          // Must reset disk control struct here,
          // otherwise duplicate entries will be
          // added when calling retro_reset()
-         dc_reset(retro_dc);
-         dc_add_file(retro_dc, full_path, cd_image_label);
+         dc_reset(dc);
+         dc_add_file(dc, full_path, cd_image_label);
 
          // Init first disk
-         retro_dc->index = 0;
-         retro_dc->eject_state = false;
-         display_current_image(retro_dc->labels[retro_dc->index], true);
-         log_cb(RETRO_LOG_INFO, "CD (%d) inserted in drive CD0: '%s'\n", retro_dc->index+1, retro_dc->files[retro_dc->index]);
-         fprintf(configfile, "cdimage0=%s,%s\n", retro_dc->files[0], (opt_cd_startup_delayed_insert ? "delay" : "")); // ","-suffix needed if filename contains ","
+         dc->index = 0;
+         dc->eject_state = false;
+         display_current_image(dc->labels[dc->index], true);
+         log_cb(RETRO_LOG_INFO, "CD (%d) inserted in drive CD0: '%s'\n", dc->index+1, dc->files[dc->index]);
+         fprintf(configfile, "cdimage0=%s,%s\n", dc->files[0], (opt_cd_startup_delayed_insert ? "delay" : "")); // ","-suffix needed if filename contains ","
 
          // Separator row for clarity
          fprintf(configfile, "\n");
@@ -4947,7 +4772,7 @@ static bool retro_create_config()
          // Must reset disk control struct here,
          // otherwise duplicate entries will be
          // added when calling retro_reset()
-         dc_reset(retro_dc);
+         dc_reset(dc);
 
          // Iterate parsed file and append all rows to the temporary config
          FILE * configfile_custom;
@@ -4974,7 +4799,7 @@ static bool retro_create_config()
                      char disk_image_label[RETRO_PATH_MAX];
                      disk_image_label[0] = '\0';
                      fill_short_pathname_representation(disk_image_label, disk_image, sizeof(disk_image_label));
-                     dc_add_file(retro_dc, disk_image, disk_image_label);
+                     dc_add_file(dc, disk_image, disk_image_label);
                   }
                }
             }
@@ -4982,13 +4807,13 @@ static bool retro_create_config()
          }
 
          // Init only existing disks
-         if (!string_is_empty(disk_image) && retro_dc->count)
+         if (!string_is_empty(disk_image) && dc->count)
          {
             // Init first disk
-            retro_dc->index = 0;
-            retro_dc->eject_state = false;
-            display_current_image(retro_dc->labels[retro_dc->index], true);
-            log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF0: '%s'\n", retro_dc->index+1, retro_dc->files[retro_dc->index]);
+            dc->index = 0;
+            dc->eject_state = false;
+            display_current_image(dc->labels[dc->index], true);
+            log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF0: '%s'\n", dc->index+1, dc->files[dc->index]);
          }
       }
       // Unknown extensions
