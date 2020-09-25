@@ -69,7 +69,6 @@ SOURCES_C += $(EMU)/main.c \
 	$(EMU)/aros.rom.c \
 	$(EMU)/specialmonitors.c \
 	$(EMU)/writelog.c \
-	$(EMU)/debug.c \
 	$(EMU)/identify.c \
 	$(EMU)/picasso96.c \
 	$(EMU)/blkdev.c \
@@ -111,6 +110,7 @@ SOURCES_C += $(EMU)/main.c \
 	$(RETRODEP)/main.c \
 	$(RETRODEP)/machdep/support.c \
 	$(RETRODEP)/gui.c \
+	$(RETRODEP)/debug.c \
 	$(RETRODEP)/retroglue.c \
 	$(RETRODEP)/sounddep/sound.c \
 	$(RETRODEP)/threaddep/thread.c
