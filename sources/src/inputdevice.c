@@ -5342,7 +5342,9 @@ void inputdevice_updateconfig_internal (const struct uae_prefs *srcprrefs, struc
 {
 	int i;
 
+#ifndef __LIBRETRO__
 	keyboard_default = keyboard_default_table[currprefs.input_keyboard_type];
+#endif
 
 	copyjport (srcprrefs, dstprefs, 0);
 	copyjport (srcprrefs, dstprefs, 1);
@@ -5371,7 +5373,12 @@ void inputdevice_updateconfig_internal (const struct uae_prefs *srcprrefs, struc
 		mice[i].enabled = 0;
 	}
 
+#ifndef __LIBRETRO__
 	compatibility_copy (dstprefs, true);
+#else
+	compatibility_copy (dstprefs, false);
+#endif
+
 	joysticks = dstprefs->joystick_settings[dstprefs->input_selected_setting];
 	mice = dstprefs->mouse_settings[dstprefs->input_selected_setting];
 	keyboards = dstprefs->keyboard_settings[dstprefs->input_selected_setting];
@@ -5485,7 +5492,9 @@ void inputdevice_default_prefs (struct uae_prefs *p)
 	p->input_autofire_linecnt = 600;
 	p->input_keyboard_type = 0;
 
+#ifndef __LIBRETRO__
 	keyboard_default = keyboard_default_table[p->input_keyboard_type];
+#endif
 	inputdevice_default_kb_all (p);
 }
 

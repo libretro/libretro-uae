@@ -754,6 +754,36 @@ void setcapslockstate (int state)
 {
 }
 
+#if 0
+static struct uae_input_device_kbr_default keytrans_amiga[] = {
+    { -1, {{0}} }
+};
+
+static struct uae_input_device_kbr_default keytrans_pc1[] = {
+    { -1, {{0, 0}} }
+};
+
+static struct uae_input_device_kbr_default *keytrans[] = {
+    keytrans_amiga,
+    keytrans_pc1,
+    keytrans_pc1
+};
+
+static int *kbmaps[] = {
+};
+
+void clearallkeys (void)
+{
+    inputdevice_updateconfig (&changed_prefs, &currprefs);
+}
+#endif
+
+void keyboard_settrans (void)
+{
+    //inputdevice_setkeytranslation (keytrans, kbmaps);
+}
+
+
 /********************************************************************
     Misc fuctions
 *********************************************************************/
