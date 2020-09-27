@@ -77,7 +77,7 @@
 
 #ifdef __LIBRETRO__
 #include "libretro-core.h"
-extern bool retro_request_av_info_update;
+extern bool request_update_av_info;
 extern bool retro_av_info_change_timing;
 extern bool retro_av_info_is_ntsc;
 #endif
@@ -3238,9 +3238,9 @@ void compute_framesync (void)
 	);
 
 #ifdef __LIBRETRO__
-	retro_request_av_info_update = true;
-	retro_av_info_change_timing  = true;
-	retro_av_info_is_ntsc        = isntsc;
+	request_update_av_info      = true;
+	retro_av_info_change_timing = true;
+	retro_av_info_is_ntsc       = isntsc;
 #endif
 
 	config_changed = 1;

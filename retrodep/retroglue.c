@@ -11,7 +11,7 @@
 #include "hrtimer.h"
 
 #include "inputdevice.h"
-void inputdevice_release_all_keys (void);
+void inputdevice_release_all_keys(void);
 extern int mouse_port[NORMAL_JPORTS];
 
 #include "drawing.h"
@@ -31,20 +31,11 @@ extern int defaulth;
 extern int libretro_runloop_active;
 extern int libretro_frame_end;
 
-unsigned short int clut[] = {
-	0x0000,  /* full background transparency */
-	0x0200,  /* background semi transparent */
-	0x06FF,  /* opaque + light orange */
-	0x06AA,  /* opaque + dark orange  */
-} ;
-
 unsigned short int* pixbuf = NULL;
-
 extern unsigned short int retro_bmp[RETRO_BMP_SIZE];
 void retro_audio_batch_cb(const int16_t *data, size_t frames);
 
 int prefs_changed = 0;
-int vsync_enabled = 0;
 int opt_scrw = 0;
 int opt_scrh = 0;
 unsigned long stat_value = 0;
@@ -126,12 +117,12 @@ void retro_joystick_button(int port, int button, int state)
 /* --- keyboard input --- */
 void retro_key_down(int key)
 {
-	inputdevice_do_keyboard (key, 1);
+	inputdevice_do_keyboard(key, 1);
 }
 
 void retro_key_up(int key)
 {
-	inputdevice_do_keyboard (key, 0);
+	inputdevice_do_keyboard(key, 0);
 }
 
 
@@ -141,7 +132,7 @@ void retro_renderSound(short* samples, int sampleCount)
     if ((sampleCount < 1) || !libretro_runloop_active)
         return;
 #if 0
-    for(int i=0; i<sampleCount; i+=2)
+    for (int i=0; i<sampleCount; i+=2)
     {
         retro_audio_cb(samples[i], samples[i+1]);
     }
@@ -244,9 +235,8 @@ int is_fullscreen (void)
 
 int is_vsync (void)
 {
-    return vsync_enabled;
+    return 0;
 }
-
 
 int mousehack_allowed (void)
 {
