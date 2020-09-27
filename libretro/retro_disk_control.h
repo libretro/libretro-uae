@@ -21,8 +21,7 @@
 
 #include <stdbool.h>
 
-//*****************************************************************************
-// Disk control structure and functions
+/* Disk control structure and functions */
 #define DC_MAX_SIZE 20
 
 enum dc_image_type {

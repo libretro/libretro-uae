@@ -23,11 +23,10 @@ extern int mouse_port[NORMAL_JPORTS];
 #include "retro_files.h"
 #include "file/file_path.h"
 extern unsigned int uae_devices[4];
-extern unsigned int inputdevice_finalized;
+bool inputdevice_finalized = false;
 
 extern int defaultw;
 extern int defaulth;
-
 extern int libretro_runloop_active;
 extern int libretro_frame_end;
 
@@ -36,9 +35,6 @@ extern unsigned short int retro_bmp[RETRO_BMP_SIZE];
 void retro_audio_batch_cb(const int16_t *data, size_t frames);
 
 int prefs_changed = 0;
-int opt_scrw = 0;
-int opt_scrh = 0;
-unsigned long stat_value = 0;
 
 int retro_thisframe_first_drawn_line;
 int retro_thisframe_last_drawn_line;
@@ -191,8 +187,6 @@ int graphics_init(void) {
 #else
 	currprefs.gfx_size_win.height = defaulth;
 #endif	
-	opt_scrw = currprefs.gfx_size_win.width;
-	opt_scrh = currprefs.gfx_size_win.height;
 
 #ifdef ENABLE_LOG_SCREEN
 	pixbuf = (unsigned int*) malloc(currprefs.gfx_size_win.width * 576 * pix_bytes);
@@ -501,7 +495,7 @@ int input_get_default_joystick (struct uae_input_device *uid, int num, int port,
     uid[2].enabled = 1;
     uid[3].enabled = 1;
 
-    inputdevice_finalized = 1;
+    inputdevice_finalized = true;
 
     currprefs.input_analog_joystick_mult = 100;
     currprefs.input_analog_joystick_offset = 0;

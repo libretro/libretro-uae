@@ -15,9 +15,9 @@
 
 #ifdef __LIBRETRO__
 #include "libretro-core.h"
+extern bool retro_statusbar;
 extern int opt_statusbar;
 extern int opt_statusbar_position;
-extern int LEDON;
 static int num_multip = 1;
 #endif
 
@@ -166,7 +166,7 @@ static void write_tdnumber (uae_u8 *buf, int bpp, int x, int y, int num, uae_u32
 
 void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u32 *rc, uae_u32 *gc, uae_u32 *bc, uae_u32 *alpha)
 {
-    if (LEDON == -1)
+    if (!retro_statusbar)
         return;
 
     totalwidth = zoomed_width;

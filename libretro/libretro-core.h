@@ -30,10 +30,6 @@ extern void print_statusbar(void);
 extern bool retro_message;
 extern char retro_message_msg[1024];
 
-extern bool retro_request_av_info_update;
-extern bool retro_av_info_change_timing;
-extern bool retro_av_info_is_ntsc;
-
 extern int retro_thisframe_first_drawn_line;
 extern int retro_thisframe_last_drawn_line;
 extern int retro_min_diwstart;
@@ -56,17 +52,17 @@ int umain (int argc, TCHAR **argv);
 #define DIR_SEP_STR "/"
 #endif
 
-// VKBD
-#define NPLGN 11
-#define NLIGN 8
-#define NLETT 9
-//#define POINTER_DEBUG
+/* VKBD */
+#define VKBDX 11
+#define VKBDY 8
+#if 0
+#define POINTER_DEBUG
+#endif
 #ifdef POINTER_DEBUG
 extern int pointer_x;
 extern int pointer_y;
 #endif
 
-extern int SHOWKEY;
 extern int vkey_pos_x;
 extern int vkey_pos_y;
 extern int vkey_pressed;
@@ -79,18 +75,18 @@ extern int vkbd_x_max;
 extern int vkbd_y_min;
 extern int vkbd_y_max;
 
-// Statusbar
+/* Statusbar */
 #define STATUSBAR_BOTTOM    0x01
 #define STATUSBAR_TOP       0x02
 #define STATUSBAR_BASIC     0x04
 #define STATUSBAR_MINIMAL   0x08
 
-// Colors
+/* Colors */
 #define RGB565(r, g, b) ((((r>>3)<<11) | ((g>>2)<<5) | (b>>3)))
 #define RGB888(r, g, b) (((r * 255 / 31) << (16)) | ((g * 255 / 31) << 8) | (b * 255 / 31))
 #define ARGB888(a, r, g, b) ((a << 24) | (r << 16) | (g << 8) | b)
 
-// Configs
+/* Configs */
 enum EMU_CONFIG {
    EMU_CONFIG_A500 = 0,
    EMU_CONFIG_A500OG,
@@ -106,7 +102,7 @@ enum EMU_CONFIG {
    EMU_CONFIG_COUNT
 };
 
-// Kickstarts
+/* Kickstarts */
 #define A500_ROM                "kick34005.A500"
 #define A500KS2_ROM             "kick37175.A500"
 #define A600_ROM                "kick40063.A600"
@@ -116,10 +112,10 @@ enum EMU_CONFIG {
 #define CD32_ROM                "kick40060.CD32"
 #define CD32_ROM_EXT            "kick40060.CD32.ext"
 
-// Support files
+/* Support files */
 #define LIBRETRO_PUAE_PREFIX    "puae_libretro"
 
-// Video
+/* Video */
 #define PUAE_VIDEO_PAL          0x01
 #define PUAE_VIDEO_NTSC         0x02
 #define PUAE_VIDEO_HIRES        0x04
@@ -144,13 +140,13 @@ enum EMU_CONFIG {
 #define PUAE_VIDEO_HEIGHT_PAL   576
 #define PUAE_VIDEO_HEIGHT_NTSC  480
 
-// Libretro video
+/* Libretro video */
 #define EMULATOR_DEF_WIDTH      720
 #define EMULATOR_DEF_HEIGHT     576
 #define EMULATOR_MAX_WIDTH      (EMULATOR_DEF_WIDTH * 2)
 #define EMULATOR_MAX_HEIGHT     EMULATOR_DEF_HEIGHT
+#define RETRO_BMP_SIZE          (EMULATOR_DEF_WIDTH * EMULATOR_DEF_HEIGHT * 4) /* 4x is big enough for 24-bit SuperHires double line */
 
-#define RETRO_BMP_SIZE          (EMULATOR_DEF_WIDTH * EMULATOR_DEF_HEIGHT * 4) // 4x is big enough for 24-bit SuperHires double line
 extern unsigned short int retro_bmp[RETRO_BMP_SIZE];
 extern unsigned int pix_bytes;
 extern int retrow;

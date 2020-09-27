@@ -76,7 +76,6 @@
 #endif
 
 #ifdef __LIBRETRO__
-#include "libretro-core.h"
 extern bool request_update_av_info;
 extern bool retro_av_info_change_timing;
 extern bool retro_av_info_is_ntsc;

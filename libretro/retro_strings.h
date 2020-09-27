@@ -21,8 +21,7 @@
 
 #include <stdbool.h>
 
-//*****************************************************************************
-// String helpers functions
+/* String helpers functions */
 char* trimwhitespace(char *str);
 char* strleft(const char* str, int len);
 char* strright(const char* str, int len);
