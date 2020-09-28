@@ -4,9 +4,9 @@
 #include "keyboard.h"
 
 typedef struct {
-	char normal[9];
-	char shift[9];
-	int value;	
+   char normal[9];
+   char shift[9];
+   int value;
 } retro_vkeys;
 
 retro_vkeys vkeys[VKBDX * VKBDY * 2] = {
