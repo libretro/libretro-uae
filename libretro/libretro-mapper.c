@@ -39,12 +39,21 @@ void gettimeofday (struct timeval *tv, void *blah)
 #include <time.h>
 #endif
 
-/* Mouse speed flags */
-#define MOUSE_SPEED_SLOWER 1
-#define MOUSE_SPEED_FASTER 2
-/* Mouse speed multipliers */
-#define MOUSE_SPEED_SLOW 5
-#define MOUSE_SPEED_FAST 2
+extern char retro_key_state[RETROK_LAST];
+extern char retro_key_state_old[RETROK_LAST];
+
+static retro_input_state_t input_state_cb;
+static retro_input_poll_t input_poll_cb;
+
+void retro_set_input_state(retro_input_state_t cb)
+{
+   input_state_cb = cb;
+}
+
+void retro_set_input_poll(retro_input_poll_t cb)
+{
+   input_poll_cb = cb;
+}
 
 #ifdef POINTER_DEBUG
 int pointer_x = 0;
@@ -60,6 +69,14 @@ int vkbd_x_max = 0;
 int vkbd_y_min = 0;
 int vkbd_y_max = 0;
 
+/* Mouse speed flags */
+#define MOUSE_SPEED_SLOWER 1
+#define MOUSE_SPEED_FASTER 2
+/* Mouse speed multipliers */
+#define MOUSE_SPEED_SLOW 5
+#define MOUSE_SPEED_FAST 2
+
+/* Core flags */
 int vkflag[9] = {0};
 int retro_capslock = false;
 bool retro_mousemode = false;
@@ -73,7 +90,6 @@ static int jbt[2][24] = {0};
 static int kbt[16] = {0};
 static int mapper_flag[4][16] = {0};
 
-extern unsigned short int retro_bmp[RETRO_BMP_SIZE];
 extern void retro_reset_soft();
 extern bool retro_statusbar;
 extern bool retro_vkbd;
@@ -200,22 +216,6 @@ void emu_function(int function)
          }
          break;
    }
-}
-
-extern char retro_key_state[RETROK_LAST];
-extern char retro_key_state_old[RETROK_LAST];
-
-static retro_input_state_t input_state_cb;
-static retro_input_poll_t input_poll_cb;
-
-void retro_set_input_state(retro_input_state_t cb)
-{
-   input_state_cb = cb;
-}
-
-void retro_set_input_poll(retro_input_poll_t cb)
-{
-   input_poll_cb = cb;
 }
 
 #ifdef WIIU
