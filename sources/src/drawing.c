@@ -52,7 +52,7 @@
 
 #ifdef __LIBRETRO__
 #include "libretro-core.h"
-extern int STATUSON;
+extern bool retro_statusbar;
 extern void retro_set_led(unsigned);
 static unsigned led_on_prev = 0;
 static unsigned led_on = 0;
@@ -3462,7 +3462,7 @@ void finish_drawing_frame (void)
 	draw_frame2 ();
 
 #ifdef __LIBRETRO__
-	if (STATUSON == 1)
+	if (retro_statusbar)
 		print_statusbar();
 #endif
 	if (currprefs.leds_on_screen) {

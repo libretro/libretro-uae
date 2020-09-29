@@ -9,43 +9,43 @@
 
 unsigned short blend(unsigned short fg, unsigned short bg, unsigned int alpha)
 {
-   // Split foreground into components
+   /* Split foreground into components */
    unsigned fg_r = fg >> 11;
    unsigned fg_g = (fg >> 5) & ((1u << 6) - 1);
    unsigned fg_b = fg & ((1u << 5) - 1);
 
-   // Split background into components
+   /* Split background into components */
    unsigned bg_r = bg >> 11;
    unsigned bg_g = (bg >> 5) & ((1u << 6) - 1);
    unsigned bg_b = bg & ((1u << 5) - 1);
 
-   // Alpha blend components
+   /* Alpha blend components */
    unsigned out_r = (fg_r * alpha + bg_r * (255 - alpha)) / 255;
    unsigned out_g = (fg_g * alpha + bg_g * (255 - alpha)) / 255;
    unsigned out_b = (fg_b * alpha + bg_b * (255 - alpha)) / 255;
 
-   // Pack result
+   /* Pack result */
    return (unsigned short) ((out_r << 11) | (out_g << 5) | out_b);
 }
 
 uint32_t blend32(uint32_t fg, uint32_t bg, unsigned int alpha)
 {
-   // Split foreground into components
+   /* Split foreground into components */
    unsigned fg_r = (fg >> 16) & 0xFF;
    unsigned fg_g = (fg >> 8) & 0xFF;
    unsigned fg_b = (fg >> 0) & 0xFF;
 
-   // Split background into components
+   /* Split background into components */
    unsigned bg_r = (bg >> 16) & 0xFF;
    unsigned bg_g = (bg >> 8) & 0xFF;
    unsigned bg_b = (bg >> 0) & 0xFF;
 
-   // Alpha blend components
+   /* Alpha blend components */
    unsigned out_r = (fg_r * alpha + bg_r * (255 - alpha)) / 255;
    unsigned out_g = (fg_g * alpha + bg_g * (255 - alpha)) / 255;
    unsigned out_b = (fg_b * alpha + bg_b * (255 - alpha)) / 255;
 
-   // Pack result
+   /* Pack result */
    return (uint32_t) ((out_r << 16) | (out_g << 8) | out_b);
 }
 
@@ -279,7 +279,7 @@ void Draw_string(unsigned short *surf, signed short int x, signed short int y,
    if (!string)
       return;
 
-   // Pseudo transparency for now
+   /* Pseudo transparency for now */
    if (alpha < 255)
    {
       fg = blend(fg, ((bg == 0) ? 0xFFFF : bg), alpha);
@@ -291,14 +291,14 @@ void Draw_string(unsigned short *surf, signed short int x, signed short int y,
    int surfw = strlen * 7 * xscale;
    int surfh = 8 * yscale;
 
-   // No horizontal wrap
+   /* No horizontal wrap */
    if ((surfw + x) > retrow)
       return;
 
    linesurf = (unsigned char*)malloc(sizeof(unsigned short)*surfw*surfh);
    yptr = (unsigned short *)&linesurf[0];
 
-   // Skip the 8th row
+   /* Skip the 8th row */
    surfh -= 1;
 
    for(ypixel = 0; ypixel < 8; ypixel++)
@@ -346,7 +346,7 @@ void Draw_string32(uint32_t *surf, signed short int x, signed short int y,
    if (!string)
       return;
 
-   // Pseudo transparency for now
+   /* Pseudo transparency for now */
    if (alpha < 255)
    {
       fg = blend32(fg, ((bg == 0) ? 0xFFFFFFFF : bg), alpha);
@@ -358,14 +358,14 @@ void Draw_string32(uint32_t *surf, signed short int x, signed short int y,
    int surfw = strlen * 7 * xscale;
    int surfh = 8 * yscale;
 
-   // No horizontal wrap
+   /* No horizontal wrap */
    if ((surfw + x) > retrow)
       return;
 
    linesurf = (uint32_t *)malloc(sizeof(uint32_t)*surfw*surfh);
    yptr = (uint32_t *)&linesurf[0];
 
-   // Skip the 8th row
+   /* Skip the 8th row */
    surfh -= 1;
 
    for(ypixel = 0; ypixel < 8; ypixel++)

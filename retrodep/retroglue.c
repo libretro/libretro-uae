@@ -11,7 +11,7 @@
 #include "hrtimer.h"
 
 #include "inputdevice.h"
-void inputdevice_release_all_keys (void);
+void inputdevice_release_all_keys(void);
 extern int mouse_port[NORMAL_JPORTS];
 
 #include "drawing.h"
@@ -23,31 +23,18 @@ extern int mouse_port[NORMAL_JPORTS];
 #include "retro_files.h"
 #include "file/file_path.h"
 extern unsigned int uae_devices[4];
-extern unsigned int inputdevice_finalized;
+bool inputdevice_finalized = false;
 
 extern int defaultw;
 extern int defaulth;
-
 extern int libretro_runloop_active;
 extern int libretro_frame_end;
 
-unsigned short int clut[] = {
-	0x0000,  /* full background transparency */
-	0x0200,  /* background semi transparent */
-	0x06FF,  /* opaque + light orange */
-	0x06AA,  /* opaque + dark orange  */
-} ;
-
 unsigned short int* pixbuf = NULL;
-
 extern unsigned short int retro_bmp[RETRO_BMP_SIZE];
 void retro_audio_batch_cb(const int16_t *data, size_t frames);
 
 int prefs_changed = 0;
-int vsync_enabled = 0;
-int opt_scrw = 0;
-int opt_scrh = 0;
-unsigned long stat_value = 0;
 
 int retro_thisframe_first_drawn_line;
 int retro_thisframe_last_drawn_line;
@@ -92,7 +79,7 @@ void retro_mouse_button(int port, int button, int state)
 /* --- joystick input --- */
 void retro_joystick(int port, int axis, int state)
 {
-    // disable mouse in normal ports, joystick/mouse inverted
+    /* Disable mouse in normal ports, joystick/mouse inverted */
     if (port < 2)
     {
         int m_port = (port == 0) ? 1 : 0;
@@ -103,7 +90,7 @@ void retro_joystick(int port, int axis, int state)
 
 void retro_joystick_analog(int port, int axis, int state)
 {
-    // disable mouse in normal ports, joystick/mouse inverted
+    /* Disable mouse in normal ports, joystick/mouse inverted */
     if (port < 2)
     {
         int m_port = (port == 0) ? 1 : 0;
@@ -114,7 +101,7 @@ void retro_joystick_analog(int port, int axis, int state)
 
 void retro_joystick_button(int port, int button, int state)
 {
-    // disable mouse in normal ports, joystick/mouse inverted
+    /* Disable mouse in normal ports, joystick/mouse inverted */
     if (port < 2)
     {
         int m_port = (port == 0) ? 1 : 0;
@@ -126,12 +113,12 @@ void retro_joystick_button(int port, int button, int state)
 /* --- keyboard input --- */
 void retro_key_down(int key)
 {
-	inputdevice_do_keyboard (key, 1);
+	inputdevice_do_keyboard(key, 1);
 }
 
 void retro_key_up(int key)
 {
-	inputdevice_do_keyboard (key, 0);
+	inputdevice_do_keyboard(key, 0);
 }
 
 
@@ -141,7 +128,7 @@ void retro_renderSound(short* samples, int sampleCount)
     if ((sampleCount < 1) || !libretro_runloop_active)
         return;
 #if 0
-    for(int i=0; i<sampleCount; i+=2)
+    for (int i=0; i<sampleCount; i+=2)
     {
         retro_audio_cb(samples[i], samples[i+1]);
     }
@@ -152,15 +139,15 @@ void retro_renderSound(short* samples, int sampleCount)
 
 void retro_flush_screen (struct vidbuf_description *gfxinfo, int ystart, int yend)
 {
-   // These values must be cached here, since the
-   // source variables will be reset before the frame
-   // ends and control is returned to the frontend
+   /* These values must be cached here, since the
+    * source variables will be reset before the frame
+    * ends and control is returned to the frontend */
    retro_thisframe_first_drawn_line = thisframe_first_drawn_line;
    retro_thisframe_last_drawn_line  = thisframe_last_drawn_line;
    retro_min_diwstart               = min_diwstart;
    retro_max_diwstop                = max_diwstop;
 
-   // Flag that we should end the frame, return out of retro_run
+   /* Flag that we should end the frame, return out of retro_run */
    libretro_frame_end = 1;
 }
 
@@ -196,19 +183,19 @@ int graphics_init(void) {
 
 #ifdef ENABLE_LOG_SCREEN
 	currprefs.gfx_height = 256;
-	currprefs.gfx_linedbl = 0;	//disable line doubling
+	currprefs.gfx_linedbl = 0;
 #else
 	currprefs.gfx_size_win.height = defaulth;
 #endif	
-	opt_scrw = currprefs.gfx_size_win.width;
-	opt_scrh = currprefs.gfx_size_win.height;
 
 #ifdef ENABLE_LOG_SCREEN
 	pixbuf = (unsigned int*) malloc(currprefs.gfx_size_win.width * 576 * pix_bytes);
 #else
 	pixbuf = (unsigned short int*) &retro_bmp[0];
 #endif
-	//printf("graphics init: pixbuf=%p color_mode=%d width=%d height=%d\n", pixbuf, currprefs.color_mode, currprefs.gfx_size_win.width, currprefs.gfx_size_win.height);
+#if 0
+	printf("graphics init: pixbuf=%p color_mode=%d width=%d height=%d\n", pixbuf, currprefs.color_mode, currprefs.gfx_size_win.width, currprefs.gfx_size_win.height);
+#endif
 	if (pixbuf == NULL) {
 		printf("Error: not enough memory to initialize screen buffer!\n");
 		return -1;
@@ -244,9 +231,8 @@ int is_fullscreen (void)
 
 int is_vsync (void)
 {
-    return vsync_enabled;
+    return 0;
 }
-
 
 int mousehack_allowed (void)
 {
@@ -255,8 +241,8 @@ int mousehack_allowed (void)
 
 int graphics_setup(void)
 {
-	//32bit mode
-	//Rw, Gw, Bw,   Rs, Gs, Bs,   Aw, As, Avalue, swap
+	/* 32bit mode
+	 *                   Rw,Gw,Bw,Rs, Gs,Bs,Aw,As,Avalue,swap */
 	if (pix_bytes == 2)
 		alloc_colors64k (5, 6, 5, 11, 5, 0, 0, 0, 0, 0); 
 	else
@@ -320,7 +306,9 @@ int check_prefs_changed_gfx (void)
     gfxvidinfo.height_allocated         = currprefs.gfx_size_win.height;
     gfxvidinfo.rowbytes                 = gfxvidinfo.width_allocated * gfxvidinfo.pixbytes;
 
-    //printf("check_prefs_changed_gfx: %d:%d, res:%d vres:%d\n", changed_prefs.gfx_size_win.width, changed_prefs.gfx_size_win.height, changed_prefs.gfx_resolution, changed_prefs.gfx_vresolution);
+#if 0
+    printf("check_prefs_changed_gfx: %d:%d, res:%d vres:%d\n", changed_prefs.gfx_size_win.width, changed_prefs.gfx_size_win.height, changed_prefs.gfx_resolution, changed_prefs.gfx_vresolution);
+#endif
     return 1;
 }
 
@@ -511,7 +499,7 @@ int input_get_default_joystick (struct uae_input_device *uid, int num, int port,
     uid[2].enabled = 1;
     uid[3].enabled = 1;
 
-    inputdevice_finalized = 1;
+    inputdevice_finalized = true;
 
     currprefs.input_analog_joystick_mult = 100;
     currprefs.input_analog_joystick_offset = 0;
@@ -754,6 +742,38 @@ void setcapslockstate (int state)
 {
 }
 
+#if 0
+static struct uae_input_device_kbr_default keytrans_amiga[] = {
+    { -1, {{0}} }
+};
+
+static struct uae_input_device_kbr_default keytrans_pc1[] = {
+    { -1, {{0, 0}} }
+};
+
+static struct uae_input_device_kbr_default *keytrans[] = {
+    keytrans_amiga,
+    keytrans_pc1,
+    keytrans_pc1
+};
+
+static int *kbmaps[] = {
+};
+
+void clearallkeys (void)
+{
+    inputdevice_updateconfig (&changed_prefs, &currprefs);
+}
+#endif
+
+void keyboard_settrans (void)
+{
+#if 0
+    inputdevice_setkeytranslation (keytrans, kbmaps);
+#endif
+}
+
+
 /********************************************************************
     Misc fuctions
 *********************************************************************/
@@ -792,11 +812,11 @@ int sensible_strcmp(char *a, char *b)
    for (i = 0; a[i] == b[i]; i++)
       if (a[i] == '\0')
          return 0;
-   // Replace " " (32) with "/" (47) when comparing for more natural sorting, such as:
-   // 1. Turrican
-   // 2. Turrican II
-   // 3. Turrican III
-   // Because "/" (47) is bigger than "," (44) and "." (46), and it is not used in filenames
+   /* Replace " " (32) with "/" (47) when comparing for more natural sorting, such as:
+    * 1. Turrican
+    * 2. Turrican II
+    * 3. Turrican III
+    * Because "/" (47) is bigger than "," (44) and "." (46), and it is not used in filenames */
    if (a[i] == 32)
       return (47 < (unsigned char)b[i]) ? -1 : 1;
    if (b[i] == 32)

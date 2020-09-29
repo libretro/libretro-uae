@@ -30,6 +30,13 @@
 #include "disk.h"
 
 int libretro_runloop_active = 0;
+int retrow = 0;
+int retroh = 0;
+int defaultw = EMULATOR_DEF_WIDTH;
+int defaulth = EMULATOR_DEF_HEIGHT;
+char retro_key_state[RETROK_LAST] = {0};
+char retro_key_state_old[RETROK_LAST] = {0};
+unsigned short int retro_bmp[RETRO_BMP_SIZE] = {0};
 
 extern int frame_redraw_necessary;
 extern int bplcon0;
@@ -37,13 +44,7 @@ extern int diwlastword_total;
 extern int diwfirstword_total;
 extern int interlace_seen;
 extern int m68k_go(int may_quit, int resume);
-
-int defaultw = EMULATOR_DEF_WIDTH;
-int defaulth = EMULATOR_DEF_HEIGHT;
-int retrow = 0;
-int retroh = 0;
-char retro_key_state[RETROK_LAST];
-char retro_key_state_old[RETROK_LAST];
+extern int prefs_changed;
 
 unsigned int opt_model_options_display = 0;
 unsigned int opt_audio_options_display = 0;
@@ -78,8 +79,6 @@ float opt_analogmouse_speed = 1.0;
 unsigned int opt_cd32pad_options = 0;
 unsigned int opt_retropad_options = 0;
 char opt_joyport_order[5] = "1234";
-bool mousemode_locked = false;
-extern int MOUSEMODE;
 
 #if defined(NATMEM_OFFSET)
 extern uae_u8 *natmem_offset;
@@ -92,23 +91,26 @@ static char *uae_argv[] = { "puae", RPATH };
 static int restart_pending = 0;
 static char* core_options_legacy_strings = NULL;
 
-unsigned short int retro_bmp[RETRO_BMP_SIZE];
-extern int STATUSON;
-extern int prefs_changed;
-
 bool retro_message = false;
 char retro_message_msg[1024] = {0};
+bool retro_statusbar = false;
+
+extern bool retro_mousemode;
+extern bool mousemode_locked;
+extern bool retro_vkbd;
+extern void print_vkbd(unsigned short int *pixels);
 
 extern int turbo_fire_button;
 extern unsigned int turbo_pulse;
-unsigned int inputdevice_finalized = 0;
+extern bool inputdevice_finalized;
 unsigned int pix_bytes = 2;
 static bool pix_bytes_initialized = false;
-bool automatic_sound_filter_type_update = true;
-bool fake_ntsc = false;
-bool real_ntsc = false;
-bool forced_video = false;
-bool retro_request_av_info_update = false;
+static bool cpu_cycle_exact_force = false;
+static bool automatic_sound_filter_type_update = true;
+static bool fake_ntsc = false;
+static bool real_ntsc = false;
+static bool forced_video = false;
+bool request_update_av_info = false;
 bool retro_av_info_change_timing = false;
 bool retro_av_info_change_geometry = true;
 bool retro_av_info_is_ntsc = false;
@@ -123,8 +125,8 @@ int zoomed_width = 0;
 int zoomed_height = 0;
 unsigned int width_multiplier = 1;
 
-int opt_vertical_offset = 0;
-bool opt_vertical_offset_auto = true;
+static int opt_vertical_offset = 0;
+static bool opt_vertical_offset_auto = true;
 extern int minfirstline;
 static int retro_thisframe_counter = 0;
 extern int retro_thisframe_first_drawn_line;
@@ -134,11 +136,11 @@ extern int retro_thisframe_last_drawn_line;
 static int retro_thisframe_last_drawn_line_old = -1;
 static int retro_thisframe_last_drawn_line_start = -1;
 extern int thisframe_y_adjust;
-static int thisframe_y_adjust_old = 0;
+static int thisframe_y_adjust_old = -1;
 static int thisframe_y_adjust_update_frame_timer = 3;
 
-int opt_horizontal_offset = 0;
-bool opt_horizontal_offset_auto = true;
+static int opt_horizontal_offset = 0;
+static bool opt_horizontal_offset_auto = true;
 static int retro_max_diwlastword_hires = 824;
 static int retro_max_diwlastword = 824;
 extern int retro_min_diwstart;
@@ -160,13 +162,13 @@ struct zfile *retro_deserialize_file = NULL;
 static size_t save_state_file_size = 0;
 
 #include "libretro-keyboard.i"
-int keyId(const char *val)
+static int retro_key_id(const char *val)
 {
-   int i=0;
-   while (keyDesc[i]!=NULL)
+   int i = 0;
+   while (retro_key_name[i] != NULL)
    {
-      if (!strcmp(keyDesc[i],val))
-         return keyVal[i];
+      if (!strcmp(retro_key_name[i], val))
+         return retro_key_value[i];
       i++;
    }
    return 0;
@@ -175,7 +177,7 @@ int keyId(const char *val)
 extern void retro_poll_event(void);
 unsigned int uae_devices[4];
 extern int cd32_pad_enabled[NORMAL_JPORTS];
-int mapper_keys[31]={0};
+int mapper_keys[31] = {0};
 extern void display_current_image(const char *image, bool inserted);
 
 retro_log_printf_t log_cb = NULL;
@@ -190,10 +192,10 @@ char retro_temp_directory[RETRO_PATH_MAX] = {0};
 char retro_system_directory[RETRO_PATH_MAX] = {0};
 static char retro_content_directory[RETRO_PATH_MAX] = {0};
 
-// Disk Control context
+/* Disk Control context */
 dc_storage *dc = NULL;
 
-// Configs
+/* Configs */
 static char uae_model[256] = {0};
 static char uae_kickstart[RETRO_PATH_MAX] = {0};
 static char uae_kickstart_ext[RETRO_PATH_MAX] = {0};
@@ -233,10 +235,10 @@ void retro_set_environment(retro_environment_t cb)
    };
 
    static const struct retro_controller_info ports[] = {
-      { p1_controllers, 5 }, // port 1
-      { p2_controllers, 5 }, // port 2
-      { p3_controllers, 3 }, // port 3
-      { p4_controllers, 3 }, // port 4
+      { p1_controllers, 5 }, /* port 1 */
+      { p2_controllers, 5 }, /* port 2 */
+      { p3_controllers, 3 }, /* port 3 */
+      { p4_controllers, 3 }, /* port 4 */
       { NULL, 0 }
    };
 
@@ -584,7 +586,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_vertical_pos",
          "Video > Vertical Position",
-         "'Automatic' keeps zoom modes centered. Positive values force the screen upward and negative values downward.",
+         "'Automatic' keeps only zoomed screens centered. Positive values move upward and negative values move downward.",
          {
             { "auto", "Automatic" },
             { "0", "Default" },
@@ -625,7 +627,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_horizontal_pos",
          "Video > Horizontal Position",
-         "'Automatic' keeps screen centered. Positive values force the screen right and negative values left.",
+         "'Automatic' keeps screen centered. Positive values move right and negative values move left.",
          {
             { "auto", "Automatic" },
             { "0", "Default" },
@@ -1360,10 +1362,19 @@ void retro_set_environment(retro_environment_t cb)
       { NULL, NULL, NULL, {{0}}, NULL },
    };
 
-   /* fill in the values for all the mappers */
+   /* Fill in the values for all the mappers */
    int i = 0;
    int j = 0;
    int hotkey = 0;
+   int hotkeys_skipped = 0;
+   /* Count special hotkeys */
+   while (retro_key_name[j] && j < RETRO_NUM_CORE_OPTION_VALUES_MAX - 1)
+   {
+      if (retro_key_value[j] < 0)
+         hotkeys_skipped++;
+      ++j;
+   }
+
    while (core_options[i].key)
    {
       if (strstr(core_options[i].key, "puae_mapper_"))
@@ -1383,18 +1394,21 @@ void retro_set_environment(retro_environment_t cb)
          j = 0;
          if (hotkey)
          {
-             while (keyDescHotkeys[j] && j < RETRO_NUM_CORE_OPTION_VALUES_MAX - 1)
+             while (retro_key_name[j] && j < RETRO_NUM_CORE_OPTION_VALUES_MAX - 1)
              {
-                core_options[i].values[j].value = keyDescHotkeys[j];
+                if (j == 0)
+                   core_options[i].values[j].value = retro_key_name[j];
+                else
+                   core_options[i].values[j].value = retro_key_name[j + hotkeys_skipped + 1];
                 core_options[i].values[j].label = NULL;
                 ++j;
              };
          }
          else
          {
-             while (keyDesc[j] && j < RETRO_NUM_CORE_OPTION_VALUES_MAX - 1)
+             while (retro_key_name[j] && j < RETRO_NUM_CORE_OPTION_VALUES_MAX - 1)
              {
-                core_options[i].values[j].value = keyDesc[j];
+                core_options[i].values[j].value = retro_key_name[j];
                 core_options[i].values[j].label = NULL;
                 ++j;
              };
@@ -1731,7 +1745,7 @@ static void update_variables(void)
          strcat(uae_config, "cycle_exact=true\n");
       }
 
-      if (libretro_runloop_active)
+      if (libretro_runloop_active && !cpu_cycle_exact_force)
       {
          if (!strcmp(var.value, "normal"))
          {
@@ -2082,7 +2096,7 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      // Only allow screenmode change after restart
+      /* Only allow screenmode change after restart */
       if (!pix_bytes_initialized)
       {
          if (!strcmp(var.value, "16bit"))      pix_bytes = 2;
@@ -2324,8 +2338,11 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if      (!strcmp(var.value, "joystick") && !mousemode_locked) MOUSEMODE = -1;
-      else if (!strcmp(var.value, "mouse") && !mousemode_locked)    MOUSEMODE = 1;
+      if (!mousemode_locked)
+      {
+         if      (!strcmp(var.value, "joystick")) retro_mousemode = false;
+         else if (!strcmp(var.value, "mouse"))    retro_mousemode = true;
+      }
    }
 
    var.key = "puae_joyport_order";
@@ -2382,140 +2399,140 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[RETRO_DEVICE_ID_JOYPAD_SELECT] = keyId(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_SELECT] = retro_key_id(var.value);
    }
 
    var.key = "puae_mapper_start";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[RETRO_DEVICE_ID_JOYPAD_START] = keyId(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_START] = retro_key_id(var.value);
    }
 
    var.key = "puae_mapper_b";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[RETRO_DEVICE_ID_JOYPAD_B] = keyId(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_B] = retro_key_id(var.value);
    }
 
    var.key = "puae_mapper_a";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[RETRO_DEVICE_ID_JOYPAD_A] = keyId(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_A] = retro_key_id(var.value);
    }
 
    var.key = "puae_mapper_y";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[RETRO_DEVICE_ID_JOYPAD_Y] = keyId(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_Y] = retro_key_id(var.value);
    }
 
    var.key = "puae_mapper_x";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[RETRO_DEVICE_ID_JOYPAD_X] = keyId(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_X] = retro_key_id(var.value);
    }
 
    var.key = "puae_mapper_l";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[RETRO_DEVICE_ID_JOYPAD_L] = keyId(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_L] = retro_key_id(var.value);
    }
 
    var.key = "puae_mapper_r";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[RETRO_DEVICE_ID_JOYPAD_R] = keyId(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_R] = retro_key_id(var.value);
    }
 
    var.key = "puae_mapper_l2";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[RETRO_DEVICE_ID_JOYPAD_L2] = keyId(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_L2] = retro_key_id(var.value);
    }
 
    var.key = "puae_mapper_r2";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[RETRO_DEVICE_ID_JOYPAD_R2] = keyId(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_R2] = retro_key_id(var.value);
    }
 
    var.key = "puae_mapper_l3";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[RETRO_DEVICE_ID_JOYPAD_L3] = keyId(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_L3] = retro_key_id(var.value);
    }
 
    var.key = "puae_mapper_r3";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[RETRO_DEVICE_ID_JOYPAD_R3] = keyId(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_R3] = retro_key_id(var.value);
    }
 
    var.key = "puae_mapper_lr";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[16] = keyId(var.value);
+      mapper_keys[16] = retro_key_id(var.value);
    }
 
    var.key = "puae_mapper_ll";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[17] = keyId(var.value);
+      mapper_keys[17] = retro_key_id(var.value);
    }
 
    var.key = "puae_mapper_ld";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[18] = keyId(var.value);
+      mapper_keys[18] = retro_key_id(var.value);
    }
 
    var.key = "puae_mapper_lu";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[19] = keyId(var.value);
+      mapper_keys[19] = retro_key_id(var.value);
    }
 
    var.key = "puae_mapper_rr";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[20] = keyId(var.value);
+      mapper_keys[20] = retro_key_id(var.value);
    }
 
    var.key = "puae_mapper_rl";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[21] = keyId(var.value);
+      mapper_keys[21] = retro_key_id(var.value);
    }
 
    var.key = "puae_mapper_rd";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[22] = keyId(var.value);
+      mapper_keys[22] = retro_key_id(var.value);
    }
 
    var.key = "puae_mapper_ru";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[23] = keyId(var.value);
+      mapper_keys[23] = retro_key_id(var.value);
    }
 
    /* Mapper hotkeys */
@@ -2523,42 +2540,42 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[24] = keyId(var.value);
+      mapper_keys[24] = retro_key_id(var.value);
    }
 
    var.key = "puae_mapper_statusbar";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[25] = keyId(var.value);
+      mapper_keys[25] = retro_key_id(var.value);
    }
 
    var.key = "puae_mapper_mouse_toggle";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[26] = keyId(var.value);
+      mapper_keys[26] = retro_key_id(var.value);
    }
 
    var.key = "puae_mapper_reset";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[27] = keyId(var.value);
+      mapper_keys[27] = retro_key_id(var.value);
    }
 
    var.key = "puae_mapper_aspect_ratio_toggle";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[28] = keyId(var.value);
+      mapper_keys[28] = retro_key_id(var.value);
    }
 
    var.key = "puae_mapper_zoom_mode_toggle";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[29] = keyId(var.value);
+      mapper_keys[29] = retro_key_id(var.value);
    }
 
    /*** Options display ***/
@@ -2754,7 +2771,7 @@ static void update_variables(void)
    }
 
    /* Always update av_info geometry */
-   retro_request_av_info_update = true;
+   request_update_av_info = true;
 
    /* Always trigger changed prefs */
    config_changed = 1;
@@ -2951,7 +2968,7 @@ static struct retro_disk_control_ext_callback disk_interface_ext = {
    retro_disk_get_num_images,
    retro_disk_replace_image_index,
    retro_disk_add_image_index,
-   NULL, // set_initial_image
+   NULL, /* set_initial_image */
    retro_disk_get_image_path,
    retro_disk_get_image_label,
 };
@@ -2967,7 +2984,6 @@ static void fallback_log(enum retro_log_level level, const char *fmt, ...)
    va_end(va);
 }
 
-// Init
 void retro_init(void)
 {
    struct retro_log_callback log;
@@ -2978,67 +2994,60 @@ void retro_init(void)
    const char *system_dir = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &system_dir) && system_dir)
    {
-      // if defined, use the system directory
-      strlcpy(
-            retro_system_directory,
-            system_dir,
-            sizeof(retro_system_directory));
+      strlcpy(retro_system_directory,
+              system_dir,
+              sizeof(retro_system_directory));
    }
 
    const char *content_dir = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_CONTENT_DIRECTORY, &content_dir) && content_dir)
    {
-      // if defined, use the system directory
-      strlcpy(
-            retro_content_directory,
-            content_dir,
-            sizeof(retro_content_directory));
+      strlcpy(retro_content_directory,
+              content_dir,
+              sizeof(retro_content_directory));
    }
 
    const char *save_dir = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &save_dir) && save_dir)
    {
-      // If save directory is defined use it, otherwise use system directory
-      strlcpy(
-            retro_save_directory,
-            string_is_empty(save_dir) ? retro_system_directory : save_dir,
-            sizeof(retro_save_directory));
+      /* If save directory is defined use it, otherwise use system directory */
+      strlcpy(retro_save_directory,
+              string_is_empty(save_dir) ? retro_system_directory : save_dir,
+              sizeof(retro_save_directory));
    }
    else
    {
-      // make retro_save_directory the same in case RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY is not implemented by the frontend
-      strlcpy(
-            retro_save_directory,
-            retro_system_directory,
-            sizeof(retro_save_directory));
+      /* Make retro_save_directory the same in case RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY is not implemented by the frontend */
+      strlcpy(retro_save_directory,
+              retro_system_directory,
+              sizeof(retro_save_directory));
    }
 
-   // Disk control interface
+   /* Disk Control interface */
    dc = dc_create();
-
    unsigned dci_version = 0;
    if (environ_cb(RETRO_ENVIRONMENT_GET_DISK_CONTROL_INTERFACE_VERSION, &dci_version) && (dci_version >= 1))
       environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_EXT_INTERFACE, &disk_interface_ext);
    else
       environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &disk_interface);
 
-   // Savestates
-   // > Considered incomplete because runahead cannot
-   //   be enabled until content is full loaded
+   /* Savestates
+    * > Considered incomplete because runahead cannot
+    *   be enabled until content is full loaded */
    static uint64_t quirks = RETRO_SERIALIZATION_QUIRK_INCOMPLETE;
    environ_cb(RETRO_ENVIRONMENT_SET_SERIALIZATION_QUIRKS, &quirks);
 
-   // > Ensure save state de-serialization file
-   //   is closed/NULL
-   //   (redundant safety check, possibly required
-   //   for static builds...)
+   /* > Ensure save state de-serialization file
+    *   is closed/NULL
+    *   (redundant safety check, possibly required
+    *   for static builds...) */
    if (retro_deserialize_file)
    {
       zfile_fclose(retro_deserialize_file);
       retro_deserialize_file = NULL;
    }
 
-   // Inputs
+   /* Inputs */
    #define RETRO_DESCRIPTOR_BLOCK(_user)                                                                        \
    { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP, "Up" },                                          \
    { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN, "Down" },                                      \
@@ -3087,27 +3096,27 @@ void retro_init(void)
    libretro_runloop_active = 0;
    update_variables();
 
-   // Screen resolution
-   //log_cb(RETRO_LOG_INFO, "Resolution selected: %dx%d\n", defaultw, defaulth);
+   /* Screen resolution */
+   log_cb(RETRO_LOG_DEBUG, "Resolution selected: %dx%d\n", defaultw, defaulth);
    retrow = defaultw;
    retroh = defaulth;
 }
 
 void retro_deinit(void)
 {	
-   // Clean the M3U storage
+   /* Clean the M3U storage */
    if (dc)
       dc_free(dc);
 
-   // Clean legacy strings
+   /* Clean legacy strings */
    if (core_options_legacy_strings)
       free(core_options_legacy_strings);
 
-   // Clean ZIP temp
+   /* Clean ZIP temp */
    if (!string_is_empty(retro_temp_directory) && path_is_directory(retro_temp_directory))
       remove_recurse(retro_temp_directory);
 
-   // 'Reset' troublesome static variable
+   /* 'Reset' troublesome static variable */
    pix_bytes_initialized = false;
 }
 
@@ -3206,466 +3215,9 @@ double retro_get_aspect_ratio(unsigned int width, unsigned int height, bool pixe
    return ar;
 }
 
-static bool retro_update_av_info(void)
-{
-   bool av_log          = false;
-   bool isntsc          = retro_av_info_is_ntsc;
-   bool change_timing   = retro_av_info_change_timing;
-   bool change_geometry = retro_av_info_change_geometry;
-   double hz            = currprefs.chipset_refreshrate;
-
-   /* Reset global parameters ready for the
-    * next update */
-   retro_request_av_info_update  = false;
-   retro_av_info_is_ntsc         = false;
-   retro_av_info_change_timing   = false;
-   retro_av_info_change_geometry = true;
-
-   if (av_log)
-      fprintf(stdout, "* Trying to update AV timing:%d to: ntsc:%d hz:%0.4f, from video_config:%d, video_aspect:%d\n", change_timing, isntsc, hz, video_config, video_config_aspect);
-
-   /* Change PAL/NTSC with a twist, thanks to Dyna Blaster
-
-      Early Startup switch looks proper:
-         PAL mode V=49.9201Hz H=15625.0881Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
-         NTSC mode V=59.8859Hz H=15590.7473Hz (227x262+1) IDX=11 (NTSC) D=0 RTG=0/0
-         PAL mode V=49.9201Hz H=15625.0881Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
-
-      Dyna Blaster switch looks unorthodox:
-         PAL mode V=49.9201Hz H=15625.0881Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
-         PAL mode V=59.4106Hz H=15625.0881Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
-         PAL mode V=49.9201Hz H=15625.0881Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
-   */
-
-   video_config_old = video_config;
-   video_config_geometry = video_config;
-
-   /* When timing & geometry is changed */
-   if (change_timing)
-   {
-      /* Change to NTSC if not NTSC */
-      if (isntsc && (video_config & PUAE_VIDEO_PAL) && !fake_ntsc)
-      {
-         video_config |= PUAE_VIDEO_NTSC;
-         video_config &= ~PUAE_VIDEO_PAL;
-         real_ntsc = true;
-      }
-      /* Change to PAL if not PAL */
-      else if (!isntsc && (video_config & PUAE_VIDEO_NTSC) && !fake_ntsc)
-      {
-         video_config |= PUAE_VIDEO_PAL;
-         video_config &= ~PUAE_VIDEO_NTSC;
-         real_ntsc = false;
-      }
-
-      /* Request init_custom() on change and update temporary video config */
-      if (video_config_geometry != video_config)
-         request_init_custom_timer = 1;
-      video_config_geometry = video_config;
-   }
-
-   /* Aspect ratio override changes only the temporary video config. Don't change at the same time with region change. */
-   if (!change_timing && video_config_aspect != 0)
-   {
-      if (video_config_aspect == PUAE_VIDEO_NTSC)
-      {
-         video_config_geometry |= PUAE_VIDEO_NTSC;
-         video_config_geometry &= ~PUAE_VIDEO_PAL;
-      }
-      else if (video_config_aspect == PUAE_VIDEO_PAL)
-      {
-         video_config_geometry |= PUAE_VIDEO_PAL;
-         video_config_geometry &= ~PUAE_VIDEO_NTSC;
-      }
-   }
-   /* Forced aspect needs to be postponed for the next run to keep the actual dimension intact */
-   else if (change_timing && video_config_aspect != 0)
-      retro_request_av_info_update = true;
-
-   /* Do nothing if timing has not changed, unless Hz switched without isntsc */
-   if (video_config_old == video_config && change_timing)
-   {
-      /* Dyna Blaster and the like stays at fake NTSC to prevent pointless switching back and forth */
-      if (!isntsc && hz > 55)
-      {
-         video_config |= PUAE_VIDEO_NTSC;
-         video_config &= ~PUAE_VIDEO_PAL;
-         video_config_geometry = video_config;
-         fake_ntsc = true;
-      }
-
-      /* If still no change */
-      if (video_config_old == video_config)
-      {
-         if (av_log)
-            fprintf(stdout, "* Already at wanted AV\n");
-         change_timing = false; // Allow other calculations but don't alter timing
-      }
-   }
-
-   /* Horizontal centering thresholds */
-   static int min_diwstart_limit_hires = 220;
-   static int max_diwstop_limit_hires = 600;
-   static int min_diwstart_limit = 220;
-   static int max_diwstop_limit = 600;
-   if (video_config & PUAE_VIDEO_SUPERHIRES)
-   {
-      min_diwstart_limit = min_diwstart_limit_hires * 2;
-      max_diwstop_limit = max_diwstop_limit_hires * 2;
-      width_multiplier = 4;
-   }
-   else if (video_config & PUAE_VIDEO_HIRES)
-   {
-      min_diwstart_limit = min_diwstart_limit_hires;
-      max_diwstop_limit = max_diwstop_limit_hires;
-      width_multiplier = 2;
-   }
-   else
-   {
-      min_diwstart_limit = min_diwstart_limit_hires / 2;
-      max_diwstop_limit = max_diwstop_limit_hires / 2;
-      width_multiplier = 1;
-   }
-
-   /* Geometry dimensions */
-   switch (video_config_geometry)
-   {
-      case PUAE_VIDEO_PAL_LO:
-         retrow = PUAE_VIDEO_WIDTH / 2;
-         retroh = PUAE_VIDEO_HEIGHT_PAL / 2;
-         break;
-      case PUAE_VIDEO_PAL_HI:
-         retrow = PUAE_VIDEO_WIDTH;
-         retroh = PUAE_VIDEO_HEIGHT_PAL / 2;
-         break;
-      case PUAE_VIDEO_PAL_HI_DL:
-         retrow = PUAE_VIDEO_WIDTH;
-         retroh = PUAE_VIDEO_HEIGHT_PAL;
-         break;
-      case PUAE_VIDEO_PAL_SUHI:
-         retrow = PUAE_VIDEO_WIDTH * 2;
-         retroh = PUAE_VIDEO_HEIGHT_PAL / 2;
-         break;
-      case PUAE_VIDEO_PAL_SUHI_DL:
-         retrow = PUAE_VIDEO_WIDTH * 2;
-         retroh = PUAE_VIDEO_HEIGHT_PAL;
-         break;
-
-      case PUAE_VIDEO_NTSC_LO:
-         retrow = PUAE_VIDEO_WIDTH / 2;
-         retroh = PUAE_VIDEO_HEIGHT_NTSC / 2;
-         break;
-      case PUAE_VIDEO_NTSC_HI:
-         retrow = PUAE_VIDEO_WIDTH;
-         retroh = PUAE_VIDEO_HEIGHT_NTSC / 2;
-         break;
-      case PUAE_VIDEO_NTSC_HI_DL:
-         retrow = PUAE_VIDEO_WIDTH;
-         retroh = PUAE_VIDEO_HEIGHT_NTSC;
-         break;
-      case PUAE_VIDEO_NTSC_SUHI:
-         retrow = PUAE_VIDEO_WIDTH * 2;
-         retroh = PUAE_VIDEO_HEIGHT_NTSC / 2;
-         break;
-      case PUAE_VIDEO_NTSC_SUHI_DL:
-         retrow = PUAE_VIDEO_WIDTH * 2;
-         retroh = PUAE_VIDEO_HEIGHT_NTSC;
-         break;
-   }
-
-   /* Restore actual canvas height for aspect ratio toggling in real NTSC, otherwise toggling is broken */
-   if (!change_timing && real_ntsc && video_config_aspect == PUAE_VIDEO_PAL)
-      retroh = defaulth;
-
-   /* Exception for Dyna Blaster */
-   if (fake_ntsc)
-      retroh = (video_config & PUAE_VIDEO_DOUBLELINE) ? 476 : 238;
-
-   /* When the actual dimensions change and not just the view */
-   if (change_timing)
-   {
-      defaultw = retrow;
-      defaulth = retroh;
-   }
-
-   static struct retro_system_av_info new_av_info;
-   retro_get_system_av_info(&new_av_info);
-
-   /* Disable Hz change if not allowed */
-   if (!video_config_allow_hz_change)
-      change_timing = false;
-
-   /* Timing or geometry update */
-   if (change_timing)
-   {
-      new_av_info.timing.fps = hz;
-      environ_cb(RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO, &new_av_info);
-   }
-   else if (change_geometry)
-      environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
-
-   /* Ensure statusbar stays visible at the bottom */
-   opt_statusbar_position_offset = 0;
-   opt_statusbar_position = opt_statusbar_position_old;
-   if (!change_timing)
-      if (retroh < defaulth)
-         if (opt_statusbar_position >= 0 && (defaulth - retroh) >= opt_statusbar_position)
-            opt_statusbar_position = defaulth - retroh;
-
-   /* Aspect offset for zoom mode */
-   opt_statusbar_position_offset = opt_statusbar_position_old - opt_statusbar_position;
-
-   /* Compensate for the PAL last line, aargh */
-   if (video_config & PUAE_VIDEO_PAL && !real_ntsc && opt_statusbar_position >= 0)
-   {
-      if (interlace_seen)
-      {
-         if (video_config_geometry & PUAE_VIDEO_DOUBLELINE)
-         {
-            if (video_config_geometry & PUAE_VIDEO_PAL)
-            {
-               opt_statusbar_position += 2;
-               opt_statusbar_position_offset += 2;
-            }
-            else
-            {
-               opt_statusbar_position -= 2;
-               opt_statusbar_position_offset -= 2;
-            }
-         }
-         else
-         {
-            if (video_config_geometry & PUAE_VIDEO_PAL)
-            {
-               opt_statusbar_position += 1;
-               opt_statusbar_position_offset += 1;
-            }
-         }
-      }
-      else
-      {
-         if (video_config_geometry & PUAE_VIDEO_DOUBLELINE && video_config_geometry & PUAE_VIDEO_PAL)
-         {
-            opt_statusbar_position += 1;
-            opt_statusbar_position_offset += 1;
-         }
-      }
-   }
-
-   //fprintf(stdout, "statusbar:%3d old:%3d offset:%3d, defaulth:%d retroh:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, defaulth, retroh);
-
-   /* Apply zoom mode if necessary */
-   switch (zoom_mode_id)
-   {
-      case 1:
-         zoomed_width = 360;
-         zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 240 : 270;
-         break;
-      case 2:
-         zoomed_width = 348;
-         zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 240 : 264;
-         break;
-      case 3:
-         zoomed_width = 332;
-         zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 240 : 256;
-         break;
-      case 4:
-         zoomed_width = 320;
-         zoomed_height = 240;
-         break;
-      case 5:
-         zoomed_width = 320;
-         zoomed_height = 224;
-         break;
-      case 6:
-         zoomed_width = 320;
-         zoomed_height = 216;
-         break;
-      case 7:
-         zoomed_width = 320;
-         zoomed_height = 200;
-         break;
-      case 8:
-         if (retro_min_diwstart != retro_max_diwstop
-          && retro_min_diwstart > 0
-          && retro_max_diwstop > 0)
-            zoomed_width = (retro_max_diwstop / width_multiplier) - (retro_min_diwstart / width_multiplier);
-         zoomed_width = (zoomed_width < 320) ? 320 : zoomed_width;
-
-         if (retro_thisframe_first_drawn_line != retro_thisframe_last_drawn_line
-          && retro_thisframe_first_drawn_line > 0
-          && retro_thisframe_last_drawn_line > 0)
-            zoomed_height = retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line + 1;
-         zoomed_height = (zoomed_height < 200) ? 200 : zoomed_height;
-         break;
-      default:
-         zoomed_width = retrow;
-         zoomed_height = retroh;
-         break;
-   }
-
-   if (zoom_mode_id > 0)
-   {
-      double zoom_dar = 0;
-      double zoom_par = retro_get_aspect_ratio(0, 0, true);
-      int zoomed_height_original = zoomed_height;
-
-      switch (zoom_mode_crop_id)
-      {
-         case 0: // Both
-            break;
-         case 1: // Vertical disables horizontal crop
-            zoomed_width = retrow;
-            break;
-         case 2: // Horizontal disables vertical crop
-            zoomed_height = retroh;
-            break;
-         case 3: // 16:9
-            zoom_dar = (double)16/9;
-            zoomed_width = retrow;
-            if (zoomed_height < (int)(zoomed_width * width_multiplier / zoom_dar * zoom_par))
-               zoomed_width = (int)(zoomed_height * zoom_dar / zoom_par);
-            break;
-         case 4: // 16:10
-            zoom_dar = (double)16/10;
-            zoomed_width = retrow;
-            if (zoomed_height < (int)(zoomed_width * width_multiplier / zoom_dar * zoom_par))
-               zoomed_width = (int)(zoomed_height * zoom_dar / zoom_par);
-            break;
-         case 5: // 4:3
-            zoom_dar = (double)4/3;
-            if (zoomed_height < (int)(zoomed_width * width_multiplier / zoom_dar * zoom_par))
-            {
-               zoomed_height = (int)(zoomed_width / zoom_dar * zoom_par);
-               if (zoomed_height < zoomed_height_original)
-                  zoomed_height = zoomed_height_original;
-               zoomed_width = (int)(zoomed_height * zoom_dar / zoom_par);
-            }
-            break;
-         case 6: // 5:4
-            zoom_dar = (double)5/4;
-            if (zoomed_height < (int)(zoomed_width * width_multiplier / zoom_dar * zoom_par))
-            {
-               zoomed_height = (int)(zoomed_width / zoom_dar * zoom_par);
-               if (zoomed_height < zoomed_height_original)
-                  zoomed_height = zoomed_height_original;
-               zoomed_width = (int)(zoomed_height * zoom_dar / zoom_par);
-            }
-            break;
-      }
-
-      if (video_config & PUAE_VIDEO_DOUBLELINE)
-         zoomed_height *= 2;
-
-      zoomed_width = (zoomed_width < 320) ? 320 : zoomed_width;
-      zoomed_width *= width_multiplier;
-
-      if (zoomed_height > retroh)
-         zoomed_height = retroh;
-
-      if (zoomed_width > retrow)
-         zoomed_width = retrow;
-   }
-
-   if (zoomed_height != retroh || zoomed_width != retrow)
-   {
-      new_av_info.geometry.base_width = zoomed_width;
-      new_av_info.geometry.base_height = zoomed_height;
-      new_av_info.geometry.aspect_ratio = retro_get_aspect_ratio(zoomed_width, zoomed_height, false);
-      environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
-
-      /* Ensure statusbar stays visible at the bottom */
-      if (opt_statusbar_position >= 0 && (retroh - zoomed_height - opt_statusbar_position_offset) >= opt_statusbar_position)
-         opt_statusbar_position = retroh - zoomed_height - opt_statusbar_position_offset;
-
-      //fprintf(stdout, "ztatusbar:%3d old:%3d offset:%3d, defaulth:%d retroz:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, defaulth, zoomed_height);
-   }
-
-   /* If zoom mode should be vertically centered automagically */
-   if (opt_vertical_offset_auto && (zoom_mode_id != 0 || zoomed_height != retroh))
-   {
-      int zoomed_height_normal = (video_config & PUAE_VIDEO_DOUBLELINE) ? zoomed_height / 2 : zoomed_height;
-      int thisframe_y_adjust_new = minfirstline;
-
-      /* Need proper values for calculations */
-      if (retro_thisframe_first_drawn_line != retro_thisframe_last_drawn_line
-       && retro_thisframe_first_drawn_line > 0 && retro_thisframe_last_drawn_line > 0
-       && (retro_thisframe_first_drawn_line < 150 || retro_thisframe_last_drawn_line > 150)
-      )
-         thisframe_y_adjust_new = (retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line - zoomed_height_normal) / 2 + retro_thisframe_first_drawn_line;
-      else if (retro_thisframe_first_drawn_line == -1 && retro_thisframe_last_drawn_line == -1)
-         thisframe_y_adjust_new = thisframe_y_adjust_old;
-
-      /* Sensible limits */
-      thisframe_y_adjust_new = (thisframe_y_adjust_new < 0) ? 0 : thisframe_y_adjust_new;
-      thisframe_y_adjust_new = (thisframe_y_adjust_new > (minfirstline + 60)) ? (minfirstline + 60) : thisframe_y_adjust_new;
-
-      /* Change value only if altered */
-      if (thisframe_y_adjust != thisframe_y_adjust_new)
-         thisframe_y_adjust = thisframe_y_adjust_new;
-
-      //fprintf(stdout, "FIRSTDRAWN:%6d LASTDRAWN:%6d   yadjust:%3d old:%3d zoomed_h:%d change_g:%d\n", retro_thisframe_first_drawn_line, retro_thisframe_last_drawn_line, thisframe_y_adjust, thisframe_y_adjust_old, zoomed_height, change_geometry);
-
-      /* Remember the previous value */
-      thisframe_y_adjust_old = thisframe_y_adjust;
-   }
-   else
-      thisframe_y_adjust = minfirstline + opt_vertical_offset;
-
-   /* Horizontal centering */
-   if (opt_horizontal_offset_auto)
-   {
-      int visible_left_border_new = retro_max_diwlastword - retrow + (retrow - zoomed_width) / 2;
-
-      /* Need proper values for calculations */
-      if (retro_min_diwstart != retro_max_diwstop
-       && retro_min_diwstart > 0 && retro_max_diwstop > 0
-       && retro_min_diwstart < min_diwstart_limit
-       && retro_max_diwstop > max_diwstop_limit
-       && (retro_max_diwstop - retro_min_diwstart) <= (zoomed_width + (2 * width_multiplier)))
-         visible_left_border_new = (retro_max_diwstop - retro_min_diwstart - zoomed_width) / 2 + retro_min_diwstart;
-      else if (retro_min_diwstart == 30000 && retro_max_diwstop == 0)
-         visible_left_border_new = visible_left_border;
-
-      /* Sensible limits */
-      visible_left_border_new = (visible_left_border_new < 0) ? 0 : visible_left_border_new;
-      visible_left_border_new = ((visible_left_border_new / width_multiplier) > 150) ? (150 * width_multiplier) : visible_left_border_new;
-
-      /* Change value only if altered */
-      if (visible_left_border != visible_left_border_new)
-         visible_left_border = visible_left_border_new;
-
-      //fprintf(stdout, "DIWSTART  :%6d DIWSTOP  :%6d   lborder:%3d old:%3d\n", retro_min_diwstart, retro_max_diwstop, visible_left_border, visible_left_border_old);
-
-      /* Remember the previous value */
-      visible_left_border_old = visible_left_border;
-   }
-
-   /* Logging */
-   if (av_log)
-   {
-      if (change_timing)
-         fprintf(stdout, "* Update av_info: %dx%d %0.4fHz, zoomed: %dx%d, video_config:%d\n", retrow, retroh, hz, zoomed_width, zoomed_height, video_config_geometry);
-      else if (change_geometry)
-         fprintf(stdout, "* Update geometry: %dx%d, zoomed: %dx%d, video_config:%d\n", retrow, retroh, zoomed_width, zoomed_height, video_config_geometry);
-      else
-         fprintf(stdout, "* Update zoom: %dx%d, zoomed: %dx%d, video_config:%d\n", retrow, retroh, zoomed_width, zoomed_height, video_config_geometry);
-   }
-
-   /* Triggers check_prefs_changed_gfx() in vsync_handle_check() */
-   prefs_changed = 1;
-
-   /* Changing any drawing/offset parameters requires
-    * a drawing reset - it is safest to just do this
-    * whenever retro_update_av_info() is called */
-   request_reset_drawing = true;
-
-   return true;
-}
-
 void retro_get_system_av_info(struct retro_system_av_info *info)
 {
-   /* need to do this here because core option values are not available in retro_init */
+   /* Need to do this here because core option values are not available in retro_init */
    if (!pix_bytes_initialized)
    {
       pix_bytes_initialized = true;
@@ -3680,22 +3232,20 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
             if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
             {
                log_cb(RETRO_LOG_INFO, "RGB565 is not supported.\n");
-               exit(0);//return false;
+               exit(0);
             }
          }
       }
    }
 
-   static struct retro_game_geometry geom;
-   geom.base_width = retrow;
-   geom.base_height = retroh;
-   geom.max_width = EMULATOR_MAX_WIDTH;
-   geom.max_height = EMULATOR_MAX_HEIGHT;
-   geom.aspect_ratio = retro_get_aspect_ratio(retrow, retroh, false);
+   info->geometry.base_width   = retrow;
+   info->geometry.base_height  = retroh;
+   info->geometry.max_width    = EMULATOR_MAX_WIDTH;
+   info->geometry.max_height   = EMULATOR_MAX_HEIGHT;
+   info->geometry.aspect_ratio = retro_get_aspect_ratio(retrow, retroh, false);
 
-   info->geometry = geom;
-   info->timing.sample_rate = 44100.0;
-   info->timing.fps = (retro_get_region() == RETRO_REGION_NTSC) ? PUAE_VIDEO_HZ_NTSC : PUAE_VIDEO_HZ_PAL;
+   info->timing.sample_rate    = 44100.0;
+   info->timing.fps            = (retro_get_region() == RETRO_REGION_NTSC) ? PUAE_VIDEO_HZ_NTSC : PUAE_VIDEO_HZ_PAL;
 }
 
 void retro_set_video_refresh(retro_video_refresh_t cb)
@@ -3725,7 +3275,7 @@ void retro_audio_batch_cb(const int16_t *data, size_t frames)
 
 static void retro_force_region(FILE** configfile)
 {
-   // If region was specified in the path
+   /* If region was specified in the path */
    if (strstr(full_path, "NTSC") || strstr(full_path, "(USA)"))
    {
       log_cb(RETRO_LOG_INFO, "Forcing NTSC mode\n");
@@ -3777,10 +3327,10 @@ static void retro_use_boot_hd(FILE** configfile)
       }
    }
 
-   // HDF mode
+   /* HDF mode */
    if (opt_use_boot_hd > 1)
    {
-      // Init Boot HD
+      /* Init Boot HD */
       char boothd_hdf[RETRO_PATH_MAX];
       path_join((char*)&boothd_hdf, retro_save_directory, LIBRETRO_PUAE_PREFIX ".hdf");
       if (!file_exists(boothd_hdf))
@@ -3797,7 +3347,7 @@ static void retro_use_boot_hd(FILE** configfile)
          tmp_str = NULL;
       }
    }
-   // Directory mode
+   /* Directory mode */
    else if (opt_use_boot_hd == 1)
    {
       char boothd_path[RETRO_PATH_MAX];
@@ -3825,10 +3375,10 @@ static void retro_print_kickstart(FILE** configfile)
    char kickstart[RETRO_PATH_MAX];
    path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
 
-   // Main Kickstart
+   /* Main Kickstart */
    if (!file_exists(kickstart))
    {
-      // Kickstart ROM not found
+      /* Kickstart ROM not found */
       log_cb(RETRO_LOG_ERROR, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
       snprintf(retro_message_msg, sizeof(retro_message_msg),
                "Kickstart ROM '%s' not found!", path_basename((const char*)kickstart));
@@ -3837,22 +3387,22 @@ static void retro_print_kickstart(FILE** configfile)
    else
       fprintf(*configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
 
-   // Extended KS + NVRAM
+   /* Extended KS + NVRAM */
    if (!string_is_empty(uae_kickstart_ext))
    {
       char kickstart_ext[RETRO_PATH_MAX];
       path_join((char*)&kickstart_ext, retro_system_directory, uae_kickstart_ext);
 
-      // Decide if CD32 ROM is combined based on filesize
+      /* Decide if CD32 ROM is combined based on filesize */
       struct stat kickstart_st;
       stat(kickstart, &kickstart_st);
 
-      // Verify extended ROM if external
+      /* Verify extended ROM if external */
       if (kickstart_st.st_size <= 524288)
       {
          if (!file_exists(kickstart_ext))
          {
-            // Kickstart extended ROM not found
+            /* Kickstart extended ROM not found */
             log_cb(RETRO_LOG_ERROR, "Kickstart extended ROM '%s' not found!\n", (const char*)&kickstart_ext);
             snprintf(retro_message_msg, sizeof(retro_message_msg),
                      "Kickstart extended ROM '%s' not found!", path_basename((const char*)kickstart_ext));
@@ -3862,20 +3412,20 @@ static void retro_print_kickstart(FILE** configfile)
             fprintf(*configfile, "kickstart_ext_rom_file=%s\n", (const char*)&kickstart_ext);
       }
 
-      // NVRAM
+      /* NVRAM */
       char flash_filename[RETRO_PATH_MAX];
       char flash_filepath[RETRO_PATH_MAX];
+      /* Shared */
       if (opt_shared_nvram || string_is_empty(full_path))
       {
-         // Shared
          snprintf(flash_filename, sizeof(flash_filename), "%s.nvr", LIBRETRO_PUAE_PREFIX);
-         // CDTV suffix
+         /* CDTV suffix */
          if (kickstart_st.st_size == 262144)
             snprintf(flash_filename, sizeof(flash_filename), "%s_cdtv.nvr", LIBRETRO_PUAE_PREFIX);
       }
+      /* Per game */
       else
       {
-         // Per game
          snprintf(flash_filename, sizeof(flash_filename), "%s", path_basename(full_path));
          snprintf(flash_filename, sizeof(flash_filename), "%s.nvr", path_remove_extension(flash_filename));
       }
@@ -3981,9 +3531,10 @@ static char* emu_config(int config)
       return uae_custom_config;
    }
 
-   // chipmem_size (default 1): 1 = 0.5MB, 2 = 1MB, 4 = 2MB
-   // bogomem_size (default 0): 2 = 0.5MB, 4 = 1MB, 6 = 1.5MB, 7 = 1.8MB
-   // fastmem_size (default 0): 1 = 1.0MB, ...
+   /* chipmem_size (default 1): 1 = 0.5MB, 2 = 1MB, 4 = 2MB
+    * bogomem_size (default 0): 2 = 0.5MB, 4 = 1MB, 6 = 1.5MB, 7 = 1.8MB
+    * fastmem_size (default 0): 1 = 1.0MB, ...
+    */
    switch (config)
    {
       case EMU_CONFIG_A500: return
@@ -4097,7 +3648,7 @@ static bool retro_create_config()
    path_join((char*)&RPATH, retro_save_directory, LIBRETRO_PUAE_PREFIX ".uae");
    log_cb(RETRO_LOG_INFO, "Generating config file: '%s'\n", (const char*)&RPATH);
 
-   // Model preset
+   /* Model preset */
    if (!strcmp(opt_model, "auto"))
    {
       if (opt_use_boot_hd)
@@ -4108,7 +3659,7 @@ static bool retro_create_config()
    else
       retro_build_preset(opt_model);
 
-   // "Browsed" file in ZIP
+   /* "Browsed" file in ZIP */
    char browsed_file[RETRO_PATH_MAX] = {0};
    if (!string_is_empty(full_path) && strstr(full_path, ".zip#"))
    {
@@ -4120,7 +3671,7 @@ static bool retro_create_config()
       }
    }
 
-   // Open tmp config file
+   /* Open tmp config file */
    FILE * configfile;
    if (!(configfile = fopen(RPATH, "w")))
    {
@@ -4130,7 +3681,7 @@ static bool retro_create_config()
 
    if (!string_is_empty(full_path) && (file_exists(full_path) || path_is_directory(full_path)))
    {
-      // Extract ZIP for examination
+      /* Extract ZIP for examination */
       if (strendswith(full_path, "zip"))
       {
          char zip_basename[RETRO_PATH_MAX] = {0};
@@ -4143,7 +3694,7 @@ static bool retro_create_config()
          path_mkdir(zip_path);
          zip_uncompress(full_path, zip_path, NULL);
 
-         // Default to directory mode
+         /* Default to directory mode */
          int zip_mode = 0;
          snprintf(full_path, sizeof(full_path), "%s", zip_path);
 
@@ -4161,14 +3712,14 @@ static bool retro_create_config()
             if (zip_dirp->d_name[0] == '.' || strendswith(zip_dirp->d_name, "m3u") || zip_mode > 1 || browsed_file[0] != '\0')
                continue;
 
-            // Multi file mode, generate playlist
+            /* Multi file mode, generate playlist */
             if (dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_FLOPPY)
             {
                zip_mode = 1;
                zip_m3u_num++;
                snprintf(zip_m3u_list[zip_m3u_num-1], RETRO_PATH_MAX, "%s", zip_dirp->d_name);
             }
-            // Single file image mode
+            /* Single file image mode */
             else if (dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_CD
                   || dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_HD)
             {
@@ -4180,12 +3731,12 @@ static bool retro_create_config()
 
          switch (zip_mode)
          {
-            case 0: // Extracted path
-            case 2: // Single image
+            case 0: /* Extracted path */
+            case 2: /* Single image */
                if (browsed_file[0] != '\0')
                   snprintf(full_path, sizeof(full_path), "%s%s%s", zip_path, DIR_SEP_STR, browsed_file);
                break;
-            case 1: // Generated playlist
+            case 1: /* Generated playlist */
                zip_m3u = fopen(zip_m3u_path, "w");
                qsort(zip_m3u_list, zip_m3u_num, RETRO_PATH_MAX, qstrcmp);
                for (int l = 0; l < zip_m3u_num; l++)
@@ -4196,119 +3747,111 @@ static bool retro_create_config()
          }
       }
 
-      // Floppy disk, hard drive, WHDLoad or playlist
+      /* Floppy disk, hard drive, WHDLoad or playlist */
       if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_FLOPPY
        || dc_get_image_type(full_path) == DC_IMAGE_TYPE_HD
        || dc_get_image_type(full_path) == DC_IMAGE_TYPE_WHDLOAD
        || strendswith(full_path, "m3u"))
       {
-         // Check if model is specified in the path on 'Automatic'
+         /* Check if model is specified in the path on 'Automatic' */
          if (!strcmp(opt_model, "auto"))
          {
             if (strstr(full_path, "(A4030)") || strstr(full_path, "(030)"))
             {
-               // Use A4000/030
                log_cb(RETRO_LOG_INFO, "Found '(A4030)' or '(030)' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting A4000/030: '%s'\n", A4000_ROM);
                retro_build_preset("A4030");
             }
             else if (strstr(full_path, "(A4040)") || strstr(full_path, "(040)"))
             {
-               // Use A4000/040
                log_cb(RETRO_LOG_INFO, "Found '(A4040)' or '(040)' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting A4000/040: '%s'\n", A4000_ROM);
                retro_build_preset("A4040");
             }
             else if (strstr(full_path, "(A1200OG)") || strstr(full_path, "(A1200NF)"))
             {
-               // Use A1200 barebone
                log_cb(RETRO_LOG_INFO, "Found '(A1200OG)' or '(A1200NF)' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting A1200 NoFast: '%s'\n", A1200_ROM);
                retro_build_preset("A1200OG");
             }
             else if (strstr(full_path, "(A1200)") || strstr(full_path, "AGA") || strstr(full_path, "CD32") || strstr(full_path, "AmigaCD"))
             {
-               // Use A1200
                log_cb(RETRO_LOG_INFO, "Found '(A1200)', 'AGA', 'CD32', or 'AmigaCD' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting A1200: '%s'\n", A1200_ROM);
                retro_build_preset("A1200");
             }
             else if (strstr(full_path, "(A600)") || strstr(full_path, "ECS"))
             {
-               // Use A600
                log_cb(RETRO_LOG_INFO, "Found '(A600)' or 'ECS' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting A600: '%s'\n", A600_ROM);
                retro_build_preset("A600");
             }
             else if (strstr(full_path, "(A500+)") || strstr(full_path, "(A500PLUS)"))
             {
-               // Use A500+
                log_cb(RETRO_LOG_INFO, "Found '(A500+)' or '(A500PLUS)' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting A500+: '%s'\n", A500KS2_ROM);
                retro_build_preset("A500PLUS");
             }
             else if (strstr(full_path, "(A500OG)") || strstr(full_path, "(512K)"))
             {
-               // Use A500 barebone
                log_cb(RETRO_LOG_INFO, "Found '(A500OG)' or '(512K)' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting A500 512K: '%s'\n", A500_ROM);
                retro_build_preset("A500OG");
             }
             else if (strstr(full_path, "(A500)") || strstr(full_path, "OCS"))
             {
-               // Use A500
                log_cb(RETRO_LOG_INFO, "Found '(A500)' or 'OCS' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting A500: '%s'\n", A500_ROM);
                retro_build_preset("A500");
             }
             else
             {
-               // Hard disks must default to a machine with HD interface
+               /* Hard disks must default to a machine with HD interface */
                if (!opt_use_boot_hd &&
                    (dc_get_image_type(full_path) == DC_IMAGE_TYPE_HD ||
                     dc_get_image_type(full_path) == DC_IMAGE_TYPE_WHDLOAD))
                   retro_build_preset(opt_model_hd);
 
-               // No model specified
+               /* No model specified */
                log_cb(RETRO_LOG_INFO, "No model specified in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting default model: '%s'\n", uae_kickstart);
             }
          }
          else
-            // Core option model
+            /* Core option model */
             log_cb(RETRO_LOG_INFO, "Booting model: '%s'\n", uae_kickstart);
 
-         // Write model preset
+         /* Write model preset */
          fprintf(configfile, uae_model);
 
-         // Separator row for clarity
+         /* Separator row for clarity */
          fprintf(configfile, "\n");
 
-         // Verify and write Kickstart
+         /* Verify and write Kickstart */
          retro_print_kickstart(&configfile);
 
-         // Bootable HD exception
+         /* Bootable HD exception */
          if (opt_use_boot_hd)
             retro_use_boot_hd(&configfile);
 
-         // Hard drive or WHDLoad image
+         /* Hard drive or WHDLoad image */
          if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_HD
           || dc_get_image_type(full_path) == DC_IMAGE_TYPE_WHDLOAD)
          {
             char *tmp_str = NULL;
 
-            // WHDLoad support
+            /* WHDLoad support */
             if (opt_use_whdload)
             {
-               // WHDLoad HDF mode
+               /* WHDLoad HDF mode */
                if (opt_use_whdload == 2)
                {
-                  // Init WHDLoad
+                  /* Init WHDLoad */
                   char whdload_hdf[RETRO_PATH_MAX];
                   path_join((char*)&whdload_hdf, retro_system_directory, "WHDLoad.hdf");
 
-                  // Verify WHDLoad
-                  // Windows needs double backslashes when paths are in quotes, hence the string_replace_substring()
+                  /* Verify WHDLoad */
+                  /* Windows needs double backslashes when paths are in quotes, hence the string_replace_substring() */
                   if (!file_exists(whdload_hdf))
                      path_join((char*)&whdload_hdf, retro_save_directory, "WHDLoad.hdf");
                   if (!file_exists(whdload_hdf))
@@ -4321,11 +3864,11 @@ static bool retro_create_config()
                      FILE *whdload_hdf_gz_fp;
                      if (whdload_hdf_gz_fp = fopen(whdload_hdf_gz, "wb"))
                      {
-                        // Write GZ
+                        /* Write GZ */
                         fwrite(___whdload_WHDLoad_hdf_gz, ___whdload_WHDLoad_hdf_gz_len, 1, whdload_hdf_gz_fp);
                         fclose(whdload_hdf_gz_fp);
 
-                        // Extract GZ
+                        /* Extract GZ */
                         struct gzFile_s *whdload_hdf_gz_fp;
                         if (whdload_hdf_gz_fp = gzopen(whdload_hdf_gz, "r"))
                         {
@@ -4342,7 +3885,7 @@ static bool retro_create_config()
                      else
                         log_cb(RETRO_LOG_ERROR, "Unable to create WHDLoad image file: '%s'\n", (const char*)&whdload_hdf);
                   }
-                  // Attach HDF
+                  /* Attach HDF */
                   if (file_exists(whdload_hdf))
                   {
                      tmp_str = string_replace_substring(whdload_hdf, "\\", "\\\\");
@@ -4351,7 +3894,7 @@ static bool retro_create_config()
                      tmp_str = NULL;
                   }
                }
-               // WHDLoad file mode
+               /* WHDLoad file mode */
                else
                {
                   char whdload_path[RETRO_PATH_MAX];
@@ -4371,18 +3914,18 @@ static bool retro_create_config()
                      FILE *whdload_files_zip_fp;
                      if (whdload_files_zip_fp = fopen(whdload_files_zip, "wb"))
                      {
-                        // Write ZIP
+                        /* Write ZIP */
                         fwrite(___whdload_WHDLoad_files_zip, ___whdload_WHDLoad_files_zip_len, 1, whdload_files_zip_fp);
                         fclose(whdload_files_zip_fp);
 
-                        // Extract ZIP
+                        /* Extract ZIP */
                         zip_uncompress(whdload_files_zip, whdload_path, NULL);
                         remove(whdload_files_zip);
                      }
                      else
                         log_cb(RETRO_LOG_ERROR, "Unable to create WHDLoad image directory: '%s'\n", (const char*)&whdload_path);
                   }
-                  // Attach directory
+                  /* Attach directory */
                   if (path_is_directory(whdload_path) && path_is_directory(whdload_c_path))
                   {
                      tmp_str = string_replace_substring(whdload_path, "\\", "\\\\");
@@ -4392,7 +3935,7 @@ static bool retro_create_config()
                   }
                }
 
-               // Attach hard drive
+               /* Attach hard drive */
                tmp_str = string_replace_substring(full_path, "\\", "\\\\");
                char tmp_str_name[RETRO_PATH_MAX];
                char tmp_str_path[RETRO_PATH_MAX];
@@ -4416,20 +3959,20 @@ static bool retro_create_config()
                free(tmp_str);
                tmp_str = NULL;
 
-               // Attach retro_system_directory as a read only hard drive for WHDLoad kickstarts/prefs/key
+               /* Attach retro_system_directory as a read only hard drive for WHDLoad kickstarts/prefs/key */
 #ifdef WIN32
                tmp_str = string_replace_substring(retro_system_directory, "\\", "\\\\");
                fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s\",-128\n", (const char*)tmp_str);
                free(tmp_str);
                tmp_str = NULL;
 #else
-               // Force the ending slash to make sure the path is not treated as a file
+               /* Force the ending slash to make sure the path is not treated as a file */
                fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s%s\",-128\n", retro_system_directory, "/");
 #endif
-               // WHDSaves HDF mode
+               /* WHDSaves HDF mode */
                if (opt_use_whdload == 2)
                {
-                  // Attach WHDSaves.hdf if available
+                  /* Attach WHDSaves.hdf if available */
                   char whdsaves_hdf[RETRO_PATH_MAX];
                   path_join((char*)&whdsaves_hdf, retro_system_directory, "WHDSaves.hdf");
                   if (!file_exists(whdsaves_hdf))
@@ -4444,11 +3987,11 @@ static bool retro_create_config()
                      FILE *whdsaves_hdf_gz_fp;
                      if (whdsaves_hdf_gz_fp = fopen(whdsaves_hdf_gz, "wb"))
                      {
-                        // Write GZ
+                        /* Write GZ */
                         fwrite(___whdload_WHDSaves_hdf_gz, ___whdload_WHDSaves_hdf_gz_len, 1, whdsaves_hdf_gz_fp);
                         fclose(whdsaves_hdf_gz_fp);
 
-                        // Extract GZ
+                        /* Extract GZ */
                         struct gzFile_s *whdsaves_hdf_gz_fp;
                         if (whdsaves_hdf_gz_fp = gzopen(whdsaves_hdf_gz, "r"))
                         {
@@ -4465,7 +4008,7 @@ static bool retro_create_config()
                      else
                         log_cb(RETRO_LOG_ERROR, "Unable to create WHDSaves image file: '%s'\n", (const char*)&whdsaves_hdf);
                   }
-                  // Attach HDF
+                  /* Attach HDF */
                   if (file_exists(whdsaves_hdf))
                   {
                      tmp_str = string_replace_substring(whdsaves_hdf, "\\", "\\\\");
@@ -4474,14 +4017,14 @@ static bool retro_create_config()
                      tmp_str = NULL;
                   }
                }
-               // WHDSaves file mode
+               /* WHDSaves file mode */
                else
                {
                   char whdsaves_path[RETRO_PATH_MAX];
                   path_join((char*)&whdsaves_path, retro_save_directory, "WHDSaves");
                   if (!path_is_directory(whdsaves_path))
                      path_mkdir(whdsaves_path);
-                  // Attach directory
+                  /* Attach directory */
                   if (path_is_directory(whdsaves_path))
                   {
                      tmp_str = string_replace_substring(whdsaves_path, "\\", "\\\\");
@@ -4493,7 +4036,7 @@ static bool retro_create_config()
                      log_cb(RETRO_LOG_ERROR, "Unable to create WHDSaves image directory: '%s'\n", (const char*)&whdsaves_path);
                }
 
-               // Manipulate WHDLoad.prefs
+               /* Manipulate WHDLoad.prefs */
                int WHDLoad_ConfigDelay = 0;
                int WHDLoad_SplashDelay = 0;
 
@@ -4525,11 +4068,11 @@ static bool retro_create_config()
                   FILE *whdload_prefs_gz_fp;
                   if (whdload_prefs_gz_fp = fopen(whdload_prefs_gz, "wb"))
                   {
-                     // Write GZ
+                     /* Write GZ */
                      fwrite(___whdload_WHDLoad_prefs_gz, ___whdload_WHDLoad_prefs_gz_len, 1, whdload_prefs_gz_fp);
                      fclose(whdload_prefs_gz_fp);
 
-                     // Extract GZ
+                     /* Extract GZ */
                      struct gzFile_s *whdload_prefs_gz_fp;
                      if (whdload_prefs_gz_fp = gzopen(whdload_prefs_gz, "r"))
                      {
@@ -4573,10 +4116,10 @@ static bool retro_create_config()
                      fclose(whdload_prefs_new);
                      fclose(whdload_prefs);
 
-                     // Remove backup config
+                     /* Remove backup config */
                      remove(whdload_prefs_backup_path);
 
-                     // Replace old and new config
+                     /* Replace old and new config */
                      rename(whdload_prefs_path, whdload_prefs_backup_path);
                      rename(whdload_prefs_new_path, whdload_prefs_path);
                   }
@@ -4600,21 +4143,21 @@ static bool retro_create_config()
          }
          else
          {
-            // M3U playlist
+            /* M3U playlist */
             if (strendswith(full_path, "m3u"))
             {
-               // Parse the M3U file
+               /* Parse the M3U file */
                dc_parse_m3u(dc, full_path, retro_save_directory);
 
-               // Some debugging
+               /* Some debugging */
                log_cb(RETRO_LOG_INFO, "M3U parsed, %d file(s) found\n", dc->count);
-               //for (unsigned i = 0; i < dc->count; i++)
-                  //log_cb(RETRO_LOG_INFO, "File %d: %s\n", i+1, dc->files[i]);
+               for (unsigned i = 0; i < dc->count; i++)
+                  log_cb(RETRO_LOG_DEBUG, "File %d: %s\n", i+1, dc->files[i]);
             }
-            // Single file
+            /* Single file */
             else
             {
-               // Add the file to disk control context
+               /* Add the file to disk control context */
                char disk_image_label[RETRO_PATH_MAX];
                disk_image_label[0] = '\0';
 
@@ -4622,24 +4165,24 @@ static bool retro_create_config()
                   fill_short_pathname_representation(
                         disk_image_label, full_path, sizeof(disk_image_label));
 
-               // Must reset disk control struct here,
-               // otherwise duplicate entries will be
-               // added when calling retro_reset()
+               /* Must reset disk control struct here,
+                * otherwise duplicate entries will be
+                * added when calling retro_reset() */
                dc_reset(dc);
                dc_add_file(dc, full_path, disk_image_label);
             }
 
-            // Init only existing disks
+            /* Init only existing disks */
             if (dc->count)
             {
-               // Init first disk
+               /* Init first disk */
                dc->index = 0;
                dc->eject_state = false;
                display_current_image(dc->labels[dc->index], true);
                log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF0: '%s'\n", dc->index+1, dc->files[dc->index]);
                fprintf(configfile, "floppy0=%s\n", dc->files[0]);
 
-               // Append rest of the disks to the config if M3U is a MultiDrive-M3U
+               /* Append rest of the disks to the config if M3U is a MultiDrive-M3U */
                if (strstr(full_path, "(MD)") != NULL)
                {
                   for (unsigned i = 1; i < dc->count; i++)
@@ -4649,8 +4192,8 @@ static bool retro_create_config()
                         log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF%d: '%s'\n", i+1, i, dc->files[i]);
                         fprintf(configfile, "floppy%d=%s\n", i, dc->files[i]);
 
-                        // By default only DF0: is enabled, so floppyXtype needs to be set on the extra drives
-                        fprintf(configfile, "floppy%dtype=%d\n", i, 0); // 0 = 3.5" DD
+                        /* By default only DF0: is enabled, so floppyXtype needs to be set on the extra drives */
+                        fprintf(configfile, "floppy%dtype=%d\n", i, 0); /* 0 = 3.5" DD */
                      }
                      else
                      {
@@ -4663,63 +4206,60 @@ static bool retro_create_config()
             }
          }
 
-         // Separator row for clarity
+         /* Separator row for clarity */
          fprintf(configfile, "\n");
 
-         // Write common config
+         /* Write common config */
          fprintf(configfile, uae_config);
       }
-      // CD image
+      /* CD image */
       else if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_CD)
       {
-         // Check if model is specified in the path on 'Automatic'
+         /* Check if model is specified in the path on 'Automatic' */
          if (!strcmp(opt_model, "auto"))
          {
             if (strstr(full_path, "(CD32FR)") || strstr(full_path, "FastRAM"))
             {
-               // Use CD32 with Fast RAM
                log_cb(RETRO_LOG_INFO, "Found '(CD32FR)' or 'FastRAM' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting CD32 FastRAM: '%s'\n", CD32_ROM);
                retro_build_preset("CD32FR");
             }
             else if (strstr(full_path, "(CD32)") || strstr(full_path, "(CD32NF)"))
             {
-               // Use CD32 barebone
                log_cb(RETRO_LOG_INFO, "Found '(CD32)' or '(CD32NF)' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting CD32: '%s'\n", CD32_ROM);
                retro_build_preset("CD32");
             }
             else if (strstr(full_path, "CDTV"))
             {
-               // Use CDTV
                log_cb(RETRO_LOG_INFO, "Found 'CDTV' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting CDTV: '%s'\n", CDTV_ROM);
                retro_build_preset("CDTV");
             }
             else
             {
-               // Default CD model
+               /* Default CD model */
                retro_build_preset(opt_model_cd);
 
-               // No model specified
+               /* No model specified */
                log_cb(RETRO_LOG_INFO, "No model specified in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting default model: '%s'\n", uae_kickstart);
             }
          }
          else
-            // Core option model
+            /* Core option model */
             log_cb(RETRO_LOG_INFO, "Booting model: '%s'\n", uae_kickstart);
 
-         // Write model preset
+         /* Write model preset */
          fprintf(configfile, uae_model);
 
-         // Separator row for clarity
+         /* Separator row for clarity */
          fprintf(configfile, "\n");
 
-         // Verify and write Kickstart
+         /* Verify and write Kickstart */
          retro_print_kickstart(&configfile);
 
-         // Add the file to disk control context
+         /* Add the file to disk control context */
          char cd_image_label[RETRO_PATH_MAX];
          cd_image_label[0] = '\0';
 
@@ -4727,54 +4267,54 @@ static bool retro_create_config()
             fill_short_pathname_representation(
                   cd_image_label, full_path, sizeof(cd_image_label));
 
-         // Must reset disk control struct here,
-         // otherwise duplicate entries will be
-         // added when calling retro_reset()
+         /* Must reset disk control struct here,
+          * otherwise duplicate entries will be
+          * added when calling retro_reset() */
          dc_reset(dc);
          dc_add_file(dc, full_path, cd_image_label);
 
-         // Init first disk
+         /* Init first disk */
          dc->index = 0;
          dc->eject_state = false;
          display_current_image(dc->labels[dc->index], true);
          log_cb(RETRO_LOG_INFO, "CD (%d) inserted in drive CD0: '%s'\n", dc->index+1, dc->files[dc->index]);
-         fprintf(configfile, "cdimage0=%s,%s\n", dc->files[0], (opt_cd_startup_delayed_insert ? "delay" : "")); // ","-suffix needed if filename contains ","
+         fprintf(configfile, "cdimage0=%s,%s\n", dc->files[0], (opt_cd_startup_delayed_insert ? "delay" : "")); /* ","-suffix needed if filename contains "," */
 
-         // Separator row for clarity
+         /* Separator row for clarity */
          fprintf(configfile, "\n");
 
-         // Write common config
+         /* Write common config */
          fprintf(configfile, uae_config);
       }
-      // UAE config file
+      /* UAE config file */
       else if (strendswith(full_path, "uae"))
       {
          char disk_image[RETRO_PATH_MAX] = {0};
 
-         // Write model preset
+         /* Write model preset */
          fprintf(configfile, uae_model);
 
-         // Separator row for clarity
+         /* Separator row for clarity */
          fprintf(configfile, "\n");
 
-         // Verify and write Kickstart
+         /* Verify and write Kickstart */
          retro_print_kickstart(&configfile);
 
-         // Separator row for clarity
+         /* Separator row for clarity */
          fprintf(configfile, "\n");
 
-         // Write common config
+         /* Write common config */
          fprintf(configfile, uae_config);
 
-         // Separator row for clarity
+         /* Separator row for clarity */
          fprintf(configfile, "\n");
 
-         // Must reset disk control struct here,
-         // otherwise duplicate entries will be
-         // added when calling retro_reset()
+         /* Must reset disk control struct here,
+          * otherwise duplicate entries will be
+          * added when calling retro_reset() */
          dc_reset(dc);
 
-         // Iterate parsed file and append all rows to the temporary config
+         /* Iterate parsed file and append all rows to the temporary config */
          FILE * configfile_custom;
          char filebuf[512];
          if (configfile_custom = fopen(full_path, "r"))
@@ -4783,7 +4323,7 @@ static bool retro_create_config()
             {
                fprintf(configfile, filebuf);
 
-               // Parse diskimage-rows for disk control
+               /* Parse diskimage-rows for disk control */
                if (strstr(filebuf, "diskimage") && filebuf[0] == 'd')
                {
                   char *token = strtok((char*)filebuf, "=");
@@ -4795,7 +4335,7 @@ static bool retro_create_config()
                   strtok(disk_image, "\n");
                   if (!string_is_empty(disk_image) && file_exists(disk_image))
                   {
-                     // Add the file to disk control context
+                     /* Add the file to disk control context */
                      char disk_image_label[RETRO_PATH_MAX];
                      disk_image_label[0] = '\0';
                      fill_short_pathname_representation(disk_image_label, disk_image, sizeof(disk_image_label));
@@ -4806,77 +4346,77 @@ static bool retro_create_config()
             fclose(configfile_custom);
          }
 
-         // Init only existing disks
+         /* Init only existing disks */
          if (!string_is_empty(disk_image) && dc->count)
          {
-            // Init first disk
+            /* Init first disk */
             dc->index = 0;
             dc->eject_state = false;
             display_current_image(dc->labels[dc->index], true);
             log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF0: '%s'\n", dc->index+1, dc->files[dc->index]);
          }
       }
-      // Unknown extensions
+      /* Unknown extensions */
       else
       {
-         // Write model preset
+         /* Write model preset */
          fprintf(configfile, uae_model);
 
-         // Separator row for clarity
+         /* Separator row for clarity */
          fprintf(configfile, "\n");
 
-         // Verify and write Kickstart
+         /* Verify and write Kickstart */
          retro_print_kickstart(&configfile);
 
-         // Separator row for clarity
+         /* Separator row for clarity */
          fprintf(configfile, "\n");
 
-         // Write common config
+         /* Write common config */
          fprintf(configfile, uae_config);
 
-         // Unsupported file format
+         /* Unsupported file format */
          log_cb(RETRO_LOG_ERROR, "Unsupported file format: '%s'\n", full_path);
          snprintf(retro_message_msg, sizeof(retro_message_msg), "Unsupported file format: '%s'", path_get_extension(full_path));
          retro_message = true;
       }
    }
-   // Empty content
+   /* Empty content */
    else
    {
-      // No model specified
+      /* No model specified */
       log_cb(RETRO_LOG_INFO, "Booting model: '%s'\n", uae_kickstart);
 
-      // Write model preset
+      /* Write model preset */
       fprintf(configfile, uae_model);
 
-      // Separator row for clarity
+      /* Separator row for clarity */
       fprintf(configfile, "\n");
 
-      // Verify and write Kickstart
+      /* Verify and write Kickstart */
       retro_print_kickstart(&configfile);
 
-      // Bootable HD exception, not for CD systems
+      /* Bootable HD exception, not for CD systems */
       if (opt_use_boot_hd)
          if (strcmp(opt_model, "CD32") && strcmp(opt_model, "CD32FR") && strcmp(opt_model, "CDTV"))
             retro_use_boot_hd(&configfile);
 
-      // Separator row for clarity
+      /* Separator row for clarity */
       fprintf(configfile, "\n");
 
-      // Write common config
+      /* Write common config */
       fprintf(configfile, uae_config);
    }
 
-   // Separator row for clarity
+   /* Separator row for clarity */
    fprintf(configfile, "\n");
 
-   // Iterate global config file and append all rows to the temporary config
+   /* Iterate global config file and append all rows to the temporary config */
    char configfile_global_path[RETRO_PATH_MAX];
    path_join((char*)&configfile_global_path, retro_save_directory, LIBRETRO_PUAE_PREFIX "_global.uae");
    if (file_exists(configfile_global_path))
    {
       log_cb(RETRO_LOG_INFO, "Appending global configuration: '%s'\n", configfile_global_path);
-      // Separator row for clarity
+      /* Separator row for clarity */
       fprintf(configfile, "\n");
 
       FILE * configfile_global;
@@ -4889,14 +4429,18 @@ static bool retro_create_config()
       }
    }
 
-   // Scan region tags only with automatic region
+   /* Scan region tags only with automatic region */
    if (opt_region_auto)
       retro_force_region(&configfile);
 
-   // Close tmp config
+   /* Forced Cycle-exact */
+   if (strstr(full_path, "(CE)"))
+      fprintf(configfile, "cycle_exact=true\n");
+
+   /* Close tmp config */
    fclose(configfile);
 
-   // Scan for specific rows
+   /* Scan for specific rows */
    char filebuf[512];
    if (configfile = fopen(RPATH, "r"))
    {
@@ -4906,6 +4450,8 @@ static bool retro_create_config()
             real_ntsc = true;
          if (strstr(filebuf, "ntsc=false") && filebuf[0] == 'n')
             real_ntsc = false;
+         if (strstr(filebuf, "cycle_exact=true") && filebuf[0] == 'c')
+            cpu_cycle_exact_force = true;
       }
       fclose(configfile);
    }
@@ -4929,38 +4475,120 @@ void retro_reset_soft()
    uae_reset(0, 0); /* hardreset, keyboardreset */
 }
 
+/* Vertical centering */
+void update_video_center_vertical(void)
+{
+   int zoomed_height_normal   = (video_config & PUAE_VIDEO_DOUBLELINE) ? zoomed_height / 2 : zoomed_height;
+   int thisframe_y_adjust_new = minfirstline;
+
+   /* Need proper values for calculations */
+   if (retro_thisframe_first_drawn_line != retro_thisframe_last_drawn_line
+    && retro_thisframe_first_drawn_line > 0 && retro_thisframe_last_drawn_line > 0
+    && (retro_thisframe_first_drawn_line < 150 || retro_thisframe_last_drawn_line > 150)
+   )
+      thisframe_y_adjust_new = (retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line - zoomed_height_normal) / 2 + retro_thisframe_first_drawn_line;
+   else if (retro_thisframe_first_drawn_line == -1 && retro_thisframe_last_drawn_line == -1)
+      thisframe_y_adjust_new = thisframe_y_adjust_old;
+
+   /* Sensible limits */
+   thisframe_y_adjust_new = (thisframe_y_adjust_new < 0) ? 0 : thisframe_y_adjust_new;
+   thisframe_y_adjust_new = (thisframe_y_adjust_new > (minfirstline + 60)) ? (minfirstline + 60) : thisframe_y_adjust_new;
+
+   /* Change value only if altered */
+   if (thisframe_y_adjust != thisframe_y_adjust_new)
+      thisframe_y_adjust = thisframe_y_adjust_new;
+
+#if 0
+   fprintf(stdout, "FIRSTDRAWN:%6d LASTDRAWN:%6d   yadjust:%3d old:%3d zoomed_h:%d\n", retro_thisframe_first_drawn_line, retro_thisframe_last_drawn_line, thisframe_y_adjust, thisframe_y_adjust_old, zoomed_height);
+#endif
+
+   /* Remember the previous value */
+   thisframe_y_adjust_old = thisframe_y_adjust;
+
+   /* Counter reset */
+   retro_thisframe_counter = 0;
+}
+
+/* Horizontal centering */
+void update_video_center_horizontal(void)
+{
+   int visible_left_border_new = retro_max_diwlastword - retrow + (retrow - zoomed_width) / 2;
+
+   /* Horizontal centering thresholds */
+   int min_diwstart_limit = 110;
+   int max_diwstop_limit  = 300;
+   int min_diwwidth_limit = 256;
+
+   min_diwstart_limit *= width_multiplier;
+   max_diwstop_limit  *= width_multiplier;
+
+   /* Need proper values for calculations */
+   if (retro_min_diwstart != retro_max_diwstop
+    && retro_min_diwstart > 0
+    && retro_max_diwstop  > 0
+    && retro_min_diwstart < min_diwstart_limit
+    && retro_max_diwstop  > max_diwstop_limit
+    && (retro_max_diwstop - retro_min_diwstart) <= (zoomed_width + (2 * width_multiplier))
+    && (retro_max_diwstop - retro_min_diwstart) > (min_diwwidth_limit * width_multiplier))
+      visible_left_border_new = (retro_max_diwstop - retro_min_diwstart - zoomed_width) / 2 + retro_min_diwstart;
+   else if (retro_min_diwstart == 30000 && retro_max_diwstop == 0)
+      visible_left_border_new = visible_left_border;
+
+   /* Sensible limits */
+   visible_left_border_new = (visible_left_border_new < 0) ? 0 : visible_left_border_new;
+   visible_left_border_new = ((visible_left_border_new / width_multiplier) > 150) ? (150 * width_multiplier) : visible_left_border_new;
+
+   /* Change value only if altered */
+   if (visible_left_border != visible_left_border_new)
+      visible_left_border = visible_left_border_new;
+
+#if 0
+   fprintf(stdout, "DIWSTART  :%6d DIWSTOP  :%6d   lborder:%3d old:%3d width:%3d\n", retro_min_diwstart, retro_max_diwstop, visible_left_border, visible_left_border_old, (retro_max_diwstop - retro_min_diwstart));
+#endif
+
+   /* Remember the previous value */
+   visible_left_border_old = visible_left_border;
+
+   /* Counter reset */
+   retro_diwstartstop_counter = 0;
+}
+
 void update_audiovideo(void)
 {
-   // Statusbar disk display timer
+   /* Statusbar disk display timer */
    if (imagename_timer > 0)
       imagename_timer--;
-   if (STATUSON == 1 && imagename_timer == 0)
+   if (retro_statusbar && !imagename_timer)
       request_reset_drawing = true;
 
-   // Update audio settings
+   /* Update audio settings */
    if (automatic_sound_filter_type_update)
    {
       automatic_sound_filter_type_update = false;
       config_changed = 1;
       if (currprefs.cpu_model >= 68020)
-         changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A1200;
+         changed_prefs.sound_filter_type = FILTER_SOUND_TYPE_A1200;
       else
-         changed_prefs.sound_filter_type=FILTER_SOUND_TYPE_A500;
+         changed_prefs.sound_filter_type = FILTER_SOUND_TYPE_A500;
    }
 
-   // Automatic video resolution
+   /* Automatic video resolution */
    if (opt_video_resolution_auto)
    {
       int current_resolution = GET_RES_DENISE (bplcon0);
-      //printf("BPLCON0: %d, %d, %d %d\n", bplcon0, current_resolution, diwfirstword_total, diwlastword_total);
+#if 0
+      printf("BPLCON0: %d, %d, %d %d\n", bplcon0, current_resolution, diwfirstword_total, diwlastword_total);
+#endif
 
-      // Super Skidmarks force to SuperHires
+      /* Super Skidmarks force to SuperHires */
       if (current_resolution == 1 && bplcon0 == 0xC201 && ((diwfirstword_total == 210 && diwlastword_total && 786) || (diwfirstword_total == 420 && diwlastword_total && 1572)))
          current_resolution = 2;
-      // Super Stardust force to SuperHires, rather pointless and causes a false positive on The Settlers
-      //else if (current_resolution == 0 && (bplcon0 == 0 /*CD32*/|| bplcon0 == 512 /*AGA*/) && ((diwfirstword_total == 114 && diwlastword_total && 818) || (diwfirstword_total == 228 && diwlastword_total && 1636)))
-         //current_resolution = 2;
-      // Lores force to Hires
+      /* Super Stardust force to SuperHires, rather pointless and causes a false positive on The Settlers */
+#if 0
+      else if (current_resolution == 0 && (bplcon0 == 0 /*CD32*/|| bplcon0 == 512 /*AGA*/) && ((diwfirstword_total == 114 && diwlastword_total && 818) || (diwfirstword_total == 228 && diwlastword_total && 1636)))
+         current_resolution = 2;
+#endif
+      /* Lores force to Hires */
       else if (current_resolution == 0)
          current_resolution = 1;
 
@@ -4990,21 +4618,22 @@ void update_audiovideo(void)
             break;
       }
 
-      // Horizontal centering calculation needs to be forced due to retro_max_diwlastword change, which is crucial for visible_left_border
+      /* Horizontal centering calculation needs to be forced due to
+       * retro_max_diwlastword change which is crucial for visible_left_border */
       if (request_init_custom_timer > 0)
       {
          retro_min_diwstart_old = -1;
-         retro_max_diwstop_old = -1;
-         visible_left_border = retro_max_diwlastword - retrow;
+         retro_max_diwstop_old  = -1;
+         visible_left_border    = retro_max_diwlastword - retrow;
       }
    }
 
-   // Automatic video vresolution (Line Mode)
+   /* Automatic video vresolution (Line Mode) */
    if (opt_video_vresolution_auto)
    {
       int retro_interlace_seen = interlace_seen;
 
-      // Lores force to single line
+      /* Lores force to single line */
       if (!(video_config & PUAE_VIDEO_HIRES) && !(video_config & PUAE_VIDEO_SUPERHIRES))
          retro_interlace_seen = 0;
 
@@ -5030,19 +4659,21 @@ void update_audiovideo(void)
             }
             break;
       }
-
-      // Update av_info
-      if (request_init_custom_timer > 0)
-         retro_request_av_info_update = true;
    }
 
-   // Automatic vertical offset
+   /* Update av_info */
+   if (request_init_custom_timer > 0)
+      request_update_av_info = true;
+
+   /* Automatic vertical offset */
    if (opt_vertical_offset_auto && zoom_mode_id != 0 && retro_thisframe_first_drawn_line != retro_thisframe_last_drawn_line)
    {
       int retro_thisframe_first_drawn_line_delta = abs(retro_thisframe_first_drawn_line_old - retro_thisframe_first_drawn_line);
-      int retro_thisframe_last_drawn_line_delta = abs(retro_thisframe_last_drawn_line_old - retro_thisframe_last_drawn_line);
+      int retro_thisframe_last_drawn_line_delta  = abs(retro_thisframe_last_drawn_line_old - retro_thisframe_last_drawn_line);
 
-      //printf("thisrun   first:%3d old:%3d start:%3d last:%3d old:%3d start:%3d\n", retro_thisframe_first_drawn_line, retro_thisframe_first_drawn_line_old, retro_thisframe_first_drawn_line_start, retro_thisframe_last_drawn_line, retro_thisframe_last_drawn_line_old, retro_thisframe_last_drawn_line_start);
+#if 0
+      printf("thisrun   first:%3d old:%3d start:%3d last:%3d old:%3d start:%3d\n", retro_thisframe_first_drawn_line, retro_thisframe_first_drawn_line_old, retro_thisframe_first_drawn_line_start, retro_thisframe_last_drawn_line, retro_thisframe_last_drawn_line_old, retro_thisframe_last_drawn_line_start);
+#endif
       if (( retro_thisframe_first_drawn_line != retro_thisframe_first_drawn_line_old
          || retro_thisframe_last_drawn_line  != retro_thisframe_last_drawn_line_old)
          && retro_thisframe_first_drawn_line != -1
@@ -5051,17 +4682,20 @@ void update_audiovideo(void)
          && (retro_thisframe_first_drawn_line_delta > 1 || retro_thisframe_last_drawn_line_delta > 1)
       )
       {
+         if (retro_thisframe_first_drawn_line_start == -1 && retro_thisframe_last_drawn_line_start == -1)
+            request_update_av_info = true;
+
          if (retro_thisframe_first_drawn_line_delta > 1)
             retro_thisframe_first_drawn_line_start = (retro_thisframe_first_drawn_line_old == -1) ? retro_thisframe_first_drawn_line : retro_thisframe_first_drawn_line_old;
          if (retro_thisframe_last_drawn_line_delta > 1)
-            retro_thisframe_last_drawn_line_start = (retro_thisframe_last_drawn_line_old == -1) ? retro_thisframe_last_drawn_line : retro_thisframe_last_drawn_line_old;
+            retro_thisframe_last_drawn_line_start  = (retro_thisframe_last_drawn_line_old == -1) ? retro_thisframe_last_drawn_line : retro_thisframe_last_drawn_line_old;
 
          if (retro_thisframe_first_drawn_line_start != retro_thisframe_first_drawn_line
           || retro_thisframe_last_drawn_line_start  != retro_thisframe_last_drawn_line)
              retro_thisframe_counter = 1;
 
          retro_thisframe_first_drawn_line_old = retro_thisframe_first_drawn_line;
-         retro_thisframe_last_drawn_line_old = retro_thisframe_last_drawn_line;
+         retro_thisframe_last_drawn_line_old  = retro_thisframe_last_drawn_line;
       }
       else if (retro_thisframe_counter > 0
             && retro_thisframe_first_drawn_line != -1
@@ -5069,14 +4703,16 @@ void update_audiovideo(void)
             && retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line > 40
       )
       {
-         //printf("thiscnt %d first:%3d old:%3d start:%3d last:%3d old:%3d start:%3d\n", retro_thisframe_counter, retro_thisframe_first_drawn_line, retro_thisframe_first_drawn_line_old, retro_thisframe_first_drawn_line_start, retro_thisframe_last_drawn_line, retro_thisframe_last_drawn_line_old, retro_thisframe_last_drawn_line_start);
-         // Reset counter if the first drawn line changes while the last line stays the same
+#if 0
+         printf("frmcnt %d, first:%3d old:%3d start:%3d last:%3d old:%3d start:%3d\n", retro_thisframe_counter, retro_thisframe_first_drawn_line, retro_thisframe_first_drawn_line_old, retro_thisframe_first_drawn_line_start, retro_thisframe_last_drawn_line, retro_thisframe_last_drawn_line_old, retro_thisframe_last_drawn_line_start);
+#endif
+         /* Reset counter if the first drawn line changes while the last line stays the same */
          if (retro_thisframe_first_drawn_line != retro_thisframe_first_drawn_line_start
           && retro_thisframe_last_drawn_line  == retro_thisframe_last_drawn_line_start
           && abs(retro_thisframe_first_drawn_line_start - retro_thisframe_first_drawn_line) < 40)
             retro_thisframe_counter = 0;
 
-         // Prevent geometry change but allow vertical centering if the values return to the starting point during counting
+         /* Prevent geometry change but allow vertical centering if the values return to the starting point during counting */
          if (retro_thisframe_first_drawn_line == retro_thisframe_first_drawn_line_start
           && retro_thisframe_last_drawn_line  == retro_thisframe_last_drawn_line_start)
             retro_av_info_change_geometry = false;
@@ -5085,18 +4721,18 @@ void update_audiovideo(void)
             retro_thisframe_counter++;
 
          if (retro_thisframe_counter > 4)
-            retro_request_av_info_update = true;
+            request_update_av_info = true;
+      }
 
-         if (retro_request_av_info_update)
-         {
-            retro_thisframe_first_drawn_line_start = retro_thisframe_first_drawn_line;
-            retro_thisframe_last_drawn_line_start = retro_thisframe_last_drawn_line;
-         }
+      if (request_update_av_info)
+      {
+         retro_thisframe_first_drawn_line_start = retro_thisframe_first_drawn_line;
+         retro_thisframe_last_drawn_line_start  = retro_thisframe_last_drawn_line;
       }
    }
    else
    {
-      // Vertical offset must not be set too early
+      /* Vertical offset must not be set too early */
       if (thisframe_y_adjust_update_frame_timer > 0)
       {
          thisframe_y_adjust_update_frame_timer--;
@@ -5108,37 +4744,46 @@ void update_audiovideo(void)
       }
    }
 
-   // Automatic horizontal offset
+   /* Automatic horizontal offset */
    if (opt_horizontal_offset_auto)
    {
-      if (( retro_min_diwstart != retro_min_diwstart_old
+      if ( (retro_min_diwstart != retro_min_diwstart_old
          || retro_max_diwstop  != retro_max_diwstop_old)
          && retro_min_diwstart != 30000
-         && retro_max_diwstop  != 0
-      )
+         && retro_max_diwstop  != 0)
       {
-         //printf("diwstart:%3d old:%3d diwstop:%3d old:%3d\n", retro_min_diwstart, retro_min_diwstart_old, retro_max_diwstop, retro_max_diwstop_old);
-         // Prevent centering of horizontal animations by requiring the change to stabilize
+#if 0
+         printf("start:%3d old:%3d stop:%3d old:%3d\n", retro_min_diwstart, retro_min_diwstart_old, retro_max_diwstop, retro_max_diwstop_old);
+#endif
+         /* Game specific hacks: */
+         /* Zool */
+         if (retro_min_diwstart == 0 && retro_max_diwstop == retro_max_diwstop_old)
+            retro_diwstartstop_counter = 0;
+         /* North & South */
+         else if (retro_min_diwstart == (73 * width_multiplier) && retro_min_diwstart_old == retro_min_diwstart
+               && retro_max_diwstop  == (402 * width_multiplier) && retro_max_diwstop_old == (393 * width_multiplier))
+         {
+            retro_max_diwstop = retro_max_diwstop_old;
+            retro_diwstartstop_counter = 0;
+         }
+         else
+            retro_diwstartstop_counter = 1;
+
          retro_min_diwstart_old = retro_min_diwstart;
-         retro_max_diwstop_old = retro_max_diwstop;
-         retro_diwstartstop_counter = 1;
+         retro_max_diwstop_old  = retro_max_diwstop;
       }
+      /* Prevent centering of horizontal animations by requiring the change to stabilize */
       else if (retro_diwstartstop_counter > 0
             && retro_min_diwstart == retro_min_diwstart_old
-            && retro_max_diwstop == retro_max_diwstop_old
-            && retro_thisframe_first_drawn_line < 200
-      )
+            && retro_max_diwstop  == retro_max_diwstop_old)
       {
-         // Prevent geometry change but allow horizontal centering in the middle of vertical offset stabilize count
-         if (retro_thisframe_counter > 0)
-            retro_av_info_change_geometry = false;
-
-         retro_request_av_info_update = true;
+         update_video_center_horizontal();
+         request_reset_drawing = true;
       }
    }
    else
    {
-      // Horizontal offset must not be set too early
+      /* Horizontal offset must not be set too early */
       if (visible_left_border_update_frame_timer > 0)
       {
          visible_left_border_update_frame_timer--;
@@ -5149,62 +4794,450 @@ void update_audiovideo(void)
          }
       }
    }
+}
 
-   // Reset both counters on av_info_update
-   if (retro_request_av_info_update)
+static bool retro_update_av_info(void)
+{
+   bool av_log          = false;
+   bool isntsc          = retro_av_info_is_ntsc;
+   bool change_timing   = retro_av_info_change_timing;
+   bool change_geometry = retro_av_info_change_geometry;
+   double hz            = currprefs.chipset_refreshrate;
+
+   /* Reset global parameters ready for the next update */
+   request_update_av_info        = false;
+   retro_av_info_is_ntsc         = false;
+   retro_av_info_change_timing   = false;
+   retro_av_info_change_geometry = true;
+
+   if (av_log)
+      fprintf(stdout, "* Trying to update AV timing:%d to: ntsc:%d hz:%0.4f, from video_config:%d, video_aspect:%d\n", change_timing, isntsc, hz, video_config, video_config_aspect);
+
+   /* Change PAL/NTSC with a twist, thanks to Dyna Blaster
+    *
+    * Early Startup switch looks proper:
+    *    PAL mode V=49.9201Hz H=15625.0881Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
+    *    NTSC mode V=59.8859Hz H=15590.7473Hz (227x262+1) IDX=11 (NTSC) D=0 RTG=0/0
+    *    PAL mode V=49.9201Hz H=15625.0881Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
+    *
+    * Dyna Blaster switch looks unorthodox:
+    *    PAL mode V=49.9201Hz H=15625.0881Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
+    *    PAL mode V=59.4106Hz H=15625.0881Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
+    *    PAL mode V=49.9201Hz H=15625.0881Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
+    */
+
+   video_config_old      = video_config;
+   video_config_geometry = video_config;
+
+   /* When timing & geometry is changed */
+   if (change_timing)
    {
-      retro_thisframe_counter = 0;
-      retro_diwstartstop_counter = 0;
+      /* Change to NTSC if not NTSC */
+      if (isntsc && (video_config & PUAE_VIDEO_PAL) && !fake_ntsc)
+      {
+         video_config |= PUAE_VIDEO_NTSC;
+         video_config &= ~PUAE_VIDEO_PAL;
+         real_ntsc = true;
+      }
+      /* Change to PAL if not PAL */
+      else if (!isntsc && (video_config & PUAE_VIDEO_NTSC) && !fake_ntsc)
+      {
+         video_config |= PUAE_VIDEO_PAL;
+         video_config &= ~PUAE_VIDEO_NTSC;
+         real_ntsc = false;
+      }
+
+      /* Request init_custom() on change and update temporary video config */
+      if (video_config_geometry != video_config)
+         request_init_custom_timer = 1;
+      video_config_geometry = video_config;
    }
+
+   /* Aspect ratio override changes only the temporary video config. Don't change at the same time with region change. */
+   if (!change_timing && video_config_aspect != 0)
+   {
+      if (video_config_aspect == PUAE_VIDEO_NTSC)
+      {
+         video_config_geometry |= PUAE_VIDEO_NTSC;
+         video_config_geometry &= ~PUAE_VIDEO_PAL;
+      }
+      else if (video_config_aspect == PUAE_VIDEO_PAL)
+      {
+         video_config_geometry |= PUAE_VIDEO_PAL;
+         video_config_geometry &= ~PUAE_VIDEO_NTSC;
+      }
+   }
+   /* Forced aspect needs to be postponed for the next run to keep the actual dimension intact */
+   else if (change_timing && video_config_aspect != 0)
+      request_update_av_info = true;
+
+   /* Do nothing if timing has not changed, unless Hz switched without isntsc */
+   if (video_config_old == video_config && change_timing)
+   {
+      /* Dyna Blaster and the like stays at fake NTSC to prevent pointless switching back and forth */
+      if (!isntsc && hz > 55)
+      {
+         video_config |= PUAE_VIDEO_NTSC;
+         video_config &= ~PUAE_VIDEO_PAL;
+         video_config_geometry = video_config;
+         fake_ntsc = true;
+      }
+
+      /* If still no change */
+      if (video_config_old == video_config)
+      {
+         if (av_log)
+            fprintf(stdout, "* Already at wanted AV\n");
+         change_timing = false; /* Allow other calculations but don't alter timing */
+      }
+   }
+
+
+   /* Geometry dimensions */
+   switch (video_config_geometry)
+   {
+      case PUAE_VIDEO_PAL_LO:
+         retrow = PUAE_VIDEO_WIDTH / 2;
+         retroh = PUAE_VIDEO_HEIGHT_PAL / 2;
+         break;
+      case PUAE_VIDEO_PAL_HI:
+         retrow = PUAE_VIDEO_WIDTH;
+         retroh = PUAE_VIDEO_HEIGHT_PAL / 2;
+         break;
+      case PUAE_VIDEO_PAL_HI_DL:
+         retrow = PUAE_VIDEO_WIDTH;
+         retroh = PUAE_VIDEO_HEIGHT_PAL;
+         break;
+      case PUAE_VIDEO_PAL_SUHI:
+         retrow = PUAE_VIDEO_WIDTH * 2;
+         retroh = PUAE_VIDEO_HEIGHT_PAL / 2;
+         break;
+      case PUAE_VIDEO_PAL_SUHI_DL:
+         retrow = PUAE_VIDEO_WIDTH * 2;
+         retroh = PUAE_VIDEO_HEIGHT_PAL;
+         break;
+
+      case PUAE_VIDEO_NTSC_LO:
+         retrow = PUAE_VIDEO_WIDTH / 2;
+         retroh = PUAE_VIDEO_HEIGHT_NTSC / 2;
+         break;
+      case PUAE_VIDEO_NTSC_HI:
+         retrow = PUAE_VIDEO_WIDTH;
+         retroh = PUAE_VIDEO_HEIGHT_NTSC / 2;
+         break;
+      case PUAE_VIDEO_NTSC_HI_DL:
+         retrow = PUAE_VIDEO_WIDTH;
+         retroh = PUAE_VIDEO_HEIGHT_NTSC;
+         break;
+      case PUAE_VIDEO_NTSC_SUHI:
+         retrow = PUAE_VIDEO_WIDTH * 2;
+         retroh = PUAE_VIDEO_HEIGHT_NTSC / 2;
+         break;
+      case PUAE_VIDEO_NTSC_SUHI_DL:
+         retrow = PUAE_VIDEO_WIDTH * 2;
+         retroh = PUAE_VIDEO_HEIGHT_NTSC;
+         break;
+   }
+
+   /* Width multiplier */
+   if (video_config & PUAE_VIDEO_SUPERHIRES)
+      width_multiplier = 4;
+   else if (video_config & PUAE_VIDEO_HIRES)
+      width_multiplier = 2;
+   else
+      width_multiplier = 1;
+
+   /* Restore actual canvas height for aspect ratio toggling in real NTSC, otherwise toggling is broken */
+   if (!change_timing && real_ntsc && video_config_aspect == PUAE_VIDEO_PAL)
+      retroh = defaulth;
+
+   /* Exception for Dyna Blaster */
+   if (fake_ntsc)
+      retroh = (video_config & PUAE_VIDEO_DOUBLELINE) ? 476 : 238;
+
+   /* When the actual dimensions change and not just the view */
+   if (change_timing)
+   {
+      defaultw = retrow;
+      defaulth = retroh;
+   }
+
+   /* Disable Hz change if not allowed */
+   if (!video_config_allow_hz_change)
+      change_timing = false;
+
+   /* Ensure statusbar stays visible at the bottom */
+   opt_statusbar_position_offset = 0;
+   opt_statusbar_position = opt_statusbar_position_old;
+   if (!change_timing)
+      if (retroh < defaulth)
+         if (opt_statusbar_position >= 0 && (defaulth - retroh) >= opt_statusbar_position)
+            opt_statusbar_position = defaulth - retroh;
+
+   /* Aspect offset for zoom mode */
+   opt_statusbar_position_offset = opt_statusbar_position_old - opt_statusbar_position;
+
+   /* Compensate for the PAL last line, aargh */
+   if (video_config & PUAE_VIDEO_PAL && !real_ntsc && opt_statusbar_position >= 0)
+   {
+      if (interlace_seen)
+      {
+         if (video_config_geometry & PUAE_VIDEO_DOUBLELINE)
+         {
+            if (video_config_geometry & PUAE_VIDEO_PAL)
+            {
+               opt_statusbar_position += 2;
+               opt_statusbar_position_offset += 2;
+            }
+            else
+            {
+               opt_statusbar_position -= 2;
+               opt_statusbar_position_offset -= 2;
+            }
+         }
+         else
+         {
+            if (video_config_geometry & PUAE_VIDEO_PAL)
+            {
+               opt_statusbar_position += 1;
+               opt_statusbar_position_offset += 1;
+            }
+         }
+      }
+      else
+      {
+         if (video_config_geometry & PUAE_VIDEO_DOUBLELINE && video_config_geometry & PUAE_VIDEO_PAL)
+         {
+            opt_statusbar_position += 1;
+            opt_statusbar_position_offset += 1;
+         }
+      }
+   }
+
+#if 0
+   fprintf(stdout, "statusbar:%3d old:%3d offset:%3d, defaulth:%d retroh:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, defaulth, retroh);
+#endif
+
+   /* Apply zoom mode croppings */
+   switch (zoom_mode_id)
+   {
+      case 1:
+         zoomed_width  = 360;
+         zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 240 : 270;
+         break;
+      case 2:
+         zoomed_width  = 348;
+         zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 240 : 264;
+         break;
+      case 3:
+         zoomed_width  = 332;
+         zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 240 : 256;
+         break;
+      case 4:
+         zoomed_width  = 320;
+         zoomed_height = 240;
+         break;
+      case 5:
+         zoomed_width  = 320;
+         zoomed_height = 224;
+         break;
+      case 6:
+         zoomed_width  = 320;
+         zoomed_height = 216;
+         break;
+      case 7:
+         zoomed_width  = 320;
+         zoomed_height = 200;
+         break;
+      case 8:
+         if (retro_min_diwstart != retro_max_diwstop
+          && retro_min_diwstart > 0
+          && retro_max_diwstop > 0)
+            zoomed_width = (retro_max_diwstop / width_multiplier) - (retro_min_diwstart / width_multiplier);
+         zoomed_width = (zoomed_width < 320) ? 320 : zoomed_width;
+
+         if (retro_thisframe_first_drawn_line != retro_thisframe_last_drawn_line
+          && retro_thisframe_first_drawn_line > 0
+          && retro_thisframe_last_drawn_line > 0)
+            zoomed_height = retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line + 1;
+         zoomed_height = (zoomed_height < 200) ? 200 : zoomed_height;
+         break;
+      default:
+         zoomed_width  = retrow;
+         zoomed_height = retroh;
+         break;
+   }
+
+   /* Zoom mode preset calculations */
+   if (zoom_mode_id > 0)
+   {
+      double zoom_dar = 0;
+      double zoom_par = retro_get_aspect_ratio(0, 0, true);
+      int zoomed_height_original = zoomed_height;
+
+      switch (zoom_mode_crop_id)
+      {
+         case 0: /* Both */
+            break;
+         case 1: /* Vertical disables horizontal crop */
+            zoomed_width = retrow;
+            break;
+         case 2: /* Horizontal disables vertical crop */
+            zoomed_height = retroh;
+            break;
+         case 3: /* 16:9 */
+            zoom_dar = (double)16/9;
+            zoomed_width = retrow;
+            if (zoomed_height < (int)(zoomed_width * width_multiplier / zoom_dar * zoom_par))
+               zoomed_width = (int)(zoomed_height * zoom_dar / zoom_par);
+            break;
+         case 4: /* 16:10 */
+            zoom_dar = (double)16/10;
+            zoomed_width = retrow;
+            if (zoomed_height < (int)(zoomed_width * width_multiplier / zoom_dar * zoom_par))
+               zoomed_width = (int)(zoomed_height * zoom_dar / zoom_par);
+            break;
+         case 5: /* 4:3 */
+            zoom_dar = (double)4/3;
+            if (zoomed_height < (int)(zoomed_width * width_multiplier / zoom_dar * zoom_par))
+            {
+               zoomed_height = (int)(zoomed_width / zoom_dar * zoom_par);
+               if (zoomed_height < zoomed_height_original)
+                  zoomed_height = zoomed_height_original;
+               zoomed_width = (int)(zoomed_height * zoom_dar / zoom_par);
+            }
+            break;
+         case 6: /* 5:4 */
+            zoom_dar = (double)5/4;
+            if (zoomed_height < (int)(zoomed_width * width_multiplier / zoom_dar * zoom_par))
+            {
+               zoomed_height = (int)(zoomed_width / zoom_dar * zoom_par);
+               if (zoomed_height < zoomed_height_original)
+                  zoomed_height = zoomed_height_original;
+               zoomed_width = (int)(zoomed_height * zoom_dar / zoom_par);
+            }
+            break;
+      }
+
+      if (video_config & PUAE_VIDEO_DOUBLELINE)
+         zoomed_height *= 2;
+
+      zoomed_width = (zoomed_width < 320) ? 320 : zoomed_width;
+      zoomed_width *= width_multiplier;
+
+      if (zoomed_height > retroh)
+         zoomed_height = retroh;
+
+      if (zoomed_width > retrow)
+         zoomed_width = retrow;
+   }
+
+   struct retro_system_av_info new_av_info;
+   retro_get_system_av_info(&new_av_info);
+
+   if (zoomed_height != retroh || zoomed_width != retrow)
+   {
+      new_av_info.geometry.base_width   = zoomed_width;
+      new_av_info.geometry.base_height  = zoomed_height;
+      new_av_info.geometry.aspect_ratio = retro_get_aspect_ratio(zoomed_width, zoomed_height, false);
+
+      /* Ensure statusbar stays visible at the bottom */
+      if (opt_statusbar_position >= 0 && (retroh - zoomed_height - opt_statusbar_position_offset) >= opt_statusbar_position)
+         opt_statusbar_position = retroh - zoomed_height - opt_statusbar_position_offset;
+
+#if 0
+      fprintf(stdout, "ztatusbar:%3d old:%3d offset:%3d, defaulth:%d retroz:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, defaulth, zoomed_height);
+#endif
+   }
+
+   /* Timing or geometry update */
+   if (change_timing)
+   {
+      new_av_info.timing.fps = hz;
+      environ_cb(RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO, &new_av_info);
+   }
+   else if (change_geometry)
+      environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
+
+   /* If zoom mode should be vertically centered automagically */
+   if (opt_vertical_offset_auto && (zoom_mode_id != 0 || zoomed_height != retroh))
+      update_video_center_vertical();
+   else
+      thisframe_y_adjust = minfirstline + opt_vertical_offset;
+
+   /* Horizontal centering needs to be done also after geometry change */
+   if (opt_horizontal_offset_auto)
+      update_video_center_horizontal();
+
+   /* Logging */
+   if (av_log)
+   {
+      if (change_timing)
+         fprintf(stdout, "* Update av_info : %dx%d %0.4fHz, zoomed: %dx%d, aspect:%0.3f, video_config:%d\n", retrow, retroh, hz, zoomed_width, zoomed_height, retro_get_aspect_ratio(zoomed_width, zoomed_height, false), video_config_geometry);
+      else if (change_geometry)
+         fprintf(stdout, "* Update geometry: %dx%d, zoomed: %dx%d, aspect:%0.3f, video_config:%d\n", retrow, retroh, zoomed_width, zoomed_height, retro_get_aspect_ratio(zoomed_width, zoomed_height, false), video_config_geometry);
+      else
+         fprintf(stdout, "* Update center  : %dx%d, zoomed: %dx%d, aspect:%0.3f, video_config:%d\n", retrow, retroh, zoomed_width, zoomed_height, retro_get_aspect_ratio(zoomed_width, zoomed_height, false), video_config_geometry);
+   }
+
+   /* Triggers check_prefs_changed_gfx() in vsync_handle_check() */
+   prefs_changed = 1;
+
+   /* Changing any drawing/offset parameters requires
+    * a drawing reset - it is safest to just do this
+    * whenever retro_update_av_info() is called */
+   request_reset_drawing = true;
+
+   return true;
 }
 
 void retro_run(void)
 {
-   // Core options
+   /* Core options */
    bool updated = false;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
       update_variables();
 
-   // Soft reset requested
+   /* Soft reset requested */
    if (request_reset_soft)
       retro_reset_soft();
 
-   // Handle statusbar text, audio filter type & video geometry + resolution
+   /* Handle statusbar text, audio filter type & video geometry + resolution */
    update_audiovideo();
 
-   // AV info change is requested
-   if (retro_request_av_info_update)
+   /* AV info change is requested */
+   if (request_update_av_info)
       retro_update_av_info();
 
-   // Poll inputs
+   /* Poll inputs */
    retro_poll_event();
 
-   // If any drawing parameters/offsets have been modified,
-   // must call reset_drawing() to ensure that the changes
-   // are 'registered' by center_image() in drawing.c
-   // > If we don't do this, the wrong parameters may be
-   //   used on the next frame, which can lead to out of
-   //   bounds video buffer access (memory corruption)
-   // > This check must come *after* horizontal/vertical
-   //   offset calculation, retro_update_av_info() and
-   //   retro_poll_event()
+   /* If any drawing parameters/offsets have been modified,
+    * must call reset_drawing() to ensure that the changes
+    * are 'registered' by center_image() in drawing.c
+    * > If we don't do this, the wrong parameters may be
+    *   used on the next frame, which can lead to out of
+    *   bounds video buffer access (memory corruption)
+    * > This check must come *after* horizontal/vertical
+    *   offset calculation, retro_update_av_info() and
+    *   retro_poll_event() */
    if (request_reset_drawing)
    {
       request_reset_drawing = false;
       reset_drawing();
    }
 
-   // Dynamic resolution changing requires a frame breather after reset_drawing()
+   /* Dynamic resolution changing requires a frame breather after reset_drawing() */
    if (request_init_custom_timer > 0)
    {
       if (request_init_custom_timer == 2)
          request_reset_drawing = true;
       request_init_custom_timer--;
       if (request_init_custom_timer == 0)
-         init_custom ();
+         init_custom();
    }
 
-   // Refresh CPU prefs
+   /* Refresh CPU prefs */
    if (request_check_prefs_timer > 0)
    {
       request_check_prefs_timer--;
@@ -5219,21 +5252,21 @@ void retro_run(void)
       }
    }
 
-   // Check if a restart is required
+   /* Check if a restart is required */
    if (restart_pending)
    {
       restart_pending = 0;
       libretro_do_restart(sizeof(uae_argv)/sizeof(*uae_argv), uae_argv);
-      // Re-run emulation first pass
+      /* Re-run emulation first pass */
       restart_pending = m68k_go(1, 0);
       video_cb(retro_bmp, zoomed_width, zoomed_height, retrow << (pix_bytes / 2));
       return;
    }
 
-   // Resume emulation for 1 frame
+   /* Resume emulation for 1 frame */
    restart_pending = m68k_go(1, 1);
 
-   // Warning messages
+   /* Warning messages */
    if (retro_message)
    {
       struct retro_message msg;
@@ -5243,16 +5276,15 @@ void retro_run(void)
       retro_message = false;
    }
 
-   // Core overlays
-   // print_statusbar() moved to drawing.c before leds_on_screen, for consistent background on variable LED counts
-   if (SHOWKEY == 1)
+   /* Virtual keyboard */
+   if (retro_vkbd)
    {
-      // Virtual keyboard requires a graceful redraw, blunt reset_drawing() interferes with zoom
+      /* VKBD requires a graceful redraw, blunt reset_drawing() interferes with zoom */
       frame_redraw_necessary = 2;
-      print_virtual_kbd(retro_bmp);
+      print_vkbd(retro_bmp);
    }
-   // Maximum 288p/576p PAL shenanigans:
-   // Mask the last line(s), since UAE does not refresh the last line, and even its own OSD will leave trails
+   /* Maximum 288p/576p PAL shenanigans:
+    * Mask the last line(s), since UAE does not refresh the last line, and even internal OSD will leave trails */
    if (video_config & PUAE_VIDEO_PAL)
    {
       if (video_config & PUAE_VIDEO_DOUBLELINE)
@@ -5280,11 +5312,11 @@ void retro_run(void)
 
 bool retro_load_game(const struct retro_game_info *info)
 {
-   // Content
+   /* Content */
    char *local_path;
    if (info)
    {
-      // Special unicode chars won't work without conversion
+      /* Special unicode chars won't work without conversion */
       local_path = utf8_to_local_string_alloc(info->path);
       if (local_path)
       {
@@ -5296,40 +5328,40 @@ bool retro_load_game(const struct retro_game_info *info)
          return false;
    }
 
-   // UAE config
+   /* UAE config */
    static bool retro_return;
    retro_return = retro_create_config();
    if (!retro_return)
       return false;
 
-   // Initialise emulation
+   /* Initialise emulation */
    umain(sizeof(uae_argv)/sizeof(*uae_argv), uae_argv);
 
-   // Run emulation first pass
+   /* Run emulation first pass */
    restart_pending = m68k_go(1, 0);
-   // > We are now ready to enter the run loop
+   /* > We are now ready to enter the run loop */
    libretro_runloop_active = 1;
 
-   // Save states
-   // > Ensure that save state file path is empty,
-   //   since we use memory based save states
+   /* Save states
+    * > Ensure that save state file path is empty,
+    *   since we use memory based save states */
    savestate_fname[0] = '\0';
-   // > Get save state size
-   //   Here we use initial size + 5%
-   //   Should be sufficient in all cases
-   // NOTE: It would be better to calculate the
-   // state size based on current config parameters,
-   // but while
-   //   - currprefs.chipmem_size
-   //   - currprefs.bogomem_size
-   //   - currprefs.fastmem_size
-   // account for *most* of the size, there are
-   // simply too many other factors to rely on this
-   // alone (i.e. mem size + 5% is fine in most cases,
-   // but if the user supplies a custom uae config file
-   // then this is not adequate at all). Untangling the
-   // full set of values that are recorded is beyond
-   // my patience...
+   /* > Get save state size
+    *   Here we use initial size + 5%
+    *   Should be sufficient in all cases
+    * NOTE: It would be better to calculate the
+    * state size based on current config parameters,
+    * but while
+    *   - currprefs.chipmem_size
+    *   - currprefs.bogomem_size
+    *   - currprefs.fastmem_size
+    * account for *most* of the size, there are
+    * simply too many other factors to rely on this
+    * alone (i.e. mem size + 5% is fine in most cases,
+    * but if the user supplies a custom uae config file
+    * then this is not adequate at all). Untangling the
+    * full set of values that are recorded is beyond
+    * my patience... */
    struct zfile *state_file = save_state("libretro", 0);
 
    if (state_file)
@@ -5344,10 +5376,10 @@ bool retro_load_game(const struct retro_game_info *info)
 
 void retro_unload_game(void)
 {
-   // Ensure save state de-serialization file
-   // is closed/NULL
-   // Note: Have to do this here (not in retro_deinit())
-   // since leave_program() calls zfile_exit()
+   /* Ensure save state de-serialization file
+    * is closed/NULL
+    * Note: Have to do this here (not in retro_deinit())
+    * since leave_program() calls zfile_exit() */
    if (retro_deserialize_file)
    {
       zfile_fclose(retro_deserialize_file);
@@ -5402,29 +5434,31 @@ bool retro_serialize(void *data_, size_t size)
 
 bool retro_unserialize(const void *data_, size_t size)
 {
-   // TODO: When attempting to use runahead, CD32
-   // and WHDLoad content will hang on boot. It seems
-   // we cannot restore a state until the system has
-   // passed some level of initialisation - but the
-   // point at which a restore becomes 'safe' is
-   // unknown (for CD32 content, for example, we have
-   // to wait ~300 frames before runahead can be enabled)
+   /* TODO: When attempting to use runahead, CD32
+    * and WHDLoad content will hang on boot. It seems
+    * we cannot restore a state until the system has
+    * passed some level of initialisation - but the
+    * point at which a restore becomes 'safe' is
+    * unknown (for CD32 content, for example, we have
+    * to wait ~300 frames before runahead can be enabled) */
    bool success = false;
 
-   // Cannot restore state while any 'savestate'
-   // operation is underway
-   // > Actual restore is deferred until m68k_go(),
-   //   so we have to use a shared shared state file
-   //   object - this cannot be modified until the
-   //   restore is complete
-   // > Note that this condition should never be
-   //   true - if a save state operation is underway
-   //   at this point then we are dealing with an
-   //   unknown error
+   /* Cannot restore state while any 'savestate'
+    * operation is underway
+    * > Actual restore is deferred until m68k_go(),
+    *   so we have to use a shared shared state file
+    *   object - this cannot be modified until the
+    *   restore is complete
+    * > Note that this condition should never be
+    *   true - if a save state operation is underway
+    *   at this point then we are dealing with an
+    *   unknown error */
    if (!savestate_state)
    {
-      // Savestates also save CPU prefs, therefore refresh core options, but skip it for now
-      //request_check_prefs_timer = 4;
+#if 0
+      /* Savestates also save CPU prefs, therefore force core options, but skip it for now */
+      request_check_prefs_timer = 4;
+#endif
 
       if (retro_deserialize_file)
       {
@@ -5446,36 +5480,36 @@ bool retro_unserialize(const void *data_, size_t size)
             zfile_fseek(retro_deserialize_file, 0, SEEK_SET);
             savestate_state = STATE_DORESTORE;
 
-            // For correct operation of the frontend,
-            // the save state restore must be completed
-            // by the time this function returns.
-            // Since P-UAE requires several (2) frames to get
-            // itself in order during a restore event, we
-            // have to keep emulating frames until the
-            // restore is complete...
-            // > Note that we set a 'timeout' of 50 frames
-            //   here (1s of emulated time at 50Hz) to
-            //   prevent lock-ups in the event of unexpected
-            //   errors
-            // > Temporarily 'deactivate' runloop - this lets
-            //   us call m68k_go() without accessing frontend
-            //   features - specifically, it disables the audio
-            //   callback functionality
+            /* For correct operation of the frontend,
+             * the save state restore must be completed
+             * by the time this function returns.
+             * Since P-UAE requires several (2) frames to get
+             * itself in order during a restore event, we
+             * have to keep emulating frames until the
+             * restore is complete...
+             * > Note that we set a 'timeout' of 50 frames
+             *   here (1s of emulated time at 50Hz) to
+             *   prevent lock-ups in the event of unexpected
+             *   errors
+             * > Temporarily 'deactivate' runloop - this lets
+             *   us call m68k_go() without accessing frontend
+             *   features - specifically, it disables the audio
+             *   callback functionality */
             libretro_runloop_active = 0;
             while (savestate_state && (frame_counter < max_frames))
             {
-               // Note that retro_deserialize_file will be
-               // closed inside m68k_go() upon successful
-               // completion of the restore event
+               /* Note that retro_deserialize_file will be
+                * closed inside m68k_go() upon successful
+                * completion of the restore event */
                restart_pending = m68k_go(1, 1);
                frame_counter++;
             }
             libretro_runloop_active = 1;
 
-            // If the above while loop times out, then
-            // everything is completely broken. We cannot
-            // handle this here, so just assume the restore
-            // completed successfully...
+            /* If the above while loop times out, then
+             * everything is completely broken. We cannot
+             * handle this here, so just assume the restore
+             * completed successfully... */
             request_reset_drawing = true;
             success               = true;
          }

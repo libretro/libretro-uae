@@ -102,8 +102,10 @@ int init_sound (void)
     sample_handler =  sample16s_handler;
     sound_initialized = 1;
 
-    //init_sound_table16();
-    //scaled_sample_evtime = (unsigned long)(MAXHPOS_PAL * MAXVPOS_PAL * VBLANK_HZ_PAL + rate - 1) / DEFAULT_SOUND_FREQ;
+#if 0
+    init_sound_table16();
+    scaled_sample_evtime = (unsigned long)(MAXHPOS_PAL * MAXVPOS_PAL * VBLANK_HZ_PAL + rate - 1) / DEFAULT_SOUND_FREQ;
+#endif
 
 #ifdef DRIVESOUND
 	driveclick_init();

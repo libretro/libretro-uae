@@ -25,7 +25,7 @@
 #include <file/file_path.h>
 #endif
 
-// Verify if file exists
+/* Verify if file exists */
 bool file_exists(const char *filename)
 {
 	struct stat buf;
@@ -54,7 +54,7 @@ const char *path_get_basename(const char* path)
 	if (!path || (*path == '\0'))
 		return NULL;
 
-	// Search for path separator
+	/* Search for path separator */
 	basename = strrchr(path, RETRO_PATH_SEPARATOR[0]);
 #ifdef _WIN32
 	if (!basename)
@@ -64,8 +64,8 @@ const char *path_get_basename(const char* path)
 	if (!(!basename || (*basename == '\0')))
 		return basename + 1;
 
-	// > If path contains no separator, then the
-	//   path itself is the basename
+	/* > If path contains no separator, then the
+	 *   path itself is the basename */
 	return path;
 }
 

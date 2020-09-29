@@ -23,32 +23,32 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Note: This function returns a pointer to a substring_left of the original string.
-// If the given string was allocated dynamically, the caller must not overwrite
-// that pointer with the returned value, since the original pointer must be
-// deallocated using the same allocator with which it was allocated.  The return
-// value must NOT be deallocated using free() etc.
+/* Note: This function returns a pointer to a substring_left of the original string.
+ * If the given string was allocated dynamically, the caller must not overwrite
+ * that pointer with the returned value, since the original pointer must be
+ * deallocated using the same allocator with which it was allocated.  The return
+ * value must NOT be deallocated using free() etc. */
 char* trimwhitespace(char *str)
 {
   char *end;
 
-  // Trim leading space
+  /* Trim leading space */
   while(isspace((unsigned char)*str)) str++;
 
-  if(*str == 0)  // All spaces?
+  if(*str == 0) /* All spaces? */
     return str;
 
-  // Trim trailing space
+  /* Trim trailing space */
   end = str + strlen(str) - 1;
   while(end > str && isspace((unsigned char)*end)) end--;
 
-  // Write new null terminator character
+  /* Write new null terminator character */
   end[1] = '\0';
 
   return str;
 }
 
-// Returns a substring of 'str' that contains the 'len' leftmost characters of 'str'.
+/* Returns a substring of 'str' that contains the 'len' leftmost characters of 'str' */
 char* strleft(const char* str, int len)
 {
 	char* result = calloc(len + 1, sizeof(char));
@@ -56,7 +56,7 @@ char* strleft(const char* str, int len)
 	return result;
 }
 
-// Returns a substring of 'str' that contains the 'len' rightmost characters of 'str'.
+/* Returns a substring of 'str' that contains the 'len' rightmost characters of 'str' */
 char* strright(const char* str, int len)
 {
 	int pos = strlen(str) - len;
@@ -65,7 +65,7 @@ char* strright(const char* str, int len)
 	return result;
 }
 
-// Returns true if 'str' starts with 'start'
+/* Returns true if 'str' starts with 'start' */
 bool strstartswith(const char* str, const char* start)
 {
 	if (strlen(str) >= strlen(start))
@@ -75,7 +75,7 @@ bool strstartswith(const char* str, const char* start)
 	return false;
 }
 
-// Returns true if 'str' ends with 'end'
+/* Returns true if 'str' ends with 'end' */
 bool strendswith(const char* str, const char* end)
 {
 	if (strlen(str) >= strlen(end))

@@ -3,8 +3,8 @@
 
 typedef struct
 {
-	int x, y;
-	int dx, dy;
+   int x, y;
+   int dx, dy;
 } box;
 
 extern void DrawFBoxBmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color, unsigned int alpha);
