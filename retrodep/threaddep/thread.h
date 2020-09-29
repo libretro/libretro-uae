@@ -6,8 +6,8 @@
   * Copyright 1997 Bernd Schmidt
   * Copyright 2004 Richard Drummond
   */
-#ifdef _WIN32
 
+#ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 typedef HANDLE uae_sem_t;
 typedef HANDLE uae_thread_id;
@@ -29,10 +29,11 @@ STATIC_INLINE void uae_wait_thread (uae_thread_id tid)
     WaitForSingleObject (tid, INFINITE);
     CloseHandle (tid);
 }
-#else //win32
+
+#else /* WIN32 */
 
 #ifdef WIIU
-//FIXME: write using wiiu semaphore
+/* FIXME: write using wiiu semaphore */
 #warning WIIU bad Hack rewrite me 
 
 #define TESTSEM 1
@@ -63,7 +64,6 @@ STATIC_INLINE int uae_sem_init (uae_sem_t *sem, int pshared, unsigned int value)
 STATIC_INLINE int uae_sem_destroy (uae_sem_t *sem)
 {
 #ifdef TESTSEM
-
 	if ( sem->sem ) {
 		free(sem->sem);
 	}
@@ -76,8 +76,6 @@ STATIC_INLINE int uae_sem_destroy (uae_sem_t *sem)
 STATIC_INLINE int uae_sem_post (uae_sem_t *sem)
 {
 #ifdef TESTSEM
-
-
 	int retval;
 
 	if ( ! sem->sem ) {
@@ -90,16 +88,14 @@ STATIC_INLINE int uae_sem_post (uae_sem_t *sem)
 		printf("sem_post() failed");
 	}
 	return retval;
-
 #else
-return -1;
+    return -1;
 #endif
 }
 
 STATIC_INLINE int uae_sem_wait (uae_sem_t *sem)
 {
 #ifdef TESTSEM
-
 	int retval;
 
 	if ( ! sem->sem ) {
@@ -112,9 +108,8 @@ STATIC_INLINE int uae_sem_wait (uae_sem_t *sem)
 		printf("sem_wait() failed");
 	}
 	return retval;
-
 #else
-return -1;
+    return -1;
 #endif
 }
 
@@ -133,7 +128,7 @@ STATIC_INLINE int uae_sem_trywait (uae_sem_t *sem)
 	}
 	return retval;
 #else
-return -1;
+    return -1;
 #endif
 }
 
@@ -146,23 +141,20 @@ STATIC_INLINE int uae_sem_getvalue (uae_sem_t *sem, int *sval)
 	}
         return OSGetSemaphoreCount (sem->sem);
 #else
-return -1;
+    return -1;
 #endif
 }
 
-
-#else // WIIU
+#else /* WIIU */
 
 #include <pthread.h>
 #include <semaphore.h>
-
 
 typedef struct {
     sem_t *sem;
 } uae_sem_t;
 
 #ifndef USE_NAMED_SEMAPHORES
-
 int uae_sem_init (uae_sem_t *sem, int pshared, unsigned int value);
 
 STATIC_INLINE int uae_sem_destroy (uae_sem_t *sem)
@@ -217,8 +209,7 @@ STATIC_INLINE int uae_sem_getvalue (uae_sem_t *sem, int *sval)
 {
     return sem->sem == 0 ? -1 : sem_getvalue (sem->sem, sval);
 }
-
-#endif
+#endif /* USE_NAMED_SEMAPHORES */
 
 #endif
 
@@ -248,9 +239,7 @@ STATIC_INLINE void uae_kill_thread (uae_thread_id* thread)
 	pthread_detach(*thread);
 }
 
-
 #define UAE_THREAD_EXIT pthread_exit(0)
-
 #define uae_set_thread_priority(pri)
 
 #endif

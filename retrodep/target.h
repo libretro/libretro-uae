@@ -22,7 +22,10 @@
 #  define OPTIONSFILENAME "uaerc"
 # endif
 #endif
-//#define OPTIONS_IN_HOME
+
+#if 0
+#define OPTIONS_IN_HOME
+#endif
 
 #define DEFPRTNAME "lpr"
 #define DEFSERNAME "/dev/ttyS1"
@@ -56,4 +59,3 @@
 #define DEFSERNAME "null"
 
 #endif
-

@@ -79,7 +79,7 @@ void retro_mouse_button(int port, int button, int state)
 /* --- joystick input --- */
 void retro_joystick(int port, int axis, int state)
 {
-    // disable mouse in normal ports, joystick/mouse inverted
+    /* Disable mouse in normal ports, joystick/mouse inverted */
     if (port < 2)
     {
         int m_port = (port == 0) ? 1 : 0;
@@ -90,7 +90,7 @@ void retro_joystick(int port, int axis, int state)
 
 void retro_joystick_analog(int port, int axis, int state)
 {
-    // disable mouse in normal ports, joystick/mouse inverted
+    /* Disable mouse in normal ports, joystick/mouse inverted */
     if (port < 2)
     {
         int m_port = (port == 0) ? 1 : 0;
@@ -101,7 +101,7 @@ void retro_joystick_analog(int port, int axis, int state)
 
 void retro_joystick_button(int port, int button, int state)
 {
-    // disable mouse in normal ports, joystick/mouse inverted
+    /* Disable mouse in normal ports, joystick/mouse inverted */
     if (port < 2)
     {
         int m_port = (port == 0) ? 1 : 0;
@@ -139,15 +139,15 @@ void retro_renderSound(short* samples, int sampleCount)
 
 void retro_flush_screen (struct vidbuf_description *gfxinfo, int ystart, int yend)
 {
-   // These values must be cached here, since the
-   // source variables will be reset before the frame
-   // ends and control is returned to the frontend
+   /* These values must be cached here, since the
+    * source variables will be reset before the frame
+    * ends and control is returned to the frontend */
    retro_thisframe_first_drawn_line = thisframe_first_drawn_line;
    retro_thisframe_last_drawn_line  = thisframe_last_drawn_line;
    retro_min_diwstart               = min_diwstart;
    retro_max_diwstop                = max_diwstop;
 
-   // Flag that we should end the frame, return out of retro_run
+   /* Flag that we should end the frame, return out of retro_run */
    libretro_frame_end = 1;
 }
 
@@ -183,7 +183,7 @@ int graphics_init(void) {
 
 #ifdef ENABLE_LOG_SCREEN
 	currprefs.gfx_height = 256;
-	currprefs.gfx_linedbl = 0;	//disable line doubling
+	currprefs.gfx_linedbl = 0;
 #else
 	currprefs.gfx_size_win.height = defaulth;
 #endif	
@@ -193,7 +193,9 @@ int graphics_init(void) {
 #else
 	pixbuf = (unsigned short int*) &retro_bmp[0];
 #endif
-	//printf("graphics init: pixbuf=%p color_mode=%d width=%d height=%d\n", pixbuf, currprefs.color_mode, currprefs.gfx_size_win.width, currprefs.gfx_size_win.height);
+#if 0
+	printf("graphics init: pixbuf=%p color_mode=%d width=%d height=%d\n", pixbuf, currprefs.color_mode, currprefs.gfx_size_win.width, currprefs.gfx_size_win.height);
+#endif
 	if (pixbuf == NULL) {
 		printf("Error: not enough memory to initialize screen buffer!\n");
 		return -1;
@@ -239,8 +241,8 @@ int mousehack_allowed (void)
 
 int graphics_setup(void)
 {
-	//32bit mode
-	//Rw, Gw, Bw,   Rs, Gs, Bs,   Aw, As, Avalue, swap
+	/* 32bit mode
+	 *                   Rw,Gw,Bw,Rs, Gs,Bs,Aw,As,Avalue,swap */
 	if (pix_bytes == 2)
 		alloc_colors64k (5, 6, 5, 11, 5, 0, 0, 0, 0, 0); 
 	else
@@ -304,7 +306,9 @@ int check_prefs_changed_gfx (void)
     gfxvidinfo.height_allocated         = currprefs.gfx_size_win.height;
     gfxvidinfo.rowbytes                 = gfxvidinfo.width_allocated * gfxvidinfo.pixbytes;
 
-    //printf("check_prefs_changed_gfx: %d:%d, res:%d vres:%d\n", changed_prefs.gfx_size_win.width, changed_prefs.gfx_size_win.height, changed_prefs.gfx_resolution, changed_prefs.gfx_vresolution);
+#if 0
+    printf("check_prefs_changed_gfx: %d:%d, res:%d vres:%d\n", changed_prefs.gfx_size_win.width, changed_prefs.gfx_size_win.height, changed_prefs.gfx_resolution, changed_prefs.gfx_vresolution);
+#endif
     return 1;
 }
 
@@ -764,7 +768,9 @@ void clearallkeys (void)
 
 void keyboard_settrans (void)
 {
-    //inputdevice_setkeytranslation (keytrans, kbmaps);
+#if 0
+    inputdevice_setkeytranslation (keytrans, kbmaps);
+#endif
 }
 
 
@@ -806,11 +812,11 @@ int sensible_strcmp(char *a, char *b)
    for (i = 0; a[i] == b[i]; i++)
       if (a[i] == '\0')
          return 0;
-   // Replace " " (32) with "/" (47) when comparing for more natural sorting, such as:
-   // 1. Turrican
-   // 2. Turrican II
-   // 3. Turrican III
-   // Because "/" (47) is bigger than "," (44) and "." (46), and it is not used in filenames
+   /* Replace " " (32) with "/" (47) when comparing for more natural sorting, such as:
+    * 1. Turrican
+    * 2. Turrican II
+    * 3. Turrican III
+    * Because "/" (47) is bigger than "," (44) and "." (46), and it is not used in filenames */
    if (a[i] == 32)
       return (47 < (unsigned char)b[i]) ? -1 : 1;
    if (b[i] == 32)

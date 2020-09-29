@@ -25,23 +25,23 @@
 #define DC_MAX_SIZE 20
 
 enum dc_image_type {
-	DC_IMAGE_TYPE_NONE = 0,
-	DC_IMAGE_TYPE_FLOPPY,
-	DC_IMAGE_TYPE_CD,
-	DC_IMAGE_TYPE_HD,
-	DC_IMAGE_TYPE_WHDLOAD,
-	DC_IMAGE_TYPE_UNKNOWN
+   DC_IMAGE_TYPE_NONE = 0,
+   DC_IMAGE_TYPE_FLOPPY,
+   DC_IMAGE_TYPE_CD,
+   DC_IMAGE_TYPE_HD,
+   DC_IMAGE_TYPE_WHDLOAD,
+   DC_IMAGE_TYPE_UNKNOWN
 };
 
 struct dc_storage {
-	char* command;
-	char* files[DC_MAX_SIZE];
-	char* labels[DC_MAX_SIZE];
-	enum dc_image_type types[DC_MAX_SIZE];
-	unsigned count;
-	int index;
-	bool eject_state;
-	bool replace;
+   char* command;
+   char* files[DC_MAX_SIZE];
+   char* labels[DC_MAX_SIZE];
+   enum dc_image_type types[DC_MAX_SIZE];
+   unsigned count;
+   int index;
+   bool eject_state;
+   bool replace;
 };
 
 typedef struct dc_storage dc_storage;

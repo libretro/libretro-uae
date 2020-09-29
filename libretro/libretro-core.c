@@ -34,9 +34,9 @@ int retrow = 0;
 int retroh = 0;
 int defaultw = EMULATOR_DEF_WIDTH;
 int defaulth = EMULATOR_DEF_HEIGHT;
-char retro_key_state[RETROK_LAST];
-char retro_key_state_old[RETROK_LAST];
-unsigned short int retro_bmp[RETRO_BMP_SIZE];
+char retro_key_state[RETROK_LAST] = {0};
+char retro_key_state_old[RETROK_LAST] = {0};
+unsigned short int retro_bmp[RETRO_BMP_SIZE] = {0};
 
 extern int frame_redraw_necessary;
 extern int bplcon0;
@@ -2984,7 +2984,6 @@ static void fallback_log(enum retro_log_level level, const char *fmt, ...)
    va_end(va);
 }
 
-/* Init */
 void retro_init(void)
 {
    struct retro_log_callback log;
@@ -3018,7 +3017,7 @@ void retro_init(void)
    }
    else
    {
-      /* make retro_save_directory the same in case RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY is not implemented by the frontend */
+      /* Make retro_save_directory the same in case RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY is not implemented by the frontend */
       strlcpy(retro_save_directory,
               retro_system_directory,
               sizeof(retro_save_directory));
@@ -4939,6 +4938,14 @@ static bool retro_update_av_info(void)
          retroh = PUAE_VIDEO_HEIGHT_NTSC;
          break;
    }
+
+   /* Width multiplier */
+   if (video_config & PUAE_VIDEO_SUPERHIRES)
+      width_multiplier = 4;
+   else if (video_config & PUAE_VIDEO_HIRES)
+      width_multiplier = 2;
+   else
+      width_multiplier = 1;
 
    /* Restore actual canvas height for aspect ratio toggling in real NTSC, otherwise toggling is broken */
    if (!change_timing && real_ntsc && video_config_aspect == PUAE_VIDEO_PAL)
