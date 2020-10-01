@@ -5483,7 +5483,7 @@ bool retro_unserialize(const void *data_, size_t size)
             /* For correct operation of the frontend,
              * the save state restore must be completed
              * by the time this function returns.
-             * Since P-UAE requires several (2) frames to get
+             * Since PUAE requires several (2) frames to get
              * itself in order during a restore event, we
              * have to keep emulating frames until the
              * restore is complete...

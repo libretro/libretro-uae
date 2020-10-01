@@ -114,7 +114,7 @@ static void hr (void)
 
 static void show_version (void)
 {
-	write_log (_T("P-UAE %d.%d.%d\n"), UAEMAJOR, UAEMINOR, UAESUBREV);
+	write_log (_T("PUAE %d.%d.%d\n"), UAEMAJOR, UAEMINOR, UAESUBREV);
 	write_log (_T("Git Origin: %s\n"), PACKAGE_COMMIT);
 	write_log (_T("Git Commit:%s\n"), GIT_VERSION);
 	write_log (_T("Build date: " __DATE__ " " __TIME__ "\n"));
