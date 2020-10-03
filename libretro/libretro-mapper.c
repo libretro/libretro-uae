@@ -1,5 +1,6 @@
 #include "libretro.h"
 #include "libretro-core.h"
+#include "libretro-mapper.h"
 #include "graph.h"
 #include "vkbd.h"
 #include "retro_files.h"
@@ -14,9 +15,6 @@
 #include "gui.h"
 #include "xwin.h"
 #include "disk.h"
-
-#include "libretro-mapper.h"
-#include "libretro-keymap.h"
 
 #ifdef __CELLOS_LV2__
 #include "sys/sys_time.h"

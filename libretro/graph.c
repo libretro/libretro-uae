@@ -7,6 +7,8 @@
 #include "libretro-core.h"
 #include "graph.h"
 
+#include "font.i"
+
 unsigned short blend(unsigned short fg, unsigned short bg, unsigned int alpha)
 {
    /* Split foreground into components */
@@ -51,77 +53,77 @@ uint32_t blend32(uint32_t fg, uint32_t bg, unsigned int alpha)
 
 void DrawFBoxBmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color, unsigned int alpha)
 {
-   int i,j,idx;
+   int i, j, idx;
 
-   for(i=x;i<x+dx;i++)
+   for (i=x; i<x+dx; i++)
    {
-      for(j=y;j<y+dy;j++)
+      for (j=y; j<y+dy; j++)
       {
-         idx=i+j*retrow;
+         idx = i+j*retrow;
          if (alpha < 255)
-            buffer[idx]=blend(color, buffer[idx], alpha);
+            buffer[idx] = blend(color, buffer[idx], alpha);
          else
-            buffer[idx]=color;
+            buffer[idx] = color;
       }
    }
 }
 
 void DrawFBoxBmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t color, unsigned int alpha)
 {
-   int i,j,idx;
+   int i, j, idx;
 
-   for(i=x;i<x+dx;i++)
+   for (i=x; i<x+dx; i++)
    {
-      for(j=y;j<y+dy;j++)
+      for (j=y; j<y+dy; j++)
       {
-         idx=i+j*retrow;
+         idx = i+j*retrow;
          if (alpha < 255)
-            buffer[idx]=blend32(color, buffer[idx], alpha);
+            buffer[idx] = blend32(color, buffer[idx], alpha);
          else
-            buffer[idx]=color;
+            buffer[idx] = color;
       }
    }
 }
 
 void DrawBoxBmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color)
 {
-   int i,j,idx;
+   int i, j, idx;
 
-   for(i=x;i<x+dx;i++)
+   for (i=x; i<x+dx; i++)
    {
-      idx=i+y*retrow;
-      buffer[idx]=color;
-      idx=i+(y+dy)*retrow;
-      buffer[idx]=color;
+      idx = i+y*retrow;
+      buffer[idx] = color;
+      idx = i+(y+dy)*retrow;
+      buffer[idx] = color;
    }
 
-   for(j=y;j<y+dy;j++)
+   for (j=y; j<y+dy; j++)
    {
-      idx=x+j*retrow;
-      buffer[idx]=color;	
-      idx=(x+dx)+j*retrow;
-      buffer[idx]=color;	
+      idx = x+j*retrow;
+      buffer[idx] = color;
+      idx = (x+dx)+j*retrow;
+      buffer[idx] = color;
    }
 }
 
 void DrawBoxBmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t color)
 {
-   int i,j,idx;
+   int i, j, idx;
 
-   for(i=x;i<x+dx;i++)
+   for (i=x; i<x+dx; i++)
    {
-      idx=i+y*retrow;
-      buffer[idx]=color;
-      idx=i+(y+dy)*retrow;
-      buffer[idx]=color;
+      idx = i+y*retrow;
+      buffer[idx] = color;
+      idx = i+(y+dy)*retrow;
+      buffer[idx] = color;
    }
 
-   for(j=y;j<y+dy;j++)
+   for (j=y; j<y+dy; j++)
    {
-      idx=x+j*retrow;
-      buffer[idx]=color;	
-      idx=(x+dx)+j*retrow;
-      buffer[idx]=color;	
+      idx = x+j*retrow;
+      buffer[idx] = color;
+      idx = (x+dx)+j*retrow;
+      buffer[idx] = color;
    }
 }
 
@@ -130,32 +132,32 @@ void DrawPointBmp(unsigned short *buffer, int x, int y, unsigned short color)
    int idx;
 
    idx = x + y * retrow;
-   buffer[idx]=color;
+   buffer[idx] = color;
 }
 
 void DrawHlineBmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color)
 {
-   int i,j,idx;
+   int i, j, idx;
 
    (void)j;
 
-   for(i=x;i<x+dx;i++)
+   for (i=x; i<x+dx; i++)
    {
-      idx=i+y*retrow;
-      buffer[idx]=color;
+      idx = i+y*retrow;
+      buffer[idx] = color;
    }
 }
 
 void DrawHlineBmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t color)
 {
-   int i,j,idx;
+   int i, j, idx;
 
    (void)j;
 
-   for(i=x;i<x+dx;i++)
+   for (i=x; i<x+dx; i++)
    {
-      idx=i+y*retrow;
-      buffer[idx]=color;
+      idx = i+y*retrow;
+      buffer[idx] = color;
    }
 }
 
@@ -169,14 +171,14 @@ void DrawHline(unsigned short *buffer, int x, int y, int dx, int dy, unsigned sh
 
 void DrawVlineBmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color)
 {
-   int i,j,idx;
+   int i, j, idx;
 
    (void)i;
 
-   for(j=y;j<y+dy;j++)
+   for (j=y; j<y+dy; j++)
    {
-      idx=x+j*retrow;
-      buffer[idx]=color;		
+      idx = x+j*retrow;
+      buffer[idx] = color;
    }	
 }
 
@@ -203,8 +205,8 @@ void DrawlineBmp(unsigned short *buffer, int x1, int y1, int x2, int y2, unsigne
       }
       else
       {
-         idx=x1+y1*retrow;
-         buffer[idx]=color;
+         idx = x1+y1*retrow;
+         buffer[idx] = color;
          return;
       }
    }
@@ -245,11 +247,11 @@ void DrawlineBmp(unsigned short *buffer, int x1, int y1, int x2, int y2, unsigne
    x = 0;
    y = 0;
 
-   idx=x1+y1*retrow;
+   idx = x1+y1*retrow;
 
    for (; x < dx; x++, idx +=pixx)
    {
-      buffer[idx]=color;
+      buffer[idx] = color;
       y += dy;
       if (y >= dx)
       {
@@ -258,8 +260,6 @@ void DrawlineBmp(unsigned short *buffer, int x1, int y1, int x2, int y2, unsigne
       }
    }
 }
-
-#include "font.c"
 
 void Draw_string(unsigned short *surf, signed short int x, signed short int y,
       const char *string, unsigned short maxstrlen,
@@ -286,7 +286,7 @@ void Draw_string(unsigned short *surf, signed short int x, signed short int y,
       bg = 0;
    }
 
-   for(strlen = 0; strlen < maxstrlen && string[strlen]; strlen++) {}
+   for (strlen = 0; strlen < maxstrlen && string[strlen]; strlen++) {}
 
    int surfw = strlen * 7 * xscale;
    int surfh = 8 * yscale;
@@ -301,28 +301,28 @@ void Draw_string(unsigned short *surf, signed short int x, signed short int y,
    /* Skip the 8th row */
    surfh -= 1;
 
-   for(ypixel = 0; ypixel < 8; ypixel++)
+   for (ypixel = 0; ypixel < 8; ypixel++)
    {
-      for(col = 0; col < strlen; col++)
+      for (col = 0; col < strlen; col++)
       {
          b = font_array[(string[col]^0x80)*8 + ypixel];
-         for(bit = 0; bit < 7; bit++, yptr++)
+         for (bit = 0; bit < 7; bit++, yptr++)
          {
             *yptr = (b & (1<<(7-bit))) ? fg : bg;
-            for(xrepeat = 1; xrepeat < xscale; xrepeat++, yptr++)
+            for (xrepeat = 1; xrepeat < xscale; xrepeat++, yptr++)
                yptr[1] = *yptr;
          }
       }
 
-      for(yrepeat = 1; yrepeat < yscale; yrepeat++)
-         for(xrepeat = 0; xrepeat < surfw; xrepeat++, yptr++)
+      for (yrepeat = 1; yrepeat < yscale; yrepeat++)
+         for (xrepeat = 0; xrepeat < surfw; xrepeat++, yptr++)
             *yptr = yptr[-surfw];
    }
 
    yptr = (unsigned short*)&linesurf[0];
 
-   for(yrepeat = y; yrepeat < y+surfh; yrepeat++)
-      for(xrepeat = x; xrepeat < x+surfw; xrepeat++, yptr++)
+   for (yrepeat = y; yrepeat < y+surfh; yrepeat++)
+      for (xrepeat = x; xrepeat < x+surfw; xrepeat++, yptr++)
          if (*yptr != 0) surf[xrepeat+yrepeat*retrow] = *yptr;
 
    free(linesurf);
@@ -353,7 +353,7 @@ void Draw_string32(uint32_t *surf, signed short int x, signed short int y,
       bg = 0;
    }
 
-   for(strlen = 0; strlen < maxstrlen && string[strlen]; strlen++) {}
+   for (strlen = 0; strlen < maxstrlen && string[strlen]; strlen++) {}
 
    int surfw = strlen * 7 * xscale;
    int surfh = 8 * yscale;
@@ -368,28 +368,28 @@ void Draw_string32(uint32_t *surf, signed short int x, signed short int y,
    /* Skip the 8th row */
    surfh -= 1;
 
-   for(ypixel = 0; ypixel < 8; ypixel++)
+   for (ypixel = 0; ypixel < 8; ypixel++)
    {
-      for(col = 0; col < strlen; col++)
+      for (col = 0; col < strlen; col++)
       {
          b = font_array[(string[col]^0x80)*8 + ypixel];
-         for(bit = 0; bit < 7; bit++, yptr++)
+         for (bit = 0; bit < 7; bit++, yptr++)
          {
             *yptr = (b & (1<<(7-bit))) ? fg : bg;
-            for(xrepeat = 1; xrepeat < xscale; xrepeat++, yptr++)
+            for (xrepeat = 1; xrepeat < xscale; xrepeat++, yptr++)
                yptr[1] = *yptr;
          }
       }
 
-      for(yrepeat = 1; yrepeat < yscale; yrepeat++)
-         for(xrepeat = 0; xrepeat < surfw; xrepeat++, yptr++)
+      for (yrepeat = 1; yrepeat < yscale; yrepeat++)
+         for (xrepeat = 0; xrepeat < surfw; xrepeat++, yptr++)
             *yptr = yptr[-surfw];
    }
 
    yptr = (uint32_t *)&linesurf[0];
 
-   for(yrepeat = y; yrepeat < y+surfh; yrepeat++)
-      for(xrepeat = x; xrepeat < x+surfw; xrepeat++, yptr++)
+   for (yrepeat = y; yrepeat < y+surfh; yrepeat++)
+      for (xrepeat = x; xrepeat < x+surfw; xrepeat++, yptr++)
          if (*yptr != 0) surf[xrepeat+yrepeat*retrow] = *yptr;
 
    free(linesurf);
@@ -399,11 +399,8 @@ void Draw_text(unsigned short *buffer, int x, int y,
       unsigned short fgcol, unsigned short bgcol, unsigned int alpha,
       int scalex, int scaley, int max, char *string, ...)
 {
-   int boucle=0;
    char text[256];
    va_list ap;
-
-   (void)boucle;
 
    if (string == NULL)
       return;
@@ -444,11 +441,8 @@ void Draw_text32(uint32_t *buffer, int x, int y,
       uint32_t fgcol, uint32_t bgcol, unsigned int alpha,
       int scalex, int scaley, int max, char *string,...)
 {
-   int boucle=0;
    char text[256];
    va_list ap;
-
-   (void)boucle;
 
    if (string == NULL)
       return;

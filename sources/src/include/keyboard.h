@@ -1,3 +1,5 @@
+#ifndef SRC_INCLUDE_KEYBOARD_H
+#define SRC_INCLUDE_KEYBOARD_H
 /*
  * UAE - The Un*x Amiga Emulator
  *
@@ -175,3 +177,5 @@ enum aks { AKS_ENTERGUI = 0x200, AKS_SCREENSHOT_FILE, AKS_SCREENSHOT_CLIPBOARD, 
 
 extern int target_checkcapslock (int, int *);
 extern void keyboard_settrans (void);
+
+#endif /* SRC_INCLUDE_KEYBOARD_H */
