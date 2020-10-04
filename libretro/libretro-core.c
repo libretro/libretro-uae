@@ -110,6 +110,7 @@ static bool automatic_sound_filter_type_update = true;
 static bool fake_ntsc = false;
 static bool real_ntsc = false;
 static bool forced_video = false;
+static bool locked_video_horizontal = false;
 bool request_update_av_info = false;
 bool retro_av_info_change_timing = false;
 bool retro_av_info_change_geometry = true;
@@ -3138,8 +3139,14 @@ void retro_deinit(void)
    if (!string_is_empty(retro_temp_directory) && path_is_directory(retro_temp_directory))
       remove_recurse(retro_temp_directory);
 
-   /* 'Reset' troublesome static variable */
+   /* 'Reset' troublesome static variables */
    pix_bytes_initialized = false;
+   cpu_cycle_exact_force = false;
+   automatic_sound_filter_type_update = true;
+   fake_ntsc = false;
+   real_ntsc = false;
+   forced_video = false;
+   locked_video_horizontal = false;
 }
 
 unsigned retro_api_version(void)
@@ -4539,7 +4546,9 @@ void update_video_center_horizontal(void)
    /* Horizontal centering thresholds */
    int min_diwstart_limit = 110;
    int max_diwstop_limit  = 300;
-   int min_diwwidth_limit = 256;
+
+   if (locked_video_horizontal)
+      return;
 
    min_diwstart_limit *= width_multiplier;
    max_diwstop_limit  *= width_multiplier;
@@ -4550,8 +4559,7 @@ void update_video_center_horizontal(void)
     && retro_max_diwstop  > 0
     && retro_min_diwstart < min_diwstart_limit
     && retro_max_diwstop  > max_diwstop_limit
-    && (retro_max_diwstop - retro_min_diwstart) <= (zoomed_width + (2 * width_multiplier))
-    && (retro_max_diwstop - retro_min_diwstart) > (min_diwwidth_limit * width_multiplier))
+    && (retro_max_diwstop - retro_min_diwstart) <= (zoomed_width + (2 * width_multiplier)))
       visible_left_border_new = (retro_max_diwstop - retro_min_diwstart - zoomed_width) / 2 + retro_min_diwstart;
    else if (retro_min_diwstart == 30000 && retro_max_diwstop == 0)
       visible_left_border_new = visible_left_border;
@@ -4787,6 +4795,13 @@ void update_audiovideo(void)
          {
             retro_max_diwstop = retro_max_diwstop_old;
             retro_diwstartstop_counter = 0;
+         }
+         /* Toki */
+         else if (retro_min_diwstart == (89 * width_multiplier) && retro_min_diwstart_old == (57 * width_multiplier)
+               && retro_max_diwstop  == (345 * width_multiplier) && retro_max_diwstop_old == (409 * width_multiplier))
+         {
+            retro_diwstartstop_counter = 0;
+            locked_video_horizontal = true;
          }
          else
             retro_diwstartstop_counter = 1;
