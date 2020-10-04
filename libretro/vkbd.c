@@ -1,6 +1,7 @@
 #include "libretro-core.h"
-#include "vkbd_def.h"
 #include "graph.h"
+#include "keyboard.h"
+#include "vkbd.h"
 
 bool retro_vkbd = false;
 bool retro_vkbd_page = false;
