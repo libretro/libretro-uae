@@ -1,5 +1,5 @@
 #include "libretro.h"
-#include "retrodep/retroglue.h"
+#include "retroglue.h"
 #include "libretro-mapper.h"
 #include "libretro-core.h"
 #include "vkbd.h"
@@ -3716,26 +3716,24 @@ static bool retro_create_config()
          char zip_basename[RETRO_PATH_MAX] = {0};
          snprintf(zip_basename, sizeof(zip_basename), "%s", path_basename(full_path));
          snprintf(zip_basename, sizeof(zip_basename), "%s", path_remove_extension(zip_basename));
-         snprintf(retro_temp_directory, sizeof(retro_temp_directory), "%s%s%s", retro_save_directory, DIR_SEP_STR, "ZIP");
-         char zip_path[RETRO_PATH_MAX] = {0};
-         snprintf(zip_path, sizeof(zip_path), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_basename);
+         snprintf(retro_temp_directory, sizeof(retro_temp_directory), "%s%s%s", retro_save_directory, DIR_SEP_STR, "TEMP");
 
-         path_mkdir(zip_path);
-         zip_uncompress(full_path, zip_path, NULL);
+         path_mkdir(retro_temp_directory);
+         zip_uncompress(full_path, retro_temp_directory, NULL);
 
          /* Default to directory mode */
          int zip_mode = 0;
-         snprintf(full_path, sizeof(full_path), "%s", zip_path);
+         snprintf(full_path, sizeof(full_path), "%s", retro_temp_directory);
 
          FILE *zip_m3u;
          char zip_m3u_list[20][RETRO_PATH_MAX] = {0};
          char zip_m3u_path[RETRO_PATH_MAX];
-         snprintf(zip_m3u_path, sizeof(zip_m3u_path), "%s%s%s.m3u", zip_path, DIR_SEP_STR, zip_basename);
+         snprintf(zip_m3u_path, sizeof(zip_m3u_path), "%s%s%s.m3u", retro_temp_directory, DIR_SEP_STR, zip_basename);
          int zip_m3u_num = 0;
 
          DIR *zip_dir;
          struct dirent *zip_dirp;
-         zip_dir = opendir(zip_path);
+         zip_dir = opendir(retro_temp_directory);
          while ((zip_dirp = readdir(zip_dir)) != NULL)
          {
             if (zip_dirp->d_name[0] == '.' || strendswith(zip_dirp->d_name, "m3u") || zip_mode > 1 || browsed_file[0] != '\0')
@@ -3753,7 +3751,7 @@ static bool retro_create_config()
                   || dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_HD)
             {
                zip_mode = 2;
-               snprintf(full_path, sizeof(full_path), "%s%s%s", zip_path, DIR_SEP_STR, zip_dirp->d_name);
+               snprintf(full_path, sizeof(full_path), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_dirp->d_name);
             }
          }
          closedir(zip_dir);
@@ -3763,7 +3761,7 @@ static bool retro_create_config()
             case 0: /* Extracted path */
             case 2: /* Single image */
                if (browsed_file[0] != '\0')
-                  snprintf(full_path, sizeof(full_path), "%s%s%s", zip_path, DIR_SEP_STR, browsed_file);
+                  snprintf(full_path, sizeof(full_path), "%s%s%s", retro_temp_directory, DIR_SEP_STR, browsed_file);
                break;
             case 1: /* Generated playlist */
                zip_m3u = fopen(zip_m3u_path, "w");

@@ -107,10 +107,9 @@ SOURCES_C += $(EMU)/main.c \
 	$(RETRODEP)/memory.c \
 	$(RETRODEP)/parser.c \
 	$(RETRODEP)/main.c \
-	$(RETRODEP)/machdep/support.c \
 	$(RETRODEP)/gui.c \
 	$(RETRODEP)/debug.c \
-	$(RETRODEP)/retroglue.c \
+	$(RETRODEP)/machdep/support.c \
 	$(RETRODEP)/sounddep/sound.c \
 	$(RETRODEP)/threaddep/thread.c
 
@@ -141,6 +140,7 @@ SOURCES_C += $(LIBRETRO)/libretro-core.c \
 	$(LIBRETRO)/libretro-mapper.c \
 	$(LIBRETRO)/vkbd.c \
 	$(LIBRETRO)/graph.c \
+	$(LIBRETRO)/retroglue.c \
 	$(LIBRETRO)/retro_files.c \
 	$(LIBRETRO)/retro_strings.c \
 	$(LIBRETRO)/retro_disk_control.c \
