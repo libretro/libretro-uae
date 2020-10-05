@@ -109,14 +109,13 @@ DWORD GetLastError(void)
 
 static void hr (void)
 {
-	write_log (_T("------------------------------------------------------------------------------------\n"));
+	write_log (_T("--------------------------------------------------------------------------------\n"));
 }
 
 static void show_version (void)
 {
-	write_log (_T("PUAE %d.%d.%d\n"), UAEMAJOR, UAEMINOR, UAESUBREV);
-	write_log (_T("Git Origin: %s\n"), PACKAGE_COMMIT);
-	write_log (_T("Git Commit:%s\n"), GIT_VERSION);
+	write_log (_T("PUAE %d.%d.%d (%s)\n"), UAEMAJOR, UAEMINOR, UAESUBREV, PACKAGE_COMMIT);
+	write_log (_T("Git commit:%s\n"), GIT_VERSION);
 	write_log (_T("Build date: " __DATE__ " " __TIME__ "\n"));
 }
 
@@ -124,14 +123,18 @@ static void show_version_full (void)
 {
 	hr ();
 	show_version ();
+#ifdef __LIBRETRO__
+	write_log (_T("\n"));
+#else
 	hr ();
 	write_log (_T("Copyright 1995-2002 Bernd Schmidt\n"));
 	write_log (_T("          1999-2013 Toni Wilen\n"));
 	write_log (_T("          2003-2007 Richard Drummond\n"));
 	write_log (_T("          2006-2013 Mustafa 'GnoStiC' Tufan\n"));
 	write_log (_T("\n"));
+#endif
 	write_log (_T("See the source for a full list of contributors.\n"));
-	write_log (_T("This is free software; see the file COPYING for copying conditions.  There is NO\n"));
+	write_log (_T("This is free software; see the file COPYING for copying conditions. There is NO\n"));
 	write_log (_T("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"));
 	hr ();
 }

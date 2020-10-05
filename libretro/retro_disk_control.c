@@ -282,26 +282,24 @@ bool dc_replace_file(dc_storage* dc, int index, const char* filename)
             char zip_basename[RETRO_PATH_MAX] = {0};
             snprintf(zip_basename, sizeof(zip_basename), "%s", path_basename(full_path_replace));
             snprintf(zip_basename, sizeof(zip_basename), "%s", path_remove_extension(zip_basename));
-            snprintf(retro_temp_directory, sizeof(retro_temp_directory), "%s%s%s", retro_save_directory, DIR_SEP_STR, "ZIP");
-            char zip_path[RETRO_PATH_MAX] = {0};
-            snprintf(zip_path, sizeof(zip_path), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_basename);
+            snprintf(retro_temp_directory, sizeof(retro_temp_directory), "%s%s%s", retro_save_directory, DIR_SEP_STR, "TEMP");
 
-            path_mkdir(zip_path);
-            zip_uncompress(full_path_replace, zip_path, NULL);
+            path_mkdir(retro_temp_directory);
+            zip_uncompress(full_path_replace, retro_temp_directory, NULL);
 
             /* Default to directory mode */
             int zip_mode = 0;
-            snprintf(full_path_replace, sizeof(full_path_replace), "%s", zip_path);
+            snprintf(full_path_replace, sizeof(full_path_replace), "%s", retro_temp_directory);
 
             FILE *zip_m3u;
             char zip_m3u_list[DC_MAX_SIZE][RETRO_PATH_MAX] = {0};
             char zip_m3u_path[RETRO_PATH_MAX] = {0};
-            snprintf(zip_m3u_path, sizeof(zip_m3u_path), "%s%s%s.m3u", zip_path, DIR_SEP_STR, zip_basename);
+            snprintf(zip_m3u_path, sizeof(zip_m3u_path), "%s%s%s.m3u", retro_temp_directory, DIR_SEP_STR, zip_basename);
             int zip_m3u_num = 0;
 
             DIR *zip_dir;
             struct dirent *zip_dirp;
-            zip_dir = opendir(zip_path);
+            zip_dir = opendir(retro_temp_directory);
             while ((zip_dirp = readdir(zip_dir)) != NULL)
             {
                 if (zip_dirp->d_name[0] == '.' || strendswith(zip_dirp->d_name, "m3u") || zip_mode > 1)
@@ -319,7 +317,7 @@ bool dc_replace_file(dc_storage* dc, int index, const char* filename)
                       || dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_HD)
                 {
                     zip_mode = 2;
-                    snprintf(full_path_replace, sizeof(full_path_replace), "%s%s%s", zip_path, DIR_SEP_STR, zip_dirp->d_name);
+                    snprintf(full_path_replace, sizeof(full_path_replace), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_dirp->d_name);
                 }
             }
             closedir(zip_dir);
@@ -337,7 +335,7 @@ bool dc_replace_file(dc_storage* dc, int index, const char* filename)
                 case 1: /* Generated playlist */
                     if (zip_m3u_num == 1)
                     {
-                        snprintf(full_path_replace, sizeof(full_path_replace), "%s%s%s", zip_path, DIR_SEP_STR, zip_m3u_list[0]);
+                        snprintf(full_path_replace, sizeof(full_path_replace), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_m3u_list[0]);
                     }
                     else
                     {
@@ -530,8 +528,7 @@ static bool dc_add_m3u_disk(
 		{
 			/* Note that label may intentionally be left blank */
 			if (usr_disk_label && (*usr_disk_label != '\0'))
-				strncpy(
-						disk_label, usr_disk_label, sizeof(disk_label) - 1);
+				strncpy(disk_label, usr_disk_label, sizeof(disk_label) - 1);
 		}
 		else
 		{
@@ -539,10 +536,7 @@ static bool dc_add_m3u_disk(
 			const char *file_name = path_get_basename(disk_file_path);
 			
 			if (!(!file_name || (*file_name == '\0')))
-			{
-				remove_file_extension(
-						file_name, disk_label, sizeof(disk_label));
-			}
+				remove_file_extension(file_name, disk_label, sizeof(disk_label));
 		}
 
 		/* ZIP */
@@ -551,14 +545,12 @@ static bool dc_add_m3u_disk(
 			char zip_basename[RETRO_PATH_MAX];
 			snprintf(zip_basename, sizeof(zip_basename), "%s", path_basename(disk_file_path));
 			snprintf(zip_basename, sizeof(zip_basename), "%s", path_remove_extension(zip_basename));
-			snprintf(retro_temp_directory, sizeof(retro_temp_directory), "%s%s%s", retro_save_directory, DIR_SEP_STR, "ZIP");
-			char zip_path[RETRO_PATH_MAX];
-			snprintf(zip_path, sizeof(zip_path), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_basename);
+			snprintf(retro_temp_directory, sizeof(retro_temp_directory), "%s%s%s", retro_save_directory, DIR_SEP_STR, "TEMP");
 			char lastfile[RETRO_PATH_MAX];
 
-			path_mkdir(zip_path);
-			zip_uncompress(disk_file_path, zip_path, lastfile);
-			snprintf(disk_file_path, RETRO_PATH_MAX, "%s%s%s", zip_path, DIR_SEP_STR, lastfile);
+			path_mkdir(retro_temp_directory);
+			zip_uncompress(disk_file_path, retro_temp_directory, lastfile);
+			snprintf(disk_file_path, RETRO_PATH_MAX, "%s%s%s", retro_temp_directory, DIR_SEP_STR, lastfile);
 		}
 		
 		/* Add the file to the list */
