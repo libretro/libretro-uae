@@ -58,6 +58,7 @@ bool opt_region_auto = true;
 bool opt_video_resolution_auto = false;
 bool opt_video_vresolution_auto = false;
 bool opt_floppy_sound_empty_mute = false;
+bool opt_floppy_multidrive = false;
 unsigned int opt_use_whdload = 1;
 unsigned int opt_use_whdload_prefs = 0;
 unsigned int opt_use_boot_hd = 0;
@@ -322,7 +323,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_cpu_compatibility",
          "System > CPU Compatibility",
-         "",
+         "Some games require 'Cycle-exact'. 'Cycle-exact' can be forced with '(CE)' file path tag.",
          {
             { "normal", "Normal" },
             { "compatible", "More compatible" },
@@ -390,6 +391,17 @@ void retro_set_environment(retro_environment_t cb)
             { NULL, NULL },
          },
          "100"
+      },
+      {
+         "puae_floppy_multidrive",
+         "Media > Floppy MultiDrive",
+         "Inserts each disk in different drives. Can be forced with '(MD)' file path tag. Maximum is 4 disks due to external drive limit! Not all games support external drives!\nCore restart required.",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "disabled"
       },
       {
          "puae_floppy_write_protection",
@@ -491,7 +503,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_video_allow_hz_change",
          "Video > Allow PAL/NTSC Hz Change",
-         "Let Amiga decide the exact output Hz.",
+         "Lets Amiga decide the exact output Hz.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -1924,6 +1936,14 @@ static void update_variables(void)
 
       if (libretro_runloop_active)
          changed_prefs.floppy_speed = atoi(var.value);
+   }
+
+   var.key = "puae_floppy_multidrive";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (!strcmp(var.value, "disabled")) opt_floppy_multidrive = false;
+      else                                opt_floppy_multidrive = true;
    }
 
    var.key = "puae_floppy_write_protection";
@@ -4210,7 +4230,7 @@ static bool retro_create_config()
                fprintf(configfile, "floppy0=%s\n", dc->files[0]);
 
                /* Append rest of the disks to the config if M3U is a MultiDrive-M3U */
-               if (strstr(full_path, "(MD)") != NULL)
+               if (strstr(full_path, "(MD)") != NULL || opt_floppy_multidrive)
                {
                   for (unsigned i = 1; i < dc->count; i++)
                   {
@@ -5306,7 +5326,7 @@ void retro_run(void)
    {
       struct retro_message msg;
       msg.msg = retro_message_msg;
-      msg.frames = 1000;
+      msg.frames = 500;
       environ_cb(RETRO_ENVIRONMENT_SET_MESSAGE, &msg);
       retro_message = false;
    }
