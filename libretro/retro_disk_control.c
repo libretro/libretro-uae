@@ -50,6 +50,7 @@
 extern char retro_save_directory[RETRO_PATH_MAX];
 extern char retro_temp_directory[RETRO_PATH_MAX];
 extern bool retro_disk_set_image_index(unsigned index);
+extern bool opt_floppy_multidrive;
 extern char full_path[RETRO_PATH_MAX];
 extern void display_current_image(const char *image, bool inserted);
 
@@ -368,7 +369,7 @@ bool dc_replace_file(dc_storage* dc, int index, const char* filename)
             dc->replace = true;
 
             /* Append rest of the disks to the config if M3U is a MultiDrive-M3U */
-            if (strstr(full_path_replace, "(MD)") != NULL)
+            if (strstr(full_path_replace, "(MD)") != NULL || opt_floppy_multidrive)
             {
                 for (unsigned i = 1; i < dc->count; i++)
                 {
