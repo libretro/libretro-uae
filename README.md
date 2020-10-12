@@ -34,7 +34,7 @@ WinUAE), and many more.
 |---|---|
 |F11|Toggle virtual keyboard|
 |F12|Toggle statusbar|
-|RControl|Toggle between joystick/mouse|
+|RControl|Switch between joystick/mouse|
 
 ### Virtual keyboard controls
 |Button|Action|
@@ -46,6 +46,13 @@ WinUAE), and many more.
 |Start|Press Return|
 
 Long press for sticky keys. Stickying the third key will replace the second.
+
+### Joyport control
+Some games use mouse instead of joystick. D-Pad can be switched between joystick and mouse control in several ways:
+- Use the core option: `Quick Menu -> Options -> RetroPad Joystick/Mouse`.
+- Bring up the virtual keyboard with `Select` button, and press the key labeled `J/M`.
+- Press the default keyboard shortcut `Right Control`.
+- Assign `Switch Joystick/Mouse` to any RetroPad button under `Quick Menu -> Options`.
 
 ## Configuration
 To generate the temporary uae configuration file the core will use the core options configured in RetroArch.
@@ -143,8 +150,8 @@ When using high resolution "**Single Line**" mode, rendering is presented as is.
 - Automatic "Resolution" defaults to "**Hires**" and selects "**SuperHires**" when needed (practically only in Workbench and Super Skidmarks).
 - Automatic "Line Mode" defaults to "**Single Line**" and selects "**Double Line**" on interlaced screens.
 
-## Games that require specific hardware
-You can force a specific model if a game needs one (AGA games for instance) either by the "Model" core option or by filename tags.
+## Model overriding
+You can force a specific model if a game needs one (AGA games for instance) either by the "Model" core option or by file path tags.
 
 The "Model" core option at "**Automatic**" will default to A500 when booting floppy disks, A600 when booting hard drives, and CD32 when booting CD images.
 
@@ -178,7 +185,7 @@ Supported formats are:
 - **ISO**, **CUE**, **CCD**, **NRG**, **MDS** for compact disc images
 - **HDF**, **HDZ**, **LHA** for hard drive images
 - **M3U** for multiple floppy disk image playlist
-- **ZIP** for various content (FD, HDD, CD, WHDLoad)
+- **ZIP** for various content (FD, HD, CD, WHDLoad)
 
 When passing these files as a parameter the core will generate a temporary uae configuration file in RetroArch `saves` directory and use it to launch the content.
 
@@ -197,11 +204,13 @@ Compatible CAPSIMG libraries for Android can be found at [https://github.com/rsn
 Please be aware that there are 32-bits and 64-bits versions of the library. Choose the one corresponding to your RetroArch executable.
 
 ### ZIP support
-ZIPs will be extracted to a temporary directory in RetroArch `saves`, bypassing the default frontend extraction. The temporary directory will be removed on exit.
+ZIPs will be extracted to a temporary directory in `saves`, bypassing the default frontend extraction. The temporary directory will be removed on exit.
 
-- If the ZIP contains floppy disks, a M3U playlist will be generated and launched.
-- Hard drive and CD images will be treated one by one and only the first file found is selected for launch.
-- If no disk/drive images are found, the ZIP will be treated as a directory.
+This allows:
+- Automatic M3U playlist generation of all floppy disks
+- The use of zipped images in M3Us
+- Hard drive and CD images will be treated one by one and only the first file found is selected for launch
+- If no disk/drive images are found, the ZIP will be treated as a directory
 
 ### M3U support
 When you have a multi disk game, you can use a M3U playlist file to be able to change disks via RetroArch Disc Control interface.
@@ -286,7 +295,7 @@ Pre-installed WHDLoad LHA archives can be launched directly without any kind of 
 - **(Red)** Hold fire button for launch selector
   - For alternate `.info` launching
 - **(Red+Blue)** Hold fire + 2nd fire for `ReadMe` + `MkCustom`
-  - For creating default CUSTOM parameters
+  - For creating default `CUSTOM` parameters
 
 #### + `WHDLoad Splash Screen` core option overrides
 - **(Blue)** Hold 2nd fire for WHDLoad Config
@@ -359,7 +368,7 @@ If the file `puae_libretro_global.uae` exists in RetroArch `saves` it will be ap
 
 ***Note that the use of configuration files is no longer encouraged or necessary. The core has been modified to always use the core options as a base, so that all custom configurations will be appended to the created configuration, effectively overriding the core options. The problem with this is that changing any core option while the core is running will reset all duplicate configurations. Therefore only add configurations which will require a restart or do not exist in the core options, if you must use a custom uae. If there is an option missing that is a must have, please make an issue about it.***
 
-Example 1: You want to mount four non-RDB HDF files. You have one bootable 1000 MB file called `System.hdf` created with surfaces=1, and three non-bootable 2000 MB files called `WHDGamesA.hdf`, `WHDGamesB.hdf`, `WHDGamesC.hdf` created with surfaces=2. Your hdf files are located in the folder with absolute path `/emuroms/amiga/hdf/`. For that scenario, you should create a .uae text file with the following content:
+Example 1: You want to mount four non-RDB HDF files. You have one bootable 1000 MB file called `System.hdf` created with `surfaces=1`, and three non-bootable 2000 MB files called `WHDGamesA.hdf`, `WHDGamesB.hdf`, `WHDGamesC.hdf` created with `surfaces=2`. Your HDF files are located in the folder with absolute path `/emuroms/amiga/hdf/`. For that scenario, you should create a .uae text file with the following content:
 ```
 hardfile=read-write,32,1,2,512,/emuroms/amiga/hdf/System.hdf
 hardfile=read-write,32,2,2,512,/emuroms/amiga/hdf/WHDGamesA.hdf
@@ -378,11 +387,7 @@ Windows tip:
 Linux tip:
 - Leave the ending slash to the path to make sure UAE sees it as a directory.
 
-You can then load your .uae file via "Load Content".
-
-Note that for most HDF files, the model has to be set to A1200 in Quickmenu->Options. This requires a restart to take effect.
-
-If you are using RDB HDF files, please use 0,0,0,0 instead of geometry numbers like 32,1,2,512. The geometry will then be read from the file. This only works for RDB HDF files.
+If you are using RDB HDF files, please use `0,0,0,0` instead of geometry numbers like `32,1,2,512`. The geometry will then be read from the file. This only works for RDB HDF files.
 
 ## Latest features
 - Full framerate double line interlace backport (sonninnos)
