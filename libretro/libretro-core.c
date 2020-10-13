@@ -248,7 +248,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_model",
          "Model",
-         "'Automatic' defaults to A500 with floppy disks, to A600 with hard drives and to CD32 with CD images. 'Automatic' can be overridden with filename and directory tags.\nCore restart required.",
+         "'Automatic' defaults to 'A500' with floppy disks, 'A600' with hard drives and 'CD32' with CD images. 'Automatic' can be overridden with file path tags.\nCore restart required.",
          {
             { "auto", "Automatic" },
             { "A500OG", "A500 (512KB Chip)" },
@@ -311,7 +311,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_model_cd",
          "Model > Automatic CD",
-         "Default model when optical discs are launched with 'Automatic' model.\nCore restart required.",
+         "Default model when compact discs are launched with 'Automatic' model.\nCore restart required.",
          {
             { "CDTV", "CDTV (1MB Chip)" },
             { "CD32", "CD32 (2MB Chip)" },
@@ -438,8 +438,8 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_shared_nvram",
-         "Media > Shared CD32/CDTV NVRAM",
-         "'OFF' saves separate files per content, 'ON' shares the same file. Starting without content uses the shared file. CD32 and CDTV use separate shared files.\nCore restart required.",
+         "Media > CD32/CDTV Shared NVRAM",
+         "'OFF' saves separate files per content. Starting without content uses the shared file. CD32 and CDTV use separate shared files.\nCore restart required.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -450,7 +450,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_use_boot_hd",
          "Media > Global Boot HD",
-         "Attach a bootable hard drive. Enabling forces a model with HD interface. Changing HDF size will not replace or edit the previous HDF.\nCore restart required.",
+         "Attach a bootable hard drive. Enabling forces a model with HD interface. Changing HDF size will not replace or edit the existing HDF.\nCore restart required.",
          {
             { "disabled", NULL },
             { "files", "Files" },
@@ -514,7 +514,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_video_standard",
          "Video > Standard",
-         "Output Hz & height:\n- 'PAL': 50Hz - 288px / 576px\n- 'NTSC': 60Hz - 240px / 480px\n- 'Automatic' switches region per filename and directory tags.",
+         "Output Hz & height:\n- 'PAL': 50Hz - 288px / 576px\n- 'NTSC': 60Hz - 240px / 480px\n- 'Automatic' switches region per file path tags.",
          {
             { "PAL auto", "Automatic PAL" },
             { "NTSC auto", "Automatic NTSC" },
@@ -564,7 +564,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_zoom_mode",
          "Video > Zoom Mode",
-         "Crops the borders for better screen estate usage. Requirements in RetroArch settings:\n- Aspect Ratio: Core provided,\n- Integer Scale: Off.",
+         "Crops the borders to fit various host screens. Requirements in RetroArch settings:\n- Aspect Ratio: Core provided,\n- Integer Scale: Off.",
          {
             { "disabled", NULL },
             { "minimum", "Minimum" },
@@ -582,7 +582,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_zoom_mode_crop",
          "Video > Zoom Mode Crop",
-         "Cropping type presets for various host screens.",
+         "Use 'Horizontal + Vertical' & 'Automatic' to remove borders completely.",
          {
             { "both", "Horizontal + Vertical" },
             { "horizontal", "Horizontal" },
@@ -737,7 +737,7 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_statusbar",
-         "Video > Statusbar Position & Mode",
+         "Video > Statusbar Mode",
          "- 'Full': Joyports + Current image + LEDs\n- 'Basic': Current image + LEDs\n- 'Minimal': Track number + FPS hidden",
          {
             { "bottom", "Bottom Full" },
@@ -819,7 +819,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_sound_stereo_separation",
          "Audio > Stereo Separation",
-         "Paula sound chip channel panning.",
+         "Paula sound chip channel panning. Does not affect CD audio.",
          {
             { "0\%", NULL },
             { "10\%", NULL },
@@ -1119,8 +1119,8 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_mapper_mouse_toggle",
-         "Hotkey > Toggle Joystick/Mouse",
-         "Press the mapped key to toggle between joystick and mouse control.",
+         "Hotkey > Switch Joystick/Mouse",
+         "Press the mapped key to switch between joystick and mouse control.",
          {{ NULL, NULL }},
          "RETROK_RCTRL"
       },
