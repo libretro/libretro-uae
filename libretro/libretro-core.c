@@ -3893,14 +3893,10 @@ static bool retro_create_config()
                /* WHDLoad HDF mode */
                if (opt_use_whdload == 2)
                {
-                  /* Init WHDLoad */
                   char whdload_hdf[RETRO_PATH_MAX];
-                  path_join((char*)&whdload_hdf, retro_system_directory, "WHDLoad.hdf");
+                  path_join((char*)&whdload_hdf, retro_save_directory, "WHDLoad.hdf");
 
                   /* Verify WHDLoad */
-                  /* Windows needs double backslashes when paths are in quotes, hence the string_replace_substring() */
-                  if (!file_exists(whdload_hdf))
-                     path_join((char*)&whdload_hdf, retro_save_directory, "WHDLoad.hdf");
                   if (!file_exists(whdload_hdf))
                   {
                      log_cb(RETRO_LOG_INFO, "WHDLoad image file '%s' not found, attempting to create one\n", (const char*)&whdload_hdf);
@@ -3950,6 +3946,7 @@ static bool retro_create_config()
                   char whdload_c_path[RETRO_PATH_MAX];
                   path_join((char*)&whdload_c_path, retro_save_directory, "WHDLoad/C");
 
+                  /* Verify WHDLoad */
                   if (!path_is_directory(whdload_path) || (path_is_directory(whdload_path) && !path_is_directory(whdload_c_path)))
                   {
                      log_cb(RETRO_LOG_INFO, "WHDLoad image directory '%s' not found, attempting to create one\n", (const char*)&whdload_path);
@@ -4021,9 +4018,7 @@ static bool retro_create_config()
                {
                   /* Attach WHDSaves.hdf if available */
                   char whdsaves_hdf[RETRO_PATH_MAX];
-                  path_join((char*)&whdsaves_hdf, retro_system_directory, "WHDSaves.hdf");
-                  if (!file_exists(whdsaves_hdf))
-                     path_join((char*)&whdsaves_hdf, retro_save_directory, "WHDSaves.hdf");
+                  path_join((char*)&whdsaves_hdf, retro_save_directory, "WHDSaves.hdf");
                   if (!file_exists(whdsaves_hdf))
                   {
                      log_cb(RETRO_LOG_INFO, "WHDSaves image file '%s' not found, attempting to create one\n", (const char*)&whdsaves_hdf);
