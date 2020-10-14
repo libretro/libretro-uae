@@ -167,7 +167,7 @@ The whole path (filename and directory) will be searched for the following tags 
 |**x**| |**(A1200)** or **AGA** or **CD32** or **AmigaCD**|Amiga 1200, 2MB Chip RAM + 8MB Fast RAM|
 |**x**| |**(A4030)** or **(030)**|Amiga 4000/030, 2MB Chip RAM + 8MB Fast RAM|
 |**x**| |**(A4040)** or **(040)**|Amiga 4000/040, 2MB Chip RAM + 8MB Fast RAM|
-|**x**| |**(MD)**|*Insert each disk in different drives (**Maximum 4 disks**)*|
+|**x**| |**(MD)**|Insert each disk in different drives (**Maximum 4 disks**)|
 | |**x**|**CDTV**|Amiga CDTV, 1MB Chip RAM|
 | |**x**|**(CD32)** or **(CD32NF)**|Amiga CD32, 2MB Chip RAM|
 | |**x**|**(CD32FR)** or **FastRAM**|Amiga CD32, 2MB Chip RAM + 8MB Fast RAM|

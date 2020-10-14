@@ -175,10 +175,10 @@ static int retro_keymap_id(const char *val)
    return 0;
 }
 
-extern void retro_poll_event(void);
 unsigned int uae_devices[4];
+extern void retro_poll_event();
 extern int cd32_pad_enabled[NORMAL_JPORTS];
-int mapper_keys[31] = {0};
+extern int mapper_keys[RETRO_MAPPER_LAST];
 extern void display_current_image(const char *image, bool inserted);
 
 retro_log_printf_t log_cb = NULL;
@@ -2526,56 +2526,56 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[16] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_LR] = retro_keymap_id(var.value);
    }
 
    var.key = "puae_mapper_ll";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[17] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_LL] = retro_keymap_id(var.value);
    }
 
    var.key = "puae_mapper_ld";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[18] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_LD] = retro_keymap_id(var.value);
    }
 
    var.key = "puae_mapper_lu";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[19] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_LU] = retro_keymap_id(var.value);
    }
 
    var.key = "puae_mapper_rr";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[20] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_RR] = retro_keymap_id(var.value);
    }
 
    var.key = "puae_mapper_rl";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[21] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_RL] = retro_keymap_id(var.value);
    }
 
    var.key = "puae_mapper_rd";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[22] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_RD] = retro_keymap_id(var.value);
    }
 
    var.key = "puae_mapper_ru";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[23] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_RU] = retro_keymap_id(var.value);
    }
 
    /* Mapper hotkeys */
@@ -2583,42 +2583,42 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[24] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_MAPPER_VKBD] = retro_keymap_id(var.value);
    }
 
    var.key = "puae_mapper_statusbar";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[25] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_MAPPER_STATUSBAR] = retro_keymap_id(var.value);
    }
 
    var.key = "puae_mapper_mouse_toggle";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[26] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_MAPPER_JOYMOUSE] = retro_keymap_id(var.value);
    }
 
    var.key = "puae_mapper_reset";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[27] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_MAPPER_RESET] = retro_keymap_id(var.value);
    }
 
    var.key = "puae_mapper_aspect_ratio_toggle";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[28] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_MAPPER_ASPECT_RATIO] = retro_keymap_id(var.value);
    }
 
    var.key = "puae_mapper_zoom_mode_toggle";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[29] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_MAPPER_ZOOM_MODE] = retro_keymap_id(var.value);
    }
 
    /*** Options display ***/
