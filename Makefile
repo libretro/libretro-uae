@@ -32,7 +32,6 @@ else ifeq ($(platform), rpi)
 
 # Classic Platforms ####################
 # Platform affix = classic_<ISA>_<µARCH>
-# Help at https://modmyclassic.com/comp
 
 # (armv7 a7, hard point, neon based) ### 
 # NESC, SNESC, C64 mini 
@@ -61,7 +60,7 @@ else ifeq ($(platform), classic_armv7_a7)
 	    LDFLAGS += -static-libgcc -static-libstdc++
 	  endif
 	endif
-#######################################
+
 # (armv8 a35, hard point, neon based) ###
 # PlayStation Classic
 else ifeq ($(platform), classic_armv8_a35)
@@ -73,6 +72,7 @@ else ifeq ($(platform), classic_armv8_a35)
            -fmerge-all-constants -fno-math-errno -march=armv8-a \
            -marm -mtune=cortex-a35 -mfpu=neon-fp-armv8 -mfloat-abi=hard
    LDFLAGS += -static-libgcc -static-libstdc++
+#######################################
 
 # OSX
 else ifeq ($(platform), osx)

@@ -1,29 +1,60 @@
 #ifndef LIBRETRO_MAPPER_H
 #define LIBRETRO_MAPPER_H
 
-#define RETRO_DEVICE_UAE_JOYSTICK   RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_ANALOG, 0)
-#define RETRO_DEVICE_UAE_CD32PAD    RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_ANALOG, 1)
-#define RETRO_DEVICE_UAE_ANALOG     RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_ANALOG, 2)
-#define RETRO_DEVICE_UAE_KEYBOARD   RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_KEYBOARD, 0)
+#define RETRO_DEVICE_UAE_JOYSTICK       RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_ANALOG, 0)
+#define RETRO_DEVICE_UAE_CD32PAD        RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_ANALOG, 1)
+#define RETRO_DEVICE_UAE_ANALOG         RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_ANALOG, 2)
+#define RETRO_DEVICE_UAE_KEYBOARD       RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_KEYBOARD, 0)
 
-typedef struct {
+#define RETRO_DEVICE_ID_JOYPAD_LR       16
+#define RETRO_DEVICE_ID_JOYPAD_LL       17
+#define RETRO_DEVICE_ID_JOYPAD_LD       18
+#define RETRO_DEVICE_ID_JOYPAD_LU       19
+#define RETRO_DEVICE_ID_JOYPAD_RR       20
+#define RETRO_DEVICE_ID_JOYPAD_RL       21
+#define RETRO_DEVICE_ID_JOYPAD_RD       22
+#define RETRO_DEVICE_ID_JOYPAD_RU       23
+
+#define RETRO_MAPPER_VKBD               24
+#define RETRO_MAPPER_STATUSBAR          25
+#define RETRO_MAPPER_JOYMOUSE           26
+#define RETRO_MAPPER_RESET              27
+#define RETRO_MAPPER_ASPECT_RATIO       28
+#define RETRO_MAPPER_ZOOM_MODE          29
+
+#define RETRO_MAPPER_LAST               30
+
+#define TOGGLE_VKBD                     -11
+#define TOGGLE_STATUSBAR                -12
+#define SWITCH_JOYMOUSE                 -13
+#define MOUSE_LEFT_BUTTON               -2
+#define MOUSE_RIGHT_BUTTON              -3
+#define MOUSE_MIDDLE_BUTTON             -4
+#define MOUSE_SLOWER                    -5
+#define MOUSE_FASTER                    -6
+#define JOYSTICK_FIRE                   -7
+#define JOYSTICK_2ND_FIRE               -8
+
+typedef struct
+{
    int id;
    char value[20];
    char label[25];
 } retro_keymap;
 
-static retro_keymap retro_keys[RETROK_LAST] = {
+static retro_keymap retro_keys[RETROK_LAST] =
+{
    {0,                  "---",                 "---"},
-   {-11,                "TOGGLE_VKBD",         "Toggle Virtual Keyboard"},
-   {-12,                "TOGGLE_STATUSBAR",    "Toggle Statusbar"},
-   {-13,                "SWITCH_JOYMOUSE",     "Switch Joystick/Mouse"},
-   {-2,                 "MOUSE_LEFT_BUTTON",   "Mouse Left Button"},
-   {-3,                 "MOUSE_RIGHT_BUTTON",  "Mouse Right Button"},
-   {-4,                 "MOUSE_MIDDLE_BUTTON", "Mouse Middle Button"},
-   {-5,                 "MOUSE_SLOWER",        "Mouse Slower"},
-   {-6,                 "MOUSE_FASTER",        "Mouse Faster"},
-   {-7,                 "JOYSTICK_FIRE",       "Joystick Fire Button"},
-   {-8,                 "JOYSTICK_2ND_FIRE",   "Joystick 2nd Fire Button"},
+   {TOGGLE_VKBD,        "TOGGLE_VKBD",         "Toggle Virtual Keyboard"},
+   {TOGGLE_STATUSBAR,   "TOGGLE_STATUSBAR",    "Toggle Statusbar"},
+   {SWITCH_JOYMOUSE,    "SWITCH_JOYMOUSE",     "Switch Joystick/Mouse"},
+   {MOUSE_SLOWER,       "MOUSE_SLOWER",        "Mouse Slower"},
+   {MOUSE_FASTER,       "MOUSE_FASTER",        "Mouse Faster"},
+   {MOUSE_LEFT_BUTTON,  "MOUSE_LEFT_BUTTON",   "Mouse Left Button"},
+   {MOUSE_RIGHT_BUTTON, "MOUSE_RIGHT_BUTTON",  "Mouse Right Button"},
+   {MOUSE_MIDDLE_BUTTON,"MOUSE_MIDDLE_BUTTON", "Mouse Middle Button"},
+   {JOYSTICK_FIRE,      "JOYSTICK_FIRE",       "Joystick Fire Button"},
+   {JOYSTICK_2ND_FIRE,  "JOYSTICK_2ND_FIRE",   "Joystick 2nd Fire Button"},
    {RETROK_BACKSPACE,   "RETROK_BACKSPACE",    "Backspace"},
    {RETROK_TAB,         "RETROK_TAB",          "Tab"},
 /* {RETROK_CLEAR,       "RETROK_CLEAR",        "Clear"}, */
@@ -133,9 +164,9 @@ static retro_keymap retro_keys[RETROK_LAST] = {
    {RETROK_F10,         "RETROK_F10",          "F10"},
    {RETROK_F11,         "RETROK_F11",          "F11"},
    {RETROK_F12,         "RETROK_F12",          "F12"},
-/* {RETROK_F13,         "RETROK_F13",          "F13"}, */
-/* {RETROK_F14,         "RETROK_F14",          "F14"}, */
-/* {RETROK_F15,         "RETROK_F15",          "F15"}, */
+   {RETROK_F13,         "RETROK_F13",          "F13"},
+   {RETROK_F14,         "RETROK_F14",          "F14"},
+   {RETROK_F15,         "RETROK_F15",          "F15"},
 /* {RETROK_NUMLOCK,     "RETROK_NUMLOCK",      "Num Lock"}, */
 /* {RETROK_CAPSLOCK,    "RETROK_CAPSLOCK",     "Caps Lock"}, */
 /* {RETROK_SCROLLOCK,   "RETROK_SCROLLOCK",    "Scroll Lock"}, */
@@ -145,10 +176,10 @@ static retro_keymap retro_keys[RETROK_LAST] = {
    {RETROK_LCTRL,       "RETROK_LCTRL",        "Left Control"},
    {RETROK_RALT,        "RETROK_RALT",         "Right Alt"},
    {RETROK_LALT,        "RETROK_LALT",         "Left Alt"},
-   {RETROK_RMETA,       "RETROK_RMETA",        "Right Meta"},
-   {RETROK_LMETA,       "RETROK_LMETA",        "Left Meta"},
-/* {RETROK_LSUPER,      "RETROK_LSUPER",       "Right Super"}, */
-/* {RETROK_RSUPER,      "RETROK_RSUPER",       "Left Super"},*/
+/* {RETROK_RMETA,       "RETROK_RMETA",        "Right Meta"}, */
+/* {RETROK_LMETA,       "RETROK_LMETA",        "Left Meta"}, */
+   {RETROK_RSUPER,      "RETROK_RSUPER",       "Right Super"},
+   {RETROK_LSUPER,      "RETROK_LSUPER",       "Left Super"},
 /* {RETROK_MODE,        "RETROK_MODE",         "Mode"}, */
 /* {RETROK_COMPOSE,     "RETROK_COMPOSE",      "Compose"}, */
    {RETROK_HELP,        "RETROK_HELP",         "Help"},
@@ -326,8 +357,8 @@ static const int keyboard_translation[512] =
    AK_HELP,        /* 277 = RETROK_INSERT */
    AK_NPLPAREN,    /* 278 = RETROK_HOME */
    AK_NPRPAREN,    /* 279 = RETROK_END */
-   AK_RAMI,        /* 280 = RETROK_PAGEUP */
-   AK_LAMI,        /* 281 = RETROK_PAGEDOWN */
+   AK_LAMI,        /* 280 = RETROK_PAGEUP */
+   AK_RAMI,        /* 281 = RETROK_PAGEDOWN */
    AK_F1,          /* 282 = RETROK_F1 */
    AK_F2,          /* 283 = RETROK_F2 */
    AK_F3,          /* 284 = RETROK_F3 */
@@ -357,8 +388,8 @@ static const int keyboard_translation[512] =
    AK_LALT,        /* 308 = RETROK_LALT */
    AK_RAMI,        /* 309 = RETROK_RMETA */
    AK_LAMI,        /* 310 = RETROK_LMETA */
-   AK_RAMI,        /* 311 = RETROK_LSUPER ?*/
-   AK_LAMI,        /* 312 = RETROK_RSUPER ?*/
+   AK_LAMI,        /* 311 = RETROK_LSUPER */
+   AK_RAMI,        /* 312 = RETROK_RSUPER */
    -1,             /* 313 = RETROK_MODE */
    -1,             /* 314 = RETROK_COMPOSE */
    AK_HELP,        /* 315 = RETROK_HELP */

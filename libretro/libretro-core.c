@@ -175,10 +175,10 @@ static int retro_keymap_id(const char *val)
    return 0;
 }
 
-extern void retro_poll_event(void);
 unsigned int uae_devices[4];
+extern void retro_poll_event();
 extern int cd32_pad_enabled[NORMAL_JPORTS];
-int mapper_keys[31] = {0};
+extern int mapper_keys[RETRO_MAPPER_LAST];
 extern void display_current_image(const char *image, bool inserted);
 
 retro_log_printf_t log_cb = NULL;
@@ -755,7 +755,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_vkbd_theme",
          "Video > Virtual KBD Theme",
-         "By default, the keyboard comes up with RetroPad Select or F11.",
+         "By default, the keyboard comes up with RetroPad Select.",
          {
             { "0", "Classic" },
             { "1", "CD32" },
@@ -1108,7 +1108,7 @@ void retro_set_environment(retro_environment_t cb)
          "Hotkey > Toggle Virtual Keyboard",
          "Press the mapped key to toggle the virtual keyboard.",
          {{ NULL, NULL }},
-         "RETROK_F11"
+         "---"
       },
       {
          "puae_mapper_statusbar",
@@ -2526,56 +2526,56 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[16] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_LR] = retro_keymap_id(var.value);
    }
 
    var.key = "puae_mapper_ll";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[17] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_LL] = retro_keymap_id(var.value);
    }
 
    var.key = "puae_mapper_ld";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[18] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_LD] = retro_keymap_id(var.value);
    }
 
    var.key = "puae_mapper_lu";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[19] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_LU] = retro_keymap_id(var.value);
    }
 
    var.key = "puae_mapper_rr";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[20] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_RR] = retro_keymap_id(var.value);
    }
 
    var.key = "puae_mapper_rl";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[21] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_RL] = retro_keymap_id(var.value);
    }
 
    var.key = "puae_mapper_rd";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[22] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_RD] = retro_keymap_id(var.value);
    }
 
    var.key = "puae_mapper_ru";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[23] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_DEVICE_ID_JOYPAD_RU] = retro_keymap_id(var.value);
    }
 
    /* Mapper hotkeys */
@@ -2583,42 +2583,42 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[24] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_MAPPER_VKBD] = retro_keymap_id(var.value);
    }
 
    var.key = "puae_mapper_statusbar";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[25] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_MAPPER_STATUSBAR] = retro_keymap_id(var.value);
    }
 
    var.key = "puae_mapper_mouse_toggle";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[26] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_MAPPER_JOYMOUSE] = retro_keymap_id(var.value);
    }
 
    var.key = "puae_mapper_reset";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[27] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_MAPPER_RESET] = retro_keymap_id(var.value);
    }
 
    var.key = "puae_mapper_aspect_ratio_toggle";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[28] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_MAPPER_ASPECT_RATIO] = retro_keymap_id(var.value);
    }
 
    var.key = "puae_mapper_zoom_mode_toggle";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[29] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_MAPPER_ZOOM_MODE] = retro_keymap_id(var.value);
    }
 
    /*** Options display ***/
@@ -3893,14 +3893,10 @@ static bool retro_create_config()
                /* WHDLoad HDF mode */
                if (opt_use_whdload == 2)
                {
-                  /* Init WHDLoad */
                   char whdload_hdf[RETRO_PATH_MAX];
-                  path_join((char*)&whdload_hdf, retro_system_directory, "WHDLoad.hdf");
+                  path_join((char*)&whdload_hdf, retro_save_directory, "WHDLoad.hdf");
 
                   /* Verify WHDLoad */
-                  /* Windows needs double backslashes when paths are in quotes, hence the string_replace_substring() */
-                  if (!file_exists(whdload_hdf))
-                     path_join((char*)&whdload_hdf, retro_save_directory, "WHDLoad.hdf");
                   if (!file_exists(whdload_hdf))
                   {
                      log_cb(RETRO_LOG_INFO, "WHDLoad image file '%s' not found, attempting to create one\n", (const char*)&whdload_hdf);
@@ -3950,6 +3946,7 @@ static bool retro_create_config()
                   char whdload_c_path[RETRO_PATH_MAX];
                   path_join((char*)&whdload_c_path, retro_save_directory, "WHDLoad/C");
 
+                  /* Verify WHDLoad */
                   if (!path_is_directory(whdload_path) || (path_is_directory(whdload_path) && !path_is_directory(whdload_c_path)))
                   {
                      log_cb(RETRO_LOG_INFO, "WHDLoad image directory '%s' not found, attempting to create one\n", (const char*)&whdload_path);
@@ -4021,9 +4018,7 @@ static bool retro_create_config()
                {
                   /* Attach WHDSaves.hdf if available */
                   char whdsaves_hdf[RETRO_PATH_MAX];
-                  path_join((char*)&whdsaves_hdf, retro_system_directory, "WHDSaves.hdf");
-                  if (!file_exists(whdsaves_hdf))
-                     path_join((char*)&whdsaves_hdf, retro_save_directory, "WHDSaves.hdf");
+                  path_join((char*)&whdsaves_hdf, retro_save_directory, "WHDSaves.hdf");
                   if (!file_exists(whdsaves_hdf))
                   {
                      log_cb(RETRO_LOG_INFO, "WHDSaves image file '%s' not found, attempting to create one\n", (const char*)&whdsaves_hdf);

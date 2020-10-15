@@ -75,19 +75,20 @@ int vkbd_y_max = 0;
 #define MOUSE_SPEED_FAST 2
 
 /* Core flags */
+int mapper_keys[RETRO_MAPPER_LAST] = {0};
 int vkflag[9] = {0};
 int retro_capslock = false;
 bool retro_mousemode = false;
 bool mousemode_locked = false;
-static unsigned int mouse_speed[2] = {0};
 static int jflag[4][16] = {0};
 static int kjflag[2][16] = {0};
 static int mflag[2][16] = {0};
 static int aflag[2][16] = {0};
-static int jbt[2][24] = {0};
-static int kbt[16] = {0};
 static int mapper_flag[4][16] = {0};
+static unsigned int mouse_speed[2] = {0};
 
+extern bool request_update_av_info;
+extern bool request_reset_drawing;
 extern void retro_reset_soft();
 extern bool retro_statusbar;
 extern bool retro_vkbd;
@@ -102,13 +103,12 @@ extern void retro_joystick(int, int, int);
 extern void retro_joystick_analog(int, int, int);
 extern void retro_joystick_button(int, int, int);
 extern unsigned int uae_devices[4];
-extern int mapper_keys[32];
+
+/* Core options */
 extern unsigned int video_config;
 extern unsigned int video_config_aspect;
 extern unsigned int zoom_mode_id;
 extern unsigned int opt_zoom_mode_id;
-extern bool request_update_av_info;
-extern bool request_reset_drawing;
 extern int opt_statusbar;
 extern int opt_statusbar_position;
 extern unsigned int opt_analogmouse;
@@ -124,20 +124,22 @@ extern char opt_joyport_order[5];
 
 int imagename_timer = 0;
 static char statusbar_text[RETRO_PATH_MAX] = {0};
+
 int turbo_fire_button_disabled = -1;
 int turbo_fire_button = -1;
 unsigned int turbo_pulse = 2;
 unsigned int turbo_state[5] = {0};
 unsigned int turbo_toggle[5] = {0};
 
-enum EMU_FUNCTIONS {
+enum EMU_FUNCTIONS
+{
    EMU_VKBD = 0,
    EMU_STATUSBAR,
-   EMU_MOUSE_TOGGLE,
+   EMU_JOYMOUSE,
    EMU_RESET,
-   EMU_ASPECT_RATIO_TOGGLE,
-   EMU_ZOOM_MODE_TOGGLE,
-   EMU_TURBO_FIRE_TOGGLE,
+   EMU_ASPECT_RATIO,
+   EMU_ZOOM_MODE,
+   EMU_TURBO_FIRE,
    EMU_FUNCTION_COUNT
 };
 
@@ -169,7 +171,7 @@ void emu_function(int function)
          retro_statusbar = !retro_statusbar;
          request_reset_drawing = true;
          break;
-      case EMU_MOUSE_TOGGLE:
+      case EMU_JOYMOUSE:
          mousemode_locked = true;
          retro_mousemode = !retro_mousemode;
          /* Reset flags to prevent sticky keys */
@@ -178,7 +180,7 @@ void emu_function(int function)
       case EMU_RESET:
          retro_reset_soft();
          break;
-      case EMU_ASPECT_RATIO_TOGGLE:
+      case EMU_ASPECT_RATIO:
          if (video_config_aspect == 0)
             video_config_aspect = (video_config & PUAE_VIDEO_NTSC) ? PUAE_VIDEO_PAL : PUAE_VIDEO_NTSC;
          else if (video_config_aspect == PUAE_VIDEO_PAL)
@@ -187,7 +189,7 @@ void emu_function(int function)
             video_config_aspect = PUAE_VIDEO_PAL;
          request_update_av_info = true;
          break;
-      case EMU_ZOOM_MODE_TOGGLE:
+      case EMU_ZOOM_MODE:
          if (zoom_mode_id == 0 && opt_zoom_mode_id == 0)
             break;
          if (zoom_mode_id > 0)
@@ -196,7 +198,7 @@ void emu_function(int function)
             zoom_mode_id = opt_zoom_mode_id;
          request_update_av_info = true;
          break;
-      case EMU_TURBO_FIRE_TOGGLE:
+      case EMU_TURBO_FIRE:
          if (turbo_fire_button_disabled == -1 && turbo_fire_button == -1)
             break;
          else if (turbo_fire_button_disabled != -1 && turbo_fire_button != -1)
@@ -1273,8 +1275,8 @@ static void process_key(int disable_physical_cursor_keys)
 
 void update_input(int disable_physical_cursor_keys)
 {
-   /* RETRO    B   Y   SLT STA UP  DWN LFT RGT A   X   L   R   L2  R2  L3  R3  LR  LL  LD  LU  RR  RL  RD  RU
-    * INDEX    0   1   2   3   4   5   6   7   8   9   10  11  12  13  14  15  16  17  18  19  20  21  22  23
+   /* RETRO  B  Y  SL ST UP DN LT RT A  X  L   R   L2  R2  L3  R3  LR  LL  LD  LU  RR  RL  RD  RU
+    * INDEX  0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23
     */
 
    static long now = 0;
@@ -1287,9 +1289,12 @@ void update_input(int disable_physical_cursor_keys)
    static int LX = 0, LY = 0, RX = 0, RY = 0;
    const int threshold = 20000;
 
+   static int jbt[2][24] = {0};
+   static int kbt[EMU_FUNCTION_COUNT] = {0};
+
    now = GetTicks();
 
-   if (vkey_sticky && last_vkey_pressed != -1)
+   if (vkey_sticky && last_vkey_pressed != -1 && last_vkey_pressed > 0)
    {
       if (vkey_sticky1 > -1 && vkey_sticky1 != last_vkey_pressed)
       {
@@ -1353,34 +1358,35 @@ void update_input(int disable_physical_cursor_keys)
    for (i = 0; i < EMU_FUNCTION_COUNT; i++)
    {
       mk = i + 24;
+
       /* Key down */
-      if (!kbt[i] && mapper_keys[mk] && input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, mapper_keys[mk]))
+      if (input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, mapper_keys[mk]) && !kbt[i] && mapper_keys[mk])
       {
          kbt[i] = 1;
          switch (mk)
          {
-            case 24:
+            case RETRO_MAPPER_VKBD:
                emu_function(EMU_VKBD);
                break;
-            case 25:
+            case RETRO_MAPPER_STATUSBAR:
                emu_function(EMU_STATUSBAR);
                break;
-            case 26:
-               emu_function(EMU_MOUSE_TOGGLE);
+            case RETRO_MAPPER_JOYMOUSE:
+               emu_function(EMU_JOYMOUSE);
                break;
-            case 27:
+            case RETRO_MAPPER_RESET:
                emu_function(EMU_RESET);
                break;
-            case 28:
-               emu_function(EMU_ASPECT_RATIO_TOGGLE);
+            case RETRO_MAPPER_ASPECT_RATIO:
+               emu_function(EMU_ASPECT_RATIO);
                break;
-            case 29:
-               emu_function(EMU_ZOOM_MODE_TOGGLE);
+            case RETRO_MAPPER_ZOOM_MODE:
+               emu_function(EMU_ZOOM_MODE);
                break;
          }
       }
       /* Key up */
-      else if (kbt[i] && mapper_keys[mk] && !input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, mapper_keys[mk]))
+      else if (!input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, mapper_keys[mk]) && kbt[i] && mapper_keys[mk])
       {
          kbt[i] = 0;
       }
@@ -1464,35 +1470,35 @@ void update_input(int disable_physical_cursor_keys)
             {
                switch (i)
                {
-                  case 16: /* LR */
+                  case RETRO_DEVICE_ID_JOYPAD_LR:
                      if (LX > threshold && !jbt[j][i]) just_pressed = 1;
                      else if (LX < threshold && jbt[j][i]) just_released = 1;
                      break;
-                  case 17: /* LL */
+                  case RETRO_DEVICE_ID_JOYPAD_LL:
                      if (LX < -threshold && !jbt[j][i]) just_pressed = 1;
                      else if (LX > -threshold && jbt[j][i]) just_released = 1;
                      break;
-                  case 18: /* LD */
+                  case RETRO_DEVICE_ID_JOYPAD_LD:
                      if (LY > threshold && !jbt[j][i]) just_pressed = 1;
                      else if (LY < threshold && jbt[j][i]) just_released = 1;
                      break;
-                  case 19: /* LU */
+                  case RETRO_DEVICE_ID_JOYPAD_LU:
                      if (LY < -threshold && !jbt[j][i]) just_pressed = 1;
                      else if (LY > -threshold && jbt[j][i]) just_released = 1;
                      break;
-                  case 20: /* RR */
+                  case RETRO_DEVICE_ID_JOYPAD_RR:
                      if (RX > threshold && !jbt[j][i]) just_pressed = 1;
                      else if (RX < threshold && jbt[j][i]) just_released = 1;
                      break;
-                  case 21: /* RL */
+                  case RETRO_DEVICE_ID_JOYPAD_RL:
                      if (RX < -threshold && !jbt[j][i]) just_pressed = 1;
                      else if (RX > -threshold && jbt[j][i]) just_released = 1;
                      break;
-                  case 22: /* RD */
+                  case RETRO_DEVICE_ID_JOYPAD_RD:
                      if (RY > threshold && !jbt[j][i]) just_pressed = 1;
                      else if (RY < threshold && jbt[j][i]) just_released = 1;
                      break;
-                  case 23: /* RU */
+                  case RETRO_DEVICE_ID_JOYPAD_RU:
                      if (RY < -threshold && !jbt[j][i]) just_pressed = 1;
                      else if (RY > -threshold && jbt[j][i]) just_released = 1;
                      break;
@@ -1507,35 +1513,35 @@ void update_input(int disable_physical_cursor_keys)
                if (!mapper_keys[i]) /* Unmapped, e.g. set to "---" in core options */
                   continue;
 
-               if (mapper_keys[i] == mapper_keys[24]) /* Virtual keyboard */
+               if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_VKBD])
                   emu_function(EMU_VKBD);
-               else if (mapper_keys[i] == mapper_keys[25]) /* Statusbar */
+               else if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_STATUSBAR])
                   emu_function(EMU_STATUSBAR);
-               else if (mapper_keys[i] == mapper_keys[26]) /* Toggle mouse control */
-                  emu_function(EMU_MOUSE_TOGGLE);
-               else if (mapper_keys[i] == mapper_keys[27]) /* Reset */
+               else if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_JOYMOUSE])
+                  emu_function(EMU_JOYMOUSE);
+               else if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_RESET])
                   emu_function(EMU_RESET);
-               else if (mapper_keys[i] == mapper_keys[28]) /* Toggle aspect ratio */
-                  emu_function(EMU_ASPECT_RATIO_TOGGLE);
-               else if (mapper_keys[i] == mapper_keys[29]) /* Toggle zoom mode */
-                  emu_function(EMU_ZOOM_MODE_TOGGLE);
-               else if (mapper_keys[i] == -2) /* Mouse button left */
+               else if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_ASPECT_RATIO])
+                  emu_function(EMU_ASPECT_RATIO);
+               else if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_ZOOM_MODE])
+                  emu_function(EMU_ZOOM_MODE);
+               else if (mapper_keys[i] == MOUSE_LEFT_BUTTON)
                {
                   retro_mouse_button(j, 0, 1);
                   mflag[j][RETRO_DEVICE_ID_JOYPAD_B] = 1;
                }
-               else if (mapper_keys[i] == -3) /* Mouse button right */
+               else if (mapper_keys[i] == MOUSE_RIGHT_BUTTON)
                {
                   retro_mouse_button(j, 1, 1);
                   mflag[j][RETRO_DEVICE_ID_JOYPAD_A] = 1;
                }
-               else if (mapper_keys[i] == -4) /* Mouse button middle */
+               else if (mapper_keys[i] == MOUSE_MIDDLE_BUTTON)
                   retro_mouse_button(j, 2, 1);
-               else if (mapper_keys[i] == -5) /* Mouse speed slower */
+               else if (mapper_keys[i] == MOUSE_SLOWER)
                   mouse_speed[j] |= MOUSE_SPEED_SLOWER;
-               else if (mapper_keys[i] == -6) /* Mouse speed faster */
+               else if (mapper_keys[i] == MOUSE_FASTER)
                   mouse_speed[j] |= MOUSE_SPEED_FASTER;
-               else if (mapper_keys[i] == -7) /* Joystick fire button */
+               else if (mapper_keys[i] == JOYSTICK_FIRE)
                {
                   retro_joystick_button(j, 0, 1);
                   if (opt_retropad_options == 1 || opt_retropad_options == 3)
@@ -1543,7 +1549,7 @@ void update_input(int disable_physical_cursor_keys)
                   else
                      jflag[j][RETRO_DEVICE_ID_JOYPAD_B] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_B] = 1;
                }
-               else if (mapper_keys[i] == -8) /* Joystick 2nd fire button */
+               else if (mapper_keys[i] == JOYSTICK_2ND_FIRE)
                {
                   retro_joystick_button(j, 1, 1);
                   if (opt_retropad_options == 1 || opt_retropad_options == 3)
@@ -1551,13 +1557,13 @@ void update_input(int disable_physical_cursor_keys)
                   else
                      jflag[j][RETRO_DEVICE_ID_JOYPAD_A] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_A] = 1;
                }
-               else if (mapper_keys[i] == -11) /* Virtual keyboard */
+               else if (mapper_keys[i] == TOGGLE_VKBD)
                   emu_function(EMU_VKBD);
-               else if (mapper_keys[i] == -12) /* Statusbar */
+               else if (mapper_keys[i] == TOGGLE_STATUSBAR)
                   emu_function(EMU_STATUSBAR);
-               else if (mapper_keys[i] == -13) /* Toggle mouse control */
-                  emu_function(EMU_MOUSE_TOGGLE);
-               else /* Keyboard keys */
+               else if (mapper_keys[i] == SWITCH_JOYMOUSE)
+                  emu_function(EMU_JOYMOUSE);
+               else
                   retro_key_down(keyboard_translation[mapper_keys[i]]);
             }
             else if (just_released)
@@ -1566,35 +1572,35 @@ void update_input(int disable_physical_cursor_keys)
                if (!mapper_keys[i]) /* Unmapped, e.g. set to "---" in core options */
                   continue;
 
-               if (mapper_keys[i] == mapper_keys[24]) /* Virtual keyboard */
+               if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_VKBD])
                   ; /* nop */
-               else if (mapper_keys[i] == mapper_keys[25]) /* Statusbar */
+               else if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_STATUSBAR])
                   ; /* nop */
-               else if (mapper_keys[i] == mapper_keys[26]) /* Toggle mouse control */
+               else if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_JOYMOUSE])
                   ; /* nop */
-               else if (mapper_keys[i] == mapper_keys[27]) /* Reset */
+               else if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_RESET])
                   ; /* nop */
-               else if (mapper_keys[i] == mapper_keys[28]) /* Toggle aspect ratio */
+               else if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_ASPECT_RATIO])
                   ; /* nop */
-               else if (mapper_keys[i] == mapper_keys[29]) /* Toggle zoom mode */
+               else if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_ZOOM_MODE])
                   ; /* nop */
-               else if (mapper_keys[i] == -2) /* Mouse button left */
+               else if (mapper_keys[i] == MOUSE_LEFT_BUTTON)
                {
                   retro_mouse_button(j, 0, 0);
                   mflag[j][RETRO_DEVICE_ID_JOYPAD_B] = 0;
                }
-               else if (mapper_keys[i] == -3) /* Mouse button right */
+               else if (mapper_keys[i] == MOUSE_RIGHT_BUTTON)
                {
                   retro_mouse_button(j, 1, 0);
                   mflag[j][RETRO_DEVICE_ID_JOYPAD_A] = 0;
                }
-               else if (mapper_keys[i] == -4) /* Mouse button middle */
+               else if (mapper_keys[i] == MOUSE_MIDDLE_BUTTON)
                   retro_mouse_button(j, 2, 0);
-               else if (mapper_keys[i] == -5) /* Mouse speed slower */
+               else if (mapper_keys[i] == MOUSE_SLOWER)
                   mouse_speed[j] &= ~MOUSE_SPEED_SLOWER;
-               else if (mapper_keys[i] == -6) /* Mouse speed faster */
+               else if (mapper_keys[i] == MOUSE_FASTER)
                   mouse_speed[j] &= ~MOUSE_SPEED_FASTER;
-               else if (mapper_keys[i] == -7) /* Joystick fire button */
+               else if (mapper_keys[i] == JOYSTICK_FIRE)
                {
                   retro_joystick_button(j, 0, 0);
                   if (opt_retropad_options == 1 || opt_retropad_options == 3)
@@ -1602,7 +1608,7 @@ void update_input(int disable_physical_cursor_keys)
                   else
                      jflag[j][RETRO_DEVICE_ID_JOYPAD_B] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_B] = 0;
                }
-               else if (mapper_keys[i] == -8) /* Joystick 2nd fire button */
+               else if (mapper_keys[i] == JOYSTICK_2ND_FIRE)
                {
                   retro_joystick_button(j, 1, 0);
                   if (opt_retropad_options == 1 || opt_retropad_options == 3)
@@ -1610,13 +1616,13 @@ void update_input(int disable_physical_cursor_keys)
                   else
                      jflag[j][RETRO_DEVICE_ID_JOYPAD_A] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_A] = 0;
                }
-               else if (mapper_keys[i] == -11) /* Virtual keyboard */
+               else if (mapper_keys[i] == TOGGLE_VKBD)
                   ; /* nop */
-               else if (mapper_keys[i] == -12) /* Statusbar */
+               else if (mapper_keys[i] == TOGGLE_STATUSBAR)
                   ; /* nop */
-               else if (mapper_keys[i] == -13) /* Toggle mouse control */
+               else if (mapper_keys[i] == SWITCH_JOYMOUSE)
                   ; /* nop */
-               else /* Keyboard keys */
+               else
                   retro_key_up(keyboard_translation[mapper_keys[i]]);
             }
          } /* for i */
@@ -1668,9 +1674,9 @@ void update_input(int disable_physical_cursor_keys)
             /* just pressing down */
             last_press_time = now;
 
-         if ( (now - last_press_time > VKBD_MIN_HOLDING_TIME
-            && now - last_move_time > VKBD_MOVE_DELAY)
-            || let_go_of_direction)
+         if ((now - last_press_time > VKBD_MIN_HOLDING_TIME
+           && now - last_move_time > VKBD_MOVE_DELAY)
+           || let_go_of_direction)
          {
             last_move_time = now;
 
@@ -1836,11 +1842,11 @@ void update_input(int disable_physical_cursor_keys)
             }
             else if (vkey_pressed == -18) /* Toggle joystick/mouse */
             {
-               emu_function(EMU_MOUSE_TOGGLE);
+               emu_function(EMU_JOYMOUSE);
             }
             else if (vkey_pressed == -19) /* Toggle turbo fire */
             {
-               emu_function(EMU_TURBO_FIRE_TOGGLE);
+               emu_function(EMU_TURBO_FIRE);
             }
             else if (vkey_pressed == -20) /* Reset */
             {
@@ -1852,7 +1858,7 @@ void update_input(int disable_physical_cursor_keys)
             }
             else if (vkey_pressed == -22) /* Toggle aspect ratio */
             {
-               emu_function(EMU_ASPECT_RATIO_TOGGLE);
+               emu_function(EMU_ASPECT_RATIO);
             }
          }
          else
@@ -1998,9 +2004,9 @@ void retro_poll_event()
    static long now = 0;
    now = GetTicks();
 
-   static int uae_mouse_x[2] = {0}, uae_mouse_y[2] = {0};
-   static int uae_mouse_l[2] = {0}, uae_mouse_r[2] = {0}, uae_mouse_m[2] = {0};
-   static int mouse_lmb[2] = {0}, mouse_rmb[2] = {0}, mouse_mmb[2] = {0};
+   int uae_mouse_x[2] = {0}, uae_mouse_y[2] = {0};
+   unsigned int uae_mouse_l[2] = {0}, uae_mouse_r[2] = {0}, uae_mouse_m[2] = {0};
+   static unsigned int mouse_lmb[2] = {0}, mouse_rmb[2] = {0}, mouse_mmb[2] = {0};
    static int16_t mouse_x[2] = {0}, mouse_y[2] = {0};
 
    int analog_left[2] = {0};
