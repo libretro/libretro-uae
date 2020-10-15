@@ -33,7 +33,6 @@ WinUAE), and many more.
 
 | Keyboard key    | Action                        |
 |-----------------|-------------------------------|
-| F11             | Toggle virtual keyboard       |
 | F12             | Toggle statusbar              |
 | RControl        | Switch between joystick/mouse |
 
@@ -88,7 +87,7 @@ The following Kickstart ROMs are required in RetroArch `system` directory:
 
 *The core has a built-in AROS fallback Kickstart, which is used when the real Kickstart is not found. It can be compatible enough for some A500 games.*
 
-You must rename Amiga Forever BIOS files accordingly.
+Amiga Forever BIOS files must be renamed accordingly.
 
 | System | Version                       | Filename               | Amiga Forever             | Size      | MD5                              |
 |--------|-------------------------------|------------------------|---------------------------|-----------|----------------------------------|
@@ -198,7 +197,7 @@ Supported formats are:
 - **M3U** for multiple floppy disk image playlist
 - **ZIP** for various content (FD, HD, CD, WHDLoad)
 
-When launchig these files the core will generate a temporary configuration file in RetroArch `saves` directory and use it to start the emulation.
+When launching these files the core will generate a temporary configuration file in RetroArch `saves` directory and use it to start the emulation.
 
 ### Floppy drive sounds
 

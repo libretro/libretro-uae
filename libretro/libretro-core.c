@@ -755,7 +755,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_vkbd_theme",
          "Video > Virtual KBD Theme",
-         "By default, the keyboard comes up with RetroPad Select or F11.",
+         "By default, the keyboard comes up with RetroPad Select.",
          {
             { "0", "Classic" },
             { "1", "CD32" },
@@ -1108,7 +1108,7 @@ void retro_set_environment(retro_environment_t cb)
          "Hotkey > Toggle Virtual Keyboard",
          "Press the mapped key to toggle the virtual keyboard.",
          {{ NULL, NULL }},
-         "RETROK_F11"
+         "---"
       },
       {
          "puae_mapper_statusbar",

@@ -164,9 +164,9 @@ static retro_keymap retro_keys[RETROK_LAST] =
    {RETROK_F10,         "RETROK_F10",          "F10"},
    {RETROK_F11,         "RETROK_F11",          "F11"},
    {RETROK_F12,         "RETROK_F12",          "F12"},
-/* {RETROK_F13,         "RETROK_F13",          "F13"}, */
-/* {RETROK_F14,         "RETROK_F14",          "F14"}, */
-/* {RETROK_F15,         "RETROK_F15",          "F15"}, */
+   {RETROK_F13,         "RETROK_F13",          "F13"},
+   {RETROK_F14,         "RETROK_F14",          "F14"},
+   {RETROK_F15,         "RETROK_F15",          "F15"},
 /* {RETROK_NUMLOCK,     "RETROK_NUMLOCK",      "Num Lock"}, */
 /* {RETROK_CAPSLOCK,    "RETROK_CAPSLOCK",     "Caps Lock"}, */
 /* {RETROK_SCROLLOCK,   "RETROK_SCROLLOCK",    "Scroll Lock"}, */
