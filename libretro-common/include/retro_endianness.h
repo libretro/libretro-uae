@@ -95,6 +95,8 @@
 #  endif
 #elif defined (__i386__) || defined(__x86_64__)
 #  define LSB_FIRST 1
+#elif defined (__CELLOS_LV2__)
+#  define MSB_FIRST 1
 #else
 #  error "Unknown platform"
 #endif

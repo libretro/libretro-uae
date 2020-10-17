@@ -16,12 +16,16 @@
 #include "u_deep.h"
 #include "getbits.h"
 
-
+#ifdef __CELLOS_LV2__
+INLINE USHORT DecodeChar(void);
+INLINE USHORT DecodePosition(void);
+INLINE void update(USHORT c);
+#else
 USHORT DecodeChar(void);
 USHORT DecodePosition(void);
 void update(USHORT c);
 static void reconst(void);
-
+#endif
 
 USHORT dms_deep_text_loc;
 int dms_init_deep_tabs=1;

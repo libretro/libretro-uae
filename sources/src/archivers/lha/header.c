@@ -695,7 +695,7 @@ void init_header(char *name, struct stat *v_stat, LzHeader *hdr)
 		bcopy(LZHDIRS_METHOD, hdr->method, METHOD_TYPE_STRAGE);
 		hdr->attribute = GENERIC_DIRECTORY_ATTRIBUTE;
 		hdr->original_size = 0;
-#if !defined(ANDROID) && !defined(__SWITCH__) && !defined(WIIU) && !defined(VITA)
+#if !defined(ANDROID) && !defined(__SWITCH__) && !defined(WIIU) && !defined(VITA) && !defined(__CELLOS_LV2__)
 		len = readlink(name, lkname, 256);
 #endif
 		lkname[len] = (char)'\0';

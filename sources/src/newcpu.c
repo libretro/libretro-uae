@@ -7,7 +7,7 @@
  */
 
 #define MOVEC_DEBUG 0
-#define MMUOP_DEBUG 0
+#define MMUOP_DEBUG 2
 #define DEBUG_CD32CDTVIO 0
 #define EXCEPTION3_DEBUGGER 0
 #define CPUTRACE_DEBUG 0
@@ -4826,9 +4826,13 @@ static void m68k_run_2 (void)
 	struct regstruct *r = &regs;
 
 	for (;;) {
+		printf("1\n");
 		r->instruction_pc = m68k_getpc ();
+		printf("2\n");
 		uae_u16 opcode = get_iword (0);
+		printf("opcode: 0x%x\n", opcode);
 		count_instr (opcode);
+		printf("4\n");
 
 //		if (regs.s == 0 && regs.regs[15] < 0x10040000 && regs.regs[15] > 0x10000000)
 //			activate_debugger();
@@ -4840,8 +4844,11 @@ static void m68k_run_2 (void)
 		}
 #endif	
 		do_cycles (cpu_cycles);
+		printf("5\n");
 		cpu_cycles = (*cpufunctbl[opcode])(opcode);
+		printf("6\n");
 		cpu_cycles = adjust_cycles (cpu_cycles);
+		printf("7\n");
 		if (r->spcflags) {
 			if (do_specialties (cpu_cycles))
 				return;
@@ -4896,6 +4903,7 @@ int m68k_go (int may_quit, int resume)
 void m68k_go (int may_quit)
 #endif
 {
+printf("m68k_go\n");
 #ifdef __LIBRETRO__
 	if ( resume == 0 )
 	{
@@ -4980,6 +4988,7 @@ void m68k_go (int may_quit)
 			}
 #ifdef SAVESTATE
 			/* We may have been restoring state, but we're done now.  */
+			printf("SAVESTATE\n");
 			if (isrestore ()) {
 				if (debug_dma) {
 					record_dma_reset ();
@@ -4988,6 +4997,7 @@ void m68k_go (int may_quit)
 				restored = savestate_restore_finish ();
 				memory_map_dump ();
 #ifdef MMUEMU
+				printf("MMUEMU\n");
 				if (currprefs.mmu_model == 68030) {
 					mmu030_decode_tc (tc_030);
 				} else if (currprefs.mmu_model >= 68040) {
@@ -4997,6 +5007,7 @@ void m68k_go (int may_quit)
 				startup = 1;
 			}
 #endif
+			printf("CONT1\n");
 			if (currprefs.produce_sound == 0)
 				eventtab[ev_audio].active = 0;
 			m68k_setpc (regs.pc);
@@ -5016,6 +5027,7 @@ void m68k_go (int may_quit)
 			}
 		}
 
+		printf("CONT2\n");
 		if (changed_prefs.inprecfile[0] && input_record)
 			inprec_prepare_record (savestate_fname[0] ? savestate_fname : NULL);
 
@@ -5025,6 +5037,7 @@ void m68k_go (int may_quit)
 		if (debugging)
 			debug ();
 #endif
+		printf("CONT3\n");
 		if (regs.panic) {
 			regs.panic = 0;
 			/* program jumped to non-existing memory and cpu was >= 68020 */
@@ -5058,15 +5071,19 @@ void m68k_go (int may_quit)
 #endif
 		}
 		startup = 0;
+		printf("CONT4\n");
 
 #ifdef SAVESTATE
 		if (restored) {
+			printf("CONT5\n");
 			restored = 0;
 			savestate_restore_final();
 		}
+		printf("CONT6\n");
 #endif
 
 		if (regs.halted) {
+			printf("CONT7\n");
 			cpu_halt (regs.halted);
 			continue;
 		}
@@ -5075,6 +5092,7 @@ void m68k_go (int may_quit)
 			run_func = m68k_run_mmu;
 		} else {
 #endif
+			printf("CONT8\n");
 			run_func = currprefs.cpu_cycle_exact && currprefs.cpu_model == 68000 ? m68k_run_1_ce :
 				currprefs.cpu_compatible && currprefs.cpu_model == 68000 ? m68k_run_1 :
 #ifdef JIT
@@ -5090,13 +5108,17 @@ void m68k_go (int may_quit)
 #if 0
 		}
 #endif
+		printf("CONT9\n");
 		run_func ();
+		printf("CONT10\n");
 		unset_special (SPCFLAG_BRK | SPCFLAG_MODE_CHANGE);
+		printf("CONT11\n");
 
 #ifdef __LIBRETRO__
 		if ( libretro_frame_end )
 		{
 			libretro_frame_end = 0;
+			printf("return 0\n");
 			return 0;
 		}
 #endif
@@ -5105,10 +5127,12 @@ void m68k_go (int may_quit)
 	protect_roms (false);
 #endif
 #ifdef __LIBRETRO__
+	printf("return 1\n");
 	return 1;
 #else
 	in_m68k_go--;
 #endif
+printf("return NULL\n");
 }
 
 #if 0

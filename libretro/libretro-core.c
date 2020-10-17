@@ -208,6 +208,19 @@ void retro_set_led(unsigned led)
    led_state_cb(0, led);
 }
 
+#ifdef __CELLOS_LV2__
+int FAKEaccess(char *fpath, int unused)
+{
+	struct stat buffer;   
+	return stat(fpath, &buffer); 
+}
+int
+fseeko(FILE *stream, off_t pos, int whence)
+{
+   return fseek(stream, (long)pos, whence);
+}
+#endif
+
 void retro_set_environment(retro_environment_t cb)
 {
    static const struct retro_controller_description p1_controllers[] = {

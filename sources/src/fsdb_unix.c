@@ -14,6 +14,10 @@
 #include "fsdb.h"
 #include "misc.h"
 
+#ifdef __CELLOS_LV2__
+#include "libretro.h"
+#endif
+
 #ifdef __LIBRETRO__
 #include "string/stdstring.h"
 #endif

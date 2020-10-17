@@ -1,6 +1,10 @@
 #include "sysconfig.h"
 #include "sysdeps.h"
 
+#ifdef __CELLOS_LV2__
+#include <ctype.h>
+#endif
+
 #include "options.h"
 
 #include "uae.h"

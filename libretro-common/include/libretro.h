@@ -77,6 +77,73 @@ extern "C" {
 #  endif
 #endif
 
+#ifdef __CELLOS_LV2__
+#include <unistd.h>
+#include <dirent.h>
+#define F_OK 0
+#ifndef S_ISDIR
+#define S_ISDIR(mode)  (((mode) & S_IFMT) == S_IFDIR)
+#endif
+#define usleep  sys_timer_usleep
+int FAKEaccess(char *fpath, int unused);
+int fseeko(FILE *stream, off_t pos, int whence);
+#define access FAKEaccess
+
+// missing func
+extern uint8_t *MSA_UnCompress(uint8_t *pMSAFile, long *pImageSize);
+
+// implicit func
+extern void inputdevice_release_all_keys (void);
+extern void reset_hotkeys (void);
+extern void pause_select(void);
+extern void retro_audio_cb( short l, short r);
+extern void mount_hdf(int index, char* name);
+extern void unmount_all_hdfs(void);
+extern void memory_reset (void);
+extern void expamem_reset (void);
+extern int scandir(const char *dirp, struct dirent ***namelist,
+      int (*filter)(const struct dirent *),
+      int (*compar)(const struct dirent **, const struct dirent **));
+extern int get_cpu_model (void);
+//extern void DrawFBoxBmp(unsigned  short  *buffer,int x,int y,int dx,int dy,unsigned  short color);
+//extern void Draw_text(unsigned  short *buffer,int x,int y,
+					//unsigned  short  fgcol,unsigned  short int bgcol ,int scalex,int scaley , int max, char *string,...);
+extern const char* get_current_config_name();
+extern void clean_led_area(void);
+//extern void DISK_check_change (void);
+extern char *filebrowser(const char *path_and_name);
+extern int update_input_gui(void);
+extern void reset_drawing (void);
+extern void uae_resume (void);
+extern void uae_pause (void);
+extern void retro_uae_reset(int y);
+extern void retro_shutdown_uae(void);
+extern void resume_sound (void);
+extern void pause_sound (void);
+extern void DrawPointBmp(unsigned  short  *buffer,int x,int y,unsigned  short color);
+extern void Dialog_VideoDlg(void);
+extern void Dialog_MiscDlg(void);
+extern void loadthumb(char *name,int x,int y);
+extern void dothumb(char *name,int sw,int sh,int tw,int th);
+extern int fsel_file_exists(char * path);
+extern int fsel_file_create(char * path);
+extern void enter_options(void);
+extern void retro_key_up(int key);
+extern void retro_key_down(int key);
+extern void setjoybuttonstate (int joy, int button, int state);
+extern void setjoystickstate (int joy, int axle, int state, int max);
+extern void retro_joy0(unsigned char joy0);
+//extern void retro_mouse(int dx, int dy);
+extern void retro_mouse_but0(int down);
+extern void retro_mouse_but1(int down);
+extern void pause_select(void);
+extern void retro_audio_cb( short l, short r);
+#define	getcwd(a,b)	"/"
+#define getenv(a)	"/dev_hdd0/HOMEBREW/ST/"
+#define chdir(a) 0
+
+#endif
+
 /* Used for checking API/ABI mismatches that can break libretro
  * implementations.
  * It is not incremented for compatible changes to the API.

@@ -30,9 +30,13 @@ USHORT dms_heavy_text_loc;
 
 static USHORT read_tree_c(void);
 static USHORT read_tree_p(void);
+#ifdef __CELLOS_LV2__
+INLINE USHORT decode_c(void);
+INLINE USHORT decode_p(void);
+#else
 USHORT decode_c(void);
 USHORT decode_p(void);
-
+#endif
 
 
 USHORT Unpack_HEAVY(UCHAR *in, UCHAR *out, UCHAR flags, USHORT origsize){
