@@ -232,7 +232,7 @@ extern long     timezone;		/* not defined in time.h */
 #endif
 
 /* ------------------------------------------------------------------------ */
-#if (defined(FTIME) || defined(GETTIMEOFDAY) || defined(TZSET)) && !defined(__SWITCH__) && !defined(VITA)
+#if (defined(FTIME) || defined(GETTIMEOFDAY) || defined(TZSET)) && !defined(__SWITCH__) && !defined(VITA) && !defined(__CELLOS_LV2__)
 static long
 gettz()
 #ifdef TZSET

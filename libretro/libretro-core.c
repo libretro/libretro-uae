@@ -5617,6 +5617,10 @@ void retro_cheat_set(unsigned index, bool enabled, const char *code)
 #if defined(ANDROID) || defined(__SWITCH__) || defined(WIIU) || defined(__CELLOS_LV2__)
 #include <sys/timeb.h>
 
+#ifdef __CELLOS_LV2__
+#include "hrtimer.h"
+#endif
+
 int ftime(struct timeb *tb)
 {
     struct timeval  tv;
@@ -5633,8 +5637,10 @@ int ftime(struct timeb *tb)
         ++tb->time;
         tb->millitm = 0;
     }
+#ifndef __CELLOS_LV2__    
     tb->timezone = tz.tz_minuteswest;
     tb->dstflag  = tz.tz_dsttime;
+#endif
 
     return 0;
 }
