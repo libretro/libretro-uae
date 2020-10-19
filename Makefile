@@ -162,7 +162,7 @@ else ifeq ($(platform), ps3)
    AR = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-ar.exe
    ZLIB_DIR = $(LIBUTILS)/zlib/
    LDFLAGS := -lm -lpthread -lc
-   CFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DBYTE_ORDER=BIG_ENDIAN -D__CELLOS_LV2__ -DHAVE_MEMALIGN -DHAVE_ASPRINTF -DBIG_ENDIAN -I$(ZLIB_DIR)
+   CFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DBYTE_ORDER=BIG_ENDIAN -D__CELLOS_LV2__ -DHAVE_MEMALIGN -DHAVE_ASPRINTF -DBIG_ENDIAN -I$(ZLIB_DIR) -I./jni/include
    STATIC_LINKING=1
    STATIC_LINKING_LINK=1
 
@@ -261,7 +261,7 @@ endif
 ifeq ($(DEBUG), 1)
    CFLAGS += -O0 -g
 else
-   CFLAGS += -O2
+   CFLAGS += -O3
 endif
 
 CFLAGS += -D__LIBRETRO__ -DINLINE="inline" -std=gnu99

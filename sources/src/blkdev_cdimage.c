@@ -11,8 +11,10 @@
  * Copyright 2010-2013 Toni Wilen
  *
  */
-#ifndef __CELLOS_LV2__
+
 #include <sys/timeb.h>
+#ifdef __CELLOS_LV2__
+#include <ctype.h>
 #endif
 
 #include "sysconfig.h"
@@ -25,7 +27,6 @@
 #include "fsdb.h"
 #include "threaddep/thread.h"
 #include "scsidev.h"
-#ifndef __CELLOS_LV2__
 #include "cda_play.h"
 #include "memory.h"
 #include "audio.h"
@@ -2375,13 +2376,4 @@ struct device_functions devicefunc_cdimage = {
 	command_toc, command_read, command_rawread, 0,
 	0, ismedia
 };
-#else
-struct device_functions devicefunc_cdimage = {
-	_T("IMAGE"),
-	0, 0, 0, 0, 0,
-	0, 0, 0,
-	0, 0, 0, 0, 0,
-	0, 0, 0, 0,
-	0, 0
-};
-#endif
+
