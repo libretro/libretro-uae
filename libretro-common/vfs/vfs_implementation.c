@@ -282,7 +282,6 @@ int64_t retro_vfs_file_seek_internal(libretro_vfs_implementation_file *stream, i
 libretro_vfs_implementation_file *retro_vfs_file_open_impl(
       const char *path, unsigned mode, unsigned hints)
 {
-    printf("VFS OPEN\n");
     int                                flags = 0;
    const char                     *mode_str = NULL;
    int                             path_len = (int)strlen(path);
