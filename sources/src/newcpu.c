@@ -4828,9 +4828,8 @@ static void m68k_run_2 (void)
 	for (;;) {
 		r->instruction_pc = m68k_getpc ();
 		uae_u16 opcode = get_iword (0);
-		//printf("opcode: 0x%x\n", opcode);
 		count_instr (opcode);
-		
+
 //		if (regs.s == 0 && regs.regs[15] < 0x10040000 && regs.regs[15] > 0x10000000)
 //			activate_debugger();
 
@@ -4841,8 +4840,6 @@ static void m68k_run_2 (void)
 		}
 #endif	
 		do_cycles (cpu_cycles);
-		//if (opcode != 0x5380)
-		printf("opcode: 0x%x - cpufunctbl: %p\n", opcode, *cpufunctbl[opcode]);
 		cpu_cycles = (*cpufunctbl[opcode])(opcode);
 		cpu_cycles = adjust_cycles (cpu_cycles);
 		if (r->spcflags) {
@@ -5061,7 +5058,7 @@ void m68k_go (int may_quit)
 #endif
 		}
 		startup = 0;
-		
+
 #ifdef SAVESTATE
 		if (restored) {
 			restored = 0;
