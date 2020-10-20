@@ -28,13 +28,6 @@
 #ifndef _SYS_TIMEB_H
 #define _SYS_TIMEB_H
 
-#ifdef __CELLOS_LV2__
-#undef timezone
-struct timezone {
-    int tz_minuteswest;     /* minutes west of Greenwich */
-    int tz_dsttime;         /* type of DST correction */
-};
-#endif
 #include <sys/time.h>
 
 struct timeb {
