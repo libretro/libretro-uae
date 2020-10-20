@@ -33,7 +33,7 @@
 #define PAGE_READONLY           0x02
 #endif
 #define MAX_SHMID 256
-#if !defined(WIIU) && !defined(__SWITCH__) && !defined(VITA)
+#if !defined(WIIU) && !defined(__SWITCH__) && !defined(VITA) && !defined(__CELLOS_LV2__)
 typedef int key_t;
 #endif
 /* One shmid data structure for each shared memory segment in the system. */

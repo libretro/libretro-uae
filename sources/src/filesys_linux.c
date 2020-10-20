@@ -11,6 +11,10 @@
 
 #include <sys/time.h>
 
+#ifdef __CELLOS_LV2__
+#include "ps3_headers.h"
+#endif
+
 #ifdef VITA
 #include <psp2/types.h>
 #include <psp2/io/dirent.h>
@@ -18,7 +22,7 @@
 #define rmdir(name) sceIoRmdir(name)
 #endif
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__CELLOS_LV2__)
 #include <sys/timeb.h>
 #endif
 
@@ -158,12 +162,6 @@ bool my_utime (const TCHAR *name, struct mytimeval *tv)
 
         return false;
 }
-
-#if defined(__CELLOS_LV2__) 
-#include <unistd.h> //stat() is defined here
-#define S_ISDIR(x) (x & CELL_FS_S_IFDIR)
-#define F_OK 0
-#endif
 
 int my_existsfile (const char *name)
 {

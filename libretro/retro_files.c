@@ -24,6 +24,9 @@
 #ifdef VITA
 #include <file/file_path.h>
 #endif
+#ifdef __CELLOS_LV2__
+#include <unistd.h> //stat() is defined here
+#endif
 
 /* Verify if file exists */
 bool file_exists(const char *filename)

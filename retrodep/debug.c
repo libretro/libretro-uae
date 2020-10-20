@@ -12,7 +12,9 @@
 #include "sysdeps.h"
 
 #include <ctype.h>
+#ifndef __CELLOS_LV2__
 #include <signal.h>
+#endif
 
 #include "options.h"
 #include "uae.h"

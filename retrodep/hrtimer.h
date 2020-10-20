@@ -12,22 +12,12 @@
 #include <features_cpu.h>
 #endif
 #ifdef __CELLOS_LV2__
-#include "sys/sys_time.h"
-#include "sys/timer.h"
-#define usleep  sys_timer_usleep
+#include "ps3_headers.h"
+#endif
 
-static INLINE void gettimeofday (struct timeval *tv, void *blah)
-{
-    int64_t time = sys_time_get_system_time();
-
-    tv->tv_sec  = time / 1000000;
-    tv->tv_usec = time - (tv->tv_sec * 1000000);  // implicit rounding will take care of this for us
-}
-#else
 #include <sys/types.h>
 #include <sys/time.h>
 #include <time.h>
-#endif
 
 #ifdef VITA
 #include <psp2/kernel/processmgr.h>

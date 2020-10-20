@@ -11,7 +11,12 @@
  * Copyright 2010-2013 Toni Wilen
  *
  */
+
+#ifdef __CELLOS_LV2__
+#include "ps3_headers.h"
+#else
 #include <sys/timeb.h>
+#endif
 
 #include "sysconfig.h"
 #include "sysdeps.h"
