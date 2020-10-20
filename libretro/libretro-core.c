@@ -5601,8 +5601,13 @@ void retro_cheat_set(unsigned index, bool enabled, const char *code)
    (void)code;
 }
 
-#if defined(ANDROID) || defined(__SWITCH__) || defined(WIIU)
+#if defined(ANDROID) || defined(__SWITCH__) || defined(WIIU) || defined(__CELLOS_LV2__)
+#ifndef __CELLOS_LV2__
 #include <sys/timeb.h>
+#else
+#include "ps3_headers.h"
+#undef timezone
+#endif
 
 int ftime(struct timeb *tb)
 {
@@ -5620,8 +5625,10 @@ int ftime(struct timeb *tb)
         ++tb->time;
         tb->millitm = 0;
     }
+#ifndef __CELLOS_LV2__    
     tb->timezone = tz.tz_minuteswest;
     tb->dstflag  = tz.tz_dsttime;
+#endif
 
     return 0;
 }

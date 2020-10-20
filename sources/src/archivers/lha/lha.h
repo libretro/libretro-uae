@@ -30,7 +30,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#ifndef __CELLOS_LV2__
 #include <signal.h>
+#endif
 
 #include "lha_macro.h"
 

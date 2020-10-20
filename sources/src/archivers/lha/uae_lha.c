@@ -26,7 +26,7 @@ struct zvolume *archive_directory_lha (struct zfile *zf)
     LzHeader hdr;
     int i;
 
-#if !defined(ANDROID) && !defined(__SWITCH__) && !defined(WIIU) && !defined(VITA)
+#if !defined(ANDROID) && !defined(__SWITCH__) && !defined(WIIU) && !defined(VITA) && !defined(__CELLOS_LV2__)
     tzset();
 #endif
     zv = zvolume_alloc (zf, ArchiveFormatLHA, NULL, NULL);
@@ -43,7 +43,7 @@ struct zvolume *archive_directory_lha (struct zfile *zf)
         zai.size = hdr.original_size;
         zai.flags = hdr.attribute;
         if (hdr.extend_type != 0) {
-#if !defined(ANDROID) && !defined(__SWITCH__) && !defined(WIIU) && !defined(VITA)
+#if !defined(ANDROID) && !defined(__SWITCH__) && !defined(WIIU) && !defined(VITA) && !defined(__CELLOS_LV2__)
             zai.tv.tv_sec = hdr.unix_last_modified_stamp -= timezone;
 #else
             zai.tv.tv_sec = hdr.unix_last_modified_stamp;
@@ -57,7 +57,7 @@ struct zvolume *archive_directory_lha (struct zfile *zf)
             t.tm_mday = (v >> 16) & 0x1f;
             t.tm_mon = ((v >> 21) & 0xf) - 1;
             t.tm_year = ((v >> 25) & 0x7f) + 80;
-#if !defined(ANDROID) && !defined(__SWITCH__) && !defined(WIIU) && !defined(VITA)
+#if !defined(ANDROID) && !defined(__SWITCH__) && !defined(WIIU) && !defined(VITA) && !defined(__CELLOS_LV2__)
             zai.tv.tv_sec = mktime (&t) - timezone;
 #else
             zai.tv.tv_sec = mktime (&t);
