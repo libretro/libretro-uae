@@ -12,9 +12,7 @@
 #include <sys/time.h>
 
 #ifdef __CELLOS_LV2__
-// I didn't found any the __END_DECLS ...
-#include <sys/cdefs.h>
-#include "libretro.h"
+#include "ps3_headers.h"
 #endif
 
 #ifdef VITA

@@ -77,22 +77,6 @@ extern "C" {
 #  endif
 #endif
 
-#ifdef __CELLOS_LV2__
-#include <unistd.h>
-#include <dirent.h>
-#define F_OK 0
-#ifndef S_ISDIR
-#define S_ISDIR(mode)  (((mode) & S_IFMT) == S_IFDIR)
-#endif
-#define usleep  sys_timer_usleep
-int FAKEaccess(char *fpath, int unused);
-int fseeko(FILE *stream, off_t pos, int whence);
-#define access FAKEaccess
-#define	getcwd(a,b)	"/dev_hdd0/SSNE10000/USRDIR/"
-#define getenv(a)	"/dev_hdd0/SSNE10000/USRDIR/cores/"
-#define chdir(a) 0
-#endif
-
 /* Used for checking API/ABI mismatches that can break libretro
  * implementations.
  * It is not incremented for compatible changes to the API.

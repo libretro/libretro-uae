@@ -208,19 +208,6 @@ void retro_set_led(unsigned led)
    led_state_cb(0, led);
 }
 
-#ifdef __CELLOS_LV2__
-int FAKEaccess(char *fpath, int unused)
-{
-	struct stat buffer;   
-	return stat(fpath, &buffer); 
-}
-int
-fseeko(FILE *stream, off_t pos, int whence)
-{
-   return fseek(stream, (long)pos, whence);
-}
-#endif
-
 void retro_set_environment(retro_environment_t cb)
 {
    static const struct retro_controller_description p1_controllers[] = {
@@ -5615,10 +5602,11 @@ void retro_cheat_set(unsigned index, bool enabled, const char *code)
 }
 
 #if defined(ANDROID) || defined(__SWITCH__) || defined(WIIU) || defined(__CELLOS_LV2__)
+#ifndef __CELLOS_LV2__
 #include <sys/timeb.h>
-
-#ifdef __CELLOS_LV2__
-#include "hrtimer.h"
+#else
+#include "ps3_headers.h"
+#undef timezone
 #endif
 
 int ftime(struct timeb *tb)
