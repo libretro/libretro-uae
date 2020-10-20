@@ -10,10 +10,6 @@
 #ifndef PS3_HEADERS
 #define PS3_HEADERS
 
-#define	F_OK		0	/* test for existence of file */
-#define	X_OK		0x01	/* test for execute or search permission */
-#define	W_OK		0x02	/* test for write permission */
-#define	R_OK		0x04	/* test for read permission */
 #define S_ISDIR(mode)  (((mode) & S_IFMT) == S_IFDIR)
 #define usleep  sys_timer_usleep
 #define	getcwd(a,b)	"/dev_hdd0/SSNE10000/USRDIR/"

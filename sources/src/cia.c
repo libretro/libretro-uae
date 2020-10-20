@@ -498,8 +498,6 @@ static void tod_hack_reset (void)
 {
 #ifdef WIIU
  	tod_hack_tv = cpu_features_get_time_usec();
-#elif defined(__CELLOS_LV2__)
-#include "hrtimer.h"
 #else
 	struct timeval tv;
 	gettimeofday (&tv, NULL);
