@@ -2757,7 +2757,7 @@ bool alloc_expansion_bank(addrbank *bank, struct autoconfig_info *aci)
 void free_expansion_bank(addrbank *bank)
 {
 	mapped_free(bank);
-	bank->start = 0;/*NULL;*/
+	bank->start = 0/*NULL*/;
 	bank->reserved_size = 0;
 }
 
@@ -3589,6 +3589,12 @@ static void expansion_add_autoconfig(struct uae_prefs *p)
 					cards_set[cardno].zorro = 2;
 					cards_set[cardno++].initnum = gfxboard_init_registers;
 				}
+				if (gfxboard_is_registers(rbc) > 1) {
+					cards_set[cardno].flags = (i << 16) | CARD_FLAG_CHILD;
+					cards_set[cardno].name = _T("Gfxboard Registers #2");
+					cards_set[cardno].zorro = 2;
+					cards_set[cardno++].initnum = gfxboard_init_registers2;
+				}
 			}
 		}
 	}
@@ -3829,7 +3835,7 @@ void expansion_map(void)
 static void clear_bank (addrbank *ab)
 {
 	if (!ab)
-	    return;
+		return;
 	if (!ab->baseaddr || !ab->allocated_size)
 		return;
 	memset (ab->baseaddr, 0, ab->allocated_size > 0x800000 ? 0x800000 : ab->allocated_size);
@@ -3949,7 +3955,7 @@ uae_u8 *save_expansion_boards(int *len, uae_u8 *dstptr, int cardnum)
 		save_u8(ec->aci.autoconfig_bytes[j]);
 	}
 	struct romconfig *rc = ec->rc;
-	if (rc) {
+	if (rc && rc->back) {
 		save_u32(rc->back->device_type);
 		save_u32(rc->back->device_num);
 		save_string(rc->romfile);
@@ -4099,6 +4105,7 @@ uae_u8 *restore_expansion_info_old(uae_u8 *src)
 void restore_expansion_finish(void)
 {
 	cardno = restore_cardno;
+	restore_cardno = 0;
 	for (int i = 0; i < cardno; i++) {
 		struct card_data *ec = &cards_set[i];
 		cards[i] = ec;
@@ -4159,12 +4166,12 @@ static const struct expansionsubromtype a2091_sub[] = {
 	{
 		_T("DMAC-01"), _T("dmac01"), 0,
 		commodore, commodore_a2091_ram, 0, true,
-		0
+		0/*{ 0 }*/
 	},
 	{
 		_T("DMAC-02"), _T("dmac02"), 0,
 		commodore, commodore_a2091_ram, 0, true,
-		0
+		0/*{ 0 }*/
 	},
 	{
 		NULL
@@ -4174,17 +4181,17 @@ static const struct expansionsubromtype gvp1_sub[] = {
 	{
 		_T("Impact A2000-1/X"), _T("a2000-1"), 0,
 		1761, 8, 0, false,
-		0
+		0/*{ 0 }*/
 	},
 	{
 		_T("Impact A2000-HC"), _T("a2000-hc"), 0,
 		1761, 8, 0, false,
-		0
+		0/*{ 0 }*/
 	},
 	{
 		_T("Impact A2000-HC+2"), _T("a2000-hc+"), 0,
 		1761, 8, 0, false,
-		0
+		0/*{ 0 }*/
 	},
 	{
 		NULL
@@ -4194,12 +4201,12 @@ static const struct expansionsubromtype masoboshi_sub[] = {
 	{
 		_T("MC-302"), _T("mc-302"), 0,
 		2157, 3, 0, false,
-		0
+		0/*{ 0 }*/
 	},
 	{
 		_T("MC-702"), _T("mc-702"), 0,
 		2157, 3, 0, false,
-		0
+		0/*{ 0 }*/
 	},
 	{
 		NULL
@@ -4209,12 +4216,12 @@ static const struct expansionsubromtype rochard_sub[] = {
 	{
 		_T("IDE"), _T("ide"), 0,
 		2144, 2, 0, false,
-		0
+		0/*{ 0 }*/
 	},
 	{
 		_T("IDE+SCSI"), _T("scsi"), 0,
 		2144, 2, 0, false,
-		0
+		0/*{ 0 }*/
 	},
 	{
 		NULL
@@ -4225,12 +4232,12 @@ static const struct expansionsubromtype trifecta_sub[] = {
 	{
 		_T("EC (IDE)"), _T("ec"), 0, // IDE-only
 		2071, 32, 0, false,
-		0
+		0/*{ 0 }*/
 	},
 	{
 		_T("LX (IDE + SCSI)"), _T("lx"), 0, // IDE+SCSI
 		2071, 32, 0, false,
-		0
+		0/*{ 0 }*/
 	},
 	{
 		NULL
@@ -5085,6 +5092,25 @@ static const struct expansionboardsettings alf3_settings[] = {
 		NULL
 	}
 };
+static const struct expansionboardsettings dev_hd_settings[] = {
+	{
+		_T("Base address"),
+		_T("base")
+	},
+	{
+		_T("Register spacing"),
+		_T("spacing")
+	},
+	{
+		_T("Data port address"),
+		_T("dataport")
+	},
+	{
+		_T("Alternate register base address"),
+		_T("altbase")
+	}
+};
+
 static const struct expansionboardsettings cdtvsram_settings[] = {
 	{
 		_T("SRAM size\0") _T("64k\0") _T("128k\0") _T("256k\0"),
@@ -5804,9 +5830,12 @@ const struct expansionromtype expansionroms[] = {
 #ifndef NDEBUG
 	{
 		_T("dev_ide"), _T("DEV IDE"), NULL,
-		NULL, dev_hd_init, NULL, dev_hd_add_ide_unit, ROMTYPE_DEVHD | ROMTYPE_NOT, 0, 0, BOARD_NONAUTOCONFIG_BEFORE, true,
+		NULL, dev_hd_init, NULL, dev_hd_add_ide_unit, ROMTYPE_DEVHD | ROMTYPE_NONE, 0, 0, BOARD_AUTOCONFIG_Z2, true,
 		NULL, 0,
-		false, EXPANSIONTYPE_CUSTOM | EXPANSIONTYPE_IDE | EXPANSIONTYPE_SCSI
+		false, EXPANSIONTYPE_CUSTOM | EXPANSIONTYPE_IDE | EXPANSIONTYPE_SCSI,
+		0, 0, 0, false, NULL,
+		false, 0, dev_hd_settings
+
 	},
 #endif
 
@@ -6539,7 +6568,7 @@ static const struct cpuboardsubtype fusionforty_sub[] = {
 		_T("Fusion Forty"),
 		_T("FusionForty"),
 		ROMTYPE_CB_FUSION, 0, 4,
-		NULL, 0,
+		0/*NULL*/, 0,
 		0,
 		32 * 1024 * 1024
 	},

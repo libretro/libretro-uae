@@ -1,11 +1,11 @@
 /*
- * UAE - The Un*x Amiga Emulator
- *
- * Stuff
- *
- * Copyright 1995, 1996 Ed Hanway
- * Copyright 1995-2001 Bernd Schmidt
- */
+* UAE - The Un*x Amiga Emulator
+*
+* Stuff
+*
+* Copyright 1995, 1996 Ed Hanway
+* Copyright 1995-2001 Bernd Schmidt
+*/
 
 #ifndef UAE_OPTIONS_H
 #define UAE_OPTIONS_H
@@ -15,7 +15,7 @@
 #include "traps.h"
 
 #define UAEMAJOR 4
-#define UAEMINOR 5
+#define UAEMINOR 9
 #define UAESUBREV 0
 
 #define MAX_AMIGADISPLAYS 4
@@ -54,7 +54,7 @@ struct strlist {
 #define MAX_TOTAL_SCSI_DEVICES 8
 
 /* maximum number native input devices supported (single type) */
-#define MAX_INPUT_DEVICES 16
+#define MAX_INPUT_DEVICES 20
 /* maximum number of native input device's buttons and axles supported */
 #define MAX_INPUT_DEVICE_EVENTS 256
 /* 4 different customization settings */
@@ -66,6 +66,17 @@ struct strlist {
 #define SPARE_SUB_EVENT 8
 
 #define INTERNALEVENT_COUNT 1
+
+#if 0
+struct uae_input_device_event
+{
+	uae_s16 eventid[MAX_INPUT_SUB_EVENT_ALL];
+	TCHAR *custom[MAX_INPUT_SUB_EVENT_ALL];
+	uae_u64 flags[MAX_INPUT_SUB_EVENT_ALL];
+	uae_u8 port[MAX_INPUT_SUB_EVENT_ALL];
+	uae_s16 extra;
+};
+#endif
 
 struct uae_input_device {
 	TCHAR *name;
@@ -153,6 +164,8 @@ struct floppyslot
 {
 	TCHAR df[MAX_DPATH];
 	int dfxtype;
+	int dfxsubtype;
+	TCHAR dfxsubtypeid[32];
 	int dfxclick;
 	TCHAR dfxclickexternal[256];
 	bool forcedwriteprotect;
@@ -283,6 +296,10 @@ enum { CP_GENERIC = 1, CP_CDTV, CP_CDTVCR, CP_CD32, CP_A500, CP_A500P, CP_A600,
 #define MONITOREMU_DCTV 10
 #define MONITOREMU_OPALVISION 11
 #define MONITOREMU_COLORBURST 12
+
+#define OVERSCANMODE_OVERSCAN 3
+#define OVERSCANMODE_BROADCAST 4
+#define OVERSCANMODE_EXTREME 5
 
 #define MAX_FILTERSHADERS 4
 
@@ -445,13 +462,14 @@ struct expansion_params
 #define Z3MAPPING_UAE 1
 #define Z3MAPPING_REAL 2
 
+#define GFX_SIZE_EXTRA_NUM 6
 struct monconfig
 {
 	struct wh gfx_size_win;
 	struct wh gfx_size_fs;
 	struct wh gfx_size;
-	struct wh gfx_size_win_xtra[6];
-	struct wh gfx_size_fs_xtra[6];
+	struct wh gfx_size_win_xtra[GFX_SIZE_EXTRA_NUM];
+	struct wh gfx_size_fs_xtra[GFX_SIZE_EXTRA_NUM];
 };
 
 struct uae_prefs {
@@ -552,10 +570,10 @@ struct uae_prefs {
 	bool gfx_blackerthanblack;
 	int gfx_threebitcolors;
 	int gfx_api;
-	bool gfx_hdr;
 	int gfx_api_options;
 	int color_mode;
 	int gfx_extrawidth;
+	int gfx_extraheight;
 	bool lightboost_strobo;
 	int lightboost_strobo_ratio;
 	bool gfx_grayscale;
@@ -564,6 +582,7 @@ struct uae_prefs {
 	int gfx_display_sections;
 	int gfx_variable_sync;
 	bool gfx_windowed_resize;
+	int gfx_overscanmode;
 
 	struct gfx_filterdata gf[2];
 
@@ -905,10 +924,13 @@ extern void cfgfile_dwrite_bool (struct zfile *f,const  TCHAR *option, bool b);
 extern void cfgfile_target_write_bool (struct zfile *f, const TCHAR *option, bool b);
 extern void cfgfile_target_dwrite_bool (struct zfile *f, const TCHAR *option, bool b);
 
-extern void cfgfile_write_str (struct zfile *f, const TCHAR *option, const TCHAR *value);
-extern void cfgfile_dwrite_str (struct zfile *f, const TCHAR *option, const TCHAR *value);
-extern void cfgfile_target_write_str (struct zfile *f, const TCHAR *option, const TCHAR *value);
-extern void cfgfile_target_dwrite_str (struct zfile *f, const TCHAR *option, const TCHAR *value);
+extern void cfgfile_write_str(struct zfile *f, const TCHAR *option, const TCHAR *value);
+extern void cfgfile_write_str_escape(struct zfile *f, const TCHAR *option, const TCHAR *value);
+extern void cfgfile_dwrite_str(struct zfile *f, const TCHAR *option, const TCHAR *value);
+extern void cfgfile_dwrite_str_escape(struct zfile *f, const TCHAR *option, const TCHAR *value);
+extern void cfgfile_target_write_str(struct zfile *f, const TCHAR *option, const TCHAR *value);
+extern void cfgfile_target_dwrite_str(struct zfile *f, const TCHAR *option, const TCHAR *value);
+extern void cfgfile_target_dwrite_str_escape(struct zfile *f, const TCHAR *option, const TCHAR *value);
 
 extern void cfgfile_backup (const TCHAR *path);
 extern struct uaedev_config_data *add_filesys_config (struct uae_prefs *p, int index, struct uaedev_config_info*);
@@ -925,13 +947,14 @@ extern void copy_prefs(struct uae_prefs *src, struct uae_prefs *dst);
 
 int parse_cmdline_option (struct uae_prefs *, TCHAR, const TCHAR*);
 
-extern int cfgfile_yesno (const TCHAR *option, const TCHAR *value, const TCHAR *name, bool *location);
-extern int cfgfile_intval (const TCHAR *option, const TCHAR *value, const TCHAR *name, int *location, int scale);
-extern int cfgfile_strval (const TCHAR *option, const TCHAR *value, const TCHAR *name, int *location, const TCHAR *table[], int more);
-extern int cfgfile_string (const TCHAR *option, const TCHAR *value, const TCHAR *name, TCHAR *location, int maxsz);
+extern int cfgfile_yesno(const TCHAR *option, const TCHAR *value, const TCHAR *name, bool *location);
+extern int cfgfile_intval(const TCHAR *option, const TCHAR *value, const TCHAR *name, int *location, int scale);
+extern int cfgfile_strval(const TCHAR *option, const TCHAR *value, const TCHAR *name, int *location, const TCHAR *table[], int more);
+extern int cfgfile_string(const TCHAR *option, const TCHAR *value, const TCHAR *name, TCHAR *location, int maxsz);
+extern int cfgfile_string_escape(const TCHAR *option, const TCHAR *value, const TCHAR *name, TCHAR *location, int maxsz);
 extern bool cfgfile_option_find(const TCHAR *s, const TCHAR *option);
 extern TCHAR *cfgfile_option_get(const TCHAR *s, const TCHAR *option);
-extern TCHAR *cfgfile_subst_path (const TCHAR *path, const TCHAR *subst, const TCHAR *file);
+extern TCHAR *cfgfile_subst_path(const TCHAR *path, const TCHAR *subst, const TCHAR *file);
 
 extern TCHAR *target_expand_environment (const TCHAR *path, TCHAR *out, int maxlen);
 extern int target_parse_option (struct uae_prefs *, const TCHAR *option, const TCHAR *value);

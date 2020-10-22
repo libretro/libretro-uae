@@ -76,31 +76,31 @@
 #define CIASTARTCYCLESHI 3
 #define CIASTARTCYCLESCRA 2
 
-static unsigned int ciaaicr, ciaaimask, ciabicr, ciabimask;
-static unsigned int ciaacra, ciaacrb, ciabcra, ciabcrb;
-static unsigned int ciaastarta, ciaastartb, ciabstarta, ciabstartb;
+static uae_u32 ciaaicr, ciaaimask, ciabicr, ciabimask;
+static uae_u32 ciaacra, ciaacrb, ciabcra, ciabcrb;
+static uae_u32 ciaastarta, ciaastartb, ciabstarta, ciabstartb;
 
 /* Values of the CIA timers.  */
-static unsigned long ciaata, ciaatb, ciabta, ciabtb;
+static uae_u32 ciaata, ciaatb, ciabta, ciabtb;
 /* Computed by compute_passed_time.  */
-static unsigned long ciaata_passed, ciaatb_passed, ciabta_passed, ciabtb_passed;
+static uae_u32 ciaata_passed, ciaatb_passed, ciabta_passed, ciabtb_passed;
 
-static unsigned long ciaatod, ciabtod, ciaatol, ciabtol, ciaaalarm, ciabalarm;
+static uae_u32 ciaatod, ciabtod, ciaatol, ciabtol, ciaaalarm, ciabalarm;
 static int ciaatlatch, ciabtlatch;
 static bool oldovl;
 static bool led;
 static int led_old_brightness;
-static unsigned long led_cycles_on, led_cycles_off, led_cycle;
+static uae_u32 led_cycles_on, led_cycles_off, led_cycle;
 
-unsigned int ciabpra;
+uae_u32 ciabpra;
 
-static unsigned long ciaala, ciaalb, ciabla, ciablb;
+static uae_u32 ciaala, ciaalb, ciabla, ciablb;
 static int ciaatodon, ciabtodon;
-static unsigned int ciaapra, ciaaprb, ciaadra, ciaadrb, ciaasdr, ciaasdr_buf, ciaasdr_load, ciaasdr_cnt;
-static unsigned int ciabprb, ciabdra, ciabdrb, ciabsdr, ciabsdr_buf, ciabsdr_load, ciabsdr_cnt;
+static uae_u32 ciaapra, ciaaprb, ciaadra, ciaadrb, ciaasdr, ciaasdr_buf, ciaasdr_load, ciaasdr_cnt;
+static uae_u32 ciabprb, ciabdra, ciabdrb, ciabsdr, ciabsdr_buf, ciabsdr_load, ciabsdr_cnt;
 static int div10;
 static int kbstate, kblostsynccnt;
-static unsigned long kbhandshakestart;
+static uae_u32 kbhandshakestart;
 static uae_u8 kbcode;
 
 static uae_u8 serbits;
@@ -109,7 +109,7 @@ static int warned = 10;
 static struct rtc_msm_data rtc_msm;
 static struct rtc_ricoh_data rtc_ricoh;
 
-static void setclr (unsigned int *p, unsigned int val)
+static void setclr (uae_u32 *p, uae_u32 val)
 {
 	if (val & 0x80) {
 		*p |= val & 0x7F;
@@ -215,14 +215,14 @@ last call of CIA_calctimers.  */
 
 static void compute_passed_time (void)
 {
-	unsigned long int ccount = (get_cycles () - eventtab[ev_cia].oldcycles + div10);
-	unsigned long int ciaclocks = ccount / DIV10;
+	uae_u32 ccount = (get_cycles () - eventtab[ev_cia].oldcycles + div10);
+	uae_u32 ciaclocks = ccount / DIV10;
 
 	ciaata_passed = ciaatb_passed = ciabta_passed = ciabtb_passed = 0;
 
 	/* CIA A timers */
 	if ((ciaacra & 0x21) == 0x01) {
-		unsigned long int cc = ciaclocks;
+		uae_u32 cc = ciaclocks;
 		if (cc > ciaastarta)
 			cc -= ciaastarta;
 		else
@@ -231,7 +231,7 @@ static void compute_passed_time (void)
 		ciaata_passed = cc;
 	}
 	if ((ciaacrb & 0x61) == 0x01) {
-		unsigned long int cc = ciaclocks;
+		uae_u32 cc = ciaclocks;
 		if (cc > ciaastartb)
 			cc -= ciaastartb;
 		else
@@ -242,7 +242,7 @@ static void compute_passed_time (void)
 
 	/* CIA B timers */
 	if ((ciabcra & 0x21) == 0x01) {
-		unsigned long int cc = ciaclocks;
+		uae_u32 cc = ciaclocks;
 		if (cc > ciabstarta)
 			cc -= ciabstarta;
 		else
@@ -251,7 +251,7 @@ static void compute_passed_time (void)
 		ciabta_passed = cc;
 	}
 	if ((ciabcrb & 0x61) == 0x01) {
-		unsigned long int cc = ciaclocks;
+		uae_u32 cc = ciaclocks;
 		if (cc > ciabstartb)
 			cc -= ciabstartb;
 		else
@@ -267,8 +267,8 @@ in the same cycle.  */
 
 static int CIA_update_check (void)
 {
-	unsigned long int ccount = (get_cycles () - eventtab[ev_cia].oldcycles + div10);
-	unsigned long int ciaclocks = ccount / DIV10;
+	uae_u32 ccount = (get_cycles () - eventtab[ev_cia].oldcycles + div10);
+	uae_u32 ciaclocks = ccount / DIV10;
 
 	int aovfla = 0, aovflb = 0, asp = 0, bovfla = 0, bovflb = 0, bsp = 0;
 	int icr = 0;
@@ -279,7 +279,7 @@ static int CIA_update_check (void)
 	// A INMODE=0
 	if ((ciaacra & 0x21) == 0x01) {
 		bool check = true;
-		unsigned long int cc = ciaclocks;
+		uae_u32 cc = ciaclocks;
 		if (ciaastarta > 0) {
 			if (cc > ciaastarta) {
 				cc -= ciaastarta;
@@ -317,7 +317,7 @@ static int CIA_update_check (void)
 	// A INMODE=00
 	if ((ciaacrb & 0x61) == 0x01) {
 		bool check = true;
-		unsigned long int cc = ciaclocks;
+		uae_u32 cc = ciaclocks;
 		if (ciaastartb > 0) {
 			if (cc > ciaastartb) {
 				cc -= ciaastartb;
@@ -339,7 +339,7 @@ static int CIA_update_check (void)
 	// A INMODE=0
 	if ((ciabcra & 0x21) == 0x01) {
 		bool check = true;
-		unsigned long int cc = ciaclocks;
+		uae_u32 cc = ciaclocks;
 		if (ciabstarta > 0) {
 			if (cc > ciabstarta) {
 				cc -= ciabstarta;
@@ -380,7 +380,7 @@ static int CIA_update_check (void)
 	// B INMODE=00
 	if ((ciabcrb & 0x61) == 0x01) {
 		bool check = true;
-		unsigned long int cc = ciaclocks;
+		uae_u32 cc = ciaclocks;
 		if (ciabstartb > 0) {
 			if (cc > ciabstartb) {
 				cc -= ciabstartb;
@@ -448,7 +448,7 @@ static void CIA_update (void)
 
 static void CIA_calctimers (void)
 {
-	long int ciaatimea = -1, ciaatimeb = -1, ciabtimea = -1, ciabtimeb = -1;
+	uae_s32 ciaatimea = -1, ciaatimeb = -1, ciabtimea = -1, ciabtimeb = -1;
 	int div10diff = DIV10 - div10;
 
 	eventtab[ev_cia].oldcycles = get_cycles ();
@@ -498,7 +498,7 @@ static void CIA_calctimers (void)
 	eventtab[ev_cia].active = (ciaatimea != -1 || ciaatimeb != -1
 		|| ciabtimea != -1 || ciabtimeb != -1);
 	if (eventtab[ev_cia].active) {
-		unsigned long int ciatime = ~0L;
+		uae_u32 ciatime = ~0L;
 		if (ciaatimea != -1)
 			ciatime = ciaatimea;
 		if (ciaatimeb != -1 && ciaatimeb < ciatime)
@@ -529,7 +529,7 @@ void cia_parallelack (void)
 	RethinkICRA ();
 }
 
-static bool checkalarm (unsigned long tod, unsigned long alarm, bool inc, int ab)
+static bool checkalarm (uae_u32 tod, uae_u32 alarm, bool inc, int ab)
 {
 	if (tod == alarm)
 		return true;
@@ -906,8 +906,8 @@ void CIA_hsync_posthandler (bool ciahsync, bool dotod)
 
 static void calc_led (int old_led)
 {
-	unsigned long c = get_cycles ();
-	unsigned long t = (c - led_cycle) / CYCLE_UNIT;
+	uae_u32 c = get_cycles ();
+	uae_u32 t = (c - led_cycle) / CYCLE_UNIT;
 	if (old_led)
 		led_cycles_on += t;
 	else
@@ -1044,7 +1044,7 @@ static uae_u32 getciatod(uae_u32 tod)
 	}
 	return bcdtod;
 }
-static void setciatod(unsigned long *tod, uae_u32 v)
+static void setciatod(uae_u32 *tod, uae_u32 v)
 {
 	if (!currprefs.cs_cia6526) {
 		*tod = v;
@@ -1060,9 +1060,9 @@ static void setciatod(unsigned long *tod, uae_u32 v)
 	*tod = bintod;
 }
 
-static uae_u8 ReadCIAA (unsigned int addr, uae_u32 *flags)
+static uae_u8 ReadCIAA (uae_u32 addr, uae_u32 *flags)
 {
-	unsigned int tmp;
+	uae_u32 tmp;
 	int reg = addr & 15;
 
 	compute_passed_time ();
@@ -1238,9 +1238,9 @@ static uae_u8 ReadCIAA (unsigned int addr, uae_u32 *flags)
 	return 0;
 }
 
-static uae_u8 ReadCIAB (unsigned int addr, uae_u32 *flags)
+static uae_u8 ReadCIAB (uae_u32 addr, uae_u32 *flags)
 {
-	unsigned int tmp;
+	uae_u32 tmp;
 	int reg = addr & 15;
 
 #if CIAB_DEBUG_R > 0
@@ -1902,45 +1902,47 @@ void CIA_reset (void)
 		kbstate = 0;
 		ciaatlatch = ciabtlatch = 0;
 		ciaapra = 0; ciaadra = 0;
+		ciaaprb = 0; ciaadrb = 0;
 		ciaatod = ciabtod = 0; ciaatodon = ciabtodon = 0;
 		ciaaicr = ciabicr = ciaaimask = ciabimask = 0;
 		ciaacra = ciaacrb = ciabcra = ciabcrb = 0;
 		ciaala = ciaalb = ciabla = ciablb = ciaata = ciaatb = ciabta = ciabtb = 0xFFFF;
 		ciaaalarm = ciabalarm = 0;
 		ciabpra = 0x8C; ciabdra = 0;
+		ciabprb = 0; ciabdrb = 0;
 		div10 = 0;
 		ciaasdr_cnt = 0; ciaasdr = 0; ciaasdr_load = 0;
 		ciabsdr_cnt = 0; ciabsdr = 0; ciabsdr_buf = 0; ciabsdr_load = 0;
 		ciaata_passed = ciaatb_passed = ciabta_passed = ciabtb_passed = 0;
-		CIA_calctimers ();
-		DISK_select_set (ciabprb);
+		CIA_calctimers();
+		DISK_select_set(ciabprb);
 	}
-	map_overlay (0);
-	check_led ();
+	map_overlay(0);
+	check_led();
 #ifdef SERIAL_PORT
 	if (currprefs.use_serial && !savestate_state)
-		serial_dtr_off (); /* Drop DTR at reset */
+		serial_dtr_off(); /* Drop DTR at reset */
 #endif
 	if (savestate_state) {
 		if (currprefs.cs_ciaoverlay) {
 			oldovl = true;
 		}
-		bfe001_change ();
+		bfe001_change();
 		if (!currprefs.cs_ciaoverlay) {
-			map_overlay (oldovl ? 0 : 1);
+			map_overlay(oldovl ? 0 : 1);
 		}
 	}
 }
 
-void dumpcia (void)
+void dumpcia(void)
 {
-	console_out_f (_T("A: CRA %02x CRB %02x ICR %02x IM %02x TA %04x (%04x) TB %04x (%04x)\n"),
+	console_out_f(_T("A: CRA %02x CRB %02x ICR %02x IM %02x TA %04x (%04x) TB %04x (%04x)\n"),
 		ciaacra, ciaacrb, ciaaicr, ciaaimask, ciaata, ciaala, ciaatb, ciaalb);
-	console_out_f (_T("TOD %06x (%06x) ALARM %06x %c%c CYC=%08X\n"),
-		ciaatod, ciaatol, ciaaalarm, ciaatlatch ? 'L' : ' ', ciaatodon ? ' ' : 'S', get_cycles ());
-	console_out_f (_T("B: CRA %02x CRB %02x ICR %02x IM %02x TA %04x (%04x) TB %04x (%04x)\n"),
+	console_out_f(_T("TOD %06x (%06x) ALARM %06x %c%c CYC=%08X\n"),
+		ciaatod, ciaatol, ciaaalarm, ciaatlatch ? 'L' : ' ', ciaatodon ? ' ' : 'S', get_cycles());
+	console_out_f(_T("B: CRA %02x CRB %02x ICR %02x IM %02x TA %04x (%04x) TB %04x (%04x)\n"),
 		ciabcra, ciabcrb, ciabicr, ciabimask, ciabta, ciabla, ciabtb, ciablb);
-	console_out_f (_T("TOD %06x (%06x) ALARM %06x %c%c CLK=%d\n"),
+	console_out_f(_T("TOD %06x (%06x) ALARM %06x %c%c CLK=%d\n"),
 		ciabtod, ciabtol, ciabalarm, ciabtlatch ? 'L' : ' ', ciabtodon ? ' ' : 'S', div10 / CYCLE_UNIT);
 }
 
@@ -1955,7 +1957,7 @@ addrbank cia_bank = {
 	ABFLAG_IO | ABFLAG_CIA, S_READ, S_WRITE, NULL, 0x3f01, 0xbfc000
 };
 
-static void cia_wait_pre (int cianummask)
+static void cia_wait_pre(int cianummask)
 {
 	if (currprefs.cachesize || currprefs.cpu_thread)
 		return;
@@ -1969,23 +1971,14 @@ static void cia_wait_pre (int cianummask)
 	}
 
 #ifndef CUSTOM_SIMPLE
-	int div = (get_cycles () - eventtab[ev_cia].oldcycles) % DIV10;
-	int cycles;
-
-	if (div >= DIV10 * ECLOCK_DATA_CYCLE / 10) {
-		cycles = DIV10 - div;
-		cycles += DIV10 * ECLOCK_DATA_CYCLE / 10;
-	} else if (div) {
-		cycles = DIV10 + DIV10 * ECLOCK_DATA_CYCLE / 10 - div;
-	} else {
-		cycles = DIV10 * ECLOCK_DATA_CYCLE / 10 - div;
-	}
-
+	uae_u32 diff = get_cycles() - eventtab[ev_cia].oldcycles;
+	int div = diff % DIV10;
+	int cycles = DIV10 - div;
 	if (cycles) {
 		if (currprefs.cpu_memory_cycle_exact)
-			x_do_cycles_pre (cycles);
+			x_do_cycles_pre(cycles);
 		else
-			do_cycles (cycles);
+			do_cycles(cycles);
 	}
 #endif
 }
@@ -2646,7 +2639,8 @@ uae_u8 *restore_cia (int num, uae_u8 *src)
 		div10 = CYCLE_UNIT * b;
 	b = restore_u8 ();
 	if (num) ciabsdr_cnt = b; else ciaasdr_cnt = b;
-	if (num) ciabsdr_buf = b;
+	b = restore_u8();
+	if (num) ciabsdr_buf = b; else ciaasdr_buf = b;
 	return src;
 }
 

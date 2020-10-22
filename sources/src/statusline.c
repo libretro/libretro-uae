@@ -334,9 +334,7 @@ void draw_status_line_single (int monid, uae_u8 *buf, int bpp, int y, int totalw
                 num1 = -1;
                 num2 = track / 10;
                 num3 = track % 10;
-                //on = gui_data.drives[pled].motor;
                 on = gid->drive_motor;
-                //if (gui_data.drive_writing[pled]) {
                 if (gid->drive_writing) {
                     on_rgb  = RED_BRIGHT;
                     on_rgb2 = RED_DIM;
@@ -657,7 +655,7 @@ void draw_status_line_single(int monid, uae_u8 *buf, int bpp, int y, int totalwi
 					on_rgb = 0xcc0000;
 				}
 				half = gui_data.drive_side ? 1 : -1;
-				if (gid->df[0] == 0) {
+				if (!gid->floppy_inserted) {
 					pen_rgb = ledcolor(0x00aaaaaa, rc, gc, bc, alpha);
 				} else if (gid->floppy_protected) {
 					cb = ledcolor(0x00cc00, rc, gc, bc, alpha);

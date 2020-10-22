@@ -17,7 +17,7 @@ void sound_set_cd_volume(unsigned int vol_l, unsigned int vol_r);
 #define CD_BUFLEN (CD_FREQ / 10)
 
 extern int sound_pos_global;
-void sound_speed_changed(bool enable);
+void sound_speed_changed();
 
 void sound_init();
 void sound_reset();

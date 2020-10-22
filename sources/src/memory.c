@@ -42,18 +42,10 @@
 #include "devices.h"
 #include "inputdevice.h"
 #include "casablanca.h"
-#include "misc.h"
-#include "zfile.h"
 
 #ifdef __LIBRETRO__
 extern bool retro_message;
 extern char retro_message_msg[1024];
-#endif
-
-extern uae_u8 *natmem_offset, *natmem_offset_end;
-
-#ifdef USE_MAPPED_MEMORY
-#include <sys/mman.h>
 #endif
 
 bool canbang;
@@ -347,6 +339,12 @@ uae_u32 dummy_get_safe(uaecptr addr, int size, bool inst, uae_u32 defvalue)
 	if (currprefs.cs_unmapped_space == 2)
 		return 0xffffffff & mask;
 	if ((currprefs.cpu_model <= 68010) || (currprefs.cpu_model == 68020 && (currprefs.chipset_mask & CSMASK_AGA) && currprefs.address_space_24)) {
+		// if executed from ROM: always return zero
+		uaecptr pc = m68k_getpc();
+		addrbank *ab = &get_mem_bank(pc);
+		if (ab->flags & ABFLAG_ROM) {
+			return 0;
+		}
 		if (size == sz_long) {
 			v = regs.irc & 0xffff;
 			if (addr & 1)
@@ -708,13 +706,19 @@ static uae_u32 REGPARAM2 chipmem_dummy_lget (uaecptr addr)
 	return (chipmem_dummy () << 16) | chipmem_dummy ();
 }
 
+static uae_u32 chipmem_noise(uae_u32 addr)
+{
+	// not yet implemented
+	return 0;
+}
+
 static uae_u32 REGPARAM2 chipmem_agnus_lget (uaecptr addr)
 {
 	uae_u32 *m;
 
 	addr &= chipmem_full_mask;
 	if (addr >= chipmem_full_size - 3)
-		return 0;
+		return chipmem_noise(addr);
 	m = (uae_u32 *)(chipmem_bank.baseaddr + addr);
 	return do_get_mem_long (m);
 }
@@ -725,7 +729,7 @@ uae_u32 REGPARAM2 chipmem_agnus_wget (uaecptr addr)
 
 	addr &= chipmem_full_mask;
 	if (addr >= chipmem_full_size - 1)
-		return 0;
+		return chipmem_noise(addr);
 	m = (uae_u16 *)(chipmem_bank.baseaddr + addr);
 	return do_get_mem_word (m);
 }
@@ -734,7 +738,7 @@ static uae_u32 REGPARAM2 chipmem_agnus_bget (uaecptr addr)
 {
 	addr &= chipmem_full_mask;
 	if (addr >= chipmem_full_size)
-		return 0;
+		return chipmem_noise(addr);
 	return chipmem_bank.baseaddr[addr];
 }
 
@@ -770,6 +774,10 @@ static void REGPARAM2 chipmem_agnus_bput (uaecptr addr, uae_u32 b)
 
 static int REGPARAM2 chipmem_check (uaecptr addr, uae_u32 size)
 {
+	// Check if chip ram is in two "banks" (ECS 0.5m+0.5m config)
+	if (((addr & ~chipmem_bank.mask) & chipmem_full_mask) || (((addr + size) & ~chipmem_bank.mask) & chipmem_full_mask)) {
+		return 0;
+	}
 	addr &= chipmem_bank.mask;
 	return (addr + size) <= chipmem_full_size;
 }
@@ -2184,7 +2192,7 @@ static void allocate_memory (void)
 	/* emulate 0.5M+0.5M with 1M Agnus chip ram aliasing */
 	if (currprefs.chipmem.size == 0x80000 && currprefs.bogomem.size >= 0x80000 &&
 		(currprefs.chipset_mask & CSMASK_ECS_AGNUS) && !(currprefs.chipset_mask & CSMASK_AGA) && currprefs.cpu_model < 68020) {
-			if ((chipmem_bank.reserved_size != currprefs.chipmem.size || bogomem_bank.reserved_size != currprefs.bogomem.size)) {
+			if ((chipmem_bank.reserved_size != currprefs.chipmem.size || bogomem_bank.reserved_size != currprefs.bogomem.size || chipmem_full_size != 0x80000 * 2)) {
 				int memsize1, memsize2;
 				mapped_free (&chipmem_bank);
 				mapped_free (&bogomem_bank);
@@ -2214,7 +2222,7 @@ static void allocate_memory (void)
 			bogomem_aliasing = 1;
 	} else if (currprefs.chipmem.size == 0x80000 && currprefs.bogomem.size >= 0x80000 &&
 		!(currprefs.chipset_mask & CSMASK_ECS_AGNUS) && currprefs.cs_1mchipjumper && currprefs.cpu_model < 68020) {
-			if ((chipmem_bank.reserved_size != currprefs.chipmem.size || bogomem_bank.reserved_size != currprefs.bogomem.size)) {
+			if ((chipmem_bank.reserved_size != currprefs.chipmem.size || bogomem_bank.reserved_size != currprefs.bogomem.size || chipmem_full_size != chipmem_bank.reserved_size)) {
 				int memsize1, memsize2;
 				mapped_free (&chipmem_bank);
 				mapped_free (&bogomem_bank);
@@ -2575,7 +2583,6 @@ static void restore_roms(void)
 {
 	roms_modified = false;
 	protect_roms (false);
-
 #ifndef __LIBRETRO__
 	write_log (_T("ROM loader.. (%s)\n"), currprefs.romfile);
 #endif
@@ -3035,13 +3042,13 @@ void map_banks_cond (addrbank *bank, int start, int size, int realsize)
 
 #ifdef WITH_THREADED_CPU
 
-typedef struct addrbank_thread {
+struct addrbank_thread {
 	addrbank *orig;
 	addrbank ab;
-} addrbank_thread;
+};
 
 #define MAX_THREAD_BANKS 200
-static addrbank_thread *thread_banks[MAX_THREAD_BANKS];
+static struct addrbank_thread *thread_banks[MAX_THREAD_BANKS];
 addrbank *thread_mem_banks[MEMORY_BANKS];
 static int thread_banks_used;
 
@@ -3102,7 +3109,7 @@ static addrbank *get_bank_cpu_thread(addrbank *bank)
 	}
 	struct addrbank_thread *at = thread_banks[thread_banks_used];
 	if (!at)
-		at = xcalloc(addrbank_thread, 1);
+		at = xcalloc(struct addrbank_thread, 1);
 	thread_banks[thread_banks_used++] = at;
 	at->orig = bank;
 	memcpy(&at->ab, bank, sizeof(addrbank));
@@ -3273,13 +3280,11 @@ void map_banks (addrbank *bank, int start, int size, int realsize)
 {
 	if (start == 0xffffffff)
 		return;
-
 #ifdef JIT
 	if ((bank->jit_read_flag | bank->jit_write_flag) & S_N_ADDR) {
 		jit_n_addr_unsafe = 1;
 	}
 #endif
-
 	if (start >= 0x100) {
 		int real_left = 0;
 		for (int bnr = start; bnr < start + size; bnr++) {

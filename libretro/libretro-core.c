@@ -155,8 +155,8 @@ static int thisframe_y_adjust_update_frame_timer = 3;
 
 static int opt_horizontal_offset = 0;
 static bool opt_horizontal_offset_auto = true;
-static int retro_max_diwlastword_hires = 824;
-static int retro_max_diwlastword = 824;
+static int retro_max_diwlastword_hires = 936;
+static int retro_max_diwlastword = 936;
 extern int retro_min_diwstart;
 static int retro_min_diwstart_old = -1;
 extern int retro_max_diwstop;
@@ -4786,7 +4786,7 @@ void retro_get_system_info(struct retro_system_info *info)
 #endif
    memset(info, 0, sizeof(*info));
    info->library_name     = "PUAE";
-   info->library_version  = PACKAGE_VERSION "b17" GIT_VERSION;
+   info->library_version  = PACKAGE_VERSION "" GIT_VERSION;
    info->need_fullpath    = true;
    info->block_extract    = true;
    info->valid_extensions = "adf|adz|dms|fdi|ipf|hdf|hdz|lha|slave|info|cue|ccd|nrg|mds|iso|chd|uae|m3u|zip|7z";
@@ -6758,20 +6758,11 @@ static void update_audiovideo(void)
 #endif
 
       /* Super Skidmarks force to SuperHires */
-      if (current_resolution == 1 && bplcon0 == 0xC201 && ((diwfirstword_total == 210 && diwlastword_total == 786) || (diwfirstword_total == 420 && diwlastword_total == 1572)))
+      if (current_resolution == 1 && bplcon0 == 0xC201 && (diwfirstword_total == 938 || diwfirstword_total == 1876))
          current_resolution = 2;
-      /* Super Stardust force to SuperHires, rather pointless and causes a false positive on The Settlers */
-#if 0
-      else if (current_resolution == 0 && (bplcon0 == 0 /*CD32*/|| bplcon0 == 512 /*AGA*/) && ((diwfirstword_total == 114 && diwlastword_total == 818) || (diwfirstword_total == 228 && diwlastword_total == 1636)))
-         current_resolution = 2;
-#endif
       /* Lores force to Hires */
       else if (current_resolution == 0)
          current_resolution = 1;
-
-      /* Skip bogus switches in Super Skidmarks SuperHires */
-      if (!diwlastword_total)
-         current_resolution = 0;
 
       switch (current_resolution)
       {
@@ -6824,11 +6815,25 @@ static void update_audiovideo(void)
    if (request_init_custom_timer > 0)
       request_update_av_info = true;
 
+   /* Reuse old values if more valid than current,
+    * since otherwise interlace toggle interferes with zoom */
+   if (opt_vertical_offset_auto && zoom_mode_id != 0)
+   {
+      if (retro_thisframe_first_drawn_line == -1 && retro_thisframe_first_drawn_line_old != -1)
+         retro_thisframe_first_drawn_line = retro_thisframe_first_drawn_line_old;
+      if (retro_thisframe_last_drawn_line == -1 && retro_thisframe_last_drawn_line_old != -1)
+         retro_thisframe_last_drawn_line = retro_thisframe_last_drawn_line_old;
+   }
+
    /* Automatic vertical offset */
    if (opt_vertical_offset_auto && zoom_mode_id != 0 && retro_thisframe_first_drawn_line != retro_thisframe_last_drawn_line)
    {
       int retro_thisframe_first_drawn_line_delta = abs(retro_thisframe_first_drawn_line_old - retro_thisframe_first_drawn_line);
       int retro_thisframe_last_drawn_line_delta  = abs(retro_thisframe_last_drawn_line_old - retro_thisframe_last_drawn_line);
+
+#if 0
+      printf("thisrun   first:%3d old:%3d start:%3d last:%3d old:%3d start:%3d\n", retro_thisframe_first_drawn_line, retro_thisframe_first_drawn_line_old, retro_thisframe_first_drawn_line_start, retro_thisframe_last_drawn_line, retro_thisframe_last_drawn_line_old, retro_thisframe_last_drawn_line_start);
+#endif
 
       /* For some odd reason KS2+ Kickstarts start with bogus last_drawn_line,
        * therefore reset to safe values and skip the rest for the frame
@@ -6843,13 +6848,10 @@ static void update_audiovideo(void)
          retro_thisframe_last_drawn_line  = KS2_ZOOM_SAFE_LAST_LINE;
 
          retro_thisframe_first_drawn_line_old = retro_thisframe_first_drawn_line_start = -1;
-         retro_thisframe_last_drawn_line_old  = retro_thisframe_last_drawn_line_start = -1;
+         retro_thisframe_last_drawn_line_old  = retro_thisframe_last_drawn_line_start  = -1;
          return;
       }
 
-#if 0
-      printf("thisrun   first:%3d old:%3d start:%3d last:%3d old:%3d start:%3d\n", retro_thisframe_first_drawn_line, retro_thisframe_first_drawn_line_old, retro_thisframe_first_drawn_line_start, retro_thisframe_last_drawn_line, retro_thisframe_last_drawn_line_old, retro_thisframe_last_drawn_line_start);
-#endif
       if (( retro_thisframe_first_drawn_line != retro_thisframe_first_drawn_line_old
          || retro_thisframe_last_drawn_line  != retro_thisframe_last_drawn_line_old)
          && retro_thisframe_first_drawn_line != -1
@@ -7056,7 +7058,7 @@ static bool retro_update_av_info(void)
    {
       if (update_vresolution(true))
       {
-         request_init_custom_timer = 1;
+         request_init_custom_timer = 2;
          set_config_changed();
          return false;
       }

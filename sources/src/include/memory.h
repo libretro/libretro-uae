@@ -170,6 +170,8 @@ struct autoconfig_info
 	uae_u32 start;
 	uae_u32 size;
 	int zorro;
+	// never direct maps RAM
+	bool indirect;
 	const TCHAR *label;
 	addrbank *addrbank;
 	uaecptr write_bank_address;
@@ -455,8 +457,6 @@ extern uaecptr expamem_board_pointer, expamem_highmem_pointer;
 extern uaecptr expamem_z3_pointer_real, expamem_z3_pointer_uae;
 extern uae_u32 expamem_z3_highram_real, expamem_z3_highram_uae;
 extern uae_u32 expamem_board_size;
-
-extern uae_u32 last_custom_value1;
 
 /* Default memory access functions */
 

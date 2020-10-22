@@ -87,6 +87,10 @@ extern int screen_is_picasso;
 static int screen_is_picasso = 0;
 #endif
 
+#ifndef ACTION_REPLAY
+uae_u8 ar_custom[2*256];
+#endif
+
 uae_u32 redc[3 * 256], grec[3 * 256], bluc[3 * 256];
 
 #define VBLANKTH_KILL 0
@@ -1516,7 +1520,7 @@ void close_windows(struct AmigaMonitor *mon)
 #endif
 }
 
-void close_rtg(int monid)
+void close_rtg(int monid, bool reset)
 {
 #if 0
 	close_windows(&AMonitors[monid]);

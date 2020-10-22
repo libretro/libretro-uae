@@ -22,12 +22,12 @@
 
 static const int pissoff_nojit_value = 256 * CYCLE_UNIT;
 
-unsigned long int event_cycles, nextevent, currcycle;
+uae_u32 event_cycles, nextevent, currcycle;
 int is_syncline, is_syncline_end;
-long cycles_to_next_event;
-long max_cycles_to_next_event;
-long cycles_to_hsync_event;
-unsigned long start_cycles;
+int cycles_to_next_event;
+int max_cycles_to_next_event;
+int cycles_to_hsync_event;
+uae_u32 start_cycles;
 bool event_wait;
 
 frame_time_t vsyncmintime, vsyncmintimepre;
@@ -50,10 +50,10 @@ void events_schedule (void)
 {
 	int i;
 
-	unsigned long int mintime = ~0L;
+	uae_u32 mintime = ~0L;
 	for (i = 0; i < ev_max; i++) {
 		if (eventtab[i].active) {
-			unsigned long int eventtime = eventtab[i].evtime - currcycle;
+			uae_u32 eventtime = eventtab[i].evtime - currcycle;
 			if (eventtime < mintime)
 				mintime = eventtime;
 		}
@@ -251,7 +251,7 @@ static bool event_check_vsync(void)
 	return false;
 }
 
-void do_cycles_slow (unsigned long cycles_to_add)
+void do_cycles_slow (uae_u32 cycles_to_add)
 {
 #ifdef WITH_X86
 #if 0
@@ -365,7 +365,24 @@ void event2_newevent_xx (int no, evt t, uae_u32 data, evfunc2 func)
 				no = ev2_misc;
 			if (no == next) {
 				write_log (_T("out of event2's!\n"));
-				return;
+				// execute most recent event immediately
+				evt mintime = ~0L;
+				int minevent = -1;
+				evt ct = get_cycles();
+				for (int i = 0; i < ev2_max; i++) {
+					if (eventtab2[i].active) {
+						evt eventtime = eventtab2[i].evtime - ct;
+						if (eventtime < mintime) {
+							mintime = eventtime;
+							minevent = i;
+						}
+					}
+				}
+				if (minevent >= 0) {
+					eventtab2[minevent].active = false;
+					eventtab2[minevent].handler(eventtab2[minevent].data);
+				}
+				continue;
 			}
 		}
 		next = no;
@@ -394,7 +411,7 @@ void event2_newevent_x_replace(evt t, uae_u32 data, evfunc2 func)
 
 int current_hpos (void)
 {
-	int hp = current_hpos_safe ();
+	int hp = current_hpos_safe();
 	if (hp < 0 || hp > 256) {
 		gui_message(_T("hpos = %d!?\n"), hp);
 		hp = 0;

@@ -395,10 +395,15 @@ static int get_gayle_ide_reg (uaecptr addr, struct ide_hdf **ide)
 			addr &= ~IDE_SECONDARY;
 		}
 	}
+	if (idedrive[ide2] == NULL) {
+		return -1;
+	}
 	*ide = idedrive[ide2 + idedrive[ide2]->ide_drv];
+	if (*ide == NULL) {
+		return -1;
+	}
 	return addr;
 }
-
 
 static uae_u32 gayle_read2 (uaecptr addr)
 {
@@ -1934,6 +1939,7 @@ bool gayle_init_board_io_pcmcia(struct autoconfig_info *aci)
 	aci->start = PCMCIA_ATTRIBUTE_START;
 	aci->size = PCMCIA_ATTRIBUTE_SIZE;
 	aci->zorro = 0;
+	aci->indirect = true;
 	aci->parent_address_space = true;
 	device_add_reset(gayle_reset);
 	if (aci->doinit)
@@ -1946,6 +1952,7 @@ bool gayle_init_board_common_pcmcia(struct autoconfig_info *aci)
 	aci->start = PCMCIA_COMMON_START;
 	aci->size = PCMCIA_COMMON_SIZE;
 	aci->zorro = 0;
+	aci->indirect = true;
 	aci->parent_address_space = true;
 	device_add_reset(gayle_reset);
 	if (aci->doinit)
@@ -1958,6 +1965,7 @@ bool gayle_init_pcmcia(struct autoconfig_info *aci)
 	aci->start = PCMCIA_COMMON_START;
 	aci->size = 0xa80000 - aci->start;
 	aci->zorro = 0;
+	aci->indirect = true;
 	device_add_reset(gayle_reset);
 	if (aci->doinit)
 		gayle_init();

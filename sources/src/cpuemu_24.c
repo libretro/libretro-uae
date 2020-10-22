@@ -19018,7 +19018,10 @@ void REGPARAM2 op_4e70_24_ff(uae_u32 opcode)
 		Exception(8);
 		return;
 	}
-	cpureset();
+	bool r = cpureset();
+	if (r) {
+		return;
+	}
 	m68k_incpci(2);
 	return;
 }

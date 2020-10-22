@@ -19072,7 +19072,10 @@ uae_u32 REGPARAM2 op_4e70_0_ff(uae_u32 opcode)
 		Exception(8);
 		return 0;
 	}
-	cpureset();
+	bool r = cpureset();
+	if (r) {
+		return (128 * CYCLE_UNIT / 2 + count_cycles) | (((1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4) << 16);
+	}
 	m68k_incpc(2);
 	return (132 * CYCLE_UNIT / 2 + count_cycles) | (((1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4) << 16);
 }

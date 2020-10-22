@@ -576,10 +576,8 @@ static void restore_header (uae_u8 *src)
 	emuname = restore_string ();
 	emuversion = restore_string ();
 	description = restore_string ();
-#if OPEN_LOG > 0
 	write_log (_T("Saved with: '%s %s', description: '%s'\n"),
 		emuname, emuversion, description);
-#endif
 	xfree (description);
 	xfree (emuversion);
 	xfree (emuname);
@@ -1988,7 +1986,7 @@ retry2:
 		input_record++;
 		for (i = 0; i < 4; i++) {
 			bool wp = true;
-			DISK_validate_filename (&currprefs, currprefs.floppyslots[i].df, NULL, false, &wp, NULL, NULL);
+			DISK_validate_filename (&currprefs, currprefs.floppyslots[i].df, i, NULL, false, &wp, NULL, NULL);
 			inprec_recorddiskchange (i, currprefs.floppyslots[i].df, wp);
 		}
 		input_record--;

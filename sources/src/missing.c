@@ -23,3 +23,4 @@ TCHAR *my_strdup (const TCHAR *s)
 }
 
 #endif
+
