@@ -19,7 +19,7 @@
 #include "cd32_fmv.h"
 #include "uae.h"
 
-#define FMV_DEBUG 1
+#define FMV_DEBUG 0
 
 /*
  0x200000 - 0x23FFFF ROM

@@ -4303,11 +4303,3 @@ int disk_prevnext (int drive, int dir)
 	_tcscpy (changed_prefs.floppyslots[drive].df, img);
 	return 1;
 }
-
-/// REMOVEME: nowhere used
-#if 0
-int getdebug(void)
-{
-	return floppy[0].mfmpos;
-}
-#endif

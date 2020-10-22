@@ -472,11 +472,9 @@ struct uae_prefs {
 	TCHAR romextident[256];
 	TCHAR flashfile[MAX_DPATH];
 	TCHAR rtcfile[MAX_DPATH];
-#ifdef ACTION_REPLAY
 	TCHAR cartfile[MAX_DPATH];
 	TCHAR cartident[256];
 	int cart_internal;
-#endif
 	TCHAR pci_devices[256];
 	TCHAR prtname[256];
 	TCHAR sername[256];

@@ -1056,6 +1056,8 @@ void virtualdevice_init (void)
 #endif
 #ifdef AUTOCONFIG
 	expansion_init ();
+#endif
+#ifndef __LIBRETRO__
 	emulib_install ();
 	uaeexe_install ();
 #endif
@@ -1098,10 +1100,12 @@ static int real_main2 (int argc, TCHAR **argv)
 		return -1;
 	}
 
+#ifndef __LIBRETRO__
 	if (console_emulation) {
 		consolehook_config (&currprefs);
 		fixup_prefs (&currprefs);
 	}
+#endif
 
 	if (! setup_sound ()) {
 		write_log (_T("Sound driver unavailable: Sound output disabled\n"));

@@ -978,9 +978,10 @@ static void mergecd32 (uae_u8 *dst, uae_u8 *src, int size)
 static void descramble (const struct romdata *rd, uae_u8 *data, int size, int odd)
 {
 	int flags = rd->type;
-
+#ifdef ACTION_REPLAY
 	if (flags & (ROMTYPE_NORDIC | ROMTYPE_XPOWER))
 		descramble_nordicpro (data, size, odd);
+#endif
 }
 
 static int read_rom_file (uae_u8 *buf, const struct romdata *rd)

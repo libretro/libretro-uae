@@ -54,6 +54,7 @@ uae_u32 redc[3 * 256], grec[3 * 256], bluc[3 * 256];
 
 static volatile frame_time_t vblank_prev_time;
 
+#ifndef __LIBRETRO__
 struct winuae_currentmode {
         unsigned int flags;
         int native_width, native_height, native_depth, pitch;
@@ -79,6 +80,8 @@ typedef struct {
   DWORD dmDisplayFrequency;
 } DEVMODE;
 #endif
+#endif
+
 /* internal prototypes */
 void setmouseactivexy (int x, int y, int dir);
 int get_guid_target (uae_u8 *out);
@@ -163,11 +166,10 @@ int vsync_switchmode (int hz)
             return true;
     } 
 #else
-return false;
+    return false;
 #endif
 }
 
-//win32.cpp
 int extraframewait = 0;
 
 void sleep_millis_main (int ms)
@@ -185,77 +187,17 @@ void driveclick_fdrawcmd_seek(int drive, int cyl){}
 void driveclick_fdrawcmd_motor (int drive, int running){}
 void driveclick_fdrawcmd_vsync(void){}
 
-// win32
 uae_u32 emulib_target_getcpurate (uae_u32 v, uae_u32 *low)
 {
-/*
-	static struct timeval _tstart, _tend;
-	static struct timezone tz;
-
-	*low = 0;
-	if (v == 1) {
-		gettimeofday (&_tstart, &tz);
-	} else if (v == 2) {
-		gettimeofday (&_tend, &tz);
-	}
-	double t1, t2;
-
-	t1 =  (double)_tstart.tv_sec + (double)_tstart.tv_usec/(1000*1000);
-	t2 =  (double)_tend.tv_sec + (double)_tend.tv_usec/(1000*1000);
-	return t2-t1;
-*/
 	return 0;
 }
 
-
 void setmouseactivexy (int x, int y, int dir)
 {
-/*        int diff = 8;
-
-        if (isfullscreen () > 0)
-                return;
-        x += amigawin_rect.left;
-        y += amigawin_rect.top;
-        if (dir & 1)
-                x = amigawin_rect.left - diff;
-        if (dir & 2)
-                x = amigawin_rect.right + diff;
-        if (dir & 4)
-                y = amigawin_rect.top - diff;
-        if (dir & 8)
-                y = amigawin_rect.bottom + diff;
-        if (!dir) {
-                x += (amigawin_rect.right - amigawin_rect.left) / 2;
-                y += (amigawin_rect.bottom - amigawin_rect.top) / 2;
-        }
-        if (mouseactive) {
-                disablecapture ();
-                SetCursorPos (x, y);
-                if (dir)
-                        recapture = 1;
-        }*/
 }
 
 void setmouseactive (int active)
 {
-}
-
-// unicode
-char *au_fs_copy (char *dst, int maxlen, const char *src)
-{
-	int i;
-
-	for (i = 0; src[i] && i < maxlen - 1; i++)
-		dst[i] = src[i];
-	dst[i] = 0;
-	return dst;
-}
-
-char *ua_fs_copy (char *dst, int maxlen, const TCHAR *src, int defchar)
-{
-    dst[0] = 0;
-    strncpy(dst, src, maxlen);
-    return dst;
 }
 
 // clipboard
@@ -291,7 +233,6 @@ uaecptr amiga_clipboard_proc_start (void)
 
 void amiga_clipboard_got_data (uaecptr data, uae_u32 size, uae_u32 actual)
 {
-	//uae_u8 *addr;
 	if (!initialized) {
 		write_log ("clipboard: got_data() before initialized!?\n");
 		return;
@@ -327,7 +268,6 @@ void machdep_free (void)
 
 void target_run (void)
 {
-	//shellexecute (currprefs.win32_commandpathstart);
 }
 
 // dinput
@@ -338,18 +278,6 @@ int input_get_default_keyboard (int i)
 	return 0;
 }
 
-// unicode
-char *ua_fs (const char *s, int defchar)
-{
-	return strdup(s);
-}
-
-char *ua_copy (char *dst, int maxlen, const char *src)
-{
-	dst[0] = 0;
-	strncpy (dst, src, maxlen);
-	return dst;
-}
 
 // win32gui
 static int qs_override;
@@ -566,16 +494,49 @@ void fullpath (TCHAR *path, int size)
         /* <drive letter>: is supposed to mean same as <drive letter>:\ */
 }
 
+char *ua (const TCHAR *s)
+{
+	return strdup(s);
+}
+
+char *ua_fs (const char *s, int defchar)
+{
+	return strdup(s);
+}
+
+char *ua_fs_copy (char *dst, int maxlen, const TCHAR *src, int defchar)
+{
+    dst[0] = 0;
+    strncpy(dst, src, maxlen);
+    return dst;
+}
+
+char *ua_copy (char *dst, int maxlen, const char *src)
+{
+	dst[0] = 0;
+	strncpy (dst, src, maxlen);
+	return dst;
+}
+
 TCHAR *au (const char *s)
 {
 	return strdup(s);
 }
 
-//
 TCHAR *au_copy (TCHAR *dst, int maxlen, const char *src)
 {
 	dst[0] = 0;
 	memcpy (dst, src, maxlen);
+	return dst;
+}
+
+char *au_fs_copy (char *dst, int maxlen, const char *src)
+{
+	int i;
+
+	for (i = 0; src[i] && i < maxlen - 1; i++)
+		dst[i] = src[i];
+	dst[i] = 0;
 	return dst;
 }
 
@@ -612,7 +573,7 @@ bool console_isch (void)
 
 TCHAR console_getch (void)
 {
-        return 0;
+    return 0;
 }
 
 void debugger_change (int mode)
@@ -628,11 +589,6 @@ void debugger_change (int mode)
 }
 
 // unicode
-char *ua (const TCHAR *s)
-{
-	return strdup(s);
-}
-
 char *uutf8 (const char *s)
 {
 	return strdup(s);
@@ -994,28 +950,6 @@ void enumeratedisplays (void) {
 #endif
 void updatedisplayarea (void)
 {
-/*
-	if (!screen_is_initialized)
-		return;
-	if (dx_islost ())
-		return;
-	if (picasso_on)
-		return;
-#if defined (GFXFILTER)
-	if (currentmode->flags & DM_D3D) {
-#if defined (D3D)
-		D3D_refresh ();
-#endif
-	} else
-#endif
-		if (currentmode->flags & DM_DDRAW) {
-#if defined (GFXFILTER)
-			if (currentmode->flags & DM_SWSCALE)
-				S2X_refresh ();
-#endif
-			DirectDraw_Flip (0);
-		} 
-*/
 }
 
 static bool render_ok;
@@ -1201,56 +1135,16 @@ bool vsync_busywait_do (int *freetime, bool lace, bool oddeven)
 		getvblankpos (&vp);
 	}
 
-		return v;
-	}
-
-///////////////////////////////////////////////////
-// parser.c
-///////////////////////////////////////////////////
+	return v;
+}
 
 unsigned int flashscreen;   
 
 void doflashscreen (void)
 {
-/*
-        flashscreen = 10;
-        init_colors ();
-        picasso_refresh ();
-        reset_drawing ();
-        flush_screen (gfxvidinfo.outbuffer, 0, 0);
-*/
 }
 
-// posix
 uae_u32 getlocaltime (void)
 {
-/*
-        SYSTEMTIME st;
-        FILETIME ft;
-        ULARGE_INTEGER t;
-
-        GetLocalTime (&st);
-        SystemTimeToFileTime (&st, &ft);
-        t.LowPart = ft.dwLowDateTime;
-        t.HighPart = ft.dwHighDateTime;
-        t.QuadPart -= 11644473600000 * 10000;
-        return (uae_u32)(t.QuadPart / 10000000);
-*/
 	return 0;
 }
-
-/*
-#ifndef HAVE_ISINF
-int isinf (double x)
-{
-        const int nClass = _fpclass (x);
-        int result;
-        if (nClass == _FPCLASS_NINF || nClass == _FPCLASS_PINF)
-                result = 1;
-        else
-                result = 0;
-        return result;
-}
-#endif
-*/
-

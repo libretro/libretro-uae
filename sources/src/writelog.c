@@ -33,7 +33,7 @@ void write_log (const char *fmt, ...)
     va_end(ap);
 
     if (text[strlen(text)-1] == '\n')
-       text[strlen(text)-1] = ' ';
+       text[strlen(text)-1] = '\0';
 
     log_cb(RETRO_LOG_INFO, "%s\n", text);
 }
