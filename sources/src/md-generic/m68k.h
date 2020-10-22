@@ -17,11 +17,19 @@ struct flag_struct {
 
 extern struct flag_struct regflags;
 
+#ifdef WORDS_BIGENDIAN
+#define FLAGBIT_N	31
+#define FLAGBIT_Z	29
+#define FLAGBIT_V	22
+#define FLAGBIT_C	21
+#define FLAGBIT_X	21
+#else
 #define FLAGBIT_N	15
 #define FLAGBIT_Z	14
 #define FLAGBIT_C	8
 #define FLAGBIT_V	0
 #define FLAGBIT_X	8
+#endif
 
 #define FLAGVAL_N	(1 << FLAGBIT_N)
 #define FLAGVAL_Z 	(1 << FLAGBIT_Z)
