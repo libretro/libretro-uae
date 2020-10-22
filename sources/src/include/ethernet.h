@@ -1,8 +1,9 @@
 #ifndef UAE_ETHERNET_H
 #define UAE_ETHERNET_H
 
-struct autoconfig_info;
 #include "uae/types.h"
+
+struct autoconfig_info;
 
 #define UAENET_NONE 0
 #define UAENET_SLIRP 1

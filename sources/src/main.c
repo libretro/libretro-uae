@@ -54,6 +54,28 @@
 #ifdef __LIBRETRO__
 static int real_main2_ret = 0;
 unsigned int libretro_frame_end = 0;
+static void hr (void)
+{
+	write_log (_T("--------------------------------------------------------------------------------\n"));
+}
+
+static void show_version (void)
+{
+#ifndef GIT_VERSION
+#define GIT_VERSION ""
+#endif
+	write_log (_T("PUAE %d.%d.%d%s, %s %s\n"), UAEMAJOR, UAEMINOR, UAESUBREV, GIT_VERSION, __DATE__, __TIME__);
+}
+
+static void show_version_full (void)
+{
+	hr ();
+	show_version ();
+	hr ();
+}
+
+static int real_main2 (int argc, TCHAR **argv);
+
 #endif
 
 long int version = 256 * 65536L * UAEMAJOR + 65536L * UAEMINOR + UAESUBREV;
@@ -74,28 +96,6 @@ TCHAR optionsfile[256];
 
 static uae_u32 randseed;
 static int oldhcounter;
-
-#ifdef __LIBRETRO__
-static void hr (void)
-{
-	write_log (_T("--------------------------------------------------------------------------------\n"));
-}
-
-static void show_version (void)
-{
-#ifndef GIT_VERSION
-#define GIT_VERSION ""
-#endif
-	write_log (_T("PUAE %d.%d.%d%s, %s %s\n"), UAEMAJOR, UAEMINOR, UAESUBREV, GIT_VERSION, __DATE__, __TIME__);
-}
-
-static void show_version_full (void)
-{
-	hr ();
-	show_version ();
-	hr ();
-}
-#endif
 
 uae_u32 uaesrand (uae_u32 seed)
 {
@@ -371,6 +371,12 @@ void fixup_cpu (struct uae_prefs *p)
 		error_log (_T("Immediate blitter and waiting blits can't be enabled simultaneously.\n"));
 		p->waiting_blits = 0;
 	}
+
+	if (p->blitter_cycle_exact && !p->cpu_memory_cycle_exact) {
+		error_log(_T("Blitter cycle-exact requires at least CPU memory cycle-exact.\n"));
+		p->blitter_cycle_exact = 0;
+	}
+
 	if (p->cpu_memory_cycle_exact)
 		p->cpu_compatible = true;
 
@@ -788,7 +794,6 @@ void fixup_prefs (struct uae_prefs *p, bool userconfig)
 	cfgfile_createconfigstore(p);
 }
 
-
 int quit_program = 0;
 static int restart_program;
 static TCHAR restart_config[MAX_DPATH];
@@ -820,11 +825,11 @@ void uae_quit (void)
 	target_quit ();
 }
 
-/* 0 = normal, 1 = nogui, -1 = disable nogui */
+/* 0 = normal, 1 = nogui, -1 = disable nogui, -2 = autorestart */
 void uae_restart (int opengui, const TCHAR *cfgfile)
 {
 	uae_quit ();
-	restart_program = opengui > 0 ? 1 : (opengui == 0 ? 2 : 3);
+	restart_program = opengui == -2 ? 4 : (opengui > 0 ? 1 : (opengui == 0 ? 2 : 3));
 #ifndef __LIBRETRO__
 	restart_config[0] = 0;
 	default_config = 0;
@@ -835,8 +840,6 @@ void uae_restart (int opengui, const TCHAR *cfgfile)
 }
 
 #ifdef __LIBRETRO__
-static int real_main2 (int argc, TCHAR **argv);
-
 extern void libretro_do_restart (int argc, TCHAR **argv)
 {
 	// This is used inside libretro.c to recreate the
@@ -1145,14 +1148,12 @@ void do_start_program (void)
 	}
 #endif
 }
-#endif /* __LIBRETRO__ */
 
-#ifndef __LIBRETRO__
 void start_program (void)
 {
 	do_start_program ();
 }
-#endif
+#endif /* __LIBRETRO__ */
 
 void leave_program (void)
 {
@@ -1208,7 +1209,7 @@ static int real_main2 (int argc, TCHAR **argv)
 	copy_prefs(&currprefs, &changed_prefs);
 
 	no_gui = ! currprefs.start_gui;
-	if (restart_program == 2)
+	if (restart_program == 2 || restart_program == 4)
 		no_gui = 1;
 	else if (restart_program == 3)
 		no_gui = 0;

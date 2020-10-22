@@ -10,10 +10,14 @@ void blitdofast_0 (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, struct bl
 {
 int i,j;
 uae_u32 totald = 0;
+uae_u16 ashift = bltcon0 >> 12;
+uae_u16 bshift = bltcon1 >> 12;
 uae_u32 dstd=0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
-	for (i = b->hblitsize; i--; ) {
+for (j = 0; j < b->vblitsize; j++) {
+	for (i = 0; i < b->hblitsize; i++) {
+		uae_u32 bltadat, srca;
+
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = (0) & 0xFFFF;
 		totald |= dstd;
@@ -28,10 +32,13 @@ void blitdofast_desc_0 (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, stru
 {
 uae_u32 totald = 0;
 int i,j;
+uae_u16 ashift = 16 - (bltcon0 >> 12);
+uae_u16 bshift = 16 - (bltcon1 >> 12);
 uae_u32 dstd = 0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
-	for (i = b->hblitsize; i--; ) {
+for (j = 0; j < b->vblitsize; j++) {
+	for (i = 0; i < b->hblitsize; i++) {
+		uae_u32 bltadat, srca;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = (0) & 0xFFFF;
 		totald |= dstd;
@@ -46,19 +53,20 @@ void blitdofast_a (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, struct bl
 {
 int i,j;
 uae_u32 totald = 0;
-uae_u32 preva = 0;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = bltcon0 >> 12;
+uae_u16 bshift = bltcon1 >> 12;
 uae_u32 dstd=0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc += 2; }
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)preva << 16) | bltadat) >> b->blitashift;
-		preva = bltadat;
+		srca = (((uae_u32)b->bltaold << 16) | bltadat) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((~srca & srcc)) & 0xFFFF;
 		totald |= dstd;
@@ -76,18 +84,19 @@ void blitdofast_desc_a (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, stru
 {
 uae_u32 totald = 0;
 int i,j;
-uae_u32 preva = 0;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = 16 - (bltcon0 >> 12);
+uae_u16 bshift = 16 - (bltcon1 >> 12);
 uae_u32 dstd = 0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc -= 2; }
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)bltadat << 16) | preva) >> b->blitdownashift;
-		preva = bltadat;
+		srca = (((uae_u32)bltadat << 16) | b->bltaold) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((~srca & srcc)) & 0xFFFF;
 		totald |= dstd;
@@ -105,25 +114,26 @@ void blitdofast_2a (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, struct b
 {
 int i,j;
 uae_u32 totald = 0;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = bltcon0 >> 12;
+uae_u16 bshift = bltcon1 >> 12;
 uae_u32 dstd=0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc += 2; }
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
-			srcb = (((uae_u32)prevb << 16) | bltbdat) >> b->blitbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
+			srcb = (((uae_u32)b->bltbold << 16) | bltbdat) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)preva << 16) | bltadat) >> b->blitashift;
-		preva = bltadat;
+		srca = (((uae_u32)b->bltaold << 16) | bltadat) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srcc & ~(srca & srcb))) & 0xFFFF;
 		totald |= dstd;
@@ -143,24 +153,25 @@ void blitdofast_desc_2a (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, str
 {
 uae_u32 totald = 0;
 int i,j;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = 16 - (bltcon0 >> 12);
+uae_u16 bshift = 16 - (bltcon1 >> 12);
 uae_u32 dstd = 0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc -= 2; }
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
-			srcb = ((bltbdat << 16) | prevb) >> b->blitdownbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
+			srcb = ((bltbdat << 16) | b->bltbold) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)bltadat << 16) | preva) >> b->blitdownashift;
-		preva = bltadat;
+		srca = (((uae_u32)bltadat << 16) | b->bltaold) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srcc & ~(srca & srcb))) & 0xFFFF;
 		totald |= dstd;
@@ -180,23 +191,24 @@ void blitdofast_30 (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, struct b
 {
 int i,j;
 uae_u32 totald = 0;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
+uae_u16 ashift = bltcon0 >> 12;
+uae_u16 bshift = bltcon1 >> 12;
 uae_u32 dstd=0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
-			srcb = (((uae_u32)prevb << 16) | bltbdat) >> b->blitbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
+			srcb = (((uae_u32)b->bltbold << 16) | bltbdat) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)preva << 16) | bltadat) >> b->blitashift;
-		preva = bltadat;
+		srca = (((uae_u32)b->bltaold << 16) | bltadat) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srca & ~srcb)) & 0xFFFF;
 		totald |= dstd;
@@ -214,22 +226,23 @@ void blitdofast_desc_30 (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, str
 {
 uae_u32 totald = 0;
 int i,j;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
+uae_u16 ashift = 16 - (bltcon0 >> 12);
+uae_u16 bshift = 16 - (bltcon1 >> 12);
 uae_u32 dstd = 0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
-			srcb = ((bltbdat << 16) | prevb) >> b->blitdownbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
+			srcb = ((bltbdat << 16) | b->bltbold) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)bltadat << 16) | preva) >> b->blitdownashift;
-		preva = bltadat;
+		srca = (((uae_u32)bltadat << 16) | b->bltaold) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srca & ~srcb)) & 0xFFFF;
 		totald |= dstd;
@@ -247,25 +260,26 @@ void blitdofast_3a (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, struct b
 {
 int i,j;
 uae_u32 totald = 0;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = bltcon0 >> 12;
+uae_u16 bshift = bltcon1 >> 12;
 uae_u32 dstd=0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc += 2; }
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
-			srcb = (((uae_u32)prevb << 16) | bltbdat) >> b->blitbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
+			srcb = (((uae_u32)b->bltbold << 16) | bltbdat) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)preva << 16) | bltadat) >> b->blitashift;
-		preva = bltadat;
+		srca = (((uae_u32)b->bltaold << 16) | bltadat) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srcb ^ (srca | (srcb ^ srcc)))) & 0xFFFF;
 		totald |= dstd;
@@ -285,24 +299,25 @@ void blitdofast_desc_3a (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, str
 {
 uae_u32 totald = 0;
 int i,j;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = 16 - (bltcon0 >> 12);
+uae_u16 bshift = 16 - (bltcon1 >> 12);
 uae_u32 dstd = 0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc -= 2; }
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
-			srcb = ((bltbdat << 16) | prevb) >> b->blitdownbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
+			srcb = ((bltbdat << 16) | b->bltbold) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)bltadat << 16) | preva) >> b->blitdownashift;
-		preva = bltadat;
+		srca = (((uae_u32)bltadat << 16) | b->bltaold) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srcb ^ (srca | (srcb ^ srcc)))) & 0xFFFF;
 		totald |= dstd;
@@ -322,23 +337,24 @@ void blitdofast_3c (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, struct b
 {
 int i,j;
 uae_u32 totald = 0;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
+uae_u16 ashift = bltcon0 >> 12;
+uae_u16 bshift = bltcon1 >> 12;
 uae_u32 dstd=0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
-			srcb = (((uae_u32)prevb << 16) | bltbdat) >> b->blitbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
+			srcb = (((uae_u32)b->bltbold << 16) | bltbdat) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)preva << 16) | bltadat) >> b->blitashift;
-		preva = bltadat;
+		srca = (((uae_u32)b->bltaold << 16) | bltadat) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srca ^ srcb)) & 0xFFFF;
 		totald |= dstd;
@@ -356,22 +372,23 @@ void blitdofast_desc_3c (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, str
 {
 uae_u32 totald = 0;
 int i,j;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
+uae_u16 ashift = 16 - (bltcon0 >> 12);
+uae_u16 bshift = 16 - (bltcon1 >> 12);
 uae_u32 dstd = 0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
-			srcb = ((bltbdat << 16) | prevb) >> b->blitdownbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
+			srcb = ((bltbdat << 16) | b->bltbold) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)bltadat << 16) | preva) >> b->blitdownashift;
-		preva = bltadat;
+		srca = (((uae_u32)bltadat << 16) | b->bltaold) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srca ^ srcb)) & 0xFFFF;
 		totald |= dstd;
@@ -389,25 +406,26 @@ void blitdofast_4a (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, struct b
 {
 int i,j;
 uae_u32 totald = 0;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = bltcon0 >> 12;
+uae_u16 bshift = bltcon1 >> 12;
 uae_u32 dstd=0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc += 2; }
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
-			srcb = (((uae_u32)prevb << 16) | bltbdat) >> b->blitbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
+			srcb = (((uae_u32)b->bltbold << 16) | bltbdat) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)preva << 16) | bltadat) >> b->blitashift;
-		preva = bltadat;
+		srca = (((uae_u32)b->bltaold << 16) | bltadat) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srcc ^ (srca & (srcb | srcc)))) & 0xFFFF;
 		totald |= dstd;
@@ -427,24 +445,25 @@ void blitdofast_desc_4a (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, str
 {
 uae_u32 totald = 0;
 int i,j;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = 16 - (bltcon0 >> 12);
+uae_u16 bshift = 16 - (bltcon1 >> 12);
 uae_u32 dstd = 0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc -= 2; }
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
-			srcb = ((bltbdat << 16) | prevb) >> b->blitdownbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
+			srcb = ((bltbdat << 16) | b->bltbold) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)bltadat << 16) | preva) >> b->blitdownashift;
-		preva = bltadat;
+		srca = (((uae_u32)bltadat << 16) | b->bltaold) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srcc ^ (srca & (srcb | srcc)))) & 0xFFFF;
 		totald |= dstd;
@@ -464,25 +483,26 @@ void blitdofast_6a (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, struct b
 {
 int i,j;
 uae_u32 totald = 0;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = bltcon0 >> 12;
+uae_u16 bshift = bltcon1 >> 12;
 uae_u32 dstd=0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc += 2; }
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
-			srcb = (((uae_u32)prevb << 16) | bltbdat) >> b->blitbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
+			srcb = (((uae_u32)b->bltbold << 16) | bltbdat) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)preva << 16) | bltadat) >> b->blitashift;
-		preva = bltadat;
+		srca = (((uae_u32)b->bltaold << 16) | bltadat) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srcc ^ (srca & srcb))) & 0xFFFF;
 		totald |= dstd;
@@ -502,24 +522,25 @@ void blitdofast_desc_6a (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, str
 {
 uae_u32 totald = 0;
 int i,j;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = 16 - (bltcon0 >> 12);
+uae_u16 bshift = 16 - (bltcon1 >> 12);
 uae_u32 dstd = 0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc -= 2; }
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
-			srcb = ((bltbdat << 16) | prevb) >> b->blitdownbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
+			srcb = ((bltbdat << 16) | b->bltbold) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)bltadat << 16) | preva) >> b->blitdownashift;
-		preva = bltadat;
+		srca = (((uae_u32)bltadat << 16) | b->bltaold) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srcc ^ (srca & srcb))) & 0xFFFF;
 		totald |= dstd;
@@ -539,25 +560,26 @@ void blitdofast_8a (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, struct b
 {
 int i,j;
 uae_u32 totald = 0;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = bltcon0 >> 12;
+uae_u16 bshift = bltcon1 >> 12;
 uae_u32 dstd=0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc += 2; }
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
-			srcb = (((uae_u32)prevb << 16) | bltbdat) >> b->blitbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
+			srcb = (((uae_u32)b->bltbold << 16) | bltbdat) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)preva << 16) | bltadat) >> b->blitashift;
-		preva = bltadat;
+		srca = (((uae_u32)b->bltaold << 16) | bltadat) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srcc & (~srca | srcb))) & 0xFFFF;
 		totald |= dstd;
@@ -577,24 +599,25 @@ void blitdofast_desc_8a (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, str
 {
 uae_u32 totald = 0;
 int i,j;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = 16 - (bltcon0 >> 12);
+uae_u16 bshift = 16 - (bltcon1 >> 12);
 uae_u32 dstd = 0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc -= 2; }
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
-			srcb = ((bltbdat << 16) | prevb) >> b->blitdownbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
+			srcb = ((bltbdat << 16) | b->bltbold) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)bltadat << 16) | preva) >> b->blitdownashift;
-		preva = bltadat;
+		srca = (((uae_u32)bltadat << 16) | b->bltaold) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srcc & (~srca | srcb))) & 0xFFFF;
 		totald |= dstd;
@@ -614,25 +637,26 @@ void blitdofast_8c (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, struct b
 {
 int i,j;
 uae_u32 totald = 0;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = bltcon0 >> 12;
+uae_u16 bshift = bltcon1 >> 12;
 uae_u32 dstd=0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc += 2; }
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
-			srcb = (((uae_u32)prevb << 16) | bltbdat) >> b->blitbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
+			srcb = (((uae_u32)b->bltbold << 16) | bltbdat) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)preva << 16) | bltadat) >> b->blitashift;
-		preva = bltadat;
+		srca = (((uae_u32)b->bltaold << 16) | bltadat) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srcb & (~srca | srcc))) & 0xFFFF;
 		totald |= dstd;
@@ -652,24 +676,25 @@ void blitdofast_desc_8c (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, str
 {
 uae_u32 totald = 0;
 int i,j;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = 16 - (bltcon0 >> 12);
+uae_u16 bshift = 16 - (bltcon1 >> 12);
 uae_u32 dstd = 0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc -= 2; }
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
-			srcb = ((bltbdat << 16) | prevb) >> b->blitdownbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
+			srcb = ((bltbdat << 16) | b->bltbold) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)bltadat << 16) | preva) >> b->blitdownashift;
-		preva = bltadat;
+		srca = (((uae_u32)bltadat << 16) | b->bltaold) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srcb & (~srca | srcc))) & 0xFFFF;
 		totald |= dstd;
@@ -689,25 +714,26 @@ void blitdofast_9a (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, struct b
 {
 int i,j;
 uae_u32 totald = 0;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = bltcon0 >> 12;
+uae_u16 bshift = bltcon1 >> 12;
 uae_u32 dstd=0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc += 2; }
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
-			srcb = (((uae_u32)prevb << 16) | bltbdat) >> b->blitbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
+			srcb = (((uae_u32)b->bltbold << 16) | bltbdat) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)preva << 16) | bltadat) >> b->blitashift;
-		preva = bltadat;
+		srca = (((uae_u32)b->bltaold << 16) | bltadat) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srcc ^ (srca & ~srcb))) & 0xFFFF;
 		totald |= dstd;
@@ -727,24 +753,25 @@ void blitdofast_desc_9a (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, str
 {
 uae_u32 totald = 0;
 int i,j;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = 16 - (bltcon0 >> 12);
+uae_u16 bshift = 16 - (bltcon1 >> 12);
 uae_u32 dstd = 0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc -= 2; }
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
-			srcb = ((bltbdat << 16) | prevb) >> b->blitdownbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
+			srcb = ((bltbdat << 16) | b->bltbold) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)bltadat << 16) | preva) >> b->blitdownashift;
-		preva = bltadat;
+		srca = (((uae_u32)bltadat << 16) | b->bltaold) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srcc ^ (srca & ~srcb))) & 0xFFFF;
 		totald |= dstd;
@@ -764,25 +791,26 @@ void blitdofast_a8 (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, struct b
 {
 int i,j;
 uae_u32 totald = 0;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = bltcon0 >> 12;
+uae_u16 bshift = bltcon1 >> 12;
 uae_u32 dstd=0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc += 2; }
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
-			srcb = (((uae_u32)prevb << 16) | bltbdat) >> b->blitbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
+			srcb = (((uae_u32)b->bltbold << 16) | bltbdat) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)preva << 16) | bltadat) >> b->blitashift;
-		preva = bltadat;
+		srca = (((uae_u32)b->bltaold << 16) | bltadat) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srcc & (srca | srcb))) & 0xFFFF;
 		totald |= dstd;
@@ -802,24 +830,25 @@ void blitdofast_desc_a8 (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, str
 {
 uae_u32 totald = 0;
 int i,j;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = 16 - (bltcon0 >> 12);
+uae_u16 bshift = 16 - (bltcon1 >> 12);
 uae_u32 dstd = 0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc -= 2; }
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
-			srcb = ((bltbdat << 16) | prevb) >> b->blitdownbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
+			srcb = ((bltbdat << 16) | b->bltbold) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)bltadat << 16) | preva) >> b->blitdownashift;
-		preva = bltadat;
+		srca = (((uae_u32)bltadat << 16) | b->bltaold) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srcc & (srca | srcb))) & 0xFFFF;
 		totald |= dstd;
@@ -840,10 +869,14 @@ void blitdofast_aa (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, struct b
 int i,j;
 uae_u32 totald = 0;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = bltcon0 >> 12;
+uae_u16 bshift = bltcon1 >> 12;
 uae_u32 dstd=0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
-	for (i = b->hblitsize; i--; ) {
+for (j = 0; j < b->vblitsize; j++) {
+	for (i = 0; i < b->hblitsize; i++) {
+		uae_u32 bltadat, srca;
+
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc += 2; }
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = (srcc) & 0xFFFF;
@@ -862,10 +895,13 @@ void blitdofast_desc_aa (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, str
 uae_u32 totald = 0;
 int i,j;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = 16 - (bltcon0 >> 12);
+uae_u16 bshift = 16 - (bltcon1 >> 12);
 uae_u32 dstd = 0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
-	for (i = b->hblitsize; i--; ) {
+for (j = 0; j < b->vblitsize; j++) {
+	for (i = 0; i < b->hblitsize; i++) {
+		uae_u32 bltadat, srca;
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc -= 2; }
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = (srcc) & 0xFFFF;
@@ -883,25 +919,26 @@ void blitdofast_b1 (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, struct b
 {
 int i,j;
 uae_u32 totald = 0;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = bltcon0 >> 12;
+uae_u16 bshift = bltcon1 >> 12;
 uae_u32 dstd=0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc += 2; }
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
-			srcb = (((uae_u32)prevb << 16) | bltbdat) >> b->blitbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
+			srcb = (((uae_u32)b->bltbold << 16) | bltbdat) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)preva << 16) | bltadat) >> b->blitashift;
-		preva = bltadat;
+		srca = (((uae_u32)b->bltaold << 16) | bltadat) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = (~(srca ^ (srcc | (srca ^ srcb)))) & 0xFFFF;
 		totald |= dstd;
@@ -921,24 +958,25 @@ void blitdofast_desc_b1 (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, str
 {
 uae_u32 totald = 0;
 int i,j;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = 16 - (bltcon0 >> 12);
+uae_u16 bshift = 16 - (bltcon1 >> 12);
 uae_u32 dstd = 0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc -= 2; }
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
-			srcb = ((bltbdat << 16) | prevb) >> b->blitdownbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
+			srcb = ((bltbdat << 16) | b->bltbold) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)bltadat << 16) | preva) >> b->blitdownashift;
-		preva = bltadat;
+		srca = (((uae_u32)bltadat << 16) | b->bltaold) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = (~(srca ^ (srcc | (srca ^ srcb)))) & 0xFFFF;
 		totald |= dstd;
@@ -958,25 +996,26 @@ void blitdofast_ca (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, struct b
 {
 int i,j;
 uae_u32 totald = 0;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = bltcon0 >> 12;
+uae_u16 bshift = bltcon1 >> 12;
 uae_u32 dstd=0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc += 2; }
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
-			srcb = (((uae_u32)prevb << 16) | bltbdat) >> b->blitbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
+			srcb = (((uae_u32)b->bltbold << 16) | bltbdat) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)preva << 16) | bltadat) >> b->blitashift;
-		preva = bltadat;
+		srca = (((uae_u32)b->bltaold << 16) | bltadat) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srcc ^ (srca & (srcb ^ srcc)))) & 0xFFFF;
 		totald |= dstd;
@@ -996,24 +1035,25 @@ void blitdofast_desc_ca (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, str
 {
 uae_u32 totald = 0;
 int i,j;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = 16 - (bltcon0 >> 12);
+uae_u16 bshift = 16 - (bltcon1 >> 12);
 uae_u32 dstd = 0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc -= 2; }
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
-			srcb = ((bltbdat << 16) | prevb) >> b->blitdownbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
+			srcb = ((bltbdat << 16) | b->bltbold) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)bltadat << 16) | preva) >> b->blitdownashift;
-		preva = bltadat;
+		srca = (((uae_u32)bltadat << 16) | b->bltaold) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srcc ^ (srca & (srcb ^ srcc)))) & 0xFFFF;
 		totald |= dstd;
@@ -1033,15 +1073,19 @@ void blitdofast_cc (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, struct b
 {
 int i,j;
 uae_u32 totald = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
+uae_u16 ashift = bltcon0 >> 12;
+uae_u16 bshift = bltcon1 >> 12;
 uae_u32 dstd=0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
-	for (i = b->hblitsize; i--; ) {
+for (j = 0; j < b->vblitsize; j++) {
+	for (i = 0; i < b->hblitsize; i++) {
+		uae_u32 bltadat, srca;
+
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
-			srcb = (((uae_u32)prevb << 16) | bltbdat) >> b->blitbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
+			srcb = (((uae_u32)b->bltbold << 16) | bltbdat) >> bshift;
+			b->bltbold = bltbdat;
 		}
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = (srcb) & 0xFFFF;
@@ -1059,15 +1103,18 @@ void blitdofast_desc_cc (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, str
 {
 uae_u32 totald = 0;
 int i,j;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
+uae_u16 ashift = 16 - (bltcon0 >> 12);
+uae_u16 bshift = 16 - (bltcon1 >> 12);
 uae_u32 dstd = 0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
-	for (i = b->hblitsize; i--; ) {
+for (j = 0; j < b->vblitsize; j++) {
+	for (i = 0; i < b->hblitsize; i++) {
+		uae_u32 bltadat, srca;
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
-			srcb = ((bltbdat << 16) | prevb) >> b->blitdownbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
+			srcb = ((bltbdat << 16) | b->bltbold) >> bshift;
+			b->bltbold = bltbdat;
 		}
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = (srcb) & 0xFFFF;
@@ -1085,25 +1132,26 @@ void blitdofast_d8 (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, struct b
 {
 int i,j;
 uae_u32 totald = 0;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = bltcon0 >> 12;
+uae_u16 bshift = bltcon1 >> 12;
 uae_u32 dstd=0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc += 2; }
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
-			srcb = (((uae_u32)prevb << 16) | bltbdat) >> b->blitbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
+			srcb = (((uae_u32)b->bltbold << 16) | bltbdat) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)preva << 16) | bltadat) >> b->blitashift;
-		preva = bltadat;
+		srca = (((uae_u32)b->bltaold << 16) | bltadat) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srca ^ (srcc & (srca ^ srcb)))) & 0xFFFF;
 		totald |= dstd;
@@ -1123,24 +1171,25 @@ void blitdofast_desc_d8 (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, str
 {
 uae_u32 totald = 0;
 int i,j;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = 16 - (bltcon0 >> 12);
+uae_u16 bshift = 16 - (bltcon1 >> 12);
 uae_u32 dstd = 0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc -= 2; }
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
-			srcb = ((bltbdat << 16) | prevb) >> b->blitdownbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
+			srcb = ((bltbdat << 16) | b->bltbold) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)bltadat << 16) | preva) >> b->blitdownashift;
-		preva = bltadat;
+		srca = (((uae_u32)bltadat << 16) | b->bltaold) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srca ^ (srcc & (srca ^ srcb)))) & 0xFFFF;
 		totald |= dstd;
@@ -1160,25 +1209,26 @@ void blitdofast_e2 (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, struct b
 {
 int i,j;
 uae_u32 totald = 0;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = bltcon0 >> 12;
+uae_u16 bshift = bltcon1 >> 12;
 uae_u32 dstd=0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc += 2; }
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
-			srcb = (((uae_u32)prevb << 16) | bltbdat) >> b->blitbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
+			srcb = (((uae_u32)b->bltbold << 16) | bltbdat) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)preva << 16) | bltadat) >> b->blitashift;
-		preva = bltadat;
+		srca = (((uae_u32)b->bltaold << 16) | bltadat) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srcc ^ (srcb & (srca ^ srcc)))) & 0xFFFF;
 		totald |= dstd;
@@ -1198,24 +1248,25 @@ void blitdofast_desc_e2 (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, str
 {
 uae_u32 totald = 0;
 int i,j;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = 16 - (bltcon0 >> 12);
+uae_u16 bshift = 16 - (bltcon1 >> 12);
 uae_u32 dstd = 0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc -= 2; }
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
-			srcb = ((bltbdat << 16) | prevb) >> b->blitdownbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
+			srcb = ((bltbdat << 16) | b->bltbold) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)bltadat << 16) | preva) >> b->blitdownashift;
-		preva = bltadat;
+		srca = (((uae_u32)bltadat << 16) | b->bltaold) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srcc ^ (srcb & (srca ^ srcc)))) & 0xFFFF;
 		totald |= dstd;
@@ -1235,25 +1286,26 @@ void blitdofast_ea (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, struct b
 {
 int i,j;
 uae_u32 totald = 0;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = bltcon0 >> 12;
+uae_u16 bshift = bltcon1 >> 12;
 uae_u32 dstd=0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc += 2; }
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
-			srcb = (((uae_u32)prevb << 16) | bltbdat) >> b->blitbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
+			srcb = (((uae_u32)b->bltbold << 16) | bltbdat) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)preva << 16) | bltadat) >> b->blitashift;
-		preva = bltadat;
+		srca = (((uae_u32)b->bltaold << 16) | bltadat) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srcc | (srca & srcb))) & 0xFFFF;
 		totald |= dstd;
@@ -1273,24 +1325,25 @@ void blitdofast_desc_ea (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, str
 {
 uae_u32 totald = 0;
 int i,j;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = 16 - (bltcon0 >> 12);
+uae_u16 bshift = 16 - (bltcon1 >> 12);
 uae_u32 dstd = 0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc -= 2; }
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
-			srcb = ((bltbdat << 16) | prevb) >> b->blitdownbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
+			srcb = ((bltbdat << 16) | b->bltbold) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)bltadat << 16) | preva) >> b->blitdownashift;
-		preva = bltadat;
+		srca = (((uae_u32)bltadat << 16) | b->bltaold) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srcc | (srca & srcb))) & 0xFFFF;
 		totald |= dstd;
@@ -1310,17 +1363,18 @@ void blitdofast_f0 (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, struct b
 {
 int i,j;
 uae_u32 totald = 0;
-uae_u32 preva = 0;
+uae_u16 ashift = bltcon0 >> 12;
+uae_u16 bshift = bltcon1 >> 12;
 uae_u32 dstd=0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)preva << 16) | bltadat) >> b->blitashift;
-		preva = bltadat;
+		srca = (((uae_u32)b->bltaold << 16) | bltadat) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = (srca) & 0xFFFF;
 		totald |= dstd;
@@ -1336,16 +1390,17 @@ void blitdofast_desc_f0 (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, str
 {
 uae_u32 totald = 0;
 int i,j;
-uae_u32 preva = 0;
+uae_u16 ashift = 16 - (bltcon0 >> 12);
+uae_u16 bshift = 16 - (bltcon1 >> 12);
 uae_u32 dstd = 0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)bltadat << 16) | preva) >> b->blitdownashift;
-		preva = bltadat;
+		srca = (((uae_u32)bltadat << 16) | b->bltaold) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = (srca) & 0xFFFF;
 		totald |= dstd;
@@ -1361,19 +1416,20 @@ void blitdofast_fa (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, struct b
 {
 int i,j;
 uae_u32 totald = 0;
-uae_u32 preva = 0;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = bltcon0 >> 12;
+uae_u16 bshift = bltcon1 >> 12;
 uae_u32 dstd=0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc += 2; }
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)preva << 16) | bltadat) >> b->blitashift;
-		preva = bltadat;
+		srca = (((uae_u32)b->bltaold << 16) | bltadat) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srca | srcc)) & 0xFFFF;
 		totald |= dstd;
@@ -1391,18 +1447,19 @@ void blitdofast_desc_fa (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, str
 {
 uae_u32 totald = 0;
 int i,j;
-uae_u32 preva = 0;
 uae_u32 srcc = b->bltcdat;
+uae_u16 ashift = 16 - (bltcon0 >> 12);
+uae_u16 bshift = 16 - (bltcon1 >> 12);
 uae_u32 dstd = 0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 		if (ptc) { srcc = chipmem_wget_indirect (ptc); ptc -= 2; }
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)bltadat << 16) | preva) >> b->blitdownashift;
-		preva = bltadat;
+		srca = (((uae_u32)bltadat << 16) | b->bltaold) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srca | srcc)) & 0xFFFF;
 		totald |= dstd;
@@ -1420,23 +1477,24 @@ void blitdofast_fc (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, struct b
 {
 int i,j;
 uae_u32 totald = 0;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
+uae_u16 ashift = bltcon0 >> 12;
+uae_u16 bshift = bltcon1 >> 12;
 uae_u32 dstd=0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
-			srcb = (((uae_u32)prevb << 16) | bltbdat) >> b->blitbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb += 2;
+			srcb = (((uae_u32)b->bltbold << 16) | bltbdat) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta += 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)preva << 16) | bltadat) >> b->blitashift;
-		preva = bltadat;
+		srca = (((uae_u32)b->bltaold << 16) | bltadat) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srca | srcb)) & 0xFFFF;
 		totald |= dstd;
@@ -1454,22 +1512,23 @@ void blitdofast_desc_fc (uaecptr pta, uaecptr ptb, uaecptr ptc, uaecptr ptd, str
 {
 uae_u32 totald = 0;
 int i,j;
-uae_u32 preva = 0;
-uae_u32 prevb = 0, srcb = b->bltbhold;
+uae_u32 srcb = b->bltbhold;
+uae_u16 ashift = 16 - (bltcon0 >> 12);
+uae_u16 bshift = 16 - (bltcon1 >> 12);
 uae_u32 dstd = 0;
 uaecptr dstp = 0;
-for (j = b->vblitsize; j--; ) {
+for (j = 0; j < b->vblitsize; j++) {
 	for (i = 0; i < b->hblitsize; i++) {
 		uae_u32 bltadat, srca;
 		if (ptb) {
-			uae_u32 bltbdat = blt_info.bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
-			srcb = ((bltbdat << 16) | prevb) >> b->blitdownbshift;
-			prevb = bltbdat;
+			uae_u32 bltbdat = b->bltbdat = chipmem_wget_indirect (ptb); ptb -= 2;
+			srcb = ((bltbdat << 16) | b->bltbold) >> bshift;
+			b->bltbold = bltbdat;
 		}
-		if (pta) { bltadat = blt_info.bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = blt_info.bltadat; }
+		if (pta) { bltadat = b->bltadat = chipmem_wget_indirect (pta); pta -= 2; } else { bltadat = b->bltadat; }
 		bltadat &= blit_masktable[i];
-		srca = (((uae_u32)bltadat << 16) | preva) >> b->blitdownashift;
-		preva = bltadat;
+		srca = (((uae_u32)bltadat << 16) | b->bltaold) >> ashift;
+		b->bltaold = bltadat;
 		if (dstp) chipmem_wput_indirect (dstp, dstd);
 		dstd = ((srca | srcb)) & 0xFFFF;
 		totald |= dstd;

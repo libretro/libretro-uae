@@ -110,6 +110,7 @@ struct gfxboard
 	int manufacturer;
 	int model_memory;
 	int model_registers;
+	int model_extra;
 	int serial;
 	int vrammin;
 	int vrammax;
@@ -136,91 +137,91 @@ static const struct gfxboard boards[] =
 	{
 		GFXBOARD_ID_A2410,
 		_T("A2410 [Zorro II]"), _T("Commodore"), _T("A2410"),
-		1030, 0, 0,
+		1030, 0, 0, 0,
 		0x00000000, 0x00200000, 0x00200000, 0x10000, 0, 0, 2, false,
 		0, 0xc1, &a2410_func
 	},
 	{
 		GFXBOARD_ID_SPECTRUM_Z2,
 		_T("Spectrum 28/24 [Zorro II]"), _T("Great Valley Products"), _T("Spectrum28/24_Z2"),
-		BOARD_MANUFACTURER_SPECTRUM, BOARD_MODEL_MEMORY_SPECTRUM, BOARD_MODEL_REGISTERS_SPECTRUM,
+		BOARD_MANUFACTURER_SPECTRUM, BOARD_MODEL_MEMORY_SPECTRUM, BOARD_MODEL_REGISTERS_SPECTRUM, 0,
 		0x00000000, 0x00100000, 0x00200000, 0x00200000, CIRRUS_ID_CLGD5428, 2, 6, true,
 		0, 0, NULL, &gd5428_swapped_device
 	},
 	{
 		GFXBOARD_ID_SPECTRUM_Z3,
 		_T("Spectrum 28/24 [Zorro III]"), _T("Great Valley Products"), _T("Spectrum28/24_Z3"),
-		BOARD_MANUFACTURER_SPECTRUM, BOARD_MODEL_MEMORY_SPECTRUM, BOARD_MODEL_REGISTERS_SPECTRUM,
+		BOARD_MANUFACTURER_SPECTRUM, BOARD_MODEL_MEMORY_SPECTRUM, BOARD_MODEL_REGISTERS_SPECTRUM, 0,
 		0x00000000, 0x00100000, 0x00200000, 0x00200000, CIRRUS_ID_CLGD5428, 3, 6, true,
 		0, 0, NULL, &gd5428_swapped_device
 	},
 	{
 		GFXBOARD_ID_PICCOLO_Z2,
 		_T("Piccolo [Zorro II]"), _T("Ingenieurbüro Helfrich"), _T("Piccolo_Z2"),
-		BOARD_MANUFACTURER_PICCOLO, BOARD_MODEL_MEMORY_PICCOLO, BOARD_MODEL_REGISTERS_PICCOLO,
+		BOARD_MANUFACTURER_PICCOLO, BOARD_MODEL_MEMORY_PICCOLO, BOARD_MODEL_REGISTERS_PICCOLO, 0,
 		0x00000000, 0x00100000, 0x00200000, 0x00200000, CIRRUS_ID_CLGD5426, 2, 6, true,
 		0, 0, NULL, &gd5426_swapped_device
 	},
 	{
 		GFXBOARD_ID_PICCOLO_Z3,
 		_T("Piccolo [Zorro III]"), _T("Ingenieurbüro Helfrich"), _T("Piccolo_Z3"),
-		BOARD_MANUFACTURER_PICCOLO, BOARD_MODEL_MEMORY_PICCOLO, BOARD_MODEL_REGISTERS_PICCOLO,
+		BOARD_MANUFACTURER_PICCOLO, BOARD_MODEL_MEMORY_PICCOLO, BOARD_MODEL_REGISTERS_PICCOLO, 0,
 		0x00000000, 0x00100000, 0x00200000, 0x00200000, CIRRUS_ID_CLGD5426, 3, 6, true,
 		0, 0, NULL, &gd5426_swapped_device
 	},
 	{
 		GFXBOARD_ID_SD64_Z2,
 		_T("Piccolo SD64 [Zorro II]"), _T("Ingenieurbüro Helfrich"), _T("PiccoloSD64_Z2"),
-		BOARD_MANUFACTURER_PICCOLO, BOARD_MODEL_MEMORY_PICCOLO64, BOARD_MODEL_REGISTERS_PICCOLO64,
+		BOARD_MANUFACTURER_PICCOLO, BOARD_MODEL_MEMORY_PICCOLO64, BOARD_MODEL_REGISTERS_PICCOLO64, 0,
 		0x00000000, 0x00200000, 0x00400000, 0x00400000, CIRRUS_ID_CLGD5434, 2, 6, true,
 		0, 0, NULL, &gd5434_vlb_swapped_device
 	},
 	{
 		GFXBOARD_ID_SD64_Z3,
 		_T("Piccolo SD64 [Zorro III]"), _T("Ingenieurbüro Helfrich"), _T("PiccoloSD64_Z3"),
-		BOARD_MANUFACTURER_PICCOLO, BOARD_MODEL_MEMORY_PICCOLO64, BOARD_MODEL_REGISTERS_PICCOLO64,
+		BOARD_MANUFACTURER_PICCOLO, BOARD_MODEL_MEMORY_PICCOLO64, BOARD_MODEL_REGISTERS_PICCOLO64, 0,
 		0x00000000, 0x00200000, 0x00400000, 0x00400000, CIRRUS_ID_CLGD5434, 3, 6, true,
 		0, 0, NULL, &gd5434_vlb_swapped_device
 	},
 	{
 		GFXBOARD_ID_CV64_Z3,
 		_T("CyberVision 64 [Zorro III]"), _T("Phase 5"), _T("CV64_Z3"),
-		8512, 34, 0,
+		8512, 34, 0, 0,
 		0x00000000, 0x00200000, 0x00400000, 0x20000000, 0, 3, 2, false,
 		0, 0, NULL, &s3_cybervision_trio64_device, 0x40
 	},
 	{
 		GFXBOARD_ID_CV643D_Z2,
 		_T("CyberVision 64/3D [Zorro II]"), _T("Phase 5"), _T("CV643D_Z2"),
-		8512, 67, 0,
+		8512, 67, 0, 0,
 		0x00000000, 0x00400000, 0x00400000, 0x00400000, 0, 2, 2, false,
 		0, 0, NULL, &s3_virge_device, 0xc0
 	},
 	{
 		GFXBOARD_ID_CV643D_Z3,
 		_T("CyberVision 64/3D [Zorro III]"), _T("Phase 5"), _T("CV643D_Z3"),
-		8512, 67, 0,
+		8512, 67, 0, 0,
 		0x00000000, 0x00400000, 0x00400000, 0x10000000, 0, 3, 2, false,
 		0, 0, NULL, &s3_virge_device, 0x40
 	},
 	{
 		GFXBOARD_ID_PICASSO2,
 		_T("Picasso II [Zorro II]"), _T("Village Tronic"), _T("PicassoII"),
-		BOARD_MANUFACTURER_PICASSO, BOARD_MODEL_MEMORY_PICASSOII, BOARD_MODEL_REGISTERS_PICASSOII,
+		BOARD_MANUFACTURER_PICASSO, BOARD_MODEL_MEMORY_PICASSOII, BOARD_MODEL_REGISTERS_PICASSOII, 0,
 		0x00020000, 0x00100000, 0x00200000, 0x00200000, CIRRUS_ID_CLGD5426, 2, 0, false,
 		0, 0, NULL, &gd5426_device
 	},
 	{
 		GFXBOARD_ID_PICASSO2PLUS,
 		_T("Picasso II+ [Zorro II]"), _T("Village Tronic"), _T("PicassoII+"),
-		BOARD_MANUFACTURER_PICASSO, BOARD_MODEL_MEMORY_PICASSOII, BOARD_MODEL_REGISTERS_PICASSOII,
+		BOARD_MANUFACTURER_PICASSO, BOARD_MODEL_MEMORY_PICASSOII, BOARD_MODEL_REGISTERS_PICASSOII, 0,
 		0x00100000, 0x00100000, 0x00200000, 0x00200000, CIRRUS_ID_CLGD5428, 2, 2, false,
 		0, 0, NULL, &gd5428_device
 	},
 	{
 		GFXBOARD_ID_PICASSO4_Z2,
 		_T("Picasso IV [Zorro II]"), _T("Village Tronic"), _T("PicassoIV_Z2"),
-		BOARD_MANUFACTURER_PICASSO, BOARD_MODEL_MEMORY_PICASSOIV, BOARD_MODEL_REGISTERS_PICASSOIV,
+		BOARD_MANUFACTURER_PICASSO, BOARD_MODEL_MEMORY_PICASSOIV, BOARD_MODEL_REGISTERS_PICASSOIV, 0,
 		0x00000000, 0x00200000, 0x00400000, 0x00400000, CIRRUS_ID_CLGD5446, 2, 2, false,
 		ROMTYPE_PICASSOIV,
 		0, NULL, &gd5446_device
@@ -228,7 +229,7 @@ static const struct gfxboard boards[] =
 	{
 		GFXBOARD_ID_PICASSO4_Z3,
 		_T("Picasso IV [Zorro III]"), _T("Village Tronic"), _T("PicassoIV_Z3"),
-		BOARD_MANUFACTURER_PICASSO, BOARD_MODEL_MEMORY_PICASSOIV, 0,
+		BOARD_MANUFACTURER_PICASSO, BOARD_MODEL_MEMORY_PICASSOIV, 0, 0,
 		0x00000000, 0x00400000, 0x00400000, 0x02000000, CIRRUS_ID_CLGD5446, 3, 2, false,
 		ROMTYPE_PICASSOIV,
 		0, NULL, &gd5446_device
@@ -236,7 +237,7 @@ static const struct gfxboard boards[] =
 	{
 		GFXBOARD_ID_HARLEQUIN,
 		_T("Harlequin [Zorro II]"), _T("ACS"), _T("Harlequin_PAL"),
-		2118, 100, 0,
+		2118, 100, 0, 0,
 		0x00000000, 0x00200000, 0x00200000, 0x10000, 0, 0, 2, false,
 		ROMTYPE_HARLEQUIN, 0xc2, &harlequin_func
 	},
@@ -251,37 +252,34 @@ static const struct gfxboard boards[] =
 	{
 		GFXBOARD_ID_VOODOO3_PCI,
 		_T("Voodoo 3 3000 [PCI]"), _T("3dfx"), _T("V3_3000"),
-		0, 0, 0,
+		0, 0, 0, 0,
 		0x00000000, 0x01000000, 0x01000000, 0x01000000, 0, 0, -1, false,
 		ROMTYPE_VOODOO3,
 		0, NULL, &voodoo_3_3000_device, 0, true
 	},
-#if 0
-	{
-		GFXBOARD_ID_VOODOO5_PCI,
-		_T("Voodoo 5 5500 [PCI] (Basic 2D only, Fast direct VRAM access)"), _T("3dfx"), _T("V5_5500"),
-		0, 0, 0,
-		0x00000000, 0x04000000, 0x04000000, 0x04000000, 0, 0, -1, false,
-		ROMTYPE_VOODOO5,
-		0, NULL, &voodoo_5_5500_device, 0, true
-	},
-#endif
 	{
 		GFXBOARD_ID_S3VIRGE_PCI,
 		_T("Virge [PCI]"), _T("S3"), _T("S3VIRGE_PCI"),
-		0, 0, 0,
+		0, 0, 0, 0,
 		0x00000000, 0x00400000, 0x00400000, 0x10000000, 0, 0, -1, false,
 		0, 0, NULL, &s3_virge_device, 0, true
 	},
 	{
 		GFXBOARD_ID_VGA,
 		_T("x86 bridgeboard VGA [ISA]"), _T("x86"), _T("VGA"),
-		0, 0, 0,
+		0, 0, 0, 0,
 		0x00000000, 0x00100000, 0x00200000, 0x00000000, CIRRUS_ID_CLGD5426, 0, 0, false,
 		ROMTYPE_x86_VGA
 	},
 	{
-		0/*NULL*/
+		GFXBOARD_ID_PIXEL64,
+		_T("Pixel64 [AteoBus]"), _T("Atéo Concepts"), _T("Pixel64"),
+		2026, 255, 254, 0, // 255: type=$c7 flags=$40, 254: type=$c2 flags=$40 128k, 252: type=$c2 flags=$40, 128k
+		0x00000000, 0x00200000, 0x00200000, 0x00400000, CIRRUS_ID_CLGD5434, 2, 0, false,
+		0, 0, NULL, &gd5434_vlb_swapped_device
+	},
+	{
+		NULL
 	}
 };
 
@@ -350,6 +348,7 @@ struct rtggfxboard
 	addrbank gfxboard_bank_lbsmemory;
 	addrbank gfxboard_bank_nbsmemory;
 	addrbank gfxboard_bank_registers;
+	addrbank gfxboard_bank_registers2;
 	addrbank gfxboard_bank_special;
 
 	addrbank gfxboard_bank_vram_pcem;
@@ -480,6 +479,15 @@ static const addrbank tmpl_gfxboard_bank_registers = {
 	dummy_lgeti, dummy_wgeti,
 	ABFLAG_IO | ABFLAG_SAFE, S_READ, S_WRITE
 };
+
+static const addrbank tmpl_gfxboard_bank_registers2 = {
+	gfxboard_lget_regs, gfxboard_wget_regs, gfxboard_bget_regs,
+	gfxboard_lput_regs, gfxboard_wput_regs, gfxboard_bput_regs,
+	default_xlate, default_check, NULL, NULL, NULL,
+	dummy_lgeti, dummy_wgeti,
+	ABFLAG_IO | ABFLAG_SAFE, S_READ, S_WRITE
+};
+
 
 static const addrbank tmpl_gfxboard_bank_special = {
 	gfxboards_lget_regs, gfxboards_wget_regs, gfxboards_bget_regs,
@@ -697,7 +705,7 @@ void video_blit_memtoscreen(int x, int y, int y1, int y2, int w, int h)
 			pcem_flush(gb, i);
 			if (rtg_visible[gb->monitor_id] >= 0 && gb->monswitch_delay == 0 && gb->monswitch_current == gb->monswitch_new) {
 				if (gb->gfxboard_surface == NULL) {
-					gb->gfxboard_surface = gfx_lock_picasso(gb->monitor_id, false, false);
+					gb->gfxboard_surface = gfx_lock_picasso(gb->monitor_id, false);
 				}
 				if (gb->gfxboard_surface) {
 					struct picasso_vidbuf_description *vidinfo = &picasso_vidinfo[gb->monitor_id];
@@ -1111,6 +1119,10 @@ bool gfxboard_init_board(struct autoconfig_info *aci)
 	gfx_temp_bank_idx = aci->devnum;
 	gb->gfxmem_bank = aci->addrbank;
 	aci->addrbank = &gfx_temp_bank;
+
+	device_add_hsync(gfxboard_hsync_handler);
+	device_add_rethink(gfxboard_rethink);
+
 	return true;
 }
 
@@ -1362,7 +1374,7 @@ int surface_stride(DisplaySurface *s)
 	if (s == &gb->fakesurface || !gb->vga_refresh_active)
 		return 0;
 	if (gb->gfxboard_surface == NULL)
-		gb->gfxboard_surface = gfx_lock_picasso(gb->monitor_id, false, false);
+		gb->gfxboard_surface = gfx_lock_picasso(gb->monitor_id, false);
 	struct picasso_vidbuf_description *vidinfo = &picasso_vidinfo[gb->monitor_id];
 	return vidinfo->rowbytes;
 }
@@ -1378,7 +1390,7 @@ uint8_t *surface_data(DisplaySurface *s)
 	if (s == &gb->fakesurface || !gb->vga_refresh_active)
 		return gb->fakesurface_surface;
 	if (gb->gfxboard_surface == NULL)
-		gb->gfxboard_surface = gfx_lock_picasso(gb->monitor_id, false, false);
+		gb->gfxboard_surface = gfx_lock_picasso(gb->monitor_id, false);
 	return gb->gfxboard_surface;
 }
 
@@ -1488,7 +1500,8 @@ void gfxboard_vsync_handler(bool full_redraw_required, bool redraw_required)
 				}
 				if (gb->board->pci && gb->vram) {
 					bool svga_on(void *p);
-					set_monswitch(gb, svga_on(gb->pcemobject2));
+					bool on = svga_on(gb->pcemobject2);
+					set_monswitch(gb, on);
 				}
 			}
 
@@ -1607,7 +1620,7 @@ void gfxboard_vsync_handler(bool full_redraw_required, bool redraw_required)
 			if (!gb->monitor_id) {
 				if (currprefs.leds_on_screen & STATUSLINE_RTG) {
 					if (gb->gfxboard_surface == NULL) {
-						gb->gfxboard_surface = gfx_lock_picasso(gb->monitor_id, false, false);
+						gb->gfxboard_surface = gfx_lock_picasso(gb->monitor_id, false);
 					}
 					if (gb->gfxboard_surface) {
 						if (softstatusline())
@@ -2812,6 +2825,23 @@ static void REGPARAM2 gfxboard_bput_mem_autoconfig (uaecptr addr, uae_u32 b)
 					gb->pcem_vram_mask = 0x3fffff;
 					gb->pcem_io_mask = 0x3fff;
 
+				} else if (boardnum == GFXBOARD_ID_PIXEL64) {
+
+					ab = &gb->gfxboard_bank_vram_pcem;
+					gb->gfxboardmem_start = b << 16;
+					map_banks_z2(ab, b, 0x200000 >> 16);
+					map_banks_z2(&gb->gfxboard_bank_vram_wordswap_pcem, b + (0x200000 >> 16), 0x200000 >> 16);
+
+					init_board(gb);
+
+					gb->configured_mem = b;
+					gb->mem_start[0] = b << 16;
+					gb->mem_end[0] = gb->mem_start[0] + gb->board->banksize;
+
+					gb->pcem_vram_offset = 0x800000;
+					gb->pcem_vram_mask = 0x1fffff;
+					gb->pcem_io_mask = 0x3fff;
+
 				} else {
 
 					// Picasso II, Picasso II+
@@ -3048,7 +3078,7 @@ static void REGPARAM2 gfxboard_bput_regs_autoconfig (uaecptr addr, uae_u32 b)
 		} else if (gb->pcemdev) {
 
 			ab = &gb->gfxboard_bank_special_pcem;
-			int size = boardnum == GFXBOARD_ID_PICASSO4_Z2 ? 0x20000 : 0x10000;
+			int size = (boardnum == GFXBOARD_ID_PICASSO4_Z2 || boardnum == GFXBOARD_ID_PIXEL64) ? 0x20000 : 0x10000;
 			map_banks_z2(ab, b, size >> 16);
 			gb->io_start = b << 16;
 			gb->io_end = gb->io_start + size;
@@ -3088,13 +3118,14 @@ static void gfxboard_free_board(struct rtggfxboard *gb)
 		if (gb->pcemobject) {
 			gb->pcemdev->close(gb->pcemobject);
 			gb->pcemobject = NULL;
+			gb->pcemobject2 = NULL;
 		}
 	}
-	if (gb->vram) {
+	if (gb->vram && gb->gfxmem_bank->baseaddr) {
 		gb->gfxmem_bank->baseaddr = gb->vramrealstart;
 		gfxboard_free_vram(gb->rbc->rtg_index);
-		gb->gfxmem_bank = NULL;
 	}
+	gb->gfxmem_bank = NULL;
 	gb->vram = NULL;
 	gb->vramrealstart = NULL;
 	xfree(gb->fakesurface_surface);
@@ -3145,7 +3176,7 @@ void gfxboard_reset (void)
 			}
 		}
 		if (gb->monitor_id > 0) {
-			close_rtg(gb->monitor_id);
+			close_rtg(gb->monitor_id, true);
 		}
 	}
 	for (int i = 0; i < MAX_AMIGADISPLAYS; i++) {
@@ -4148,14 +4179,16 @@ int gfxboard_get_vram_max (struct rtgboardconfig *rbc)
 	return gb->board->vrammax;
 }
 
-bool gfxboard_is_registers (struct rtgboardconfig *rbc)
+int gfxboard_is_registers (struct rtgboardconfig *rbc)
 {
 	int type = rbc->rtgmem_type;
 	if (type < 2)
-		return false;
+		return 0;
 	struct rtggfxboard *gb = &rtggfxboards[rbc->rtg_index];
 	gb->board = find_board(type);
-	return gb->board->model_registers != 0;
+	if (gb->board->model_extra > 0)
+		return 2;
+	return gb->board->model_registers > 0 ? 1 : 0;
 }
 
 int gfxboard_num_boards (struct rtgboardconfig *rbc)
@@ -4277,7 +4310,7 @@ bool gfxboard_init_memory (struct autoconfig_info *aci)
 	} else {
 		type = z2_flags | 0xc0;
 	}
-	type |= gb->board->model_registers ? 0x08 : 0x00;
+	type |= gb->board->model_registers && !gb->board->model_extra ? 0x08 : 0x00;
 	flags |= gb->board->er_flags;
 
 	ew(gb, 0x04, gb->board->model_memory);
@@ -4383,6 +4416,7 @@ bool gfxboard_init_memory (struct autoconfig_info *aci)
 	memcpy(&gb->gfxboard_bank_lbsmemory, &tmpl_gfxboard_bank_lbsmemory, sizeof addrbank);
 	memcpy(&gb->gfxboard_bank_nbsmemory, &tmpl_gfxboard_bank_nbsmemory, sizeof addrbank);
 	memcpy(&gb->gfxboard_bank_registers, &tmpl_gfxboard_bank_registers, sizeof addrbank);
+	memcpy(&gb->gfxboard_bank_registers2, &tmpl_gfxboard_bank_registers2, sizeof addrbank);
 	memcpy(&gb->gfxboard_bank_special, &tmpl_gfxboard_bank_special, sizeof addrbank);
 	memcpy(&gb->gfxboard_bank_memory_nojit, &tmpl_gfxboard_bank_memory_nojit, sizeof addrbank);
 
@@ -4407,6 +4441,7 @@ bool gfxboard_init_memory (struct autoconfig_info *aci)
 	gb->gfxboard_bank_wbsmemory.name = gb->wbsmemorybankname;
 	gb->gfxboard_bank_lbsmemory.name = gb->lbsmemorybankname;
 	gb->gfxboard_bank_registers.name = gb->regbankname;
+	gb->gfxboard_bank_registers2.name = gb->regbankname;
 
 	gb->gfxboard_bank_memory.bget = gfxboard_bget_mem_autoconfig;
 	gb->gfxboard_bank_memory.bput = gfxboard_bput_mem_autoconfig;
@@ -4484,17 +4519,30 @@ bool gfxboard_init_memory_p4_z2 (struct autoconfig_info *aci)
 	return true;
 }
 
-bool gfxboard_init_registers (struct autoconfig_info *aci)
+bool gfxboard_init_registersx(struct autoconfig_info *aci, int regnum)
 {
 	struct rtggfxboard *gb = &rtggfxboards[aci->devnum];
-	if (!gb->board->model_registers) {
+	int size;
+
+	if (regnum && !gb->board->model_extra) {
+		aci->addrbank = &expamem_null;
+		return true;
+	}
+	if (!regnum && !gb->board->model_registers) {
 		aci->addrbank = &expamem_null;
 		return true;
 	}
 
 	memset (gb->automemory, 0xff, GFXBOARD_AUTOCONFIG_SIZE);
-	ew (gb, 0x00, 0xc0 | 0x01); // 64k Z2
-	ew (gb, 0x04, gb->board->model_registers);
+	if (gb->rbc->rtgmem_type == GFXBOARD_ID_PIXEL64) {
+		ew(gb, 0x00, 0xc0 | 0x02); // 128 Z2
+		size = BOARD_REGISTERS_SIZE * 2;
+	} else {
+		ew(gb, 0x00, 0xc0 | 0x01); // 64k Z2
+		size = BOARD_REGISTERS_SIZE;
+	}
+
+	ew (gb, 0x04, regnum ? gb->board->model_extra : gb->board->model_registers);
 	ew (gb, 0x10, gb->board->manufacturer >> 8);
 	ew (gb, 0x14, gb->board->manufacturer);
 
@@ -4517,20 +4565,37 @@ bool gfxboard_init_registers (struct autoconfig_info *aci)
 	memcpy(aci->autoconfig_raw, gb->automemory, sizeof aci->autoconfig_raw);
 	aci->label = gb->board->name;
 
-	aci->addrbank = &gb->gfxboard_bank_registers;
+	aci->addrbank = regnum ? &gb->gfxboard_bank_registers2 : &gb->gfxboard_bank_registers;
 	aci->parent_of_previous = true;
 
 	if (!aci->doinit)
 		return true;
 
-	gb->gfxboard_bank_registers.bget = gfxboard_bget_regs_autoconfig;
-	gb->gfxboard_bank_registers.bput = gfxboard_bput_regs_autoconfig;
+	if (regnum) {
+		gb->gfxboard_bank_registers2.bget = gfxboard_bget_regs_autoconfig;
+		gb->gfxboard_bank_registers2.bput = gfxboard_bput_regs_autoconfig;
+		gb->gfxboard_bank_registers2.reserved_size = size;
+		gb->configured_regs = -2;
+	} else {
+		gb->gfxboard_bank_registers.bget = gfxboard_bget_regs_autoconfig;
+		gb->gfxboard_bank_registers.bput = gfxboard_bput_regs_autoconfig;
+		gb->gfxboard_bank_registers.reserved_size = size;
+		gb->configured_regs = -1;
+	}
 
-	gb->gfxboard_bank_registers.reserved_size = BOARD_REGISTERS_SIZE;
-	gb->configured_regs = -1;
 
 	return true;
 }
+
+bool gfxboard_init_registers(struct autoconfig_info *aci)
+{
+	return gfxboard_init_registersx(aci, 0);
+}
+bool gfxboard_init_registers2(struct autoconfig_info *aci)
+{
+	return gfxboard_init_registersx(aci, 1);
+}
+
 
 static uae_u32 REGPARAM2 gfxboard_bget_bios(uaecptr addr)
 {
@@ -5349,7 +5414,17 @@ static void special_pcem_put(uaecptr addr, uae_u32 v, int size)
 		write_log(_T("PCEM SPECIAL PUT %08x %08x %d PC=%08x\n"), addr, v, size, M68K_GETPC);
 #endif
 
-	if (boardnum == GFXBOARD_ID_CV643D_Z2) {
+	if (boardnum == GFXBOARD_ID_PIXEL64) {
+
+		addr &= 0xffff;
+		if (size) {
+			put_io_pcem(addr + 0, (v >> 8) & 0xff, 0);
+			put_io_pcem(addr + 1, (v >> 0) & 0xff, 0);
+		} else if (size == 0) {
+			put_io_pcem(addr, v & 0xff, 0);
+		}
+
+	} else if (boardnum == GFXBOARD_ID_CV643D_Z2) {
 
 		uaecptr addr2 = (addr - gb->gfxboardmem_start) & gb->banksize_mask;
 		uaecptr addrd = addr2 + gb->gfxboardmem_start;
@@ -5623,7 +5698,17 @@ static uae_u32 special_pcem_get(uaecptr addr, int size)
 	write_log(_T("PCEM SPECIAL GET %08x %d PC=%08x\n"), addr, size, M68K_GETPC);
 #endif
 
-	if (boardnum == GFXBOARD_ID_CV643D_Z2) {
+	if (boardnum == GFXBOARD_ID_PIXEL64) {
+
+		if (size) {
+			v = get_io_pcem(addr + 0, 0) << 8;
+			v |= get_io_pcem(addr + 1, 0) << 0;
+		} else if (size == 0) {
+			v = get_io_pcem(addr, 0);
+		}
+
+	} else if (boardnum == GFXBOARD_ID_CV643D_Z2) {
+
 		uaecptr addr2 = (addr - gb->gfxboardmem_start) & gb->banksize_mask;
 		uaecptr addrd = addr2 + gb->gfxboardmem_start;
 		if (gb->pcem_pci_configured) {
@@ -5669,6 +5754,7 @@ static uae_u32 special_pcem_get(uaecptr addr, int size)
 			else
 				v = gfxboard_lget_mmio_wbs_pcem(addrd);
 		}
+
 	} else if (boardnum == GFXBOARD_ID_CV64_Z3) {
 
 		v = 0;
@@ -5973,5 +6059,6 @@ bool gfxboard_init_board(struct autoconfig_info *aci) { return false; }
 bool gfxboard_init_memory (struct autoconfig_info *aci) { return false; }
 bool gfxboard_init_memory_p4_z2 (struct autoconfig_info *aci) { return false; }
 bool gfxboard_init_registers (struct autoconfig_info *aci) { return false; }
+bool gfxboard_init_registers2 (struct autoconfig_info *aci) { return false; }
 
 #endif

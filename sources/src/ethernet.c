@@ -236,7 +236,8 @@ bool ethernet_enumerate (struct netdriverdata **nddp, int romtype)
 #ifdef WITH_UAENET_PCAP
 	nd = uaenet_enumerate (NULL);
 	if (nd) {
-		for (int i = 0; i < MAX_TOTAL_NET_DEVICES; i++) {
+		int last = MAX_TOTAL_NET_DEVICES - 1 - j;
+		for (int i = 0; i < last; i++) {
 			if (nd[i].active)
 				nddp[j++] = &nd[i];
 		}
@@ -315,4 +316,3 @@ bool xsurf100_init(struct autoconfig_info *aci) { return false; }
 
 void ethernet_reset(void) {}
 void ethernet_pause (int pause) {}
-

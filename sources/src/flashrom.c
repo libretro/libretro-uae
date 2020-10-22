@@ -328,13 +328,23 @@ static void nvram_write (struct bitbang_i2c_interface *i2c, int offset, int len)
 	}
 }
 
-static void bitbang_i2c_enter_stop(bitbang_i2c_interface *i2c)
+static void bitbang_i2c_enter_stop(struct bitbang_i2c_interface *i2c)
 {
 #if EEPROM_LOG
     write_log(_T("I2C STOP\n"));
 #endif
-	if (i2c->write_offset >= 0)
-		nvram_write(i2c, i2c->write_offset, 16);
+	if (i2c->write_offset >= 0) {
+		int len = i2c->size - i2c->write_offset;
+		if (len > 16) {
+			len = 16;
+		}
+		if (len > 0) {
+			nvram_write(i2c, i2c->write_offset, len);
+		}
+		if (len < 16) {
+			nvram_write(i2c, 0, 16 - len);
+		}
+	}
 	i2c->write_offset = -1;
     i2c->current_addr = -1;
     i2c->state = STOPPED;
@@ -342,7 +352,7 @@ static void bitbang_i2c_enter_stop(bitbang_i2c_interface *i2c)
 }
 
 /* Set device data pin.  */
-static int bitbang_i2c_ret(bitbang_i2c_interface *i2c, int level)
+static int bitbang_i2c_ret(struct bitbang_i2c_interface *i2c, int level)
 {
     i2c->device_out = level;
     //DPRINTF("%d %d %d\n", i2c->last_clock, i2c->last_data, i2c->device_out);
@@ -350,7 +360,7 @@ static int bitbang_i2c_ret(bitbang_i2c_interface *i2c, int level)
 }
 
 /* Leave device data pin unodified.  */
-static int bitbang_i2c_nop(bitbang_i2c_interface *i2c)
+static int bitbang_i2c_nop(struct bitbang_i2c_interface *i2c)
 {
     return bitbang_i2c_ret(i2c, i2c->device_out);
 }

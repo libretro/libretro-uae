@@ -20987,7 +20987,10 @@ uae_u32 REGPARAM2 op_4e70_31_ff(uae_u32 opcode)
 		Exception(8);
 		return 0;
 	}
-	cpureset();
+	bool r = cpureset();
+	if (r) {
+		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
+	}
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }

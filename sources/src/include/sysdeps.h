@@ -477,6 +477,7 @@ extern void mallocemu_free (void *ptr);
 #define setconsolemode
 
 extern void console_out (const char *, ...);
+/*extern void console_out_f (const TCHAR *, ...);*/
 extern void console_flush (void);
 extern int  console_get (char *, int);
 extern void flush_log (void);

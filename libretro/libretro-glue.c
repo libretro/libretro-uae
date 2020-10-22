@@ -31,6 +31,7 @@ int vsync_activeheight, vsync_totalheight;
 int max_uae_width = EMULATOR_MAX_WIDTH;
 int max_uae_height = EMULATOR_MAX_HEIGHT;
 int pause_emulation;
+bool gfx_hdr;
 addrbank *gfxmem_banks[MAX_RTG_BOARDS];
 struct AmigaMonitor AMonitors[MAX_AMIGAMONITORS];
 static int display_change_requested;
@@ -671,7 +672,7 @@ void retro_key_up(int key)
 
 
 /* Graphics */
-int lockscr(struct vidbuffer *vb, bool fullupdate, bool first)
+int lockscr(struct vidbuffer *vb, bool fullupdate, bool first, bool skip)
 {
    return 1;
 }
@@ -689,6 +690,14 @@ void unlockscr(struct vidbuffer *vb, int y_start, int y_end)
    /* Align the resulting Automatic Zoom screen height to even number */
    if ((retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line + 1) % 2)
       retro_thisframe_last_drawn_line++;
+
+   if (retro_thisframe_first_drawn_line > 0)
+      retro_thisframe_first_drawn_line--;
+
+   if (retro_thisframe_last_drawn_line > 0)
+      retro_thisframe_last_drawn_line--;
+   if (!retro_thisframe_last_drawn_line)
+      retro_thisframe_last_drawn_line = -1;
 
    /* Flag that we should end the frame, return out of retro_run */
    libretro_frame_end = 1;
@@ -812,6 +821,14 @@ int check_prefs_changed_gfx (void)
 
       /* Reset video buffer */
       memset(retro_bmp, 0, sizeof(retro_bmp));
+
+#if 0
+   printf("%s: %dx%d, res=%d vres=%d\n", __func__,
+         changed_prefs.gfx_monitor[0].gfx_size_win.width,
+         changed_prefs.gfx_monitor[0].gfx_size_win.height,
+         changed_prefs.gfx_resolution,
+         changed_prefs.gfx_vresolution);
+#endif
    }
 
    if (currprefs.gfx_monitor[0].gfx_size_win.width   != changed_prefs.gfx_monitor[0].gfx_size_win.width)
@@ -837,13 +854,6 @@ int check_prefs_changed_gfx (void)
        graphics_setup();
    }
 
-#if 0
-   printf("%s: %dx%d, res=%d vres=%d\n", __func__,
-         changed_prefs.gfx_monitor[0].gfx_size_win.width,
-         changed_prefs.gfx_monitor[0].gfx_size_win.height,
-         changed_prefs.gfx_resolution,
-         changed_prefs.gfx_vresolution);
-#endif
    return 1;
 }
 

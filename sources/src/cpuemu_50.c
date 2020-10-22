@@ -18224,7 +18224,10 @@ uae_u32 REGPARAM2 op_4e70_50_ff(uae_u32 opcode)
 		Exception(8);
 		return 0;
 	}
-	cpureset();
+	bool r = cpureset();
+	if (r) {
+		return 0;
+	}
 	m68k_incpc(2);
 	return 0;
 }

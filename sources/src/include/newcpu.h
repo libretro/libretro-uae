@@ -310,6 +310,7 @@ extern int mmu_enabled, mmu_triggered;
 extern int cpu_cycles;
 extern int cpucycleunit;
 extern int m68k_pc_indirect;
+extern bool m68k_interrupt_delay;
 
 extern void safe_interrupt_set(int, int, bool);
 
@@ -646,9 +647,9 @@ extern void dfc_nommu_put_byte(uaecptr, uae_u32);
 extern void dfc_nommu_put_word(uaecptr, uae_u32);
 extern void dfc_nommu_put_long(uaecptr, uae_u32);
 
-extern void (*x_do_cycles)(unsigned long);
-extern void (*x_do_cycles_pre)(unsigned long);
-extern void (*x_do_cycles_post)(unsigned long, uae_u32);
+extern void (*x_do_cycles)(uae_u32);
+extern void (*x_do_cycles_pre)(uae_u32);
+extern void (*x_do_cycles_post)(uae_u32, uae_u32);
 
 extern uae_u32 REGPARAM3 x_get_disp_ea_020 (uae_u32 base, int idx) REGPARAM;
 extern uae_u32 REGPARAM3 x_get_disp_ea_ce020 (uae_u32 base, int idx) REGPARAM;
@@ -756,10 +757,6 @@ extern void exception3_read_prefetch(uae_u32 opcode, uaecptr addr);
 extern void exception3_read_prefetch_68040bug(uae_u32 opcode, uaecptr addr, uae_u16 secondarysr);
 extern void exception3_read_prefetch_only(uae_u32 opcode, uaecptr addr);
 extern void exception3_notinstruction(uae_u32 opcode, uaecptr addr);
-
-extern void exception3i (uae_u32 opcode, uaecptr addr);
-extern void exception3b (uae_u32 opcode, uaecptr addr, bool w, bool i, uaecptr pc);
-
 extern void hardware_exception2(uaecptr addr, uae_u32 v, bool read, bool ins, int size);
 extern void exception2_setup(uae_u32 opcode, uaecptr addr, bool read, int size, uae_u32 fc);
 extern void exception2_read(uae_u32 opcode, uaecptr addr, int size, int fc);
@@ -767,7 +764,7 @@ extern void exception2_write(uae_u32 opcode, uaecptr addr, int size, uae_u32 val
 extern void exception2_fetch_opcode(uae_u32 opcode, int offset, int pcoffset);
 extern void exception2_fetch(uae_u32 opcode, int offset, int pcoffset);
 extern void m68k_reset (void);
-extern void cpureset (void);
+extern bool cpureset (void);
 extern void cpu_halt (int id);
 extern int cpu_sleep_millis(int ms);
 extern void cpu_change(int newmodel);

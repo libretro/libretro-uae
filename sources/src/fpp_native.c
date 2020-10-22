@@ -940,6 +940,16 @@ static void fp_cos(fpdata *a, fpdata *b)
 	fp_reset_normal_prec();
 	fp_round(a);
 }
+static void fp_sincos(fpdata *a, fpdata *b, fpdata *c)
+{
+	fp_normal_prec();
+	c->fp = cosl(b->fp);
+	a->fp = sinl(b->fp);
+	fp_reset_normal_prec();
+	fp_round(a);
+	fp_round(c);
+}
+
 static void fp_sub(fpdata *a, fpdata *b, int prec)
 {
 	fp_set_prec(prec);
@@ -1365,6 +1375,7 @@ void fp_init_native(void)
 	fpp_neg = fp_neg;
 	fpp_acos = fp_acos;
 	fpp_cos = fp_cos;
+	fpp_sincos = fp_sincos;
 	fpp_getexp = fp_getexp;
 	fpp_getman = fp_getman;
 	fpp_div = fp_div;

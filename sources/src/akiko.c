@@ -1995,7 +1995,7 @@ static void REGPARAM2 akiko_bput (uaecptr addr, uae_u32 v)
 
 static void REGPARAM2 akiko_wput (uaecptr addr, uae_u32 v)
 {
-	addr &= 0xfff;
+	addr &= 0xffff;
 	if (addr >= 0x8000)
 		return;
 	if((addr < 0x30 && AKIKO_DEBUG_IO)) {
@@ -2301,7 +2301,7 @@ void restore_akiko_finish (void)
 
 void restore_akiko_final(void)
 {
-	if (!currprefs.cs_cd32cd)
+	if (!currprefs.cs_cd32cd || !akiko_inited)
 		return;
 	write_comm_pipe_u32(&requests, 0x0102, 1); // pause
 	write_comm_pipe_u32(&requests, 0x0105, 1); // set mute

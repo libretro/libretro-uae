@@ -378,7 +378,7 @@ static bool is_aca500(struct uae_prefs *p)
 
 extern addrbank cpuboardmem1_bank;
 MEMORY_FUNCTIONS(cpuboardmem1);
-/*static*/ addrbank cpuboardmem1_bank = {
+static addrbank cpuboardmem1_bank = {
 	cpuboardmem1_lget, cpuboardmem1_wget, cpuboardmem1_bget,
 	cpuboardmem1_lput, cpuboardmem1_wput, cpuboardmem1_bput,
 	cpuboardmem1_xlate, cpuboardmem1_check, NULL, _T("*B"), _T("cpuboard ram"),
@@ -387,7 +387,7 @@ MEMORY_FUNCTIONS(cpuboardmem1);
 };
 extern addrbank cpuboardmem2_bank;
 MEMORY_FUNCTIONS(cpuboardmem2);
-/*static*/ addrbank cpuboardmem2_bank = {
+static addrbank cpuboardmem2_bank = {
 	cpuboardmem2_lget, cpuboardmem2_wget, cpuboardmem2_bget,
 	cpuboardmem2_lput, cpuboardmem2_wput, cpuboardmem2_bput,
 	cpuboardmem2_xlate, cpuboardmem2_check, NULL, _T("*B"), _T("cpuboard ram #2"),
@@ -1169,7 +1169,7 @@ void cyberstorm_mk3_ppc_irq(int id, int level)
 	devices_rethink_all(cpuboard_rethink);
 }
 
-void blizzardppc_irq_setonly(int id, int level)
+void blizzardppc_irq_setonly(int level)
 {
 	if (level)
 		io_reg[CSIII_REG_IRQ] &= ~P5_IRQ_SCSI;
@@ -1178,7 +1178,7 @@ void blizzardppc_irq_setonly(int id, int level)
 }
 void blizzardppc_irq(int id, int level)
 {
-	blizzardppc_irq_setonly(id, level);
+	blizzardppc_irq_setonly(level);
 	devices_rethink_all(cpuboard_rethink);
 }
 
@@ -1723,6 +1723,14 @@ void cpuboard_map(void)
 	}
 }
 
+bool cpuboard_forced_hardreset(void)
+{
+	if (is_blizzardppc(&currprefs)) {
+		return true;
+	}
+	return false;
+}
+
 void cpuboard_reset(int hardreset)
 {
 #if 0
@@ -1745,6 +1753,7 @@ void cpuboard_reset(int hardreset)
 	}
 	if (hardreset || is_keyboardreset())
 		a2630_io = 0;
+
 	flash_unlocked = 0;
 	cpuboard_non_byte_ea = false;
 
@@ -2734,9 +2743,9 @@ bool cpuboard_autoconfig_init(struct autoconfig_info *aci)
 	}
 	if (!isflashrom) {
 		if (romname)
-			autoconfig_rom = zfile_fopen_2(romname, _T("rb"));
+			autoconfig_rom = zfile_fopen(romname, _T("rb"));
 		if (!autoconfig_rom && defaultromname)
-			autoconfig_rom = zfile_fopen_2(defaultromname, _T("rb"));
+			autoconfig_rom = zfile_fopen(defaultromname, _T("rb"));
 		if (rl) {
 			if (autoconfig_rom) {
 				struct romdata *rd2 = getromdatabyid(romtype);
@@ -3118,6 +3127,7 @@ void cpuboard_overlay_override(void) {}
 void cpuboard_clear(void) {}
 void cpuboard_map(void) {}
 bool cpuboard_maprom(void) { return false; }
+bool cpuboard_forced_hardreset(void) { return false; }
 void cpuboard_reset(int hardreset) {}
 void cpuboard_cleanup(void) {}
 

@@ -353,7 +353,7 @@ static void fp_getman(fpdata *a, fpdata *b)
 }
 static void fp_mod(fpdata *a, fpdata *b, uae_u64 *q, uae_u8 *s)
 {
-	a->fpx = floatx80_mod(a->fpx, b->fpx, (uint64_t*)q, s, &fs);
+	a->fpx = floatx80_mod(a->fpx, b->fpx, q, s, &fs);
 }
 static void fp_sgldiv(fpdata *a, fpdata *b)
 {
@@ -365,7 +365,7 @@ static void fp_sglmul(fpdata *a, fpdata *b)
 }
 static void fp_rem(fpdata *a, fpdata *b, uae_u64 *q, uae_u8 *s)
 {
-	a->fpx = floatx80_rem(a->fpx, b->fpx, (uint64_t*)q, s, &fs);
+	a->fpx = floatx80_rem(a->fpx, b->fpx, q, s, &fs);
 }
 static void fp_scale(fpdata *a, fpdata *b)
 {
@@ -512,6 +512,10 @@ static void fp_acos(fpdata *a, fpdata *b)
 static void fp_cos(fpdata *a, fpdata *b)
 {
     a->fpx = floatx80_cos(b->fpx, &fs);
+}
+static void fp_sincos(fpdata *a, fpdata *b, fpdata *c)
+{
+	a->fpx = floatx80_sincos(b->fpx, &c->fpx, &fs);
 }
 
 /* Functions for converting between float formats */
@@ -816,6 +820,7 @@ void fp_init_softfloat(int fpu_model)
 	fpp_neg = fp_neg;
 	fpp_acos = fp_acos;
 	fpp_cos = fp_cos;
+	fpp_sincos = fp_sincos;
 	fpp_getexp = fp_getexp;
 	fpp_getman = fp_getman;
 	fpp_div = fp_div;

@@ -1,4 +1,390 @@
 
+
+Beta 43 (RC4):
+
+- CDFS mounting used wrong character set translation functions, file names with character codes larger than 128 could not be opened depending on Windows regional settings.
+- Vertical centering sometimes decided to use max offset, pushing the image down as much as possible.
+- Filter Overscan blanking used old horizontal origin (which changed to earlier, "true" horizontal=0 position, due to chipset updates). Workaround added.
+- Blacker than black in non-HDR mode was not RGB=000000 black.
+
+Beta 42 (RC3):
+
+- Switching from D3D11 fullscreen mode to windowed mode using GUI caused windowed mode to keep-reinitializing continuously. (CTRL+F12 switch worked normally)
+- Fixed wrong condition in check if Denise side BPLCON0 parameters needs updating, broke for example HAM enable/disable until next line (b41)
+- Blitter line mode with C disabled also disables C-channel pointer modulo add operations. b39 update was not complete. (Methylate / Focus Design).
+- Interlace mode last 2 lines (if Overscan+ or Extreme) had swapped long/short line (last line/line zero "wrap around" point), LOF toggles at this point but display device does not see it until few lines later.
+- Fixed buffer overflow that caused unexpected crash due to internal variables getting corrupted. It happened if mode was RTG (native chipset not active) and native mode had copper list that writes to custom registers that can affect colors or blanking, state change was unnecessarily recorded to a buffer that is not in use if RTG mode and after long time (can be 100 minutes or more), it finally overflowed. Recent blanking updates introduced this.
+- Programmed blanking change was not always fully detected, leaving partially blanked border in some situations.
+- Enabled Remove interlace arfifact option without interlace mode: bitplane overrun emulation was not possible.
+- Remove interlace artifact option last line flickering/garbage is really gone now. (Blanks extra line(s), this is not really the correct way but too late to fix it properly)
+- Bitplane pointer pointing to upper 512k chip ram in ECS 0.5M+0.5M config didn't use indirect read routines. (Fixes Cen / Rare ECS 0.5M+0.5M config corrupted vector objects)
+
+Beta 41 (RC2):
+
+- Sprite processing was exited early if sprite horizontal start was zero (which is correct normally). But when combined with FMODE SSCAN2-bit, only "original" sprite is invisible but "doubled" sprite is still visible. Fixes Fantastic Dizzy CD32 background glitch.
+- Improve Denise/Lisa internal bitplane pipeline logic, previously undocumented combined plane change + bitplane shift changes mid scanline are now working correctly.
+- Above behavior also revealed yet another undocumented chipset feature/bug: if ECS Denise or AGA and bitplane plane count is lowered mid scan line and disabled plane's last bit out of bitplane shifter was one: last pixel appears twice. OCS Denise is unaffected. This is emulated only in subpixel mode.
+- Clear all internal display emulation buffers at reset, previously some of them was not cleared. (Possibly could have caused temporary on screen garbage when loading statefile on the fly)
+
+
+Beta 40 (RC1):
+
+- A2065 emulation quit/reset crash fix, A2065 RAM was freed too early, when it was still possible to receive new ethernet frames.
+- Blitter final D write does not happen if D channel gets disabled, line mode gets enabled or new blit starts before pending D write has finished. This mainly affects copper blitter wait bug behavior, if new blit is setup before blitter gets its last cycle, last D write never happens which can prevent the glitch from happening. (Last write getting skipped might not cause any visible glitches) Fixes Andy & Blondie / Finity second to last part's glitch. Note that final part has many glitches, happens also on real A500 if system does not have any real Fast RAM.
+- Log warning message if BLTDPTx is written to while blitter final D write is still pending.
+- Removed wrong INTENA write optimization. Fixes Expiration / Mayhem cube corruption. (Problem wasn't directly blitter related)
+- If programmed mode was in use that didn't require configured VSSTRT/VSSTOP registers, display was blank. (Contactro / Illusion)
+- Screen mode with even horizontal cycle length (programmed and normal NTSC mode) copper timing fix. Copper can use cycle 0 (previously incorrectly calculated as cycle $e0) if previous line's last cycle was odd cycle (even total length). (Contactro / Illusion)
+- Programmed mode registers are again zeroed at startup (was all ones) because JtxRules / Illusion only sets VBSTOP and HBSTOP and expects zeroed HBSTRT and VBSTRT. (Programmed mode comparators don't have reset line connected but they still power up with zeroed contents. At least usually..)
+
+Beta 39:
+
+- Executable as a disk image mounting now supports FFS and HD disks. Uses DD+OFS if selected file fits (like previously), then DD+FFS, finally HD+FFS (if drive is HD).
+- Fixed empty formatted standard HD ADF creation, broken in 4.3.0 (bitmap block used DD size)
+- If A1200 config had PCMCIA emulation and 4M or larger Z2 RAM enabled, end of Z2 RAM didn't have "safety barrier" which caused long or word access that crosses end of RAM to crash the emulator.
+- Some audio debugging was accidentally left enabled in b38
+- Adjusted UAE Boot ROM variable locations, freeing more space for ROM code.
+- UAE Boot ROM level 2 interrupt server priority changed to -1 if KS 1.x, workaround for old SoundTracker (and clones) broken keyboard handling that breaks completely if KS ROM level 2 interrupt server isn't first in chain.
+- Fixed last line of bitmap missing or flickering if very tall interlace mode and interlace artifact removal was enabled.
+- Blitter line mode didn't clear BLTZERO if line pixel was skipped because of onedot mode. (vAmiga test case)
+- Blitter line mode didn't update global state of shift values and SIGN bit. (vAmiga test case where next blit is started without updating BLTCON0/1)
+- Yet another small interrupt timing adjustment.
+- Chipset emulation could get confused in non-ce configurations when BPL1DAT was modified with a copper.
+- Reinitialize all selected FloppyBridges when exiting FloppyBridge UI.
+- Change to memory card (CF/SD/etc) added as a harddrive: if you wanted to use same config with Amiga formatted cards and FAT formatted cards and Windows/driver allowed direct access even when FAT formatted card (without partition table) was inserted (oddly enough Windows 10 and older didn't allow it on my PC but after updating to Windows 11, direct access is possible), FAT card wasn't anymore mounted as a directory drive after re-insert because direct access has priority and it did succeed. Now direct harddrive mode is only used if drive does not have any PC partitions (no drive letter) or if Lock option is ticked.
+- Experimental HDR support added. (This is not going to be fully implemented in next official release, it is only side project)
+
+HDR mode details:
+- Requirements: HDR capable monitor. Windows HDR mode enabled. Direct 3D 11.
+- New Graphics API option: "Direct3D 11 HDR".
+- Original 8-bit RGB values are converted to HDR color space using shaders.
+- Brightness/contrast adjustments are now done in shader code which prevents usual SDR black crush or white clipping. (Work more like CRT). Gamma adjustment is not yet supported.
+- "Blacker than black" option behavior is also changed, because HDR by design support blacker than SDR black, it does not need to affect normal color range like in SDR mode. It is also always enabled in HDR mode.
+
+Beta 38:
+
+- b33 audio update missed one condition, when DMA sample playback ended, last sample was played twice before audio channel entered idle state.
+- FloppyBridge HD support fix. Fixed unreliable "turbo" writing and unreliable "?" button boot and root block reads.
+- Quickstart floppy drive type is now remembered.
+- Internal display buffer allocation was too small if image width was not divisible by 8. Could have caused crashes in some windowed mode configurations, for example when saving screenshots (very old bug).
+- Screenshot height was always total internal size, even if it was partically blanked. (OCS Denise and mode was not Overscan+ or higher)
+- OCS Denise last line "bug" was only visible in short field modes.
+- Virtual mouse driver enabled, load new config that does not use virtual mouse: possible crash when restarting emulation.
+- Fixed weird blitter behavior in some 68020+ memory cycle-exact modes if blitter nasty was also set.
+- Fixed "Remove interlace artifact" display corruption in some programmed modes introduced in earlier betas. (Copper was partially enabled during "scandoubled" line processing).
+
+Beta 37:
+
+- "Copper wake up" (W) and "Copper wanted this cycle but couldn't get it" (c) markers in DMA debugger had disappeared. Skip also shows 'W' if SKIP skipped.
+- Do not allow cycle-exact blitter without at least memory cycle-exact CPU. It is not anymore compatible with faster modes.
+- Fixed random corruption when cycle-exact blitter was enabled and CPU was (memory) cycle-exact and CPU config was fast.
+- Do not allow opposite joystick directions at the same time (some games crash..) if mapped using Game Ports panel. It is still allowed if configured using Input panel and it was mapped to left/right/up/down events (not horiz/vert).
+- Added official WinUAE FloppyBridge support.
+- Added basic floppy type selection to Quickstart panel (3.5" DD, 3.5" HD and FloppyBridge). Selection is not remembered yet.
+
+FloppyBridge details:
+- https://amiga.robsmithdev.co.uk/winuae
+- DLLs go to <winuae path>/plugins
+- Simple and flexible UI implementation. Different than in unofficial WinUAE floppybridge versions.
+- Drive type select menus have "Configure Floppybridge" option if floppybridge DLL is detected. Selecting the option opens floppybridge configuration UI (which is located in floppybridge DLL, it is not part of WinUAE UI), use it configure one or more drive profiles. Select profile to enable floppybridge mode for selected emulated drive.
+
+Beta 36:
+
+- Lores Display panel resolution mode: horizontal DIW values had wrong masking, bitplane left/right edge missed 1 pixel row or had 1 pixel row too much. (b29)
+- 68000 IPL timing adjustment, IPL copy seems to be done when CPU is going to do read/write data during second part of memory cycle if followed by prefetch memory access. Previously it was after memory access which seems to be too late.
+- Horizontal mid screen HAM mode enable/disable combined with resolution change didn't anymore work correctly (Runaway / 2000AD, "Use joystick to move scroller!!" part) 
+- Fixed "box art" window image filehandle leak.
+- Warp mode was much slower in Direct3D 9 compared to Direct3D 11.
+- Don't emulate chipset emulation interrupt delays if not approximate/more compatible CPU speed. Delays are far too large in fast modes where chipset/chip ram accesses have unrestricted speeds. Fixes random hangs when formatting/writing to floppies.
+
+Beta 35:
+
+- Adjusted 68000 IPL sampling timing. (Spectre Party / Phenomena, F1GP by MicroValue. Not Microprose!)
+- Blizzard PPC: if RESET m68k instruction executed, apparently board logic also forces external CPU reset.
+- Fixed GDI handle leak (GUI panel change always leaked 2 font handles)
+- Updated GUI tab order.
+- If emulator was started by selecting statefile and GUI was opened after starting emulation, every time GUI Misc panel was opened, selected statefile was set to reload when GUI exited. (b31?)
+
+Beta 34:
+
+- Harmnless bug causing "Negative nr_color_changes.. " log messages fixed.
+- Copper VBLANK startup was 2 cycles too early. (Previous fix was not correct)
+- Partially reverted b9 sound update that caused worse sound stability on some systems. It also makes FPS value slightly less stable.
+- Audio volume (from AUDxVOL) is only loaded to internal volume register when period counter is loaded. Volume changes during period counting don't affect audio until next period load.
+- Copper writes to AUDxDAT in non-cycle exact modes had inaccurate timing.
+- AUDxDAT undocumented feature: AUDxDAT write has 1 cycle delay, state machine==3 INTREQ test is done when period counter==1, not when it is zero.  (Thanks to ross again, another weird test set :))
+- RTG screen was not fully cleared in some situations when switching modes (b25)
+- Changed debugger "dp" to "dppc" (switch to PPC disassembly mode)
+- Ateo Pixel 64 RTG board emulation. Another Cirrus Logic based RTG board. Very quickly done, only works with recent Picasso96 versions, does not work with drivers that need ateobus.library (will be done if someone disassembles it, I am too lazy, as usual). 256 color mode has wrong colors and right edge wraps around. Does not autoswitch.
+- "Smooth Copper" works correctly again.
+
+Beta 33:
+
+- DMACONR blitter busy bit state is 1 cycle later than copper waking up from blitter finished. (Circle Scroller / United Force)
+- Direct3D9 mode crash was possible when switching screen modes (b32).
+- Disassembler configuration (upper/lower case options, show calculated EA, show data pointed by EA, condition true/false), hex number prefix, min and max number of opcode/opwords. Currently only available via direct ini or registry editing, first enter debugger, then quit emulator to create default entries. Debugger sub section, debug_disasm_flags is bit mask, bits 0 to 4 are lower case bits (0=instruction name, 1=registers, 2=hex values, 3=instruction size), 4=show T/F, 5=show EA, 6=show EA contents, 7=show instruction opcode/opwords. Currently they only affect disassembler output. Defaults changed to lower case.
+- Don't log flood "DMAL error" messages if (totally unusable) programmed mode with HTOTAL smaller than last audio DMA slot.
+- DMAL (Serial DMA slot allocation information from Paula to Agnus) start cycle was not updated to match new custom chipset emulation.
+- Small audio period causing repeated samples is now fully accurate, including 1 extra cycle delay if DMA request includes pointer reset (sample restart).
+- Very strange programmed modes could have made it impossible to quit emulator normally.
+- Adjusted behavior of CPU reads from write-only custom registers (Bozebobs / Area08)
+- Fixed crash when loading some old A500 statefiles with CD32 CD incorrectly enabled.
+- Adjusted "Smooth Copper" hack to work with new custom chipset emulation (not fully correct yet).
+- Console log/debugger DPI adjustment.
+
+Beta 32:
+
+- HDIW blanking could get stuck in always-on state if VPOSW was written mid screen with out of range values. (Agony Psygnosis title screen become fully border color blanked if ECS)
+- Wait 2 fields before updating visible screen after display parameter change. Hides glitches at the bottom of screen that can appear when last visible line is actually line 0 or higher. Direct 3D output is still refreshed normally, only difference is that data comes from old frame. Most "real" displays would either roll (CRT) or blank temporarily (LCD etc) in this situation.
+- On the fly config changes are again checked and processed before vertical position 0 starts. Previous display updates moved it to line 1 or later, depending on mode. This might have caused unexpected side-effects.
+- Hardwired vertical blanking didn't work correctly if OCS Denise was configured.
+- Removed OCS Denise H-blank bug advanced chipset option. It is now always enabled (if OCS Denise configured) but "buggy" top and bottom line is only visible if overscan mode is Overscan+ or Extreme.
+- Switching from some other config to/from ECS Agnus 512k/512k configuration where Agnus sees 1M chip RAM (Agnus sees upper half of chip RAM at usual $800000 address but CPU sees it at $c00000) didn't always change config correctly. For example loading statefile that uses ECS 512k/512k config when current config is OCS 512k/512k, didn't switch config correctly. (Very old bug)
+- ECS Denise + EXTHBLANK=1: vertical blanking (display blanking only) is fully disabled.
+- New undocumented feature: DIGHIGH bits 3 and 11 are vertical start/stop bit 11 in ECS Agnus. AGA replaces them with horizontal H0 bits. It is not documented in HRM ECS chapter documents them, officially V10 bit is highest (and even V10 is almost totally useless). VPOSR/W V11 does not exist and vertical counter is only 11 bits (0 to 10) which makes DIWHIGH V11 feature that makes no sense.
+- CIA/CPU timing fix in b21 was partically broken.
+- Programmed mode vertical display start/end calculation adjustments.
+- Bitplane refresh slot conflict emulation was "too random". Internal behavior is still unknown. (First demo / Starline corruption if ECS)
+- INTREQ write that clears interrupt(s) didn't use cycle accurate (delayed) code path. (La Weird / Cave)
+- Vblank interrupt horizontal start was not adjusted to new custom chipset emulation (Spectre Party / Phenomena and others)
+- VHPOSR was not adjusted to new chipset emulation (hpos=0 reads previous vertical line)
+- CD32 NVRAM write that wraps around caused NVRAM file size to increase.
+
+Beta 31:
+
+- Sprite right overscan fixes.
+- Programmed mode adjustments. HSSTOP does not affect display position. HSSTRT - HSSTOP only needs to be long enough for display device to detect it. Note that WinUAE will accept invalid HSSTOP and other impossible in real world programmed modes, there is no validation against real world video signal standards.
+- HBSTRT/STOP accuracy improved in really weird situations (like having multiple HBLANK regions in single scanline..). Undocumented special case emulated: if HBSTRT to HBSTOP is less than 1 lores pixel (4 shres pixels), 4-(HBSTOP-HBSTRT) shres pixels of bitplane is visible before COLOR0 starts. Subpixel mode required. Apparently switching border on takes 1 lores pixel. (HB is Denise/Lisa internal trigger for border on state)
+- Bitplane to refresh strobe vs refresh-only slot conflict behavior fixed (Water intro / Acme, Vectors Again / Armada etc, glitches are now correct if ECS Agnus)
+- Optimized bitplane allocation now works correctly in NTSC mode, needs 2 alternating buffers because line length alternates in NTSC.
+- Writing to horizontal DIWSTRT/STOP just before it would match missed the check.
+- DIWHIGH full AGA hires/shres positioning bit support.
+- Line buffer size was not large enough to fit "extreme" overscan superhires mode.
+- HCENTER 8/9 CCK horizontal blanking period emulated. HCENTER generates extra sync pulse when it matches and current line is vsync line and long field. This is normally invisible but it can be visible in (weird or badly configured) programmed modes. Visible result is small black box, about at the middle of last line(s), ECS Denise only. This is never visible on AGA because blanking is generated by Lisa using internal registers. ECS Denise uses CSYNC pin to detect blanking condition. OCS Denise does not have CSYNC pin and uses internal hardwired blanking only.
+- Fixed wrong border color/black color in right border when horizontal centering was enabled. Probably also possible in some other situations.
+- ECS Denise hires resolution sprite horizontal position bit works strangely if bitplane resolution is lores or hires: first pixel row of sprite becomes transparent. Horizontal bit only works correctly if bitplane resolution is superhires.
+- Subpixel emulation mode + superhires had single shres pixel offset in horizontal hblank and borderblank positioning. This change also means borderblank/border bug can't be anymore visible without subpixel mode + superhires resolution.
+- DMA debugger uses first refresh slot to show if line is vertical blanking (B), vertical sync (S) or vertical diw is open (=), second refresh slot is used for long field (F) and long line (L). These special slots are marked with '*' to not (too easily) confuse them with same symbols in other slots. Horizontal diw ('(' and ')'), programmed horizontal blanking ('[' and ']') and programmed horizontal sync ('{' and '}') are also marked.
+- PCem v17 merge. Some SVGA updates, Voodoo 3 updates, x86 CPU updates. (Probably moving to 86box in the future, PCem is not updated anymore.)
+- Misc panel statefile text box was empty (might be Windows version specific or something) even when loaded config had statefile configured.
+- Seems to run normally under Windows 11 insider build.
+- fs debugger command fixed, display emulation updates made it randomly inaccurate.
+
+Beta 30:
+
+- BEAMCON0 LOLDIS modification was ignored unless display setup needed reinitialization (programmed refresh rate change etc..)
+- Programmed VBLANK (BEAMCON0 bit 12) didn't blank lines after VBSTRT in some situations.
+- Fixed scanline offset if resolution and BPLCON1 was changed during same scanline.
+- Sprite horizontal wrap around support was only partially implemented.
+- Horizontal display window (DIWSTRT/DIWSTOP) didn't support some wrap around/start larger than stop conditions correctly.
+- Borderblank glitch emulation improved. If HDIW is open before first BPL1DAT access, there is 1.5 lores pixel COLOR00 gap between borderblank and first bitplane pixel.
+- Reset didn't clear CIA-A/B B data port/direction.
+- Bitplane first refresh slot conflict (strobe signal) was not reported and didn't trigger simulated conflict corrupted graphics.
+- Added A590/A2091 v4.4 ROMs to ROM scanner. Probably original release version because ROMs had labels 390388-01 and 390389-01.
+- If on the fly (emulation has already been started) Quickstart model or model specific change modifies expansion devices, force internal "Restart"-button press. Without it not all expansion devices initialize correctly.
+
+Beta 29:
+
+- b28 copper update was wrong. Second attempt. (Hotbleeps etc. This time without breaking others.)
+- Sprite fix, sprite DMA does not start if frame's initial SPRxPOS/SPRxCTL fill loads vertical start position that matches current vertical position.
+- Added bsdsocket IoctlSocket SIOCIFADDR, SIOCIFFLAGS, SIOCIFBRDADDR, SIOCIFCONF, SIOCIFNETMASK, SIOCIFMETRIC and SIOCIFMTU support. Read-only.
+- Fixed uaegfx indirect mode BlitTemplate() harmless one byte buffer out of bounds read.
+- VPOSW register access always clears LOL bit (if it was set = NTSC long line). It can't be set to one by writing to VPOSW.
+- NTSC long/short line order was wrong after horizontal wrap around.
+
+Beta 28:
+
+- Fixed buffer overflow if more than 9 devices were found when enumerating NPCap/WinCap devices. (Special SLIRP cases ignore max size check)
+- Mid screen HBlank change didn't force current scan line redraw. It could have caused glitches in some weird situations.
+- Fixed crash when display DMA start/stop/position was too weird. (Can happen if setup changes mid scanline with DMA already active)
+- AGA borderblank hires pixel delay is working again.
+- b27 bitplane allocation optimization fix.
+- Copper WAIT can't wake up at the start of scanline. (This was lost when custom emulation rewrite started)
+- Sprite emulation fix, vblank end sprite reset and first possible sprite DMA didn't use same line.
+- Blitter register modification while active support was partially broken few betas ago.
+- ECS Denise H/V-blank emulation updates.
+- RTS/RTE/RTR/RTD disassembly shows also return address, calculated using current stack pointer value.
+- DMA debugger now includes DDFSTRT (0), DDFSTOP (1) and hardwired DDFSTOP (2) positions if match caused bitplane DMA to start (DDFSTRT) or stop (DDFSTRT/hardwired DDFSTOP).
+
+Beta 27:
+
+- Graphics glitches fixed (b26 and b25)
+- Some programs (for example Wings of Death) that use OCS compatible 60Hz hack didn't have working vblank interrupt. If write to VPOSW jumped to mid last line, vblank start line check was missed.
+- Added some optimizations (for example don't create new bitplane allocation table for current scanline if previous line had identical bitplane cycle sequence)
+- Added bitplane/audio DMA conflict emulation that can happen in bitplane overrun situations. In this situation no DMA transfer is done (neither BPL or audio).
+- Integer scale filters usually forced all scanlines to be fully redrawn, even if content didn't change.
+- VPOSW fake 60Hz now uses 60Hz height if refresh rate is >=55Hz and 50Hz height if less than 55Hz. Matches 1081/1084 etc CRT behavior better.
+- "Remove interlace artifacts" last line flickering fixed.
+
+Beta 26:
+
+- Write to most programmed mode registers (ECS/AGA only) caused display emulation reinitialization, even when modified register was not in use. Now reinitialization is only done if matching BEAMCON0 bit(s) is set. Fixes BC Kid screen flashing, game updates color registers but writes too much and modifies first few programmed mode registers.
+- Remove interlace artifacts option works again but is not fully functional. (last line might flicker, copper modifications are not always accurate)
+- On the fly switch to subpixel mode caused hang in some situations.
+- Default overscan mode had one extra pixel row and line. Overscan+ size also fixed.
+- Fixed display glitches in 68020+ memory cycle exact modes (memory cycle exact only).
+- Shader files are again supported in Direct3D 11 mode. FX11 moved to separate static library.
+
+Beta 25:
+
+- On the fly PAL/NTSC switch (VPOSW trick or BEAMCON0) incorrectly adjusted screen width in some situations. Height is now adjusted relative to total vertical lines, some games use VPOSW trick to generate 56Hz mode which was previously scaled as NTSC.
+- Programmed mode (BEAMCON0 bit 7 set) with PAL/NTSC like parameters are not anymore considered as VGA-like.
+- Hardwired vblank end line was 1 too late.
+- Fixed repeating autoresize.
+- Yet another HBLANK related undocumented feature: HBLANK start enables border. If HBLANK start is moved to visible area and bitplanes are active during HBLANK: border gets re-activated and bitplane re-starts when next BPL1DAT write happens. This probably can't be used for anything useful because display's black level detection will get confused (weird colors, wrong black level etc) if HSYNC period is not blanked.
+- And another undocumented feature: if horizontal display window was closed due to HBLANK and next BPL1DAT access is close enough (and after HBLANK end in visible region, so probably can only happen in bitplane overun condition, normally shift registers empty and only background color is shown), display window opens 1.5 lores pixel early, showing previous BPL1DAT loaded pixel pattern.
+- Horizontal diw now works correctly even if display horizontally "wraps around" due to (much) larger than normal HSYNC position.
+- Light gun/pen fix.
+- Partial fix to cycle-exact + MMU emulation (but could also happen without MMU) weird copper behavior. Internal cycle counter was not always guaranteed to be chipset cycle aligned.
+- GUI lists (for example Hardware info) column DPI support.
+- Fixed D3D11 OSD led crash (D3D9 worked) if display moved monitors and they had different DPI.
+- Fixed RTG unexpected display size/scaling, introduces few betas ago.
+- Fixed RTG related crash when switching fullscreen modes (possibly also in other modes).
+- Fixed chipset emulation buffer overflow in some programmed modes, buffers need to be slightly larger now that vertical "overrun" is supported.
+
+Beta 24:
+
+- usegfx Picasso96 DISPLAYCHAIN is now only forced if uaegfx monitor is monitor id=0 (shared with native chipset). Previously DISPLAYCHAIN was always forced.
+- uaegfx in other monitor than native: uaegfx window was tiny before it resized to selected Picasso96 resolution. Now reset default is 640x480 instead of 0x0. uaegfx window also didn't re-open after reset.
+- Extra multi monitor mode window positions are now stored to registry/ini.
+- Bitplane wrap around (extreme bitplane overrun condition where BPLxDAT fetches before hsync start are visible after hsync end) is now fully supported.
+- Sprite fix (Shadow of the Beast 3 missing sprite)
+- Adjusted extreme overscan positioning and filter (for example integer scaling) support improved.
+- Two (or more) horizontal DIWSTRT/STOP regions are now supported. Previously only first region was visible.
+- Programmed mode WB modes should now have 100% correct vertical and horizontal blanking. Hardwired blanking is now correct in overscan+ modes.
+
+Beta 23:
+
+- Display positioned was shifted in some programs. (b22)
+- Fixed horizontal jitter in some AGA programs. (b22)
+- Black screen in some programs. (b22)
+- Automatic scaling fixed. (b22)
+- Switching from programmed horizontal blanking back to hardwired h-blanking didn't work.
+- Added Overscan option to Display panel. Overscan selection is default from previous versions. This probably will replace will TV filter options in the future. Overscan+ and Extreme are even more larger modes, only useful if programmed blanking is enabled, more details later. TV options probably need some calibration.
+
+Beta 22:
+
+- Copper vblank start was delayed by few cycles.
+- uaegfx used unsafe (assumes unrecoverable state if invalid address) address translation function without validating the address first. Invalid VRAM address would have crashes emulated Amiga.
+- "Add harddrive" tried to incorrectly guess logical geometry and didn't enable full drive mode if drive didn't already have RDB. (and it become weird and useless drive)
+- Picasso96 v3.0+ uaegfx screen dragging support fixed.
+- Extended window border mode joystick/mouse direction/buttons indicators fixed.
+- Overscan blanking filter settings added to filter profiles.
+- DMA debugger now shows AGA FMODE>0 bitplane and sprite fetch read values fully (both 32-bit and 64-bit). Previously it was always truncated to 16-bit.
+- Memwatch points now fully support AGA FMODE>0 bitplane and sprite fetches.
+- Memwatch log only (L) flag was not cleared when memwatch point was replaced or reset.
+- Bitplane graphics wrapping around is now emulated (BPLxDAT fetch done before hsync but it is long enough to be partially visible after hsync). Normally can't happen but it can happen in bitplane DMA overrun situations or if weird programmed mode. Not fully working yet.
+- Hard reset tried to free hardware emulated RTG VRAM twice causing memory corruption.
+
+More programmed mode/normal mode special case related updates, including really weird never before used modes (Thanks to Ross again :)) Still work to do.
+
+- Many programmed screen modes had corruption.
+- Vertical now also supports wraparound (Horizontal added in b18), if vblank starts at line 0 or later (normal PAL/NTSC vblank start is last line), they will be correctly drawn after "real" last line. More lines are shown if VB starts later than normally.
+- BPLCON3 EXTBLKEN (horizontal blanking) is now fully emulated and accurate. Note that ECS Denise works differently than AGA:
+-* ECS Denise: ECSENA=1 + EXTBLKEN=0: blanking disabled, including vertical (except tiny blanking during hsync to keep display black level detection working), ECSENA=1 + EXTBLKEN=1 and ECSENA=0: hardwired blanking. No programmed blanking, itseems HBSTRT/HBSTOP registers don't exists in ECS Denise. 
+-* AGA: ECSENA=0 and ECSENA=1 + EXTBLKEN=0: hardwired blanking. ECSENA=1 + EXTBLKEN=1: HBSTRT/HBSTOP programmed horizontal blanking.
+-* Note that display devices need blanked signals during part of hsync period (and vsync), it is used to set black levels, without blanking, image might become very dark or have strange colors, have strange brightness pulsing etc. This is not emulated.
+- Increased internal max native display width by 2 lores pixels. ECS Denise/AGA can show 1 lores pixel more in right overscan compared to OCS. (Increased by 2 to keep display width even)
+- Programmable vertical blanking is now handled accurately. VBSTOP = line when sprites are reset and first loads are done. VBSTOP+1 = first visible line. Sprites are also now emulated correctly even if VBSTRT is after vsync period. Display is now correctly blanked if vertical blank period is in visible part of display. First line of display is also adjusted depending on VBSTOP value when BEAMCON0 VARVBEN is enabled, even if other bits are not set.
+- Advanced chipset "OCS H-Blank glitch" implemented (option already existed few betas ago). When enabled, first blanked line has background color visible in right border and last visible line has right border blanked. Not emulated by default because it looks really ugly and it is usually invisible when using real hardware due to overscan.
+- Programmable horizontal (HSSTRT and HSSTOP) and vertical sync (VSSTRT and VSSTOP) emulation improved. Previously h/v-sync and h/v-blank was combined, now they are fully separate.
+
+Part of below was already known previously but this time all chipset versions have been tested one by one and fully emulated now:
+
+A1000/OCS Denise/ECS Denise last line differences:
+- When A1000 Denise gets VB strobe, vertical blanking starts next line.
+- When OCS Denise gets VB strobe, vertical blanking starts after 2 lines.
+- When ECS Denise/AGA gets VB strobe, vertical blanking starts next line.
+
+A1000 Agnus sends first VB strobe when current line is first line, line zero. (Which as a side-effect causes delayed vblank interrupt, interrupt is generated when line 1 starts) Other Agnus versions sends first VB strobe when current line is last line.
+
+Bitplane DMA vertical DIW is forced closed when VB starts and sprite DMA is inhibited during all VB lines. Unless ECS/AGA and BEAMCON0 HARDDIS=1 or VARBEAMEN=1 or VARVBEN=1. (Note: DDFSTRT/STOP limits are not same, BEAMCON0 HARDDIS=1 or VARBEAMEN=1 or SHRES=1 or UHRES=1)
+
+A1000: first blanked line is line 1. Line 0 is last visible line at the bottom of screen.
+OCS Denise: first blanked line is line 1. Line 0 is last visible line at the bottom of screen. (This was not previously emulated, some programs might suddenly have different colored last line)
+ECS Denise/AGA: first blanked line is line 0. Last line (312/313/262/263) is last visible line at the bottom of screen.
+(Back in the CRT days last line was almost always invisible)
+
+Normally only COLOR0 changes are visible during last line. All chipset versions have same first visible line. OCS Denise outputs 1 more visible line than ECS Denise/AGA in default PAL/NTSC modes.
+
+Vertical blanking in this context means RGB output DAC (after Denise/Lisa) is in blanked mode. Vertical sync usually is different than vertical blanking in programmed modes.
+
+
+Beta 21:
+
+- Blitter line draw with B channel enabled supported. Flexible Zoom / Upfront uses it to load line pattern using DMA (undocumented feature, not really useful because it wastes lots of DMA time) instead of using static BLTBDAT 16-bit pattern.
+- Blitter got stuck in some 68020+ CE configs.
+- Copper blitter wait glitches are now accurately emulated.
+- Cycle-exact mode CPU to CIA E-clock syncronization was not accurate.
+- BPLxDAT CPU/copper write timing fix.
+- FSINCOS native FPU mode had SIN and COS values swapped.
+- If CPU reads from non-existing address space and code is executed from ROM, return all zeroes. This might not be exactly correct because it was only quickly checked on real hardware. Fixes Batman Vuelve slideshow II / Batman Group.
+- A2410 works again (broke in 4300b1)
+
+Beta 20:
+
+- Blitter internal RGA bus pipeline emulation implemented.
+- When blitter was started for the first time and cycle-exact mode: blitter idle time from start of scanline to BLTSIZE write position was not emulated cycle-exactly. Almost harmless previously, now it caused visible problems with statefiles that expected blitter to steal all cycles. Very old bug.
+- Copper didn't stop when both COPJMP1 and COPJMP2 was strobed without active copper DMA. (b18)
+- Copper WAIT wrong special case fixed. (Hotbleeps and EyeQlazer)
+- Blitter register modification while active update. (For example fixes Demo Mix 5 intro / Tommyknockers). Not 100% yet.
+- AGA FMODE bit 14 bitplane scandoubling odd/even scanlines were swapped. (b18)
+- Optimized mode bitplane emulation didn't do anything if scanline's bitplane pointers crossed end of chip ram. Normally never happens but really weird programs or free running bitplane pointers might not have been 100% accurately emulated ("Warning: Bad playfield pointer" message). Ancient bug with ancient comment (probably from pre-0.8 UAE) that this should be fixed someday..
+- Some more UHRES parts implemented. (Yes, this is useless but cycle usage still should match real hardware if UHRES is enabled for some weird reason!)
+- b18 FSINCOS update broke non-softfloat FSINCOS.
+
+Beta 19:
+
+- Bitplane max plane limit was calculated before internal aga=true variable was set. Loading AGA statefile forced OCS/ECS limits if FMODE not updated in copper list.
+- Fixed sprite glitches in some situations.
+- Fixed graphics glitches if resolution was changed in horizontal blanking region.
+- Different bitplane delay for odd and even planes didn't work correctly in some situations.
+- Fixed memory buffer overflow when some types of file dialog was opened. (old bug)
+
+Note: "Remove interlace artifacts" Display panel option is currently not supported. It must be disabled.
+Note: Blitter cycle allocation is not yet pipelined. (Which is the real cause for 2 idle cycles after writing to BLTSIZE.) This will most likely affect copper blitter wait timing.
+
+
+Beta 18: Version bumped to 4.9. (Which will become 5.0 later this year. Probably. New chipset and Voodoo 3 emulation are big enough features.)
+
+Display emulation rewrite. Bitplane sequencer, copper (mostly) and internal pipelining is rewritten to match schematics.
+
+NOTES:
+- Performance is slower when running custom chipset heavy programs. Will be improved later.
+- There should be no visible differences when running "normal" programs.
+- Horizontal positions shown by debugger are now shifted by 4 cycles compared to previous versions. Old versions basically used wrong origin (based on DDFSTRT immediately starting BPL DMA which was not correct). I'll write more detailed notes about internal Agnus logic later.
+- Programmed mode (BEAMCON0 and friends) rewrite is still work in progress, some glitches might be visible.
+- D3D9 shaders are not currently supported in D3D11 mode.
+
+What to check:
+
+- Old bug(s) reappearing (hack removed but missing edge case wasn't reimplemented properly)
+- Other bugs.
+- Really bad performance. (But buy a new PC if you have something like pre-Sandy Bridge era CPU). New emulation is more complex but also some previous "lazy evaluation" optimizations might not be fully working.
+
+- Bitplane logic internal pipeline is accurately emulated (DDFSTRT/limit check, BPRUN latch, sequencer output, RGA output latch = 4 cycle delay from DDFSTRT decision to first possible BPLxDAT slot). All known side-effects can be easily explained now. For example bitplane/copper/sprite DMA on/off mid scanline is now fully accurate (including all side-effects) with explanation that actually makes sense.
+- Copper free cycle check uses pipelined bitplane allocation, copper decisions are done early (2 cycles).
+- Display rendering part of emulation is now from hsync to hsync. Was previously scanline to scanline which required extra hacks to support displaying early horizontal positions in right border. All of that simply work automatically now.
+- Bitplane DMA "overrun" condition special cases removed, it isn't needed anymore to handle overrun correctly. Lots of other similar hacks also become obsolete and are gone.
+- Bitplane overrun new undocumented "feature": because BPL sequencer uses horizontal counter bit 0 as a clock signal, HPOS 226 to 0 transition does not increment BPL sequencer counter: same BPL cycle gets repeated.
+- Lots of special case BEAMCON0 blanking/sync improvements. (Thanks Ross :))
+- HBSTRT/HBSTOP now supports AGA-only 140ns/70ns/35ns resolution bits.
+- BPLCON3 EXTBLKEN didn't affect blanking timing if it was changed after BEAMCON0 was written to enable programmable blanking.
+- Sprite emulation is now also pipelined but because most of sprite decision logic is in "STCMSD" black box, exact behavior is still not 100% known. No non-working programs known.
+- DMA debugger now shows DMA cycle conflicts, top/left contains string "!<register number that conflicts>" if conflict.
+- Programmed display mode vblank timing calculation fixed (usually was less than 1Hz off), also correctly uses NTSC base clock if NTSC hardware.
+- Copper debugger (od) now stores also copper jumps and copper disassembler follows jumps automatically (if not after SKIP). o3 = start from vblank (COP1LC value when vblank started).
+- Loading statefiles created with 4.4 or older and blitter was active when statefile was created: loading statefile corrupted memory. Old-style blitter active statefiles are not supported: blitter is restored in stopped state. I haven't yet decided if support gets re-implemented.
+
+- Prometheus PCI config word wide access byteswap fix. Fixes Prometheus Voodoo 3 Picasso96 driver hang. Note that 8-bit has graphics corruption, driver is buggy and has off by one error when it tries render fonts (extra line of garbage) and when rendering icons (and probably other image elements), it sets host-to-screen blit height to 1 but actually keeps writing multiple lines worth of data to blitter's CPU data input register. It seems real Voodoo 3 blits all extra lines and drops the last line. Partial workaround implemented.
+- Saving config file: Confirm overwrite (which is actually rename as configuration.backup) if it is read-only.
+- Softfloat FMOD, FREM update. FSINCOS implemented, calculates both SIN and COS simultaneously, previously FSINCOS called SIN and COS separately. (Andreas Grabher)
+- uaeserial.device CMD_WRITE with io_Length=-1 is now supported. Sends data until first zero byte.
+- uaeserial.device EOFMODE support implemented.
+- uaeserial.device io_ExtFlags Mark and Space parity support implemented.
+- American Laser Games Platoon and Space Pirates v1.4 descrambling support added.
+- Add quotes to serial, parallel and MIDI port names in config file if they begins or ends with a space. Also escape if name contains quotes.
+
 Beta 17:
 
 - OSD led status bar positioning fixed (b16)

@@ -21,7 +21,6 @@ uae_u32 REGPARAM2 op_0000_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(4);
@@ -43,7 +42,6 @@ uae_u32 REGPARAM2 op_0010_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -66,7 +64,6 @@ uae_u32 REGPARAM2 op_0018_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -89,7 +86,6 @@ uae_u32 REGPARAM2 op_0020_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -111,7 +107,6 @@ uae_u32 REGPARAM2 op_0028_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, src);
 	m68k_incpci(6);
@@ -134,7 +129,6 @@ uae_u32 REGPARAM2 op_0030_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, src);
 	return (3 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -153,7 +147,6 @@ uae_u32 REGPARAM2 op_0038_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, src);
 	m68k_incpci(6);
@@ -173,7 +166,6 @@ uae_u32 REGPARAM2 op_0039_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_byte(dsta, src);
 	m68k_incpci(8);
@@ -191,7 +183,6 @@ uae_u32 REGPARAM2 op_003c_20_ff(uae_u32 opcode)
 	regs.sr |= src;
 	MakeFromSR();
 	m68k_incpci(4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -209,7 +200,6 @@ uae_u32 REGPARAM2 op_0040_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(4);
@@ -231,7 +221,6 @@ uae_u32 REGPARAM2 op_0050_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -254,7 +243,6 @@ uae_u32 REGPARAM2 op_0058_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -277,7 +265,6 @@ uae_u32 REGPARAM2 op_0060_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -299,7 +286,6 @@ uae_u32 REGPARAM2 op_0068_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, src);
 	m68k_incpci(6);
@@ -322,7 +308,6 @@ uae_u32 REGPARAM2 op_0070_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -341,7 +326,6 @@ uae_u32 REGPARAM2 op_0078_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, src);
 	m68k_incpci(6);
@@ -361,7 +345,6 @@ uae_u32 REGPARAM2 op_0079_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_word(dsta, src);
 	m68k_incpci(8);
@@ -401,7 +384,6 @@ uae_u32 REGPARAM2 op_0080_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(6);
@@ -424,7 +406,6 @@ uae_u32 REGPARAM2 op_0090_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -448,7 +429,6 @@ uae_u32 REGPARAM2 op_0098_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -472,7 +452,6 @@ uae_u32 REGPARAM2 op_00a0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -495,7 +474,6 @@ uae_u32 REGPARAM2 op_00a8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_long(dsta, src);
 	m68k_incpci(8);
@@ -519,7 +497,6 @@ uae_u32 REGPARAM2 op_00b0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -539,7 +516,6 @@ uae_u32 REGPARAM2 op_00b8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_long(dsta, src);
 	m68k_incpci(8);
@@ -560,7 +536,6 @@ uae_u32 REGPARAM2 op_00b9_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(10);
 	x_put_long(dsta, src);
 	m68k_incpci(10);
@@ -596,7 +571,6 @@ uae_u32 REGPARAM2 op_00d0_20_ff(uae_u32 opcode)
 		Exception_cpu(6);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -631,7 +605,6 @@ uae_u32 REGPARAM2 op_00e8_20_ff(uae_u32 opcode)
 		Exception_cpu(6);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -666,7 +639,6 @@ uae_u32 REGPARAM2 op_00f0_20_ff(uae_u32 opcode)
 		Exception_cpu(6);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -699,7 +671,6 @@ uae_u32 REGPARAM2 op_00f8_20_ff(uae_u32 opcode)
 		Exception_cpu(6);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -732,7 +703,6 @@ uae_u32 REGPARAM2 op_00f9_20_ff(uae_u32 opcode)
 		Exception_cpu(6);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -767,7 +737,6 @@ uae_u32 REGPARAM2 op_00fa_20_ff(uae_u32 opcode)
 		Exception_cpu(6);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -802,7 +771,6 @@ uae_u32 REGPARAM2 op_00fb_20_ff(uae_u32 opcode)
 		Exception_cpu(6);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -820,7 +788,6 @@ uae_u32 REGPARAM2 op_0100_20_ff(uae_u32 opcode)
 	uae_s32 dst = m68k_dreg(regs, dstreg);
 	src &= 31;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -837,7 +804,6 @@ uae_u32 REGPARAM2 op_0108_20_ff(uae_u32 opcode)
 	uaecptr mempa = m68k_areg(regs, srcreg) + (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	uae_u16 val  = (x_get_byte(mempa) & 0xff) << 8;
 	val |= (x_get_byte(mempa + 2) & 0xff);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((val) & 0xffff);
 	m68k_incpci(4);
@@ -858,7 +824,6 @@ uae_u32 REGPARAM2 op_0110_20_ff(uae_u32 opcode)
 	uae_s8 dst = x_get_byte(dsta);
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -879,7 +844,6 @@ uae_u32 REGPARAM2 op_0118_20_ff(uae_u32 opcode)
 	m68k_areg(regs, dstreg) += areg_byteinc[dstreg];
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -900,7 +864,6 @@ uae_u32 REGPARAM2 op_0120_20_ff(uae_u32 opcode)
 	m68k_areg(regs, dstreg) = dsta;
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -920,7 +883,6 @@ uae_u32 REGPARAM2 op_0128_20_ff(uae_u32 opcode)
 	uae_s8 dst = x_get_byte(dsta);
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -941,7 +903,6 @@ uae_u32 REGPARAM2 op_0130_20_ff(uae_u32 opcode)
 	uae_s8 dst = x_get_byte(dsta);
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -959,7 +920,6 @@ uae_u32 REGPARAM2 op_0138_20_ff(uae_u32 opcode)
 	uae_s8 dst = x_get_byte(dsta);
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -978,7 +938,6 @@ uae_u32 REGPARAM2 op_0139_20_ff(uae_u32 opcode)
 	uae_s8 dst = x_get_byte(dsta);
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -999,7 +958,6 @@ uae_u32 REGPARAM2 op_013a_20_ff(uae_u32 opcode)
 	uae_s8 dst = x_get_byte(dsta);
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -1021,7 +979,6 @@ uae_u32 REGPARAM2 op_013b_20_ff(uae_u32 opcode)
 	uae_s8 dst = x_get_byte(dsta);
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -1037,7 +994,6 @@ uae_u32 REGPARAM2 op_013c_20_ff(uae_u32 opcode)
 	uae_s8 dst = (uae_u8)get_word_020_prefetch(2);
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -1056,7 +1012,6 @@ uae_u32 REGPARAM2 op_0140_20_ff(uae_u32 opcode)
 	src &= 31;
 	dst ^= (1 << src);
 	SET_ZFLG(((uae_u32)dst & (1 << src)) >> src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (dst);
 	m68k_incpci(2);
@@ -1076,7 +1031,6 @@ uae_u32 REGPARAM2 op_0148_20_ff(uae_u32 opcode)
 	val |= (x_get_byte(mempa + 2) & 0xff) << 16;
 	val |= (x_get_byte(mempa + 4) & 0xff) << 8;
 	val |= (x_get_byte(mempa + 6) & 0xff);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (val);
 	m68k_incpci(4);
@@ -1098,7 +1052,6 @@ uae_u32 REGPARAM2 op_0150_20_ff(uae_u32 opcode)
 	src &= 7;
 	dst ^= (1 << src);
 	SET_ZFLG(((uae_u32)dst & (1 << src)) >> src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, dst);
 	m68k_incpci(2);
@@ -1121,7 +1074,6 @@ uae_u32 REGPARAM2 op_0158_20_ff(uae_u32 opcode)
 	src &= 7;
 	dst ^= (1 << src);
 	SET_ZFLG(((uae_u32)dst & (1 << src)) >> src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, dst);
 	m68k_incpci(2);
@@ -1144,7 +1096,6 @@ uae_u32 REGPARAM2 op_0160_20_ff(uae_u32 opcode)
 	src &= 7;
 	dst ^= (1 << src);
 	SET_ZFLG(((uae_u32)dst & (1 << src)) >> src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, dst);
 	m68k_incpci(2);
@@ -1166,7 +1117,6 @@ uae_u32 REGPARAM2 op_0168_20_ff(uae_u32 opcode)
 	src &= 7;
 	dst ^= (1 << src);
 	SET_ZFLG(((uae_u32)dst & (1 << src)) >> src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, dst);
 	m68k_incpci(4);
@@ -1189,7 +1139,6 @@ uae_u32 REGPARAM2 op_0170_20_ff(uae_u32 opcode)
 	src &= 7;
 	dst ^= (1 << src);
 	SET_ZFLG(((uae_u32)dst & (1 << src)) >> src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, dst);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -1209,7 +1158,6 @@ uae_u32 REGPARAM2 op_0178_20_ff(uae_u32 opcode)
 	src &= 7;
 	dst ^= (1 << src);
 	SET_ZFLG(((uae_u32)dst & (1 << src)) >> src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, dst);
 	m68k_incpci(4);
@@ -1230,7 +1178,6 @@ uae_u32 REGPARAM2 op_0179_20_ff(uae_u32 opcode)
 	src &= 7;
 	dst ^= (1 << src);
 	SET_ZFLG(((uae_u32)dst & (1 << src)) >> src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, dst);
 	m68k_incpci(6);
@@ -1250,7 +1197,6 @@ uae_u32 REGPARAM2 op_0180_20_ff(uae_u32 opcode)
 	src &= 31;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst &= ~(1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (dst);
 	m68k_incpci(2);
@@ -1269,7 +1215,6 @@ uae_u32 REGPARAM2 op_0188_20_ff(uae_u32 opcode)
 	uaecptr mempa = m68k_areg(regs, dstreg) + (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	x_put_byte(mempa, src >> 8);
 	x_put_byte(mempa + 2, src); 
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -1290,7 +1235,6 @@ uae_u32 REGPARAM2 op_0190_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst &= ~(1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, dst);
 	m68k_incpci(2);
@@ -1313,7 +1257,6 @@ uae_u32 REGPARAM2 op_0198_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst &= ~(1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, dst);
 	m68k_incpci(2);
@@ -1336,7 +1279,6 @@ uae_u32 REGPARAM2 op_01a0_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst &= ~(1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, dst);
 	m68k_incpci(2);
@@ -1358,7 +1300,6 @@ uae_u32 REGPARAM2 op_01a8_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst &= ~(1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, dst);
 	m68k_incpci(4);
@@ -1381,7 +1322,6 @@ uae_u32 REGPARAM2 op_01b0_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst &= ~(1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, dst);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -1401,7 +1341,6 @@ uae_u32 REGPARAM2 op_01b8_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst &= ~(1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, dst);
 	m68k_incpci(4);
@@ -1422,7 +1361,6 @@ uae_u32 REGPARAM2 op_01b9_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst &= ~(1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, dst);
 	m68k_incpci(6);
@@ -1442,7 +1380,6 @@ uae_u32 REGPARAM2 op_01c0_20_ff(uae_u32 opcode)
 	src &= 31;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst |= (1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (dst);
 	m68k_incpci(2);
@@ -1463,7 +1400,6 @@ uae_u32 REGPARAM2 op_01c8_20_ff(uae_u32 opcode)
 	x_put_byte(mempa + 2, src >> 16);
 	x_put_byte(mempa + 4, src >> 8);
 	x_put_byte(mempa + 6, src); 
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (4 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -1484,7 +1420,6 @@ uae_u32 REGPARAM2 op_01d0_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst |= (1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, dst);
 	m68k_incpci(2);
@@ -1507,7 +1442,6 @@ uae_u32 REGPARAM2 op_01d8_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst |= (1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, dst);
 	m68k_incpci(2);
@@ -1530,7 +1464,6 @@ uae_u32 REGPARAM2 op_01e0_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst |= (1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, dst);
 	m68k_incpci(2);
@@ -1552,7 +1485,6 @@ uae_u32 REGPARAM2 op_01e8_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst |= (1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, dst);
 	m68k_incpci(4);
@@ -1575,7 +1507,6 @@ uae_u32 REGPARAM2 op_01f0_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst |= (1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, dst);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -1595,7 +1526,6 @@ uae_u32 REGPARAM2 op_01f8_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst |= (1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, dst);
 	m68k_incpci(4);
@@ -1616,7 +1546,6 @@ uae_u32 REGPARAM2 op_01f9_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst |= (1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, dst);
 	m68k_incpci(6);
@@ -1636,7 +1565,6 @@ uae_u32 REGPARAM2 op_0200_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(4);
@@ -1658,7 +1586,6 @@ uae_u32 REGPARAM2 op_0210_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -1681,7 +1608,6 @@ uae_u32 REGPARAM2 op_0218_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -1704,7 +1630,6 @@ uae_u32 REGPARAM2 op_0220_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -1726,7 +1651,6 @@ uae_u32 REGPARAM2 op_0228_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, src);
 	m68k_incpci(6);
@@ -1749,7 +1673,6 @@ uae_u32 REGPARAM2 op_0230_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, src);
 	return (3 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -1768,7 +1691,6 @@ uae_u32 REGPARAM2 op_0238_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, src);
 	m68k_incpci(6);
@@ -1788,7 +1710,6 @@ uae_u32 REGPARAM2 op_0239_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_byte(dsta, src);
 	m68k_incpci(8);
@@ -1807,7 +1728,6 @@ uae_u32 REGPARAM2 op_023c_20_ff(uae_u32 opcode)
 	regs.sr &= src;
 	MakeFromSR();
 	m68k_incpci(4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -1825,7 +1745,6 @@ uae_u32 REGPARAM2 op_0240_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(4);
@@ -1847,7 +1766,6 @@ uae_u32 REGPARAM2 op_0250_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -1870,7 +1788,6 @@ uae_u32 REGPARAM2 op_0258_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -1893,7 +1810,6 @@ uae_u32 REGPARAM2 op_0260_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -1915,7 +1831,6 @@ uae_u32 REGPARAM2 op_0268_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, src);
 	m68k_incpci(6);
@@ -1938,7 +1853,6 @@ uae_u32 REGPARAM2 op_0270_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -1957,7 +1871,6 @@ uae_u32 REGPARAM2 op_0278_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, src);
 	m68k_incpci(6);
@@ -1977,7 +1890,6 @@ uae_u32 REGPARAM2 op_0279_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_word(dsta, src);
 	m68k_incpci(8);
@@ -2017,7 +1929,6 @@ uae_u32 REGPARAM2 op_0280_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(6);
@@ -2040,7 +1951,6 @@ uae_u32 REGPARAM2 op_0290_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -2064,7 +1974,6 @@ uae_u32 REGPARAM2 op_0298_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -2088,7 +1997,6 @@ uae_u32 REGPARAM2 op_02a0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -2111,7 +2019,6 @@ uae_u32 REGPARAM2 op_02a8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_long(dsta, src);
 	m68k_incpci(8);
@@ -2135,7 +2042,6 @@ uae_u32 REGPARAM2 op_02b0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -2155,7 +2061,6 @@ uae_u32 REGPARAM2 op_02b8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_long(dsta, src);
 	m68k_incpci(8);
@@ -2176,7 +2081,6 @@ uae_u32 REGPARAM2 op_02b9_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(10);
 	x_put_long(dsta, src);
 	m68k_incpci(10);
@@ -2212,7 +2116,6 @@ uae_u32 REGPARAM2 op_02d0_20_ff(uae_u32 opcode)
 		Exception_cpu(6);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -2247,7 +2150,6 @@ uae_u32 REGPARAM2 op_02e8_20_ff(uae_u32 opcode)
 		Exception_cpu(6);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -2282,7 +2184,6 @@ uae_u32 REGPARAM2 op_02f0_20_ff(uae_u32 opcode)
 		Exception_cpu(6);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -2315,7 +2216,6 @@ uae_u32 REGPARAM2 op_02f8_20_ff(uae_u32 opcode)
 		Exception_cpu(6);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -2348,7 +2248,6 @@ uae_u32 REGPARAM2 op_02f9_20_ff(uae_u32 opcode)
 		Exception_cpu(6);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -2383,7 +2282,6 @@ uae_u32 REGPARAM2 op_02fa_20_ff(uae_u32 opcode)
 		Exception_cpu(6);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -2418,7 +2316,6 @@ uae_u32 REGPARAM2 op_02fb_20_ff(uae_u32 opcode)
 		Exception_cpu(6);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -2442,7 +2339,6 @@ uae_u32 REGPARAM2 op_0400_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(4);
@@ -2469,7 +2365,6 @@ uae_u32 REGPARAM2 op_0410_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, newv);
 	m68k_incpci(4);
@@ -2497,7 +2392,6 @@ uae_u32 REGPARAM2 op_0418_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, newv);
 	m68k_incpci(4);
@@ -2525,7 +2419,6 @@ uae_u32 REGPARAM2 op_0420_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, newv);
 	m68k_incpci(4);
@@ -2552,7 +2445,6 @@ uae_u32 REGPARAM2 op_0428_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, newv);
 	m68k_incpci(6);
@@ -2580,7 +2472,6 @@ uae_u32 REGPARAM2 op_0430_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, newv);
 	return (3 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -2604,7 +2495,6 @@ uae_u32 REGPARAM2 op_0438_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, newv);
 	m68k_incpci(6);
@@ -2629,7 +2519,6 @@ uae_u32 REGPARAM2 op_0439_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_byte(dsta, newv);
 	m68k_incpci(8);
@@ -2654,7 +2543,6 @@ uae_u32 REGPARAM2 op_0440_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	m68k_incpci(4);
@@ -2681,7 +2569,6 @@ uae_u32 REGPARAM2 op_0450_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, newv);
 	m68k_incpci(4);
@@ -2709,7 +2596,6 @@ uae_u32 REGPARAM2 op_0458_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, newv);
 	m68k_incpci(4);
@@ -2737,7 +2623,6 @@ uae_u32 REGPARAM2 op_0460_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, newv);
 	m68k_incpci(4);
@@ -2764,7 +2649,6 @@ uae_u32 REGPARAM2 op_0468_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, newv);
 	m68k_incpci(6);
@@ -2792,7 +2676,6 @@ uae_u32 REGPARAM2 op_0470_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, newv);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -2816,7 +2699,6 @@ uae_u32 REGPARAM2 op_0478_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, newv);
 	m68k_incpci(6);
@@ -2841,7 +2723,6 @@ uae_u32 REGPARAM2 op_0479_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_word(dsta, newv);
 	m68k_incpci(8);
@@ -2867,7 +2748,6 @@ uae_u32 REGPARAM2 op_0480_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(6);
@@ -2895,7 +2775,6 @@ uae_u32 REGPARAM2 op_0490_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, newv);
 	m68k_incpci(6);
@@ -2924,7 +2803,6 @@ uae_u32 REGPARAM2 op_0498_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, newv);
 	m68k_incpci(6);
@@ -2953,7 +2831,6 @@ uae_u32 REGPARAM2 op_04a0_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, newv);
 	m68k_incpci(6);
@@ -2981,7 +2858,6 @@ uae_u32 REGPARAM2 op_04a8_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_long(dsta, newv);
 	m68k_incpci(8);
@@ -3010,7 +2886,6 @@ uae_u32 REGPARAM2 op_04b0_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, newv);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -3035,7 +2910,6 @@ uae_u32 REGPARAM2 op_04b8_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_long(dsta, newv);
 	m68k_incpci(8);
@@ -3061,7 +2935,6 @@ uae_u32 REGPARAM2 op_04b9_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(10);
 	x_put_long(dsta, newv);
 	m68k_incpci(10);
@@ -3095,7 +2968,6 @@ uae_u32 REGPARAM2 op_04d0_20_ff(uae_u32 opcode)
 		Exception_cpu(6);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -3128,7 +3000,6 @@ uae_u32 REGPARAM2 op_04e8_20_ff(uae_u32 opcode)
 		Exception_cpu(6);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -3161,7 +3032,6 @@ uae_u32 REGPARAM2 op_04f0_20_ff(uae_u32 opcode)
 		Exception_cpu(6);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -3192,7 +3062,6 @@ uae_u32 REGPARAM2 op_04f8_20_ff(uae_u32 opcode)
 		Exception_cpu(6);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -3223,7 +3092,6 @@ uae_u32 REGPARAM2 op_04f9_20_ff(uae_u32 opcode)
 		Exception_cpu(6);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -3256,7 +3124,6 @@ uae_u32 REGPARAM2 op_04fa_20_ff(uae_u32 opcode)
 		Exception_cpu(6);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -3289,7 +3156,6 @@ uae_u32 REGPARAM2 op_04fb_20_ff(uae_u32 opcode)
 		Exception_cpu(6);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -3313,7 +3179,6 @@ uae_u32 REGPARAM2 op_0600_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(4);
@@ -3340,7 +3205,6 @@ uae_u32 REGPARAM2 op_0610_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, newv);
 	m68k_incpci(4);
@@ -3368,7 +3232,6 @@ uae_u32 REGPARAM2 op_0618_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, newv);
 	m68k_incpci(4);
@@ -3396,7 +3259,6 @@ uae_u32 REGPARAM2 op_0620_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, newv);
 	m68k_incpci(4);
@@ -3423,7 +3285,6 @@ uae_u32 REGPARAM2 op_0628_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, newv);
 	m68k_incpci(6);
@@ -3451,7 +3312,6 @@ uae_u32 REGPARAM2 op_0630_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, newv);
 	return (3 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -3475,7 +3335,6 @@ uae_u32 REGPARAM2 op_0638_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, newv);
 	m68k_incpci(6);
@@ -3500,7 +3359,6 @@ uae_u32 REGPARAM2 op_0639_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_byte(dsta, newv);
 	m68k_incpci(8);
@@ -3525,7 +3383,6 @@ uae_u32 REGPARAM2 op_0640_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	m68k_incpci(4);
@@ -3552,7 +3409,6 @@ uae_u32 REGPARAM2 op_0650_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, newv);
 	m68k_incpci(4);
@@ -3580,7 +3436,6 @@ uae_u32 REGPARAM2 op_0658_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, newv);
 	m68k_incpci(4);
@@ -3608,7 +3463,6 @@ uae_u32 REGPARAM2 op_0660_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, newv);
 	m68k_incpci(4);
@@ -3635,7 +3489,6 @@ uae_u32 REGPARAM2 op_0668_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, newv);
 	m68k_incpci(6);
@@ -3663,7 +3516,6 @@ uae_u32 REGPARAM2 op_0670_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, newv);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -3687,7 +3539,6 @@ uae_u32 REGPARAM2 op_0678_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, newv);
 	m68k_incpci(6);
@@ -3712,7 +3563,6 @@ uae_u32 REGPARAM2 op_0679_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_word(dsta, newv);
 	m68k_incpci(8);
@@ -3738,7 +3588,6 @@ uae_u32 REGPARAM2 op_0680_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(6);
@@ -3766,7 +3615,6 @@ uae_u32 REGPARAM2 op_0690_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, newv);
 	m68k_incpci(6);
@@ -3795,7 +3643,6 @@ uae_u32 REGPARAM2 op_0698_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, newv);
 	m68k_incpci(6);
@@ -3824,7 +3671,6 @@ uae_u32 REGPARAM2 op_06a0_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, newv);
 	m68k_incpci(6);
@@ -3852,7 +3698,6 @@ uae_u32 REGPARAM2 op_06a8_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_long(dsta, newv);
 	m68k_incpci(8);
@@ -3881,7 +3726,6 @@ uae_u32 REGPARAM2 op_06b0_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, newv);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -3906,7 +3750,6 @@ uae_u32 REGPARAM2 op_06b8_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_long(dsta, newv);
 	m68k_incpci(8);
@@ -3932,7 +3775,6 @@ uae_u32 REGPARAM2 op_06b9_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(10);
 	x_put_long(dsta, newv);
 	m68k_incpci(10);
@@ -4068,7 +3910,6 @@ uae_u32 REGPARAM2 op_0800_20_ff(uae_u32 opcode)
 	uae_s32 dst = m68k_dreg(regs, dstreg);
 	src &= 31;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -4087,7 +3928,6 @@ uae_u32 REGPARAM2 op_0810_20_ff(uae_u32 opcode)
 	uae_s8 dst = x_get_byte(dsta);
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -4107,7 +3947,6 @@ uae_u32 REGPARAM2 op_0818_20_ff(uae_u32 opcode)
 	m68k_areg(regs, dstreg) += areg_byteinc[dstreg];
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -4127,7 +3966,6 @@ uae_u32 REGPARAM2 op_0820_20_ff(uae_u32 opcode)
 	m68k_areg(regs, dstreg) = dsta;
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -4146,7 +3984,6 @@ uae_u32 REGPARAM2 op_0828_20_ff(uae_u32 opcode)
 	uae_s8 dst = x_get_byte(dsta);
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -4166,7 +4003,6 @@ uae_u32 REGPARAM2 op_0830_20_ff(uae_u32 opcode)
 	uae_s8 dst = x_get_byte(dsta);
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -4182,7 +4018,6 @@ uae_u32 REGPARAM2 op_0838_20_ff(uae_u32 opcode)
 	uae_s8 dst = x_get_byte(dsta);
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -4199,7 +4034,6 @@ uae_u32 REGPARAM2 op_0839_20_ff(uae_u32 opcode)
 	uae_s8 dst = x_get_byte(dsta);
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	m68k_incpci(8);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -4218,7 +4052,6 @@ uae_u32 REGPARAM2 op_083a_20_ff(uae_u32 opcode)
 	uae_s8 dst = x_get_byte(dsta);
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -4238,7 +4071,6 @@ uae_u32 REGPARAM2 op_083b_20_ff(uae_u32 opcode)
 	uae_s8 dst = x_get_byte(dsta);
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -4255,7 +4087,6 @@ uae_u32 REGPARAM2 op_0840_20_ff(uae_u32 opcode)
 	src &= 31;
 	dst ^= (1 << src);
 	SET_ZFLG(((uae_u32)dst & (1 << src)) >> src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (dst);
 	m68k_incpci(4);
@@ -4276,7 +4107,6 @@ uae_u32 REGPARAM2 op_0850_20_ff(uae_u32 opcode)
 	src &= 7;
 	dst ^= (1 << src);
 	SET_ZFLG(((uae_u32)dst & (1 << src)) >> src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, dst);
 	m68k_incpci(4);
@@ -4298,7 +4128,6 @@ uae_u32 REGPARAM2 op_0858_20_ff(uae_u32 opcode)
 	src &= 7;
 	dst ^= (1 << src);
 	SET_ZFLG(((uae_u32)dst & (1 << src)) >> src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, dst);
 	m68k_incpci(4);
@@ -4320,7 +4149,6 @@ uae_u32 REGPARAM2 op_0860_20_ff(uae_u32 opcode)
 	src &= 7;
 	dst ^= (1 << src);
 	SET_ZFLG(((uae_u32)dst & (1 << src)) >> src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, dst);
 	m68k_incpci(4);
@@ -4341,7 +4169,6 @@ uae_u32 REGPARAM2 op_0868_20_ff(uae_u32 opcode)
 	src &= 7;
 	dst ^= (1 << src);
 	SET_ZFLG(((uae_u32)dst & (1 << src)) >> src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, dst);
 	m68k_incpci(6);
@@ -4363,7 +4190,6 @@ uae_u32 REGPARAM2 op_0870_20_ff(uae_u32 opcode)
 	src &= 7;
 	dst ^= (1 << src);
 	SET_ZFLG(((uae_u32)dst & (1 << src)) >> src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, dst);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -4381,7 +4207,6 @@ uae_u32 REGPARAM2 op_0878_20_ff(uae_u32 opcode)
 	src &= 7;
 	dst ^= (1 << src);
 	SET_ZFLG(((uae_u32)dst & (1 << src)) >> src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, dst);
 	m68k_incpci(6);
@@ -4400,7 +4225,6 @@ uae_u32 REGPARAM2 op_0879_20_ff(uae_u32 opcode)
 	src &= 7;
 	dst ^= (1 << src);
 	SET_ZFLG(((uae_u32)dst & (1 << src)) >> src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_byte(dsta, dst);
 	m68k_incpci(8);
@@ -4419,7 +4243,6 @@ uae_u32 REGPARAM2 op_0880_20_ff(uae_u32 opcode)
 	src &= 31;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst &= ~(1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (dst);
 	m68k_incpci(4);
@@ -4440,7 +4263,6 @@ uae_u32 REGPARAM2 op_0890_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst &= ~(1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, dst);
 	m68k_incpci(4);
@@ -4462,7 +4284,6 @@ uae_u32 REGPARAM2 op_0898_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst &= ~(1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, dst);
 	m68k_incpci(4);
@@ -4484,7 +4305,6 @@ uae_u32 REGPARAM2 op_08a0_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst &= ~(1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, dst);
 	m68k_incpci(4);
@@ -4505,7 +4325,6 @@ uae_u32 REGPARAM2 op_08a8_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst &= ~(1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, dst);
 	m68k_incpci(6);
@@ -4527,7 +4346,6 @@ uae_u32 REGPARAM2 op_08b0_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst &= ~(1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, dst);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -4545,7 +4363,6 @@ uae_u32 REGPARAM2 op_08b8_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst &= ~(1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, dst);
 	m68k_incpci(6);
@@ -4564,7 +4381,6 @@ uae_u32 REGPARAM2 op_08b9_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst &= ~(1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_byte(dsta, dst);
 	m68k_incpci(8);
@@ -4583,7 +4399,6 @@ uae_u32 REGPARAM2 op_08c0_20_ff(uae_u32 opcode)
 	src &= 31;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst |= (1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (dst);
 	m68k_incpci(4);
@@ -4604,7 +4419,6 @@ uae_u32 REGPARAM2 op_08d0_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst |= (1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, dst);
 	m68k_incpci(4);
@@ -4626,7 +4440,6 @@ uae_u32 REGPARAM2 op_08d8_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst |= (1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, dst);
 	m68k_incpci(4);
@@ -4648,7 +4461,6 @@ uae_u32 REGPARAM2 op_08e0_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst |= (1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, dst);
 	m68k_incpci(4);
@@ -4669,7 +4481,6 @@ uae_u32 REGPARAM2 op_08e8_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst |= (1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, dst);
 	m68k_incpci(6);
@@ -4691,7 +4502,6 @@ uae_u32 REGPARAM2 op_08f0_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst |= (1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, dst);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -4709,7 +4519,6 @@ uae_u32 REGPARAM2 op_08f8_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst |= (1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, dst);
 	m68k_incpci(6);
@@ -4728,7 +4537,6 @@ uae_u32 REGPARAM2 op_08f9_20_ff(uae_u32 opcode)
 	src &= 7;
 	SET_ZFLG(1 ^ ((dst >> src) & 1));
 	dst |= (1 << src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_byte(dsta, dst);
 	m68k_incpci(8);
@@ -4748,7 +4556,6 @@ uae_u32 REGPARAM2 op_0a00_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(4);
@@ -4770,7 +4577,6 @@ uae_u32 REGPARAM2 op_0a10_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -4793,7 +4599,6 @@ uae_u32 REGPARAM2 op_0a18_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -4816,7 +4621,6 @@ uae_u32 REGPARAM2 op_0a20_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -4838,7 +4642,6 @@ uae_u32 REGPARAM2 op_0a28_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, src);
 	m68k_incpci(6);
@@ -4861,7 +4664,6 @@ uae_u32 REGPARAM2 op_0a30_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, src);
 	return (3 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -4880,7 +4682,6 @@ uae_u32 REGPARAM2 op_0a38_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, src);
 	m68k_incpci(6);
@@ -4900,7 +4701,6 @@ uae_u32 REGPARAM2 op_0a39_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_byte(dsta, src);
 	m68k_incpci(8);
@@ -4918,7 +4718,6 @@ uae_u32 REGPARAM2 op_0a3c_20_ff(uae_u32 opcode)
 	regs.sr ^= src;
 	MakeFromSR();
 	m68k_incpci(4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -4936,7 +4735,6 @@ uae_u32 REGPARAM2 op_0a40_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(4);
@@ -4958,7 +4756,6 @@ uae_u32 REGPARAM2 op_0a50_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -4981,7 +4778,6 @@ uae_u32 REGPARAM2 op_0a58_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -5004,7 +4800,6 @@ uae_u32 REGPARAM2 op_0a60_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -5026,7 +4821,6 @@ uae_u32 REGPARAM2 op_0a68_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, src);
 	m68k_incpci(6);
@@ -5049,7 +4843,6 @@ uae_u32 REGPARAM2 op_0a70_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -5068,7 +4861,6 @@ uae_u32 REGPARAM2 op_0a78_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, src);
 	m68k_incpci(6);
@@ -5088,7 +4880,6 @@ uae_u32 REGPARAM2 op_0a79_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_word(dsta, src);
 	m68k_incpci(8);
@@ -5128,7 +4919,6 @@ uae_u32 REGPARAM2 op_0a80_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(6);
@@ -5151,7 +4941,6 @@ uae_u32 REGPARAM2 op_0a90_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -5175,7 +4964,6 @@ uae_u32 REGPARAM2 op_0a98_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -5199,7 +4987,6 @@ uae_u32 REGPARAM2 op_0aa0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -5222,7 +5009,6 @@ uae_u32 REGPARAM2 op_0aa8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_long(dsta, src);
 	m68k_incpci(8);
@@ -5246,7 +5032,6 @@ uae_u32 REGPARAM2 op_0ab0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -5266,7 +5051,6 @@ uae_u32 REGPARAM2 op_0ab8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_long(dsta, src);
 	m68k_incpci(8);
@@ -5287,7 +5071,6 @@ uae_u32 REGPARAM2 op_0ab9_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(10);
 	x_put_long(dsta, src);
 	m68k_incpci(10);
@@ -5318,7 +5101,6 @@ uae_u32 REGPARAM2 op_0ad0_20_ff(uae_u32 opcode)
 	SET_NFLG(flgn != 0);
 	if (GET_ZFLG()) {
 		x_put_byte(dsta, (m68k_dreg(regs, ru)));
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(4);
 	} else {
 		regs.irc = get_word_020_prefetch(4);
@@ -5354,7 +5136,6 @@ uae_u32 REGPARAM2 op_0ad8_20_ff(uae_u32 opcode)
 	SET_NFLG(flgn != 0);
 	if (GET_ZFLG()) {
 		x_put_byte(dsta, (m68k_dreg(regs, ru)));
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(4);
 	} else {
 		regs.irc = get_word_020_prefetch(4);
@@ -5390,7 +5171,6 @@ uae_u32 REGPARAM2 op_0ae0_20_ff(uae_u32 opcode)
 	SET_NFLG(flgn != 0);
 	if (GET_ZFLG()) {
 		x_put_byte(dsta, (m68k_dreg(regs, ru)));
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(4);
 	} else {
 		regs.irc = get_word_020_prefetch(4);
@@ -5425,7 +5205,6 @@ uae_u32 REGPARAM2 op_0ae8_20_ff(uae_u32 opcode)
 	SET_NFLG(flgn != 0);
 	if (GET_ZFLG()) {
 		x_put_byte(dsta, (m68k_dreg(regs, ru)));
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(6);
 	} else {
 		regs.irc = get_word_020_prefetch(6);
@@ -5461,7 +5240,6 @@ uae_u32 REGPARAM2 op_0af0_20_ff(uae_u32 opcode)
 	SET_NFLG(flgn != 0);
 	if (GET_ZFLG()) {
 		x_put_byte(dsta, (m68k_dreg(regs, ru)));
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(0);
 	} else {
 		regs.irc = get_word_020_prefetch(0);
@@ -5493,7 +5271,6 @@ uae_u32 REGPARAM2 op_0af8_20_ff(uae_u32 opcode)
 	SET_NFLG(flgn != 0);
 	if (GET_ZFLG()) {
 		x_put_byte(dsta, (m68k_dreg(regs, ru)));
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(6);
 	} else {
 		regs.irc = get_word_020_prefetch(6);
@@ -5526,7 +5303,6 @@ uae_u32 REGPARAM2 op_0af9_20_ff(uae_u32 opcode)
 	SET_NFLG(flgn != 0);
 	if (GET_ZFLG()) {
 		x_put_byte(dsta, (m68k_dreg(regs, ru)));
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(8);
 	} else {
 		regs.irc = get_word_020_prefetch(8);
@@ -5554,7 +5330,6 @@ uae_u32 REGPARAM2 op_0c00_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -5579,7 +5354,6 @@ uae_u32 REGPARAM2 op_0c10_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -5605,7 +5379,6 @@ uae_u32 REGPARAM2 op_0c18_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -5631,7 +5404,6 @@ uae_u32 REGPARAM2 op_0c20_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -5656,7 +5428,6 @@ uae_u32 REGPARAM2 op_0c28_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -5682,7 +5453,6 @@ uae_u32 REGPARAM2 op_0c30_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -5704,7 +5474,6 @@ uae_u32 REGPARAM2 op_0c38_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -5727,7 +5496,6 @@ uae_u32 REGPARAM2 op_0c39_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	m68k_incpci(8);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -5753,7 +5521,6 @@ uae_u32 REGPARAM2 op_0c3a_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -5781,7 +5548,6 @@ uae_u32 REGPARAM2 op_0c3b_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -5804,7 +5570,6 @@ uae_u32 REGPARAM2 op_0c40_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -5829,7 +5594,6 @@ uae_u32 REGPARAM2 op_0c50_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -5855,7 +5619,6 @@ uae_u32 REGPARAM2 op_0c58_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -5881,7 +5644,6 @@ uae_u32 REGPARAM2 op_0c60_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -5906,7 +5668,6 @@ uae_u32 REGPARAM2 op_0c68_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -5932,7 +5693,6 @@ uae_u32 REGPARAM2 op_0c70_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -5954,7 +5714,6 @@ uae_u32 REGPARAM2 op_0c78_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -5977,7 +5736,6 @@ uae_u32 REGPARAM2 op_0c79_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	m68k_incpci(8);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -6003,7 +5761,6 @@ uae_u32 REGPARAM2 op_0c7a_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -6031,7 +5788,6 @@ uae_u32 REGPARAM2 op_0c7b_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -6055,7 +5811,6 @@ uae_u32 REGPARAM2 op_0c80_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -6081,7 +5836,6 @@ uae_u32 REGPARAM2 op_0c90_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -6108,7 +5862,6 @@ uae_u32 REGPARAM2 op_0c98_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -6135,7 +5888,6 @@ uae_u32 REGPARAM2 op_0ca0_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -6161,7 +5913,6 @@ uae_u32 REGPARAM2 op_0ca8_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	m68k_incpci(8);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -6188,7 +5939,6 @@ uae_u32 REGPARAM2 op_0cb0_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -6211,7 +5961,6 @@ uae_u32 REGPARAM2 op_0cb8_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	m68k_incpci(8);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -6235,7 +5984,6 @@ uae_u32 REGPARAM2 op_0cb9_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(10);
 	m68k_incpci(10);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -6262,7 +6010,6 @@ uae_u32 REGPARAM2 op_0cba_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	m68k_incpci(8);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -6291,7 +6038,6 @@ uae_u32 REGPARAM2 op_0cbb_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -6321,7 +6067,6 @@ uae_u32 REGPARAM2 op_0cd0_20_ff(uae_u32 opcode)
 	SET_NFLG(flgn != 0);
 	if (GET_ZFLG()) {
 		x_put_word(dsta, (m68k_dreg(regs, ru)));
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(4);
 	} else {
 		regs.irc = get_word_020_prefetch(4);
@@ -6357,7 +6102,6 @@ uae_u32 REGPARAM2 op_0cd8_20_ff(uae_u32 opcode)
 	SET_NFLG(flgn != 0);
 	if (GET_ZFLG()) {
 		x_put_word(dsta, (m68k_dreg(regs, ru)));
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(4);
 	} else {
 		regs.irc = get_word_020_prefetch(4);
@@ -6393,7 +6137,6 @@ uae_u32 REGPARAM2 op_0ce0_20_ff(uae_u32 opcode)
 	SET_NFLG(flgn != 0);
 	if (GET_ZFLG()) {
 		x_put_word(dsta, (m68k_dreg(regs, ru)));
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(4);
 	} else {
 		regs.irc = get_word_020_prefetch(4);
@@ -6428,7 +6171,6 @@ uae_u32 REGPARAM2 op_0ce8_20_ff(uae_u32 opcode)
 	SET_NFLG(flgn != 0);
 	if (GET_ZFLG()) {
 		x_put_word(dsta, (m68k_dreg(regs, ru)));
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(6);
 	} else {
 		regs.irc = get_word_020_prefetch(6);
@@ -6464,7 +6206,6 @@ uae_u32 REGPARAM2 op_0cf0_20_ff(uae_u32 opcode)
 	SET_NFLG(flgn != 0);
 	if (GET_ZFLG()) {
 		x_put_word(dsta, (m68k_dreg(regs, ru)));
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(0);
 	} else {
 		regs.irc = get_word_020_prefetch(0);
@@ -6496,7 +6237,6 @@ uae_u32 REGPARAM2 op_0cf8_20_ff(uae_u32 opcode)
 	SET_NFLG(flgn != 0);
 	if (GET_ZFLG()) {
 		x_put_word(dsta, (m68k_dreg(regs, ru)));
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(6);
 	} else {
 		regs.irc = get_word_020_prefetch(6);
@@ -6529,7 +6269,6 @@ uae_u32 REGPARAM2 op_0cf9_20_ff(uae_u32 opcode)
 	SET_NFLG(flgn != 0);
 	if (GET_ZFLG()) {
 		x_put_word(dsta, (m68k_dreg(regs, ru)));
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(8);
 	} else {
 		regs.irc = get_word_020_prefetch(8);
@@ -6577,7 +6316,6 @@ uae_u32 REGPARAM2 op_0cfc_20_ff(uae_u32 opcode)
 		m68k_dreg(regs, (extra >> 0) & 7) = (m68k_dreg(regs, (extra >> 0) & 7) & ~0xffff) | (dst2 & 0xffff);
 		m68k_dreg(regs, (extra >> 16) & 7) = (m68k_dreg(regs, (extra >> 16) & 7) & ~0xffff) | (dst1 & 0xffff);
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -6601,7 +6339,6 @@ uae_u32 REGPARAM2 op_0e10_20_ff(uae_u32 opcode)
 		uae_u32 src = regs.regs[(extra >> 12) & 15];
 		uaecptr dsta;
 		dsta = m68k_areg(regs, dstreg);
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(4);
 		dfc_nommu_put_byte(dsta, src);
 		m68k_incpci(4);
@@ -6639,7 +6376,6 @@ uae_u32 REGPARAM2 op_0e18_20_ff(uae_u32 opcode)
 		uaecptr dsta;
 		dsta = m68k_areg(regs, dstreg);
 		m68k_areg(regs, dstreg) += areg_byteinc[dstreg];
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(4);
 		src = regs.regs[(extra >> 12) & 15];
 		dfc_nommu_put_byte(dsta, src);
@@ -6679,7 +6415,6 @@ uae_u32 REGPARAM2 op_0e20_20_ff(uae_u32 opcode)
 		uaecptr dsta;
 		dsta = m68k_areg(regs, dstreg) - areg_byteinc[dstreg];
 		m68k_areg(regs, dstreg) = dsta;
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(4);
 		src = regs.regs[(extra >> 12) & 15];
 		dfc_nommu_put_byte(dsta, src);
@@ -6718,7 +6453,6 @@ uae_u32 REGPARAM2 op_0e28_20_ff(uae_u32 opcode)
 		uae_u32 src = regs.regs[(extra >> 12) & 15];
 		uaecptr dsta;
 		dsta = m68k_areg(regs, dstreg) + (uae_s32)(uae_s16)get_word_020_prefetch(4);
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(6);
 		dfc_nommu_put_byte(dsta, src);
 		m68k_incpci(6);
@@ -6756,7 +6490,6 @@ uae_u32 REGPARAM2 op_0e30_20_ff(uae_u32 opcode)
 		uaecptr dsta;
 		m68k_incpci(4);
 		dsta = x_get_disp_ea_020(m68k_areg(regs, dstreg), 0);
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(0);
 		dfc_nommu_put_byte(dsta, src);
 	} else {
@@ -6790,7 +6523,6 @@ uae_u32 REGPARAM2 op_0e38_20_ff(uae_u32 opcode)
 		uae_u32 src = regs.regs[(extra >> 12) & 15];
 		uaecptr dsta;
 		dsta = (uae_s32)(uae_s16)get_word_020_prefetch(4);
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(6);
 		dfc_nommu_put_byte(dsta, src);
 		m68k_incpci(6);
@@ -6825,7 +6557,6 @@ uae_u32 REGPARAM2 op_0e39_20_ff(uae_u32 opcode)
 		uae_u32 src = regs.regs[(extra >> 12) & 15];
 		uaecptr dsta;
 		dsta = get_long_020_prefetch(4);
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(8);
 		dfc_nommu_put_byte(dsta, src);
 		m68k_incpci(8);
@@ -6862,7 +6593,6 @@ uae_u32 REGPARAM2 op_0e50_20_ff(uae_u32 opcode)
 		uae_u32 src = regs.regs[(extra >> 12) & 15];
 		uaecptr dsta;
 		dsta = m68k_areg(regs, dstreg);
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(4);
 		dfc_nommu_put_word(dsta, src);
 		m68k_incpci(4);
@@ -6900,7 +6630,6 @@ uae_u32 REGPARAM2 op_0e58_20_ff(uae_u32 opcode)
 		uaecptr dsta;
 		dsta = m68k_areg(regs, dstreg);
 		m68k_areg(regs, dstreg) += 2;
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(4);
 		src = regs.regs[(extra >> 12) & 15];
 		dfc_nommu_put_word(dsta, src);
@@ -6940,7 +6669,6 @@ uae_u32 REGPARAM2 op_0e60_20_ff(uae_u32 opcode)
 		uaecptr dsta;
 		dsta = m68k_areg(regs, dstreg) - 2;
 		m68k_areg(regs, dstreg) = dsta;
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(4);
 		src = regs.regs[(extra >> 12) & 15];
 		dfc_nommu_put_word(dsta, src);
@@ -6979,7 +6707,6 @@ uae_u32 REGPARAM2 op_0e68_20_ff(uae_u32 opcode)
 		uae_u32 src = regs.regs[(extra >> 12) & 15];
 		uaecptr dsta;
 		dsta = m68k_areg(regs, dstreg) + (uae_s32)(uae_s16)get_word_020_prefetch(4);
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(6);
 		dfc_nommu_put_word(dsta, src);
 		m68k_incpci(6);
@@ -7017,7 +6744,6 @@ uae_u32 REGPARAM2 op_0e70_20_ff(uae_u32 opcode)
 		uaecptr dsta;
 		m68k_incpci(4);
 		dsta = x_get_disp_ea_020(m68k_areg(regs, dstreg), 0);
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(0);
 		dfc_nommu_put_word(dsta, src);
 	} else {
@@ -7051,7 +6777,6 @@ uae_u32 REGPARAM2 op_0e78_20_ff(uae_u32 opcode)
 		uae_u32 src = regs.regs[(extra >> 12) & 15];
 		uaecptr dsta;
 		dsta = (uae_s32)(uae_s16)get_word_020_prefetch(4);
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(6);
 		dfc_nommu_put_word(dsta, src);
 		m68k_incpci(6);
@@ -7086,7 +6811,6 @@ uae_u32 REGPARAM2 op_0e79_20_ff(uae_u32 opcode)
 		uae_u32 src = regs.regs[(extra >> 12) & 15];
 		uaecptr dsta;
 		dsta = get_long_020_prefetch(4);
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(8);
 		dfc_nommu_put_word(dsta, src);
 		m68k_incpci(8);
@@ -7123,7 +6847,6 @@ uae_u32 REGPARAM2 op_0e90_20_ff(uae_u32 opcode)
 		uae_u32 src = regs.regs[(extra >> 12) & 15];
 		uaecptr dsta;
 		dsta = m68k_areg(regs, dstreg);
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(4);
 		dfc_nommu_put_long(dsta, src);
 		m68k_incpci(4);
@@ -7161,7 +6884,6 @@ uae_u32 REGPARAM2 op_0e98_20_ff(uae_u32 opcode)
 		uaecptr dsta;
 		dsta = m68k_areg(regs, dstreg);
 		m68k_areg(regs, dstreg) += 4;
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(4);
 		src = regs.regs[(extra >> 12) & 15];
 		dfc_nommu_put_long(dsta, src);
@@ -7201,7 +6923,6 @@ uae_u32 REGPARAM2 op_0ea0_20_ff(uae_u32 opcode)
 		uaecptr dsta;
 		dsta = m68k_areg(regs, dstreg) - 4;
 		m68k_areg(regs, dstreg) = dsta;
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(4);
 		src = regs.regs[(extra >> 12) & 15];
 		dfc_nommu_put_long(dsta, src);
@@ -7240,7 +6961,6 @@ uae_u32 REGPARAM2 op_0ea8_20_ff(uae_u32 opcode)
 		uae_u32 src = regs.regs[(extra >> 12) & 15];
 		uaecptr dsta;
 		dsta = m68k_areg(regs, dstreg) + (uae_s32)(uae_s16)get_word_020_prefetch(4);
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(6);
 		dfc_nommu_put_long(dsta, src);
 		m68k_incpci(6);
@@ -7278,7 +6998,6 @@ uae_u32 REGPARAM2 op_0eb0_20_ff(uae_u32 opcode)
 		uaecptr dsta;
 		m68k_incpci(4);
 		dsta = x_get_disp_ea_020(m68k_areg(regs, dstreg), 0);
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(0);
 		dfc_nommu_put_long(dsta, src);
 	} else {
@@ -7312,7 +7031,6 @@ uae_u32 REGPARAM2 op_0eb8_20_ff(uae_u32 opcode)
 		uae_u32 src = regs.regs[(extra >> 12) & 15];
 		uaecptr dsta;
 		dsta = (uae_s32)(uae_s16)get_word_020_prefetch(4);
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(6);
 		dfc_nommu_put_long(dsta, src);
 		m68k_incpci(6);
@@ -7347,7 +7065,6 @@ uae_u32 REGPARAM2 op_0eb9_20_ff(uae_u32 opcode)
 		uae_u32 src = regs.regs[(extra >> 12) & 15];
 		uaecptr dsta;
 		dsta = get_long_020_prefetch(4);
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(8);
 		dfc_nommu_put_long(dsta, src);
 		m68k_incpci(8);
@@ -7391,7 +7108,6 @@ uae_u32 REGPARAM2 op_0ed0_20_ff(uae_u32 opcode)
 	SET_NFLG(flgn != 0);
 	if (GET_ZFLG()) {
 		x_put_long(dsta, (m68k_dreg(regs, ru)));
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(4);
 	} else {
 		regs.irc = get_word_020_prefetch(4);
@@ -7427,7 +7143,6 @@ uae_u32 REGPARAM2 op_0ed8_20_ff(uae_u32 opcode)
 	SET_NFLG(flgn != 0);
 	if (GET_ZFLG()) {
 		x_put_long(dsta, (m68k_dreg(regs, ru)));
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(4);
 	} else {
 		regs.irc = get_word_020_prefetch(4);
@@ -7463,7 +7178,6 @@ uae_u32 REGPARAM2 op_0ee0_20_ff(uae_u32 opcode)
 	SET_NFLG(flgn != 0);
 	if (GET_ZFLG()) {
 		x_put_long(dsta, (m68k_dreg(regs, ru)));
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(4);
 	} else {
 		regs.irc = get_word_020_prefetch(4);
@@ -7498,7 +7212,6 @@ uae_u32 REGPARAM2 op_0ee8_20_ff(uae_u32 opcode)
 	SET_NFLG(flgn != 0);
 	if (GET_ZFLG()) {
 		x_put_long(dsta, (m68k_dreg(regs, ru)));
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(6);
 	} else {
 		regs.irc = get_word_020_prefetch(6);
@@ -7534,7 +7247,6 @@ uae_u32 REGPARAM2 op_0ef0_20_ff(uae_u32 opcode)
 	SET_NFLG(flgn != 0);
 	if (GET_ZFLG()) {
 		x_put_long(dsta, (m68k_dreg(regs, ru)));
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(0);
 	} else {
 		regs.irc = get_word_020_prefetch(0);
@@ -7566,7 +7278,6 @@ uae_u32 REGPARAM2 op_0ef8_20_ff(uae_u32 opcode)
 	SET_NFLG(flgn != 0);
 	if (GET_ZFLG()) {
 		x_put_long(dsta, (m68k_dreg(regs, ru)));
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(6);
 	} else {
 		regs.irc = get_word_020_prefetch(6);
@@ -7599,7 +7310,6 @@ uae_u32 REGPARAM2 op_0ef9_20_ff(uae_u32 opcode)
 	SET_NFLG(flgn != 0);
 	if (GET_ZFLG()) {
 		x_put_long(dsta, (m68k_dreg(regs, ru)));
-		ipl_fetch();
 		regs.irc = get_word_020_prefetch(8);
 	} else {
 		regs.irc = get_word_020_prefetch(8);
@@ -7647,7 +7357,6 @@ uae_u32 REGPARAM2 op_0efc_20_ff(uae_u32 opcode)
 		m68k_dreg(regs, (extra >> 0) & 7) = dst2;
 		m68k_dreg(regs, (extra >> 16) & 7) = dst1;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -7666,7 +7375,6 @@ uae_u32 REGPARAM2 op_1000_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(2);
@@ -7687,7 +7395,6 @@ uae_u32 REGPARAM2 op_1010_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(2);
@@ -7709,7 +7416,6 @@ uae_u32 REGPARAM2 op_1018_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(2);
@@ -7731,7 +7437,6 @@ uae_u32 REGPARAM2 op_1020_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(2);
@@ -7752,7 +7457,6 @@ uae_u32 REGPARAM2 op_1028_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(4);
@@ -7774,7 +7478,6 @@ uae_u32 REGPARAM2 op_1030_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -7793,7 +7496,6 @@ uae_u32 REGPARAM2 op_1038_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(4);
@@ -7813,7 +7515,6 @@ uae_u32 REGPARAM2 op_1039_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(6);
@@ -7834,7 +7535,6 @@ uae_u32 REGPARAM2 op_103a_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(4);
@@ -7856,7 +7556,6 @@ uae_u32 REGPARAM2 op_103b_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -7873,7 +7572,6 @@ uae_u32 REGPARAM2 op_103c_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(4);
@@ -7894,7 +7592,6 @@ uae_u32 REGPARAM2 op_1080_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, src);
 	m68k_incpci(2);
@@ -7917,7 +7614,6 @@ uae_u32 REGPARAM2 op_1090_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, src);
 	m68k_incpci(2);
@@ -7941,7 +7637,6 @@ uae_u32 REGPARAM2 op_1098_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, src);
 	m68k_incpci(2);
@@ -7965,7 +7660,6 @@ uae_u32 REGPARAM2 op_10a0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, src);
 	m68k_incpci(2);
@@ -7988,7 +7682,6 @@ uae_u32 REGPARAM2 op_10a8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -8012,7 +7705,6 @@ uae_u32 REGPARAM2 op_10b0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -8033,7 +7725,6 @@ uae_u32 REGPARAM2 op_10b8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -8055,7 +7746,6 @@ uae_u32 REGPARAM2 op_10b9_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, src);
 	m68k_incpci(6);
@@ -8078,7 +7768,6 @@ uae_u32 REGPARAM2 op_10ba_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -8102,7 +7791,6 @@ uae_u32 REGPARAM2 op_10bb_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -8121,7 +7809,6 @@ uae_u32 REGPARAM2 op_10bc_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -8143,7 +7830,6 @@ uae_u32 REGPARAM2 op_10c0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, src);
 	m68k_incpci(2);
@@ -8167,7 +7853,6 @@ uae_u32 REGPARAM2 op_10d0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, src);
 	m68k_incpci(2);
@@ -8192,7 +7877,6 @@ uae_u32 REGPARAM2 op_10d8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, src);
 	m68k_incpci(2);
@@ -8217,7 +7901,6 @@ uae_u32 REGPARAM2 op_10e0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, src);
 	m68k_incpci(2);
@@ -8241,7 +7924,6 @@ uae_u32 REGPARAM2 op_10e8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -8266,7 +7948,6 @@ uae_u32 REGPARAM2 op_10f0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -8288,7 +7969,6 @@ uae_u32 REGPARAM2 op_10f8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -8311,7 +7991,6 @@ uae_u32 REGPARAM2 op_10f9_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, src);
 	m68k_incpci(6);
@@ -8335,7 +8014,6 @@ uae_u32 REGPARAM2 op_10fa_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -8360,7 +8038,6 @@ uae_u32 REGPARAM2 op_10fb_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -8380,7 +8057,6 @@ uae_u32 REGPARAM2 op_10fc_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -8402,7 +8078,6 @@ uae_u32 REGPARAM2 op_1100_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, src);
 	m68k_incpci(2);
@@ -8426,7 +8101,6 @@ uae_u32 REGPARAM2 op_1110_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, src);
 	m68k_incpci(2);
@@ -8451,7 +8125,6 @@ uae_u32 REGPARAM2 op_1118_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, src);
 	m68k_incpci(2);
@@ -8476,7 +8149,6 @@ uae_u32 REGPARAM2 op_1120_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, src);
 	m68k_incpci(2);
@@ -8500,7 +8172,6 @@ uae_u32 REGPARAM2 op_1128_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -8525,7 +8196,6 @@ uae_u32 REGPARAM2 op_1130_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -8547,7 +8217,6 @@ uae_u32 REGPARAM2 op_1138_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -8570,7 +8239,6 @@ uae_u32 REGPARAM2 op_1139_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, src);
 	m68k_incpci(6);
@@ -8594,7 +8262,6 @@ uae_u32 REGPARAM2 op_113a_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -8619,7 +8286,6 @@ uae_u32 REGPARAM2 op_113b_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -8639,7 +8305,6 @@ uae_u32 REGPARAM2 op_113c_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -8660,7 +8325,6 @@ uae_u32 REGPARAM2 op_1140_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -8683,7 +8347,6 @@ uae_u32 REGPARAM2 op_1150_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -8707,7 +8370,6 @@ uae_u32 REGPARAM2 op_1158_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -8731,7 +8393,6 @@ uae_u32 REGPARAM2 op_1160_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -8754,7 +8415,6 @@ uae_u32 REGPARAM2 op_1168_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, src);
 	m68k_incpci(6);
@@ -8778,7 +8438,6 @@ uae_u32 REGPARAM2 op_1170_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, src);
 	m68k_incpci(2);
@@ -8800,7 +8459,6 @@ uae_u32 REGPARAM2 op_1178_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, src);
 	m68k_incpci(6);
@@ -8822,7 +8480,6 @@ uae_u32 REGPARAM2 op_1179_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_byte(dsta, src);
 	m68k_incpci(8);
@@ -8845,7 +8502,6 @@ uae_u32 REGPARAM2 op_117a_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, src);
 	m68k_incpci(6);
@@ -8869,7 +8525,6 @@ uae_u32 REGPARAM2 op_117b_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, src);
 	m68k_incpci(2);
@@ -8889,7 +8544,6 @@ uae_u32 REGPARAM2 op_117c_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, src);
 	m68k_incpci(6);
@@ -8911,7 +8565,6 @@ uae_u32 REGPARAM2 op_1180_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, src);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -8934,7 +8587,6 @@ uae_u32 REGPARAM2 op_1190_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -8958,7 +8610,6 @@ uae_u32 REGPARAM2 op_1198_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -8982,7 +8633,6 @@ uae_u32 REGPARAM2 op_11a0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -9005,7 +8655,6 @@ uae_u32 REGPARAM2 op_11a8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -9028,7 +8677,6 @@ uae_u32 REGPARAM2 op_11b0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -9050,7 +8698,6 @@ uae_u32 REGPARAM2 op_11b8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -9072,7 +8719,6 @@ uae_u32 REGPARAM2 op_11b9_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -9095,7 +8741,6 @@ uae_u32 REGPARAM2 op_11ba_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -9118,7 +8763,6 @@ uae_u32 REGPARAM2 op_11bb_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -9138,7 +8782,6 @@ uae_u32 REGPARAM2 op_11bc_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -9157,7 +8800,6 @@ uae_u32 REGPARAM2 op_11c0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -9179,7 +8821,6 @@ uae_u32 REGPARAM2 op_11d0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -9202,7 +8843,6 @@ uae_u32 REGPARAM2 op_11d8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -9225,7 +8865,6 @@ uae_u32 REGPARAM2 op_11e0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -9247,7 +8886,6 @@ uae_u32 REGPARAM2 op_11e8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, src);
 	m68k_incpci(6);
@@ -9270,7 +8908,6 @@ uae_u32 REGPARAM2 op_11f0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, src);
 	m68k_incpci(2);
@@ -9290,7 +8927,6 @@ uae_u32 REGPARAM2 op_11f8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, src);
 	m68k_incpci(6);
@@ -9310,7 +8946,6 @@ uae_u32 REGPARAM2 op_11f9_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_byte(dsta, src);
 	m68k_incpci(8);
@@ -9331,7 +8966,6 @@ uae_u32 REGPARAM2 op_11fa_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, src);
 	m68k_incpci(6);
@@ -9353,7 +8987,6 @@ uae_u32 REGPARAM2 op_11fb_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, src);
 	m68k_incpci(2);
@@ -9371,7 +9004,6 @@ uae_u32 REGPARAM2 op_11fc_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, src);
 	m68k_incpci(6);
@@ -9391,7 +9023,6 @@ uae_u32 REGPARAM2 op_13c0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, src);
 	m68k_incpci(6);
@@ -9413,7 +9044,6 @@ uae_u32 REGPARAM2 op_13d0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, src);
 	m68k_incpci(6);
@@ -9436,7 +9066,6 @@ uae_u32 REGPARAM2 op_13d8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, src);
 	m68k_incpci(6);
@@ -9459,7 +9088,6 @@ uae_u32 REGPARAM2 op_13e0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, src);
 	m68k_incpci(6);
@@ -9481,7 +9109,6 @@ uae_u32 REGPARAM2 op_13e8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_byte(dsta, src);
 	m68k_incpci(8);
@@ -9504,7 +9131,6 @@ uae_u32 REGPARAM2 op_13f0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -9524,7 +9150,6 @@ uae_u32 REGPARAM2 op_13f8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_byte(dsta, src);
 	m68k_incpci(8);
@@ -9544,7 +9169,6 @@ uae_u32 REGPARAM2 op_13f9_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(10);
 	x_put_byte(dsta, src);
 	m68k_incpci(10);
@@ -9565,7 +9189,6 @@ uae_u32 REGPARAM2 op_13fa_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_byte(dsta, src);
 	m68k_incpci(8);
@@ -9587,7 +9210,6 @@ uae_u32 REGPARAM2 op_13fb_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -9605,7 +9227,6 @@ uae_u32 REGPARAM2 op_13fc_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_byte(dsta, src);
 	m68k_incpci(8);
@@ -9624,7 +9245,6 @@ uae_u32 REGPARAM2 op_2000_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(2);
@@ -9643,7 +9263,6 @@ uae_u32 REGPARAM2 op_2008_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(2);
@@ -9664,7 +9283,6 @@ uae_u32 REGPARAM2 op_2010_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(2);
@@ -9686,7 +9304,6 @@ uae_u32 REGPARAM2 op_2018_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(2);
@@ -9708,7 +9325,6 @@ uae_u32 REGPARAM2 op_2020_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(2);
@@ -9729,7 +9345,6 @@ uae_u32 REGPARAM2 op_2028_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(4);
@@ -9751,7 +9366,6 @@ uae_u32 REGPARAM2 op_2030_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (src);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -9770,7 +9384,6 @@ uae_u32 REGPARAM2 op_2038_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(4);
@@ -9790,7 +9403,6 @@ uae_u32 REGPARAM2 op_2039_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(6);
@@ -9811,7 +9423,6 @@ uae_u32 REGPARAM2 op_203a_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(4);
@@ -9833,7 +9444,6 @@ uae_u32 REGPARAM2 op_203b_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (src);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -9851,7 +9461,6 @@ uae_u32 REGPARAM2 op_203c_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(6);
@@ -9867,7 +9476,6 @@ uae_u32 REGPARAM2 op_2040_20_ff(uae_u32 opcode)
 	uae_u32 srcreg = (real_opcode & 7);
 	uae_u32 dstreg = (real_opcode >> 9) & 7;
 	uae_s32 src = m68k_dreg(regs, srcreg);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (src);
 	m68k_incpci(2);
@@ -9883,7 +9491,6 @@ uae_u32 REGPARAM2 op_2048_20_ff(uae_u32 opcode)
 	uae_u32 srcreg = (real_opcode & 7);
 	uae_u32 dstreg = (real_opcode >> 9) & 7;
 	uae_s32 src = m68k_areg(regs, srcreg);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (src);
 	m68k_incpci(2);
@@ -9901,7 +9508,6 @@ uae_u32 REGPARAM2 op_2050_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg);
 	uae_s32 src = x_get_long(srca);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (src);
 	m68k_incpci(2);
@@ -9920,7 +9526,6 @@ uae_u32 REGPARAM2 op_2058_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg);
 	uae_s32 src = x_get_long(srca);
 	m68k_areg(regs, srcreg) += 4;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (src);
 	m68k_incpci(2);
@@ -9939,7 +9544,6 @@ uae_u32 REGPARAM2 op_2060_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg) - 4;
 	uae_s32 src = x_get_long(srca);
 	m68k_areg(regs, srcreg) = srca;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (src);
 	m68k_incpci(2);
@@ -9957,7 +9561,6 @@ uae_u32 REGPARAM2 op_2068_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg) + (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	uae_s32 src = x_get_long(srca);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_areg(regs, dstreg) = (src);
 	m68k_incpci(4);
@@ -9976,7 +9579,6 @@ uae_u32 REGPARAM2 op_2070_20_ff(uae_u32 opcode)
 	m68k_incpci(2);
 	srca = x_get_disp_ea_020(m68k_areg(regs, srcreg), 0);
 	uae_s32 src = x_get_long(srca);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_areg(regs, dstreg) = (src);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -9992,7 +9594,6 @@ uae_u32 REGPARAM2 op_2078_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	uae_s32 src = x_get_long(srca);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_areg(regs, dstreg) = (src);
 	m68k_incpci(4);
@@ -10009,7 +9610,6 @@ uae_u32 REGPARAM2 op_2079_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = get_long_020_prefetch(2);
 	uae_s32 src = x_get_long(srca);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_areg(regs, dstreg) = (src);
 	m68k_incpci(6);
@@ -10027,7 +9627,6 @@ uae_u32 REGPARAM2 op_207a_20_ff(uae_u32 opcode)
 	srca = m68k_getpci() + 2;
 	srca += (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	uae_s32 src = x_get_long(srca);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_areg(regs, dstreg) = (src);
 	m68k_incpci(4);
@@ -10046,7 +9645,6 @@ uae_u32 REGPARAM2 op_207b_20_ff(uae_u32 opcode)
 	uaecptr tmppc = m68k_getpci();
 	srca = x_get_disp_ea_020(tmppc, 0);
 	uae_s32 src = x_get_long(srca);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_areg(regs, dstreg) = (src);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -10061,7 +9659,6 @@ uae_u32 REGPARAM2 op_207c_20_ff(uae_u32 opcode)
 	uae_u32 dstreg = (real_opcode >> 9) & 7;
 	uae_s32 src;
 	src = get_long_020_prefetch(2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_areg(regs, dstreg) = (src);
 	m68k_incpci(6);
@@ -10082,7 +9679,6 @@ uae_u32 REGPARAM2 op_2080_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -10103,7 +9699,6 @@ uae_u32 REGPARAM2 op_2088_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -10126,7 +9721,6 @@ uae_u32 REGPARAM2 op_2090_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -10150,7 +9744,6 @@ uae_u32 REGPARAM2 op_2098_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -10174,7 +9767,6 @@ uae_u32 REGPARAM2 op_20a0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -10197,7 +9789,6 @@ uae_u32 REGPARAM2 op_20a8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, src);
 	m68k_incpci(4);
@@ -10221,7 +9812,6 @@ uae_u32 REGPARAM2 op_20b0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -10242,7 +9832,6 @@ uae_u32 REGPARAM2 op_20b8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, src);
 	m68k_incpci(4);
@@ -10264,7 +9853,6 @@ uae_u32 REGPARAM2 op_20b9_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -10287,7 +9875,6 @@ uae_u32 REGPARAM2 op_20ba_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, src);
 	m68k_incpci(4);
@@ -10311,7 +9898,6 @@ uae_u32 REGPARAM2 op_20bb_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -10331,7 +9917,6 @@ uae_u32 REGPARAM2 op_20bc_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -10353,7 +9938,6 @@ uae_u32 REGPARAM2 op_20c0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -10375,7 +9959,6 @@ uae_u32 REGPARAM2 op_20c8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -10399,7 +9982,6 @@ uae_u32 REGPARAM2 op_20d0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -10424,7 +10006,6 @@ uae_u32 REGPARAM2 op_20d8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -10449,7 +10030,6 @@ uae_u32 REGPARAM2 op_20e0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -10473,7 +10053,6 @@ uae_u32 REGPARAM2 op_20e8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, src);
 	m68k_incpci(4);
@@ -10498,7 +10077,6 @@ uae_u32 REGPARAM2 op_20f0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -10520,7 +10098,6 @@ uae_u32 REGPARAM2 op_20f8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, src);
 	m68k_incpci(4);
@@ -10543,7 +10120,6 @@ uae_u32 REGPARAM2 op_20f9_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -10567,7 +10143,6 @@ uae_u32 REGPARAM2 op_20fa_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, src);
 	m68k_incpci(4);
@@ -10592,7 +10167,6 @@ uae_u32 REGPARAM2 op_20fb_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -10613,7 +10187,6 @@ uae_u32 REGPARAM2 op_20fc_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -10635,7 +10208,6 @@ uae_u32 REGPARAM2 op_2100_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -10657,7 +10229,6 @@ uae_u32 REGPARAM2 op_2108_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -10681,7 +10252,6 @@ uae_u32 REGPARAM2 op_2110_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -10706,7 +10276,6 @@ uae_u32 REGPARAM2 op_2118_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -10731,7 +10300,6 @@ uae_u32 REGPARAM2 op_2120_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -10755,7 +10323,6 @@ uae_u32 REGPARAM2 op_2128_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, src);
 	m68k_incpci(4);
@@ -10780,7 +10347,6 @@ uae_u32 REGPARAM2 op_2130_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -10802,7 +10368,6 @@ uae_u32 REGPARAM2 op_2138_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, src);
 	m68k_incpci(4);
@@ -10825,7 +10390,6 @@ uae_u32 REGPARAM2 op_2139_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -10849,7 +10413,6 @@ uae_u32 REGPARAM2 op_213a_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, src);
 	m68k_incpci(4);
@@ -10874,7 +10437,6 @@ uae_u32 REGPARAM2 op_213b_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -10895,7 +10457,6 @@ uae_u32 REGPARAM2 op_213c_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -10916,7 +10477,6 @@ uae_u32 REGPARAM2 op_2140_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, src);
 	m68k_incpci(4);
@@ -10937,7 +10497,6 @@ uae_u32 REGPARAM2 op_2148_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, src);
 	m68k_incpci(4);
@@ -10960,7 +10519,6 @@ uae_u32 REGPARAM2 op_2150_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, src);
 	m68k_incpci(4);
@@ -10984,7 +10542,6 @@ uae_u32 REGPARAM2 op_2158_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, src);
 	m68k_incpci(4);
@@ -11008,7 +10565,6 @@ uae_u32 REGPARAM2 op_2160_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, src);
 	m68k_incpci(4);
@@ -11031,7 +10587,6 @@ uae_u32 REGPARAM2 op_2168_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -11055,7 +10610,6 @@ uae_u32 REGPARAM2 op_2170_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -11077,7 +10631,6 @@ uae_u32 REGPARAM2 op_2178_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -11099,7 +10652,6 @@ uae_u32 REGPARAM2 op_2179_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_long(dsta, src);
 	m68k_incpci(8);
@@ -11122,7 +10674,6 @@ uae_u32 REGPARAM2 op_217a_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -11146,7 +10697,6 @@ uae_u32 REGPARAM2 op_217b_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -11167,7 +10717,6 @@ uae_u32 REGPARAM2 op_217c_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_long(dsta, src);
 	m68k_incpci(8);
@@ -11189,7 +10738,6 @@ uae_u32 REGPARAM2 op_2180_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, src);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -11210,7 +10758,6 @@ uae_u32 REGPARAM2 op_2188_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, src);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -11233,7 +10780,6 @@ uae_u32 REGPARAM2 op_2190_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -11257,7 +10803,6 @@ uae_u32 REGPARAM2 op_2198_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -11281,7 +10826,6 @@ uae_u32 REGPARAM2 op_21a0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -11304,7 +10848,6 @@ uae_u32 REGPARAM2 op_21a8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -11327,7 +10870,6 @@ uae_u32 REGPARAM2 op_21b0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -11349,7 +10891,6 @@ uae_u32 REGPARAM2 op_21b8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -11371,7 +10912,6 @@ uae_u32 REGPARAM2 op_21b9_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -11394,7 +10934,6 @@ uae_u32 REGPARAM2 op_21ba_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -11417,7 +10956,6 @@ uae_u32 REGPARAM2 op_21bb_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -11438,7 +10976,6 @@ uae_u32 REGPARAM2 op_21bc_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, src);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -11457,7 +10994,6 @@ uae_u32 REGPARAM2 op_21c0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, src);
 	m68k_incpci(4);
@@ -11477,7 +11013,6 @@ uae_u32 REGPARAM2 op_21c8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, src);
 	m68k_incpci(4);
@@ -11499,7 +11034,6 @@ uae_u32 REGPARAM2 op_21d0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, src);
 	m68k_incpci(4);
@@ -11522,7 +11056,6 @@ uae_u32 REGPARAM2 op_21d8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, src);
 	m68k_incpci(4);
@@ -11545,7 +11078,6 @@ uae_u32 REGPARAM2 op_21e0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, src);
 	m68k_incpci(4);
@@ -11567,7 +11099,6 @@ uae_u32 REGPARAM2 op_21e8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -11590,7 +11121,6 @@ uae_u32 REGPARAM2 op_21f0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -11610,7 +11140,6 @@ uae_u32 REGPARAM2 op_21f8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -11630,7 +11159,6 @@ uae_u32 REGPARAM2 op_21f9_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_long(dsta, src);
 	m68k_incpci(8);
@@ -11651,7 +11179,6 @@ uae_u32 REGPARAM2 op_21fa_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -11673,7 +11200,6 @@ uae_u32 REGPARAM2 op_21fb_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -11692,7 +11218,6 @@ uae_u32 REGPARAM2 op_21fc_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_long(dsta, src);
 	m68k_incpci(8);
@@ -11712,7 +11237,6 @@ uae_u32 REGPARAM2 op_23c0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -11732,7 +11256,6 @@ uae_u32 REGPARAM2 op_23c8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -11754,7 +11277,6 @@ uae_u32 REGPARAM2 op_23d0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -11777,7 +11299,6 @@ uae_u32 REGPARAM2 op_23d8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -11800,7 +11321,6 @@ uae_u32 REGPARAM2 op_23e0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -11822,7 +11342,6 @@ uae_u32 REGPARAM2 op_23e8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_long(dsta, src);
 	m68k_incpci(8);
@@ -11845,7 +11364,6 @@ uae_u32 REGPARAM2 op_23f0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, src);
 	m68k_incpci(4);
@@ -11865,7 +11383,6 @@ uae_u32 REGPARAM2 op_23f8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_long(dsta, src);
 	m68k_incpci(8);
@@ -11885,7 +11402,6 @@ uae_u32 REGPARAM2 op_23f9_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(10);
 	x_put_long(dsta, src);
 	m68k_incpci(10);
@@ -11906,7 +11422,6 @@ uae_u32 REGPARAM2 op_23fa_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_long(dsta, src);
 	m68k_incpci(8);
@@ -11928,7 +11443,6 @@ uae_u32 REGPARAM2 op_23fb_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, src);
 	m68k_incpci(4);
@@ -11947,7 +11461,6 @@ uae_u32 REGPARAM2 op_23fc_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(10);
 	x_put_long(dsta, src);
 	m68k_incpci(10);
@@ -11966,7 +11479,6 @@ uae_u32 REGPARAM2 op_3000_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(2);
@@ -11985,7 +11497,6 @@ uae_u32 REGPARAM2 op_3008_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(2);
@@ -12006,7 +11517,6 @@ uae_u32 REGPARAM2 op_3010_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(2);
@@ -12028,7 +11538,6 @@ uae_u32 REGPARAM2 op_3018_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(2);
@@ -12050,7 +11559,6 @@ uae_u32 REGPARAM2 op_3020_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(2);
@@ -12071,7 +11579,6 @@ uae_u32 REGPARAM2 op_3028_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(4);
@@ -12093,7 +11600,6 @@ uae_u32 REGPARAM2 op_3030_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -12112,7 +11618,6 @@ uae_u32 REGPARAM2 op_3038_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(4);
@@ -12132,7 +11637,6 @@ uae_u32 REGPARAM2 op_3039_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(6);
@@ -12153,7 +11657,6 @@ uae_u32 REGPARAM2 op_303a_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(4);
@@ -12175,7 +11678,6 @@ uae_u32 REGPARAM2 op_303b_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -12192,7 +11694,6 @@ uae_u32 REGPARAM2 op_303c_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(4);
@@ -12209,7 +11710,6 @@ uae_u32 REGPARAM2 op_3040_20_ff(uae_u32 opcode)
 	uae_u32 dstreg = (real_opcode >> 9) & 7;
 	uae_s16 src = m68k_dreg(regs, srcreg);
 	src = (uae_s32)(uae_s16)src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (uae_s32)(uae_s16)(src);
 	m68k_incpci(2);
@@ -12226,7 +11726,6 @@ uae_u32 REGPARAM2 op_3048_20_ff(uae_u32 opcode)
 	uae_u32 dstreg = (real_opcode >> 9) & 7;
 	uae_s16 src = m68k_areg(regs, srcreg);
 	src = (uae_s32)(uae_s16)src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (uae_s32)(uae_s16)(src);
 	m68k_incpci(2);
@@ -12245,7 +11744,6 @@ uae_u32 REGPARAM2 op_3050_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg);
 	uae_s16 src = x_get_word(srca);
 	src = (uae_s32)(uae_s16)src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (uae_s32)(uae_s16)(src);
 	m68k_incpci(2);
@@ -12265,7 +11763,6 @@ uae_u32 REGPARAM2 op_3058_20_ff(uae_u32 opcode)
 	uae_s16 src = x_get_word(srca);
 	m68k_areg(regs, srcreg) += 2;
 	src = (uae_s32)(uae_s16)src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (uae_s32)(uae_s16)(src);
 	m68k_incpci(2);
@@ -12285,7 +11782,6 @@ uae_u32 REGPARAM2 op_3060_20_ff(uae_u32 opcode)
 	uae_s16 src = x_get_word(srca);
 	m68k_areg(regs, srcreg) = srca;
 	src = (uae_s32)(uae_s16)src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (uae_s32)(uae_s16)(src);
 	m68k_incpci(2);
@@ -12304,7 +11800,6 @@ uae_u32 REGPARAM2 op_3068_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg) + (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	uae_s16 src = x_get_word(srca);
 	src = (uae_s32)(uae_s16)src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_areg(regs, dstreg) = (uae_s32)(uae_s16)(src);
 	m68k_incpci(4);
@@ -12324,7 +11819,6 @@ uae_u32 REGPARAM2 op_3070_20_ff(uae_u32 opcode)
 	srca = x_get_disp_ea_020(m68k_areg(regs, srcreg), 0);
 	uae_s16 src = x_get_word(srca);
 	src = (uae_s32)(uae_s16)src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_areg(regs, dstreg) = (uae_s32)(uae_s16)(src);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -12341,7 +11835,6 @@ uae_u32 REGPARAM2 op_3078_20_ff(uae_u32 opcode)
 	srca = (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	uae_s16 src = x_get_word(srca);
 	src = (uae_s32)(uae_s16)src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_areg(regs, dstreg) = (uae_s32)(uae_s16)(src);
 	m68k_incpci(4);
@@ -12359,7 +11852,6 @@ uae_u32 REGPARAM2 op_3079_20_ff(uae_u32 opcode)
 	srca = get_long_020_prefetch(2);
 	uae_s16 src = x_get_word(srca);
 	src = (uae_s32)(uae_s16)src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_areg(regs, dstreg) = (uae_s32)(uae_s16)(src);
 	m68k_incpci(6);
@@ -12378,7 +11870,6 @@ uae_u32 REGPARAM2 op_307a_20_ff(uae_u32 opcode)
 	srca += (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	uae_s16 src = x_get_word(srca);
 	src = (uae_s32)(uae_s16)src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_areg(regs, dstreg) = (uae_s32)(uae_s16)(src);
 	m68k_incpci(4);
@@ -12398,7 +11889,6 @@ uae_u32 REGPARAM2 op_307b_20_ff(uae_u32 opcode)
 	srca = x_get_disp_ea_020(tmppc, 0);
 	uae_s16 src = x_get_word(srca);
 	src = (uae_s32)(uae_s16)src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_areg(regs, dstreg) = (uae_s32)(uae_s16)(src);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -12413,7 +11903,6 @@ uae_u32 REGPARAM2 op_307c_20_ff(uae_u32 opcode)
 	uae_u32 dstreg = (real_opcode >> 9) & 7;
 	uae_s16 src = get_word_020_prefetch(2);
 	src = (uae_s32)(uae_s16)src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_areg(regs, dstreg) = (uae_s32)(uae_s16)(src);
 	m68k_incpci(4);
@@ -12434,7 +11923,6 @@ uae_u32 REGPARAM2 op_3080_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -12455,7 +11943,6 @@ uae_u32 REGPARAM2 op_3088_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -12478,7 +11965,6 @@ uae_u32 REGPARAM2 op_3090_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -12502,7 +11988,6 @@ uae_u32 REGPARAM2 op_3098_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -12526,7 +12011,6 @@ uae_u32 REGPARAM2 op_30a0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -12549,7 +12033,6 @@ uae_u32 REGPARAM2 op_30a8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -12573,7 +12056,6 @@ uae_u32 REGPARAM2 op_30b0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -12594,7 +12076,6 @@ uae_u32 REGPARAM2 op_30b8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -12616,7 +12097,6 @@ uae_u32 REGPARAM2 op_30b9_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, src);
 	m68k_incpci(6);
@@ -12639,7 +12119,6 @@ uae_u32 REGPARAM2 op_30ba_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -12663,7 +12142,6 @@ uae_u32 REGPARAM2 op_30bb_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -12682,7 +12160,6 @@ uae_u32 REGPARAM2 op_30bc_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -12704,7 +12181,6 @@ uae_u32 REGPARAM2 op_30c0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -12726,7 +12202,6 @@ uae_u32 REGPARAM2 op_30c8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -12750,7 +12225,6 @@ uae_u32 REGPARAM2 op_30d0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -12775,7 +12249,6 @@ uae_u32 REGPARAM2 op_30d8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -12800,7 +12273,6 @@ uae_u32 REGPARAM2 op_30e0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -12824,7 +12296,6 @@ uae_u32 REGPARAM2 op_30e8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -12849,7 +12320,6 @@ uae_u32 REGPARAM2 op_30f0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -12871,7 +12341,6 @@ uae_u32 REGPARAM2 op_30f8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -12894,7 +12363,6 @@ uae_u32 REGPARAM2 op_30f9_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, src);
 	m68k_incpci(6);
@@ -12918,7 +12386,6 @@ uae_u32 REGPARAM2 op_30fa_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -12943,7 +12410,6 @@ uae_u32 REGPARAM2 op_30fb_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -12963,7 +12429,6 @@ uae_u32 REGPARAM2 op_30fc_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -12985,7 +12450,6 @@ uae_u32 REGPARAM2 op_3100_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -13007,7 +12471,6 @@ uae_u32 REGPARAM2 op_3108_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -13031,7 +12494,6 @@ uae_u32 REGPARAM2 op_3110_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -13056,7 +12518,6 @@ uae_u32 REGPARAM2 op_3118_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -13081,7 +12542,6 @@ uae_u32 REGPARAM2 op_3120_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -13105,7 +12565,6 @@ uae_u32 REGPARAM2 op_3128_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -13130,7 +12589,6 @@ uae_u32 REGPARAM2 op_3130_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -13152,7 +12610,6 @@ uae_u32 REGPARAM2 op_3138_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -13175,7 +12632,6 @@ uae_u32 REGPARAM2 op_3139_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, src);
 	m68k_incpci(6);
@@ -13199,7 +12655,6 @@ uae_u32 REGPARAM2 op_313a_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -13224,7 +12679,6 @@ uae_u32 REGPARAM2 op_313b_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -13244,7 +12698,6 @@ uae_u32 REGPARAM2 op_313c_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -13265,7 +12718,6 @@ uae_u32 REGPARAM2 op_3140_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -13286,7 +12738,6 @@ uae_u32 REGPARAM2 op_3148_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -13309,7 +12760,6 @@ uae_u32 REGPARAM2 op_3150_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -13333,7 +12783,6 @@ uae_u32 REGPARAM2 op_3158_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -13357,7 +12806,6 @@ uae_u32 REGPARAM2 op_3160_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -13380,7 +12828,6 @@ uae_u32 REGPARAM2 op_3168_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, src);
 	m68k_incpci(6);
@@ -13404,7 +12851,6 @@ uae_u32 REGPARAM2 op_3170_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -13426,7 +12872,6 @@ uae_u32 REGPARAM2 op_3178_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, src);
 	m68k_incpci(6);
@@ -13448,7 +12893,6 @@ uae_u32 REGPARAM2 op_3179_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_word(dsta, src);
 	m68k_incpci(8);
@@ -13471,7 +12915,6 @@ uae_u32 REGPARAM2 op_317a_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, src);
 	m68k_incpci(6);
@@ -13495,7 +12938,6 @@ uae_u32 REGPARAM2 op_317b_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -13515,7 +12957,6 @@ uae_u32 REGPARAM2 op_317c_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, src);
 	m68k_incpci(6);
@@ -13537,7 +12978,6 @@ uae_u32 REGPARAM2 op_3180_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, src);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -13558,7 +12998,6 @@ uae_u32 REGPARAM2 op_3188_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, src);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -13581,7 +13020,6 @@ uae_u32 REGPARAM2 op_3190_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -13605,7 +13043,6 @@ uae_u32 REGPARAM2 op_3198_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -13629,7 +13066,6 @@ uae_u32 REGPARAM2 op_31a0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -13652,7 +13088,6 @@ uae_u32 REGPARAM2 op_31a8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -13675,7 +13110,6 @@ uae_u32 REGPARAM2 op_31b0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -13697,7 +13131,6 @@ uae_u32 REGPARAM2 op_31b8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -13719,7 +13152,6 @@ uae_u32 REGPARAM2 op_31b9_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -13742,7 +13174,6 @@ uae_u32 REGPARAM2 op_31ba_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -13765,7 +13196,6 @@ uae_u32 REGPARAM2 op_31bb_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -13785,7 +13215,6 @@ uae_u32 REGPARAM2 op_31bc_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, src);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -13804,7 +13233,6 @@ uae_u32 REGPARAM2 op_31c0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -13824,7 +13252,6 @@ uae_u32 REGPARAM2 op_31c8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -13846,7 +13273,6 @@ uae_u32 REGPARAM2 op_31d0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -13869,7 +13295,6 @@ uae_u32 REGPARAM2 op_31d8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -13892,7 +13317,6 @@ uae_u32 REGPARAM2 op_31e0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -13914,7 +13338,6 @@ uae_u32 REGPARAM2 op_31e8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, src);
 	m68k_incpci(6);
@@ -13937,7 +13360,6 @@ uae_u32 REGPARAM2 op_31f0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -13957,7 +13379,6 @@ uae_u32 REGPARAM2 op_31f8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, src);
 	m68k_incpci(6);
@@ -13977,7 +13398,6 @@ uae_u32 REGPARAM2 op_31f9_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_word(dsta, src);
 	m68k_incpci(8);
@@ -13998,7 +13418,6 @@ uae_u32 REGPARAM2 op_31fa_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, src);
 	m68k_incpci(6);
@@ -14020,7 +13439,6 @@ uae_u32 REGPARAM2 op_31fb_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -14038,7 +13456,6 @@ uae_u32 REGPARAM2 op_31fc_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, src);
 	m68k_incpci(6);
@@ -14058,7 +13475,6 @@ uae_u32 REGPARAM2 op_33c0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, src);
 	m68k_incpci(6);
@@ -14078,7 +13494,6 @@ uae_u32 REGPARAM2 op_33c8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, src);
 	m68k_incpci(6);
@@ -14100,7 +13515,6 @@ uae_u32 REGPARAM2 op_33d0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, src);
 	m68k_incpci(6);
@@ -14123,7 +13537,6 @@ uae_u32 REGPARAM2 op_33d8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, src);
 	m68k_incpci(6);
@@ -14146,7 +13559,6 @@ uae_u32 REGPARAM2 op_33e0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, src);
 	m68k_incpci(6);
@@ -14168,7 +13580,6 @@ uae_u32 REGPARAM2 op_33e8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_word(dsta, src);
 	m68k_incpci(8);
@@ -14191,7 +13602,6 @@ uae_u32 REGPARAM2 op_33f0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -14211,7 +13621,6 @@ uae_u32 REGPARAM2 op_33f8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_word(dsta, src);
 	m68k_incpci(8);
@@ -14231,7 +13640,6 @@ uae_u32 REGPARAM2 op_33f9_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(10);
 	x_put_word(dsta, src);
 	m68k_incpci(10);
@@ -14252,7 +13660,6 @@ uae_u32 REGPARAM2 op_33fa_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_word(dsta, src);
 	m68k_incpci(8);
@@ -14274,7 +13681,6 @@ uae_u32 REGPARAM2 op_33fb_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -14292,7 +13698,6 @@ uae_u32 REGPARAM2 op_33fc_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	x_put_word(dsta, src);
 	m68k_incpci(8);
@@ -14316,7 +13721,6 @@ uae_u32 REGPARAM2 op_4000_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s8)(newv)) == 0));
 	SET_NFLG(((uae_s8)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(2);
@@ -14342,7 +13746,6 @@ uae_u32 REGPARAM2 op_4010_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s8)(newv)) == 0));
 	SET_NFLG(((uae_s8)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, newv);
 	m68k_incpci(2);
@@ -14369,7 +13772,6 @@ uae_u32 REGPARAM2 op_4018_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s8)(newv)) == 0));
 	SET_NFLG(((uae_s8)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, newv);
 	m68k_incpci(2);
@@ -14396,7 +13798,6 @@ uae_u32 REGPARAM2 op_4020_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s8)(newv)) == 0));
 	SET_NFLG(((uae_s8)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, newv);
 	m68k_incpci(2);
@@ -14422,7 +13823,6 @@ uae_u32 REGPARAM2 op_4028_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s8)(newv)) == 0));
 	SET_NFLG(((uae_s8)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, newv);
 	m68k_incpci(4);
@@ -14449,7 +13849,6 @@ uae_u32 REGPARAM2 op_4030_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s8)(newv)) == 0));
 	SET_NFLG(((uae_s8)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(srca, newv);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -14472,7 +13871,6 @@ uae_u32 REGPARAM2 op_4038_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s8)(newv)) == 0));
 	SET_NFLG(((uae_s8)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, newv);
 	m68k_incpci(4);
@@ -14496,7 +13894,6 @@ uae_u32 REGPARAM2 op_4039_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s8)(newv)) == 0));
 	SET_NFLG(((uae_s8)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(srca, newv);
 	m68k_incpci(6);
@@ -14520,7 +13917,6 @@ uae_u32 REGPARAM2 op_4040_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s16)(newv)) == 0));
 	SET_NFLG(((uae_s16)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xffff) | ((newv) & 0xffff);
 	m68k_incpci(2);
@@ -14546,7 +13942,6 @@ uae_u32 REGPARAM2 op_4050_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s16)(newv)) == 0));
 	SET_NFLG(((uae_s16)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(srca, newv);
 	m68k_incpci(2);
@@ -14573,7 +13968,6 @@ uae_u32 REGPARAM2 op_4058_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s16)(newv)) == 0));
 	SET_NFLG(((uae_s16)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(srca, newv);
 	m68k_incpci(2);
@@ -14600,7 +13994,6 @@ uae_u32 REGPARAM2 op_4060_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s16)(newv)) == 0));
 	SET_NFLG(((uae_s16)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(srca, newv);
 	m68k_incpci(2);
@@ -14626,7 +14019,6 @@ uae_u32 REGPARAM2 op_4068_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s16)(newv)) == 0));
 	SET_NFLG(((uae_s16)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(srca, newv);
 	m68k_incpci(4);
@@ -14653,7 +14045,6 @@ uae_u32 REGPARAM2 op_4070_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s16)(newv)) == 0));
 	SET_NFLG(((uae_s16)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(srca, newv);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -14676,7 +14067,6 @@ uae_u32 REGPARAM2 op_4078_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s16)(newv)) == 0));
 	SET_NFLG(((uae_s16)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(srca, newv);
 	m68k_incpci(4);
@@ -14700,7 +14090,6 @@ uae_u32 REGPARAM2 op_4079_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s16)(newv)) == 0));
 	SET_NFLG(((uae_s16)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(srca, newv);
 	m68k_incpci(6);
@@ -14724,7 +14113,6 @@ uae_u32 REGPARAM2 op_4080_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s32)(newv)) == 0));
 	SET_NFLG(((uae_s32)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (newv);
 	m68k_incpci(2);
@@ -14750,7 +14138,6 @@ uae_u32 REGPARAM2 op_4090_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s32)(newv)) == 0));
 	SET_NFLG(((uae_s32)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(srca, newv);
 	m68k_incpci(2);
@@ -14777,7 +14164,6 @@ uae_u32 REGPARAM2 op_4098_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s32)(newv)) == 0));
 	SET_NFLG(((uae_s32)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(srca, newv);
 	m68k_incpci(2);
@@ -14804,7 +14190,6 @@ uae_u32 REGPARAM2 op_40a0_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s32)(newv)) == 0));
 	SET_NFLG(((uae_s32)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(srca, newv);
 	m68k_incpci(2);
@@ -14830,7 +14215,6 @@ uae_u32 REGPARAM2 op_40a8_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s32)(newv)) == 0));
 	SET_NFLG(((uae_s32)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(srca, newv);
 	m68k_incpci(4);
@@ -14857,7 +14241,6 @@ uae_u32 REGPARAM2 op_40b0_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s32)(newv)) == 0));
 	SET_NFLG(((uae_s32)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(srca, newv);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -14880,7 +14263,6 @@ uae_u32 REGPARAM2 op_40b8_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s32)(newv)) == 0));
 	SET_NFLG(((uae_s32)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(srca, newv);
 	m68k_incpci(4);
@@ -14904,7 +14286,6 @@ uae_u32 REGPARAM2 op_40b9_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s32)(newv)) == 0));
 	SET_NFLG(((uae_s32)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(srca, newv);
 	m68k_incpci(6);
@@ -14923,7 +14304,6 @@ uae_u32 REGPARAM2 op_40c0_20_ff(uae_u32 opcode)
 		return 0;
 	}
 	MakeSR();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xffff) | ((regs.sr) & 0xffff);
 	m68k_incpci(2);
@@ -14944,7 +14324,6 @@ uae_u32 REGPARAM2 op_40d0_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg);
 	MakeSR();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(srca, regs.sr);
 	m68k_incpci(2);
@@ -14966,7 +14345,6 @@ uae_u32 REGPARAM2 op_40d8_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg);
 	m68k_areg(regs, srcreg) += 2;
 	MakeSR();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(srca, regs.sr);
 	m68k_incpci(2);
@@ -14988,7 +14366,6 @@ uae_u32 REGPARAM2 op_40e0_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg) - 2;
 	m68k_areg(regs, srcreg) = srca;
 	MakeSR();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(srca, regs.sr);
 	m68k_incpci(2);
@@ -15009,7 +14386,6 @@ uae_u32 REGPARAM2 op_40e8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg) + (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	MakeSR();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(srca, regs.sr);
 	m68k_incpci(4);
@@ -15031,7 +14407,6 @@ uae_u32 REGPARAM2 op_40f0_20_ff(uae_u32 opcode)
 	m68k_incpci(2);
 	srca = x_get_disp_ea_020(m68k_areg(regs, srcreg), 0);
 	MakeSR();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(srca, regs.sr);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -15049,7 +14424,6 @@ uae_u32 REGPARAM2 op_40f8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	MakeSR();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(srca, regs.sr);
 	m68k_incpci(4);
@@ -15068,7 +14442,6 @@ uae_u32 REGPARAM2 op_40f9_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = get_long_020_prefetch(2);
 	MakeSR();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(srca, regs.sr);
 	m68k_incpci(6);
@@ -15098,7 +14471,6 @@ uae_u32 REGPARAM2 op_4100_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	setchkundefinedflags(src, dst, 2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -15129,7 +14501,6 @@ uae_u32 REGPARAM2 op_4110_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	setchkundefinedflags(src, dst, 2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -15161,7 +14532,6 @@ uae_u32 REGPARAM2 op_4118_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	setchkundefinedflags(src, dst, 2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -15193,7 +14563,6 @@ uae_u32 REGPARAM2 op_4120_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	setchkundefinedflags(src, dst, 2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -15224,7 +14593,6 @@ uae_u32 REGPARAM2 op_4128_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	setchkundefinedflags(src, dst, 2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -15255,7 +14623,6 @@ uae_u32 REGPARAM2 op_4130_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	setchkundefinedflags(src, dst, 2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -15285,7 +14652,6 @@ uae_u32 REGPARAM2 op_4138_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	setchkundefinedflags(src, dst, 2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -15315,7 +14681,6 @@ uae_u32 REGPARAM2 op_4139_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	setchkundefinedflags(src, dst, 2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -15346,7 +14711,6 @@ uae_u32 REGPARAM2 op_413a_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	setchkundefinedflags(src, dst, 2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -15377,7 +14741,6 @@ uae_u32 REGPARAM2 op_413b_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	setchkundefinedflags(src, dst, 2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -15406,7 +14769,6 @@ uae_u32 REGPARAM2 op_413c_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	setchkundefinedflags(src, dst, 2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -15434,7 +14796,6 @@ uae_u32 REGPARAM2 op_4180_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	setchkundefinedflags(src, dst, 1);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -15463,7 +14824,6 @@ uae_u32 REGPARAM2 op_4190_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	setchkundefinedflags(src, dst, 1);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -15493,7 +14853,6 @@ uae_u32 REGPARAM2 op_4198_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	setchkundefinedflags(src, dst, 1);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -15523,7 +14882,6 @@ uae_u32 REGPARAM2 op_41a0_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	setchkundefinedflags(src, dst, 1);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -15552,7 +14910,6 @@ uae_u32 REGPARAM2 op_41a8_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	setchkundefinedflags(src, dst, 1);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -15581,7 +14938,6 @@ uae_u32 REGPARAM2 op_41b0_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	setchkundefinedflags(src, dst, 1);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -15609,7 +14965,6 @@ uae_u32 REGPARAM2 op_41b8_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	setchkundefinedflags(src, dst, 1);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -15637,7 +14992,6 @@ uae_u32 REGPARAM2 op_41b9_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	setchkundefinedflags(src, dst, 1);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -15666,7 +15020,6 @@ uae_u32 REGPARAM2 op_41ba_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	setchkundefinedflags(src, dst, 1);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -15695,7 +15048,6 @@ uae_u32 REGPARAM2 op_41bb_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	setchkundefinedflags(src, dst, 1);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -15721,7 +15073,6 @@ uae_u32 REGPARAM2 op_41bc_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	setchkundefinedflags(src, dst, 1);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -15736,7 +15087,6 @@ uae_u32 REGPARAM2 op_41d0_20_ff(uae_u32 opcode)
 	uae_u32 dstreg = (real_opcode >> 9) & 7;
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (srca);
 	m68k_incpci(2);
@@ -15753,7 +15103,6 @@ uae_u32 REGPARAM2 op_41e8_20_ff(uae_u32 opcode)
 	uae_u32 dstreg = (real_opcode >> 9) & 7;
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg) + (uae_s32)(uae_s16)get_word_020_prefetch(2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_areg(regs, dstreg) = (srca);
 	m68k_incpci(4);
@@ -15771,7 +15120,6 @@ uae_u32 REGPARAM2 op_41f0_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	m68k_incpci(2);
 	srca = x_get_disp_ea_020(m68k_areg(regs, srcreg), 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_areg(regs, dstreg) = (srca);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -15786,7 +15134,6 @@ uae_u32 REGPARAM2 op_41f8_20_ff(uae_u32 opcode)
 	uae_u32 dstreg = (real_opcode >> 9) & 7;
 	uaecptr srca;
 	srca = (uae_s32)(uae_s16)get_word_020_prefetch(2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_areg(regs, dstreg) = (srca);
 	m68k_incpci(4);
@@ -15802,7 +15149,6 @@ uae_u32 REGPARAM2 op_41f9_20_ff(uae_u32 opcode)
 	uae_u32 dstreg = (real_opcode >> 9) & 7;
 	uaecptr srca;
 	srca = get_long_020_prefetch(2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_areg(regs, dstreg) = (srca);
 	m68k_incpci(6);
@@ -15819,7 +15165,6 @@ uae_u32 REGPARAM2 op_41fa_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_getpci() + 2;
 	srca += (uae_s32)(uae_s16)get_word_020_prefetch(2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_areg(regs, dstreg) = (srca);
 	m68k_incpci(4);
@@ -15837,7 +15182,6 @@ uae_u32 REGPARAM2 op_41fb_20_ff(uae_u32 opcode)
 	m68k_incpci(2);
 	uaecptr tmppc = m68k_getpci();
 	srca = x_get_disp_ea_020(tmppc, 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_areg(regs, dstreg) = (srca);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -15853,7 +15197,6 @@ uae_u32 REGPARAM2 op_4200_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(0)) == 0);
 	SET_NFLG(((uae_s8)(0)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xff) | ((0) & 0xff);
 	m68k_incpci(2);
@@ -15872,7 +15215,6 @@ uae_u32 REGPARAM2 op_4210_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(0)) == 0);
 	SET_NFLG(((uae_s8)(0)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, 0);
 	m68k_incpci(2);
@@ -15892,7 +15234,6 @@ uae_u32 REGPARAM2 op_4218_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(0)) == 0);
 	SET_NFLG(((uae_s8)(0)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, 0);
 	m68k_incpci(2);
@@ -15912,7 +15253,6 @@ uae_u32 REGPARAM2 op_4220_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(0)) == 0);
 	SET_NFLG(((uae_s8)(0)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, 0);
 	m68k_incpci(2);
@@ -15931,7 +15271,6 @@ uae_u32 REGPARAM2 op_4228_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(0)) == 0);
 	SET_NFLG(((uae_s8)(0)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, 0);
 	m68k_incpci(4);
@@ -15951,7 +15290,6 @@ uae_u32 REGPARAM2 op_4230_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(0)) == 0);
 	SET_NFLG(((uae_s8)(0)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(srca, 0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -15967,7 +15305,6 @@ uae_u32 REGPARAM2 op_4238_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(0)) == 0);
 	SET_NFLG(((uae_s8)(0)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, 0);
 	m68k_incpci(4);
@@ -15984,7 +15321,6 @@ uae_u32 REGPARAM2 op_4239_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(0)) == 0);
 	SET_NFLG(((uae_s8)(0)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(srca, 0);
 	m68k_incpci(6);
@@ -16001,7 +15337,6 @@ uae_u32 REGPARAM2 op_4240_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(0)) == 0);
 	SET_NFLG(((uae_s16)(0)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xffff) | ((0) & 0xffff);
 	m68k_incpci(2);
@@ -16020,7 +15355,6 @@ uae_u32 REGPARAM2 op_4250_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(0)) == 0);
 	SET_NFLG(((uae_s16)(0)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(srca, 0);
 	m68k_incpci(2);
@@ -16040,7 +15374,6 @@ uae_u32 REGPARAM2 op_4258_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(0)) == 0);
 	SET_NFLG(((uae_s16)(0)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(srca, 0);
 	m68k_incpci(2);
@@ -16060,7 +15393,6 @@ uae_u32 REGPARAM2 op_4260_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(0)) == 0);
 	SET_NFLG(((uae_s16)(0)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(srca, 0);
 	m68k_incpci(2);
@@ -16079,7 +15411,6 @@ uae_u32 REGPARAM2 op_4268_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(0)) == 0);
 	SET_NFLG(((uae_s16)(0)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(srca, 0);
 	m68k_incpci(4);
@@ -16099,7 +15430,6 @@ uae_u32 REGPARAM2 op_4270_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(0)) == 0);
 	SET_NFLG(((uae_s16)(0)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(srca, 0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -16115,7 +15445,6 @@ uae_u32 REGPARAM2 op_4278_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(0)) == 0);
 	SET_NFLG(((uae_s16)(0)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(srca, 0);
 	m68k_incpci(4);
@@ -16132,7 +15461,6 @@ uae_u32 REGPARAM2 op_4279_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(0)) == 0);
 	SET_NFLG(((uae_s16)(0)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(srca, 0);
 	m68k_incpci(6);
@@ -16149,7 +15477,6 @@ uae_u32 REGPARAM2 op_4280_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(0)) == 0);
 	SET_NFLG(((uae_s32)(0)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (0);
 	m68k_incpci(2);
@@ -16168,7 +15495,6 @@ uae_u32 REGPARAM2 op_4290_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(0)) == 0);
 	SET_NFLG(((uae_s32)(0)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(srca, 0);
 	m68k_incpci(2);
@@ -16188,7 +15514,6 @@ uae_u32 REGPARAM2 op_4298_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(0)) == 0);
 	SET_NFLG(((uae_s32)(0)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(srca, 0);
 	m68k_incpci(2);
@@ -16208,7 +15533,6 @@ uae_u32 REGPARAM2 op_42a0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(0)) == 0);
 	SET_NFLG(((uae_s32)(0)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(srca, 0);
 	m68k_incpci(2);
@@ -16227,7 +15551,6 @@ uae_u32 REGPARAM2 op_42a8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(0)) == 0);
 	SET_NFLG(((uae_s32)(0)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(srca, 0);
 	m68k_incpci(4);
@@ -16247,7 +15570,6 @@ uae_u32 REGPARAM2 op_42b0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(0)) == 0);
 	SET_NFLG(((uae_s32)(0)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(srca, 0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -16263,7 +15585,6 @@ uae_u32 REGPARAM2 op_42b8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(0)) == 0);
 	SET_NFLG(((uae_s32)(0)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(srca, 0);
 	m68k_incpci(4);
@@ -16280,7 +15601,6 @@ uae_u32 REGPARAM2 op_42b9_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(0)) == 0);
 	SET_NFLG(((uae_s32)(0)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(srca, 0);
 	m68k_incpci(6);
@@ -16296,7 +15616,6 @@ uae_u32 REGPARAM2 op_42c0_20_ff(uae_u32 opcode)
 	uae_u32 real_opcode = opcode;
 	uae_u32 srcreg = (real_opcode & 7);
 	MakeSR();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xffff) | ((regs.sr & 0xff) & 0xffff);
 	m68k_incpci(2);
@@ -16315,7 +15634,6 @@ uae_u32 REGPARAM2 op_42d0_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg);
 	MakeSR();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(srca, regs.sr & 0xff);
 	m68k_incpci(2);
@@ -16335,7 +15653,6 @@ uae_u32 REGPARAM2 op_42d8_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg);
 	m68k_areg(regs, srcreg) += 2;
 	MakeSR();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(srca, regs.sr & 0xff);
 	m68k_incpci(2);
@@ -16355,7 +15672,6 @@ uae_u32 REGPARAM2 op_42e0_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg) - 2;
 	m68k_areg(regs, srcreg) = srca;
 	MakeSR();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(srca, regs.sr & 0xff);
 	m68k_incpci(2);
@@ -16374,7 +15690,6 @@ uae_u32 REGPARAM2 op_42e8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg) + (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	MakeSR();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(srca, regs.sr & 0xff);
 	m68k_incpci(4);
@@ -16394,7 +15709,6 @@ uae_u32 REGPARAM2 op_42f0_20_ff(uae_u32 opcode)
 	m68k_incpci(2);
 	srca = x_get_disp_ea_020(m68k_areg(regs, srcreg), 0);
 	MakeSR();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(srca, regs.sr & 0xff);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -16410,7 +15724,6 @@ uae_u32 REGPARAM2 op_42f8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	MakeSR();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(srca, regs.sr & 0xff);
 	m68k_incpci(4);
@@ -16427,7 +15740,6 @@ uae_u32 REGPARAM2 op_42f9_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = get_long_020_prefetch(2);
 	MakeSR();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(srca, regs.sr & 0xff);
 	m68k_incpci(6);
@@ -16452,7 +15764,6 @@ uae_u32 REGPARAM2 op_4400_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(0)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xff) | ((dst) & 0xff);
 	m68k_incpci(2);
@@ -16478,7 +15789,6 @@ uae_u32 REGPARAM2 op_4410_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(0)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, dst);
 	m68k_incpci(2);
@@ -16505,7 +15815,6 @@ uae_u32 REGPARAM2 op_4418_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(0)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, dst);
 	m68k_incpci(2);
@@ -16532,7 +15841,6 @@ uae_u32 REGPARAM2 op_4420_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(0)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, dst);
 	m68k_incpci(2);
@@ -16558,7 +15866,6 @@ uae_u32 REGPARAM2 op_4428_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(0)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, dst);
 	m68k_incpci(4);
@@ -16585,7 +15892,6 @@ uae_u32 REGPARAM2 op_4430_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(0)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(srca, dst);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -16608,7 +15914,6 @@ uae_u32 REGPARAM2 op_4438_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(0)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, dst);
 	m68k_incpci(4);
@@ -16632,7 +15937,6 @@ uae_u32 REGPARAM2 op_4439_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(0)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(srca, dst);
 	m68k_incpci(6);
@@ -16656,7 +15960,6 @@ uae_u32 REGPARAM2 op_4440_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(0)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xffff) | ((dst) & 0xffff);
 	m68k_incpci(2);
@@ -16682,7 +15985,6 @@ uae_u32 REGPARAM2 op_4450_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(0)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(srca, dst);
 	m68k_incpci(2);
@@ -16709,7 +16011,6 @@ uae_u32 REGPARAM2 op_4458_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(0)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(srca, dst);
 	m68k_incpci(2);
@@ -16736,7 +16037,6 @@ uae_u32 REGPARAM2 op_4460_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(0)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(srca, dst);
 	m68k_incpci(2);
@@ -16762,7 +16062,6 @@ uae_u32 REGPARAM2 op_4468_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(0)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(srca, dst);
 	m68k_incpci(4);
@@ -16789,7 +16088,6 @@ uae_u32 REGPARAM2 op_4470_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(0)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(srca, dst);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -16812,7 +16110,6 @@ uae_u32 REGPARAM2 op_4478_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(0)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(srca, dst);
 	m68k_incpci(4);
@@ -16836,7 +16133,6 @@ uae_u32 REGPARAM2 op_4479_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(0)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(srca, dst);
 	m68k_incpci(6);
@@ -16860,7 +16156,6 @@ uae_u32 REGPARAM2 op_4480_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(0)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (dst);
 	m68k_incpci(2);
@@ -16886,7 +16181,6 @@ uae_u32 REGPARAM2 op_4490_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(0)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(srca, dst);
 	m68k_incpci(2);
@@ -16913,7 +16207,6 @@ uae_u32 REGPARAM2 op_4498_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(0)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(srca, dst);
 	m68k_incpci(2);
@@ -16940,7 +16233,6 @@ uae_u32 REGPARAM2 op_44a0_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(0)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(srca, dst);
 	m68k_incpci(2);
@@ -16966,7 +16258,6 @@ uae_u32 REGPARAM2 op_44a8_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(0)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(srca, dst);
 	m68k_incpci(4);
@@ -16993,7 +16284,6 @@ uae_u32 REGPARAM2 op_44b0_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(0)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(srca, dst);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -17016,7 +16306,6 @@ uae_u32 REGPARAM2 op_44b8_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(0)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(srca, dst);
 	m68k_incpci(4);
@@ -17040,7 +16329,6 @@ uae_u32 REGPARAM2 op_44b9_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(0)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(srca, dst);
 	m68k_incpci(6);
@@ -17059,7 +16347,6 @@ uae_u32 REGPARAM2 op_44c0_20_ff(uae_u32 opcode)
 	regs.sr &= 0xFF00;
 	regs.sr |= src & 0xFF;
 	MakeFromSR();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -17079,7 +16366,6 @@ uae_u32 REGPARAM2 op_44d0_20_ff(uae_u32 opcode)
 	regs.sr &= 0xFF00;
 	regs.sr |= src & 0xFF;
 	MakeFromSR();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -17100,7 +16386,6 @@ uae_u32 REGPARAM2 op_44d8_20_ff(uae_u32 opcode)
 	regs.sr &= 0xFF00;
 	regs.sr |= src & 0xFF;
 	MakeFromSR();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -17121,7 +16406,6 @@ uae_u32 REGPARAM2 op_44e0_20_ff(uae_u32 opcode)
 	regs.sr &= 0xFF00;
 	regs.sr |= src & 0xFF;
 	MakeFromSR();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -17141,7 +16425,6 @@ uae_u32 REGPARAM2 op_44e8_20_ff(uae_u32 opcode)
 	regs.sr &= 0xFF00;
 	regs.sr |= src & 0xFF;
 	MakeFromSR();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -17162,7 +16445,6 @@ uae_u32 REGPARAM2 op_44f0_20_ff(uae_u32 opcode)
 	regs.sr &= 0xFF00;
 	regs.sr |= src & 0xFF;
 	MakeFromSR();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -17179,7 +16461,6 @@ uae_u32 REGPARAM2 op_44f8_20_ff(uae_u32 opcode)
 	regs.sr &= 0xFF00;
 	regs.sr |= src & 0xFF;
 	MakeFromSR();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -17197,7 +16478,6 @@ uae_u32 REGPARAM2 op_44f9_20_ff(uae_u32 opcode)
 	regs.sr &= 0xFF00;
 	regs.sr |= src & 0xFF;
 	MakeFromSR();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -17216,7 +16496,6 @@ uae_u32 REGPARAM2 op_44fa_20_ff(uae_u32 opcode)
 	regs.sr &= 0xFF00;
 	regs.sr |= src & 0xFF;
 	MakeFromSR();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -17236,7 +16515,6 @@ uae_u32 REGPARAM2 op_44fb_20_ff(uae_u32 opcode)
 	regs.sr &= 0xFF00;
 	regs.sr |= src & 0xFF;
 	MakeFromSR();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -17251,7 +16529,6 @@ uae_u32 REGPARAM2 op_44fc_20_ff(uae_u32 opcode)
 	regs.sr &= 0xFF00;
 	regs.sr |= src & 0xFF;
 	MakeFromSR();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -17269,7 +16546,6 @@ uae_u32 REGPARAM2 op_4600_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(dst)) == 0);
 	SET_NFLG(((uae_s8)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xff) | ((dst) & 0xff);
 	m68k_incpci(2);
@@ -17290,7 +16566,6 @@ uae_u32 REGPARAM2 op_4610_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(dst)) == 0);
 	SET_NFLG(((uae_s8)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, dst);
 	m68k_incpci(2);
@@ -17312,7 +16587,6 @@ uae_u32 REGPARAM2 op_4618_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(dst)) == 0);
 	SET_NFLG(((uae_s8)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, dst);
 	m68k_incpci(2);
@@ -17334,7 +16608,6 @@ uae_u32 REGPARAM2 op_4620_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(dst)) == 0);
 	SET_NFLG(((uae_s8)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, dst);
 	m68k_incpci(2);
@@ -17355,7 +16628,6 @@ uae_u32 REGPARAM2 op_4628_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(dst)) == 0);
 	SET_NFLG(((uae_s8)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, dst);
 	m68k_incpci(4);
@@ -17377,7 +16649,6 @@ uae_u32 REGPARAM2 op_4630_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(dst)) == 0);
 	SET_NFLG(((uae_s8)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(srca, dst);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -17395,7 +16666,6 @@ uae_u32 REGPARAM2 op_4638_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(dst)) == 0);
 	SET_NFLG(((uae_s8)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, dst);
 	m68k_incpci(4);
@@ -17414,7 +16684,6 @@ uae_u32 REGPARAM2 op_4639_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(dst)) == 0);
 	SET_NFLG(((uae_s8)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(srca, dst);
 	m68k_incpci(6);
@@ -17433,7 +16702,6 @@ uae_u32 REGPARAM2 op_4640_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(dst)) == 0);
 	SET_NFLG(((uae_s16)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xffff) | ((dst) & 0xffff);
 	m68k_incpci(2);
@@ -17454,7 +16722,6 @@ uae_u32 REGPARAM2 op_4650_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(dst)) == 0);
 	SET_NFLG(((uae_s16)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(srca, dst);
 	m68k_incpci(2);
@@ -17476,7 +16743,6 @@ uae_u32 REGPARAM2 op_4658_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(dst)) == 0);
 	SET_NFLG(((uae_s16)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(srca, dst);
 	m68k_incpci(2);
@@ -17498,7 +16764,6 @@ uae_u32 REGPARAM2 op_4660_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(dst)) == 0);
 	SET_NFLG(((uae_s16)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(srca, dst);
 	m68k_incpci(2);
@@ -17519,7 +16784,6 @@ uae_u32 REGPARAM2 op_4668_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(dst)) == 0);
 	SET_NFLG(((uae_s16)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(srca, dst);
 	m68k_incpci(4);
@@ -17541,7 +16805,6 @@ uae_u32 REGPARAM2 op_4670_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(dst)) == 0);
 	SET_NFLG(((uae_s16)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(srca, dst);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -17559,7 +16822,6 @@ uae_u32 REGPARAM2 op_4678_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(dst)) == 0);
 	SET_NFLG(((uae_s16)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(srca, dst);
 	m68k_incpci(4);
@@ -17578,7 +16840,6 @@ uae_u32 REGPARAM2 op_4679_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(dst)) == 0);
 	SET_NFLG(((uae_s16)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(srca, dst);
 	m68k_incpci(6);
@@ -17597,7 +16858,6 @@ uae_u32 REGPARAM2 op_4680_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(dst)) == 0);
 	SET_NFLG(((uae_s32)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (dst);
 	m68k_incpci(2);
@@ -17618,7 +16878,6 @@ uae_u32 REGPARAM2 op_4690_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(dst)) == 0);
 	SET_NFLG(((uae_s32)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(srca, dst);
 	m68k_incpci(2);
@@ -17640,7 +16899,6 @@ uae_u32 REGPARAM2 op_4698_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(dst)) == 0);
 	SET_NFLG(((uae_s32)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(srca, dst);
 	m68k_incpci(2);
@@ -17662,7 +16920,6 @@ uae_u32 REGPARAM2 op_46a0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(dst)) == 0);
 	SET_NFLG(((uae_s32)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(srca, dst);
 	m68k_incpci(2);
@@ -17683,7 +16940,6 @@ uae_u32 REGPARAM2 op_46a8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(dst)) == 0);
 	SET_NFLG(((uae_s32)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(srca, dst);
 	m68k_incpci(4);
@@ -17705,7 +16961,6 @@ uae_u32 REGPARAM2 op_46b0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(dst)) == 0);
 	SET_NFLG(((uae_s32)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(srca, dst);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -17723,7 +16978,6 @@ uae_u32 REGPARAM2 op_46b8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(dst)) == 0);
 	SET_NFLG(((uae_s32)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(srca, dst);
 	m68k_incpci(4);
@@ -17742,7 +16996,6 @@ uae_u32 REGPARAM2 op_46b9_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(dst)) == 0);
 	SET_NFLG(((uae_s32)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(srca, dst);
 	m68k_incpci(6);
@@ -18003,7 +17256,6 @@ uae_u32 REGPARAM2 op_4800_20_ff(uae_u32 opcode)
 	SET_ZFLG(GET_ZFLG() & (((uae_s8)(newv)) == 0));
 	SET_NFLG(((uae_s8)(newv)) < 0);
 	SET_VFLG(0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(2);
@@ -18024,7 +17276,6 @@ uae_u32 REGPARAM2 op_4808_20_ff(uae_u32 opcode)
 	m68k_areg(regs, 7) = olda;
 	uae_s32 offs;
 	offs = get_long_020_prefetch(2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(olda, src);
 	m68k_areg(regs, srcreg) = (m68k_areg(regs, 7));
@@ -18058,7 +17309,6 @@ uae_u32 REGPARAM2 op_4810_20_ff(uae_u32 opcode)
 	SET_ZFLG(GET_ZFLG() & (((uae_s8)(newv)) == 0));
 	SET_NFLG(((uae_s8)(newv)) < 0);
 	SET_VFLG(0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, newv);
 	m68k_incpci(2);
@@ -18090,7 +17340,6 @@ uae_u32 REGPARAM2 op_4818_20_ff(uae_u32 opcode)
 	SET_ZFLG(GET_ZFLG() & (((uae_s8)(newv)) == 0));
 	SET_NFLG(((uae_s8)(newv)) < 0);
 	SET_VFLG(0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, newv);
 	m68k_incpci(2);
@@ -18122,7 +17371,6 @@ uae_u32 REGPARAM2 op_4820_20_ff(uae_u32 opcode)
 	SET_ZFLG(GET_ZFLG() & (((uae_s8)(newv)) == 0));
 	SET_NFLG(((uae_s8)(newv)) < 0);
 	SET_VFLG(0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, newv);
 	m68k_incpci(2);
@@ -18153,7 +17401,6 @@ uae_u32 REGPARAM2 op_4828_20_ff(uae_u32 opcode)
 	SET_ZFLG(GET_ZFLG() & (((uae_s8)(newv)) == 0));
 	SET_NFLG(((uae_s8)(newv)) < 0);
 	SET_VFLG(0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, newv);
 	m68k_incpci(4);
@@ -18185,7 +17432,6 @@ uae_u32 REGPARAM2 op_4830_20_ff(uae_u32 opcode)
 	SET_ZFLG(GET_ZFLG() & (((uae_s8)(newv)) == 0));
 	SET_NFLG(((uae_s8)(newv)) < 0);
 	SET_VFLG(0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(srca, newv);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -18213,7 +17459,6 @@ uae_u32 REGPARAM2 op_4838_20_ff(uae_u32 opcode)
 	SET_ZFLG(GET_ZFLG() & (((uae_s8)(newv)) == 0));
 	SET_NFLG(((uae_s8)(newv)) < 0);
 	SET_VFLG(0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, newv);
 	m68k_incpci(4);
@@ -18242,7 +17487,6 @@ uae_u32 REGPARAM2 op_4839_20_ff(uae_u32 opcode)
 	SET_ZFLG(GET_ZFLG() & (((uae_s8)(newv)) == 0));
 	SET_NFLG(((uae_s8)(newv)) < 0);
 	SET_VFLG(0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(srca, newv);
 	m68k_incpci(6);
@@ -18261,7 +17505,6 @@ uae_u32 REGPARAM2 op_4840_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(dst)) == 0);
 	SET_NFLG(((uae_s32)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (dst);
 	m68k_incpci(2);
@@ -18294,7 +17537,6 @@ uae_u32 REGPARAM2 op_4850_20_ff(uae_u32 opcode)
 	uaecptr dsta;
 	dsta = m68k_areg(regs, 7) - 4;
 	m68k_areg(regs, 7) = dsta;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, srca);
 	m68k_incpci(2);
@@ -18313,7 +17555,6 @@ uae_u32 REGPARAM2 op_4868_20_ff(uae_u32 opcode)
 	uaecptr dsta;
 	dsta = m68k_areg(regs, 7) - 4;
 	m68k_areg(regs, 7) = dsta;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, srca);
 	m68k_incpci(4);
@@ -18333,7 +17574,6 @@ uae_u32 REGPARAM2 op_4870_20_ff(uae_u32 opcode)
 	uaecptr dsta;
 	dsta = m68k_areg(regs, 7) - 4;
 	m68k_areg(regs, 7) = dsta;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, srca);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -18349,7 +17589,6 @@ uae_u32 REGPARAM2 op_4878_20_ff(uae_u32 opcode)
 	uaecptr dsta;
 	dsta = m68k_areg(regs, 7) - 4;
 	m68k_areg(regs, 7) = dsta;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, srca);
 	m68k_incpci(4);
@@ -18366,7 +17605,6 @@ uae_u32 REGPARAM2 op_4879_20_ff(uae_u32 opcode)
 	uaecptr dsta;
 	dsta = m68k_areg(regs, 7) - 4;
 	m68k_areg(regs, 7) = dsta;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, srca);
 	m68k_incpci(6);
@@ -18384,7 +17622,6 @@ uae_u32 REGPARAM2 op_487a_20_ff(uae_u32 opcode)
 	uaecptr dsta;
 	dsta = m68k_areg(regs, 7) - 4;
 	m68k_areg(regs, 7) = dsta;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, srca);
 	m68k_incpci(4);
@@ -18403,7 +17640,6 @@ uae_u32 REGPARAM2 op_487b_20_ff(uae_u32 opcode)
 	uaecptr dsta;
 	dsta = m68k_areg(regs, 7) - 4;
 	m68k_areg(regs, 7) = dsta;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, srca);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -18421,7 +17657,6 @@ uae_u32 REGPARAM2 op_4880_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(dst)) == 0);
 	SET_NFLG(((uae_s16)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xffff) | ((dst) & 0xffff);
 	m68k_incpci(2);
@@ -18451,7 +17686,6 @@ uae_u32 REGPARAM2 op_4890_20_ff(uae_u32 opcode)
 		srca += 2;
 		amask = movem_next[amask];
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -18487,7 +17721,6 @@ uae_u32 REGPARAM2 op_48a0_20_ff(uae_u32 opcode)
 		dmask = movem_next[dmask];
 	}
 	m68k_areg(regs, dstreg) = srca;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -18516,7 +17749,6 @@ uae_u32 REGPARAM2 op_48a8_20_ff(uae_u32 opcode)
 		srca += 2;
 		amask = movem_next[amask];
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -18546,7 +17778,6 @@ uae_u32 REGPARAM2 op_48b0_20_ff(uae_u32 opcode)
 		srca += 2;
 		amask = movem_next[amask];
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -18572,7 +17803,6 @@ uae_u32 REGPARAM2 op_48b8_20_ff(uae_u32 opcode)
 		srca += 2;
 		amask = movem_next[amask];
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -18599,7 +17829,6 @@ uae_u32 REGPARAM2 op_48b9_20_ff(uae_u32 opcode)
 		srca += 2;
 		amask = movem_next[amask];
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	m68k_incpci(8);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -18617,7 +17846,6 @@ uae_u32 REGPARAM2 op_48c0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(dst)) == 0);
 	SET_NFLG(((uae_s32)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (dst);
 	m68k_incpci(2);
@@ -18647,7 +17875,6 @@ uae_u32 REGPARAM2 op_48d0_20_ff(uae_u32 opcode)
 		srca += 4;
 		amask = movem_next[amask];
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -18683,7 +17910,6 @@ uae_u32 REGPARAM2 op_48e0_20_ff(uae_u32 opcode)
 		dmask = movem_next[dmask];
 	}
 	m68k_areg(regs, dstreg) = srca;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -18712,7 +17938,6 @@ uae_u32 REGPARAM2 op_48e8_20_ff(uae_u32 opcode)
 		srca += 4;
 		amask = movem_next[amask];
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -18742,7 +17967,6 @@ uae_u32 REGPARAM2 op_48f0_20_ff(uae_u32 opcode)
 		srca += 4;
 		amask = movem_next[amask];
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -18768,7 +17992,6 @@ uae_u32 REGPARAM2 op_48f8_20_ff(uae_u32 opcode)
 		srca += 4;
 		amask = movem_next[amask];
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -18795,7 +18018,6 @@ uae_u32 REGPARAM2 op_48f9_20_ff(uae_u32 opcode)
 		srca += 4;
 		amask = movem_next[amask];
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	m68k_incpci(8);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -18814,7 +18036,6 @@ uae_u32 REGPARAM2 op_49c0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(dst)) == 0);
 	SET_NFLG(((uae_s32)(dst)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (dst);
 	m68k_incpci(2);
@@ -18833,7 +18054,6 @@ uae_u32 REGPARAM2 op_4a00_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -18852,7 +18072,6 @@ uae_u32 REGPARAM2 op_4a10_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -18872,7 +18091,6 @@ uae_u32 REGPARAM2 op_4a18_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -18892,7 +18110,6 @@ uae_u32 REGPARAM2 op_4a20_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -18911,7 +18128,6 @@ uae_u32 REGPARAM2 op_4a28_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -18931,7 +18147,6 @@ uae_u32 REGPARAM2 op_4a30_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -18947,7 +18162,6 @@ uae_u32 REGPARAM2 op_4a38_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -18964,7 +18178,6 @@ uae_u32 REGPARAM2 op_4a39_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -18983,7 +18196,6 @@ uae_u32 REGPARAM2 op_4a3a_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19004,7 +18216,6 @@ uae_u32 REGPARAM2 op_4a3b_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -19020,7 +18231,6 @@ uae_u32 REGPARAM2 op_4a3c_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19038,7 +18248,6 @@ uae_u32 REGPARAM2 op_4a40_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19056,7 +18265,6 @@ uae_u32 REGPARAM2 op_4a48_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19076,7 +18284,6 @@ uae_u32 REGPARAM2 op_4a50_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19096,7 +18303,6 @@ uae_u32 REGPARAM2 op_4a58_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19116,7 +18322,6 @@ uae_u32 REGPARAM2 op_4a60_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19135,7 +18340,6 @@ uae_u32 REGPARAM2 op_4a68_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19155,7 +18359,6 @@ uae_u32 REGPARAM2 op_4a70_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -19171,7 +18374,6 @@ uae_u32 REGPARAM2 op_4a78_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19188,7 +18390,6 @@ uae_u32 REGPARAM2 op_4a79_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19207,7 +18408,6 @@ uae_u32 REGPARAM2 op_4a7a_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19228,7 +18428,6 @@ uae_u32 REGPARAM2 op_4a7b_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -19244,7 +18443,6 @@ uae_u32 REGPARAM2 op_4a7c_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19262,7 +18460,6 @@ uae_u32 REGPARAM2 op_4a80_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19280,7 +18477,6 @@ uae_u32 REGPARAM2 op_4a88_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19300,7 +18496,6 @@ uae_u32 REGPARAM2 op_4a90_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19320,7 +18515,6 @@ uae_u32 REGPARAM2 op_4a98_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19340,7 +18534,6 @@ uae_u32 REGPARAM2 op_4aa0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19359,7 +18552,6 @@ uae_u32 REGPARAM2 op_4aa8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19379,7 +18571,6 @@ uae_u32 REGPARAM2 op_4ab0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -19395,7 +18586,6 @@ uae_u32 REGPARAM2 op_4ab8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19412,7 +18602,6 @@ uae_u32 REGPARAM2 op_4ab9_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19431,7 +18620,6 @@ uae_u32 REGPARAM2 op_4aba_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19452,7 +18640,6 @@ uae_u32 REGPARAM2 op_4abb_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -19469,7 +18656,6 @@ uae_u32 REGPARAM2 op_4abc_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19489,7 +18675,6 @@ uae_u32 REGPARAM2 op_4ac0_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s8)(src)) < 0);
 	src |= 0x80;
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xff) | ((src) & 0xff);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19510,7 +18695,6 @@ uae_u32 REGPARAM2 op_4ad0_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s8)(src)) < 0);
 	src |= 0x80;
 	x_put_byte(srca, src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19532,7 +18716,6 @@ uae_u32 REGPARAM2 op_4ad8_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s8)(src)) < 0);
 	src |= 0x80;
 	x_put_byte(srca, src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19554,7 +18737,6 @@ uae_u32 REGPARAM2 op_4ae0_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s8)(src)) < 0);
 	src |= 0x80;
 	x_put_byte(srca, src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19575,7 +18757,6 @@ uae_u32 REGPARAM2 op_4ae8_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s8)(src)) < 0);
 	src |= 0x80;
 	x_put_byte(srca, src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19597,7 +18778,6 @@ uae_u32 REGPARAM2 op_4af0_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s8)(src)) < 0);
 	src |= 0x80;
 	x_put_byte(srca, src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -19615,7 +18795,6 @@ uae_u32 REGPARAM2 op_4af8_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s8)(src)) < 0);
 	src |= 0x80;
 	x_put_byte(srca, src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19634,7 +18813,6 @@ uae_u32 REGPARAM2 op_4af9_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s8)(src)) < 0);
 	src |= 0x80;
 	x_put_byte(srca, src);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -19658,7 +18836,6 @@ uae_u32 REGPARAM2 op_4c00_20_ff(uae_u32 opcode)
 		}
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -19684,7 +18861,6 @@ uae_u32 REGPARAM2 op_4c10_20_ff(uae_u32 opcode)
 		}
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -19711,7 +18887,6 @@ uae_u32 REGPARAM2 op_4c18_20_ff(uae_u32 opcode)
 		}
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -19738,7 +18913,6 @@ uae_u32 REGPARAM2 op_4c20_20_ff(uae_u32 opcode)
 		}
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -19764,7 +18938,6 @@ uae_u32 REGPARAM2 op_4c28_20_ff(uae_u32 opcode)
 		}
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -19790,7 +18963,6 @@ uae_u32 REGPARAM2 op_4c30_20_ff(uae_u32 opcode)
 		}
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -19814,7 +18986,6 @@ uae_u32 REGPARAM2 op_4c38_20_ff(uae_u32 opcode)
 		}
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -19838,7 +19009,6 @@ uae_u32 REGPARAM2 op_4c39_20_ff(uae_u32 opcode)
 		}
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -19864,7 +19034,6 @@ uae_u32 REGPARAM2 op_4c3a_20_ff(uae_u32 opcode)
 		}
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -19890,7 +19059,6 @@ uae_u32 REGPARAM2 op_4c3b_20_ff(uae_u32 opcode)
 		}
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -19913,7 +19081,6 @@ uae_u32 REGPARAM2 op_4c3c_20_ff(uae_u32 opcode)
 		}
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -19938,7 +19105,6 @@ uae_u32 REGPARAM2 op_4c40_20_ff(uae_u32 opcode)
 		}
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -19965,7 +19131,6 @@ uae_u32 REGPARAM2 op_4c50_20_ff(uae_u32 opcode)
 		}
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -19993,7 +19158,6 @@ uae_u32 REGPARAM2 op_4c58_20_ff(uae_u32 opcode)
 		}
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -20021,7 +19185,6 @@ uae_u32 REGPARAM2 op_4c60_20_ff(uae_u32 opcode)
 		}
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -20048,7 +19211,6 @@ uae_u32 REGPARAM2 op_4c68_20_ff(uae_u32 opcode)
 		}
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -20075,7 +19237,6 @@ uae_u32 REGPARAM2 op_4c70_20_ff(uae_u32 opcode)
 		}
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -20100,7 +19261,6 @@ uae_u32 REGPARAM2 op_4c78_20_ff(uae_u32 opcode)
 		}
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -20125,7 +19285,6 @@ uae_u32 REGPARAM2 op_4c79_20_ff(uae_u32 opcode)
 		}
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -20152,7 +19311,6 @@ uae_u32 REGPARAM2 op_4c7a_20_ff(uae_u32 opcode)
 		}
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -20179,7 +19337,6 @@ uae_u32 REGPARAM2 op_4c7b_20_ff(uae_u32 opcode)
 		}
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -20203,7 +19360,6 @@ uae_u32 REGPARAM2 op_4c7c_20_ff(uae_u32 opcode)
 		}
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -20232,7 +19388,6 @@ uae_u32 REGPARAM2 op_4c90_20_ff(uae_u32 opcode)
 		srca += 2;
 		amask = movem_next[amask];
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -20262,7 +19417,6 @@ uae_u32 REGPARAM2 op_4c98_20_ff(uae_u32 opcode)
 		amask = movem_next[amask];
 	}
 	m68k_areg(regs, dstreg) = srca;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -20291,7 +19445,6 @@ uae_u32 REGPARAM2 op_4ca8_20_ff(uae_u32 opcode)
 		srca += 2;
 		amask = movem_next[amask];
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -20321,7 +19474,6 @@ uae_u32 REGPARAM2 op_4cb0_20_ff(uae_u32 opcode)
 		srca += 2;
 		amask = movem_next[amask];
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -20347,7 +19499,6 @@ uae_u32 REGPARAM2 op_4cb8_20_ff(uae_u32 opcode)
 		srca += 2;
 		amask = movem_next[amask];
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -20374,7 +19525,6 @@ uae_u32 REGPARAM2 op_4cb9_20_ff(uae_u32 opcode)
 		srca += 2;
 		amask = movem_next[amask];
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	m68k_incpci(8);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -20403,7 +19553,6 @@ uae_u32 REGPARAM2 op_4cba_20_ff(uae_u32 opcode)
 		srca += 2;
 		amask = movem_next[amask];
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -20433,7 +19582,6 @@ uae_u32 REGPARAM2 op_4cbb_20_ff(uae_u32 opcode)
 		srca += 2;
 		amask = movem_next[amask];
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -20461,7 +19609,6 @@ uae_u32 REGPARAM2 op_4cd0_20_ff(uae_u32 opcode)
 		srca += 4;
 		amask = movem_next[amask];
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -20491,7 +19638,6 @@ uae_u32 REGPARAM2 op_4cd8_20_ff(uae_u32 opcode)
 		amask = movem_next[amask];
 	}
 	m68k_areg(regs, dstreg) = srca;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -20520,7 +19666,6 @@ uae_u32 REGPARAM2 op_4ce8_20_ff(uae_u32 opcode)
 		srca += 4;
 		amask = movem_next[amask];
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -20550,7 +19695,6 @@ uae_u32 REGPARAM2 op_4cf0_20_ff(uae_u32 opcode)
 		srca += 4;
 		amask = movem_next[amask];
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -20576,7 +19720,6 @@ uae_u32 REGPARAM2 op_4cf8_20_ff(uae_u32 opcode)
 		srca += 4;
 		amask = movem_next[amask];
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -20603,7 +19746,6 @@ uae_u32 REGPARAM2 op_4cf9_20_ff(uae_u32 opcode)
 		srca += 4;
 		amask = movem_next[amask];
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	m68k_incpci(8);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -20632,7 +19774,6 @@ uae_u32 REGPARAM2 op_4cfa_20_ff(uae_u32 opcode)
 		srca += 4;
 		amask = movem_next[amask];
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -20662,7 +19803,6 @@ uae_u32 REGPARAM2 op_4cfb_20_ff(uae_u32 opcode)
 		srca += 4;
 		amask = movem_next[amask];
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -20693,7 +19833,6 @@ uae_u32 REGPARAM2 op_4e50_20_ff(uae_u32 opcode)
 	olda = m68k_areg(regs, 7) - 4;
 	m68k_areg(regs, 7) = olda;
 	uae_s16 offs = get_word_020_prefetch(2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(olda, src);
 	m68k_areg(regs, srcreg) = (m68k_areg(regs, 7));
@@ -20713,7 +19852,6 @@ uae_u32 REGPARAM2 op_4e58_20_ff(uae_u32 opcode)
 	uae_u32 olda = src;
 	uae_s32 old = x_get_long(olda);
 	m68k_areg(regs, 7) = src + 4;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, srcreg) = (old);
 	m68k_incpci(2);
@@ -20733,7 +19871,6 @@ uae_u32 REGPARAM2 op_4e60_20_ff(uae_u32 opcode)
 	}
 	uae_s32 src = m68k_areg(regs, srcreg);
 	regs.usp = src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -20750,7 +19887,6 @@ uae_u32 REGPARAM2 op_4e68_20_ff(uae_u32 opcode)
 		Exception(8);
 		return 0;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, srcreg) = (regs.usp);
 	m68k_incpci(2);
@@ -20766,8 +19902,10 @@ uae_u32 REGPARAM2 op_4e70_20_ff(uae_u32 opcode)
 		Exception(8);
 		return 0;
 	}
-	cpureset();
-	ipl_fetch();
+	bool r = cpureset();
+	if (r) {
+		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
+	}
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -20778,7 +19916,6 @@ uae_u32 REGPARAM2 op_4e70_20_ff(uae_u32 opcode)
 uae_u32 REGPARAM2 op_4e71_20_ff(uae_u32 opcode)
 {
 	int count_cycles = 0;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -20908,7 +20045,6 @@ uae_u32 REGPARAM2 op_4e76_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -20954,7 +20090,6 @@ uae_u32 REGPARAM2 op_4e7a_20_ff(uae_u32 opcode)
 	if (!m68k_movec2(src & 0xFFF, regp)) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -20973,7 +20108,6 @@ uae_u32 REGPARAM2 op_4e7b_20_ff(uae_u32 opcode)
 	if (!m68k_move2c(src & 0xFFF, regp)) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -21304,7 +20438,6 @@ uae_u32 REGPARAM2 op_5000_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(2);
@@ -21332,7 +20465,6 @@ uae_u32 REGPARAM2 op_5010_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, newv);
 	m68k_incpci(2);
@@ -21361,7 +20493,6 @@ uae_u32 REGPARAM2 op_5018_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, newv);
 	m68k_incpci(2);
@@ -21390,7 +20521,6 @@ uae_u32 REGPARAM2 op_5020_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, newv);
 	m68k_incpci(2);
@@ -21418,7 +20548,6 @@ uae_u32 REGPARAM2 op_5028_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, newv);
 	m68k_incpci(4);
@@ -21447,7 +20576,6 @@ uae_u32 REGPARAM2 op_5030_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, newv);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -21473,7 +20601,6 @@ uae_u32 REGPARAM2 op_5038_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, newv);
 	m68k_incpci(4);
@@ -21500,7 +20627,6 @@ uae_u32 REGPARAM2 op_5039_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, newv);
 	m68k_incpci(6);
@@ -21526,7 +20652,6 @@ uae_u32 REGPARAM2 op_5040_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	m68k_incpci(2);
@@ -21544,7 +20669,6 @@ uae_u32 REGPARAM2 op_5048_20_ff(uae_u32 opcode)
 	uae_u32 src = srcreg;
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst + src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -21572,7 +20696,6 @@ uae_u32 REGPARAM2 op_5050_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, newv);
 	m68k_incpci(2);
@@ -21601,7 +20724,6 @@ uae_u32 REGPARAM2 op_5058_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, newv);
 	m68k_incpci(2);
@@ -21630,7 +20752,6 @@ uae_u32 REGPARAM2 op_5060_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, newv);
 	m68k_incpci(2);
@@ -21658,7 +20779,6 @@ uae_u32 REGPARAM2 op_5068_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, newv);
 	m68k_incpci(4);
@@ -21687,7 +20807,6 @@ uae_u32 REGPARAM2 op_5070_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, newv);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -21713,7 +20832,6 @@ uae_u32 REGPARAM2 op_5078_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, newv);
 	m68k_incpci(4);
@@ -21740,7 +20858,6 @@ uae_u32 REGPARAM2 op_5079_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, newv);
 	m68k_incpci(6);
@@ -21766,7 +20883,6 @@ uae_u32 REGPARAM2 op_5080_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -21784,7 +20900,6 @@ uae_u32 REGPARAM2 op_5088_20_ff(uae_u32 opcode)
 	uae_u32 src = srcreg;
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst + src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -21812,7 +20927,6 @@ uae_u32 REGPARAM2 op_5090_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, newv);
 	m68k_incpci(2);
@@ -21841,7 +20955,6 @@ uae_u32 REGPARAM2 op_5098_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, newv);
 	m68k_incpci(2);
@@ -21870,7 +20983,6 @@ uae_u32 REGPARAM2 op_50a0_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, newv);
 	m68k_incpci(2);
@@ -21898,7 +21010,6 @@ uae_u32 REGPARAM2 op_50a8_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, newv);
 	m68k_incpci(4);
@@ -21927,7 +21038,6 @@ uae_u32 REGPARAM2 op_50b0_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, newv);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -21953,7 +21063,6 @@ uae_u32 REGPARAM2 op_50b8_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, newv);
 	m68k_incpci(4);
@@ -21980,7 +21089,6 @@ uae_u32 REGPARAM2 op_50b9_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, newv);
 	m68k_incpci(6);
@@ -21995,7 +21103,6 @@ uae_u32 REGPARAM2 op_50c0_20_ff(uae_u32 opcode)
 	uae_u32 real_opcode = opcode;
 	uae_u32 srcreg = (real_opcode & 7);
 	int val = cctrue(0) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xff) | ((val) & 0xff);
 	count_cycles += ((val ? 2 : 0)) * CYCLE_UNIT / 2;
@@ -22027,7 +21134,6 @@ uae_u32 REGPARAM2 op_50c8_20_ff(uae_u32 opcode)
 		count_cycles += 6 * CYCLE_UNIT / 2;
 	}
 	m68k_setpci_j(oldpc + 4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -22042,7 +21148,6 @@ uae_u32 REGPARAM2 op_50d0_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg);
 	int val = cctrue(0) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -22060,7 +21165,6 @@ uae_u32 REGPARAM2 op_50d8_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg);
 	m68k_areg(regs, srcreg) += areg_byteinc[srcreg];
 	int val = cctrue(0) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -22078,7 +21182,6 @@ uae_u32 REGPARAM2 op_50e0_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg) - areg_byteinc[srcreg];
 	m68k_areg(regs, srcreg) = srca;
 	int val = cctrue(0) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -22095,7 +21198,6 @@ uae_u32 REGPARAM2 op_50e8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg) + (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(0) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -22113,7 +21215,6 @@ uae_u32 REGPARAM2 op_50f0_20_ff(uae_u32 opcode)
 	m68k_incpci(2);
 	srca = x_get_disp_ea_020(m68k_areg(regs, srcreg), 0);
 	int val = cctrue(0) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(srca, val);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -22127,7 +21228,6 @@ uae_u32 REGPARAM2 op_50f8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(0) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -22142,7 +21242,6 @@ uae_u32 REGPARAM2 op_50f9_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = get_long_020_prefetch(2);
 	int val = cctrue(0) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(srca, val);
 	m68k_incpci(6);
@@ -22161,7 +21260,6 @@ uae_u32 REGPARAM2 op_50fa_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -22180,7 +21278,6 @@ uae_u32 REGPARAM2 op_50fb_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -22197,7 +21294,6 @@ uae_u32 REGPARAM2 op_50fc_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -22222,7 +21318,6 @@ uae_u32 REGPARAM2 op_5100_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(2);
@@ -22250,7 +21345,6 @@ uae_u32 REGPARAM2 op_5110_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, newv);
 	m68k_incpci(2);
@@ -22279,7 +21373,6 @@ uae_u32 REGPARAM2 op_5118_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, newv);
 	m68k_incpci(2);
@@ -22308,7 +21401,6 @@ uae_u32 REGPARAM2 op_5120_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, newv);
 	m68k_incpci(2);
@@ -22336,7 +21428,6 @@ uae_u32 REGPARAM2 op_5128_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, newv);
 	m68k_incpci(4);
@@ -22365,7 +21456,6 @@ uae_u32 REGPARAM2 op_5130_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, newv);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -22391,7 +21481,6 @@ uae_u32 REGPARAM2 op_5138_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, newv);
 	m68k_incpci(4);
@@ -22418,7 +21507,6 @@ uae_u32 REGPARAM2 op_5139_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, newv);
 	m68k_incpci(6);
@@ -22444,7 +21532,6 @@ uae_u32 REGPARAM2 op_5140_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	m68k_incpci(2);
@@ -22462,7 +21549,6 @@ uae_u32 REGPARAM2 op_5148_20_ff(uae_u32 opcode)
 	uae_u32 src = srcreg;
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst - src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -22490,7 +21576,6 @@ uae_u32 REGPARAM2 op_5150_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, newv);
 	m68k_incpci(2);
@@ -22519,7 +21604,6 @@ uae_u32 REGPARAM2 op_5158_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, newv);
 	m68k_incpci(2);
@@ -22548,7 +21632,6 @@ uae_u32 REGPARAM2 op_5160_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, newv);
 	m68k_incpci(2);
@@ -22576,7 +21659,6 @@ uae_u32 REGPARAM2 op_5168_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, newv);
 	m68k_incpci(4);
@@ -22605,7 +21687,6 @@ uae_u32 REGPARAM2 op_5170_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, newv);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -22631,7 +21712,6 @@ uae_u32 REGPARAM2 op_5178_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, newv);
 	m68k_incpci(4);
@@ -22658,7 +21738,6 @@ uae_u32 REGPARAM2 op_5179_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, newv);
 	m68k_incpci(6);
@@ -22684,7 +21763,6 @@ uae_u32 REGPARAM2 op_5180_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -22702,7 +21780,6 @@ uae_u32 REGPARAM2 op_5188_20_ff(uae_u32 opcode)
 	uae_u32 src = srcreg;
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst - src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -22730,7 +21807,6 @@ uae_u32 REGPARAM2 op_5190_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, newv);
 	m68k_incpci(2);
@@ -22759,7 +21835,6 @@ uae_u32 REGPARAM2 op_5198_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, newv);
 	m68k_incpci(2);
@@ -22788,7 +21863,6 @@ uae_u32 REGPARAM2 op_51a0_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, newv);
 	m68k_incpci(2);
@@ -22816,7 +21890,6 @@ uae_u32 REGPARAM2 op_51a8_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, newv);
 	m68k_incpci(4);
@@ -22845,7 +21918,6 @@ uae_u32 REGPARAM2 op_51b0_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, newv);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -22871,7 +21943,6 @@ uae_u32 REGPARAM2 op_51b8_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, newv);
 	m68k_incpci(4);
@@ -22898,7 +21969,6 @@ uae_u32 REGPARAM2 op_51b9_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, newv);
 	m68k_incpci(6);
@@ -22913,7 +21983,6 @@ uae_u32 REGPARAM2 op_51c0_20_ff(uae_u32 opcode)
 	uae_u32 real_opcode = opcode;
 	uae_u32 srcreg = (real_opcode & 7);
 	int val = cctrue(1) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xff) | ((val) & 0xff);
 	count_cycles += ((val ? 2 : 0)) * CYCLE_UNIT / 2;
@@ -22945,7 +22014,6 @@ uae_u32 REGPARAM2 op_51c8_20_ff(uae_u32 opcode)
 		count_cycles += 6 * CYCLE_UNIT / 2;
 	}
 	m68k_setpci_j(oldpc + 4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -22960,7 +22028,6 @@ uae_u32 REGPARAM2 op_51d0_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg);
 	int val = cctrue(1) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -22978,7 +22045,6 @@ uae_u32 REGPARAM2 op_51d8_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg);
 	m68k_areg(regs, srcreg) += areg_byteinc[srcreg];
 	int val = cctrue(1) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -22996,7 +22062,6 @@ uae_u32 REGPARAM2 op_51e0_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg) - areg_byteinc[srcreg];
 	m68k_areg(regs, srcreg) = srca;
 	int val = cctrue(1) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -23013,7 +22078,6 @@ uae_u32 REGPARAM2 op_51e8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg) + (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(1) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -23031,7 +22095,6 @@ uae_u32 REGPARAM2 op_51f0_20_ff(uae_u32 opcode)
 	m68k_incpci(2);
 	srca = x_get_disp_ea_020(m68k_areg(regs, srcreg), 0);
 	int val = cctrue(1) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(srca, val);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -23045,7 +22108,6 @@ uae_u32 REGPARAM2 op_51f8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(1) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -23060,7 +22122,6 @@ uae_u32 REGPARAM2 op_51f9_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = get_long_020_prefetch(2);
 	int val = cctrue(1) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(srca, val);
 	m68k_incpci(6);
@@ -23079,7 +22140,6 @@ uae_u32 REGPARAM2 op_51fa_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -23098,7 +22158,6 @@ uae_u32 REGPARAM2 op_51fb_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -23115,7 +22174,6 @@ uae_u32 REGPARAM2 op_51fc_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -23129,7 +22187,6 @@ uae_u32 REGPARAM2 op_52c0_20_ff(uae_u32 opcode)
 	uae_u32 real_opcode = opcode;
 	uae_u32 srcreg = (real_opcode & 7);
 	int val = cctrue(2) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xff) | ((val) & 0xff);
 	count_cycles += ((val ? 2 : 0)) * CYCLE_UNIT / 2;
@@ -23161,7 +22218,6 @@ uae_u32 REGPARAM2 op_52c8_20_ff(uae_u32 opcode)
 		count_cycles += 6 * CYCLE_UNIT / 2;
 	}
 	m68k_setpci_j(oldpc + 4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -23176,7 +22232,6 @@ uae_u32 REGPARAM2 op_52d0_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg);
 	int val = cctrue(2) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -23194,7 +22249,6 @@ uae_u32 REGPARAM2 op_52d8_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg);
 	m68k_areg(regs, srcreg) += areg_byteinc[srcreg];
 	int val = cctrue(2) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -23212,7 +22266,6 @@ uae_u32 REGPARAM2 op_52e0_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg) - areg_byteinc[srcreg];
 	m68k_areg(regs, srcreg) = srca;
 	int val = cctrue(2) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -23229,7 +22282,6 @@ uae_u32 REGPARAM2 op_52e8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg) + (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(2) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -23247,7 +22299,6 @@ uae_u32 REGPARAM2 op_52f0_20_ff(uae_u32 opcode)
 	m68k_incpci(2);
 	srca = x_get_disp_ea_020(m68k_areg(regs, srcreg), 0);
 	int val = cctrue(2) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(srca, val);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -23261,7 +22312,6 @@ uae_u32 REGPARAM2 op_52f8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(2) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -23276,7 +22326,6 @@ uae_u32 REGPARAM2 op_52f9_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = get_long_020_prefetch(2);
 	int val = cctrue(2) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(srca, val);
 	m68k_incpci(6);
@@ -23295,7 +22344,6 @@ uae_u32 REGPARAM2 op_52fa_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -23314,7 +22362,6 @@ uae_u32 REGPARAM2 op_52fb_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -23331,7 +22378,6 @@ uae_u32 REGPARAM2 op_52fc_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -23345,7 +22391,6 @@ uae_u32 REGPARAM2 op_53c0_20_ff(uae_u32 opcode)
 	uae_u32 real_opcode = opcode;
 	uae_u32 srcreg = (real_opcode & 7);
 	int val = cctrue(3) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xff) | ((val) & 0xff);
 	count_cycles += ((val ? 2 : 0)) * CYCLE_UNIT / 2;
@@ -23377,7 +22422,6 @@ uae_u32 REGPARAM2 op_53c8_20_ff(uae_u32 opcode)
 		count_cycles += 6 * CYCLE_UNIT / 2;
 	}
 	m68k_setpci_j(oldpc + 4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -23392,7 +22436,6 @@ uae_u32 REGPARAM2 op_53d0_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg);
 	int val = cctrue(3) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -23410,7 +22453,6 @@ uae_u32 REGPARAM2 op_53d8_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg);
 	m68k_areg(regs, srcreg) += areg_byteinc[srcreg];
 	int val = cctrue(3) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -23428,7 +22470,6 @@ uae_u32 REGPARAM2 op_53e0_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg) - areg_byteinc[srcreg];
 	m68k_areg(regs, srcreg) = srca;
 	int val = cctrue(3) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -23445,7 +22486,6 @@ uae_u32 REGPARAM2 op_53e8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg) + (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(3) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -23463,7 +22503,6 @@ uae_u32 REGPARAM2 op_53f0_20_ff(uae_u32 opcode)
 	m68k_incpci(2);
 	srca = x_get_disp_ea_020(m68k_areg(regs, srcreg), 0);
 	int val = cctrue(3) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(srca, val);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -23477,7 +22516,6 @@ uae_u32 REGPARAM2 op_53f8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(3) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -23492,7 +22530,6 @@ uae_u32 REGPARAM2 op_53f9_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = get_long_020_prefetch(2);
 	int val = cctrue(3) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(srca, val);
 	m68k_incpci(6);
@@ -23511,7 +22548,6 @@ uae_u32 REGPARAM2 op_53fa_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -23530,7 +22566,6 @@ uae_u32 REGPARAM2 op_53fb_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -23547,7 +22582,6 @@ uae_u32 REGPARAM2 op_53fc_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -23561,7 +22595,6 @@ uae_u32 REGPARAM2 op_54c0_20_ff(uae_u32 opcode)
 	uae_u32 real_opcode = opcode;
 	uae_u32 srcreg = (real_opcode & 7);
 	int val = cctrue(4) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xff) | ((val) & 0xff);
 	count_cycles += ((val ? 2 : 0)) * CYCLE_UNIT / 2;
@@ -23593,7 +22626,6 @@ uae_u32 REGPARAM2 op_54c8_20_ff(uae_u32 opcode)
 		count_cycles += 6 * CYCLE_UNIT / 2;
 	}
 	m68k_setpci_j(oldpc + 4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -23608,7 +22640,6 @@ uae_u32 REGPARAM2 op_54d0_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg);
 	int val = cctrue(4) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -23626,7 +22657,6 @@ uae_u32 REGPARAM2 op_54d8_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg);
 	m68k_areg(regs, srcreg) += areg_byteinc[srcreg];
 	int val = cctrue(4) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -23644,7 +22674,6 @@ uae_u32 REGPARAM2 op_54e0_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg) - areg_byteinc[srcreg];
 	m68k_areg(regs, srcreg) = srca;
 	int val = cctrue(4) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -23661,7 +22690,6 @@ uae_u32 REGPARAM2 op_54e8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg) + (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(4) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -23679,7 +22707,6 @@ uae_u32 REGPARAM2 op_54f0_20_ff(uae_u32 opcode)
 	m68k_incpci(2);
 	srca = x_get_disp_ea_020(m68k_areg(regs, srcreg), 0);
 	int val = cctrue(4) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(srca, val);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -23693,7 +22720,6 @@ uae_u32 REGPARAM2 op_54f8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(4) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -23708,7 +22734,6 @@ uae_u32 REGPARAM2 op_54f9_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = get_long_020_prefetch(2);
 	int val = cctrue(4) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(srca, val);
 	m68k_incpci(6);
@@ -23727,7 +22752,6 @@ uae_u32 REGPARAM2 op_54fa_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -23746,7 +22770,6 @@ uae_u32 REGPARAM2 op_54fb_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -23763,7 +22786,6 @@ uae_u32 REGPARAM2 op_54fc_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -23777,7 +22799,6 @@ uae_u32 REGPARAM2 op_55c0_20_ff(uae_u32 opcode)
 	uae_u32 real_opcode = opcode;
 	uae_u32 srcreg = (real_opcode & 7);
 	int val = cctrue(5) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xff) | ((val) & 0xff);
 	count_cycles += ((val ? 2 : 0)) * CYCLE_UNIT / 2;
@@ -23809,7 +22830,6 @@ uae_u32 REGPARAM2 op_55c8_20_ff(uae_u32 opcode)
 		count_cycles += 6 * CYCLE_UNIT / 2;
 	}
 	m68k_setpci_j(oldpc + 4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -23824,7 +22844,6 @@ uae_u32 REGPARAM2 op_55d0_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg);
 	int val = cctrue(5) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -23842,7 +22861,6 @@ uae_u32 REGPARAM2 op_55d8_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg);
 	m68k_areg(regs, srcreg) += areg_byteinc[srcreg];
 	int val = cctrue(5) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -23860,7 +22878,6 @@ uae_u32 REGPARAM2 op_55e0_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg) - areg_byteinc[srcreg];
 	m68k_areg(regs, srcreg) = srca;
 	int val = cctrue(5) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -23877,7 +22894,6 @@ uae_u32 REGPARAM2 op_55e8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg) + (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(5) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -23895,7 +22911,6 @@ uae_u32 REGPARAM2 op_55f0_20_ff(uae_u32 opcode)
 	m68k_incpci(2);
 	srca = x_get_disp_ea_020(m68k_areg(regs, srcreg), 0);
 	int val = cctrue(5) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(srca, val);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -23909,7 +22924,6 @@ uae_u32 REGPARAM2 op_55f8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(5) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -23924,7 +22938,6 @@ uae_u32 REGPARAM2 op_55f9_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = get_long_020_prefetch(2);
 	int val = cctrue(5) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(srca, val);
 	m68k_incpci(6);
@@ -23943,7 +22956,6 @@ uae_u32 REGPARAM2 op_55fa_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -23962,7 +22974,6 @@ uae_u32 REGPARAM2 op_55fb_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -23979,7 +22990,6 @@ uae_u32 REGPARAM2 op_55fc_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -23993,7 +23003,6 @@ uae_u32 REGPARAM2 op_56c0_20_ff(uae_u32 opcode)
 	uae_u32 real_opcode = opcode;
 	uae_u32 srcreg = (real_opcode & 7);
 	int val = cctrue(6) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xff) | ((val) & 0xff);
 	count_cycles += ((val ? 2 : 0)) * CYCLE_UNIT / 2;
@@ -24025,7 +23034,6 @@ uae_u32 REGPARAM2 op_56c8_20_ff(uae_u32 opcode)
 		count_cycles += 6 * CYCLE_UNIT / 2;
 	}
 	m68k_setpci_j(oldpc + 4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -24040,7 +23048,6 @@ uae_u32 REGPARAM2 op_56d0_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg);
 	int val = cctrue(6) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -24058,7 +23065,6 @@ uae_u32 REGPARAM2 op_56d8_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg);
 	m68k_areg(regs, srcreg) += areg_byteinc[srcreg];
 	int val = cctrue(6) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -24076,7 +23082,6 @@ uae_u32 REGPARAM2 op_56e0_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg) - areg_byteinc[srcreg];
 	m68k_areg(regs, srcreg) = srca;
 	int val = cctrue(6) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -24093,7 +23098,6 @@ uae_u32 REGPARAM2 op_56e8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg) + (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(6) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -24111,7 +23115,6 @@ uae_u32 REGPARAM2 op_56f0_20_ff(uae_u32 opcode)
 	m68k_incpci(2);
 	srca = x_get_disp_ea_020(m68k_areg(regs, srcreg), 0);
 	int val = cctrue(6) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(srca, val);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -24125,7 +23128,6 @@ uae_u32 REGPARAM2 op_56f8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(6) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -24140,7 +23142,6 @@ uae_u32 REGPARAM2 op_56f9_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = get_long_020_prefetch(2);
 	int val = cctrue(6) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(srca, val);
 	m68k_incpci(6);
@@ -24159,7 +23160,6 @@ uae_u32 REGPARAM2 op_56fa_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -24178,7 +23178,6 @@ uae_u32 REGPARAM2 op_56fb_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -24195,7 +23194,6 @@ uae_u32 REGPARAM2 op_56fc_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -24209,7 +23207,6 @@ uae_u32 REGPARAM2 op_57c0_20_ff(uae_u32 opcode)
 	uae_u32 real_opcode = opcode;
 	uae_u32 srcreg = (real_opcode & 7);
 	int val = cctrue(7) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xff) | ((val) & 0xff);
 	count_cycles += ((val ? 2 : 0)) * CYCLE_UNIT / 2;
@@ -24241,7 +23238,6 @@ uae_u32 REGPARAM2 op_57c8_20_ff(uae_u32 opcode)
 		count_cycles += 6 * CYCLE_UNIT / 2;
 	}
 	m68k_setpci_j(oldpc + 4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -24256,7 +23252,6 @@ uae_u32 REGPARAM2 op_57d0_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg);
 	int val = cctrue(7) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -24274,7 +23269,6 @@ uae_u32 REGPARAM2 op_57d8_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg);
 	m68k_areg(regs, srcreg) += areg_byteinc[srcreg];
 	int val = cctrue(7) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -24292,7 +23286,6 @@ uae_u32 REGPARAM2 op_57e0_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg) - areg_byteinc[srcreg];
 	m68k_areg(regs, srcreg) = srca;
 	int val = cctrue(7) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -24309,7 +23302,6 @@ uae_u32 REGPARAM2 op_57e8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg) + (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(7) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -24327,7 +23319,6 @@ uae_u32 REGPARAM2 op_57f0_20_ff(uae_u32 opcode)
 	m68k_incpci(2);
 	srca = x_get_disp_ea_020(m68k_areg(regs, srcreg), 0);
 	int val = cctrue(7) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(srca, val);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -24341,7 +23332,6 @@ uae_u32 REGPARAM2 op_57f8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(7) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -24356,7 +23346,6 @@ uae_u32 REGPARAM2 op_57f9_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = get_long_020_prefetch(2);
 	int val = cctrue(7) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(srca, val);
 	m68k_incpci(6);
@@ -24375,7 +23364,6 @@ uae_u32 REGPARAM2 op_57fa_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -24394,7 +23382,6 @@ uae_u32 REGPARAM2 op_57fb_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -24411,7 +23398,6 @@ uae_u32 REGPARAM2 op_57fc_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -24425,7 +23411,6 @@ uae_u32 REGPARAM2 op_58c0_20_ff(uae_u32 opcode)
 	uae_u32 real_opcode = opcode;
 	uae_u32 srcreg = (real_opcode & 7);
 	int val = cctrue(8) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xff) | ((val) & 0xff);
 	count_cycles += ((val ? 2 : 0)) * CYCLE_UNIT / 2;
@@ -24457,7 +23442,6 @@ uae_u32 REGPARAM2 op_58c8_20_ff(uae_u32 opcode)
 		count_cycles += 6 * CYCLE_UNIT / 2;
 	}
 	m68k_setpci_j(oldpc + 4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -24472,7 +23456,6 @@ uae_u32 REGPARAM2 op_58d0_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg);
 	int val = cctrue(8) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -24490,7 +23473,6 @@ uae_u32 REGPARAM2 op_58d8_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg);
 	m68k_areg(regs, srcreg) += areg_byteinc[srcreg];
 	int val = cctrue(8) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -24508,7 +23490,6 @@ uae_u32 REGPARAM2 op_58e0_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg) - areg_byteinc[srcreg];
 	m68k_areg(regs, srcreg) = srca;
 	int val = cctrue(8) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -24525,7 +23506,6 @@ uae_u32 REGPARAM2 op_58e8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg) + (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(8) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -24543,7 +23523,6 @@ uae_u32 REGPARAM2 op_58f0_20_ff(uae_u32 opcode)
 	m68k_incpci(2);
 	srca = x_get_disp_ea_020(m68k_areg(regs, srcreg), 0);
 	int val = cctrue(8) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(srca, val);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -24557,7 +23536,6 @@ uae_u32 REGPARAM2 op_58f8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(8) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -24572,7 +23550,6 @@ uae_u32 REGPARAM2 op_58f9_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = get_long_020_prefetch(2);
 	int val = cctrue(8) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(srca, val);
 	m68k_incpci(6);
@@ -24591,7 +23568,6 @@ uae_u32 REGPARAM2 op_58fa_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -24610,7 +23586,6 @@ uae_u32 REGPARAM2 op_58fb_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -24627,7 +23602,6 @@ uae_u32 REGPARAM2 op_58fc_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -24641,7 +23615,6 @@ uae_u32 REGPARAM2 op_59c0_20_ff(uae_u32 opcode)
 	uae_u32 real_opcode = opcode;
 	uae_u32 srcreg = (real_opcode & 7);
 	int val = cctrue(9) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xff) | ((val) & 0xff);
 	count_cycles += ((val ? 2 : 0)) * CYCLE_UNIT / 2;
@@ -24673,7 +23646,6 @@ uae_u32 REGPARAM2 op_59c8_20_ff(uae_u32 opcode)
 		count_cycles += 6 * CYCLE_UNIT / 2;
 	}
 	m68k_setpci_j(oldpc + 4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -24688,7 +23660,6 @@ uae_u32 REGPARAM2 op_59d0_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg);
 	int val = cctrue(9) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -24706,7 +23677,6 @@ uae_u32 REGPARAM2 op_59d8_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg);
 	m68k_areg(regs, srcreg) += areg_byteinc[srcreg];
 	int val = cctrue(9) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -24724,7 +23694,6 @@ uae_u32 REGPARAM2 op_59e0_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg) - areg_byteinc[srcreg];
 	m68k_areg(regs, srcreg) = srca;
 	int val = cctrue(9) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -24741,7 +23710,6 @@ uae_u32 REGPARAM2 op_59e8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg) + (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(9) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -24759,7 +23727,6 @@ uae_u32 REGPARAM2 op_59f0_20_ff(uae_u32 opcode)
 	m68k_incpci(2);
 	srca = x_get_disp_ea_020(m68k_areg(regs, srcreg), 0);
 	int val = cctrue(9) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(srca, val);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -24773,7 +23740,6 @@ uae_u32 REGPARAM2 op_59f8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(9) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -24788,7 +23754,6 @@ uae_u32 REGPARAM2 op_59f9_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = get_long_020_prefetch(2);
 	int val = cctrue(9) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(srca, val);
 	m68k_incpci(6);
@@ -24807,7 +23772,6 @@ uae_u32 REGPARAM2 op_59fa_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -24826,7 +23790,6 @@ uae_u32 REGPARAM2 op_59fb_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -24843,7 +23806,6 @@ uae_u32 REGPARAM2 op_59fc_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -24857,7 +23819,6 @@ uae_u32 REGPARAM2 op_5ac0_20_ff(uae_u32 opcode)
 	uae_u32 real_opcode = opcode;
 	uae_u32 srcreg = (real_opcode & 7);
 	int val = cctrue(10) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xff) | ((val) & 0xff);
 	count_cycles += ((val ? 2 : 0)) * CYCLE_UNIT / 2;
@@ -24889,7 +23850,6 @@ uae_u32 REGPARAM2 op_5ac8_20_ff(uae_u32 opcode)
 		count_cycles += 6 * CYCLE_UNIT / 2;
 	}
 	m68k_setpci_j(oldpc + 4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -24904,7 +23864,6 @@ uae_u32 REGPARAM2 op_5ad0_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg);
 	int val = cctrue(10) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -24922,7 +23881,6 @@ uae_u32 REGPARAM2 op_5ad8_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg);
 	m68k_areg(regs, srcreg) += areg_byteinc[srcreg];
 	int val = cctrue(10) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -24940,7 +23898,6 @@ uae_u32 REGPARAM2 op_5ae0_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg) - areg_byteinc[srcreg];
 	m68k_areg(regs, srcreg) = srca;
 	int val = cctrue(10) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -24957,7 +23914,6 @@ uae_u32 REGPARAM2 op_5ae8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg) + (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(10) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -24975,7 +23931,6 @@ uae_u32 REGPARAM2 op_5af0_20_ff(uae_u32 opcode)
 	m68k_incpci(2);
 	srca = x_get_disp_ea_020(m68k_areg(regs, srcreg), 0);
 	int val = cctrue(10) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(srca, val);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -24989,7 +23944,6 @@ uae_u32 REGPARAM2 op_5af8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(10) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -25004,7 +23958,6 @@ uae_u32 REGPARAM2 op_5af9_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = get_long_020_prefetch(2);
 	int val = cctrue(10) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(srca, val);
 	m68k_incpci(6);
@@ -25023,7 +23976,6 @@ uae_u32 REGPARAM2 op_5afa_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -25042,7 +23994,6 @@ uae_u32 REGPARAM2 op_5afb_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -25059,7 +24010,6 @@ uae_u32 REGPARAM2 op_5afc_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -25073,7 +24023,6 @@ uae_u32 REGPARAM2 op_5bc0_20_ff(uae_u32 opcode)
 	uae_u32 real_opcode = opcode;
 	uae_u32 srcreg = (real_opcode & 7);
 	int val = cctrue(11) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xff) | ((val) & 0xff);
 	count_cycles += ((val ? 2 : 0)) * CYCLE_UNIT / 2;
@@ -25105,7 +24054,6 @@ uae_u32 REGPARAM2 op_5bc8_20_ff(uae_u32 opcode)
 		count_cycles += 6 * CYCLE_UNIT / 2;
 	}
 	m68k_setpci_j(oldpc + 4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -25120,7 +24068,6 @@ uae_u32 REGPARAM2 op_5bd0_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg);
 	int val = cctrue(11) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -25138,7 +24085,6 @@ uae_u32 REGPARAM2 op_5bd8_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg);
 	m68k_areg(regs, srcreg) += areg_byteinc[srcreg];
 	int val = cctrue(11) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -25156,7 +24102,6 @@ uae_u32 REGPARAM2 op_5be0_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg) - areg_byteinc[srcreg];
 	m68k_areg(regs, srcreg) = srca;
 	int val = cctrue(11) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -25173,7 +24118,6 @@ uae_u32 REGPARAM2 op_5be8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg) + (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(11) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -25191,7 +24135,6 @@ uae_u32 REGPARAM2 op_5bf0_20_ff(uae_u32 opcode)
 	m68k_incpci(2);
 	srca = x_get_disp_ea_020(m68k_areg(regs, srcreg), 0);
 	int val = cctrue(11) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(srca, val);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -25205,7 +24148,6 @@ uae_u32 REGPARAM2 op_5bf8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(11) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -25220,7 +24162,6 @@ uae_u32 REGPARAM2 op_5bf9_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = get_long_020_prefetch(2);
 	int val = cctrue(11) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(srca, val);
 	m68k_incpci(6);
@@ -25239,7 +24180,6 @@ uae_u32 REGPARAM2 op_5bfa_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -25258,7 +24198,6 @@ uae_u32 REGPARAM2 op_5bfb_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -25275,7 +24214,6 @@ uae_u32 REGPARAM2 op_5bfc_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -25289,7 +24227,6 @@ uae_u32 REGPARAM2 op_5cc0_20_ff(uae_u32 opcode)
 	uae_u32 real_opcode = opcode;
 	uae_u32 srcreg = (real_opcode & 7);
 	int val = cctrue(12) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xff) | ((val) & 0xff);
 	count_cycles += ((val ? 2 : 0)) * CYCLE_UNIT / 2;
@@ -25321,7 +24258,6 @@ uae_u32 REGPARAM2 op_5cc8_20_ff(uae_u32 opcode)
 		count_cycles += 6 * CYCLE_UNIT / 2;
 	}
 	m68k_setpci_j(oldpc + 4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -25336,7 +24272,6 @@ uae_u32 REGPARAM2 op_5cd0_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg);
 	int val = cctrue(12) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -25354,7 +24289,6 @@ uae_u32 REGPARAM2 op_5cd8_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg);
 	m68k_areg(regs, srcreg) += areg_byteinc[srcreg];
 	int val = cctrue(12) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -25372,7 +24306,6 @@ uae_u32 REGPARAM2 op_5ce0_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg) - areg_byteinc[srcreg];
 	m68k_areg(regs, srcreg) = srca;
 	int val = cctrue(12) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -25389,7 +24322,6 @@ uae_u32 REGPARAM2 op_5ce8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg) + (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(12) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -25407,7 +24339,6 @@ uae_u32 REGPARAM2 op_5cf0_20_ff(uae_u32 opcode)
 	m68k_incpci(2);
 	srca = x_get_disp_ea_020(m68k_areg(regs, srcreg), 0);
 	int val = cctrue(12) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(srca, val);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -25421,7 +24352,6 @@ uae_u32 REGPARAM2 op_5cf8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(12) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -25436,7 +24366,6 @@ uae_u32 REGPARAM2 op_5cf9_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = get_long_020_prefetch(2);
 	int val = cctrue(12) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(srca, val);
 	m68k_incpci(6);
@@ -25455,7 +24384,6 @@ uae_u32 REGPARAM2 op_5cfa_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -25474,7 +24402,6 @@ uae_u32 REGPARAM2 op_5cfb_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -25491,7 +24418,6 @@ uae_u32 REGPARAM2 op_5cfc_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -25505,7 +24431,6 @@ uae_u32 REGPARAM2 op_5dc0_20_ff(uae_u32 opcode)
 	uae_u32 real_opcode = opcode;
 	uae_u32 srcreg = (real_opcode & 7);
 	int val = cctrue(13) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xff) | ((val) & 0xff);
 	count_cycles += ((val ? 2 : 0)) * CYCLE_UNIT / 2;
@@ -25537,7 +24462,6 @@ uae_u32 REGPARAM2 op_5dc8_20_ff(uae_u32 opcode)
 		count_cycles += 6 * CYCLE_UNIT / 2;
 	}
 	m68k_setpci_j(oldpc + 4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -25552,7 +24476,6 @@ uae_u32 REGPARAM2 op_5dd0_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg);
 	int val = cctrue(13) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -25570,7 +24493,6 @@ uae_u32 REGPARAM2 op_5dd8_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg);
 	m68k_areg(regs, srcreg) += areg_byteinc[srcreg];
 	int val = cctrue(13) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -25588,7 +24510,6 @@ uae_u32 REGPARAM2 op_5de0_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg) - areg_byteinc[srcreg];
 	m68k_areg(regs, srcreg) = srca;
 	int val = cctrue(13) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -25605,7 +24526,6 @@ uae_u32 REGPARAM2 op_5de8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg) + (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(13) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -25623,7 +24543,6 @@ uae_u32 REGPARAM2 op_5df0_20_ff(uae_u32 opcode)
 	m68k_incpci(2);
 	srca = x_get_disp_ea_020(m68k_areg(regs, srcreg), 0);
 	int val = cctrue(13) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(srca, val);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -25637,7 +24556,6 @@ uae_u32 REGPARAM2 op_5df8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(13) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -25652,7 +24570,6 @@ uae_u32 REGPARAM2 op_5df9_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = get_long_020_prefetch(2);
 	int val = cctrue(13) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(srca, val);
 	m68k_incpci(6);
@@ -25671,7 +24588,6 @@ uae_u32 REGPARAM2 op_5dfa_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -25690,7 +24606,6 @@ uae_u32 REGPARAM2 op_5dfb_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -25707,7 +24622,6 @@ uae_u32 REGPARAM2 op_5dfc_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -25721,7 +24635,6 @@ uae_u32 REGPARAM2 op_5ec0_20_ff(uae_u32 opcode)
 	uae_u32 real_opcode = opcode;
 	uae_u32 srcreg = (real_opcode & 7);
 	int val = cctrue(14) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xff) | ((val) & 0xff);
 	count_cycles += ((val ? 2 : 0)) * CYCLE_UNIT / 2;
@@ -25753,7 +24666,6 @@ uae_u32 REGPARAM2 op_5ec8_20_ff(uae_u32 opcode)
 		count_cycles += 6 * CYCLE_UNIT / 2;
 	}
 	m68k_setpci_j(oldpc + 4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -25768,7 +24680,6 @@ uae_u32 REGPARAM2 op_5ed0_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg);
 	int val = cctrue(14) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -25786,7 +24697,6 @@ uae_u32 REGPARAM2 op_5ed8_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg);
 	m68k_areg(regs, srcreg) += areg_byteinc[srcreg];
 	int val = cctrue(14) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -25804,7 +24714,6 @@ uae_u32 REGPARAM2 op_5ee0_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg) - areg_byteinc[srcreg];
 	m68k_areg(regs, srcreg) = srca;
 	int val = cctrue(14) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -25821,7 +24730,6 @@ uae_u32 REGPARAM2 op_5ee8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg) + (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(14) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -25839,7 +24747,6 @@ uae_u32 REGPARAM2 op_5ef0_20_ff(uae_u32 opcode)
 	m68k_incpci(2);
 	srca = x_get_disp_ea_020(m68k_areg(regs, srcreg), 0);
 	int val = cctrue(14) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(srca, val);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -25853,7 +24760,6 @@ uae_u32 REGPARAM2 op_5ef8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(14) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -25868,7 +24774,6 @@ uae_u32 REGPARAM2 op_5ef9_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = get_long_020_prefetch(2);
 	int val = cctrue(14) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(srca, val);
 	m68k_incpci(6);
@@ -25887,7 +24792,6 @@ uae_u32 REGPARAM2 op_5efa_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -25906,7 +24810,6 @@ uae_u32 REGPARAM2 op_5efb_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -25923,7 +24826,6 @@ uae_u32 REGPARAM2 op_5efc_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -25937,7 +24839,6 @@ uae_u32 REGPARAM2 op_5fc0_20_ff(uae_u32 opcode)
 	uae_u32 real_opcode = opcode;
 	uae_u32 srcreg = (real_opcode & 7);
 	int val = cctrue(15) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (m68k_dreg(regs, srcreg) & ~0xff) | ((val) & 0xff);
 	count_cycles += ((val ? 2 : 0)) * CYCLE_UNIT / 2;
@@ -25969,7 +24870,6 @@ uae_u32 REGPARAM2 op_5fc8_20_ff(uae_u32 opcode)
 		count_cycles += 6 * CYCLE_UNIT / 2;
 	}
 	m68k_setpci_j(oldpc + 4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -25984,7 +24884,6 @@ uae_u32 REGPARAM2 op_5fd0_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg);
 	int val = cctrue(15) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -26002,7 +24901,6 @@ uae_u32 REGPARAM2 op_5fd8_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg);
 	m68k_areg(regs, srcreg) += areg_byteinc[srcreg];
 	int val = cctrue(15) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -26020,7 +24918,6 @@ uae_u32 REGPARAM2 op_5fe0_20_ff(uae_u32 opcode)
 	srca = m68k_areg(regs, srcreg) - areg_byteinc[srcreg];
 	m68k_areg(regs, srcreg) = srca;
 	int val = cctrue(15) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(srca, val);
 	m68k_incpci(2);
@@ -26037,7 +24934,6 @@ uae_u32 REGPARAM2 op_5fe8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = m68k_areg(regs, srcreg) + (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(15) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -26055,7 +24951,6 @@ uae_u32 REGPARAM2 op_5ff0_20_ff(uae_u32 opcode)
 	m68k_incpci(2);
 	srca = x_get_disp_ea_020(m68k_areg(regs, srcreg), 0);
 	int val = cctrue(15) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(srca, val);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -26069,7 +24964,6 @@ uae_u32 REGPARAM2 op_5ff8_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = (uae_s32)(uae_s16)get_word_020_prefetch(2);
 	int val = cctrue(15) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(srca, val);
 	m68k_incpci(4);
@@ -26084,7 +24978,6 @@ uae_u32 REGPARAM2 op_5ff9_20_ff(uae_u32 opcode)
 	uaecptr srca;
 	srca = get_long_020_prefetch(2);
 	int val = cctrue(15) ? 0xff : 0x00;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(srca, val);
 	m68k_incpci(6);
@@ -26103,7 +24996,6 @@ uae_u32 REGPARAM2 op_5ffa_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26122,7 +25014,6 @@ uae_u32 REGPARAM2 op_5ffb_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26139,7 +25030,6 @@ uae_u32 REGPARAM2 op_5ffc_20_ff(uae_u32 opcode)
 		Exception_cpu(7);
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26163,7 +25053,6 @@ uae_u32 REGPARAM2 op_6000_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26188,7 +25077,6 @@ uae_u32 REGPARAM2 op_6001_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26212,7 +25100,6 @@ uae_u32 REGPARAM2 op_60ff_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(6);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26307,7 +25194,6 @@ uae_u32 REGPARAM2 op_6200_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26332,7 +25218,6 @@ uae_u32 REGPARAM2 op_6201_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26356,7 +25241,6 @@ uae_u32 REGPARAM2 op_62ff_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(6);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26379,7 +25263,6 @@ uae_u32 REGPARAM2 op_6300_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26404,7 +25287,6 @@ uae_u32 REGPARAM2 op_6301_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26428,7 +25310,6 @@ uae_u32 REGPARAM2 op_63ff_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(6);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26451,7 +25332,6 @@ uae_u32 REGPARAM2 op_6400_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26476,7 +25356,6 @@ uae_u32 REGPARAM2 op_6401_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26500,7 +25379,6 @@ uae_u32 REGPARAM2 op_64ff_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(6);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26523,7 +25401,6 @@ uae_u32 REGPARAM2 op_6500_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26548,7 +25425,6 @@ uae_u32 REGPARAM2 op_6501_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26572,7 +25448,6 @@ uae_u32 REGPARAM2 op_65ff_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(6);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26595,7 +25470,6 @@ uae_u32 REGPARAM2 op_6600_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26620,7 +25494,6 @@ uae_u32 REGPARAM2 op_6601_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26644,7 +25517,6 @@ uae_u32 REGPARAM2 op_66ff_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(6);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26667,7 +25539,6 @@ uae_u32 REGPARAM2 op_6700_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26692,7 +25563,6 @@ uae_u32 REGPARAM2 op_6701_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26716,7 +25586,6 @@ uae_u32 REGPARAM2 op_67ff_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(6);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26739,7 +25608,6 @@ uae_u32 REGPARAM2 op_6800_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26764,7 +25632,6 @@ uae_u32 REGPARAM2 op_6801_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26788,7 +25655,6 @@ uae_u32 REGPARAM2 op_68ff_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(6);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26811,7 +25677,6 @@ uae_u32 REGPARAM2 op_6900_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26836,7 +25701,6 @@ uae_u32 REGPARAM2 op_6901_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26860,7 +25724,6 @@ uae_u32 REGPARAM2 op_69ff_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(6);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26883,7 +25746,6 @@ uae_u32 REGPARAM2 op_6a00_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26908,7 +25770,6 @@ uae_u32 REGPARAM2 op_6a01_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26932,7 +25793,6 @@ uae_u32 REGPARAM2 op_6aff_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(6);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26955,7 +25815,6 @@ uae_u32 REGPARAM2 op_6b00_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -26980,7 +25839,6 @@ uae_u32 REGPARAM2 op_6b01_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -27004,7 +25862,6 @@ uae_u32 REGPARAM2 op_6bff_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(6);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -27027,7 +25884,6 @@ uae_u32 REGPARAM2 op_6c00_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -27052,7 +25908,6 @@ uae_u32 REGPARAM2 op_6c01_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -27076,7 +25931,6 @@ uae_u32 REGPARAM2 op_6cff_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(6);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -27099,7 +25953,6 @@ uae_u32 REGPARAM2 op_6d00_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -27124,7 +25977,6 @@ uae_u32 REGPARAM2 op_6d01_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -27148,7 +26000,6 @@ uae_u32 REGPARAM2 op_6dff_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(6);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -27171,7 +26022,6 @@ uae_u32 REGPARAM2 op_6e00_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -27196,7 +26046,6 @@ uae_u32 REGPARAM2 op_6e01_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -27220,7 +26069,6 @@ uae_u32 REGPARAM2 op_6eff_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(6);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -27243,7 +26091,6 @@ uae_u32 REGPARAM2 op_6f00_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(4);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -27268,7 +26115,6 @@ uae_u32 REGPARAM2 op_6f01_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(2);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -27292,7 +26138,6 @@ uae_u32 REGPARAM2 op_6fff_20_ff(uae_u32 opcode)
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
 	m68k_incpci(6);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -27309,7 +26154,6 @@ uae_u32 REGPARAM2 op_7000_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(2);
@@ -27330,7 +26174,6 @@ uae_u32 REGPARAM2 op_8000_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(2);
@@ -27353,7 +26196,6 @@ uae_u32 REGPARAM2 op_8010_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(2);
@@ -27377,7 +26219,6 @@ uae_u32 REGPARAM2 op_8018_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(2);
@@ -27401,7 +26242,6 @@ uae_u32 REGPARAM2 op_8020_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(2);
@@ -27424,7 +26264,6 @@ uae_u32 REGPARAM2 op_8028_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(4);
@@ -27448,7 +26287,6 @@ uae_u32 REGPARAM2 op_8030_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -27469,7 +26307,6 @@ uae_u32 REGPARAM2 op_8038_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(4);
@@ -27491,7 +26328,6 @@ uae_u32 REGPARAM2 op_8039_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(6);
@@ -27514,7 +26350,6 @@ uae_u32 REGPARAM2 op_803a_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(4);
@@ -27538,7 +26373,6 @@ uae_u32 REGPARAM2 op_803b_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -27557,7 +26391,6 @@ uae_u32 REGPARAM2 op_803c_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(4);
@@ -27578,7 +26411,6 @@ uae_u32 REGPARAM2 op_8040_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(2);
@@ -27601,7 +26433,6 @@ uae_u32 REGPARAM2 op_8050_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(2);
@@ -27625,7 +26456,6 @@ uae_u32 REGPARAM2 op_8058_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(2);
@@ -27649,7 +26479,6 @@ uae_u32 REGPARAM2 op_8060_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(2);
@@ -27672,7 +26501,6 @@ uae_u32 REGPARAM2 op_8068_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(4);
@@ -27696,7 +26524,6 @@ uae_u32 REGPARAM2 op_8070_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -27717,7 +26544,6 @@ uae_u32 REGPARAM2 op_8078_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(4);
@@ -27739,7 +26565,6 @@ uae_u32 REGPARAM2 op_8079_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(6);
@@ -27762,7 +26587,6 @@ uae_u32 REGPARAM2 op_807a_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(4);
@@ -27786,7 +26610,6 @@ uae_u32 REGPARAM2 op_807b_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -27805,7 +26628,6 @@ uae_u32 REGPARAM2 op_807c_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(4);
@@ -27826,7 +26648,6 @@ uae_u32 REGPARAM2 op_8080_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(2);
@@ -27849,7 +26670,6 @@ uae_u32 REGPARAM2 op_8090_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(2);
@@ -27873,7 +26693,6 @@ uae_u32 REGPARAM2 op_8098_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(2);
@@ -27897,7 +26716,6 @@ uae_u32 REGPARAM2 op_80a0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(2);
@@ -27920,7 +26738,6 @@ uae_u32 REGPARAM2 op_80a8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(4);
@@ -27944,7 +26761,6 @@ uae_u32 REGPARAM2 op_80b0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (src);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -27965,7 +26781,6 @@ uae_u32 REGPARAM2 op_80b8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(4);
@@ -27987,7 +26802,6 @@ uae_u32 REGPARAM2 op_80b9_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(6);
@@ -28010,7 +26824,6 @@ uae_u32 REGPARAM2 op_80ba_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(4);
@@ -28034,7 +26847,6 @@ uae_u32 REGPARAM2 op_80bb_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (src);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -28054,7 +26866,6 @@ uae_u32 REGPARAM2 op_80bc_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(6);
@@ -28090,7 +26901,6 @@ uae_u32 REGPARAM2 op_80c0_20_ff(uae_u32 opcode)
 	}
 	m68k_incpci(2);
 	count_cycles += 34;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -28126,7 +26936,6 @@ uae_u32 REGPARAM2 op_80d0_20_ff(uae_u32 opcode)
 	}
 	m68k_incpci(2);
 	count_cycles += 34;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -28163,7 +26972,6 @@ uae_u32 REGPARAM2 op_80d8_20_ff(uae_u32 opcode)
 	}
 	m68k_incpci(2);
 	count_cycles += 34;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -28200,7 +27008,6 @@ uae_u32 REGPARAM2 op_80e0_20_ff(uae_u32 opcode)
 	}
 	m68k_incpci(2);
 	count_cycles += 34;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -28236,7 +27043,6 @@ uae_u32 REGPARAM2 op_80e8_20_ff(uae_u32 opcode)
 	}
 	m68k_incpci(4);
 	count_cycles += 34;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -28272,7 +27078,6 @@ uae_u32 REGPARAM2 op_80f0_20_ff(uae_u32 opcode)
 		m68k_dreg(regs, dstreg) = (newv);
 	}
 	count_cycles += 34;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -28307,7 +27112,6 @@ uae_u32 REGPARAM2 op_80f8_20_ff(uae_u32 opcode)
 	}
 	m68k_incpci(4);
 	count_cycles += 34;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -28342,7 +27146,6 @@ uae_u32 REGPARAM2 op_80f9_20_ff(uae_u32 opcode)
 	}
 	m68k_incpci(6);
 	count_cycles += 34;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -28378,7 +27181,6 @@ uae_u32 REGPARAM2 op_80fa_20_ff(uae_u32 opcode)
 	}
 	m68k_incpci(4);
 	count_cycles += 34;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -28414,7 +27216,6 @@ uae_u32 REGPARAM2 op_80fb_20_ff(uae_u32 opcode)
 		m68k_dreg(regs, dstreg) = (newv);
 	}
 	count_cycles += 34;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -28447,7 +27248,6 @@ uae_u32 REGPARAM2 op_80fc_20_ff(uae_u32 opcode)
 	}
 	m68k_incpci(4);
 	count_cycles += 34;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -28474,7 +27274,6 @@ if ((((dst & 0xFF) - (src & 0xFF) - (GET_XFLG() ? 1 : 0)) & 0x100) > 0xFF) { new
 	SET_ZFLG(GET_ZFLG() & (((uae_s8)(newv)) == 0));
 	SET_NFLG(((uae_s8)(newv)) < 0);
 	SET_VFLG(0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(2);
@@ -28509,7 +27308,6 @@ if ((((dst & 0xFF) - (src & 0xFF) - (GET_XFLG() ? 1 : 0)) & 0x100) > 0xFF) { new
 	SET_ZFLG(GET_ZFLG() & (((uae_s8)(newv)) == 0));
 	SET_NFLG(((uae_s8)(newv)) < 0);
 	SET_VFLG(0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, newv);
 	m68k_incpci(2);
@@ -28532,7 +27330,6 @@ uae_u32 REGPARAM2 op_8110_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, src);
 	m68k_incpci(2);
@@ -28556,7 +27353,6 @@ uae_u32 REGPARAM2 op_8118_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, src);
 	m68k_incpci(2);
@@ -28580,7 +27376,6 @@ uae_u32 REGPARAM2 op_8120_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, src);
 	m68k_incpci(2);
@@ -28603,7 +27398,6 @@ uae_u32 REGPARAM2 op_8128_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -28627,7 +27421,6 @@ uae_u32 REGPARAM2 op_8130_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -28648,7 +27441,6 @@ uae_u32 REGPARAM2 op_8138_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -28670,7 +27462,6 @@ uae_u32 REGPARAM2 op_8139_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, src);
 	m68k_incpci(6);
@@ -28688,7 +27479,6 @@ uae_u32 REGPARAM2 op_8140_20_ff(uae_u32 opcode)
 	uae_u32 dstreg = (real_opcode >> 9) & 7;
 	uae_u16 val = m68k_dreg(regs, srcreg) + get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & 0xffffff00) | ((val >> 4) & 0xf0) | (val & 0xf);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -28710,7 +27500,6 @@ uae_u32 REGPARAM2 op_8148_20_ff(uae_u32 opcode)
 	val += get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) -= areg_byteinc[dstreg];
 	x_put_byte(m68k_areg(regs, dstreg),((val >> 4) & 0xf0) | (val & 0xf));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -28733,7 +27522,6 @@ uae_u32 REGPARAM2 op_8150_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -28757,7 +27545,6 @@ uae_u32 REGPARAM2 op_8158_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -28781,7 +27568,6 @@ uae_u32 REGPARAM2 op_8160_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -28804,7 +27590,6 @@ uae_u32 REGPARAM2 op_8168_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -28828,7 +27613,6 @@ uae_u32 REGPARAM2 op_8170_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -28849,7 +27633,6 @@ uae_u32 REGPARAM2 op_8178_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -28871,7 +27654,6 @@ uae_u32 REGPARAM2 op_8179_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, src);
 	m68k_incpci(6);
@@ -28891,7 +27673,6 @@ uae_u32 REGPARAM2 op_8180_20_ff(uae_u32 opcode)
 	val = ((val << 4) & 0xf00) | (val & 0xf);
 	val += get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & 0xffff0000) | (val & 0xffff);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -28913,7 +27694,6 @@ uae_u32 REGPARAM2 op_8188_20_ff(uae_u32 opcode)
 	val = (((val << 4) & 0xf00) | (val & 0xf)) + get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) -= 2;
 	x_put_word(m68k_areg(regs, dstreg), val);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -28936,7 +27716,6 @@ uae_u32 REGPARAM2 op_8190_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -28960,7 +27739,6 @@ uae_u32 REGPARAM2 op_8198_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -28984,7 +27762,6 @@ uae_u32 REGPARAM2 op_81a0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -29007,7 +27784,6 @@ uae_u32 REGPARAM2 op_81a8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, src);
 	m68k_incpci(4);
@@ -29031,7 +27807,6 @@ uae_u32 REGPARAM2 op_81b0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -29052,7 +27827,6 @@ uae_u32 REGPARAM2 op_81b8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, src);
 	m68k_incpci(4);
@@ -29074,7 +27848,6 @@ uae_u32 REGPARAM2 op_81b9_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -29115,7 +27888,6 @@ uae_u32 REGPARAM2 op_81c0_20_ff(uae_u32 opcode)
 	}
 	m68k_incpci(2);
 	count_cycles += 48;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -29156,7 +27928,6 @@ uae_u32 REGPARAM2 op_81d0_20_ff(uae_u32 opcode)
 	}
 	m68k_incpci(2);
 	count_cycles += 48;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -29198,7 +27969,6 @@ uae_u32 REGPARAM2 op_81d8_20_ff(uae_u32 opcode)
 	}
 	m68k_incpci(2);
 	count_cycles += 48;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -29240,7 +28010,6 @@ uae_u32 REGPARAM2 op_81e0_20_ff(uae_u32 opcode)
 	}
 	m68k_incpci(2);
 	count_cycles += 48;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -29281,7 +28050,6 @@ uae_u32 REGPARAM2 op_81e8_20_ff(uae_u32 opcode)
 	}
 	m68k_incpci(4);
 	count_cycles += 48;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -29322,7 +28090,6 @@ uae_u32 REGPARAM2 op_81f0_20_ff(uae_u32 opcode)
 		}
 	}
 	count_cycles += 48;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -29362,7 +28129,6 @@ uae_u32 REGPARAM2 op_81f8_20_ff(uae_u32 opcode)
 	}
 	m68k_incpci(4);
 	count_cycles += 48;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -29402,7 +28168,6 @@ uae_u32 REGPARAM2 op_81f9_20_ff(uae_u32 opcode)
 	}
 	m68k_incpci(6);
 	count_cycles += 48;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -29443,7 +28208,6 @@ uae_u32 REGPARAM2 op_81fa_20_ff(uae_u32 opcode)
 	}
 	m68k_incpci(4);
 	count_cycles += 48;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -29484,7 +28248,6 @@ uae_u32 REGPARAM2 op_81fb_20_ff(uae_u32 opcode)
 		}
 	}
 	count_cycles += 48;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -29522,7 +28285,6 @@ uae_u32 REGPARAM2 op_81fc_20_ff(uae_u32 opcode)
 	}
 	m68k_incpci(4);
 	count_cycles += 48;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -29546,7 +28308,6 @@ uae_u32 REGPARAM2 op_9000_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(2);
@@ -29574,7 +28335,6 @@ uae_u32 REGPARAM2 op_9010_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(2);
@@ -29603,7 +28363,6 @@ uae_u32 REGPARAM2 op_9018_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(2);
@@ -29632,7 +28391,6 @@ uae_u32 REGPARAM2 op_9020_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(2);
@@ -29660,7 +28418,6 @@ uae_u32 REGPARAM2 op_9028_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(4);
@@ -29689,7 +28446,6 @@ uae_u32 REGPARAM2 op_9030_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -29715,7 +28471,6 @@ uae_u32 REGPARAM2 op_9038_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(4);
@@ -29742,7 +28497,6 @@ uae_u32 REGPARAM2 op_9039_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(6);
@@ -29770,7 +28524,6 @@ uae_u32 REGPARAM2 op_903a_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(4);
@@ -29799,7 +28552,6 @@ uae_u32 REGPARAM2 op_903b_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -29823,7 +28575,6 @@ uae_u32 REGPARAM2 op_903c_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(4);
@@ -29849,7 +28600,6 @@ uae_u32 REGPARAM2 op_9040_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	m68k_incpci(2);
@@ -29875,7 +28625,6 @@ uae_u32 REGPARAM2 op_9048_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	m68k_incpci(2);
@@ -29903,7 +28652,6 @@ uae_u32 REGPARAM2 op_9050_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	m68k_incpci(2);
@@ -29932,7 +28680,6 @@ uae_u32 REGPARAM2 op_9058_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	m68k_incpci(2);
@@ -29961,7 +28708,6 @@ uae_u32 REGPARAM2 op_9060_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	m68k_incpci(2);
@@ -29989,7 +28735,6 @@ uae_u32 REGPARAM2 op_9068_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	m68k_incpci(4);
@@ -30018,7 +28763,6 @@ uae_u32 REGPARAM2 op_9070_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -30044,7 +28788,6 @@ uae_u32 REGPARAM2 op_9078_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	m68k_incpci(4);
@@ -30071,7 +28814,6 @@ uae_u32 REGPARAM2 op_9079_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	m68k_incpci(6);
@@ -30099,7 +28841,6 @@ uae_u32 REGPARAM2 op_907a_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	m68k_incpci(4);
@@ -30128,7 +28869,6 @@ uae_u32 REGPARAM2 op_907b_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -30152,7 +28892,6 @@ uae_u32 REGPARAM2 op_907c_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	m68k_incpci(4);
@@ -30178,7 +28917,6 @@ uae_u32 REGPARAM2 op_9080_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -30204,7 +28942,6 @@ uae_u32 REGPARAM2 op_9088_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -30232,7 +28969,6 @@ uae_u32 REGPARAM2 op_9090_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -30261,7 +28997,6 @@ uae_u32 REGPARAM2 op_9098_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -30290,7 +29025,6 @@ uae_u32 REGPARAM2 op_90a0_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -30318,7 +29052,6 @@ uae_u32 REGPARAM2 op_90a8_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -30347,7 +29080,6 @@ uae_u32 REGPARAM2 op_90b0_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (newv);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -30373,7 +29105,6 @@ uae_u32 REGPARAM2 op_90b8_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -30400,7 +29131,6 @@ uae_u32 REGPARAM2 op_90b9_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(6);
@@ -30428,7 +29158,6 @@ uae_u32 REGPARAM2 op_90ba_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -30457,7 +29186,6 @@ uae_u32 REGPARAM2 op_90bb_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (newv);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -30482,7 +29210,6 @@ uae_u32 REGPARAM2 op_90bc_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(6);
@@ -30500,7 +29227,6 @@ uae_u32 REGPARAM2 op_90c0_20_ff(uae_u32 opcode)
 	uae_s16 src = m68k_dreg(regs, srcreg);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst - src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -30518,7 +29244,6 @@ uae_u32 REGPARAM2 op_90c8_20_ff(uae_u32 opcode)
 	uae_s16 src = m68k_areg(regs, srcreg);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst - src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -30538,7 +29263,6 @@ uae_u32 REGPARAM2 op_90d0_20_ff(uae_u32 opcode)
 	uae_s16 src = x_get_word(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst - src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -30559,7 +29283,6 @@ uae_u32 REGPARAM2 op_90d8_20_ff(uae_u32 opcode)
 	m68k_areg(regs, srcreg) += 2;
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst - src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -30580,7 +29303,6 @@ uae_u32 REGPARAM2 op_90e0_20_ff(uae_u32 opcode)
 	m68k_areg(regs, srcreg) = srca;
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst - src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -30600,7 +29322,6 @@ uae_u32 REGPARAM2 op_90e8_20_ff(uae_u32 opcode)
 	uae_s16 src = x_get_word(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst - src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -30621,7 +29342,6 @@ uae_u32 REGPARAM2 op_90f0_20_ff(uae_u32 opcode)
 	uae_s16 src = x_get_word(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst - src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_areg(regs, dstreg) = (newv);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -30639,7 +29359,6 @@ uae_u32 REGPARAM2 op_90f8_20_ff(uae_u32 opcode)
 	uae_s16 src = x_get_word(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst - src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -30658,7 +29377,6 @@ uae_u32 REGPARAM2 op_90f9_20_ff(uae_u32 opcode)
 	uae_s16 src = x_get_word(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst - src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(6);
@@ -30678,7 +29396,6 @@ uae_u32 REGPARAM2 op_90fa_20_ff(uae_u32 opcode)
 	uae_s16 src = x_get_word(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst - src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -30699,7 +29416,6 @@ uae_u32 REGPARAM2 op_90fb_20_ff(uae_u32 opcode)
 	uae_s16 src = x_get_word(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst - src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_areg(regs, dstreg) = (newv);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -30715,7 +29431,6 @@ uae_u32 REGPARAM2 op_90fc_20_ff(uae_u32 opcode)
 	uae_s16 src = get_word_020_prefetch(2);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst - src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -30741,7 +29456,6 @@ uae_u32 REGPARAM2 op_9100_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s8)(newv)) == 0));
 	SET_NFLG(((uae_s8)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(2);
@@ -30773,7 +29487,6 @@ uae_u32 REGPARAM2 op_9108_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s8)(newv)) == 0));
 	SET_NFLG(((uae_s8)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, newv);
 	m68k_incpci(2);
@@ -30801,7 +29514,6 @@ uae_u32 REGPARAM2 op_9110_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, newv);
 	m68k_incpci(2);
@@ -30830,7 +29542,6 @@ uae_u32 REGPARAM2 op_9118_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, newv);
 	m68k_incpci(2);
@@ -30859,7 +29570,6 @@ uae_u32 REGPARAM2 op_9120_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, newv);
 	m68k_incpci(2);
@@ -30887,7 +29597,6 @@ uae_u32 REGPARAM2 op_9128_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, newv);
 	m68k_incpci(4);
@@ -30916,7 +29625,6 @@ uae_u32 REGPARAM2 op_9130_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, newv);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -30942,7 +29650,6 @@ uae_u32 REGPARAM2 op_9138_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, newv);
 	m68k_incpci(4);
@@ -30969,7 +29676,6 @@ uae_u32 REGPARAM2 op_9139_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, newv);
 	m68k_incpci(6);
@@ -30995,7 +29701,6 @@ uae_u32 REGPARAM2 op_9140_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s16)(newv)) == 0));
 	SET_NFLG(((uae_s16)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	m68k_incpci(2);
@@ -31027,7 +29732,6 @@ uae_u32 REGPARAM2 op_9148_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s16)(newv)) == 0));
 	SET_NFLG(((uae_s16)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, newv);
 	m68k_incpci(2);
@@ -31055,7 +29759,6 @@ uae_u32 REGPARAM2 op_9150_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, newv);
 	m68k_incpci(2);
@@ -31084,7 +29787,6 @@ uae_u32 REGPARAM2 op_9158_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, newv);
 	m68k_incpci(2);
@@ -31113,7 +29815,6 @@ uae_u32 REGPARAM2 op_9160_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, newv);
 	m68k_incpci(2);
@@ -31141,7 +29842,6 @@ uae_u32 REGPARAM2 op_9168_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, newv);
 	m68k_incpci(4);
@@ -31170,7 +29870,6 @@ uae_u32 REGPARAM2 op_9170_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, newv);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -31196,7 +29895,6 @@ uae_u32 REGPARAM2 op_9178_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, newv);
 	m68k_incpci(4);
@@ -31223,7 +29921,6 @@ uae_u32 REGPARAM2 op_9179_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, newv);
 	m68k_incpci(6);
@@ -31249,7 +29946,6 @@ uae_u32 REGPARAM2 op_9180_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s32)(newv)) == 0));
 	SET_NFLG(((uae_s32)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -31281,7 +29977,6 @@ uae_u32 REGPARAM2 op_9188_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s32)(newv)) == 0));
 	SET_NFLG(((uae_s32)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, newv);
 	m68k_incpci(2);
@@ -31309,7 +30004,6 @@ uae_u32 REGPARAM2 op_9190_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, newv);
 	m68k_incpci(2);
@@ -31338,7 +30032,6 @@ uae_u32 REGPARAM2 op_9198_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, newv);
 	m68k_incpci(2);
@@ -31367,7 +30060,6 @@ uae_u32 REGPARAM2 op_91a0_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, newv);
 	m68k_incpci(2);
@@ -31395,7 +30087,6 @@ uae_u32 REGPARAM2 op_91a8_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, newv);
 	m68k_incpci(4);
@@ -31424,7 +30115,6 @@ uae_u32 REGPARAM2 op_91b0_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, newv);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -31450,7 +30140,6 @@ uae_u32 REGPARAM2 op_91b8_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, newv);
 	m68k_incpci(4);
@@ -31477,7 +30166,6 @@ uae_u32 REGPARAM2 op_91b9_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, newv);
 	m68k_incpci(6);
@@ -31495,7 +30183,6 @@ uae_u32 REGPARAM2 op_91c0_20_ff(uae_u32 opcode)
 	uae_s32 src = m68k_dreg(regs, srcreg);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst - src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -31513,7 +30200,6 @@ uae_u32 REGPARAM2 op_91c8_20_ff(uae_u32 opcode)
 	uae_s32 src = m68k_areg(regs, srcreg);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst - src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -31533,7 +30219,6 @@ uae_u32 REGPARAM2 op_91d0_20_ff(uae_u32 opcode)
 	uae_s32 src = x_get_long(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst - src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -31554,7 +30239,6 @@ uae_u32 REGPARAM2 op_91d8_20_ff(uae_u32 opcode)
 	m68k_areg(regs, srcreg) += 4;
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst - src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -31575,7 +30259,6 @@ uae_u32 REGPARAM2 op_91e0_20_ff(uae_u32 opcode)
 	m68k_areg(regs, srcreg) = srca;
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst - src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -31595,7 +30278,6 @@ uae_u32 REGPARAM2 op_91e8_20_ff(uae_u32 opcode)
 	uae_s32 src = x_get_long(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst - src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -31616,7 +30298,6 @@ uae_u32 REGPARAM2 op_91f0_20_ff(uae_u32 opcode)
 	uae_s32 src = x_get_long(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst - src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_areg(regs, dstreg) = (newv);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -31634,7 +30315,6 @@ uae_u32 REGPARAM2 op_91f8_20_ff(uae_u32 opcode)
 	uae_s32 src = x_get_long(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst - src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -31653,7 +30333,6 @@ uae_u32 REGPARAM2 op_91f9_20_ff(uae_u32 opcode)
 	uae_s32 src = x_get_long(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst - src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(6);
@@ -31673,7 +30352,6 @@ uae_u32 REGPARAM2 op_91fa_20_ff(uae_u32 opcode)
 	uae_s32 src = x_get_long(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst - src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -31694,7 +30372,6 @@ uae_u32 REGPARAM2 op_91fb_20_ff(uae_u32 opcode)
 	uae_s32 src = x_get_long(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst - src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_areg(regs, dstreg) = (newv);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -31711,7 +30388,6 @@ uae_u32 REGPARAM2 op_91fc_20_ff(uae_u32 opcode)
 	src = get_long_020_prefetch(2);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst - src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(6);
@@ -31736,7 +30412,6 @@ uae_u32 REGPARAM2 op_b000_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -31762,7 +30437,6 @@ uae_u32 REGPARAM2 op_b010_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -31789,7 +30463,6 @@ uae_u32 REGPARAM2 op_b018_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -31816,7 +30489,6 @@ uae_u32 REGPARAM2 op_b020_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -31842,7 +30514,6 @@ uae_u32 REGPARAM2 op_b028_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -31869,7 +30540,6 @@ uae_u32 REGPARAM2 op_b030_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -31893,7 +30563,6 @@ uae_u32 REGPARAM2 op_b038_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -31918,7 +30587,6 @@ uae_u32 REGPARAM2 op_b039_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -31944,7 +30612,6 @@ uae_u32 REGPARAM2 op_b03a_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -31971,7 +30638,6 @@ uae_u32 REGPARAM2 op_b03b_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -31993,7 +30659,6 @@ uae_u32 REGPARAM2 op_b03c_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32017,7 +30682,6 @@ uae_u32 REGPARAM2 op_b040_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32041,7 +30705,6 @@ uae_u32 REGPARAM2 op_b048_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32067,7 +30730,6 @@ uae_u32 REGPARAM2 op_b050_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32094,7 +30756,6 @@ uae_u32 REGPARAM2 op_b058_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32121,7 +30782,6 @@ uae_u32 REGPARAM2 op_b060_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32147,7 +30807,6 @@ uae_u32 REGPARAM2 op_b068_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32174,7 +30833,6 @@ uae_u32 REGPARAM2 op_b070_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -32198,7 +30856,6 @@ uae_u32 REGPARAM2 op_b078_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32223,7 +30880,6 @@ uae_u32 REGPARAM2 op_b079_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32249,7 +30905,6 @@ uae_u32 REGPARAM2 op_b07a_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32276,7 +30931,6 @@ uae_u32 REGPARAM2 op_b07b_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -32298,7 +30952,6 @@ uae_u32 REGPARAM2 op_b07c_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32322,7 +30975,6 @@ uae_u32 REGPARAM2 op_b080_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32346,7 +30998,6 @@ uae_u32 REGPARAM2 op_b088_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32372,7 +31023,6 @@ uae_u32 REGPARAM2 op_b090_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32399,7 +31049,6 @@ uae_u32 REGPARAM2 op_b098_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32426,7 +31075,6 @@ uae_u32 REGPARAM2 op_b0a0_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32452,7 +31100,6 @@ uae_u32 REGPARAM2 op_b0a8_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32479,7 +31126,6 @@ uae_u32 REGPARAM2 op_b0b0_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -32503,7 +31149,6 @@ uae_u32 REGPARAM2 op_b0b8_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32528,7 +31173,6 @@ uae_u32 REGPARAM2 op_b0b9_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32554,7 +31198,6 @@ uae_u32 REGPARAM2 op_b0ba_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32581,7 +31224,6 @@ uae_u32 REGPARAM2 op_b0bb_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -32604,7 +31246,6 @@ uae_u32 REGPARAM2 op_b0bc_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32628,7 +31269,6 @@ uae_u32 REGPARAM2 op_b0c0_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32652,7 +31292,6 @@ uae_u32 REGPARAM2 op_b0c8_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32678,7 +31317,6 @@ uae_u32 REGPARAM2 op_b0d0_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32705,7 +31343,6 @@ uae_u32 REGPARAM2 op_b0d8_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32732,7 +31369,6 @@ uae_u32 REGPARAM2 op_b0e0_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32758,7 +31394,6 @@ uae_u32 REGPARAM2 op_b0e8_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32785,7 +31420,6 @@ uae_u32 REGPARAM2 op_b0f0_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -32809,7 +31443,6 @@ uae_u32 REGPARAM2 op_b0f8_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32834,7 +31467,6 @@ uae_u32 REGPARAM2 op_b0f9_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32860,7 +31492,6 @@ uae_u32 REGPARAM2 op_b0fa_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32887,7 +31518,6 @@ uae_u32 REGPARAM2 op_b0fb_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -32909,7 +31539,6 @@ uae_u32 REGPARAM2 op_b0fc_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32929,7 +31558,6 @@ uae_u32 REGPARAM2 op_b100_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(2);
@@ -32960,7 +31588,6 @@ uae_u32 REGPARAM2 op_b108_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u8)(src)) > ((uae_u8)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -32982,7 +31609,6 @@ uae_u32 REGPARAM2 op_b110_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, src);
 	m68k_incpci(2);
@@ -33006,7 +31632,6 @@ uae_u32 REGPARAM2 op_b118_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, src);
 	m68k_incpci(2);
@@ -33030,7 +31655,6 @@ uae_u32 REGPARAM2 op_b120_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, src);
 	m68k_incpci(2);
@@ -33053,7 +31677,6 @@ uae_u32 REGPARAM2 op_b128_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -33077,7 +31700,6 @@ uae_u32 REGPARAM2 op_b130_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -33098,7 +31720,6 @@ uae_u32 REGPARAM2 op_b138_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -33120,7 +31741,6 @@ uae_u32 REGPARAM2 op_b139_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, src);
 	m68k_incpci(6);
@@ -33141,7 +31761,6 @@ uae_u32 REGPARAM2 op_b140_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(2);
@@ -33172,7 +31791,6 @@ uae_u32 REGPARAM2 op_b148_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u16)(src)) > ((uae_u16)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -33194,7 +31812,6 @@ uae_u32 REGPARAM2 op_b150_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -33218,7 +31835,6 @@ uae_u32 REGPARAM2 op_b158_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -33242,7 +31858,6 @@ uae_u32 REGPARAM2 op_b160_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -33265,7 +31880,6 @@ uae_u32 REGPARAM2 op_b168_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -33289,7 +31903,6 @@ uae_u32 REGPARAM2 op_b170_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -33310,7 +31923,6 @@ uae_u32 REGPARAM2 op_b178_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -33332,7 +31944,6 @@ uae_u32 REGPARAM2 op_b179_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, src);
 	m68k_incpci(6);
@@ -33353,7 +31964,6 @@ uae_u32 REGPARAM2 op_b180_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(2);
@@ -33384,7 +31994,6 @@ uae_u32 REGPARAM2 op_b188_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -33406,7 +32015,6 @@ uae_u32 REGPARAM2 op_b190_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -33430,7 +32038,6 @@ uae_u32 REGPARAM2 op_b198_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -33454,7 +32061,6 @@ uae_u32 REGPARAM2 op_b1a0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -33477,7 +32083,6 @@ uae_u32 REGPARAM2 op_b1a8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, src);
 	m68k_incpci(4);
@@ -33501,7 +32106,6 @@ uae_u32 REGPARAM2 op_b1b0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -33522,7 +32126,6 @@ uae_u32 REGPARAM2 op_b1b8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, src);
 	m68k_incpci(4);
@@ -33544,7 +32147,6 @@ uae_u32 REGPARAM2 op_b1b9_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -33569,7 +32171,6 @@ uae_u32 REGPARAM2 op_b1c0_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -33593,7 +32194,6 @@ uae_u32 REGPARAM2 op_b1c8_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -33619,7 +32219,6 @@ uae_u32 REGPARAM2 op_b1d0_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -33646,7 +32245,6 @@ uae_u32 REGPARAM2 op_b1d8_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -33673,7 +32271,6 @@ uae_u32 REGPARAM2 op_b1e0_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_incpci(2);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -33699,7 +32296,6 @@ uae_u32 REGPARAM2 op_b1e8_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -33726,7 +32322,6 @@ uae_u32 REGPARAM2 op_b1f0_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -33750,7 +32345,6 @@ uae_u32 REGPARAM2 op_b1f8_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -33775,7 +32369,6 @@ uae_u32 REGPARAM2 op_b1f9_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -33801,7 +32394,6 @@ uae_u32 REGPARAM2 op_b1fa_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -33828,7 +32420,6 @@ uae_u32 REGPARAM2 op_b1fb_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -33851,7 +32442,6 @@ uae_u32 REGPARAM2 op_b1fc_20_ff(uae_u32 opcode)
 	SET_VFLG((flgs != flgo) && (flgn != flgo));
 	SET_CFLG(((uae_u32)(src)) > ((uae_u32)(dst)));
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -33871,7 +32461,6 @@ uae_u32 REGPARAM2 op_c000_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(2);
@@ -33894,7 +32483,6 @@ uae_u32 REGPARAM2 op_c010_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(2);
@@ -33918,7 +32506,6 @@ uae_u32 REGPARAM2 op_c018_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(2);
@@ -33942,7 +32529,6 @@ uae_u32 REGPARAM2 op_c020_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(2);
@@ -33965,7 +32551,6 @@ uae_u32 REGPARAM2 op_c028_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(4);
@@ -33989,7 +32574,6 @@ uae_u32 REGPARAM2 op_c030_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -34010,7 +32594,6 @@ uae_u32 REGPARAM2 op_c038_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(4);
@@ -34032,7 +32615,6 @@ uae_u32 REGPARAM2 op_c039_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(6);
@@ -34055,7 +32637,6 @@ uae_u32 REGPARAM2 op_c03a_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(4);
@@ -34079,7 +32660,6 @@ uae_u32 REGPARAM2 op_c03b_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -34098,7 +32678,6 @@ uae_u32 REGPARAM2 op_c03c_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((src) & 0xff);
 	m68k_incpci(4);
@@ -34119,7 +32698,6 @@ uae_u32 REGPARAM2 op_c040_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(2);
@@ -34142,7 +32720,6 @@ uae_u32 REGPARAM2 op_c050_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(2);
@@ -34166,7 +32743,6 @@ uae_u32 REGPARAM2 op_c058_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(2);
@@ -34190,7 +32766,6 @@ uae_u32 REGPARAM2 op_c060_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(2);
@@ -34213,7 +32788,6 @@ uae_u32 REGPARAM2 op_c068_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(4);
@@ -34237,7 +32811,6 @@ uae_u32 REGPARAM2 op_c070_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -34258,7 +32831,6 @@ uae_u32 REGPARAM2 op_c078_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(4);
@@ -34280,7 +32852,6 @@ uae_u32 REGPARAM2 op_c079_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(6);
@@ -34303,7 +32874,6 @@ uae_u32 REGPARAM2 op_c07a_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(4);
@@ -34327,7 +32897,6 @@ uae_u32 REGPARAM2 op_c07b_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -34346,7 +32915,6 @@ uae_u32 REGPARAM2 op_c07c_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((src) & 0xffff);
 	m68k_incpci(4);
@@ -34367,7 +32935,6 @@ uae_u32 REGPARAM2 op_c080_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(2);
@@ -34390,7 +32957,6 @@ uae_u32 REGPARAM2 op_c090_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(2);
@@ -34414,7 +32980,6 @@ uae_u32 REGPARAM2 op_c098_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(2);
@@ -34438,7 +33003,6 @@ uae_u32 REGPARAM2 op_c0a0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(2);
@@ -34461,7 +33025,6 @@ uae_u32 REGPARAM2 op_c0a8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(4);
@@ -34485,7 +33048,6 @@ uae_u32 REGPARAM2 op_c0b0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (src);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -34506,7 +33068,6 @@ uae_u32 REGPARAM2 op_c0b8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(4);
@@ -34528,7 +33089,6 @@ uae_u32 REGPARAM2 op_c0b9_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(6);
@@ -34551,7 +33111,6 @@ uae_u32 REGPARAM2 op_c0ba_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(4);
@@ -34575,7 +33134,6 @@ uae_u32 REGPARAM2 op_c0bb_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (src);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -34595,7 +33153,6 @@ uae_u32 REGPARAM2 op_c0bc_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_dreg(regs, dstreg) = (src);
 	m68k_incpci(6);
@@ -34617,7 +33174,6 @@ uae_u32 REGPARAM2 op_c0c0_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s32)(newv)) == 0);
 	SET_NFLG(((uae_s32)(newv)) < 0);
 	count_cycles += 20;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -34641,7 +33197,6 @@ uae_u32 REGPARAM2 op_c0d0_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s32)(newv)) == 0);
 	SET_NFLG(((uae_s32)(newv)) < 0);
 	count_cycles += 20;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -34666,7 +33221,6 @@ uae_u32 REGPARAM2 op_c0d8_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s32)(newv)) == 0);
 	SET_NFLG(((uae_s32)(newv)) < 0);
 	count_cycles += 20;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -34691,7 +33245,6 @@ uae_u32 REGPARAM2 op_c0e0_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s32)(newv)) == 0);
 	SET_NFLG(((uae_s32)(newv)) < 0);
 	count_cycles += 20;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -34715,7 +33268,6 @@ uae_u32 REGPARAM2 op_c0e8_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s32)(newv)) == 0);
 	SET_NFLG(((uae_s32)(newv)) < 0);
 	count_cycles += 20;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -34740,7 +33292,6 @@ uae_u32 REGPARAM2 op_c0f0_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s32)(newv)) == 0);
 	SET_NFLG(((uae_s32)(newv)) < 0);
 	count_cycles += 20;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (newv);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -34762,7 +33313,6 @@ uae_u32 REGPARAM2 op_c0f8_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s32)(newv)) == 0);
 	SET_NFLG(((uae_s32)(newv)) < 0);
 	count_cycles += 20;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -34785,7 +33335,6 @@ uae_u32 REGPARAM2 op_c0f9_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s32)(newv)) == 0);
 	SET_NFLG(((uae_s32)(newv)) < 0);
 	count_cycles += 20;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(6);
@@ -34809,7 +33358,6 @@ uae_u32 REGPARAM2 op_c0fa_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s32)(newv)) == 0);
 	SET_NFLG(((uae_s32)(newv)) < 0);
 	count_cycles += 20;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -34834,7 +33382,6 @@ uae_u32 REGPARAM2 op_c0fb_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s32)(newv)) == 0);
 	SET_NFLG(((uae_s32)(newv)) < 0);
 	count_cycles += 20;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (newv);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -34854,7 +33401,6 @@ uae_u32 REGPARAM2 op_c0fc_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s32)(newv)) == 0);
 	SET_NFLG(((uae_s32)(newv)) < 0);
 	count_cycles += 20;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -34883,7 +33429,6 @@ uae_u32 REGPARAM2 op_c100_20_ff(uae_u32 opcode)
 	SET_ZFLG(GET_ZFLG() & (((uae_s8)(newv)) == 0));
 	SET_NFLG(((uae_s8)(newv)) < 0);
 	SET_VFLG(0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(2);
@@ -34918,7 +33463,6 @@ uae_u32 REGPARAM2 op_c108_20_ff(uae_u32 opcode)
 	SET_ZFLG(GET_ZFLG() & (((uae_s8)(newv)) == 0));
 	SET_NFLG(((uae_s8)(newv)) < 0);
 	SET_VFLG(0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, newv);
 	m68k_incpci(2);
@@ -34941,7 +33485,6 @@ uae_u32 REGPARAM2 op_c110_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, src);
 	m68k_incpci(2);
@@ -34965,7 +33508,6 @@ uae_u32 REGPARAM2 op_c118_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, src);
 	m68k_incpci(2);
@@ -34989,7 +33531,6 @@ uae_u32 REGPARAM2 op_c120_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, src);
 	m68k_incpci(2);
@@ -35012,7 +33553,6 @@ uae_u32 REGPARAM2 op_c128_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -35036,7 +33576,6 @@ uae_u32 REGPARAM2 op_c130_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -35057,7 +33596,6 @@ uae_u32 REGPARAM2 op_c138_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, src);
 	m68k_incpci(4);
@@ -35079,7 +33617,6 @@ uae_u32 REGPARAM2 op_c139_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, src);
 	m68k_incpci(6);
@@ -35096,7 +33633,6 @@ uae_u32 REGPARAM2 op_c140_20_ff(uae_u32 opcode)
 	uae_u32 dstreg = real_opcode & 7;
 	uae_s32 src = m68k_dreg(regs, srcreg);
 	uae_s32 dst = m68k_dreg(regs, dstreg);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (dst);
 	m68k_dreg(regs, dstreg) = (src);
@@ -35114,7 +33650,6 @@ uae_u32 REGPARAM2 op_c148_20_ff(uae_u32 opcode)
 	uae_u32 dstreg = real_opcode & 7;
 	uae_s32 src = m68k_areg(regs, srcreg);
 	uae_s32 dst = m68k_areg(regs, dstreg);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, srcreg) = (dst);
 	m68k_areg(regs, dstreg) = (src);
@@ -35138,7 +33673,6 @@ uae_u32 REGPARAM2 op_c150_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -35162,7 +33696,6 @@ uae_u32 REGPARAM2 op_c158_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -35186,7 +33719,6 @@ uae_u32 REGPARAM2 op_c160_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, src);
 	m68k_incpci(2);
@@ -35209,7 +33741,6 @@ uae_u32 REGPARAM2 op_c168_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -35233,7 +33764,6 @@ uae_u32 REGPARAM2 op_c170_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -35254,7 +33784,6 @@ uae_u32 REGPARAM2 op_c178_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, src);
 	m68k_incpci(4);
@@ -35276,7 +33805,6 @@ uae_u32 REGPARAM2 op_c179_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, src);
 	m68k_incpci(6);
@@ -35293,7 +33821,6 @@ uae_u32 REGPARAM2 op_c188_20_ff(uae_u32 opcode)
 	uae_u32 dstreg = real_opcode & 7;
 	uae_s32 src = m68k_dreg(regs, srcreg);
 	uae_s32 dst = m68k_areg(regs, dstreg);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, srcreg) = (dst);
 	m68k_areg(regs, dstreg) = (src);
@@ -35317,7 +33844,6 @@ uae_u32 REGPARAM2 op_c190_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -35341,7 +33867,6 @@ uae_u32 REGPARAM2 op_c198_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -35365,7 +33890,6 @@ uae_u32 REGPARAM2 op_c1a0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, src);
 	m68k_incpci(2);
@@ -35388,7 +33912,6 @@ uae_u32 REGPARAM2 op_c1a8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, src);
 	m68k_incpci(4);
@@ -35412,7 +33935,6 @@ uae_u32 REGPARAM2 op_c1b0_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, src);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -35433,7 +33955,6 @@ uae_u32 REGPARAM2 op_c1b8_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, src);
 	m68k_incpci(4);
@@ -35455,7 +33976,6 @@ uae_u32 REGPARAM2 op_c1b9_20_ff(uae_u32 opcode)
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, src);
 	m68k_incpci(6);
@@ -35477,7 +33997,6 @@ uae_u32 REGPARAM2 op_c1c0_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s32)(newv)) == 0);
 	SET_NFLG(((uae_s32)(newv)) < 0);
 	count_cycles += 20;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -35501,7 +34020,6 @@ uae_u32 REGPARAM2 op_c1d0_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s32)(newv)) == 0);
 	SET_NFLG(((uae_s32)(newv)) < 0);
 	count_cycles += 20;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -35526,7 +34044,6 @@ uae_u32 REGPARAM2 op_c1d8_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s32)(newv)) == 0);
 	SET_NFLG(((uae_s32)(newv)) < 0);
 	count_cycles += 20;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -35551,7 +34068,6 @@ uae_u32 REGPARAM2 op_c1e0_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s32)(newv)) == 0);
 	SET_NFLG(((uae_s32)(newv)) < 0);
 	count_cycles += 20;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -35575,7 +34091,6 @@ uae_u32 REGPARAM2 op_c1e8_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s32)(newv)) == 0);
 	SET_NFLG(((uae_s32)(newv)) < 0);
 	count_cycles += 20;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -35600,7 +34115,6 @@ uae_u32 REGPARAM2 op_c1f0_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s32)(newv)) == 0);
 	SET_NFLG(((uae_s32)(newv)) < 0);
 	count_cycles += 20;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (newv);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -35622,7 +34136,6 @@ uae_u32 REGPARAM2 op_c1f8_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s32)(newv)) == 0);
 	SET_NFLG(((uae_s32)(newv)) < 0);
 	count_cycles += 20;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -35645,7 +34158,6 @@ uae_u32 REGPARAM2 op_c1f9_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s32)(newv)) == 0);
 	SET_NFLG(((uae_s32)(newv)) < 0);
 	count_cycles += 20;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(6);
@@ -35669,7 +34181,6 @@ uae_u32 REGPARAM2 op_c1fa_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s32)(newv)) == 0);
 	SET_NFLG(((uae_s32)(newv)) < 0);
 	count_cycles += 20;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -35694,7 +34205,6 @@ uae_u32 REGPARAM2 op_c1fb_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s32)(newv)) == 0);
 	SET_NFLG(((uae_s32)(newv)) < 0);
 	count_cycles += 20;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (newv);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -35714,7 +34224,6 @@ uae_u32 REGPARAM2 op_c1fc_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s32)(newv)) == 0);
 	SET_NFLG(((uae_s32)(newv)) < 0);
 	count_cycles += 20;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -35740,7 +34249,6 @@ uae_u32 REGPARAM2 op_d000_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(2);
@@ -35768,7 +34276,6 @@ uae_u32 REGPARAM2 op_d010_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(2);
@@ -35797,7 +34304,6 @@ uae_u32 REGPARAM2 op_d018_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(2);
@@ -35826,7 +34332,6 @@ uae_u32 REGPARAM2 op_d020_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(2);
@@ -35854,7 +34359,6 @@ uae_u32 REGPARAM2 op_d028_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(4);
@@ -35883,7 +34387,6 @@ uae_u32 REGPARAM2 op_d030_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -35909,7 +34412,6 @@ uae_u32 REGPARAM2 op_d038_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(4);
@@ -35936,7 +34438,6 @@ uae_u32 REGPARAM2 op_d039_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(6);
@@ -35964,7 +34465,6 @@ uae_u32 REGPARAM2 op_d03a_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(4);
@@ -35993,7 +34493,6 @@ uae_u32 REGPARAM2 op_d03b_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -36017,7 +34516,6 @@ uae_u32 REGPARAM2 op_d03c_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(4);
@@ -36043,7 +34541,6 @@ uae_u32 REGPARAM2 op_d040_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	m68k_incpci(2);
@@ -36069,7 +34566,6 @@ uae_u32 REGPARAM2 op_d048_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	m68k_incpci(2);
@@ -36097,7 +34593,6 @@ uae_u32 REGPARAM2 op_d050_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	m68k_incpci(2);
@@ -36126,7 +34621,6 @@ uae_u32 REGPARAM2 op_d058_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	m68k_incpci(2);
@@ -36155,7 +34649,6 @@ uae_u32 REGPARAM2 op_d060_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	m68k_incpci(2);
@@ -36183,7 +34676,6 @@ uae_u32 REGPARAM2 op_d068_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	m68k_incpci(4);
@@ -36212,7 +34704,6 @@ uae_u32 REGPARAM2 op_d070_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -36238,7 +34729,6 @@ uae_u32 REGPARAM2 op_d078_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	m68k_incpci(4);
@@ -36265,7 +34755,6 @@ uae_u32 REGPARAM2 op_d079_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	m68k_incpci(6);
@@ -36293,7 +34782,6 @@ uae_u32 REGPARAM2 op_d07a_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	m68k_incpci(4);
@@ -36322,7 +34810,6 @@ uae_u32 REGPARAM2 op_d07b_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -36346,7 +34833,6 @@ uae_u32 REGPARAM2 op_d07c_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	m68k_incpci(4);
@@ -36372,7 +34858,6 @@ uae_u32 REGPARAM2 op_d080_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -36398,7 +34883,6 @@ uae_u32 REGPARAM2 op_d088_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -36426,7 +34910,6 @@ uae_u32 REGPARAM2 op_d090_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -36455,7 +34938,6 @@ uae_u32 REGPARAM2 op_d098_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -36484,7 +34966,6 @@ uae_u32 REGPARAM2 op_d0a0_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -36512,7 +34993,6 @@ uae_u32 REGPARAM2 op_d0a8_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -36541,7 +35021,6 @@ uae_u32 REGPARAM2 op_d0b0_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (newv);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -36567,7 +35046,6 @@ uae_u32 REGPARAM2 op_d0b8_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -36594,7 +35072,6 @@ uae_u32 REGPARAM2 op_d0b9_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(6);
@@ -36622,7 +35099,6 @@ uae_u32 REGPARAM2 op_d0ba_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -36651,7 +35127,6 @@ uae_u32 REGPARAM2 op_d0bb_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_dreg(regs, dstreg) = (newv);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -36676,7 +35151,6 @@ uae_u32 REGPARAM2 op_d0bc_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(6);
@@ -36694,7 +35168,6 @@ uae_u32 REGPARAM2 op_d0c0_20_ff(uae_u32 opcode)
 	uae_s16 src = m68k_dreg(regs, srcreg);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst + src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -36712,7 +35185,6 @@ uae_u32 REGPARAM2 op_d0c8_20_ff(uae_u32 opcode)
 	uae_s16 src = m68k_areg(regs, srcreg);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst + src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -36732,7 +35204,6 @@ uae_u32 REGPARAM2 op_d0d0_20_ff(uae_u32 opcode)
 	uae_s16 src = x_get_word(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst + src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -36753,7 +35224,6 @@ uae_u32 REGPARAM2 op_d0d8_20_ff(uae_u32 opcode)
 	m68k_areg(regs, srcreg) += 2;
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst + src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -36774,7 +35244,6 @@ uae_u32 REGPARAM2 op_d0e0_20_ff(uae_u32 opcode)
 	m68k_areg(regs, srcreg) = srca;
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst + src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -36794,7 +35263,6 @@ uae_u32 REGPARAM2 op_d0e8_20_ff(uae_u32 opcode)
 	uae_s16 src = x_get_word(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst + src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -36815,7 +35283,6 @@ uae_u32 REGPARAM2 op_d0f0_20_ff(uae_u32 opcode)
 	uae_s16 src = x_get_word(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst + src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_areg(regs, dstreg) = (newv);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -36833,7 +35300,6 @@ uae_u32 REGPARAM2 op_d0f8_20_ff(uae_u32 opcode)
 	uae_s16 src = x_get_word(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst + src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -36852,7 +35318,6 @@ uae_u32 REGPARAM2 op_d0f9_20_ff(uae_u32 opcode)
 	uae_s16 src = x_get_word(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst + src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(6);
@@ -36872,7 +35337,6 @@ uae_u32 REGPARAM2 op_d0fa_20_ff(uae_u32 opcode)
 	uae_s16 src = x_get_word(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst + src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -36893,7 +35357,6 @@ uae_u32 REGPARAM2 op_d0fb_20_ff(uae_u32 opcode)
 	uae_s16 src = x_get_word(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst + src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_areg(regs, dstreg) = (newv);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -36909,7 +35372,6 @@ uae_u32 REGPARAM2 op_d0fc_20_ff(uae_u32 opcode)
 	uae_s16 src = get_word_020_prefetch(2);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst + src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -36935,7 +35397,6 @@ uae_u32 REGPARAM2 op_d100_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s8)(newv)) == 0));
 	SET_NFLG(((uae_s8)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((newv) & 0xff);
 	m68k_incpci(2);
@@ -36967,7 +35428,6 @@ uae_u32 REGPARAM2 op_d108_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s8)(newv)) == 0));
 	SET_NFLG(((uae_s8)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, newv);
 	m68k_incpci(2);
@@ -36995,7 +35455,6 @@ uae_u32 REGPARAM2 op_d110_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, newv);
 	m68k_incpci(2);
@@ -37024,7 +35483,6 @@ uae_u32 REGPARAM2 op_d118_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, newv);
 	m68k_incpci(2);
@@ -37053,7 +35511,6 @@ uae_u32 REGPARAM2 op_d120_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_byte(dsta, newv);
 	m68k_incpci(2);
@@ -37081,7 +35538,6 @@ uae_u32 REGPARAM2 op_d128_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, newv);
 	m68k_incpci(4);
@@ -37110,7 +35566,6 @@ uae_u32 REGPARAM2 op_d130_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_byte(dsta, newv);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -37136,7 +35591,6 @@ uae_u32 REGPARAM2 op_d138_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_byte(dsta, newv);
 	m68k_incpci(4);
@@ -37163,7 +35617,6 @@ uae_u32 REGPARAM2 op_d139_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u8)(~dst)) < ((uae_u8)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_byte(dsta, newv);
 	m68k_incpci(6);
@@ -37189,7 +35642,6 @@ uae_u32 REGPARAM2 op_d140_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s16)(newv)) == 0));
 	SET_NFLG(((uae_s16)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((newv) & 0xffff);
 	m68k_incpci(2);
@@ -37221,7 +35673,6 @@ uae_u32 REGPARAM2 op_d148_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s16)(newv)) == 0));
 	SET_NFLG(((uae_s16)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, newv);
 	m68k_incpci(2);
@@ -37249,7 +35700,6 @@ uae_u32 REGPARAM2 op_d150_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, newv);
 	m68k_incpci(2);
@@ -37278,7 +35728,6 @@ uae_u32 REGPARAM2 op_d158_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, newv);
 	m68k_incpci(2);
@@ -37307,7 +35756,6 @@ uae_u32 REGPARAM2 op_d160_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dsta, newv);
 	m68k_incpci(2);
@@ -37335,7 +35783,6 @@ uae_u32 REGPARAM2 op_d168_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, newv);
 	m68k_incpci(4);
@@ -37364,7 +35811,6 @@ uae_u32 REGPARAM2 op_d170_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dsta, newv);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -37390,7 +35836,6 @@ uae_u32 REGPARAM2 op_d178_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dsta, newv);
 	m68k_incpci(4);
@@ -37417,7 +35862,6 @@ uae_u32 REGPARAM2 op_d179_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u16)(~dst)) < ((uae_u16)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dsta, newv);
 	m68k_incpci(6);
@@ -37443,7 +35887,6 @@ uae_u32 REGPARAM2 op_d180_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s32)(newv)) == 0));
 	SET_NFLG(((uae_s32)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -37475,7 +35918,6 @@ uae_u32 REGPARAM2 op_d188_20_ff(uae_u32 opcode)
 	COPY_CARRY();
 	SET_ZFLG(GET_ZFLG() & (((uae_s32)(newv)) == 0));
 	SET_NFLG(((uae_s32)(newv)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, newv);
 	m68k_incpci(2);
@@ -37503,7 +35945,6 @@ uae_u32 REGPARAM2 op_d190_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, newv);
 	m68k_incpci(2);
@@ -37532,7 +35973,6 @@ uae_u32 REGPARAM2 op_d198_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, newv);
 	m68k_incpci(2);
@@ -37561,7 +36001,6 @@ uae_u32 REGPARAM2 op_d1a0_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_long(dsta, newv);
 	m68k_incpci(2);
@@ -37589,7 +36028,6 @@ uae_u32 REGPARAM2 op_d1a8_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, newv);
 	m68k_incpci(4);
@@ -37618,7 +36056,6 @@ uae_u32 REGPARAM2 op_d1b0_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_long(dsta, newv);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -37644,7 +36081,6 @@ uae_u32 REGPARAM2 op_d1b8_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_long(dsta, newv);
 	m68k_incpci(4);
@@ -37671,7 +36107,6 @@ uae_u32 REGPARAM2 op_d1b9_20_ff(uae_u32 opcode)
 	SET_CFLG(((uae_u32)(~dst)) < ((uae_u32)(src)));
 	COPY_CARRY();
 	SET_NFLG(flgn != 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_long(dsta, newv);
 	m68k_incpci(6);
@@ -37689,7 +36124,6 @@ uae_u32 REGPARAM2 op_d1c0_20_ff(uae_u32 opcode)
 	uae_s32 src = m68k_dreg(regs, srcreg);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst + src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -37707,7 +36141,6 @@ uae_u32 REGPARAM2 op_d1c8_20_ff(uae_u32 opcode)
 	uae_s32 src = m68k_areg(regs, srcreg);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst + src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -37727,7 +36160,6 @@ uae_u32 REGPARAM2 op_d1d0_20_ff(uae_u32 opcode)
 	uae_s32 src = x_get_long(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst + src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -37748,7 +36180,6 @@ uae_u32 REGPARAM2 op_d1d8_20_ff(uae_u32 opcode)
 	m68k_areg(regs, srcreg) += 4;
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst + src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -37769,7 +36200,6 @@ uae_u32 REGPARAM2 op_d1e0_20_ff(uae_u32 opcode)
 	m68k_areg(regs, srcreg) = srca;
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst + src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(2);
@@ -37789,7 +36219,6 @@ uae_u32 REGPARAM2 op_d1e8_20_ff(uae_u32 opcode)
 	uae_s32 src = x_get_long(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst + src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -37810,7 +36239,6 @@ uae_u32 REGPARAM2 op_d1f0_20_ff(uae_u32 opcode)
 	uae_s32 src = x_get_long(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst + src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_areg(regs, dstreg) = (newv);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -37828,7 +36256,6 @@ uae_u32 REGPARAM2 op_d1f8_20_ff(uae_u32 opcode)
 	uae_s32 src = x_get_long(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst + src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -37847,7 +36274,6 @@ uae_u32 REGPARAM2 op_d1f9_20_ff(uae_u32 opcode)
 	uae_s32 src = x_get_long(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst + src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(6);
@@ -37867,7 +36293,6 @@ uae_u32 REGPARAM2 op_d1fa_20_ff(uae_u32 opcode)
 	uae_s32 src = x_get_long(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst + src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(4);
@@ -37888,7 +36313,6 @@ uae_u32 REGPARAM2 op_d1fb_20_ff(uae_u32 opcode)
 	uae_s32 src = x_get_long(srca);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst + src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	m68k_areg(regs, dstreg) = (newv);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -37905,7 +36329,6 @@ uae_u32 REGPARAM2 op_d1fc_20_ff(uae_u32 opcode)
 	src = get_long_020_prefetch(2);
 	uae_s32 dst = m68k_areg(regs, dstreg);
 	uae_u32 newv = dst + src;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_areg(regs, dstreg) = (newv);
 	m68k_incpci(6);
@@ -37941,7 +36364,6 @@ uae_u32 REGPARAM2 op_e000_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s8)(val)) == 0);
 	SET_NFLG(((uae_s8)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((val) & 0xff);
 	m68k_incpci(2);
@@ -37974,7 +36396,6 @@ uae_u32 REGPARAM2 op_e008_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s8)(val)) == 0);
 	SET_NFLG(((uae_s8)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((val) & 0xff);
 	m68k_incpci(2);
@@ -38012,7 +36433,6 @@ uae_u32 REGPARAM2 op_e010_20_ff(uae_u32 opcode)
 	SET_CFLG(GET_XFLG());
 	SET_ZFLG(((uae_s8)(val)) == 0);
 	SET_NFLG(((uae_s8)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((val) & 0xff);
 	m68k_incpci(2);
@@ -38044,7 +36464,6 @@ uae_u32 REGPARAM2 op_e018_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s8)(val)) == 0);
 	SET_NFLG(((uae_s8)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((val) & 0xff);
 	m68k_incpci(2);
@@ -38080,7 +36499,6 @@ uae_u32 REGPARAM2 op_e020_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s8)(val)) == 0);
 	SET_NFLG(((uae_s8)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((val) & 0xff);
 	m68k_incpci(2);
@@ -38113,7 +36531,6 @@ uae_u32 REGPARAM2 op_e028_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s8)(val)) == 0);
 	SET_NFLG(((uae_s8)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((val) & 0xff);
 	m68k_incpci(2);
@@ -38154,7 +36571,6 @@ uae_u32 REGPARAM2 op_e030_20_ff(uae_u32 opcode)
 	SET_CFLG(GET_XFLG());
 	SET_ZFLG(((uae_s8)(val)) == 0);
 	SET_NFLG(((uae_s8)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((val) & 0xff);
 	m68k_incpci(2);
@@ -38186,7 +36602,6 @@ uae_u32 REGPARAM2 op_e038_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s8)(val)) == 0);
 	SET_NFLG(((uae_s8)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((val) & 0xff);
 	m68k_incpci(2);
@@ -38222,7 +36637,6 @@ uae_u32 REGPARAM2 op_e040_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((val) & 0xffff);
 	m68k_incpci(2);
@@ -38255,7 +36669,6 @@ uae_u32 REGPARAM2 op_e048_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((val) & 0xffff);
 	m68k_incpci(2);
@@ -38293,7 +36706,6 @@ uae_u32 REGPARAM2 op_e050_20_ff(uae_u32 opcode)
 	SET_CFLG(GET_XFLG());
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((val) & 0xffff);
 	m68k_incpci(2);
@@ -38325,7 +36737,6 @@ uae_u32 REGPARAM2 op_e058_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((val) & 0xffff);
 	m68k_incpci(2);
@@ -38361,7 +36772,6 @@ uae_u32 REGPARAM2 op_e060_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((val) & 0xffff);
 	m68k_incpci(2);
@@ -38394,7 +36804,6 @@ uae_u32 REGPARAM2 op_e068_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((val) & 0xffff);
 	m68k_incpci(2);
@@ -38434,7 +36843,6 @@ uae_u32 REGPARAM2 op_e070_20_ff(uae_u32 opcode)
 	SET_CFLG(GET_XFLG());
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((val) & 0xffff);
 	m68k_incpci(2);
@@ -38466,7 +36874,6 @@ uae_u32 REGPARAM2 op_e078_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((val) & 0xffff);
 	m68k_incpci(2);
@@ -38502,7 +36909,6 @@ uae_u32 REGPARAM2 op_e080_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s32)(val)) == 0);
 	SET_NFLG(((uae_s32)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (val);
 	m68k_incpci(2);
@@ -38535,7 +36941,6 @@ uae_u32 REGPARAM2 op_e088_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s32)(val)) == 0);
 	SET_NFLG(((uae_s32)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (val);
 	m68k_incpci(2);
@@ -38573,7 +36978,6 @@ uae_u32 REGPARAM2 op_e090_20_ff(uae_u32 opcode)
 	SET_CFLG(GET_XFLG());
 	SET_ZFLG(((uae_s32)(val)) == 0);
 	SET_NFLG(((uae_s32)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (val);
 	m68k_incpci(2);
@@ -38605,7 +37009,6 @@ uae_u32 REGPARAM2 op_e098_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s32)(val)) == 0);
 	SET_NFLG(((uae_s32)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (val);
 	m68k_incpci(2);
@@ -38641,7 +37044,6 @@ uae_u32 REGPARAM2 op_e0a0_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s32)(val)) == 0);
 	SET_NFLG(((uae_s32)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (val);
 	m68k_incpci(2);
@@ -38674,7 +37076,6 @@ uae_u32 REGPARAM2 op_e0a8_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s32)(val)) == 0);
 	SET_NFLG(((uae_s32)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (val);
 	m68k_incpci(2);
@@ -38713,7 +37114,6 @@ uae_u32 REGPARAM2 op_e0b0_20_ff(uae_u32 opcode)
 	SET_CFLG(GET_XFLG());
 	SET_ZFLG(((uae_s32)(val)) == 0);
 	SET_NFLG(((uae_s32)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (val);
 	m68k_incpci(2);
@@ -38745,7 +37145,6 @@ uae_u32 REGPARAM2 op_e0b8_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s32)(val)) == 0);
 	SET_NFLG(((uae_s32)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (val);
 	m68k_incpci(2);
@@ -38771,7 +37170,6 @@ uae_u32 REGPARAM2 op_e0d0_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(cflg);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dataa, val);
 	m68k_incpci(2);
@@ -38798,7 +37196,6 @@ uae_u32 REGPARAM2 op_e0d8_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(cflg);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dataa, val);
 	m68k_incpci(2);
@@ -38825,7 +37222,6 @@ uae_u32 REGPARAM2 op_e0e0_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(cflg);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dataa, val);
 	m68k_incpci(2);
@@ -38851,7 +37247,6 @@ uae_u32 REGPARAM2 op_e0e8_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(cflg);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dataa, val);
 	m68k_incpci(4);
@@ -38878,7 +37273,6 @@ uae_u32 REGPARAM2 op_e0f0_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(cflg);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dataa, val);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -38901,7 +37295,6 @@ uae_u32 REGPARAM2 op_e0f8_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(cflg);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dataa, val);
 	m68k_incpci(4);
@@ -38925,7 +37318,6 @@ uae_u32 REGPARAM2 op_e0f9_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(cflg);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dataa, val);
 	m68k_incpci(6);
@@ -38962,7 +37354,6 @@ uae_u32 REGPARAM2 op_e100_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s8)(val)) == 0);
 	SET_NFLG(((uae_s8)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((val) & 0xff);
 	m68k_incpci(2);
@@ -38996,7 +37387,6 @@ uae_u32 REGPARAM2 op_e108_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s8)(val)) == 0);
 	SET_NFLG(((uae_s8)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((val) & 0xff);
 	m68k_incpci(2);
@@ -39031,7 +37421,6 @@ uae_u32 REGPARAM2 op_e110_20_ff(uae_u32 opcode)
 	SET_CFLG(GET_XFLG());
 	SET_ZFLG(((uae_s8)(val)) == 0);
 	SET_NFLG(((uae_s8)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((val) & 0xff);
 	m68k_incpci(2);
@@ -39063,7 +37452,6 @@ uae_u32 REGPARAM2 op_e118_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s8)(val)) == 0);
 	SET_NFLG(((uae_s8)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((val) & 0xff);
 	m68k_incpci(2);
@@ -39100,7 +37488,6 @@ uae_u32 REGPARAM2 op_e120_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s8)(val)) == 0);
 	SET_NFLG(((uae_s8)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((val) & 0xff);
 	m68k_incpci(2);
@@ -39134,7 +37521,6 @@ uae_u32 REGPARAM2 op_e128_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s8)(val)) == 0);
 	SET_NFLG(((uae_s8)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((val) & 0xff);
 	m68k_incpci(2);
@@ -39172,7 +37558,6 @@ uae_u32 REGPARAM2 op_e130_20_ff(uae_u32 opcode)
 	SET_CFLG(GET_XFLG());
 	SET_ZFLG(((uae_s8)(val)) == 0);
 	SET_NFLG(((uae_s8)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((val) & 0xff);
 	m68k_incpci(2);
@@ -39204,7 +37589,6 @@ uae_u32 REGPARAM2 op_e138_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s8)(val)) == 0);
 	SET_NFLG(((uae_s8)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xff) | ((val) & 0xff);
 	m68k_incpci(2);
@@ -39241,7 +37625,6 @@ uae_u32 REGPARAM2 op_e140_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((val) & 0xffff);
 	m68k_incpci(2);
@@ -39275,7 +37658,6 @@ uae_u32 REGPARAM2 op_e148_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((val) & 0xffff);
 	m68k_incpci(2);
@@ -39310,7 +37692,6 @@ uae_u32 REGPARAM2 op_e150_20_ff(uae_u32 opcode)
 	SET_CFLG(GET_XFLG());
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((val) & 0xffff);
 	m68k_incpci(2);
@@ -39342,7 +37723,6 @@ uae_u32 REGPARAM2 op_e158_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((val) & 0xffff);
 	m68k_incpci(2);
@@ -39379,7 +37759,6 @@ uae_u32 REGPARAM2 op_e160_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((val) & 0xffff);
 	m68k_incpci(2);
@@ -39413,7 +37792,6 @@ uae_u32 REGPARAM2 op_e168_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((val) & 0xffff);
 	m68k_incpci(2);
@@ -39450,7 +37828,6 @@ uae_u32 REGPARAM2 op_e170_20_ff(uae_u32 opcode)
 	SET_CFLG(GET_XFLG());
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((val) & 0xffff);
 	m68k_incpci(2);
@@ -39482,7 +37859,6 @@ uae_u32 REGPARAM2 op_e178_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (m68k_dreg(regs, dstreg) & ~0xffff) | ((val) & 0xffff);
 	m68k_incpci(2);
@@ -39519,7 +37895,6 @@ uae_u32 REGPARAM2 op_e180_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s32)(val)) == 0);
 	SET_NFLG(((uae_s32)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (val);
 	m68k_incpci(2);
@@ -39553,7 +37928,6 @@ uae_u32 REGPARAM2 op_e188_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s32)(val)) == 0);
 	SET_NFLG(((uae_s32)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (val);
 	m68k_incpci(2);
@@ -39588,7 +37962,6 @@ uae_u32 REGPARAM2 op_e190_20_ff(uae_u32 opcode)
 	SET_CFLG(GET_XFLG());
 	SET_ZFLG(((uae_s32)(val)) == 0);
 	SET_NFLG(((uae_s32)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (val);
 	m68k_incpci(2);
@@ -39620,7 +37993,6 @@ uae_u32 REGPARAM2 op_e198_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s32)(val)) == 0);
 	SET_NFLG(((uae_s32)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (val);
 	m68k_incpci(2);
@@ -39657,7 +38029,6 @@ uae_u32 REGPARAM2 op_e1a0_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s32)(val)) == 0);
 	SET_NFLG(((uae_s32)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (val);
 	m68k_incpci(2);
@@ -39691,7 +38062,6 @@ uae_u32 REGPARAM2 op_e1a8_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s32)(val)) == 0);
 	SET_NFLG(((uae_s32)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (val);
 	m68k_incpci(2);
@@ -39727,7 +38097,6 @@ uae_u32 REGPARAM2 op_e1b0_20_ff(uae_u32 opcode)
 	SET_CFLG(GET_XFLG());
 	SET_ZFLG(((uae_s32)(val)) == 0);
 	SET_NFLG(((uae_s32)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (val);
 	m68k_incpci(2);
@@ -39759,7 +38128,6 @@ uae_u32 REGPARAM2 op_e1b8_20_ff(uae_u32 opcode)
 	}
 	SET_ZFLG(((uae_s32)(val)) == 0);
 	SET_NFLG(((uae_s32)(val)) < 0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	m68k_dreg(regs, dstreg) = (val);
 	m68k_incpci(2);
@@ -39787,7 +38155,6 @@ uae_u32 REGPARAM2 op_e1d0_20_ff(uae_u32 opcode)
 	SET_CFLG(sign != 0);
 	COPY_CARRY();
 	SET_VFLG(GET_VFLG() | (sign2 != sign));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dataa, val);
 	m68k_incpci(2);
@@ -39816,7 +38183,6 @@ uae_u32 REGPARAM2 op_e1d8_20_ff(uae_u32 opcode)
 	SET_CFLG(sign != 0);
 	COPY_CARRY();
 	SET_VFLG(GET_VFLG() | (sign2 != sign));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dataa, val);
 	m68k_incpci(2);
@@ -39845,7 +38211,6 @@ uae_u32 REGPARAM2 op_e1e0_20_ff(uae_u32 opcode)
 	SET_CFLG(sign != 0);
 	COPY_CARRY();
 	SET_VFLG(GET_VFLG() | (sign2 != sign));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dataa, val);
 	m68k_incpci(2);
@@ -39873,7 +38238,6 @@ uae_u32 REGPARAM2 op_e1e8_20_ff(uae_u32 opcode)
 	SET_CFLG(sign != 0);
 	COPY_CARRY();
 	SET_VFLG(GET_VFLG() | (sign2 != sign));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dataa, val);
 	m68k_incpci(4);
@@ -39902,7 +38266,6 @@ uae_u32 REGPARAM2 op_e1f0_20_ff(uae_u32 opcode)
 	SET_CFLG(sign != 0);
 	COPY_CARRY();
 	SET_VFLG(GET_VFLG() | (sign2 != sign));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dataa, val);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -39927,7 +38290,6 @@ uae_u32 REGPARAM2 op_e1f8_20_ff(uae_u32 opcode)
 	SET_CFLG(sign != 0);
 	COPY_CARRY();
 	SET_VFLG(GET_VFLG() | (sign2 != sign));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dataa, val);
 	m68k_incpci(4);
@@ -39953,7 +38315,6 @@ uae_u32 REGPARAM2 op_e1f9_20_ff(uae_u32 opcode)
 	SET_CFLG(sign != 0);
 	COPY_CARRY();
 	SET_VFLG(GET_VFLG() | (sign2 != sign));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dataa, val);
 	m68k_incpci(6);
@@ -39978,7 +38339,6 @@ uae_u32 REGPARAM2 op_e2d0_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dataa, val);
 	m68k_incpci(2);
@@ -40004,7 +38364,6 @@ uae_u32 REGPARAM2 op_e2d8_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dataa, val);
 	m68k_incpci(2);
@@ -40030,7 +38389,6 @@ uae_u32 REGPARAM2 op_e2e0_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dataa, val);
 	m68k_incpci(2);
@@ -40055,7 +38413,6 @@ uae_u32 REGPARAM2 op_e2e8_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dataa, val);
 	m68k_incpci(4);
@@ -40081,7 +38438,6 @@ uae_u32 REGPARAM2 op_e2f0_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dataa, val);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -40103,7 +38459,6 @@ uae_u32 REGPARAM2 op_e2f8_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dataa, val);
 	m68k_incpci(4);
@@ -40126,7 +38481,6 @@ uae_u32 REGPARAM2 op_e2f9_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dataa, val);
 	m68k_incpci(6);
@@ -40151,7 +38505,6 @@ uae_u32 REGPARAM2 op_e3d0_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry >> 15);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dataa, val);
 	m68k_incpci(2);
@@ -40177,7 +38530,6 @@ uae_u32 REGPARAM2 op_e3d8_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry >> 15);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dataa, val);
 	m68k_incpci(2);
@@ -40203,7 +38555,6 @@ uae_u32 REGPARAM2 op_e3e0_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry >> 15);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dataa, val);
 	m68k_incpci(2);
@@ -40228,7 +38579,6 @@ uae_u32 REGPARAM2 op_e3e8_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry >> 15);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dataa, val);
 	m68k_incpci(4);
@@ -40254,7 +38604,6 @@ uae_u32 REGPARAM2 op_e3f0_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry >> 15);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dataa, val);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -40276,7 +38625,6 @@ uae_u32 REGPARAM2 op_e3f8_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry >> 15);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dataa, val);
 	m68k_incpci(4);
@@ -40299,7 +38647,6 @@ uae_u32 REGPARAM2 op_e3f9_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry >> 15);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dataa, val);
 	m68k_incpci(6);
@@ -40325,7 +38672,6 @@ uae_u32 REGPARAM2 op_e4d0_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dataa, val);
 	m68k_incpci(2);
@@ -40352,7 +38698,6 @@ uae_u32 REGPARAM2 op_e4d8_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dataa, val);
 	m68k_incpci(2);
@@ -40379,7 +38724,6 @@ uae_u32 REGPARAM2 op_e4e0_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dataa, val);
 	m68k_incpci(2);
@@ -40405,7 +38749,6 @@ uae_u32 REGPARAM2 op_e4e8_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dataa, val);
 	m68k_incpci(4);
@@ -40432,7 +38775,6 @@ uae_u32 REGPARAM2 op_e4f0_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dataa, val);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -40455,7 +38797,6 @@ uae_u32 REGPARAM2 op_e4f8_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dataa, val);
 	m68k_incpci(4);
@@ -40479,7 +38820,6 @@ uae_u32 REGPARAM2 op_e4f9_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dataa, val);
 	m68k_incpci(6);
@@ -40505,7 +38845,6 @@ uae_u32 REGPARAM2 op_e5d0_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry >> 15);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dataa, val);
 	m68k_incpci(2);
@@ -40532,7 +38871,6 @@ uae_u32 REGPARAM2 op_e5d8_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry >> 15);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dataa, val);
 	m68k_incpci(2);
@@ -40559,7 +38897,6 @@ uae_u32 REGPARAM2 op_e5e0_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry >> 15);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dataa, val);
 	m68k_incpci(2);
@@ -40585,7 +38922,6 @@ uae_u32 REGPARAM2 op_e5e8_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry >> 15);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dataa, val);
 	m68k_incpci(4);
@@ -40612,7 +38948,6 @@ uae_u32 REGPARAM2 op_e5f0_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry >> 15);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dataa, val);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -40635,7 +38970,6 @@ uae_u32 REGPARAM2 op_e5f8_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry >> 15);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dataa, val);
 	m68k_incpci(4);
@@ -40659,7 +38993,6 @@ uae_u32 REGPARAM2 op_e5f9_20_ff(uae_u32 opcode)
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry >> 15);
 	COPY_CARRY();
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dataa, val);
 	m68k_incpci(6);
@@ -40684,7 +39017,6 @@ uae_u32 REGPARAM2 op_e6d0_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dataa, val);
 	m68k_incpci(2);
@@ -40710,7 +39042,6 @@ uae_u32 REGPARAM2 op_e6d8_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dataa, val);
 	m68k_incpci(2);
@@ -40736,7 +39067,6 @@ uae_u32 REGPARAM2 op_e6e0_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dataa, val);
 	m68k_incpci(2);
@@ -40761,7 +39091,6 @@ uae_u32 REGPARAM2 op_e6e8_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dataa, val);
 	m68k_incpci(4);
@@ -40787,7 +39116,6 @@ uae_u32 REGPARAM2 op_e6f0_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dataa, val);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -40809,7 +39137,6 @@ uae_u32 REGPARAM2 op_e6f8_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dataa, val);
 	m68k_incpci(4);
@@ -40832,7 +39159,6 @@ uae_u32 REGPARAM2 op_e6f9_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dataa, val);
 	m68k_incpci(6);
@@ -40857,7 +39183,6 @@ uae_u32 REGPARAM2 op_e7d0_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry >> 15);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dataa, val);
 	m68k_incpci(2);
@@ -40883,7 +39208,6 @@ uae_u32 REGPARAM2 op_e7d8_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry >> 15);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dataa, val);
 	m68k_incpci(2);
@@ -40909,7 +39233,6 @@ uae_u32 REGPARAM2 op_e7e0_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry >> 15);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(2);
 	x_put_word(dataa, val);
 	m68k_incpci(2);
@@ -40934,7 +39257,6 @@ uae_u32 REGPARAM2 op_e7e8_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry >> 15);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dataa, val);
 	m68k_incpci(4);
@@ -40960,7 +39282,6 @@ uae_u32 REGPARAM2 op_e7f0_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry >> 15);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	x_put_word(dataa, val);
 	return (2 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -40982,7 +39303,6 @@ uae_u32 REGPARAM2 op_e7f8_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry >> 15);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	x_put_word(dataa, val);
 	m68k_incpci(4);
@@ -41005,7 +39325,6 @@ uae_u32 REGPARAM2 op_e7f9_20_ff(uae_u32 opcode)
 	SET_ZFLG(((uae_s16)(val)) == 0);
 	SET_NFLG(((uae_s16)(val)) < 0);
 	SET_CFLG(carry >> 15);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	x_put_word(dataa, val);
 	m68k_incpci(6);
@@ -41031,7 +39350,6 @@ uae_u32 REGPARAM2 op_e8c0_20_ff(uae_u32 opcode)
 	SET_ALWAYS_NFLG(((uae_s32)tmp) < 0 ? 1 : 0);
 	tmp >>= (32 - width);
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -41058,7 +39376,6 @@ uae_u32 REGPARAM2 op_e8d0_20_ff(uae_u32 opcode)
 	SET_ALWAYS_NFLG(((uae_s32)tmp) < 0 ? 1 : 0);
 	tmp >>= (32 - width);
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -41085,7 +39402,6 @@ uae_u32 REGPARAM2 op_e8e8_20_ff(uae_u32 opcode)
 	SET_ALWAYS_NFLG(((uae_s32)tmp) < 0 ? 1 : 0);
 	tmp >>= (32 - width);
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -41113,7 +39429,6 @@ uae_u32 REGPARAM2 op_e8f0_20_ff(uae_u32 opcode)
 	SET_ALWAYS_NFLG(((uae_s32)tmp) < 0 ? 1 : 0);
 	tmp >>= (32 - width);
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -41137,7 +39452,6 @@ uae_u32 REGPARAM2 op_e8f8_20_ff(uae_u32 opcode)
 	SET_ALWAYS_NFLG(((uae_s32)tmp) < 0 ? 1 : 0);
 	tmp >>= (32 - width);
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -41162,7 +39476,6 @@ uae_u32 REGPARAM2 op_e8f9_20_ff(uae_u32 opcode)
 	SET_ALWAYS_NFLG(((uae_s32)tmp) < 0 ? 1 : 0);
 	tmp >>= (32 - width);
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	m68k_incpci(8);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -41189,7 +39502,6 @@ uae_u32 REGPARAM2 op_e8fa_20_ff(uae_u32 opcode)
 	SET_ALWAYS_NFLG(((uae_s32)tmp) < 0 ? 1 : 0);
 	tmp >>= (32 - width);
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -41217,7 +39529,6 @@ uae_u32 REGPARAM2 op_e8fb_20_ff(uae_u32 opcode)
 	SET_ALWAYS_NFLG(((uae_s32)tmp) < 0 ? 1 : 0);
 	tmp >>= (32 - width);
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -41243,7 +39554,6 @@ uae_u32 REGPARAM2 op_e9c0_20_ff(uae_u32 opcode)
 	tmp >>= (32 - width);
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	m68k_dreg(regs, (extra >> 12) & 7) = tmp;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -41271,7 +39581,6 @@ uae_u32 REGPARAM2 op_e9d0_20_ff(uae_u32 opcode)
 	tmp >>= (32 - width);
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	m68k_dreg(regs, (extra >> 12) & 7) = tmp;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -41299,7 +39608,6 @@ uae_u32 REGPARAM2 op_e9e8_20_ff(uae_u32 opcode)
 	tmp >>= (32 - width);
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	m68k_dreg(regs, (extra >> 12) & 7) = tmp;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -41328,7 +39636,6 @@ uae_u32 REGPARAM2 op_e9f0_20_ff(uae_u32 opcode)
 	tmp >>= (32 - width);
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	m68k_dreg(regs, (extra >> 12) & 7) = tmp;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -41353,7 +39660,6 @@ uae_u32 REGPARAM2 op_e9f8_20_ff(uae_u32 opcode)
 	tmp >>= (32 - width);
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	m68k_dreg(regs, (extra >> 12) & 7) = tmp;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -41379,7 +39685,6 @@ uae_u32 REGPARAM2 op_e9f9_20_ff(uae_u32 opcode)
 	tmp >>= (32 - width);
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	m68k_dreg(regs, (extra >> 12) & 7) = tmp;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	m68k_incpci(8);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -41407,7 +39712,6 @@ uae_u32 REGPARAM2 op_e9fa_20_ff(uae_u32 opcode)
 	tmp >>= (32 - width);
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	m68k_dreg(regs, (extra >> 12) & 7) = tmp;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -41436,7 +39740,6 @@ uae_u32 REGPARAM2 op_e9fb_20_ff(uae_u32 opcode)
 	tmp >>= (32 - width);
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	m68k_dreg(regs, (extra >> 12) & 7) = tmp;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -41464,7 +39767,6 @@ uae_u32 REGPARAM2 op_eac0_20_ff(uae_u32 opcode)
 	tmp = tmp ^ (0xffffffffu >> (32 - width));
 	tmp = bdata[0] | (tmp << (32 - width));
 	m68k_dreg(regs, dstreg) = (tmp >> offset) | (tmp << (32 - offset));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -41493,7 +39795,6 @@ uae_u32 REGPARAM2 op_ead0_20_ff(uae_u32 opcode)
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	tmp = tmp ^ (0xffffffffu >> (32 - width));
 	x_put_bitfield(dsta, bdata, tmp, offset, width);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -41522,7 +39823,6 @@ uae_u32 REGPARAM2 op_eae8_20_ff(uae_u32 opcode)
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	tmp = tmp ^ (0xffffffffu >> (32 - width));
 	x_put_bitfield(dsta, bdata, tmp, offset, width);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -41552,7 +39852,6 @@ uae_u32 REGPARAM2 op_eaf0_20_ff(uae_u32 opcode)
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	tmp = tmp ^ (0xffffffffu >> (32 - width));
 	x_put_bitfield(dsta, bdata, tmp, offset, width);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -41578,7 +39877,6 @@ uae_u32 REGPARAM2 op_eaf8_20_ff(uae_u32 opcode)
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	tmp = tmp ^ (0xffffffffu >> (32 - width));
 	x_put_bitfield(dsta, bdata, tmp, offset, width);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -41605,7 +39903,6 @@ uae_u32 REGPARAM2 op_eaf9_20_ff(uae_u32 opcode)
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	tmp = tmp ^ (0xffffffffu >> (32 - width));
 	x_put_bitfield(dsta, bdata, tmp, offset, width);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	m68k_incpci(8);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -41632,7 +39929,6 @@ uae_u32 REGPARAM2 op_ebc0_20_ff(uae_u32 opcode)
 	tmp = (uae_s32)tmp >> (32 - width);
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	m68k_dreg(regs, (extra >> 12) & 7) = tmp;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -41660,7 +39956,6 @@ uae_u32 REGPARAM2 op_ebd0_20_ff(uae_u32 opcode)
 	tmp = (uae_s32)tmp >> (32 - width);
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	m68k_dreg(regs, (extra >> 12) & 7) = tmp;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -41688,7 +39983,6 @@ uae_u32 REGPARAM2 op_ebe8_20_ff(uae_u32 opcode)
 	tmp = (uae_s32)tmp >> (32 - width);
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	m68k_dreg(regs, (extra >> 12) & 7) = tmp;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -41717,7 +40011,6 @@ uae_u32 REGPARAM2 op_ebf0_20_ff(uae_u32 opcode)
 	tmp = (uae_s32)tmp >> (32 - width);
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	m68k_dreg(regs, (extra >> 12) & 7) = tmp;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -41742,7 +40035,6 @@ uae_u32 REGPARAM2 op_ebf8_20_ff(uae_u32 opcode)
 	tmp = (uae_s32)tmp >> (32 - width);
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	m68k_dreg(regs, (extra >> 12) & 7) = tmp;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -41768,7 +40060,6 @@ uae_u32 REGPARAM2 op_ebf9_20_ff(uae_u32 opcode)
 	tmp = (uae_s32)tmp >> (32 - width);
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	m68k_dreg(regs, (extra >> 12) & 7) = tmp;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	m68k_incpci(8);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -41796,7 +40087,6 @@ uae_u32 REGPARAM2 op_ebfa_20_ff(uae_u32 opcode)
 	tmp = (uae_s32)tmp >> (32 - width);
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	m68k_dreg(regs, (extra >> 12) & 7) = tmp;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -41825,7 +40115,6 @@ uae_u32 REGPARAM2 op_ebfb_20_ff(uae_u32 opcode)
 	tmp = (uae_s32)tmp >> (32 - width);
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	m68k_dreg(regs, (extra >> 12) & 7) = tmp;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -41853,7 +40142,6 @@ uae_u32 REGPARAM2 op_ecc0_20_ff(uae_u32 opcode)
 	tmp = 0;
 	tmp = bdata[0] | (tmp << (32 - width));
 	m68k_dreg(regs, dstreg) = (tmp >> offset) | (tmp << (32 - offset));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -41882,7 +40170,6 @@ uae_u32 REGPARAM2 op_ecd0_20_ff(uae_u32 opcode)
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	tmp = 0;
 	x_put_bitfield(dsta, bdata, tmp, offset, width);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -41911,7 +40198,6 @@ uae_u32 REGPARAM2 op_ece8_20_ff(uae_u32 opcode)
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	tmp = 0;
 	x_put_bitfield(dsta, bdata, tmp, offset, width);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -41941,7 +40227,6 @@ uae_u32 REGPARAM2 op_ecf0_20_ff(uae_u32 opcode)
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	tmp = 0;
 	x_put_bitfield(dsta, bdata, tmp, offset, width);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -41967,7 +40252,6 @@ uae_u32 REGPARAM2 op_ecf8_20_ff(uae_u32 opcode)
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	tmp = 0;
 	x_put_bitfield(dsta, bdata, tmp, offset, width);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -41994,7 +40278,6 @@ uae_u32 REGPARAM2 op_ecf9_20_ff(uae_u32 opcode)
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	tmp = 0;
 	x_put_bitfield(dsta, bdata, tmp, offset, width);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	m68k_incpci(8);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -42024,7 +40307,6 @@ uae_u32 REGPARAM2 op_edc0_20_ff(uae_u32 opcode)
 	{ uae_u32 mask = 1 << (width - 1);
 while (mask) { if (tmp & mask) break; mask >>= 1; offset2++; }}
 	m68k_dreg(regs, (extra >> 12) & 7) = offset2;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -42055,7 +40337,6 @@ uae_u32 REGPARAM2 op_edd0_20_ff(uae_u32 opcode)
 	{ uae_u32 mask = 1 << (width - 1);
 while (mask) { if (tmp & mask) break; mask >>= 1; offset2++; }}
 	m68k_dreg(regs, (extra >> 12) & 7) = offset2;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -42086,7 +40367,6 @@ uae_u32 REGPARAM2 op_ede8_20_ff(uae_u32 opcode)
 	{ uae_u32 mask = 1 << (width - 1);
 while (mask) { if (tmp & mask) break; mask >>= 1; offset2++; }}
 	m68k_dreg(regs, (extra >> 12) & 7) = offset2;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -42118,7 +40398,6 @@ uae_u32 REGPARAM2 op_edf0_20_ff(uae_u32 opcode)
 	{ uae_u32 mask = 1 << (width - 1);
 while (mask) { if (tmp & mask) break; mask >>= 1; offset2++; }}
 	m68k_dreg(regs, (extra >> 12) & 7) = offset2;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -42146,7 +40425,6 @@ uae_u32 REGPARAM2 op_edf8_20_ff(uae_u32 opcode)
 	{ uae_u32 mask = 1 << (width - 1);
 while (mask) { if (tmp & mask) break; mask >>= 1; offset2++; }}
 	m68k_dreg(regs, (extra >> 12) & 7) = offset2;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -42175,7 +40453,6 @@ uae_u32 REGPARAM2 op_edf9_20_ff(uae_u32 opcode)
 	{ uae_u32 mask = 1 << (width - 1);
 while (mask) { if (tmp & mask) break; mask >>= 1; offset2++; }}
 	m68k_dreg(regs, (extra >> 12) & 7) = offset2;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	m68k_incpci(8);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -42206,7 +40483,6 @@ uae_u32 REGPARAM2 op_edfa_20_ff(uae_u32 opcode)
 	{ uae_u32 mask = 1 << (width - 1);
 while (mask) { if (tmp & mask) break; mask >>= 1; offset2++; }}
 	m68k_dreg(regs, (extra >> 12) & 7) = offset2;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -42238,7 +40514,6 @@ uae_u32 REGPARAM2 op_edfb_20_ff(uae_u32 opcode)
 	{ uae_u32 mask = 1 << (width - 1);
 while (mask) { if (tmp & mask) break; mask >>= 1; offset2++; }}
 	m68k_dreg(regs, (extra >> 12) & 7) = offset2;
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -42266,7 +40541,6 @@ uae_u32 REGPARAM2 op_eec0_20_ff(uae_u32 opcode)
 	tmp = 0xffffffffu >> (32 - width);
 	tmp = bdata[0] | (tmp << (32 - width));
 	m68k_dreg(regs, dstreg) = (tmp >> offset) | (tmp << (32 - offset));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -42295,7 +40569,6 @@ uae_u32 REGPARAM2 op_eed0_20_ff(uae_u32 opcode)
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	tmp = 0xffffffffu >> (32 - width);
 	x_put_bitfield(dsta, bdata, tmp, offset, width);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -42324,7 +40597,6 @@ uae_u32 REGPARAM2 op_eee8_20_ff(uae_u32 opcode)
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	tmp = 0xffffffffu >> (32 - width);
 	x_put_bitfield(dsta, bdata, tmp, offset, width);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -42354,7 +40626,6 @@ uae_u32 REGPARAM2 op_eef0_20_ff(uae_u32 opcode)
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	tmp = 0xffffffffu >> (32 - width);
 	x_put_bitfield(dsta, bdata, tmp, offset, width);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -42380,7 +40651,6 @@ uae_u32 REGPARAM2 op_eef8_20_ff(uae_u32 opcode)
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	tmp = 0xffffffffu >> (32 - width);
 	x_put_bitfield(dsta, bdata, tmp, offset, width);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -42407,7 +40677,6 @@ uae_u32 REGPARAM2 op_eef9_20_ff(uae_u32 opcode)
 	SET_ZFLG(tmp == 0); SET_VFLG(0); SET_CFLG(0);
 	tmp = 0xffffffffu >> (32 - width);
 	x_put_bitfield(dsta, bdata, tmp, offset, width);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	m68k_incpci(8);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -42439,7 +40708,6 @@ uae_u32 REGPARAM2 op_efc0_20_ff(uae_u32 opcode)
 	SET_ZFLG(tmp == 0);
 	tmp = bdata[0] | (tmp << (32 - width));
 	m68k_dreg(regs, dstreg) = (tmp >> offset) | (tmp << (32 - offset));
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -42471,7 +40739,6 @@ uae_u32 REGPARAM2 op_efd0_20_ff(uae_u32 opcode)
 	SET_ALWAYS_NFLG(tmp & (1 << (width - 1)) ? 1 : 0);
 	SET_ZFLG(tmp == 0);
 	x_put_bitfield(dsta, bdata, tmp, offset, width);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(4);
 	m68k_incpci(4);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -42503,7 +40770,6 @@ uae_u32 REGPARAM2 op_efe8_20_ff(uae_u32 opcode)
 	SET_ALWAYS_NFLG(tmp & (1 << (width - 1)) ? 1 : 0);
 	SET_ZFLG(tmp == 0);
 	x_put_bitfield(dsta, bdata, tmp, offset, width);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -42536,7 +40802,6 @@ uae_u32 REGPARAM2 op_eff0_20_ff(uae_u32 opcode)
 	SET_ALWAYS_NFLG(tmp & (1 << (width - 1)) ? 1 : 0);
 	SET_ZFLG(tmp == 0);
 	x_put_bitfield(dsta, bdata, tmp, offset, width);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -42565,7 +40830,6 @@ uae_u32 REGPARAM2 op_eff8_20_ff(uae_u32 opcode)
 	SET_ALWAYS_NFLG(tmp & (1 << (width - 1)) ? 1 : 0);
 	SET_ZFLG(tmp == 0);
 	x_put_bitfield(dsta, bdata, tmp, offset, width);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(6);
 	m68k_incpci(6);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -42595,7 +40859,6 @@ uae_u32 REGPARAM2 op_eff9_20_ff(uae_u32 opcode)
 	SET_ALWAYS_NFLG(tmp & (1 << (width - 1)) ? 1 : 0);
 	SET_ZFLG(tmp == 0);
 	x_put_bitfield(dsta, bdata, tmp, offset, width);
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(8);
 	m68k_incpci(8);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
@@ -42618,7 +40881,6 @@ uae_u32 REGPARAM2 op_f200_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -42641,7 +40903,6 @@ uae_u32 REGPARAM2 op_f208_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -42664,7 +40925,6 @@ uae_u32 REGPARAM2 op_f210_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -42687,7 +40947,6 @@ uae_u32 REGPARAM2 op_f218_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -42710,7 +40969,6 @@ uae_u32 REGPARAM2 op_f220_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -42733,7 +40991,6 @@ uae_u32 REGPARAM2 op_f228_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -42756,7 +41013,6 @@ uae_u32 REGPARAM2 op_f230_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -42777,7 +41033,6 @@ uae_u32 REGPARAM2 op_f238_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -42798,7 +41053,6 @@ uae_u32 REGPARAM2 op_f239_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -42820,7 +41074,6 @@ uae_u32 REGPARAM2 op_f23a_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -42842,7 +41095,6 @@ uae_u32 REGPARAM2 op_f23b_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -42863,7 +41115,6 @@ uae_u32 REGPARAM2 op_f23c_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -42886,7 +41137,6 @@ uae_u32 REGPARAM2 op_f240_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -42914,7 +41164,6 @@ uae_u32 REGPARAM2 op_f248_20_ff(uae_u32 opcode)
 		fill_prefetch();
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -42937,7 +41186,6 @@ uae_u32 REGPARAM2 op_f250_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -42960,7 +41208,6 @@ uae_u32 REGPARAM2 op_f258_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -42983,7 +41230,6 @@ uae_u32 REGPARAM2 op_f260_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -43006,7 +41252,6 @@ uae_u32 REGPARAM2 op_f268_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -43029,7 +41274,6 @@ uae_u32 REGPARAM2 op_f270_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -43050,7 +41294,6 @@ uae_u32 REGPARAM2 op_f278_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -43071,7 +41314,6 @@ uae_u32 REGPARAM2 op_f279_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -43094,7 +41336,6 @@ uae_u32 REGPARAM2 op_f27a_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -43118,7 +41359,6 @@ uae_u32 REGPARAM2 op_f27b_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -43140,7 +41380,6 @@ uae_u32 REGPARAM2 op_f27c_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -43170,7 +41409,6 @@ uae_u32 REGPARAM2 op_f280_20_ff(uae_u32 opcode)
 		fill_prefetch();
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -43201,7 +41439,6 @@ uae_u32 REGPARAM2 op_f2c0_20_ff(uae_u32 opcode)
 		fill_prefetch();
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -43227,7 +41464,6 @@ uae_u32 REGPARAM2 op_f310_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -43253,7 +41489,6 @@ uae_u32 REGPARAM2 op_f320_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -43279,7 +41514,6 @@ uae_u32 REGPARAM2 op_f328_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -43305,7 +41539,6 @@ uae_u32 REGPARAM2 op_f330_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -43329,7 +41562,6 @@ uae_u32 REGPARAM2 op_f338_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -43353,7 +41585,6 @@ uae_u32 REGPARAM2 op_f339_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -43379,7 +41610,6 @@ uae_u32 REGPARAM2 op_f350_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -43405,7 +41635,6 @@ uae_u32 REGPARAM2 op_f358_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -43431,7 +41660,6 @@ uae_u32 REGPARAM2 op_f368_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -43457,7 +41685,6 @@ uae_u32 REGPARAM2 op_f370_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -43481,7 +41708,6 @@ uae_u32 REGPARAM2 op_f378_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -43505,7 +41731,6 @@ uae_u32 REGPARAM2 op_f379_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -43529,7 +41754,6 @@ uae_u32 REGPARAM2 op_f37a_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif
@@ -43553,7 +41777,6 @@ uae_u32 REGPARAM2 op_f37b_20_ff(uae_u32 opcode)
 	if (regs.fp_exception) {
 		return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 	}
-	ipl_fetch();
 	regs.irc = get_word_020_prefetch(0);
 
 	#endif

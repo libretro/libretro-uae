@@ -81,6 +81,7 @@
 //#define WITH_PCI
 //#define WITH_X86
 #define WITH_THREADED_CPU
+//#define FLOPPYBRIDGE
 
 //#define WITH_CHD
 #define A_ZIP
@@ -401,7 +402,7 @@
 #define PACKAGE_NAME "PUAE"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "PUAE 4.5.0"
+#define PACKAGE_STRING "PUAE 4.9.0"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "puae"
@@ -410,7 +411,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "4.5.0"
+#define PACKAGE_VERSION "4.9.0"
 
 /* Define to the necessary symbol if this constant uses a non-standard name on
    your system. */
@@ -506,7 +507,7 @@
 #endif
 
 /* Version number of package */
-#define VERSION "4.5.0"
+#define VERSION "4.9.0"
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */
