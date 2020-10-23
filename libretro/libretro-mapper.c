@@ -236,8 +236,9 @@ static char* joystick_value_human(int val[16], int uae_device)
     * 4 = Analog joystick
     */
 
-   char *str = malloc(sizeof(char)*4);
-   snprintf(str, sizeof(str), "%3s", "   ");
+   unsigned str_len = 4;
+   char *str = malloc(sizeof(char)*str_len);
+   snprintf(str, sizeof(char)*str_len, "%3s", "   ");
 
    if (val[RETRO_DEVICE_ID_JOYPAD_UP] || val[RETRO_DEVICE_ID_JOYPAD_SELECT]) /* Unused SELECT acts as a jump button */
       str[1] = 30;

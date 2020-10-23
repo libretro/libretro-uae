@@ -48,7 +48,6 @@ void print_vkbd(unsigned short int *pixels)
    int BKG_COLOR_EXTRA   = 0;
    int BKG_COLOR_SEL     = 0;
    int BKG_COLOR_ACTIVE  = 0;
-   int BKG_COLOR_BORDER  = 0;
    int FONT_MAX          = 4;
    int FONT_WIDTH        = 1;
    int FONT_HEIGHT       = 1;

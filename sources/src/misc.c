@@ -56,30 +56,31 @@ static volatile frame_time_t vblank_prev_time;
 
 #ifndef __LIBRETRO__
 struct winuae_currentmode {
-        unsigned int flags;
-        int native_width, native_height, native_depth, pitch;
-        int current_width, current_height, current_depth;
-        int amiga_width, amiga_height;
-        int frequency;
-        int initdone;
-        int fullfill;
-        int vsync;
+	unsigned int flags;
+	int native_width, native_height, native_depth, pitch;
+	int current_width, current_height, current_depth;
+	int amiga_width, amiga_height;
+	int frequency;
+	int initdone;
+	int fullfill;
+	int vsync;
 };
 
 static struct winuae_currentmode currentmodestruct;
 static struct winuae_currentmode *currentmode = &currentmodestruct;
+#endif
+
 #ifndef _WIN32
 typedef struct {
-  WORD  dmSize;
-  WORD  dmDriverExtra;
-  DWORD dmFields;
-  DWORD dmBitsPerPel;
-  DWORD dmPelsWidth;
-  DWORD dmPelsHeight;
-  DWORD dmDisplayFlags;
-  DWORD dmDisplayFrequency;
+	WORD  dmSize;
+	WORD  dmDriverExtra;
+	DWORD dmFields;
+	DWORD dmBitsPerPel;
+	DWORD dmPelsWidth;
+	DWORD dmPelsHeight;
+	DWORD dmDisplayFlags;
+	DWORD dmDisplayFrequency;
 } DEVMODE;
-#endif
 #endif
 
 /* internal prototypes */
@@ -726,7 +727,7 @@ static int resolution_compare (const void *a, const void *b)
 		return 1;
 	return ma->depth - mb->depth;
 #else 
-return 0;
+	return 0;
 #endif
 }
 

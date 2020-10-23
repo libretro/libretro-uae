@@ -543,8 +543,7 @@ void driveclick_check_prefs (void)
 int driveclick_loadresource (struct drvsample *sp, int drivetype)
 {
     for (int type = 0; type < DS_END; type++) {
-        const char *name = NULL;
-        char *data = NULL;
+        unsigned char *data = NULL;
         int size = 0;
         switch (type) {
         case 0:
@@ -572,7 +571,6 @@ int driveclick_loadresource (struct drvsample *sp, int drivetype)
         }
         int len = (int) size;
         struct drvsample* s = sp + type;
-        uae_u8 *p = (uae_u8*)data;
         s->p = decodewav(data, &len);
         s->len = len;
     }
