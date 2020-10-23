@@ -98,8 +98,8 @@ SOURCES_C += $(EMU)/main.c \
 	$(RETRODEP)/memory.c \
 	$(RETRODEP)/main.c \
 	$(RETRODEP)/parser.c \
-	$(RETRODEP)/debug.c \
-	$(RETRODEP)/inputrecord.c \
+	$(RETRODEP)/stubs/debug.c \
+	$(RETRODEP)/stubs/inputrecord.c \
 	$(RETRODEP)/machdep/support.c \
 	$(RETRODEP)/sounddep/sound.c \
 	$(RETRODEP)/threaddep/thread.c

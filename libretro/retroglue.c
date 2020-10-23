@@ -245,6 +245,11 @@ int mousehack_allowed (void)
     return 0;
 }
 
+int debuggable (void)
+{
+    return 0;
+}
+
 int graphics_setup(void)
 {
 	/* 32bit mode
