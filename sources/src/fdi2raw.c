@@ -33,14 +33,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <stdlib.h>
 #include <string.h>
 
-/* IF UAE */
 #include "sysconfig.h"
 #include "sysdeps.h"
 #include "zfile.h"
 #include "crc32.h"
-/* ELSE */
-//#include "types.h"
-
 #include "fdi2raw.h"
 
 #ifdef FDI2RAW

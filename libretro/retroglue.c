@@ -169,7 +169,7 @@ void retro_flush_clear_screen(struct vidbuf_description *gfxinfo)
 
 int retro_lockscr(struct vidbuf_description *gfxinfo)
 {
-    return 1;
+   return 1;
 }
 
 void retro_unlockscr(struct vidbuf_description *gfxinfo)
@@ -178,11 +178,11 @@ void retro_unlockscr(struct vidbuf_description *gfxinfo)
 
 
 
-int graphics_init(void) {
-
-	if (pixbuf != NULL) {
+int graphics_init(void)
+{
+	if (pixbuf != NULL)
 		return 1;
-	}
+
 	currprefs.gfx_size_win.width = defaultw;
 
 #ifdef ENABLE_LOG_SCREEN
@@ -222,9 +222,11 @@ int graphics_init(void) {
 	gfxvidinfo.flush_line = retro_flush_line;
 
 	prefs_changed = 1;
-    inputdevice_release_all_keys ();
-    reset_hotkeys ();
-    reset_drawing ();
+	inputdevice_release_all_keys ();
+#if 0
+	reset_hotkeys ();
+#endif
+	reset_drawing ();
 	return 1;
 }
 
@@ -239,6 +241,11 @@ int is_vsync (void)
 }
 
 int mousehack_allowed (void)
+{
+    return 0;
+}
+
+int debuggable (void)
 {
     return 0;
 }

@@ -1,11 +1,3 @@
-/*
- * PUAE - The Un*x Amiga Emulator
- *
- * Windows 2 Linux
- *
- * Copyright 2012-2013 Mustafa 'GnoStiC' Tufan
- */
-
 #include "zfile.h"
 #include "fsdb.h"
 
@@ -106,7 +98,6 @@ bool my_stat (const TCHAR *name, struct mystat *ms) {
     if (log_filesys)
         write_log("fs_stat returned size %9jd: %s\n", sonuc.st_size, name);
     ms->size = sonuc.st_size;
-    // FIXME: read mode more accurately
     ms->mode = 0;
     if (sonuc.st_mode & S_IRUSR) {
         ms->mode |= FILEFLAG_READ;
@@ -124,7 +115,6 @@ bool my_stat (const TCHAR *name, struct mystat *ms) {
 
 static int setfiletime (const TCHAR *name, int days, int minute, int tick, int tolocal)
 {
-//FIXME
 	return 0;
 }
 
@@ -151,7 +141,7 @@ bool my_utime (const TCHAR *name, struct mytimeval *tv)
                 tv2.tv_usec = 1000;
                 tolocal = 0;
 #endif
-	{
+	    {
                 tv2.tv_sec = tv->tv_sec;
                 tv2.tv_usec = tv->tv_usec;
                 tolocal = 1;
@@ -498,7 +488,9 @@ int my_setcurrentdir (const TCHAR *curdir, TCHAR *oldcur)
         namep = curdir;
         ret = chdir (namep);
     }
-    //write_log("curdir=\"%s\" oldcur=\"%s\" ret=%d\n", curdir, oldcur, ret);
+#if 0
+    write_log("curdir=\"%s\" oldcur=\"%s\" ret=%d\n", curdir, oldcur, ret);
+#endif
     return ret;
 #endif
 }

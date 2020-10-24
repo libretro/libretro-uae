@@ -22,6 +22,8 @@
 #include "fsdb.h"
 #include "misc.h"
 
+#include "filesys_host.c"
+
 /* The on-disk format is as follows:
  * Offset 0, 1 byte, valid
  * Offset 1, 4 bytes, mode
@@ -44,8 +46,6 @@ TCHAR *nname_begin (TCHAR *nname)
 		return p + 1;
 	return nname;
 }
-
-#include "filesys_linux.c"
 
 /* Find the name REL in directory DIRNAME.  If we find a file that
  * has exactly the same name, return REL.  If we find a file that

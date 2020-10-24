@@ -201,7 +201,7 @@ When launching these files the core will generate a temporary configuration file
 
 ### Floppy drive sounds
 
-The core has embedded internal floppy drive samples. External sound samples have to be copied from [https://github.com/libretro/libretro-uae/tree/master/sources/uae_data](https://github.com/libretro/libretro-uae/tree/master/sources/uae_data) into a directory named `uae_data` in RetroArch `system` directory.
+The core has embedded internal floppy drive samples. External sound samples have to be copied from [https://github.com/libretro/libretro-uae/tree/master/sources/uae_data](https://github.com/libretro/libretro-uae/tree/master/sources/uae_data) into a directory named `uae_data` or `uae` in RetroArch `system` directory.
 
 ### IPF support
 

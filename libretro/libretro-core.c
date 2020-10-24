@@ -622,6 +622,21 @@ void retro_set_environment(retro_environment_t cb)
             { "36", NULL },
             { "38", NULL },
             { "40", NULL },
+            { "42", NULL },
+            { "44", NULL },
+            { "46", NULL },
+            { "48", NULL },
+            { "50", NULL },
+            { "52", NULL },
+            { "54", NULL },
+            { "56", NULL },
+            { "58", NULL },
+            { "60", NULL },
+            { "62", NULL },
+            { "64", NULL },
+            { "66", NULL },
+            { "68", NULL },
+            { "70", NULL },
             { "-20", NULL },
             { "-18", NULL },
             { "-16", NULL },
@@ -2211,7 +2226,7 @@ static void update_variables(void)
       {
          opt_vertical_offset_auto = false;
          int new_vertical_offset = atoi(var.value);
-         if (new_vertical_offset >= -20 && new_vertical_offset <= 40)
+         if (new_vertical_offset >= -20 && new_vertical_offset <= 70)
          {
             /* This offset is used whenever minfirstline is reset on gfx mode changes in the init_hz() function */
             opt_vertical_offset = new_vertical_offset;
@@ -3738,6 +3753,10 @@ static bool retro_create_config()
          snprintf(zip_basename, sizeof(zip_basename), "%s", path_remove_extension(zip_basename));
          snprintf(retro_temp_directory, sizeof(retro_temp_directory), "%s%s%s", retro_save_directory, DIR_SEP_STR, "TEMP");
 
+         /* Clean ZIP temp */
+         if (!string_is_empty(retro_temp_directory) && path_is_directory(retro_temp_directory))
+            remove_recurse(retro_temp_directory);
+
          path_mkdir(retro_temp_directory);
          zip_uncompress(full_path, retro_temp_directory, NULL);
 
@@ -4534,7 +4553,7 @@ void update_video_center_vertical(void)
 
    /* Sensible limits */
    thisframe_y_adjust_new = (thisframe_y_adjust_new < 0) ? 0 : thisframe_y_adjust_new;
-   thisframe_y_adjust_new = (thisframe_y_adjust_new > (minfirstline + 60)) ? (minfirstline + 60) : thisframe_y_adjust_new;
+   thisframe_y_adjust_new = (thisframe_y_adjust_new > (minfirstline + 70)) ? (minfirstline + 70) : thisframe_y_adjust_new;
 
    /* Change value only if altered */
    if (thisframe_y_adjust != thisframe_y_adjust_new)

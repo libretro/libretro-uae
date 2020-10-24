@@ -7532,18 +7532,24 @@ static uae_u32 REGPARAM2 mousehack_done (TrapContext *context)
 		input_mousehack_mouseoffset (a2);
 	} else if (mode == 17) {
 		uae_u32 v = 0;
-		/*if (currprefs.clipboard_sharing)
+#ifndef __LIBRETRO__
+		if (currprefs.clipboard_sharing)
 			v |= 1;
 		if (consolehook_activate ())
-			v |= 2;*/
+			v |= 2;
+#endif
 		return v;
 	} else if (mode == 18) {
 		return rtarea_base + RTAREA_HEARTBEAT;
 	} else if (mode == 101) {
+#ifndef __LIBRETRO__
 		consolehook_ret (m68k_areg (regs, 1), m68k_areg (regs, 2));
+#endif
 	} else if (mode == 102) {
+#ifndef __LIBRETRO__
 		uaecptr ret = consolehook_beginio (m68k_areg (regs, 1));
 		put_long (m68k_areg (regs, 7) + 4 * 4, ret);
+#endif
 	} else {
 		write_log (_T("Unknown mousehack hook %d\n"), mode);
 	}
