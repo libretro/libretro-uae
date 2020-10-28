@@ -428,7 +428,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_cd_startup_delayed_insert",
          "Media > CD Startup Delayed Insert",
-         "Some games fail to load if CD32/CDTV is powered on with the CD inserted. 'ON' inserts the CD during the boot animation.",
+         "Some games fail to load if CD32/CDTV is powered on with CD inserted. 'ON' inserts CD during boot animation.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -450,7 +450,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_use_boot_hd",
          "Media > Global Boot HD",
-         "Attach a bootable hard drive. Enabling forces a model with HD interface. Changing HDF size will not replace or edit the existing HDF.\nCore restart required.",
+         "Attach a hard disk meant for Workbench usage, not for WHDLoad! Enabling forces a model with HD interface. Changing HDF size will not replace or edit the existing HDF.\nCore restart required.",
          {
             { "disabled", NULL },
             { "files", "Files" },
@@ -467,7 +467,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_use_whdload",
          "Media > WHDLoad Support",
-         "Enable launching pre-installed WHDLoad installs. Creates a helper image for loading content and an empty image for saving. Core restart required.\n- 'Files' creates the data in directories\n- 'HDFs' contains the data in images",
+         "Enable launching pre-installed WHDLoad installs. Creates a helper image for loading content and an empty image for saving. Core restart required.\n- 'Files' creates data in directories\n- 'HDFs' creates data in images",
          {
             { "disabled", NULL },
             { "files", "Files" },
@@ -479,7 +479,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_use_whdload_prefs",
          "Media > WHDLoad Splash Screen",
-         "Space/Enter/Fire work as the WHDLoad Start-button. Core restart required.\nOverride with buttons while booting:\n- 'Config': Hold 2nd fire / Blue\n- 'Splash': Hold LMB\n- 'Config + Splash': Hold RMB\n- ReadMe + MkCustom: Hold Red+Blue",
+         "Space/Enter/Fire works as WHDLoad Start-button. Core restart required.\nOverride with buttons while booting:\n- 'Config': Hold 2nd fire / Blue\n- 'Splash': Hold LMB\n- 'Config + Splash': Hold RMB\n- ReadMe + MkCustom: Hold Red+Blue",
          {
             { "disabled", NULL },
             { "config", "Config (Show only if available)" },
