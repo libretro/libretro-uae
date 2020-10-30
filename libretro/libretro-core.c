@@ -175,7 +175,7 @@ static int retro_keymap_id(const char *val)
    return 0;
 }
 
-unsigned int uae_devices[4];
+unsigned int retro_devices[RETRO_DEVICES];
 extern void retro_poll_event();
 extern int cd32_pad_enabled[NORMAL_JPORTS];
 extern int mapper_keys[RETRO_MAPPER_LAST];
@@ -187,6 +187,7 @@ static retro_video_refresh_t video_cb = NULL;
 static retro_audio_sample_t audio_cb = NULL;
 static retro_audio_sample_batch_t audio_batch_cb = NULL;
 static retro_environment_t environ_cb = NULL;
+bool libretro_supports_bitmasks = false;
 
 char retro_save_directory[RETRO_PATH_MAX] = {0};
 char retro_temp_directory[RETRO_PATH_MAX] = {0};
@@ -211,27 +212,31 @@ void retro_set_led(unsigned led)
 void retro_set_environment(retro_environment_t cb)
 {
    static const struct retro_controller_description p1_controllers[] = {
-      { "CD32 Pad", RETRO_DEVICE_UAE_CD32PAD },
-      { "Analog Joystick", RETRO_DEVICE_UAE_ANALOG },
-      { "Joystick", RETRO_DEVICE_UAE_JOYSTICK },
-      { "Keyboard", RETRO_DEVICE_UAE_KEYBOARD },
+      { "CD32 Pad", RETRO_DEVICE_CD32PAD },
+      { "Analog Joystick", RETRO_DEVICE_ANALOGJOYSTICK },
+      { "Joystick", RETRO_DEVICE_JOYSTICK },
+      { "Keyboard", RETRO_DEVICE_KEYBOARD },
       { "None", RETRO_DEVICE_NONE },
    };
    static const struct retro_controller_description p2_controllers[] = {
-      { "CD32 Pad", RETRO_DEVICE_UAE_CD32PAD },
-      { "Analog Joystick", RETRO_DEVICE_UAE_ANALOG },
-      { "Joystick", RETRO_DEVICE_UAE_JOYSTICK },
-      { "Keyboard", RETRO_DEVICE_UAE_KEYBOARD },
+      { "CD32 Pad", RETRO_DEVICE_CD32PAD },
+      { "Analog Joystick", RETRO_DEVICE_ANALOGJOYSTICK },
+      { "Joystick", RETRO_DEVICE_JOYSTICK },
+      { "Keyboard", RETRO_DEVICE_KEYBOARD },
       { "None", RETRO_DEVICE_NONE },
    };
    static const struct retro_controller_description p3_controllers[] = {
-      { "Joystick", RETRO_DEVICE_UAE_JOYSTICK },
-      { "Keyboard", RETRO_DEVICE_UAE_KEYBOARD },
+      { "Joystick", RETRO_DEVICE_JOYSTICK },
+      { "Keyboard", RETRO_DEVICE_KEYBOARD },
       { "None", RETRO_DEVICE_NONE },
    };
    static const struct retro_controller_description p4_controllers[] = {
-      { "Joystick", RETRO_DEVICE_UAE_JOYSTICK },
-      { "Keyboard", RETRO_DEVICE_UAE_KEYBOARD },
+      { "Joystick", RETRO_DEVICE_JOYSTICK },
+      { "Keyboard", RETRO_DEVICE_KEYBOARD },
+      { "None", RETRO_DEVICE_NONE },
+   };
+   static const struct retro_controller_description p5_controllers[] = {
+      { "Keyboard", RETRO_DEVICE_KEYBOARD },
       { "None", RETRO_DEVICE_NONE },
    };
 
@@ -240,6 +245,7 @@ void retro_set_environment(retro_environment_t cb)
       { p2_controllers, 5 }, /* port 2 */
       { p3_controllers, 3 }, /* port 3 */
       { p4_controllers, 3 }, /* port 4 */
+      { p5_controllers, 2 }, /* port 5 */
       { NULL, 0 }
    };
 
@@ -428,7 +434,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_cd_startup_delayed_insert",
          "Media > CD Startup Delayed Insert",
-         "Some games fail to load if CD32/CDTV is powered on with the CD inserted. 'ON' inserts the CD during the boot animation.",
+         "Some games fail to load if CD32/CDTV is powered on with CD inserted. 'ON' inserts CD during boot animation.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -450,7 +456,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_use_boot_hd",
          "Media > Global Boot HD",
-         "Attach a bootable hard drive. Enabling forces a model with HD interface. Changing HDF size will not replace or edit the existing HDF.\nCore restart required.",
+         "Attach a hard disk meant for Workbench usage, not for WHDLoad! Enabling forces a model with HD interface. Changing HDF size will not replace or edit the existing HDF.\nCore restart required.",
          {
             { "disabled", NULL },
             { "files", "Files" },
@@ -467,7 +473,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_use_whdload",
          "Media > WHDLoad Support",
-         "Enable launching pre-installed WHDLoad installs. Creates a helper image for loading content and an empty image for saving. Core restart required.\n- 'Files' creates the data in directories\n- 'HDFs' contains the data in images",
+         "Enable launching pre-installed WHDLoad installs. Creates a helper image for loading content and an empty image for saving. Core restart required.\n- 'Files' creates data in directories\n- 'HDFs' creates data in images",
          {
             { "disabled", NULL },
             { "files", "Files" },
@@ -479,7 +485,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_use_whdload_prefs",
          "Media > WHDLoad Splash Screen",
-         "Space/Enter/Fire work as the WHDLoad Start-button. Core restart required.\nOverride with buttons while booting:\n- 'Config': Hold 2nd fire / Blue\n- 'Splash': Hold LMB\n- 'Config + Splash': Hold RMB\n- ReadMe + MkCustom: Hold Red+Blue",
+         "Space/Enter/Fire works as WHDLoad Start-button. Core restart required.\nOverride with buttons while booting:\n- 'Config': Hold 2nd fire / Blue\n- 'Splash': Hold LMB\n- 'Config + Splash': Hold RMB\n- ReadMe + MkCustom: Hold Red+Blue",
          {
             { "disabled", NULL },
             { "config", "Config (Show only if available)" },
@@ -1334,7 +1340,7 @@ void retro_set_environment(retro_environment_t cb)
             { "12", "12 frames" },
             { NULL, NULL },
          },
-         "4"
+         "6"
       },
       {
          "puae_joyport",
@@ -3134,10 +3140,14 @@ void retro_init(void)
       RETRO_DESCRIPTOR_BLOCK(1),
       RETRO_DESCRIPTOR_BLOCK(2),
       RETRO_DESCRIPTOR_BLOCK(3),
+      RETRO_DESCRIPTOR_BLOCK(4),
       {0},
    };
    #undef RETRO_DESCRIPTOR_BLOCK
    environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, &input_descriptors);
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_INPUT_BITMASKS, NULL))
+      libretro_supports_bitmasks = true;
 
    enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
    if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
@@ -3182,6 +3192,7 @@ void retro_deinit(void)
    real_ntsc = false;
    forced_video = false;
    locked_video_horizontal = false;
+   libretro_supports_bitmasks = false;
 }
 
 unsigned retro_api_version(void)
@@ -3191,12 +3202,12 @@ unsigned retro_api_version(void)
 
 void retro_set_controller_port_device(unsigned port, unsigned device)
 {
-   if (port<4)
+   if (port < RETRO_DEVICES)
    {
       int uae_port;
-      uae_port = (port==0) ? 1 : 0;
+      uae_port = (port == 0) ? 1 : 0;
       cd32_pad_enabled[uae_port] = 0;
-      uae_devices[port] = device;
+      retro_devices[port] = device;
 #if 0
       switch (device)
       {
@@ -3204,20 +3215,20 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
             log_cb(RETRO_LOG_INFO, "Controller %u: RetroPad\n", (port+1));
             break;
 
-         case RETRO_DEVICE_UAE_CD32PAD:
+         case RETRO_DEVICE_CD32PAD:
             log_cb(RETRO_LOG_INFO, "Controller %u: CD32 Pad\n", (port+1));
             cd32_pad_enabled[uae_port] = 1;
             break;
 
-         case RETRO_DEVICE_UAE_ANALOG:
+         case RETRO_DEVICE_ANALOGJOYSTICK:
             log_cb(RETRO_LOG_INFO, "Controller %u: Analog Joystick\n", (port+1));
             break;
 
-         case RETRO_DEVICE_UAE_JOYSTICK:
+         case RETRO_DEVICE_JOYSTICK:
             log_cb(RETRO_LOG_INFO, "Controller %u: Joystick\n", (port+1));
             break;
 
-         case RETRO_DEVICE_UAE_KEYBOARD:
+         case RETRO_DEVICE_KEYBOARD:
             log_cb(RETRO_LOG_INFO, "Controller %u: Keyboard\n", (port+1));
             break;
 
@@ -3226,7 +3237,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
             break;
       }
 #else
-      if (device == RETRO_DEVICE_UAE_CD32PAD)
+      if (device == RETRO_DEVICE_CD32PAD)
          cd32_pad_enabled[uae_port] = 1;
 #endif
 

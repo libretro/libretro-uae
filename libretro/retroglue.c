@@ -26,7 +26,7 @@ extern int mouse_port[NORMAL_JPORTS];
 #include "libretro-mapper.h"
 #include "retro_files.h"
 #include "file/file_path.h"
-extern unsigned int uae_devices[4];
+extern unsigned int retro_devices[RETRO_DEVICES];
 bool inputdevice_finalized = false;
 
 extern int defaultw;
@@ -435,7 +435,7 @@ struct inputdevice_functions inputdevicefunc_joystick = {
 
 int input_get_default_joystick (struct uae_input_device *uid, int num, int port, int af, int mode, bool gp)
 {
-    if (uae_devices[0] == RETRO_DEVICE_UAE_CD32PAD)
+    if (retro_devices[0] == RETRO_DEVICE_CD32PAD)
     {
         uid[0].eventid[ID_AXIS_OFFSET + 0][0]   = INPUTEVENT_JOY2_HORIZ;
         uid[0].eventid[ID_AXIS_OFFSET + 1][0]   = INPUTEVENT_JOY2_VERT;
@@ -447,7 +447,7 @@ int input_get_default_joystick (struct uae_input_device *uid, int num, int port,
         uid[0].eventid[ID_BUTTON_OFFSET + 5][0] = INPUTEVENT_JOY2_CD32_FFW;
         uid[0].eventid[ID_BUTTON_OFFSET + 6][0] = INPUTEVENT_JOY2_CD32_PLAY;
     }
-    else if (uae_devices[0] == RETRO_DEVICE_UAE_ANALOG)
+    else if (retro_devices[0] == RETRO_DEVICE_ANALOGJOYSTICK)
     {
         uid[0].eventid[ID_AXIS_OFFSET + 0][0]   = INPUTEVENT_JOY2_HORIZ_POT;
         uid[0].eventid[ID_AXIS_OFFSET + 1][0]   = INPUTEVENT_JOY2_VERT_POT;
@@ -464,7 +464,7 @@ int input_get_default_joystick (struct uae_input_device *uid, int num, int port,
         uid[0].eventid[ID_BUTTON_OFFSET + 1][0] = INPUTEVENT_JOY2_2ND_BUTTON;
     }
 
-    if (uae_devices[1] == RETRO_DEVICE_UAE_CD32PAD)
+    if (retro_devices[1] == RETRO_DEVICE_CD32PAD)
     {
         uid[1].eventid[ID_AXIS_OFFSET + 0][0]   = INPUTEVENT_JOY1_HORIZ;
         uid[1].eventid[ID_AXIS_OFFSET + 1][0]   = INPUTEVENT_JOY1_VERT;
@@ -476,7 +476,7 @@ int input_get_default_joystick (struct uae_input_device *uid, int num, int port,
         uid[1].eventid[ID_BUTTON_OFFSET + 5][0] = INPUTEVENT_JOY1_CD32_FFW;
         uid[1].eventid[ID_BUTTON_OFFSET + 6][0] = INPUTEVENT_JOY1_CD32_PLAY;
     }
-    else if (uae_devices[1] == RETRO_DEVICE_UAE_ANALOG)
+    else if (retro_devices[1] == RETRO_DEVICE_ANALOGJOYSTICK)
     {
         uid[1].eventid[ID_AXIS_OFFSET + 0][0]   = INPUTEVENT_JOY1_HORIZ_POT;
         uid[1].eventid[ID_AXIS_OFFSET + 1][0]   = INPUTEVENT_JOY1_VERT_POT;
