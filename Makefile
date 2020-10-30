@@ -266,7 +266,7 @@ else
    CFLAGS += -O3
 endif
 
-CFLAGS += -D__LIBRETRO__ -DINLINE="inline" -std=gnu99
+CFLAGS += -fcommon -D__LIBRETRO__ -DINLINE="inline" -std=gnu99
 
 include Makefile.common
 
