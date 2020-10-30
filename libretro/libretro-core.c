@@ -1340,7 +1340,7 @@ void retro_set_environment(retro_environment_t cb)
             { "12", "12 frames" },
             { NULL, NULL },
          },
-         "4"
+         "6"
       },
       {
          "puae_joyport",

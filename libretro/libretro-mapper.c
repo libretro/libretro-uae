@@ -117,7 +117,7 @@ static char statusbar_text[RETRO_PATH_MAX] = {0};
 
 int turbo_fire_button_disabled = -1;
 int turbo_fire_button = -1;
-unsigned int turbo_pulse = 2;
+unsigned int turbo_pulse = 6;
 unsigned int turbo_state[RETRO_DEVICES] = {0};
 unsigned int turbo_toggle[RETRO_DEVICES] = {0};
 
