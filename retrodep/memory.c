@@ -18,7 +18,9 @@
 #ifndef __CELLOS_LV2__
 #ifndef _WIN32
 #ifndef VITA
+#ifdef __APPLE__
 #include <sys/sysctl.h>
+#endif
 #endif
 #endif
 #endif
