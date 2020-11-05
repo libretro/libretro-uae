@@ -1,5 +1,5 @@
-#ifndef GRAPH_H
-#define GRAPH_H 1
+#ifndef LIBRETRO_GRAPH_H
+#define LIBRETRO_GRAPH_H
 
 typedef struct
 {
@@ -28,5 +28,4 @@ extern void Draw_string32(uint32_t *surf, signed short int x, signed short int y
 extern void Draw_text(unsigned short *buffer, int x, int y, unsigned short fgcol, unsigned short int bgcol, unsigned int alpha, int scalex, int scaley, int max, char *string, ...);
 extern void Draw_text32(uint32_t *buffer, int x, int y, uint32_t fgcol, uint32_t bgcol, unsigned int alpha, int scalex, int scaley, int max, char *string, ...);
 
-#endif
-
+#endif /* LIBRETRO_GRAPH_H */

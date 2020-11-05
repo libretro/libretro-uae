@@ -22,13 +22,10 @@ static int caps_locked[4];
 static int caps_flags = DI_LOCK_DENVAR|DI_LOCK_DENNOISE|DI_LOCK_NOISE|DI_LOCK_UPDATEFD|DI_LOCK_TYPE;
 #define LIB_TYPE 1
 
-
 #if !defined HAVE_FRAMEWORK_CAPSIMAGE
-
 #include "uae_dlopen.h"
 
 #ifdef __LIBRETRO__
-#include "retro_files.h"
 #include "libretro-core.h"
 extern char retro_system_directory[];
 extern bool retro_message;
@@ -78,9 +75,9 @@ static int load_capslib (void)
 
 #ifdef __LIBRETRO__
     snprintf(CAPSLIB_PATH, RETRO_PATH_MAX, "%s%c%s", retro_system_directory, DIR_SEP_CHR, CAPSLIB_NAME);
-    if (!file_exists(CAPSLIB_PATH))
+    if (!path_is_valid(CAPSLIB_PATH))
         snprintf(CAPSLIB_PATH, RETRO_PATH_MAX, "%s", CAPSLIB_NAME);
-    if (!file_exists(CAPSLIB_PATH))
+    if (!path_is_valid(CAPSLIB_PATH))
     {
         snprintf(retro_message_msg, sizeof(retro_message_msg), "CAPS library '%s' not found!", CAPSLIB_NAME);
         retro_message = true;

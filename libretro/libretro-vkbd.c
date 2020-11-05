@@ -1,7 +1,7 @@
 #include "libretro-core.h"
-#include "graph.h"
+#include "libretro-graph.h"
 #include "keyboard.h"
-#include "vkbd.h"
+#include "libretro-vkbd.h"
 
 bool retro_vkbd = false;
 bool retro_vkbd_page = false;
@@ -187,6 +187,7 @@ void print_vkbd(unsigned short int *pixels)
       AK_F1, AK_F2, AK_F3, AK_F4, AK_F5, AK_F6, AK_F7, AK_F8, AK_F9, AK_F10,
       AK_LSH, AK_RSH, AK_LALT, AK_RALT, AK_LAMI, AK_RAMI, -15 /*LMB*/, -16 /*RMB*/,
       AK_ESC, AK_BACKQUOTE, AK_TAB, AK_CTRL, AK_CAPSLOCK, AK_RET, AK_ENT, AK_BS, AK_DEL, AK_NPDEL, AK_HELP,
+      AK_NPSUB, AK_NPADD, AK_NPDIV, AK_NPLPAREN, AK_NPRPAREN, AK_NPMUL
    };
    int alt_keys_len = sizeof(alt_keys) / sizeof(alt_keys[0]);
 

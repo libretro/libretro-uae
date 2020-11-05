@@ -1,14 +1,7 @@
 #include "libretro.h"
-#include "retroglue.h"
-#include "libretro-mapper.h"
 #include "libretro-core.h"
-#include "vkbd.h"
-#include "graph.h"
-#include "retro_files.h"
-#include "retro_strings.h"
-#include "retro_disk_control.h"
-#include "string/stdstring.h"
-#include "file/file_path.h"
+#include "libretro-mapper.h"
+#include "libretro-graph.h"
 #include "encodings/utf.h"
 
 #include "retrodep/WHDLoad_files.zip.c"
@@ -931,26 +924,26 @@ void retro_set_environment(retro_environment_t cb)
          "",
          {
             { "100", "disabled" },
-            { "95", "5\% volume" },
-            { "90", "10\% volume" },
-            { "85", "15\% volume" },
-            { "80", "20\% volume" },
-            { "75", "25\% volume" },
-            { "70", "30\% volume" },
-            { "65", "35\% volume" },
-            { "60", "40\% volume" },
-            { "55", "45\% volume" },
-            { "50", "50\% volume" },
-            { "45", "55\% volume" },
-            { "40", "60\% volume" },
-            { "35", "65\% volume" },
-            { "30", "70\% volume" },
-            { "25", "75\% volume" },
-            { "20", "80\% volume" },
-            { "15", "85\% volume" },
-            { "10", "90\% volume" },
-            { "5", "95\% volume" },
-            { "0", "100\% volume" },
+            { "95", "5\%" },
+            { "90", "10\%" },
+            { "85", "15\%" },
+            { "80", "20\%" },
+            { "75", "25\%" },
+            { "70", "30\%" },
+            { "65", "35\%" },
+            { "60", "40\%" },
+            { "55", "45\%" },
+            { "50", "50\%" },
+            { "45", "55\%" },
+            { "40", "60\%" },
+            { "35", "65\%" },
+            { "30", "70\%" },
+            { "25", "75\%" },
+            { "20", "80\%" },
+            { "15", "85\%" },
+            { "10", "90\%" },
+            { "5", "95\%" },
+            { "0", "100\%" },
             { NULL, NULL },
          },
          "80"
@@ -2771,67 +2764,67 @@ static void update_variables(void)
    /* Setting resolution */
    switch (video_config)
    {
-		case PUAE_VIDEO_PAL_LO:
-			defaultw = PUAE_VIDEO_WIDTH / 2;
-			defaulth = PUAE_VIDEO_HEIGHT_PAL / 2;
-			strcat(uae_config, "gfx_resolution=lores\n");
-			strcat(uae_config, "gfx_linemode=none\n");
-			break;
-		case PUAE_VIDEO_PAL_HI:
-			defaultw = PUAE_VIDEO_WIDTH;
-			defaulth = PUAE_VIDEO_HEIGHT_PAL / 2;
-			strcat(uae_config, "gfx_resolution=hires\n");
-			strcat(uae_config, "gfx_linemode=none\n");
-			break;
-		case PUAE_VIDEO_PAL_HI_DL:
-			defaultw = PUAE_VIDEO_WIDTH;
-			defaulth = PUAE_VIDEO_HEIGHT_PAL;
-			strcat(uae_config, "gfx_resolution=hires\n");
-			strcat(uae_config, "gfx_linemode=double\n");
-			break;
-		case PUAE_VIDEO_PAL_SUHI:
-			defaultw = PUAE_VIDEO_WIDTH * 2;
-			defaulth = PUAE_VIDEO_HEIGHT_PAL / 2;
-			strcat(uae_config, "gfx_resolution=superhires\n");
-			strcat(uae_config, "gfx_linemode=none\n");
-			break;
-		case PUAE_VIDEO_PAL_SUHI_DL:
-			defaultw = PUAE_VIDEO_WIDTH * 2;
-			defaulth = PUAE_VIDEO_HEIGHT_PAL;
-			strcat(uae_config, "gfx_resolution=superhires\n");
-			strcat(uae_config, "gfx_linemode=double\n");
-			break;
+      case PUAE_VIDEO_PAL_LO:
+         defaultw = PUAE_VIDEO_WIDTH / 2;
+         defaulth = PUAE_VIDEO_HEIGHT_PAL / 2;
+         strcat(uae_config, "gfx_resolution=lores\n");
+         strcat(uae_config, "gfx_linemode=none\n");
+         break;
+      case PUAE_VIDEO_PAL_HI:
+         defaultw = PUAE_VIDEO_WIDTH;
+         defaulth = PUAE_VIDEO_HEIGHT_PAL / 2;
+         strcat(uae_config, "gfx_resolution=hires\n");
+         strcat(uae_config, "gfx_linemode=none\n");
+         break;
+      case PUAE_VIDEO_PAL_HI_DL:
+         defaultw = PUAE_VIDEO_WIDTH;
+         defaulth = PUAE_VIDEO_HEIGHT_PAL;
+         strcat(uae_config, "gfx_resolution=hires\n");
+         strcat(uae_config, "gfx_linemode=double\n");
+         break;
+      case PUAE_VIDEO_PAL_SUHI:
+         defaultw = PUAE_VIDEO_WIDTH * 2;
+         defaulth = PUAE_VIDEO_HEIGHT_PAL / 2;
+         strcat(uae_config, "gfx_resolution=superhires\n");
+         strcat(uae_config, "gfx_linemode=none\n");
+         break;
+      case PUAE_VIDEO_PAL_SUHI_DL:
+         defaultw = PUAE_VIDEO_WIDTH * 2;
+         defaulth = PUAE_VIDEO_HEIGHT_PAL;
+         strcat(uae_config, "gfx_resolution=superhires\n");
+         strcat(uae_config, "gfx_linemode=double\n");
+         break;
 
-		case PUAE_VIDEO_NTSC_LO:
-			defaultw = PUAE_VIDEO_WIDTH / 2;
-			defaulth = PUAE_VIDEO_HEIGHT_NTSC / 2;
-			strcat(uae_config, "gfx_resolution=lores\n");
-			strcat(uae_config, "gfx_linemode=none\n");
-			break;
-		case PUAE_VIDEO_NTSC_HI:
-			defaultw = PUAE_VIDEO_WIDTH;
-			defaulth = PUAE_VIDEO_HEIGHT_NTSC / 2;
-			strcat(uae_config, "gfx_resolution=hires\n");
-			strcat(uae_config, "gfx_linemode=none\n");
-			break;
-		case PUAE_VIDEO_NTSC_HI_DL:
-			defaultw = PUAE_VIDEO_WIDTH;
-			defaulth = PUAE_VIDEO_HEIGHT_NTSC;
-			strcat(uae_config, "gfx_resolution=hires\n");
-			strcat(uae_config, "gfx_linemode=double\n");
-			break;
-		case PUAE_VIDEO_NTSC_SUHI:
-			defaultw = PUAE_VIDEO_WIDTH * 2;
-			defaulth = PUAE_VIDEO_HEIGHT_NTSC / 2;
-			strcat(uae_config, "gfx_resolution=superhires\n");
-			strcat(uae_config, "gfx_linemode=none\n");
-			break;
-		case PUAE_VIDEO_NTSC_SUHI_DL:
-			defaultw = PUAE_VIDEO_WIDTH * 2;
-			defaulth = PUAE_VIDEO_HEIGHT_NTSC;
-			strcat(uae_config, "gfx_resolution=superhires\n");
-			strcat(uae_config, "gfx_linemode=double\n");
-			break;
+      case PUAE_VIDEO_NTSC_LO:
+         defaultw = PUAE_VIDEO_WIDTH / 2;
+         defaulth = PUAE_VIDEO_HEIGHT_NTSC / 2;
+         strcat(uae_config, "gfx_resolution=lores\n");
+         strcat(uae_config, "gfx_linemode=none\n");
+         break;
+      case PUAE_VIDEO_NTSC_HI:
+         defaultw = PUAE_VIDEO_WIDTH;
+         defaulth = PUAE_VIDEO_HEIGHT_NTSC / 2;
+         strcat(uae_config, "gfx_resolution=hires\n");
+         strcat(uae_config, "gfx_linemode=none\n");
+         break;
+      case PUAE_VIDEO_NTSC_HI_DL:
+         defaultw = PUAE_VIDEO_WIDTH;
+         defaulth = PUAE_VIDEO_HEIGHT_NTSC;
+         strcat(uae_config, "gfx_resolution=hires\n");
+         strcat(uae_config, "gfx_linemode=double\n");
+         break;
+      case PUAE_VIDEO_NTSC_SUHI:
+         defaultw = PUAE_VIDEO_WIDTH * 2;
+         defaulth = PUAE_VIDEO_HEIGHT_NTSC / 2;
+         strcat(uae_config, "gfx_resolution=superhires\n");
+         strcat(uae_config, "gfx_linemode=none\n");
+         break;
+      case PUAE_VIDEO_NTSC_SUHI_DL:
+         defaultw = PUAE_VIDEO_WIDTH * 2;
+         defaulth = PUAE_VIDEO_HEIGHT_NTSC;
+         strcat(uae_config, "gfx_resolution=superhires\n");
+         strcat(uae_config, "gfx_linemode=double\n");
+         break;
    }
 
    /* Always update av_info geometry */
@@ -2856,7 +2849,7 @@ static bool retro_disk_set_eject_state(bool ejected)
       else
          dc->eject_state = ejected;
 
-      if (dc->files[dc->index] > 0 && file_exists(dc->files[dc->index]))
+      if (dc->files[dc->index] > 0 && path_is_valid(dc->files[dc->index]))
           display_current_image(((!dc->eject_state) ? dc->labels[dc->index] : ""), !dc->eject_state);
 
       if (dc->eject_state)
@@ -2876,7 +2869,7 @@ static bool retro_disk_set_eject_state(bool ejected)
       }
       else
       {
-         if (dc->files[dc->index] > 0 && file_exists(dc->files[dc->index]))
+         if (dc->files[dc->index] > 0 && path_is_valid(dc->files[dc->index]))
          {
             if (dc->types[dc->index] == DC_IMAGE_TYPE_FLOPPY)
             {
@@ -3087,6 +3080,13 @@ void retro_init(void)
               sizeof(retro_save_directory));
    }
 
+   /* Temp directory for ZIPs */
+   snprintf(retro_temp_directory, sizeof(retro_temp_directory), "%s%s%s", retro_save_directory, DIR_SEP_STR, "TEMP");
+
+   /* Clean ZIP temp */
+   if (!string_is_empty(retro_temp_directory) && path_is_directory(retro_temp_directory))
+      remove_recurse(retro_temp_directory);
+
    /* Disk Control interface */
    dc = dc_create();
    unsigned dci_version = 0;
@@ -3171,7 +3171,7 @@ void retro_init(void)
 }
 
 void retro_deinit(void)
-{	
+{
    /* Clean the M3U storage */
    if (dc)
       dc_free(dc);
@@ -3408,13 +3408,13 @@ static void retro_use_boot_hd(FILE** configfile)
       /* Init Boot HD */
       char boothd_hdf[RETRO_PATH_MAX];
       path_join((char*)&boothd_hdf, retro_save_directory, LIBRETRO_PUAE_PREFIX ".hdf");
-      if (!file_exists(boothd_hdf))
+      if (!path_is_valid(boothd_hdf))
       {
          log_cb(RETRO_LOG_INFO, "Boot HD image file '%s' not found, attempting to create one\n", (const char*)&boothd_hdf);
          if (make_hdf(boothd_hdf, boothd_size, "BOOT"))
             log_cb(RETRO_LOG_ERROR, "Unable to create Boot HD image: '%s'\n", (const char*)&boothd_hdf);
       }
-      if (file_exists(boothd_hdf))
+      if (path_is_valid(boothd_hdf))
       {
          tmp_str = string_replace_substring(boothd_hdf, "\\", "\\\\");
          fprintf(*configfile, "hardfile2=rw,BOOT:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
@@ -3451,7 +3451,7 @@ static void retro_print_kickstart(FILE** configfile)
    path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
 
    /* Main Kickstart */
-   if (!file_exists(kickstart))
+   if (!path_is_valid(kickstart))
    {
       /* Kickstart ROM not found */
       log_cb(RETRO_LOG_ERROR, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
@@ -3475,7 +3475,7 @@ static void retro_print_kickstart(FILE** configfile)
       /* Verify extended ROM if external */
       if (kickstart_st.st_size <= 524288)
       {
-         if (!file_exists(kickstart_ext))
+         if (!path_is_valid(kickstart_ext))
          {
             /* Kickstart extended ROM not found */
             log_cb(RETRO_LOG_ERROR, "Kickstart extended ROM '%s' not found!\n", (const char*)&kickstart_ext);
@@ -3591,7 +3591,7 @@ static char* emu_config(int config)
             "%s_%s.%s", LIBRETRO_PUAE_PREFIX, emu_config_string("model", config), "uae");
    path_join(custom_config_path, retro_save_directory, custom_config_file);
 
-   if (file_exists(custom_config_path))
+   if (path_is_valid(custom_config_path))
    {
       log_cb(RETRO_LOG_INFO, "Replacing model preset with: '%s'\n", custom_config_path);
 
@@ -3754,7 +3754,7 @@ static bool retro_create_config()
       return false;
    }
 
-   if (!string_is_empty(full_path) && (file_exists(full_path) || path_is_directory(full_path)))
+   if (!string_is_empty(full_path) && (path_is_valid(full_path) || path_is_directory(full_path)))
    {
       /* Extract ZIP for examination */
       if (strendswith(full_path, "zip"))
@@ -3762,11 +3762,6 @@ static bool retro_create_config()
          char zip_basename[RETRO_PATH_MAX] = {0};
          snprintf(zip_basename, sizeof(zip_basename), "%s", path_basename(full_path));
          snprintf(zip_basename, sizeof(zip_basename), "%s", path_remove_extension(zip_basename));
-         snprintf(retro_temp_directory, sizeof(retro_temp_directory), "%s%s%s", retro_save_directory, DIR_SEP_STR, "TEMP");
-
-         /* Clean ZIP temp */
-         if (!string_is_empty(retro_temp_directory) && path_is_directory(retro_temp_directory))
-            remove_recurse(retro_temp_directory);
 
          path_mkdir(retro_temp_directory);
          zip_uncompress(full_path, retro_temp_directory, NULL);
@@ -3927,7 +3922,7 @@ static bool retro_create_config()
                   path_join((char*)&whdload_hdf, retro_save_directory, "WHDLoad.hdf");
 
                   /* Verify WHDLoad */
-                  if (!file_exists(whdload_hdf))
+                  if (!path_is_valid(whdload_hdf))
                   {
                      log_cb(RETRO_LOG_INFO, "WHDLoad image file '%s' not found, attempting to create one\n", (const char*)&whdload_hdf);
 
@@ -3959,7 +3954,7 @@ static bool retro_create_config()
                         log_cb(RETRO_LOG_ERROR, "Unable to create WHDLoad image file: '%s'\n", (const char*)&whdload_hdf);
                   }
                   /* Attach HDF */
-                  if (file_exists(whdload_hdf))
+                  if (path_is_valid(whdload_hdf))
                   {
                      tmp_str = string_replace_substring(whdload_hdf, "\\", "\\\\");
                      fprintf(configfile, "hardfile2=rw,WHDLoad:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
@@ -4049,7 +4044,7 @@ static bool retro_create_config()
                   /* Attach WHDSaves.hdf if available */
                   char whdsaves_hdf[RETRO_PATH_MAX];
                   path_join((char*)&whdsaves_hdf, retro_save_directory, "WHDSaves.hdf");
-                  if (!file_exists(whdsaves_hdf))
+                  if (!path_is_valid(whdsaves_hdf))
                   {
                      log_cb(RETRO_LOG_INFO, "WHDSaves image file '%s' not found, attempting to create one\n", (const char*)&whdsaves_hdf);
 
@@ -4081,7 +4076,7 @@ static bool retro_create_config()
                         log_cb(RETRO_LOG_ERROR, "Unable to create WHDSaves image file: '%s'\n", (const char*)&whdsaves_hdf);
                   }
                   /* Attach HDF */
-                  if (file_exists(whdsaves_hdf))
+                  if (path_is_valid(whdsaves_hdf))
                   {
                      tmp_str = string_replace_substring(whdsaves_hdf, "\\", "\\\\");
                      fprintf(configfile, "hardfile2=rw,WHDSaves:\"%s\",32,1,2,512,0,,uae2\n", (const char*)tmp_str);
@@ -4130,7 +4125,7 @@ static bool retro_create_config()
                char whdload_prefs_path[RETRO_PATH_MAX];
                path_join((char*)&whdload_prefs_path, retro_system_directory, "WHDLoad.prefs");
 
-               if (!file_exists(whdload_prefs_path))
+               if (!path_is_valid(whdload_prefs_path))
                {
                   log_cb(RETRO_LOG_INFO, "WHDLoad.prefs '%s' not found, attempting to create one\n", (const char*)&whdload_prefs_path);
 
@@ -4405,7 +4400,7 @@ static bool retro_create_config()
                      token = strtok(NULL, "=");
                   }
                   strtok(disk_image, "\n");
-                  if (!string_is_empty(disk_image) && file_exists(disk_image))
+                  if (!string_is_empty(disk_image) && path_is_valid(disk_image))
                   {
                      /* Add the file to disk control context */
                      char disk_image_label[RETRO_PATH_MAX];
@@ -4485,7 +4480,7 @@ static bool retro_create_config()
    /* Iterate global config file and append all rows to the temporary config */
    char configfile_global_path[RETRO_PATH_MAX];
    path_join((char*)&configfile_global_path, retro_save_directory, LIBRETRO_PUAE_PREFIX "_global.uae");
-   if (file_exists(configfile_global_path))
+   if (path_is_valid(configfile_global_path))
    {
       log_cb(RETRO_LOG_INFO, "Appending global configuration: '%s'\n", configfile_global_path);
       /* Separator row for clarity */

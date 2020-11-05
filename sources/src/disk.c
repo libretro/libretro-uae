@@ -62,7 +62,6 @@ int disk_debug_track = -1;
 
 #ifdef __LIBRETRO__
 #include "libretro-core.h"
-#include "retro_strings.h"
 extern dc_storage *dc;
 #endif
 

@@ -16,16 +16,44 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef RETRO_STRINGS_H__
-#define RETRO_STRINGS_H__
+#ifndef LIBRETRO_DC_H
+#define LIBRETRO_DC_H
 
 #include <stdbool.h>
 
-/* String helpers functions */
-char* trimwhitespace(char *str);
-char* strleft(const char* str, int len);
-char* strright(const char* str, int len);
-bool strstartswith(const char* str, const char* start);
-bool strendswith(const char* str, const char* end);
+/* Disk control structure and functions */
+#define DC_MAX_SIZE 20
 
-#endif
+enum dc_image_type
+{
+   DC_IMAGE_TYPE_NONE = 0,
+   DC_IMAGE_TYPE_FLOPPY,
+   DC_IMAGE_TYPE_CD,
+   DC_IMAGE_TYPE_HD,
+   DC_IMAGE_TYPE_WHDLOAD,
+   DC_IMAGE_TYPE_UNKNOWN
+};
+
+struct dc_storage
+{
+   char* command;
+   char* files[DC_MAX_SIZE];
+   char* labels[DC_MAX_SIZE];
+   enum dc_image_type types[DC_MAX_SIZE];
+   unsigned count;
+   int index;
+   bool eject_state;
+   bool replace;
+};
+
+typedef struct dc_storage dc_storage;
+dc_storage* dc_create(void);
+void dc_parse_m3u(dc_storage* dc, const char* m3u_file, const char* save_dir);
+bool dc_add_file(dc_storage* dc, const char* filename, const char* label);
+void dc_free(dc_storage* dc);
+void dc_reset(dc_storage* dc);
+bool dc_replace_file(dc_storage* dc, int index, const char* filename);
+bool dc_remove_file(dc_storage* dc, int index);
+enum dc_image_type dc_get_image_type(const char* filename);
+
+#endif /* LIBRETRO_DC_H */

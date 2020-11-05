@@ -1,10 +1,8 @@
 #include "libretro.h"
 #include "libretro-core.h"
 #include "libretro-mapper.h"
-#include "graph.h"
-#include "vkbd.h"
-#include "retro_files.h"
-#include "file/file_path.h"
+#include "libretro-graph.h"
+#include "libretro-vkbd.h"
 
 #include "uae_types.h"
 #include "sysconfig.h"
@@ -1518,9 +1516,13 @@ void update_input(int disable_physical_cursor_keys)
                   }
                }
 
-               if ((joypad_bits[j] & (1 << i)) && !jbt[j][i] && i != turbo_fire_button)
+               /* No mappings if button = turbo fire in joystick mode */
+               if (i == turbo_fire_button && !retro_mousemode)
+                  continue;
+
+               if ((joypad_bits[j] & (1 << i)) && !jbt[j][i])
                   just_pressed = 1;
-               else if (!(joypad_bits[j] & (1 << i)) && jbt[j][i] && i != turbo_fire_button)
+               else if (!(joypad_bits[j] & (1 << i)) && jbt[j][i])
                   just_released = 1;
             }
             else if (i >= 16) /* Remappable RetroPad analog stick directions */
