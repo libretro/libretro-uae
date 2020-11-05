@@ -8,7 +8,7 @@ bool retro_vkbd_page = false;
 bool retro_vkbd_position = false;
 bool retro_vkbd_transparent = true;
 extern bool retro_capslock;
-extern int vkflag[9];
+extern int vkflag[10];
 extern unsigned int video_config_geometry;
 extern unsigned int opt_vkbd_theme;
 extern unsigned int opt_vkbd_alpha;

@@ -16,6 +16,7 @@
 #include <signal.h>
 #endif
 
+#if 0
 #include "options.h"
 #include "uae.h"
 #include "sources/src/include/memory_uae.h"
@@ -41,9 +42,14 @@
 #include "cpummu.h"
 #include "cpummu030.h"
 #include "misc.h"
+#else
+#include "debug.h"
+#include "xwin.h"
+#endif
 
 /* internal members */
 int debugger_active;
+#if 0
 static uaecptr skipaddr_start, skipaddr_end;
 static int skipaddr_doskip;
 static uae_u32 skipins;
@@ -53,6 +59,7 @@ static int debug_rewind;
 #endif
 static int memwatch_enabled, memwatch_triggered;
 static uae_u16 sr_bpmask, sr_bpvalue;
+#endif
 int debugging;
 int exception_debugging;
 int no_trace_exceptions;
@@ -61,13 +68,14 @@ int debug_dma = 0;
 int debug_sprite_mask = 0xff;
 int debug_illegal = 0;
 uae_u64 debug_illegal_mask;
+#if 0
 static int debug_mmu_mode;
 
 static uaecptr processptr;
 static uae_char *processname;
 
 static uaecptr debug_copper_pc;
-
+#endif
 extern int audio_channel_mask;
 extern int inputdevice_logging;
 extern void my_trim (TCHAR *s);
@@ -89,15 +97,17 @@ void activate_debugger (void)
 {
 }
 
+#if 0
 int firsthist = 0;
 int lasthist = 0;
 static struct regstruct history[MAX_HIST];
 
-static TCHAR help[] = {};
+static TCHAR help[] = {0};
 
 void debug_help (void)
 {
 }
+
 
 static int debug_linecounter;
 #define MAX_LINECOUNTER 1000
@@ -106,6 +116,7 @@ static int debug_out (const TCHAR *format, ...)
 {
 	return 1;
 }
+#endif
 
 #ifdef MMUEMU
 uae_u32 get_byte_debug (uaecptr addr)
@@ -139,6 +150,7 @@ int safe_addr (uaecptr addr, int size)
 }
 #endif
 
+#if 0
 static bool iscancel (int counter)
 {
 	return true;
@@ -305,7 +317,7 @@ static int nr_cop_records[2], curr_cop_set;
 #define NR_DMA_REC_VPOS 1000
 static struct dma_rec *dma_record[2];
 static int dma_record_toggle;
-
+#endif
 void record_dma_reset (void)
 {
 }
@@ -313,6 +325,7 @@ void record_dma_reset (void)
 void record_copper_reset (void)
 {
 }
+
 
 STATIC_INLINE uae_u32 ledcolor (uae_u32 c, uae_u32 *rc, uae_u32 *gc, uae_u32 *bc, uae_u32 *a)
 {
@@ -334,13 +347,14 @@ void record_dma_event (int evt, int hpos, int vpos)
 
 struct dma_rec *record_dma (uae_u16 reg, uae_u16 dat, uae_u32 addr, int hpos, int vpos, int type)
 {
-	struct dma_rec *dr;
+	struct dma_rec *dr = NULL;
 	return dr;
 }
-
+#if 0
 static void decode_dma_record (int hpos, int vpos, int toggle, bool logfile)
 {
 }
+#endif
 void log_dma_record (void)
 {
 }
@@ -348,7 +362,7 @@ void log_dma_record (void)
 void record_copper (uaecptr addr, int hpos, int vpos)
 {
 }
-
+#if 0
 static struct cop_rec *find_copper_records (uaecptr addr)
 {
 	return 0;
@@ -397,7 +411,8 @@ static void deepcheatsearch (TCHAR **c)
 static void cheatsearch (TCHAR **c)
 {
 }
-
+#endif
+#if 0
 struct breakpoint_node bpnodes[BREAKPOINT_TOTAL];
 static addrbank **debug_mem_banks;
 static addrbank *debug_mem_area;
@@ -454,7 +469,7 @@ static void smc_detect_init (TCHAR **c)
 static void smc_detector (uaecptr addr, int rwi, int size, uae_u32 *valp)
 {
 }
-
+#endif
 uae_u8 *save_debug_memwatch (int *len, uae_u8 *dstptr)
 {
 	return 0;
@@ -469,12 +484,14 @@ void restore_debug_memwatch_finish (void)
 {
 }
 
+#if 0
 static int memwatch_func (uaecptr addr, int rwi, int size, uae_u32 *valp)
 {
 	return 1;
 }
 
 static int mmu_hit (uaecptr addr, int size, int rwi, uae_u32 *v);
+
 
 static uae_u32 REGPARAM2 mmu_lget (uaecptr addr)
 {
@@ -544,7 +561,7 @@ static uae_u8 *REGPARAM2 debug_xlate (uaecptr addr)
 {
 	return 0;
 }
-
+#endif
 uae_u16 debug_wputpeekdma (uaecptr addr, uae_u32 v)
 {
 	return 0;
@@ -574,7 +591,7 @@ void debug_wgetpeek (uaecptr addr, uae_u32 v)
 void debug_lgetpeek (uaecptr addr, uae_u32 v)
 {
 }
-
+#if 0
 struct membank_store
 {
 	addrbank *addr;
@@ -626,6 +643,7 @@ static uae_u8 *dump_xlate (uae_u32 addr)
 static void memory_map_dump_2 (int log)
 {
 }
+#endif
 void memory_map_dump (void)
 {
 }
@@ -634,7 +652,7 @@ STATIC_INLINE uaecptr BPTR2APTR (uaecptr addr)
 {
 	return addr << 2;
 }
-
+#if 0
 static void print_task_info (uaecptr node)
 {
 }
@@ -686,11 +704,11 @@ static int debugtest_modes[DEBUGTEST_MAX];
 static const TCHAR *debugtest_names[] = {
 	_T("Blitter"), _T("Keyboard"), _T("Floppy")
 };
-
+#endif
 void debugtest (enum debugtest_item di, const TCHAR *format, ...)
 {
 }
-
+#if 0
 static void debugtest_set (TCHAR **inptr)
 {
 }
@@ -725,7 +743,7 @@ static void debug_1 (void)
 static void addhistory (void)
 {
 }
-
+#endif
 void debug (void)
 {
 }
@@ -739,6 +757,7 @@ void mmu_disasm (uaecptr pc, int lines)
 {
 }
 
+#if 0
 static int mmu_logging;
 
 #define MMU_PAGE_SHIFT 16
@@ -756,12 +775,14 @@ static uae_u32 mmu_struct, mmu_callback, mmu_regs;
 static uae_u32 mmu_fault_bank_addr, mmu_fault_addr;
 static int mmu_fault_size, mmu_fault_rw;
 static int mmu_slots;
+
 static struct regstruct mmur;
 
 struct mmunode {
 	struct mmudata *mmubank;
 	struct mmunode *next;
 };
+
 static struct mmunode **mmunl;
 extern struct regstruct mmu_backup_regs;
 
@@ -791,6 +812,7 @@ static int mmu_hit (uaecptr addr, int size, int rwi, uae_u32 *v)
 {
 	return 0;
 }
+#endif
 
 #ifdef JIT
 static void mmu_free_node(struct mmunode *mn)
@@ -802,10 +824,12 @@ static void mmu_free(void)
 }
 #endif
 
+#if 0
 static int getmmubank(struct mmudata *snptr, uaecptr p)
 {
 	return 0;
 }
+#endif
 
 int mmu_init(int mode, uaecptr parm, uaecptr parm2)
 {

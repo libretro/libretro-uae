@@ -61,7 +61,7 @@ int vkbd_y_max = 0;
 
 /* Core flags */
 int mapper_keys[RETRO_MAPPER_LAST] = {0};
-int vkflag[9] = {0};
+int vkflag[10] = {0};
 int retro_capslock = false;
 bool retro_mousemode = false;
 bool mousemode_locked = false;

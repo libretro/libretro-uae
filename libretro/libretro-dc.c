@@ -413,7 +413,7 @@ static bool dc_add_m3u_save_disk(
     snprintf(m3u_file_name_no_ext, sizeof(m3u_file_name_no_ext),
              "%s", path_remove_extension((char*)m3u_file_name));
 
-   if (!m3u_file_name_no_ext || (*m3u_file_name_no_ext == '\0'))
+   if (*m3u_file_name_no_ext == '\0')
       return false;
 
    /* Construct save disk file name */

@@ -930,11 +930,11 @@ void gz_uncompress(gzFile in, FILE *out)
    {
       len = gzread(in, gzbuf, sizeof(gzbuf));
       if (len < 0)
-         fprintf(stderr, gzerror(in, &err));
+         fprintf(stdout, "%s", gzerror(in, &err));
       if (len == 0)
          break;
       if ((int)fwrite(gzbuf, 1, (unsigned)len, out) != len)
-         fprintf(stderr, "Write error!\n");
+         fprintf(stdout, "Write error!\n");
    }
 }
 
@@ -1140,7 +1140,7 @@ int make_hdf (char *hdf_path, char *hdf_size, char *device_name)
 
     /* Munge size specifier */
     if (size > 0) {
-        char c = (toupper(*size_spec));
+        char c = (_totupper(*size_spec));
 
         if (c == 'K')
             size *= 1024;

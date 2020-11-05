@@ -36,7 +36,9 @@ unsigned long now_time;
 unsigned long stat_time;
 unsigned long stat_count;
 
+#if 0
 static unsigned long scaled_sample_evtime;
+#endif
 
 void sound_mute (int newmute)
 {
