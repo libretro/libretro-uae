@@ -178,7 +178,7 @@ void DrawVlineBmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned
    {
       idx = x+j*retrow;
       buffer[idx] = color;
-   }	
+   }
 }
 
 void DrawlineBmp(unsigned short *buffer, int x1, int y1, int x2, int y2, unsigned short color)

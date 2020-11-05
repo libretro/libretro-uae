@@ -2764,67 +2764,67 @@ static void update_variables(void)
    /* Setting resolution */
    switch (video_config)
    {
-		case PUAE_VIDEO_PAL_LO:
-			defaultw = PUAE_VIDEO_WIDTH / 2;
-			defaulth = PUAE_VIDEO_HEIGHT_PAL / 2;
-			strcat(uae_config, "gfx_resolution=lores\n");
-			strcat(uae_config, "gfx_linemode=none\n");
-			break;
-		case PUAE_VIDEO_PAL_HI:
-			defaultw = PUAE_VIDEO_WIDTH;
-			defaulth = PUAE_VIDEO_HEIGHT_PAL / 2;
-			strcat(uae_config, "gfx_resolution=hires\n");
-			strcat(uae_config, "gfx_linemode=none\n");
-			break;
-		case PUAE_VIDEO_PAL_HI_DL:
-			defaultw = PUAE_VIDEO_WIDTH;
-			defaulth = PUAE_VIDEO_HEIGHT_PAL;
-			strcat(uae_config, "gfx_resolution=hires\n");
-			strcat(uae_config, "gfx_linemode=double\n");
-			break;
-		case PUAE_VIDEO_PAL_SUHI:
-			defaultw = PUAE_VIDEO_WIDTH * 2;
-			defaulth = PUAE_VIDEO_HEIGHT_PAL / 2;
-			strcat(uae_config, "gfx_resolution=superhires\n");
-			strcat(uae_config, "gfx_linemode=none\n");
-			break;
-		case PUAE_VIDEO_PAL_SUHI_DL:
-			defaultw = PUAE_VIDEO_WIDTH * 2;
-			defaulth = PUAE_VIDEO_HEIGHT_PAL;
-			strcat(uae_config, "gfx_resolution=superhires\n");
-			strcat(uae_config, "gfx_linemode=double\n");
-			break;
+      case PUAE_VIDEO_PAL_LO:
+         defaultw = PUAE_VIDEO_WIDTH / 2;
+         defaulth = PUAE_VIDEO_HEIGHT_PAL / 2;
+         strcat(uae_config, "gfx_resolution=lores\n");
+         strcat(uae_config, "gfx_linemode=none\n");
+         break;
+      case PUAE_VIDEO_PAL_HI:
+         defaultw = PUAE_VIDEO_WIDTH;
+         defaulth = PUAE_VIDEO_HEIGHT_PAL / 2;
+         strcat(uae_config, "gfx_resolution=hires\n");
+         strcat(uae_config, "gfx_linemode=none\n");
+         break;
+      case PUAE_VIDEO_PAL_HI_DL:
+         defaultw = PUAE_VIDEO_WIDTH;
+         defaulth = PUAE_VIDEO_HEIGHT_PAL;
+         strcat(uae_config, "gfx_resolution=hires\n");
+         strcat(uae_config, "gfx_linemode=double\n");
+         break;
+      case PUAE_VIDEO_PAL_SUHI:
+         defaultw = PUAE_VIDEO_WIDTH * 2;
+         defaulth = PUAE_VIDEO_HEIGHT_PAL / 2;
+         strcat(uae_config, "gfx_resolution=superhires\n");
+         strcat(uae_config, "gfx_linemode=none\n");
+         break;
+      case PUAE_VIDEO_PAL_SUHI_DL:
+         defaultw = PUAE_VIDEO_WIDTH * 2;
+         defaulth = PUAE_VIDEO_HEIGHT_PAL;
+         strcat(uae_config, "gfx_resolution=superhires\n");
+         strcat(uae_config, "gfx_linemode=double\n");
+         break;
 
-		case PUAE_VIDEO_NTSC_LO:
-			defaultw = PUAE_VIDEO_WIDTH / 2;
-			defaulth = PUAE_VIDEO_HEIGHT_NTSC / 2;
-			strcat(uae_config, "gfx_resolution=lores\n");
-			strcat(uae_config, "gfx_linemode=none\n");
-			break;
-		case PUAE_VIDEO_NTSC_HI:
-			defaultw = PUAE_VIDEO_WIDTH;
-			defaulth = PUAE_VIDEO_HEIGHT_NTSC / 2;
-			strcat(uae_config, "gfx_resolution=hires\n");
-			strcat(uae_config, "gfx_linemode=none\n");
-			break;
-		case PUAE_VIDEO_NTSC_HI_DL:
-			defaultw = PUAE_VIDEO_WIDTH;
-			defaulth = PUAE_VIDEO_HEIGHT_NTSC;
-			strcat(uae_config, "gfx_resolution=hires\n");
-			strcat(uae_config, "gfx_linemode=double\n");
-			break;
-		case PUAE_VIDEO_NTSC_SUHI:
-			defaultw = PUAE_VIDEO_WIDTH * 2;
-			defaulth = PUAE_VIDEO_HEIGHT_NTSC / 2;
-			strcat(uae_config, "gfx_resolution=superhires\n");
-			strcat(uae_config, "gfx_linemode=none\n");
-			break;
-		case PUAE_VIDEO_NTSC_SUHI_DL:
-			defaultw = PUAE_VIDEO_WIDTH * 2;
-			defaulth = PUAE_VIDEO_HEIGHT_NTSC;
-			strcat(uae_config, "gfx_resolution=superhires\n");
-			strcat(uae_config, "gfx_linemode=double\n");
-			break;
+      case PUAE_VIDEO_NTSC_LO:
+         defaultw = PUAE_VIDEO_WIDTH / 2;
+         defaulth = PUAE_VIDEO_HEIGHT_NTSC / 2;
+         strcat(uae_config, "gfx_resolution=lores\n");
+         strcat(uae_config, "gfx_linemode=none\n");
+         break;
+      case PUAE_VIDEO_NTSC_HI:
+         defaultw = PUAE_VIDEO_WIDTH;
+         defaulth = PUAE_VIDEO_HEIGHT_NTSC / 2;
+         strcat(uae_config, "gfx_resolution=hires\n");
+         strcat(uae_config, "gfx_linemode=none\n");
+         break;
+      case PUAE_VIDEO_NTSC_HI_DL:
+         defaultw = PUAE_VIDEO_WIDTH;
+         defaulth = PUAE_VIDEO_HEIGHT_NTSC;
+         strcat(uae_config, "gfx_resolution=hires\n");
+         strcat(uae_config, "gfx_linemode=double\n");
+         break;
+      case PUAE_VIDEO_NTSC_SUHI:
+         defaultw = PUAE_VIDEO_WIDTH * 2;
+         defaulth = PUAE_VIDEO_HEIGHT_NTSC / 2;
+         strcat(uae_config, "gfx_resolution=superhires\n");
+         strcat(uae_config, "gfx_linemode=none\n");
+         break;
+      case PUAE_VIDEO_NTSC_SUHI_DL:
+         defaultw = PUAE_VIDEO_WIDTH * 2;
+         defaulth = PUAE_VIDEO_HEIGHT_NTSC;
+         strcat(uae_config, "gfx_resolution=superhires\n");
+         strcat(uae_config, "gfx_linemode=double\n");
+         break;
    }
 
    /* Always update av_info geometry */
@@ -3171,7 +3171,7 @@ void retro_init(void)
 }
 
 void retro_deinit(void)
-{	
+{
    /* Clean the M3U storage */
    if (dc)
       dc_free(dc);
