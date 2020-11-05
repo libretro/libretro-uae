@@ -868,6 +868,7 @@ void remove_recurse(const char *path)
     rmdir(path);
 }
 
+/* zlib */
 #include "deps/zlib/zlib.h"
 void gz_uncompress(gzFile in, FILE *out)
 {
@@ -939,7 +940,7 @@ void zip_uncompress(char *in, char *out, char *lastfile)
             fprintf(stdout, "Mkdir: %s\n", filename_withpath);
             path_mkdir(filename_withpath);
         }
-        else
+        else if (!path_is_valid(filename_withpath))
         {
             const char* write_filename;
             int skip = 0;
@@ -1021,6 +1022,7 @@ void zip_uncompress(char *in, char *out, char *lastfile)
     }
 }
 
+/* HDF tools */
 static int create_hdf (const char *path, off_t size)
 {
     FILE *f;

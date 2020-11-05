@@ -21,7 +21,10 @@
 #endif
 
 #include "zfile.h"
+
 #include "libretro.h"
+#include "file/file_path.h"
+#include "string/stdstring.h"
 #include "retro_disk_control.h"
 
 extern int imagename_timer;

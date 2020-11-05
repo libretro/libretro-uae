@@ -3087,6 +3087,13 @@ void retro_init(void)
               sizeof(retro_save_directory));
    }
 
+   /* Temp directory for ZIPs */
+   snprintf(retro_temp_directory, sizeof(retro_temp_directory), "%s%s%s", retro_save_directory, DIR_SEP_STR, "TEMP");
+
+   /* Clean ZIP temp */
+   if (!string_is_empty(retro_temp_directory) && path_is_directory(retro_temp_directory))
+      remove_recurse(retro_temp_directory);
+
    /* Disk Control interface */
    dc = dc_create();
    unsigned dci_version = 0;
@@ -3762,11 +3769,6 @@ static bool retro_create_config()
          char zip_basename[RETRO_PATH_MAX] = {0};
          snprintf(zip_basename, sizeof(zip_basename), "%s", path_basename(full_path));
          snprintf(zip_basename, sizeof(zip_basename), "%s", path_remove_extension(zip_basename));
-         snprintf(retro_temp_directory, sizeof(retro_temp_directory), "%s%s%s", retro_save_directory, DIR_SEP_STR, "TEMP");
-
-         /* Clean ZIP temp */
-         if (!string_is_empty(retro_temp_directory) && path_is_directory(retro_temp_directory))
-            remove_recurse(retro_temp_directory);
 
          path_mkdir(retro_temp_directory);
          zip_uncompress(full_path, retro_temp_directory, NULL);

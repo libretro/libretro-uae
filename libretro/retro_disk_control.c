@@ -19,7 +19,6 @@
 #include "retro_disk_control.h"
 #include "retro_strings.h"
 #include "retro_files.h"
-#include "file/file_path.h"
 #include "libretro-core.h"
 #include "retroglue.h"
 
@@ -44,7 +43,7 @@
 #define COMMENT "#"
 #define M3U_SPECIAL_COMMAND "#COMMAND:"
 #define M3U_SAVEDISK "#SAVEDISK:"
-#define M3U_SAVEDISK_LABEL "SAVE DISK"
+#define M3U_SAVEDISK_LABEL "Save Disk"
 #define M3U_PATH_DELIM '|'
 
 extern char retro_save_directory[RETRO_PATH_MAX];
@@ -194,18 +193,7 @@ bool dc_add_file(dc_storage* dc, const char* filename, const char* label)
 	if (!filename || (*filename == '\0'))
 		return false;
 
-	/* Copy and return */
-	char *filename_int = calloc(strlen(filename) + 1, sizeof(char));
-	strcpy(filename_int, filename);
-
-	char *label_int = NULL; /* NULL is a valid label */
-	if (!(!label || (*label == '\0')))
-	{
-		label_int = calloc(strlen(label) + 1, sizeof(char));
-		strcpy(label_int, label);
-	}
-
-	return dc_add_file_int(dc, filename_int, label_int);
+	return dc_add_file_int(dc, my_strdup(filename), my_strdup(label));
 }
 
 bool dc_remove_file(dc_storage* dc, int index)
@@ -283,7 +271,6 @@ bool dc_replace_file(dc_storage* dc, int index, const char* filename)
             char zip_basename[RETRO_PATH_MAX] = {0};
             snprintf(zip_basename, sizeof(zip_basename), "%s", path_basename(full_path_replace));
             snprintf(zip_basename, sizeof(zip_basename), "%s", path_remove_extension(zip_basename));
-            snprintf(retro_temp_directory, sizeof(retro_temp_directory), "%s%s%s", retro_save_directory, DIR_SEP_STR, "TEMP");
 
             path_mkdir(retro_temp_directory);
             zip_uncompress(full_path_replace, retro_temp_directory, NULL);
@@ -479,6 +466,11 @@ static bool dc_add_m3u_save_disk(
 					*scrub_pointer = '_';
 			}
 		}
+
+		/* Set empty disk label as visible label */
+		if (string_is_empty(volume_name))
+		    snprintf(volume_name, sizeof(volume_name), "%s %u",
+		             M3U_SAVEDISK_LABEL, index);
 		
 		/* Create save disk */
 		save_disk_exists = disk_creatediskfile(
@@ -495,7 +487,7 @@ static bool dc_add_m3u_save_disk(
 		snprintf(save_disk_label, 64, "%s %u",
 				M3U_SAVEDISK_LABEL, index);
 		
-		dc_add_file_int(dc, my_strdup(save_disk_path), my_strdup(save_disk_label));
+		dc_add_file(dc, save_disk_path, save_disk_label);
 		return true;
 	}
 	
@@ -518,11 +510,25 @@ static bool dc_add_m3u_disk(
 	
 	if(disk_file == NULL)
 		return false;
+
+	/* "Browsed" file in ZIP */
+	char browsed_file[RETRO_PATH_MAX] = {0};
+	if (strstr(disk_file, ".zip#"))
+	{
+		char *token = strtok((char*)disk_file, "#");
+		while (token != NULL)
+		{
+			snprintf(browsed_file, sizeof(browsed_file), "%s", token);
+			token = strtok(NULL, "#");
+		}
+	}
 	
 	/* Search the file (absolute, relative to m3u) */
 	if ((disk_file_path = m3u_search_file(m3u_base_dir, disk_file)) != NULL)
 	{
 		char disk_label[RETRO_PATH_MAX] = {0};
+		char full_path[RETRO_PATH_MAX] = {0};
+		snprintf(full_path, sizeof(full_path), "%s", disk_file_path);
 		
 		/* If a label is provided, use it */
 		if (usr_disk_label_set)
@@ -535,6 +541,8 @@ static bool dc_add_m3u_disk(
 		{
 			/* Otherwise, use file name without extension as label */
 			const char *file_name = path_get_basename(disk_file_path);
+			if (!string_is_empty(browsed_file))
+			    file_name = path_get_basename(browsed_file);
 			
 			if (!(!file_name || (*file_name == '\0')))
 				remove_file_extension(file_name, disk_label, sizeof(disk_label));
@@ -543,21 +551,24 @@ static bool dc_add_m3u_disk(
 		/* ZIP */
 		if (strendswith(disk_file_path, "zip"))
 		{
-			char zip_basename[RETRO_PATH_MAX];
-			snprintf(zip_basename, sizeof(zip_basename), "%s", path_basename(disk_file_path));
-			snprintf(zip_basename, sizeof(zip_basename), "%s", path_remove_extension(zip_basename));
-			snprintf(retro_temp_directory, sizeof(retro_temp_directory), "%s%s%s", retro_save_directory, DIR_SEP_STR, "TEMP");
 			char lastfile[RETRO_PATH_MAX];
+			char zip_basename[RETRO_PATH_MAX];
+			snprintf(zip_basename, sizeof(zip_basename), "%s", path_basename(full_path));
+			snprintf(zip_basename, sizeof(zip_basename), "%s", path_remove_extension(zip_basename));
 
 			path_mkdir(retro_temp_directory);
-			zip_uncompress(disk_file_path, retro_temp_directory, lastfile);
-			snprintf(disk_file_path, RETRO_PATH_MAX, "%s%s%s", retro_temp_directory, DIR_SEP_STR, lastfile);
+			zip_uncompress(full_path, retro_temp_directory, lastfile);
+
+			if (!string_is_empty(browsed_file))
+			    snprintf(lastfile, sizeof(lastfile), "%s", browsed_file);
+			snprintf(full_path, RETRO_PATH_MAX, "%s%s%s", retro_temp_directory, DIR_SEP_STR, lastfile);
 		}
-		
+
 		/* Add the file to the list */
-		dc_add_file_int(
-				dc, disk_file_path,
-				(disk_label[0] == '\0') ? NULL : my_strdup(disk_label));
+		if (path_is_valid(full_path))
+		    dc_add_file(
+				dc, full_path,
+				(disk_label[0] == '\0') ? NULL : disk_label);
 		
 		return true;
 	}
