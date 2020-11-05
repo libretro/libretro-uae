@@ -772,9 +772,9 @@ void retro_set_environment(retro_environment_t cb)
          "By default, the keyboard comes up with RetroPad Select.",
          {
             { "0", "Classic" },
+            { "3", "Light" },
             { "1", "CD32" },
             { "2", "Dark" },
-            { "3", "Light" },
             { NULL, NULL },
          },
          "0"
