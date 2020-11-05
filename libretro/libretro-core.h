@@ -22,10 +22,10 @@
 
 #include "zfile.h"
 
-#include "libretro.h"
-#include "file/file_path.h"
+#include "libretro-glue.h"
+#include "libretro-dc.h"
 #include "string/stdstring.h"
-#include "retro_disk_control.h"
+#include "file/file_path.h"
 
 extern int imagename_timer;
 extern void reset_drawing(void);
@@ -48,6 +48,17 @@ extern retro_log_printf_t log_cb;
 #endif
 
 int umain (int argc, TCHAR **argv);
+
+/* File helpers functions */
+#define RETRO_PATH_MAX 512
+
+#ifdef _WIN32
+#define RETRO_PATH_SEPARATOR        "\\"
+/* Windows also support the unix path separator */
+#define RETRO_PATH_SEPARATOR_ALT    "/"
+#else
+#define RETRO_PATH_SEPARATOR        "/"
+#endif
 
 #ifdef WIN32
 #define DIR_SEP_STR "\\"

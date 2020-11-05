@@ -11,9 +11,9 @@
 
 #include "options.h"
 #include "gui.h"
-#include "retroglue.h"
 
 #include "libretro.h"
+#include "libretro-glue.h"
 extern retro_log_printf_t log_cb;
 
 void gui_disk_image_change (int unitnum, const TCHAR *name, bool writeprotected)

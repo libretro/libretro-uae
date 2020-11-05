@@ -1,14 +1,7 @@
 #include "libretro.h"
-#include "retroglue.h"
-#include "libretro-mapper.h"
 #include "libretro-core.h"
-#include "vkbd.h"
-#include "graph.h"
-#include "retro_files.h"
-#include "retro_strings.h"
-#include "retro_disk_control.h"
-#include "string/stdstring.h"
-#include "file/file_path.h"
+#include "libretro-mapper.h"
+#include "libretro-graph.h"
 #include "encodings/utf.h"
 
 #include "retrodep/WHDLoad_files.zip.c"
@@ -2856,7 +2849,7 @@ static bool retro_disk_set_eject_state(bool ejected)
       else
          dc->eject_state = ejected;
 
-      if (dc->files[dc->index] > 0 && file_exists(dc->files[dc->index]))
+      if (dc->files[dc->index] > 0 && path_is_valid(dc->files[dc->index]))
           display_current_image(((!dc->eject_state) ? dc->labels[dc->index] : ""), !dc->eject_state);
 
       if (dc->eject_state)
@@ -2876,7 +2869,7 @@ static bool retro_disk_set_eject_state(bool ejected)
       }
       else
       {
-         if (dc->files[dc->index] > 0 && file_exists(dc->files[dc->index]))
+         if (dc->files[dc->index] > 0 && path_is_valid(dc->files[dc->index]))
          {
             if (dc->types[dc->index] == DC_IMAGE_TYPE_FLOPPY)
             {
@@ -3415,13 +3408,13 @@ static void retro_use_boot_hd(FILE** configfile)
       /* Init Boot HD */
       char boothd_hdf[RETRO_PATH_MAX];
       path_join((char*)&boothd_hdf, retro_save_directory, LIBRETRO_PUAE_PREFIX ".hdf");
-      if (!file_exists(boothd_hdf))
+      if (!path_is_valid(boothd_hdf))
       {
          log_cb(RETRO_LOG_INFO, "Boot HD image file '%s' not found, attempting to create one\n", (const char*)&boothd_hdf);
          if (make_hdf(boothd_hdf, boothd_size, "BOOT"))
             log_cb(RETRO_LOG_ERROR, "Unable to create Boot HD image: '%s'\n", (const char*)&boothd_hdf);
       }
-      if (file_exists(boothd_hdf))
+      if (path_is_valid(boothd_hdf))
       {
          tmp_str = string_replace_substring(boothd_hdf, "\\", "\\\\");
          fprintf(*configfile, "hardfile2=rw,BOOT:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
@@ -3458,7 +3451,7 @@ static void retro_print_kickstart(FILE** configfile)
    path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
 
    /* Main Kickstart */
-   if (!file_exists(kickstart))
+   if (!path_is_valid(kickstart))
    {
       /* Kickstart ROM not found */
       log_cb(RETRO_LOG_ERROR, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
@@ -3482,7 +3475,7 @@ static void retro_print_kickstart(FILE** configfile)
       /* Verify extended ROM if external */
       if (kickstart_st.st_size <= 524288)
       {
-         if (!file_exists(kickstart_ext))
+         if (!path_is_valid(kickstart_ext))
          {
             /* Kickstart extended ROM not found */
             log_cb(RETRO_LOG_ERROR, "Kickstart extended ROM '%s' not found!\n", (const char*)&kickstart_ext);
@@ -3598,7 +3591,7 @@ static char* emu_config(int config)
             "%s_%s.%s", LIBRETRO_PUAE_PREFIX, emu_config_string("model", config), "uae");
    path_join(custom_config_path, retro_save_directory, custom_config_file);
 
-   if (file_exists(custom_config_path))
+   if (path_is_valid(custom_config_path))
    {
       log_cb(RETRO_LOG_INFO, "Replacing model preset with: '%s'\n", custom_config_path);
 
@@ -3761,7 +3754,7 @@ static bool retro_create_config()
       return false;
    }
 
-   if (!string_is_empty(full_path) && (file_exists(full_path) || path_is_directory(full_path)))
+   if (!string_is_empty(full_path) && (path_is_valid(full_path) || path_is_directory(full_path)))
    {
       /* Extract ZIP for examination */
       if (strendswith(full_path, "zip"))
@@ -3929,7 +3922,7 @@ static bool retro_create_config()
                   path_join((char*)&whdload_hdf, retro_save_directory, "WHDLoad.hdf");
 
                   /* Verify WHDLoad */
-                  if (!file_exists(whdload_hdf))
+                  if (!path_is_valid(whdload_hdf))
                   {
                      log_cb(RETRO_LOG_INFO, "WHDLoad image file '%s' not found, attempting to create one\n", (const char*)&whdload_hdf);
 
@@ -3961,7 +3954,7 @@ static bool retro_create_config()
                         log_cb(RETRO_LOG_ERROR, "Unable to create WHDLoad image file: '%s'\n", (const char*)&whdload_hdf);
                   }
                   /* Attach HDF */
-                  if (file_exists(whdload_hdf))
+                  if (path_is_valid(whdload_hdf))
                   {
                      tmp_str = string_replace_substring(whdload_hdf, "\\", "\\\\");
                      fprintf(configfile, "hardfile2=rw,WHDLoad:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
@@ -4051,7 +4044,7 @@ static bool retro_create_config()
                   /* Attach WHDSaves.hdf if available */
                   char whdsaves_hdf[RETRO_PATH_MAX];
                   path_join((char*)&whdsaves_hdf, retro_save_directory, "WHDSaves.hdf");
-                  if (!file_exists(whdsaves_hdf))
+                  if (!path_is_valid(whdsaves_hdf))
                   {
                      log_cb(RETRO_LOG_INFO, "WHDSaves image file '%s' not found, attempting to create one\n", (const char*)&whdsaves_hdf);
 
@@ -4083,7 +4076,7 @@ static bool retro_create_config()
                         log_cb(RETRO_LOG_ERROR, "Unable to create WHDSaves image file: '%s'\n", (const char*)&whdsaves_hdf);
                   }
                   /* Attach HDF */
-                  if (file_exists(whdsaves_hdf))
+                  if (path_is_valid(whdsaves_hdf))
                   {
                      tmp_str = string_replace_substring(whdsaves_hdf, "\\", "\\\\");
                      fprintf(configfile, "hardfile2=rw,WHDSaves:\"%s\",32,1,2,512,0,,uae2\n", (const char*)tmp_str);
@@ -4132,7 +4125,7 @@ static bool retro_create_config()
                char whdload_prefs_path[RETRO_PATH_MAX];
                path_join((char*)&whdload_prefs_path, retro_system_directory, "WHDLoad.prefs");
 
-               if (!file_exists(whdload_prefs_path))
+               if (!path_is_valid(whdload_prefs_path))
                {
                   log_cb(RETRO_LOG_INFO, "WHDLoad.prefs '%s' not found, attempting to create one\n", (const char*)&whdload_prefs_path);
 
@@ -4407,7 +4400,7 @@ static bool retro_create_config()
                      token = strtok(NULL, "=");
                   }
                   strtok(disk_image, "\n");
-                  if (!string_is_empty(disk_image) && file_exists(disk_image))
+                  if (!string_is_empty(disk_image) && path_is_valid(disk_image))
                   {
                      /* Add the file to disk control context */
                      char disk_image_label[RETRO_PATH_MAX];
@@ -4487,7 +4480,7 @@ static bool retro_create_config()
    /* Iterate global config file and append all rows to the temporary config */
    char configfile_global_path[RETRO_PATH_MAX];
    path_join((char*)&configfile_global_path, retro_save_directory, LIBRETRO_PUAE_PREFIX "_global.uae");
-   if (file_exists(configfile_global_path))
+   if (path_is_valid(configfile_global_path))
    {
       log_cb(RETRO_LOG_INFO, "Appending global configuration: '%s'\n", configfile_global_path);
       /* Separator row for clarity */

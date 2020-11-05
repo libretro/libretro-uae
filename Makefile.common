@@ -11,7 +11,7 @@ endif
 
 INCFLAGS := -I$(EMU) -I$(EMU)/include -I$(LIBRETRO) -I$(LIBRETRO_COMM_DIR)/include -I$(RETRODEP) -I$(CORE_DIR) -I$(DEPS_DIR)/zlib
 
-SOURCES_C += $(EMU)/main.c \
+SOURCES_C += \
 	$(EMU)/a2065.c \
 	$(EMU)/a2091.c \
 	$(EMU)/akiko.c \
@@ -71,6 +71,7 @@ SOURCES_C += $(EMU)/main.c \
 	$(EMU)/identify.c \
 	$(EMU)/inputdevice.c \
 	$(EMU)/keybuf.c \
+	$(EMU)/main.c \
 	$(EMU)/memory.c \
 	$(EMU)/misc.c \
 	$(EMU)/missing.c \
@@ -104,7 +105,8 @@ SOURCES_C += $(EMU)/main.c \
 	$(RETRODEP)/sounddep/sound.c \
 	$(RETRODEP)/threaddep/thread.c
 
-SOURCES_C += $(EMU)/archivers/dms/crc_csum.c \
+SOURCES_C += \
+    $(EMU)/archivers/dms/crc_csum.c \
 	$(EMU)/archivers/dms/getbits.c \
 	$(EMU)/archivers/dms/maketbl.c \
 	$(EMU)/archivers/dms/pfile.c \
@@ -127,19 +129,19 @@ SOURCES_C += $(EMU)/archivers/dms/crc_csum.c \
 	$(EMU)/archivers/lha/uae_lha.c \
 	$(EMU)/archivers/lha/util.c
 
-SOURCES_C += $(LIBRETRO)/libretro-core.c \
+SOURCES_C += \
+    $(LIBRETRO)/libretro-core.c \
 	$(LIBRETRO)/libretro-mapper.c \
-	$(LIBRETRO)/vkbd.c \
-	$(LIBRETRO)/graph.c \
-	$(LIBRETRO)/retroglue.c \
-	$(LIBRETRO)/retro_files.c \
-	$(LIBRETRO)/retro_strings.c \
-	$(LIBRETRO)/retro_disk_control.c \
+	$(LIBRETRO)/libretro-dc.c \
+	$(LIBRETRO)/libretro-glue.c \
+	$(LIBRETRO)/libretro-vkbd.c \
+	$(LIBRETRO)/libretro-graph.c \
 	$(DEPS_DIR)/zlib/unzip.c \
 	$(DEPS_DIR)/zlib/ioapi.c
 
 ifneq ($(STATIC_LINKING), 1)
-SOURCES_C += $(LIBRETRO_COMM_DIR)/file/file_path.c \
+SOURCES_C += \
+    $(LIBRETRO_COMM_DIR)/file/file_path.c \
 	$(LIBRETRO_COMM_DIR)/compat/fopen_utf8.c \
 	$(LIBRETRO_COMM_DIR)/compat/compat_strl.c \
 	$(LIBRETRO_COMM_DIR)/compat/compat_strcasestr.c \
@@ -147,7 +149,8 @@ SOURCES_C += $(LIBRETRO_COMM_DIR)/file/file_path.c \
 	$(LIBRETRO_COMM_DIR)/string/stdstring.c \
 	$(LIBRETRO_COMM_DIR)/vfs/vfs_implementation.c
 
-SOURCES_C += $(DEPS_DIR)/zlib/adler32.c \
+SOURCES_C += \
+    $(DEPS_DIR)/zlib/adler32.c \
 	$(DEPS_DIR)/zlib/compress.c \
 	$(DEPS_DIR)/zlib/crc32.c \
 	$(DEPS_DIR)/zlib/deflate.c \

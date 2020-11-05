@@ -16,11 +16,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "retro_disk_control.h"
-#include "retro_strings.h"
-#include "retro_files.h"
+#include "libretro-dc.h"
 #include "libretro-core.h"
-#include "retroglue.h"
 
 #include "sysconfig.h"
 #include "sysdeps.h"
@@ -30,15 +27,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#if 0
-#include <sys/types.h>
-#include <sys/stat.h> 
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#endif
 
 #define COMMENT "#"
 #define M3U_SPECIAL_COMMAND "#COMMAND:"
@@ -78,7 +66,7 @@ char* dirname_int(const char* filename)
 char* m3u_search_file(const char* basedir, const char* dskName)
 {
 	/* Verify if this item is an absolute pathname (or the file is in working dir) */
-	if (file_exists(dskName))
+	if (path_is_valid(dskName))
 	{
 		/* Copy and return */
 		char* result = calloc(strlen(dskName) + 1, sizeof(char));
@@ -94,7 +82,7 @@ char* m3u_search_file(const char* basedir, const char* dskName)
 		path_join(dskPath, basedir, dskName);
 
 		/* Verify if this item is a relative filename (append it to the m3u path) */
-		if (file_exists(dskPath))
+		if (path_is_valid(dskPath))
 		{
 			/* Return */
 			return dskPath;
@@ -419,14 +407,13 @@ static bool dc_add_m3u_save_disk(
 	 * or "file/file_path.h" functions here, so this will be ugly */
 	
 	/* Get m3u file name */
-	m3u_file_name = path_get_basename(m3u_file);
-	
+	m3u_file_name = path_basename(m3u_file);
 	if (!m3u_file_name || (*m3u_file_name == '\0'))
 		return false;
 	
 	/* Get m3u file name without extension */
-	remove_file_extension(
-			m3u_file_name, m3u_file_name_no_ext, sizeof(m3u_file_name_no_ext));
+    snprintf(m3u_file_name_no_ext, sizeof(m3u_file_name_no_ext),
+             "%s", path_remove_extension((char*)m3u_file_name));
 	
 	if (!m3u_file_name_no_ext || (*m3u_file_name_no_ext == '\0'))
 		return false;
@@ -443,7 +430,7 @@ static bool dc_add_m3u_save_disk(
 	 * able to support changing the volume label if
 	 * it differs from 'disk_name'. This is quite
 	 * fiddly, however - perhaps it can be added later... */
-	save_disk_exists = file_exists(save_disk_path);
+	save_disk_exists = path_is_valid(save_disk_path);
 	
 	/* ...if not, create a new one */
 	if (!save_disk_exists)
@@ -540,12 +527,13 @@ static bool dc_add_m3u_disk(
 		else
 		{
 			/* Otherwise, use file name without extension as label */
-			const char *file_name = path_get_basename(disk_file_path);
+			const char *file_name = path_basename(disk_file_path);
 			if (!string_is_empty(browsed_file))
-			    file_name = path_get_basename(browsed_file);
+			    file_name = path_basename(browsed_file);
 			
 			if (!(!file_name || (*file_name == '\0')))
-				remove_file_extension(file_name, disk_label, sizeof(disk_label));
+                snprintf(disk_label, sizeof(disk_label),
+                      "%s", path_remove_extension((char*)file_name));
 		}
 
 		/* ZIP */

@@ -1,10 +1,8 @@
 #include "libretro.h"
 #include "libretro-core.h"
 #include "libretro-mapper.h"
-#include "graph.h"
-#include "vkbd.h"
-#include "retro_files.h"
-#include "file/file_path.h"
+#include "libretro-graph.h"
+#include "libretro-vkbd.h"
 
 #include "uae_types.h"
 #include "sysconfig.h"
