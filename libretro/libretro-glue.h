@@ -5,9 +5,10 @@
 #include "deps/zlib/zlib.h"
 #include <stdio.h>
 void gz_uncompress(gzFile in, FILE *out);
-
-#include "deps/zlib/unzip.h"
 void zip_uncompress(char *in, char *out, char *lastfile);
+
+/* 7z */
+void sevenzip_uncompress(char *in, char *out, char *lastfile);
 
 /* HDF */
 int make_hdf (char *hdf_path, char *hdf_size, char *device_name);

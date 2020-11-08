@@ -3258,7 +3258,7 @@ void retro_get_system_info(struct retro_system_info *info)
    info->library_version  = "2.6.1" GIT_VERSION;
    info->need_fullpath    = true;
    info->block_extract    = true;
-   info->valid_extensions = "adf|adz|dms|fdi|ipf|hdf|hdz|lha|slave|info|cue|ccd|nrg|mds|iso|uae|m3u|zip";
+   info->valid_extensions = "adf|adz|dms|fdi|ipf|hdf|hdz|lha|slave|info|cue|ccd|nrg|mds|iso|uae|m3u|zip|7z";
 }
 
 double retro_get_aspect_ratio(unsigned int width, unsigned int height, bool pixel_aspect)
@@ -3736,7 +3736,7 @@ static bool retro_create_config()
 
    /* "Browsed" file in ZIP */
    char browsed_file[RETRO_PATH_MAX] = {0};
-   if (!string_is_empty(full_path) && strstr(full_path, ".zip#"))
+   if (!string_is_empty(full_path) && (strstr(full_path, ".zip#") || strstr(full_path, ".7z#")))
    {
       char *token = strtok((char*)full_path, "#");
       while (token != NULL)
@@ -3757,14 +3757,17 @@ static bool retro_create_config()
    if (!string_is_empty(full_path) && (path_is_valid(full_path) || path_is_directory(full_path)))
    {
       /* Extract ZIP for examination */
-      if (strendswith(full_path, "zip"))
+      if (strendswith(full_path, "zip") || strendswith(full_path, "7z"))
       {
          char zip_basename[RETRO_PATH_MAX] = {0};
          snprintf(zip_basename, sizeof(zip_basename), "%s", path_basename(full_path));
          snprintf(zip_basename, sizeof(zip_basename), "%s", path_remove_extension(zip_basename));
 
          path_mkdir(retro_temp_directory);
-         zip_uncompress(full_path, retro_temp_directory, NULL);
+         if (strendswith(full_path, "zip"))
+            zip_uncompress(full_path, retro_temp_directory, NULL);
+         else if (strendswith(full_path, "7z"))
+            sevenzip_uncompress(full_path, retro_temp_directory, NULL);
 
          /* Default to directory mode */
          int zip_mode = 0;
