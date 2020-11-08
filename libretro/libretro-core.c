@@ -27,8 +27,6 @@ int retrow = 0;
 int retroh = 0;
 int defaultw = EMULATOR_DEF_WIDTH;
 int defaulth = EMULATOR_DEF_HEIGHT;
-char retro_key_state[RETROK_LAST] = {0};
-char retro_key_state_old[RETROK_LAST] = {0};
 unsigned short int retro_bmp[RETRO_BMP_SIZE] = {0};
 
 extern int frame_redraw_necessary;
@@ -205,31 +203,31 @@ void retro_set_led(unsigned led)
 void retro_set_environment(retro_environment_t cb)
 {
    static const struct retro_controller_description p1_controllers[] = {
-      { "CD32 Pad", RETRO_DEVICE_CD32PAD },
-      { "Analog Joystick", RETRO_DEVICE_ANALOGJOYSTICK },
-      { "Joystick", RETRO_DEVICE_JOYSTICK },
-      { "Keyboard", RETRO_DEVICE_KEYBOARD },
+      { "CD32 Pad", RETRO_DEVICE_PUAE_CD32PAD },
+      { "Analog Joystick", RETRO_DEVICE_PUAE_ANALOG },
+      { "Joystick", RETRO_DEVICE_PUAE_JOYSTICK },
+      { "Keyboard", RETRO_DEVICE_PUAE_KEYBOARD },
       { "None", RETRO_DEVICE_NONE },
    };
    static const struct retro_controller_description p2_controllers[] = {
-      { "CD32 Pad", RETRO_DEVICE_CD32PAD },
-      { "Analog Joystick", RETRO_DEVICE_ANALOGJOYSTICK },
-      { "Joystick", RETRO_DEVICE_JOYSTICK },
-      { "Keyboard", RETRO_DEVICE_KEYBOARD },
+      { "CD32 Pad", RETRO_DEVICE_PUAE_CD32PAD },
+      { "Analog Joystick", RETRO_DEVICE_PUAE_ANALOG },
+      { "Joystick", RETRO_DEVICE_PUAE_JOYSTICK },
+      { "Keyboard", RETRO_DEVICE_PUAE_KEYBOARD },
       { "None", RETRO_DEVICE_NONE },
    };
    static const struct retro_controller_description p3_controllers[] = {
-      { "Joystick", RETRO_DEVICE_JOYSTICK },
-      { "Keyboard", RETRO_DEVICE_KEYBOARD },
+      { "Joystick", RETRO_DEVICE_PUAE_JOYSTICK },
+      { "Keyboard", RETRO_DEVICE_PUAE_KEYBOARD },
       { "None", RETRO_DEVICE_NONE },
    };
    static const struct retro_controller_description p4_controllers[] = {
-      { "Joystick", RETRO_DEVICE_JOYSTICK },
-      { "Keyboard", RETRO_DEVICE_KEYBOARD },
+      { "Joystick", RETRO_DEVICE_PUAE_JOYSTICK },
+      { "Keyboard", RETRO_DEVICE_PUAE_KEYBOARD },
       { "None", RETRO_DEVICE_NONE },
    };
    static const struct retro_controller_description p5_controllers[] = {
-      { "Keyboard", RETRO_DEVICE_KEYBOARD },
+      { "Keyboard", RETRO_DEVICE_PUAE_KEYBOARD },
       { "None", RETRO_DEVICE_NONE },
    };
 
@@ -3158,8 +3156,6 @@ void retro_init(void)
    }
 
    memset(retro_bmp, 0, sizeof(retro_bmp));
-   memset(retro_key_state, 0, sizeof(retro_key_state));
-   memset(retro_key_state_old, 0, sizeof(retro_key_state_old));
 
    libretro_runloop_active = 0;
    update_variables();
@@ -3215,20 +3211,20 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
             log_cb(RETRO_LOG_INFO, "Controller %u: RetroPad\n", (port+1));
             break;
 
-         case RETRO_DEVICE_CD32PAD:
+         case RETRO_DEVICE_PUAE_CD32PAD:
             log_cb(RETRO_LOG_INFO, "Controller %u: CD32 Pad\n", (port+1));
             cd32_pad_enabled[uae_port] = 1;
             break;
 
-         case RETRO_DEVICE_ANALOGJOYSTICK:
+         case RETRO_DEVICE_PUAE_ANALOG:
             log_cb(RETRO_LOG_INFO, "Controller %u: Analog Joystick\n", (port+1));
             break;
 
-         case RETRO_DEVICE_JOYSTICK:
+         case RETRO_DEVICE_PUAE_JOYSTICK:
             log_cb(RETRO_LOG_INFO, "Controller %u: Joystick\n", (port+1));
             break;
 
-         case RETRO_DEVICE_KEYBOARD:
+         case RETRO_DEVICE_PUAE_KEYBOARD:
             log_cb(RETRO_LOG_INFO, "Controller %u: Keyboard\n", (port+1));
             break;
 
@@ -3237,7 +3233,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
             break;
       }
 #else
-      if (device == RETRO_DEVICE_CD32PAD)
+      if (device == RETRO_DEVICE_PUAE_CD32PAD)
          cd32_pad_enabled[uae_port] = 1;
 #endif
 
@@ -3774,7 +3770,7 @@ static bool retro_create_config()
          snprintf(full_path, sizeof(full_path), "%s", retro_temp_directory);
 
          FILE *zip_m3u;
-         char zip_m3u_list[20][RETRO_PATH_MAX] = {0};
+         char zip_m3u_list[DC_MAX_SIZE][RETRO_PATH_MAX] = {0};
          char zip_m3u_path[RETRO_PATH_MAX];
          snprintf(zip_m3u_path, sizeof(zip_m3u_path), "%s%s%s.m3u", retro_temp_directory, DIR_SEP_STR, zip_basename);
          int zip_m3u_num = 0;

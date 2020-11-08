@@ -413,7 +413,7 @@ struct inputdevice_functions inputdevicefunc_joystick = {
 
 int input_get_default_joystick (struct uae_input_device *uid, int num, int port, int af, int mode, bool gp)
 {
-   if (retro_devices[0] == RETRO_DEVICE_CD32PAD)
+   if (retro_devices[0] == RETRO_DEVICE_PUAE_CD32PAD)
    {
       uid[0].eventid[ID_AXIS_OFFSET + 0][0]   = INPUTEVENT_JOY2_HORIZ;
       uid[0].eventid[ID_AXIS_OFFSET + 1][0]   = INPUTEVENT_JOY2_VERT;
@@ -425,7 +425,7 @@ int input_get_default_joystick (struct uae_input_device *uid, int num, int port,
       uid[0].eventid[ID_BUTTON_OFFSET + 5][0] = INPUTEVENT_JOY2_CD32_FFW;
       uid[0].eventid[ID_BUTTON_OFFSET + 6][0] = INPUTEVENT_JOY2_CD32_PLAY;
    }
-   else if (retro_devices[0] == RETRO_DEVICE_ANALOGJOYSTICK)
+   else if (retro_devices[0] == RETRO_DEVICE_PUAE_ANALOG)
    {
       uid[0].eventid[ID_AXIS_OFFSET + 0][0]   = INPUTEVENT_JOY2_HORIZ_POT;
       uid[0].eventid[ID_AXIS_OFFSET + 1][0]   = INPUTEVENT_JOY2_VERT_POT;
@@ -442,7 +442,7 @@ int input_get_default_joystick (struct uae_input_device *uid, int num, int port,
       uid[0].eventid[ID_BUTTON_OFFSET + 1][0] = INPUTEVENT_JOY2_2ND_BUTTON;
    }
 
-   if (retro_devices[1] == RETRO_DEVICE_CD32PAD)
+   if (retro_devices[1] == RETRO_DEVICE_PUAE_CD32PAD)
    {
       uid[1].eventid[ID_AXIS_OFFSET + 0][0]   = INPUTEVENT_JOY1_HORIZ;
       uid[1].eventid[ID_AXIS_OFFSET + 1][0]   = INPUTEVENT_JOY1_VERT;
@@ -454,7 +454,7 @@ int input_get_default_joystick (struct uae_input_device *uid, int num, int port,
       uid[1].eventid[ID_BUTTON_OFFSET + 5][0] = INPUTEVENT_JOY1_CD32_FFW;
       uid[1].eventid[ID_BUTTON_OFFSET + 6][0] = INPUTEVENT_JOY1_CD32_PLAY;
    }
-   else if (retro_devices[1] == RETRO_DEVICE_ANALOGJOYSTICK)
+   else if (retro_devices[1] == RETRO_DEVICE_PUAE_ANALOG)
    {
       uid[1].eventid[ID_AXIS_OFFSET + 0][0]   = INPUTEVENT_JOY1_HORIZ_POT;
       uid[1].eventid[ID_AXIS_OFFSET + 1][0]   = INPUTEVENT_JOY1_VERT_POT;
