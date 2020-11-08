@@ -264,10 +264,10 @@ ifeq ($(DEBUG), 1)
    CFLAGS += -O0 -g
 else
    CFLAGS += -O3
+   LDFLAGS += -Wl,--gc-sections -s
 endif
 
-LDFLAGS += -Wl,--gc-sections -s
-CFLAGS  += -fcommon -D__LIBRETRO__ -DINLINE="inline" -std=gnu99
+CFLAGS  += -fcommon -std=gnu99 -DINLINE="inline" -D__LIBRETRO__
 
 include Makefile.common
 
