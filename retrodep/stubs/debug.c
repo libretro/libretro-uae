@@ -799,11 +799,13 @@ extern struct regstruct mmu_backup_regs;
 #define MMU_MAP_WRITE_S (1 << 11)
 #define MMU_MAP_READI_U (1 << 12)
 #define MMU_MAP_READI_S (1 << 13)
+#endif
 
 void mmu_do_hit (void)
 {
 }
 
+#if 0
 static void mmu_do_hit_pre (struct mmudata *md, uaecptr addr, int size, int rwi, uae_u32 v)
 {
 }

@@ -435,9 +435,7 @@ void display_current_image(const char *image, bool inserted)
    else
       snprintf(imagename, sizeof(imagename), "%.100s", imagename_prev);
 
-   int len;
-   len = snprintf(&(statusbar_text[0]), sizeof(statusbar_text), "%-100s", imagename);
-   statusbar_text[0 + len] = ' ';
+   snprintf(&(statusbar_text[0]), sizeof(statusbar_text), "%-100s", imagename);
 
    if (inserted)
       statusbar_text[0] = (8 | 0x80);

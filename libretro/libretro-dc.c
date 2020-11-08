@@ -496,12 +496,12 @@ static bool dc_add_m3u_disk(
    if(m3u_base_dir == NULL)
       return false;
 
-   if(disk_file == NULL)
+   if(!disk_file[0])
       return false;
 
    /* "Browsed" file in ZIP */
    char browsed_file[RETRO_PATH_MAX] = {0};
-   if (strstr(disk_file, ".zip#"))
+   if (strstr(disk_file, ".zip#") || strstr(disk_file, ".7z#"))
    {
       char *token = strtok((char*)disk_file, "#");
       while (token != NULL)
@@ -530,7 +530,10 @@ static bool dc_add_m3u_disk(
          /* Otherwise, use file name without extension as label */
          const char *file_name = path_basename(disk_file_path);
          if (!string_is_empty(browsed_file))
-             file_name = path_basename(browsed_file);
+         {
+             file_name = strdup(browsed_file);
+             file_name = path_basename(file_name);
+         }
 
          if (!(!file_name || (*file_name == '\0')))
                 snprintf(disk_label, sizeof(disk_label),
@@ -686,9 +689,7 @@ enum dc_image_type dc_get_image_type(const char* filename)
        strendswith(filename, "adz") ||
        strendswith(filename, "fdi") ||
        strendswith(filename, "dms") ||
-       strendswith(filename, "ipf") ||
-       strendswith(filename, "zip") ||
-       strendswith(filename, "7z"))
+       strendswith(filename, "ipf"))
       return DC_IMAGE_TYPE_FLOPPY;
 
    /* CD image */
