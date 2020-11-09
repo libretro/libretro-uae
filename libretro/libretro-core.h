@@ -47,6 +47,12 @@ extern retro_log_printf_t log_cb;
 #define TCHAR char /* from sysdeps.h */
 #endif
 
+/* Types */
+#define UINT16 uint16_t
+#define UINT32 uint32_t
+typedef uint32_t uint32;
+typedef uint8_t uint8;
+
 int umain (int argc, TCHAR **argv);
 
 /* File helpers functions */

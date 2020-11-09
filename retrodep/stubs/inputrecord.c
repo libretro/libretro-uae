@@ -15,6 +15,7 @@
 #include "sysconfig.h"
 #include "sysdeps.h"
 
+#if 0
 #include "options.h"
 #include "inputrecord.h"
 #include "zfile.h"
@@ -31,9 +32,10 @@
 #include "memory_uae.h"
 #include "newcpu.h"
 #endif
+#endif
 
 int inputrecord_debug = 0;
-
+#if 0
 extern int inputdevice_logging;
 
 #define INPREC_BUFFER_SIZE 10000
@@ -41,8 +43,10 @@ extern int inputdevice_logging;
 static uae_u8 *inprec_buffer, *inprec_p;
 static struct zfile *inprec_zf;
 static int inprec_size;
+#endif
 int input_record = 0;
 int input_play = 0;
+#if 0
 static uae_u8 *inprec_plast, *inprec_plastptr;
 static int header_end, header_end2;
 static int replaypos;
@@ -135,7 +139,7 @@ static int inprec_pstr (TCHAR *dst)
 static void findlast (void)
 {
 }
-
+#endif
 
 int inprec_open (const TCHAR *fname, const TCHAR *statefilename)
 {
@@ -156,9 +160,11 @@ void inprec_close (bool clear)
 {
 }
 
+#if 0
 static void setwriteprotect (const TCHAR *fname, bool readonly)
 {
 }
+#endif
 
 void inprec_playdiskchange (void)
 {
@@ -212,7 +218,7 @@ void inprec_playtorecord (void)
 void inprec_setposition (int offset, int replaycounter)
 {
 }
-
+#if 0
 static void savelog (const TCHAR *path, const TCHAR *file)
 {
 }
@@ -221,7 +227,7 @@ static int savedisk (const TCHAR *path, const TCHAR *file, uae_u8 *data, uae_u8 
 {
 	return 0;
 }
-
+#endif
 void inprec_save (const TCHAR *filename, const TCHAR *statefilename)
 {
 }

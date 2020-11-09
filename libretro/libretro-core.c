@@ -27,11 +27,8 @@ int retrow = 0;
 int retroh = 0;
 int defaultw = EMULATOR_DEF_WIDTH;
 int defaulth = EMULATOR_DEF_HEIGHT;
-char retro_key_state[RETROK_LAST] = {0};
-char retro_key_state_old[RETROK_LAST] = {0};
 unsigned short int retro_bmp[RETRO_BMP_SIZE] = {0};
 
-extern int frame_redraw_necessary;
 extern int bplcon0;
 extern int diwlastword_total;
 extern int diwfirstword_total;
@@ -205,31 +202,31 @@ void retro_set_led(unsigned led)
 void retro_set_environment(retro_environment_t cb)
 {
    static const struct retro_controller_description p1_controllers[] = {
-      { "CD32 Pad", RETRO_DEVICE_CD32PAD },
-      { "Analog Joystick", RETRO_DEVICE_ANALOGJOYSTICK },
-      { "Joystick", RETRO_DEVICE_JOYSTICK },
-      { "Keyboard", RETRO_DEVICE_KEYBOARD },
+      { "CD32 Pad", RETRO_DEVICE_PUAE_CD32PAD },
+      { "Analog Joystick", RETRO_DEVICE_PUAE_ANALOG },
+      { "Joystick", RETRO_DEVICE_PUAE_JOYSTICK },
+      { "Keyboard", RETRO_DEVICE_PUAE_KEYBOARD },
       { "None", RETRO_DEVICE_NONE },
    };
    static const struct retro_controller_description p2_controllers[] = {
-      { "CD32 Pad", RETRO_DEVICE_CD32PAD },
-      { "Analog Joystick", RETRO_DEVICE_ANALOGJOYSTICK },
-      { "Joystick", RETRO_DEVICE_JOYSTICK },
-      { "Keyboard", RETRO_DEVICE_KEYBOARD },
+      { "CD32 Pad", RETRO_DEVICE_PUAE_CD32PAD },
+      { "Analog Joystick", RETRO_DEVICE_PUAE_ANALOG },
+      { "Joystick", RETRO_DEVICE_PUAE_JOYSTICK },
+      { "Keyboard", RETRO_DEVICE_PUAE_KEYBOARD },
       { "None", RETRO_DEVICE_NONE },
    };
    static const struct retro_controller_description p3_controllers[] = {
-      { "Joystick", RETRO_DEVICE_JOYSTICK },
-      { "Keyboard", RETRO_DEVICE_KEYBOARD },
+      { "Joystick", RETRO_DEVICE_PUAE_JOYSTICK },
+      { "Keyboard", RETRO_DEVICE_PUAE_KEYBOARD },
       { "None", RETRO_DEVICE_NONE },
    };
    static const struct retro_controller_description p4_controllers[] = {
-      { "Joystick", RETRO_DEVICE_JOYSTICK },
-      { "Keyboard", RETRO_DEVICE_KEYBOARD },
+      { "Joystick", RETRO_DEVICE_PUAE_JOYSTICK },
+      { "Keyboard", RETRO_DEVICE_PUAE_KEYBOARD },
       { "None", RETRO_DEVICE_NONE },
    };
    static const struct retro_controller_description p5_controllers[] = {
-      { "Keyboard", RETRO_DEVICE_KEYBOARD },
+      { "Keyboard", RETRO_DEVICE_PUAE_KEYBOARD },
       { "None", RETRO_DEVICE_NONE },
    };
 
@@ -772,9 +769,9 @@ void retro_set_environment(retro_environment_t cb)
          "By default, the keyboard comes up with RetroPad Select.",
          {
             { "0", "Classic" },
+            { "3", "Light" },
             { "1", "CD32" },
             { "2", "Dark" },
-            { "3", "Light" },
             { NULL, NULL },
          },
          "0"
@@ -3158,8 +3155,6 @@ void retro_init(void)
    }
 
    memset(retro_bmp, 0, sizeof(retro_bmp));
-   memset(retro_key_state, 0, sizeof(retro_key_state));
-   memset(retro_key_state_old, 0, sizeof(retro_key_state_old));
 
    libretro_runloop_active = 0;
    update_variables();
@@ -3215,20 +3210,20 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
             log_cb(RETRO_LOG_INFO, "Controller %u: RetroPad\n", (port+1));
             break;
 
-         case RETRO_DEVICE_CD32PAD:
+         case RETRO_DEVICE_PUAE_CD32PAD:
             log_cb(RETRO_LOG_INFO, "Controller %u: CD32 Pad\n", (port+1));
             cd32_pad_enabled[uae_port] = 1;
             break;
 
-         case RETRO_DEVICE_ANALOGJOYSTICK:
+         case RETRO_DEVICE_PUAE_ANALOG:
             log_cb(RETRO_LOG_INFO, "Controller %u: Analog Joystick\n", (port+1));
             break;
 
-         case RETRO_DEVICE_JOYSTICK:
+         case RETRO_DEVICE_PUAE_JOYSTICK:
             log_cb(RETRO_LOG_INFO, "Controller %u: Joystick\n", (port+1));
             break;
 
-         case RETRO_DEVICE_KEYBOARD:
+         case RETRO_DEVICE_PUAE_KEYBOARD:
             log_cb(RETRO_LOG_INFO, "Controller %u: Keyboard\n", (port+1));
             break;
 
@@ -3237,7 +3232,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
             break;
       }
 #else
-      if (device == RETRO_DEVICE_CD32PAD)
+      if (device == RETRO_DEVICE_PUAE_CD32PAD)
          cd32_pad_enabled[uae_port] = 1;
 #endif
 
@@ -3258,7 +3253,7 @@ void retro_get_system_info(struct retro_system_info *info)
    info->library_version  = "2.6.1" GIT_VERSION;
    info->need_fullpath    = true;
    info->block_extract    = true;
-   info->valid_extensions = "adf|adz|dms|fdi|ipf|hdf|hdz|lha|slave|info|cue|ccd|nrg|mds|iso|uae|m3u|zip";
+   info->valid_extensions = "adf|adz|dms|fdi|ipf|hdf|hdz|lha|slave|info|cue|ccd|nrg|mds|iso|uae|m3u|zip|7z";
 }
 
 double retro_get_aspect_ratio(unsigned int width, unsigned int height, bool pixel_aspect)
@@ -3597,7 +3592,7 @@ static char* emu_config(int config)
 
       char filebuf[512] = {0};
       FILE * custom_config_fp;
-      if (custom_config_fp = fopen(custom_config_path, "r"))
+      if ((custom_config_fp = fopen(custom_config_path, "r")))
       {
          while (fgets(filebuf, sizeof(filebuf), custom_config_fp))
             strcat(uae_custom_config, filebuf);
@@ -3736,7 +3731,7 @@ static bool retro_create_config()
 
    /* "Browsed" file in ZIP */
    char browsed_file[RETRO_PATH_MAX] = {0};
-   if (!string_is_empty(full_path) && strstr(full_path, ".zip#"))
+   if (!string_is_empty(full_path) && (strstr(full_path, ".zip#") || strstr(full_path, ".7z#")))
    {
       char *token = strtok((char*)full_path, "#");
       while (token != NULL)
@@ -3757,21 +3752,24 @@ static bool retro_create_config()
    if (!string_is_empty(full_path) && (path_is_valid(full_path) || path_is_directory(full_path)))
    {
       /* Extract ZIP for examination */
-      if (strendswith(full_path, "zip"))
+      if (strendswith(full_path, "zip") || strendswith(full_path, "7z"))
       {
          char zip_basename[RETRO_PATH_MAX] = {0};
          snprintf(zip_basename, sizeof(zip_basename), "%s", path_basename(full_path));
          snprintf(zip_basename, sizeof(zip_basename), "%s", path_remove_extension(zip_basename));
 
          path_mkdir(retro_temp_directory);
-         zip_uncompress(full_path, retro_temp_directory, NULL);
+         if (strendswith(full_path, "zip"))
+            zip_uncompress(full_path, retro_temp_directory, NULL);
+         else if (strendswith(full_path, "7z"))
+            sevenzip_uncompress(full_path, retro_temp_directory, NULL);
 
          /* Default to directory mode */
          int zip_mode = 0;
          snprintf(full_path, sizeof(full_path), "%s", retro_temp_directory);
 
          FILE *zip_m3u;
-         char zip_m3u_list[20][RETRO_PATH_MAX] = {0};
+         char zip_m3u_list[DC_MAX_SIZE][RETRO_PATH_MAX] = {0};
          char zip_m3u_path[RETRO_PATH_MAX];
          snprintf(zip_m3u_path, sizeof(zip_m3u_path), "%s%s%s.m3u", retro_temp_directory, DIR_SEP_STR, zip_basename);
          int zip_m3u_num = 0;
@@ -3894,7 +3892,7 @@ static bool retro_create_config()
             log_cb(RETRO_LOG_INFO, "Booting model: '%s'\n", uae_kickstart);
 
          /* Write model preset */
-         fprintf(configfile, uae_model);
+         fprintf(configfile, "%s", uae_model);
 
          /* Separator row for clarity */
          fprintf(configfile, "\n");
@@ -3930,7 +3928,7 @@ static bool retro_create_config()
                      path_join((char*)&whdload_hdf_gz, retro_save_directory, "WHDLoad.hdf.gz");
 
                      FILE *whdload_hdf_gz_fp;
-                     if (whdload_hdf_gz_fp = fopen(whdload_hdf_gz, "wb"))
+                     if ((whdload_hdf_gz_fp = fopen(whdload_hdf_gz, "wb")))
                      {
                         /* Write GZ */
                         fwrite(___whdload_WHDLoad_hdf_gz, ___whdload_WHDLoad_hdf_gz_len, 1, whdload_hdf_gz_fp);
@@ -3938,10 +3936,10 @@ static bool retro_create_config()
 
                         /* Extract GZ */
                         struct gzFile_s *whdload_hdf_gz_fp;
-                        if (whdload_hdf_gz_fp = gzopen(whdload_hdf_gz, "r"))
+                        if ((whdload_hdf_gz_fp = gzopen(whdload_hdf_gz, "r")))
                         {
                            FILE *whdload_hdf_fp;
-                           if (whdload_hdf_fp = fopen(whdload_hdf, "wb"))
+                           if ((whdload_hdf_fp = fopen(whdload_hdf, "wb")))
                            {
                               gz_uncompress(whdload_hdf_gz_fp, whdload_hdf_fp);
                               fclose(whdload_hdf_fp);
@@ -3981,7 +3979,7 @@ static bool retro_create_config()
                      path_join((char*)&whdload_files_zip, retro_save_directory, "WHDLoad_files.zip");
 
                      FILE *whdload_files_zip_fp;
-                     if (whdload_files_zip_fp = fopen(whdload_files_zip, "wb"))
+                     if ((whdload_files_zip_fp = fopen(whdload_files_zip, "wb")))
                      {
                         /* Write ZIP */
                         fwrite(___whdload_WHDLoad_files_zip, ___whdload_WHDLoad_files_zip_len, 1, whdload_files_zip_fp);
@@ -4052,7 +4050,7 @@ static bool retro_create_config()
                      path_join((char*)&whdsaves_hdf_gz, retro_save_directory, "WHDSaves.hdf.gz");
 
                      FILE *whdsaves_hdf_gz_fp;
-                     if (whdsaves_hdf_gz_fp = fopen(whdsaves_hdf_gz, "wb"))
+                     if ((whdsaves_hdf_gz_fp = fopen(whdsaves_hdf_gz, "wb")))
                      {
                         /* Write GZ */
                         fwrite(___whdload_WHDSaves_hdf_gz, ___whdload_WHDSaves_hdf_gz_len, 1, whdsaves_hdf_gz_fp);
@@ -4060,10 +4058,10 @@ static bool retro_create_config()
 
                         /* Extract GZ */
                         struct gzFile_s *whdsaves_hdf_gz_fp;
-                        if (whdsaves_hdf_gz_fp = gzopen(whdsaves_hdf_gz, "r"))
+                        if ((whdsaves_hdf_gz_fp = gzopen(whdsaves_hdf_gz, "r")))
                         {
                            FILE *whdsaves_hdf_fp;
-                           if (whdsaves_hdf_fp = fopen(whdsaves_hdf, "wb"))
+                           if ((whdsaves_hdf_fp = fopen(whdsaves_hdf, "wb")))
                            {
                               gz_uncompress(whdsaves_hdf_gz_fp, whdsaves_hdf_fp);
                               fclose(whdsaves_hdf_fp);
@@ -4133,7 +4131,7 @@ static bool retro_create_config()
                   path_join((char*)&whdload_prefs_gz, retro_system_directory, "WHDLoad.prefs.gz");
 
                   FILE *whdload_prefs_gz_fp;
-                  if (whdload_prefs_gz_fp = fopen(whdload_prefs_gz, "wb"))
+                  if ((whdload_prefs_gz_fp = fopen(whdload_prefs_gz, "wb")))
                   {
                      /* Write GZ */
                      fwrite(___whdload_WHDLoad_prefs_gz, ___whdload_WHDLoad_prefs_gz_len, 1, whdload_prefs_gz_fp);
@@ -4141,10 +4139,10 @@ static bool retro_create_config()
 
                      /* Extract GZ */
                      struct gzFile_s *whdload_prefs_gz_fp;
-                     if (whdload_prefs_gz_fp = gzopen(whdload_prefs_gz, "r"))
+                     if ((whdload_prefs_gz_fp = gzopen(whdload_prefs_gz, "r")))
                      {
                         FILE *whdload_prefs_fp;
-                        if (whdload_prefs_fp = fopen(whdload_prefs_path, "wb"))
+                        if ((whdload_prefs_fp = fopen(whdload_prefs_path, "wb")))
                         {
                            gz_uncompress(whdload_prefs_gz_fp, whdload_prefs_fp);
                            fclose(whdload_prefs_fp);
@@ -4165,20 +4163,20 @@ static bool retro_create_config()
                path_join((char*)&whdload_prefs_backup_path, retro_system_directory, "WHDLoad.prefs_backup");
 
                char whdload_filebuf[512];
-               if (whdload_prefs = fopen(whdload_prefs_path, "r"))
+               if ((whdload_prefs = fopen(whdload_prefs_path, "r")))
                {
-                  if (whdload_prefs_new = fopen(whdload_prefs_new_path, "w"))
+                  if ((whdload_prefs_new = fopen(whdload_prefs_new_path, "w")))
                   {
                      while (fgets(whdload_filebuf, sizeof(whdload_filebuf), whdload_prefs))
                      {
                         if (strstr(whdload_filebuf, ";ConfigDelay=") || strstr(whdload_filebuf, ";SplashDelay="))
-                           fprintf(whdload_prefs_new, whdload_filebuf);
+                           fprintf(whdload_prefs_new, "%s", whdload_filebuf);
                         else if (strstr(whdload_filebuf, "ConfigDelay="))
                            fprintf(whdload_prefs_new, "%s%d\n", "ConfigDelay=", WHDLoad_ConfigDelay);
                         else if (strstr(whdload_filebuf, "SplashDelay="))
                            fprintf(whdload_prefs_new, "%s%d\n", "SplashDelay=", WHDLoad_SplashDelay);
                         else
-                           fprintf(whdload_prefs_new, whdload_filebuf);
+                           fprintf(whdload_prefs_new, "%s", whdload_filebuf);
                      }
                      fclose(whdload_prefs_new);
                      fclose(whdload_prefs);
@@ -4277,7 +4275,7 @@ static bool retro_create_config()
          fprintf(configfile, "\n");
 
          /* Write common config */
-         fprintf(configfile, uae_config);
+         fprintf(configfile, "%s", uae_config);
       }
       /* CD image */
       else if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_CD)
@@ -4318,7 +4316,7 @@ static bool retro_create_config()
             log_cb(RETRO_LOG_INFO, "Booting model: '%s'\n", uae_kickstart);
 
          /* Write model preset */
-         fprintf(configfile, uae_model);
+         fprintf(configfile, "%s", uae_model);
 
          /* Separator row for clarity */
          fprintf(configfile, "\n");
@@ -4351,7 +4349,7 @@ static bool retro_create_config()
          fprintf(configfile, "\n");
 
          /* Write common config */
-         fprintf(configfile, uae_config);
+         fprintf(configfile, "%s", uae_config);
       }
       /* UAE config file */
       else if (strendswith(full_path, "uae"))
@@ -4359,7 +4357,7 @@ static bool retro_create_config()
          char disk_image[RETRO_PATH_MAX] = {0};
 
          /* Write model preset */
-         fprintf(configfile, uae_model);
+         fprintf(configfile, "%s", uae_model);
 
          /* Separator row for clarity */
          fprintf(configfile, "\n");
@@ -4371,7 +4369,7 @@ static bool retro_create_config()
          fprintf(configfile, "\n");
 
          /* Write common config */
-         fprintf(configfile, uae_config);
+         fprintf(configfile, "%s", uae_config);
 
          /* Separator row for clarity */
          fprintf(configfile, "\n");
@@ -4384,11 +4382,11 @@ static bool retro_create_config()
          /* Iterate parsed file and append all rows to the temporary config */
          FILE * configfile_custom;
          char filebuf[512];
-         if (configfile_custom = fopen(full_path, "r"))
+         if ((configfile_custom = fopen(full_path, "r")))
          {
             while (fgets(filebuf, sizeof(filebuf), configfile_custom))
             {
-               fprintf(configfile, filebuf);
+               fprintf(configfile, "%s", filebuf);
 
                /* Parse diskimage-rows for disk control */
                if (strstr(filebuf, "diskimage") && filebuf[0] == 'd')
@@ -4427,7 +4425,7 @@ static bool retro_create_config()
       else
       {
          /* Write model preset */
-         fprintf(configfile, uae_model);
+         fprintf(configfile, "%s", uae_model);
 
          /* Separator row for clarity */
          fprintf(configfile, "\n");
@@ -4439,7 +4437,7 @@ static bool retro_create_config()
          fprintf(configfile, "\n");
 
          /* Write common config */
-         fprintf(configfile, uae_config);
+         fprintf(configfile, "%s", uae_config);
 
          /* Unsupported file format */
          log_cb(RETRO_LOG_ERROR, "Unsupported file format: '%s'\n", full_path);
@@ -4454,7 +4452,7 @@ static bool retro_create_config()
       log_cb(RETRO_LOG_INFO, "Booting model: '%s'\n", uae_kickstart);
 
       /* Write model preset */
-      fprintf(configfile, uae_model);
+      fprintf(configfile, "%s", uae_model);
 
       /* Separator row for clarity */
       fprintf(configfile, "\n");
@@ -4471,7 +4469,7 @@ static bool retro_create_config()
       fprintf(configfile, "\n");
 
       /* Write common config */
-      fprintf(configfile, uae_config);
+      fprintf(configfile, "%s", uae_config);
    }
 
    /* Separator row for clarity */
@@ -4488,10 +4486,10 @@ static bool retro_create_config()
 
       FILE * configfile_global;
       char filebuf[512];
-      if (configfile_global = fopen(configfile_global_path, "r"))
+      if ((configfile_global = fopen(configfile_global_path, "r")))
       {
          while (fgets(filebuf, sizeof(filebuf), configfile_global))
-            fprintf(configfile, filebuf);
+            fprintf(configfile, "%s", filebuf);
          fclose(configfile_global);
       }
    }
@@ -4509,7 +4507,7 @@ static bool retro_create_config()
 
    /* Scan for specific rows */
    char filebuf[512];
-   if (configfile = fopen(RPATH, "r"))
+   if ((configfile = fopen(RPATH, "r")))
    {
       while (fgets(filebuf, sizeof(filebuf), configfile))
       {
@@ -4626,8 +4624,6 @@ void update_audiovideo(void)
    /* Statusbar disk display timer */
    if (imagename_timer > 0)
       imagename_timer--;
-   if (retro_statusbar && !imagename_timer)
-      request_reset_drawing = true;
 
    /* Update audio settings */
    if (automatic_sound_filter_type_update)
@@ -5353,11 +5349,8 @@ void retro_run(void)
 
    /* Virtual keyboard */
    if (retro_vkbd)
-   {
-      /* VKBD requires a graceful redraw, blunt reset_drawing() interferes with zoom */
-      frame_redraw_necessary = 2;
       print_vkbd(retro_bmp);
-   }
+
    /* Maximum 288p/576p PAL shenanigans:
     * Mask the last line(s), since UAE does not refresh the last line, and even internal OSD will leave trails */
    if (video_config & PUAE_VIDEO_PAL)

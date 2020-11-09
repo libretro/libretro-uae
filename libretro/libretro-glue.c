@@ -20,6 +20,7 @@ extern int mouse_port[NORMAL_JPORTS];
 
 #include "libretro-core.h"
 #include "libretro-mapper.h"
+#include "encodings/utf.h"
 
 extern unsigned int retro_devices[RETRO_DEVICES];
 bool inputdevice_finalized = false;
@@ -412,7 +413,7 @@ struct inputdevice_functions inputdevicefunc_joystick = {
 
 int input_get_default_joystick (struct uae_input_device *uid, int num, int port, int af, int mode, bool gp)
 {
-   if (retro_devices[0] == RETRO_DEVICE_CD32PAD)
+   if (retro_devices[0] == RETRO_DEVICE_PUAE_CD32PAD)
    {
       uid[0].eventid[ID_AXIS_OFFSET + 0][0]   = INPUTEVENT_JOY2_HORIZ;
       uid[0].eventid[ID_AXIS_OFFSET + 1][0]   = INPUTEVENT_JOY2_VERT;
@@ -424,7 +425,7 @@ int input_get_default_joystick (struct uae_input_device *uid, int num, int port,
       uid[0].eventid[ID_BUTTON_OFFSET + 5][0] = INPUTEVENT_JOY2_CD32_FFW;
       uid[0].eventid[ID_BUTTON_OFFSET + 6][0] = INPUTEVENT_JOY2_CD32_PLAY;
    }
-   else if (retro_devices[0] == RETRO_DEVICE_ANALOGJOYSTICK)
+   else if (retro_devices[0] == RETRO_DEVICE_PUAE_ANALOG)
    {
       uid[0].eventid[ID_AXIS_OFFSET + 0][0]   = INPUTEVENT_JOY2_HORIZ_POT;
       uid[0].eventid[ID_AXIS_OFFSET + 1][0]   = INPUTEVENT_JOY2_VERT_POT;
@@ -441,7 +442,7 @@ int input_get_default_joystick (struct uae_input_device *uid, int num, int port,
       uid[0].eventid[ID_BUTTON_OFFSET + 1][0] = INPUTEVENT_JOY2_2ND_BUTTON;
    }
 
-   if (retro_devices[1] == RETRO_DEVICE_CD32PAD)
+   if (retro_devices[1] == RETRO_DEVICE_PUAE_CD32PAD)
    {
       uid[1].eventid[ID_AXIS_OFFSET + 0][0]   = INPUTEVENT_JOY1_HORIZ;
       uid[1].eventid[ID_AXIS_OFFSET + 1][0]   = INPUTEVENT_JOY1_VERT;
@@ -453,7 +454,7 @@ int input_get_default_joystick (struct uae_input_device *uid, int num, int port,
       uid[1].eventid[ID_BUTTON_OFFSET + 5][0] = INPUTEVENT_JOY1_CD32_FFW;
       uid[1].eventid[ID_BUTTON_OFFSET + 6][0] = INPUTEVENT_JOY1_CD32_PLAY;
    }
-   else if (retro_devices[1] == RETRO_DEVICE_ANALOGJOYSTICK)
+   else if (retro_devices[1] == RETRO_DEVICE_PUAE_ANALOG)
    {
       uid[1].eventid[ID_AXIS_OFFSET + 0][0]   = INPUTEVENT_JOY1_HORIZ_POT;
       uid[1].eventid[ID_AXIS_OFFSET + 1][0]   = INPUTEVENT_JOY1_VERT_POT;
@@ -930,11 +931,11 @@ void gz_uncompress(gzFile in, FILE *out)
    {
       len = gzread(in, gzbuf, sizeof(gzbuf));
       if (len < 0)
-         fprintf(stderr, gzerror(in, &err));
+         fprintf(stdout, "%s", gzerror(in, &err));
       if (len == 0)
          break;
       if ((int)fwrite(gzbuf, 1, (unsigned)len, out) != len)
-         fprintf(stderr, "Write error!\n");
+         fprintf(stdout, "Write error!\n");
    }
 }
 
@@ -1072,6 +1073,332 @@ void zip_uncompress(char *in, char *out, char *lastfile)
    }
 }
 
+/* 7zip */
+#include "deps/7zip/7z.h"
+#include "deps/7zip/7zAlloc.h"
+#include "deps/7zip/7zBuf.h"
+#include "deps/7zip/7zCrc.h"
+#include "deps/7zip/7zFile.h"
+#include "deps/7zip/7zTypes.h"
+
+#ifndef __STATIC__
+#include "deps/7zip/7zAlloc.c"
+#include "deps/7zip/7zArcIn.c"
+#include "deps/7zip/7zBuf.c"
+#include "deps/7zip/7zCrc.c"
+#include "deps/7zip/7zCrcOpt.c"
+#include "deps/7zip/7zDec.c"
+#include "deps/7zip/7zFile.c"
+#include "deps/7zip/7zStream.c"
+#include "deps/7zip/Bcj2.c"
+#include "deps/7zip/Bra.c"
+#include "deps/7zip/Bra86.c"
+#include "deps/7zip/BraIA64.c"
+#include "deps/7zip/CpuArch.c"
+#include "deps/7zip/Delta.c"
+#include "deps/7zip/Lzma2Dec.c"
+#include "deps/7zip/LzmaDec.c"
+#include "deps/7zip/Sha256.c"
+#else
+#include "deps/7zip/7zAlloc.c"
+#define GET_LookToRead2 CLookToRead2 *p = CONTAINER_FROM_VTBL(pp, CLookToRead2, vt);
+static SRes LookToRead2_Look_Lookahead(const ILookInStream *pp, const void **buf, size_t *size)
+{
+  SRes res = SZ_OK;
+  GET_LookToRead2
+  size_t size2 = p->size - p->pos;
+  if (size2 == 0 && *size != 0)
+  {
+    p->pos = 0;
+    p->size = 0;
+    size2 = p->bufSize;
+    res = ISeekInStream_Read(p->realStream, p->buf, &size2);
+    p->size = size2;
+  }
+  if (*size > size2)
+    *size = size2;
+  *buf = p->buf + p->pos;
+  return res;
+}
+
+static SRes LookToRead2_Look_Exact(const ILookInStream *pp, const void **buf, size_t *size)
+{
+  SRes res = SZ_OK;
+  GET_LookToRead2
+  size_t size2 = p->size - p->pos;
+  if (size2 == 0 && *size != 0)
+  {
+    p->pos = 0;
+    p->size = 0;
+    if (*size > p->bufSize)
+      *size = p->bufSize;
+    res = ISeekInStream_Read(p->realStream, p->buf, size);
+    size2 = p->size = *size;
+  }
+  if (*size > size2)
+    *size = size2;
+  *buf = p->buf + p->pos;
+  return res;
+}
+
+static SRes LookToRead2_Skip(const ILookInStream *pp, size_t offset)
+{
+  GET_LookToRead2
+  p->pos += offset;
+  return SZ_OK;
+}
+
+static SRes LookToRead2_Read(const ILookInStream *pp, void *buf, size_t *size)
+{
+  GET_LookToRead2
+  size_t rem = p->size - p->pos;
+  if (rem == 0)
+    return ISeekInStream_Read(p->realStream, buf, size);
+  if (rem > *size)
+    rem = *size;
+  memcpy(buf, p->buf + p->pos, rem);
+  p->pos += rem;
+  *size = rem;
+  return SZ_OK;
+}
+
+static SRes LookToRead2_Seek(const ILookInStream *pp, Int64 *pos, ESzSeek origin)
+{
+  GET_LookToRead2
+  p->pos = p->size = 0;
+  return ISeekInStream_Seek(p->realStream, pos, origin);
+}
+
+void LookToRead2_CreateVTable(CLookToRead2 *p, int lookahead)
+{
+  p->vt.Look = lookahead ?
+      LookToRead2_Look_Lookahead :
+      LookToRead2_Look_Exact;
+  p->vt.Skip = LookToRead2_Skip;
+  p->vt.Read = LookToRead2_Read;
+  p->vt.Seek = LookToRead2_Seek;
+}
+#endif
+#define kInputBufSize ((size_t)1 << 18)
+static const ISzAlloc g_Alloc = { SzAlloc, SzFree };
+
+static int Buf_EnsureSize(CBuf *dest, size_t size)
+{
+   if (dest->size >= size)
+      return 1;
+   Buf_Free(dest, &g_Alloc);
+   return Buf_Create(dest, size, &g_Alloc);
+}
+
+static WRes MyCreateDir(const UInt16 *name)
+{
+   char temp[RETRO_PATH_MAX];
+   utf16_to_char_string(name, temp, sizeof(temp));
+   return path_mkdir((const char *)temp);
+}
+
+static WRes OutFile_OpenUtf16(CSzFile *p, const UInt16 *name)
+{
+   char temp[RETRO_PATH_MAX];
+   utf16_to_char_string(name, temp, sizeof(temp));
+   return OutFile_Open(p, (const char *)temp);
+}
+
+static void sevenzip_replace_path(UInt16 *name, char *path, char *full_path)
+{
+   char temp[RETRO_PATH_MAX];
+   utf16_to_char_string(name, temp, sizeof(temp));
+   snprintf(full_path, RETRO_PATH_MAX, "%s%s%s", path, DIR_SEP_STR, temp);
+   mbstowcs(name, full_path, RETRO_PATH_MAX);
+   return;
+}
+
+void sevenzip_uncompress(char *in, char *out, char *lastfile)
+{
+   ISzAlloc allocImp;
+   ISzAlloc allocTempImp;
+
+   CFileInStream archiveStream;
+   CLookToRead2 lookStream;
+   CSzArEx db;
+   SRes res;
+   UInt16 *temp = NULL;
+   size_t tempSize = RETRO_PATH_MAX;
+
+   SzFree(NULL, temp);
+   temp = (UInt16 *)SzAlloc(NULL, tempSize * sizeof(temp[0]));
+
+   if (!temp)
+   {
+      res = SZ_ERROR_MEM;
+      return;
+   }
+
+   if (InFile_Open(&archiveStream.file, in))
+   {
+      fprintf(stderr, "Un7ip: Error opening %s\n", in);
+      return;
+   }
+
+   allocImp = g_Alloc;
+   allocTempImp = g_Alloc;
+
+   FileInStream_CreateVTable(&archiveStream);
+   LookToRead2_CreateVTable(&lookStream, false);
+   lookStream.buf = NULL;
+
+   res = SZ_OK;
+
+   {
+      lookStream.buf = (Byte *)IAlloc_Alloc(&allocImp, kInputBufSize);
+      if (!lookStream.buf)
+         res = SZ_ERROR_MEM;
+      else
+      {
+         lookStream.bufSize = kInputBufSize;
+         lookStream.realStream = &archiveStream.vt;
+         LookToRead2_Init(&lookStream);
+      }
+   }
+
+   CrcGenerateTable();
+
+   SzArEx_Init(&db);
+
+   if (res == SZ_OK)
+      res = SzArEx_Open(&db, &lookStream.vt, &allocImp, &allocTempImp);
+
+   if (res == SZ_OK)
+   {
+      char *command = "x";
+      int listCommand = 0, testCommand = 0, fullPaths = 0;
+
+      if (strcmp(command, "l") == 0) listCommand = 1;
+      else if (strcmp(command, "t") == 0) testCommand = 1;
+      else if (strcmp(command, "e") == 0) { }
+      else if (strcmp(command, "x") == 0) fullPaths = 1;
+      else
+      {
+         fprintf(stderr, "Un7ip: Incorrect command\n");
+         res = SZ_ERROR_FAIL;
+      }
+
+      if (res == SZ_OK)
+      {
+         UInt32 i;
+
+         /*
+         if you need cache, use these 3 variables.
+         if you use external function, you can make these variable as static.
+         */
+         UInt32 blockIndex = 0xFFFFFFFF; /* it can have any value before first call (if outBuffer = 0) */
+         Byte *outBuffer = 0; /* it must be 0 before first call for each new archive. */
+         size_t outBufferSize = 0;   /* it can have any value before first call (if outBuffer = 0) */
+
+         for (i = 0; i < db.NumFiles; i++)
+         {
+            size_t offset = 0;
+            size_t outSizeProcessed = 0;
+            size_t len;
+            unsigned isDir = SzArEx_IsDir(&db, i);
+            if (listCommand == 0 && isDir && !fullPaths)
+               continue;
+            len = SzArEx_GetFileNameUtf16(&db, i, temp);
+
+            if (!isDir)
+            {
+               res = SzArEx_Extract(&db, &lookStream.vt, i,
+                     &blockIndex, &outBuffer, &outBufferSize,
+                     &offset, &outSizeProcessed,
+                     &allocImp, &allocTempImp);
+               if (res != SZ_OK)
+                  break;
+            }
+
+            if (!testCommand)
+            {
+               CSzFile outFile;
+               size_t processedSize;
+               size_t j;
+
+               char full_path[RETRO_PATH_MAX] = {0};
+               sevenzip_replace_path(temp, out, full_path);
+               if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_FLOPPY && lastfile != NULL)
+                  snprintf(lastfile, RETRO_PATH_MAX, "%s", path_basename(full_path));
+
+               UInt16 *name = (UInt16 *)temp;
+               UInt16 *destPath = (UInt16 *)name;
+
+               for (j = 0; name[j] != 0; j++)
+               {
+                  if (name[j] == '/')
+                  {
+                     if (fullPaths)
+                     {
+                        name[j] = 0;
+                        MyCreateDir(name);
+                        name[j] = CHAR_PATH_SEPARATOR;
+                     }
+                     else
+                        destPath = name + j + 1;
+                  }
+               }
+
+               if (path_is_valid(full_path))
+                   continue;
+               else if (isDir)
+               {
+                  MyCreateDir(destPath);
+                  fprintf(stdout, "Mkdir: %s\n", full_path);
+                  continue;
+               }
+               else if (OutFile_OpenUtf16(&outFile, destPath))
+               {
+                  fprintf(stderr, "Un7ip: Error opening %s\n", full_path);
+                  res = SZ_ERROR_FAIL;
+                  break;
+               }
+
+               processedSize = outSizeProcessed;
+
+               if (File_Write(&outFile, outBuffer + offset, &processedSize) != 0 || processedSize != outSizeProcessed)
+               {
+                  fprintf(stderr, "Un7ip: Error writing extracted file %s\n", full_path);
+                  res = SZ_ERROR_FAIL;
+                  break;
+               }
+               else
+                   fprintf(stdout, "Un7ip: %s\n", full_path);
+
+               if (File_Close(&outFile))
+               {
+                  fprintf(stderr, "Un7ip: Error closing %s\n", full_path);
+                  res = SZ_ERROR_FAIL;
+                  break;
+               }
+            }
+         }
+         ISzAlloc_Free(&allocImp, outBuffer);
+      }
+   }
+
+   SzFree(NULL, temp);
+   SzArEx_Free(&db, &allocImp);
+   IAlloc_Free(&allocImp, lookStream.buf);
+
+   File_Close(&archiveStream.file);
+
+   if (res == SZ_OK)
+      return;
+
+   if (res == SZ_ERROR_UNSUPPORTED)
+      fprintf(stderr, "Un7ip: Decoder doesn't support this archive\n");
+   else if (res == SZ_ERROR_MEM)
+      fprintf(stderr, "Un7ip: Can not allocate memory\n");
+   else if (res == SZ_ERROR_CRC)
+      fprintf(stderr, "Un7ip: CRC error\n");
+}
+
 /* HDF tools */
 static int create_hdf (const char *path, off_t size)
 {
@@ -1140,7 +1467,7 @@ int make_hdf (char *hdf_path, char *hdf_size, char *device_name)
 
     /* Munge size specifier */
     if (size > 0) {
-        char c = (toupper(*size_spec));
+        char c = (_totupper(*size_spec));
 
         if (c == 'K')
             size *= 1024;

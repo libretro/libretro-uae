@@ -4,11 +4,6 @@ DEPS_DIR = $(CORE_DIR)/deps
 RETRODEP = $(CORE_DIR)/retrodep
 LIBRETRO_COMM_DIR := $(CORE_DIR)/libretro-common
 
-GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
-ifneq ($(GIT_VERSION)," unknown")
-    CFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
-endif
-
 INCFLAGS := -I$(EMU) -I$(EMU)/include -I$(LIBRETRO) -I$(LIBRETRO_COMM_DIR)/include -I$(RETRODEP) -I$(CORE_DIR) -I$(DEPS_DIR)/zlib
 
 SOURCES_C += \
@@ -164,4 +159,9 @@ SOURCES_C += \
 	$(DEPS_DIR)/zlib/trees.c \
 	$(DEPS_DIR)/zlib/uncompr.c \
 	$(DEPS_DIR)/zlib/zutil.c
+endif
+
+GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
+ifneq ($(GIT_VERSION)," unknown")
+    CFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
 endif

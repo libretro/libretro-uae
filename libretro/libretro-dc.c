@@ -252,14 +252,17 @@ bool dc_replace_file(dc_storage* dc, int index, const char* filename)
         }
 
         /* ZIP */
-        else if (strendswith(full_path_replace, "zip"))
+        else if (strendswith(full_path_replace, "zip") || strendswith(full_path_replace, "7z"))
         {
             char zip_basename[RETRO_PATH_MAX] = {0};
             snprintf(zip_basename, sizeof(zip_basename), "%s", path_basename(full_path_replace));
             snprintf(zip_basename, sizeof(zip_basename), "%s", path_remove_extension(zip_basename));
 
             path_mkdir(retro_temp_directory);
-            zip_uncompress(full_path_replace, retro_temp_directory, NULL);
+            if (strendswith(full_path_replace, "zip"))
+               zip_uncompress(full_path_replace, retro_temp_directory, NULL);
+            else if (strendswith(full_path_replace, "7z"))
+               sevenzip_uncompress(full_path_replace, retro_temp_directory, NULL);
 
             /* Default to directory mode */
             int zip_mode = 0;
@@ -413,7 +416,7 @@ static bool dc_add_m3u_save_disk(
     snprintf(m3u_file_name_no_ext, sizeof(m3u_file_name_no_ext),
              "%s", path_remove_extension((char*)m3u_file_name));
 
-   if (!m3u_file_name_no_ext || (*m3u_file_name_no_ext == '\0'))
+   if (*m3u_file_name_no_ext == '\0')
       return false;
 
    /* Construct save disk file name */
@@ -493,12 +496,12 @@ static bool dc_add_m3u_disk(
    if(m3u_base_dir == NULL)
       return false;
 
-   if(disk_file == NULL)
+   if(!disk_file[0])
       return false;
 
    /* "Browsed" file in ZIP */
    char browsed_file[RETRO_PATH_MAX] = {0};
-   if (strstr(disk_file, ".zip#"))
+   if (strstr(disk_file, ".zip#") || strstr(disk_file, ".7z#"))
    {
       char *token = strtok((char*)disk_file, "#");
       while (token != NULL)
@@ -527,7 +530,10 @@ static bool dc_add_m3u_disk(
          /* Otherwise, use file name without extension as label */
          const char *file_name = path_basename(disk_file_path);
          if (!string_is_empty(browsed_file))
-             file_name = path_basename(browsed_file);
+         {
+             file_name = strdup(browsed_file);
+             file_name = path_basename(file_name);
+         }
 
          if (!(!file_name || (*file_name == '\0')))
                 snprintf(disk_label, sizeof(disk_label),
@@ -535,7 +541,7 @@ static bool dc_add_m3u_disk(
       }
 
       /* ZIP */
-      if (strendswith(disk_file_path, "zip"))
+      if (strendswith(full_path, "zip") || strendswith(full_path, "7z"))
       {
          char lastfile[RETRO_PATH_MAX];
          char zip_basename[RETRO_PATH_MAX];
@@ -543,7 +549,10 @@ static bool dc_add_m3u_disk(
          snprintf(zip_basename, sizeof(zip_basename), "%s", path_remove_extension(zip_basename));
 
          path_mkdir(retro_temp_directory);
-         zip_uncompress(full_path, retro_temp_directory, lastfile);
+         if (strendswith(full_path, "zip"))
+            zip_uncompress(full_path, retro_temp_directory, lastfile);
+         else if (strendswith(full_path, "7z"))
+            sevenzip_uncompress(full_path, retro_temp_directory, lastfile);
 
          if (!string_is_empty(browsed_file))
              snprintf(lastfile, sizeof(lastfile), "%s", browsed_file);
@@ -680,8 +689,7 @@ enum dc_image_type dc_get_image_type(const char* filename)
        strendswith(filename, "adz") ||
        strendswith(filename, "fdi") ||
        strendswith(filename, "dms") ||
-       strendswith(filename, "ipf") ||
-       strendswith(filename, "zip"))
+       strendswith(filename, "ipf"))
       return DC_IMAGE_TYPE_FLOPPY;
 
    /* CD image */

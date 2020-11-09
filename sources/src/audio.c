@@ -360,9 +360,13 @@ STATIC_INLINE int FINISH_DATA (int data, int bits, int ch)
 }
 
 static uae_u32 right_word_saved[SOUND_MAX_DELAY_BUFFER];
+#ifndef __LIBRETRO__
 static uae_u32 left_word_saved[SOUND_MAX_DELAY_BUFFER];
+#endif
 static uae_u32 right2_word_saved[SOUND_MAX_DELAY_BUFFER];
+#ifndef __LIBRETRO__
 static uae_u32 left2_word_saved[SOUND_MAX_DELAY_BUFFER];
+#endif
 static int saved_ptr, saved_ptr2;
 
 static int mixed_on, mixed_stereo_size, mixed_mul1, mixed_mul2;
@@ -481,8 +485,8 @@ STATIC_INLINE void put_sound_word_right (uae_u32 w)
 STATIC_INLINE void put_sound_word_left (uae_u32 w)
 {
 	if (mixed_on) {
-		uae_u32 rold, lold, rnew, lnew, tmp;
 #ifndef __LIBRETRO__
+		uae_u32 rold, lold, rnew, lnew, tmp;
 		left_word_saved[saved_ptr] = w;
 		lnew = w - SOUND16_BASE_VAL;
 		rnew = right_word_saved[saved_ptr] - SOUND16_BASE_VAL;
@@ -496,6 +500,7 @@ STATIC_INLINE void put_sound_word_left (uae_u32 w)
 		rold = right_word_saved[saved_ptr] - SOUND16_BASE_VAL;
 		w = (lnew * mixed_mul2 + rold * mixed_mul1) / MIXED_STEREO_SCALE;
 #else
+		uae_u32 tmp;
 		tmp = right_word_saved[saved_ptr];
 #endif
 		PUT_SOUND_WORD(tmp);
@@ -517,8 +522,8 @@ STATIC_INLINE void put_sound_word_right2 (uae_u32 w)
 STATIC_INLINE void put_sound_word_left2 (uae_u32 w)
 {
 	if (mixed_on) {
-		uae_u32 rold, lold, rnew, lnew, tmp;
 #ifndef __LIBRETRO__
+		uae_u32 rold, lold, rnew, lnew, tmp;
 		left2_word_saved[saved_ptr2] = w;
 		lnew = w - SOUND16_BASE_VAL;
 		rnew = right2_word_saved[saved_ptr2] - SOUND16_BASE_VAL;
@@ -532,6 +537,7 @@ STATIC_INLINE void put_sound_word_left2 (uae_u32 w)
 		rold = right2_word_saved[saved_ptr2] - SOUND16_BASE_VAL;
 		w = (lnew * mixed_mul2 + rold * mixed_mul1) / MIXED_STEREO_SCALE;
 #else
+		uae_u32 tmp;
 		tmp = right2_word_saved[saved_ptr2];
 #endif
 		PUT_SOUND_WORD(tmp);
