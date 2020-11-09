@@ -70,7 +70,6 @@ static int mapper_flag[4][16] = {0};
 static unsigned int mouse_speed[2] = {0};
 
 extern bool request_update_av_info;
-extern bool request_reset_drawing;
 extern void retro_reset_soft();
 extern bool retro_statusbar;
 extern bool retro_vkbd;
@@ -155,7 +154,6 @@ void emu_function(int function)
          break;
       case EMU_STATUSBAR:
          retro_statusbar = !retro_statusbar;
-         request_reset_drawing = true;
          break;
       case EMU_JOYMOUSE:
          mousemode_locked = true;

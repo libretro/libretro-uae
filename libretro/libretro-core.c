@@ -29,7 +29,6 @@ int defaultw = EMULATOR_DEF_WIDTH;
 int defaulth = EMULATOR_DEF_HEIGHT;
 unsigned short int retro_bmp[RETRO_BMP_SIZE] = {0};
 
-extern int frame_redraw_necessary;
 extern int bplcon0;
 extern int diwlastword_total;
 extern int diwfirstword_total;
@@ -4625,8 +4624,6 @@ void update_audiovideo(void)
    /* Statusbar disk display timer */
    if (imagename_timer > 0)
       imagename_timer--;
-   if (retro_statusbar && !imagename_timer)
-      request_reset_drawing = true;
 
    /* Update audio settings */
    if (automatic_sound_filter_type_update)
@@ -5352,11 +5349,8 @@ void retro_run(void)
 
    /* Virtual keyboard */
    if (retro_vkbd)
-   {
-      /* VKBD requires a graceful redraw, blunt reset_drawing() interferes with zoom */
-      frame_redraw_necessary = 2;
       print_vkbd(retro_bmp);
-   }
+
    /* Maximum 288p/576p PAL shenanigans:
     * Mask the last line(s), since UAE does not refresh the last line, and even internal OSD will leave trails */
    if (video_config & PUAE_VIDEO_PAL)

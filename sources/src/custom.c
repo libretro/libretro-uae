@@ -5614,6 +5614,9 @@ static int mavg (struct mavg_data *md, int newval, int size)
 
 static bool framewait (void)
 {
+#ifdef __LIBRETRO__
+	return true;
+#endif
 	frame_time_t curr_time;
 	frame_time_t start;
 	int vs = isvsync_chipset ();
