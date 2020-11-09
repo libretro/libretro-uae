@@ -255,7 +255,7 @@ endif
    PLATFLAGS += -DWIN32
    TARGET := $(TARGET_NAME)_libretro.dll
    fpic := -fPIC
-   SHARED := -shared -static-libgcc -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
+   SHARED := -shared -static-libgcc -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined -Wl,--gc-sections
    LDFLAGS += -lm
 endif
 
@@ -264,7 +264,7 @@ ifeq ($(DEBUG), 1)
    CFLAGS += -O0 -g
 else
    CFLAGS += -O3
-   LDFLAGS += -Wl,--gc-sections -s
+   LDFLAGS += -s
 endif
 
 CFLAGS += -fcommon -std=gnu99 -DINLINE="inline" -D__LIBRETRO__
