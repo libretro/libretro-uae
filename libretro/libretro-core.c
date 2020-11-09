@@ -4176,7 +4176,7 @@ static bool retro_create_config()
                         else if (strstr(whdload_filebuf, "SplashDelay="))
                            fprintf(whdload_prefs_new, "%s%d\n", "SplashDelay=", WHDLoad_SplashDelay);
                         else
-                           fprintf(whdload_prefs_new, whdload_filebuf);
+                           fprintf(whdload_prefs_new, "%s", whdload_filebuf);
                      }
                      fclose(whdload_prefs_new);
                      fclose(whdload_prefs);

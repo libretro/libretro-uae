@@ -1075,7 +1075,13 @@ void zip_uncompress(char *in, char *out, char *lastfile)
 
 /* 7zip */
 #include "deps/7zip/7z.h"
+#include "deps/7zip/7zAlloc.h"
+#include "deps/7zip/7zBuf.h"
+#include "deps/7zip/7zCrc.h"
+#include "deps/7zip/7zFile.h"
+#include "deps/7zip/7zTypes.h"
 
+#ifndef __STATIC__
 #include "deps/7zip/7zAlloc.c"
 #include "deps/7zip/7zArcIn.c"
 #include "deps/7zip/7zBuf.c"
@@ -1093,8 +1099,86 @@ void zip_uncompress(char *in, char *out, char *lastfile)
 #include "deps/7zip/Lzma2Dec.c"
 #include "deps/7zip/LzmaDec.c"
 #include "deps/7zip/Sha256.c"
-#include "deps/7zip/Threads.c"
+#else
+#include "deps/7zip/7zAlloc.c"
+#define GET_LookToRead2 CLookToRead2 *p = CONTAINER_FROM_VTBL(pp, CLookToRead2, vt);
+static SRes LookToRead2_Look_Lookahead(const ILookInStream *pp, const void **buf, size_t *size)
+{
+  SRes res = SZ_OK;
+  GET_LookToRead2
+  size_t size2 = p->size - p->pos;
+  if (size2 == 0 && *size != 0)
+  {
+    p->pos = 0;
+    p->size = 0;
+    size2 = p->bufSize;
+    res = ISeekInStream_Read(p->realStream, p->buf, &size2);
+    p->size = size2;
+  }
+  if (*size > size2)
+    *size = size2;
+  *buf = p->buf + p->pos;
+  return res;
+}
 
+static SRes LookToRead2_Look_Exact(const ILookInStream *pp, const void **buf, size_t *size)
+{
+  SRes res = SZ_OK;
+  GET_LookToRead2
+  size_t size2 = p->size - p->pos;
+  if (size2 == 0 && *size != 0)
+  {
+    p->pos = 0;
+    p->size = 0;
+    if (*size > p->bufSize)
+      *size = p->bufSize;
+    res = ISeekInStream_Read(p->realStream, p->buf, size);
+    size2 = p->size = *size;
+  }
+  if (*size > size2)
+    *size = size2;
+  *buf = p->buf + p->pos;
+  return res;
+}
+
+static SRes LookToRead2_Skip(const ILookInStream *pp, size_t offset)
+{
+  GET_LookToRead2
+  p->pos += offset;
+  return SZ_OK;
+}
+
+static SRes LookToRead2_Read(const ILookInStream *pp, void *buf, size_t *size)
+{
+  GET_LookToRead2
+  size_t rem = p->size - p->pos;
+  if (rem == 0)
+    return ISeekInStream_Read(p->realStream, buf, size);
+  if (rem > *size)
+    rem = *size;
+  memcpy(buf, p->buf + p->pos, rem);
+  p->pos += rem;
+  *size = rem;
+  return SZ_OK;
+}
+
+static SRes LookToRead2_Seek(const ILookInStream *pp, Int64 *pos, ESzSeek origin)
+{
+  GET_LookToRead2
+  p->pos = p->size = 0;
+  return ISeekInStream_Seek(p->realStream, pos, origin);
+}
+
+void LookToRead2_CreateVTable(CLookToRead2 *p, int lookahead)
+{
+  p->vt.Look = lookahead ?
+      LookToRead2_Look_Lookahead :
+      LookToRead2_Look_Exact;
+  p->vt.Skip = LookToRead2_Skip;
+  p->vt.Read = LookToRead2_Read;
+  p->vt.Seek = LookToRead2_Seek;
+}
+#endif
 #define kInputBufSize ((size_t)1 << 18)
 static const ISzAlloc g_Alloc = { SzAlloc, SzFree };
 
@@ -1110,7 +1194,7 @@ static WRes MyCreateDir(const UInt16 *name)
 {
    char temp[RETRO_PATH_MAX];
    utf16_to_char_string(name, temp, sizeof(temp));
-   return path_mkdir((const char *)temp) == 0 ? 0 : errno;
+   return path_mkdir((const char *)temp);
 }
 
 static WRes OutFile_OpenUtf16(CSzFile *p, const UInt16 *name)
@@ -1138,11 +1222,11 @@ void sevenzip_uncompress(char *in, char *out, char *lastfile)
    CLookToRead2 lookStream;
    CSzArEx db;
    SRes res;
-   UINT16 *temp = NULL;
+   UInt16 *temp = NULL;
    size_t tempSize = RETRO_PATH_MAX;
 
    SzFree(NULL, temp);
-   temp = (UINT16 *)SzAlloc(NULL, tempSize * sizeof(temp[0]));
+   temp = (UInt16 *)SzAlloc(NULL, tempSize * sizeof(temp[0]));
 
    if (!temp)
    {
@@ -1201,13 +1285,13 @@ void sevenzip_uncompress(char *in, char *out, char *lastfile)
 
       if (res == SZ_OK)
       {
-         UINT32 i;
+         UInt32 i;
 
          /*
          if you need cache, use these 3 variables.
          if you use external function, you can make these variable as static.
          */
-         UINT32 blockIndex = 0xFFFFFFFF; /* it can have any value before first call (if outBuffer = 0) */
+         UInt32 blockIndex = 0xFFFFFFFF; /* it can have any value before first call (if outBuffer = 0) */
          Byte *outBuffer = 0; /* it must be 0 before first call for each new archive. */
          size_t outBufferSize = 0;   /* it can have any value before first call (if outBuffer = 0) */
 
@@ -1242,8 +1326,8 @@ void sevenzip_uncompress(char *in, char *out, char *lastfile)
                if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_FLOPPY && lastfile != NULL)
                   snprintf(lastfile, RETRO_PATH_MAX, "%s", path_basename(full_path));
 
-               UINT16 *name = (UINT16 *)temp;
-               UINT16 *destPath = (UINT16 *)name;
+               UInt16 *name = (UInt16 *)temp;
+               UInt16 *destPath = (UInt16 *)name;
 
                for (j = 0; name[j] != 0; j++)
                {
