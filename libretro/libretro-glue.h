@@ -1,13 +1,20 @@
 #ifndef LIBRETRO_GLUE_H
 #define LIBRETRO_GLUE_H
 
-/* zlib */
-#include "deps/zlib/zlib.h"
 #include <stdio.h>
+
+/* zlib */
+#include "deps/libz/zlib.h"
+#include "deps/libz/unzip.h"
 void gz_uncompress(gzFile in, FILE *out);
 void zip_uncompress(char *in, char *out, char *lastfile);
 
 /* 7z */
+#include "deps/7zip/7z.h"
+#include "deps/7zip/7zBuf.h"
+#include "deps/7zip/7zCrc.h"
+#include "deps/7zip/7zFile.h"
+#include "deps/7zip/7zTypes.h"
 void sevenzip_uncompress(char *in, char *out, char *lastfile);
 
 /* HDF */

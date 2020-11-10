@@ -21,6 +21,7 @@ extern int mouse_port[NORMAL_JPORTS];
 #include "libretro-core.h"
 #include "libretro-mapper.h"
 #include "encodings/utf.h"
+#include "streams/file_stream.h"
 
 extern unsigned int retro_devices[RETRO_DEVICES];
 bool inputdevice_finalized = false;
@@ -920,7 +921,6 @@ bool strendswith(const char* str, const char* end)
 }
 
 /* zlib */
-#include "deps/zlib/zlib.h"
 void gz_uncompress(gzFile in, FILE *out)
 {
    char gzbuf[16384];
@@ -939,8 +939,6 @@ void gz_uncompress(gzFile in, FILE *out)
    }
 }
 
-#include "deps/zlib/unzip.h"
-#include "file/file_path.h"
 void zip_uncompress(char *in, char *out, char *lastfile)
 {
    unzFile uf = NULL;
@@ -1074,329 +1072,199 @@ void zip_uncompress(char *in, char *out, char *lastfile)
 }
 
 /* 7zip */
-#include "deps/7zip/7z.h"
-#include "deps/7zip/7zAlloc.h"
-#include "deps/7zip/7zBuf.h"
-#include "deps/7zip/7zCrc.h"
-#include "deps/7zip/7zFile.h"
-#include "deps/7zip/7zTypes.h"
-
-#ifndef __STATIC__
-#include "deps/7zip/7zAlloc.c"
-#include "deps/7zip/7zArcIn.c"
-#include "deps/7zip/7zBuf.c"
-#include "deps/7zip/7zCrc.c"
-#include "deps/7zip/7zCrcOpt.c"
-#include "deps/7zip/7zDec.c"
-#include "deps/7zip/7zFile.c"
-#include "deps/7zip/7zStream.c"
-#include "deps/7zip/Bcj2.c"
-#include "deps/7zip/Bra.c"
-#include "deps/7zip/Bra86.c"
-#include "deps/7zip/BraIA64.c"
-#include "deps/7zip/CpuArch.c"
-#include "deps/7zip/Delta.c"
-#include "deps/7zip/Lzma2Dec.c"
-#include "deps/7zip/LzmaDec.c"
-#include "deps/7zip/Sha256.c"
-#else
-#include "deps/7zip/7zAlloc.c"
-#define GET_LookToRead2 CLookToRead2 *p = CONTAINER_FROM_VTBL(pp, CLookToRead2, vt);
-static SRes LookToRead2_Look_Lookahead(const ILookInStream *pp, const void **buf, size_t *size)
+struct sevenzip_context_t
 {
-  SRes res = SZ_OK;
-  GET_LookToRead2
-  size_t size2 = p->size - p->pos;
-  if (size2 == 0 && *size != 0)
-  {
-    p->pos = 0;
-    p->size = 0;
-    size2 = p->bufSize;
-    res = ISeekInStream_Read(p->realStream, p->buf, &size2);
-    p->size = size2;
-  }
-  if (*size > size2)
-    *size = size2;
-  *buf = p->buf + p->pos;
-  return res;
+   uint8_t *output;
+   CFileInStream archiveStream;
+   CLookToRead lookStream;
+   ISzAlloc allocImp;
+   ISzAlloc allocTempImp;
+   CSzArEx db;
+   size_t temp_size;
+   uint32_t block_index;
+   uint32_t parse_index;
+   uint32_t decompress_index;
+   uint32_t packIndex;
+};
+
+static void *sevenzip_stream_alloc_impl(void *p, size_t size)
+{
+   if (size == 0)
+      return 0;
+   return malloc(size);
 }
 
-static SRes LookToRead2_Look_Exact(const ILookInStream *pp, const void **buf, size_t *size)
+static void sevenzip_stream_free_impl(void *p, void *address)
 {
-  SRes res = SZ_OK;
-  GET_LookToRead2
-  size_t size2 = p->size - p->pos;
-  if (size2 == 0 && *size != 0)
-  {
-    p->pos = 0;
-    p->size = 0;
-    if (*size > p->bufSize)
-      *size = p->bufSize;
-    res = ISeekInStream_Read(p->realStream, p->buf, size);
-    size2 = p->size = *size;
-  }
-  if (*size > size2)
-    *size = size2;
-  *buf = p->buf + p->pos;
-  return res;
+   (void)p;
+
+   if (address)
+      free(address);
 }
 
-static SRes LookToRead2_Skip(const ILookInStream *pp, size_t offset)
+static void *sevenzip_stream_alloc_tmp_impl(void *p, size_t size)
 {
-  GET_LookToRead2
-  p->pos += offset;
-  return SZ_OK;
-}
-
-static SRes LookToRead2_Read(const ILookInStream *pp, void *buf, size_t *size)
-{
-  GET_LookToRead2
-  size_t rem = p->size - p->pos;
-  if (rem == 0)
-    return ISeekInStream_Read(p->realStream, buf, size);
-  if (rem > *size)
-    rem = *size;
-  memcpy(buf, p->buf + p->pos, rem);
-  p->pos += rem;
-  *size = rem;
-  return SZ_OK;
-}
-
-static SRes LookToRead2_Seek(const ILookInStream *pp, Int64 *pos, ESzSeek origin)
-{
-  GET_LookToRead2
-  p->pos = p->size = 0;
-  return ISeekInStream_Seek(p->realStream, pos, origin);
-}
-
-void LookToRead2_CreateVTable(CLookToRead2 *p, int lookahead)
-{
-  p->vt.Look = lookahead ?
-      LookToRead2_Look_Lookahead :
-      LookToRead2_Look_Exact;
-  p->vt.Skip = LookToRead2_Skip;
-  p->vt.Read = LookToRead2_Read;
-  p->vt.Seek = LookToRead2_Seek;
-}
-#endif
-#define kInputBufSize ((size_t)1 << 18)
-static const ISzAlloc g_Alloc = { SzAlloc, SzFree };
-
-static int Buf_EnsureSize(CBuf *dest, size_t size)
-{
-   if (dest->size >= size)
-      return 1;
-   Buf_Free(dest, &g_Alloc);
-   return Buf_Create(dest, size, &g_Alloc);
-}
-
-static WRes MyCreateDir(const UInt16 *name)
-{
-   char temp[RETRO_PATH_MAX];
-   utf16_to_char_string(name, temp, sizeof(temp));
-   return path_mkdir((const char *)temp);
-}
-
-static WRes OutFile_OpenUtf16(CSzFile *p, const UInt16 *name)
-{
-   char temp[RETRO_PATH_MAX];
-   utf16_to_char_string(name, temp, sizeof(temp));
-   return OutFile_Open(p, (const char *)temp);
-}
-
-static void sevenzip_replace_path(UInt16 *name, char *path, char *full_path)
-{
-   char temp[RETRO_PATH_MAX];
-   utf16_to_char_string(name, temp, sizeof(temp));
-   snprintf(full_path, RETRO_PATH_MAX, "%s%s%s", path, DIR_SEP_STR, temp);
-   mbstowcs(name, full_path, RETRO_PATH_MAX);
-   return;
+   (void)p;
+   if (size == 0)
+      return 0;
+   return malloc(size);
 }
 
 void sevenzip_uncompress(char *in, char *out, char *lastfile)
 {
+   CFileInStream archiveStream;
+   CLookToRead lookStream;
    ISzAlloc allocImp;
    ISzAlloc allocTempImp;
-
-   CFileInStream archiveStream;
-   CLookToRead2 lookStream;
    CSzArEx db;
-   SRes res;
-   UInt16 *temp = NULL;
-   size_t tempSize = RETRO_PATH_MAX;
+   uint8_t *output      = 0;
+   int64_t outsize      = -1;
 
-   SzFree(NULL, temp);
-   temp = (UInt16 *)SzAlloc(NULL, tempSize * sizeof(temp[0]));
+   /*These are the allocation routines.
+    * Currently using the non-standard 7zip choices. */
+   allocImp.Alloc       = sevenzip_stream_alloc_impl;
+   allocImp.Free        = sevenzip_stream_free_impl;
+   allocTempImp.Alloc   = sevenzip_stream_alloc_tmp_impl;
+   allocTempImp.Free    = sevenzip_stream_free_impl;
 
-   if (!temp)
-   {
-      res = SZ_ERROR_MEM;
-      return;
-   }
-
+   /* Could not open 7zip archive? */
    if (InFile_Open(&archiveStream.file, in))
-   {
-      fprintf(stderr, "Un7ip: Error opening %s\n", in);
       return;
-   }
-
-   allocImp = g_Alloc;
-   allocTempImp = g_Alloc;
 
    FileInStream_CreateVTable(&archiveStream);
-   LookToRead2_CreateVTable(&lookStream, false);
-   lookStream.buf = NULL;
-
-   res = SZ_OK;
-
-   {
-      lookStream.buf = (Byte *)IAlloc_Alloc(&allocImp, kInputBufSize);
-      if (!lookStream.buf)
-         res = SZ_ERROR_MEM;
-      else
-      {
-         lookStream.bufSize = kInputBufSize;
-         lookStream.realStream = &archiveStream.vt;
-         LookToRead2_Init(&lookStream);
-      }
-   }
-
+   LookToRead_CreateVTable(&lookStream, false);
+   lookStream.realStream = &archiveStream.s;
+   LookToRead_Init(&lookStream);
    CrcGenerateTable();
+
+   db.db.PackSizes               = NULL;
+   db.db.PackCRCsDefined         = NULL;
+   db.db.PackCRCs                = NULL;
+   db.db.Folders                 = NULL;
+   db.db.Files                   = NULL;
+   db.db.NumPackStreams          = 0;
+   db.db.NumFolders              = 0;
+   db.db.NumFiles                = 0;
+   db.startPosAfterHeader        = 0;
+   db.dataPos                    = 0;
+   db.FolderStartPackStreamIndex = NULL;
+   db.PackStreamStartPositions   = NULL;
+   db.FolderStartFileIndex       = NULL;
+   db.FileIndexToFolderIndexMap  = NULL;
+   db.FileNameOffsets            = NULL;
+   db.FileNames.data             = NULL;
+   db.FileNames.size             = 0;
 
    SzArEx_Init(&db);
 
-   if (res == SZ_OK)
-      res = SzArEx_Open(&db, &lookStream.vt, &allocImp, &allocTempImp);
-
-   if (res == SZ_OK)
+   if (SzArEx_Open(&db, &lookStream.s, &allocImp, &allocTempImp) == SZ_OK)
    {
-      char *command = "x";
-      int listCommand = 0, testCommand = 0, fullPaths = 0;
+      uint32_t i;
+      uint16_t *temp       = NULL;
+      size_t temp_size     = 0;
+      uint32_t block_index = 0xFFFFFFFF;
+      SRes res             = SZ_OK;
+      size_t output_size   = 0;
 
-      if (strcmp(command, "l") == 0) listCommand = 1;
-      else if (strcmp(command, "t") == 0) testCommand = 1;
-      else if (strcmp(command, "e") == 0) { }
-      else if (strcmp(command, "x") == 0) fullPaths = 1;
-      else
+      for (i = 0; i < db.db.NumFiles; i++)
       {
-         fprintf(stderr, "Un7ip: Incorrect command\n");
-         res = SZ_ERROR_FAIL;
-      }
+         size_t j;
+         size_t len;
+         char infile[RETRO_PATH_MAX];
+         size_t offset                = 0;
+         size_t outSizeProcessed      = 0;
+         const CSzFileItem    *f      = db.db.Files + i;
 
-      if (res == SZ_OK)
-      {
-         UInt32 i;
+         len = SzArEx_GetFileNameUtf16(&db, i, NULL);
 
-         /*
-         if you need cache, use these 3 variables.
-         if you use external function, you can make these variable as static.
-         */
-         UInt32 blockIndex = 0xFFFFFFFF; /* it can have any value before first call (if outBuffer = 0) */
-         Byte *outBuffer = 0; /* it must be 0 before first call for each new archive. */
-         size_t outBufferSize = 0;   /* it can have any value before first call (if outBuffer = 0) */
-
-         for (i = 0; i < db.NumFiles; i++)
+         if (len > temp_size)
          {
-            size_t offset = 0;
-            size_t outSizeProcessed = 0;
-            size_t len;
-            unsigned isDir = SzArEx_IsDir(&db, i);
-            if (listCommand == 0 && isDir && !fullPaths)
-               continue;
-            len = SzArEx_GetFileNameUtf16(&db, i, temp);
+            if (temp)
+               free(temp);
+            temp_size = len;
+            temp = (uint16_t *)malloc(temp_size * sizeof(temp[0]));
 
-            if (!isDir)
+            if (temp == 0)
             {
-               res = SzArEx_Extract(&db, &lookStream.vt, i,
-                     &blockIndex, &outBuffer, &outBufferSize,
-                     &offset, &outSizeProcessed,
-                     &allocImp, &allocTempImp);
-               if (res != SZ_OK)
-                  break;
-            }
-
-            if (!testCommand)
-            {
-               CSzFile outFile;
-               size_t processedSize;
-               size_t j;
-
-               char full_path[RETRO_PATH_MAX] = {0};
-               sevenzip_replace_path(temp, out, full_path);
-               if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_FLOPPY && lastfile != NULL)
-                  snprintf(lastfile, RETRO_PATH_MAX, "%s", path_basename(full_path));
-
-               UInt16 *name = (UInt16 *)temp;
-               UInt16 *destPath = (UInt16 *)name;
-
-               for (j = 0; name[j] != 0; j++)
-               {
-                  if (name[j] == '/')
-                  {
-                     if (fullPaths)
-                     {
-                        name[j] = 0;
-                        MyCreateDir(name);
-                        name[j] = CHAR_PATH_SEPARATOR;
-                     }
-                     else
-                        destPath = name + j + 1;
-                  }
-               }
-
-               if (path_is_valid(full_path))
-                   continue;
-               else if (isDir)
-               {
-                  MyCreateDir(destPath);
-                  fprintf(stdout, "Mkdir: %s\n", full_path);
-                  continue;
-               }
-               else if (OutFile_OpenUtf16(&outFile, destPath))
-               {
-                  fprintf(stderr, "Un7ip: Error opening %s\n", full_path);
-                  res = SZ_ERROR_FAIL;
-                  break;
-               }
-
-               processedSize = outSizeProcessed;
-
-               if (File_Write(&outFile, outBuffer + offset, &processedSize) != 0 || processedSize != outSizeProcessed)
-               {
-                  fprintf(stderr, "Un7ip: Error writing extracted file %s\n", full_path);
-                  res = SZ_ERROR_FAIL;
-                  break;
-               }
-               else
-                   fprintf(stdout, "Un7ip: %s\n", full_path);
-
-               if (File_Close(&outFile))
-               {
-                  fprintf(stderr, "Un7ip: Error closing %s\n", full_path);
-                  res = SZ_ERROR_FAIL;
-                  break;
-               }
+               res = SZ_ERROR_MEM;
+               break;
             }
          }
-         ISzAlloc_Free(&allocImp, outBuffer);
+
+         SzArEx_GetFileNameUtf16(&db, i, temp);
+         res       = SZ_ERROR_FAIL;
+         infile[0] = '\0';
+
+         if (!temp)
+            break;
+
+         res = utf16_to_char_string(temp, infile, sizeof(infile))
+               ? SZ_OK : SZ_ERROR_FAIL;
+
+         /* C LZMA SDK does not support chunked extraction - see here:
+          * sourceforge.net/p/sevenzip/discussion/45798/thread/6fb59aaf/
+          * */
+         res = SzArEx_Extract(&db, &lookStream.s, i, &block_index,
+               &output, &output_size, &offset, &outSizeProcessed,
+               &allocImp, &allocTempImp);
+
+         if (res != SZ_OK)
+            break; /* This goes to the error section. */
+
+         outsize = (int64_t)outSizeProcessed;
+
+         char full_path[RETRO_PATH_MAX] = {0};
+         snprintf(full_path, RETRO_PATH_MAX, "%s%s%s", out, DIR_SEP_STR, infile);
+         if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_FLOPPY && lastfile != NULL)
+            snprintf(lastfile, RETRO_PATH_MAX, "%s", path_basename(full_path));
+
+         for (j = 0; full_path[j] != 0; j++)
+         {
+            if (full_path[j] == '/')
+            {
+                  full_path[j] = 0;
+                  path_mkdir((const char *)full_path);
+                  full_path[j] = DIR_SEP_CHR;
+            }
+         }
+
+         const void *ptr = (const void*)(output + offset);
+
+         if (path_is_valid(full_path))
+            continue;
+         else if (f->IsDir)
+         {
+            path_mkdir((const char *)temp);
+            fprintf(stdout, "Mkdir: %s\n", full_path);
+            continue;
+         }
+
+         if (filestream_write_file(full_path, ptr, outsize))
+         {
+            res = SZ_OK;
+            fprintf(stdout, "Un7ip: %s\n", full_path);
+         }
+         else
+         {
+            res = SZ_ERROR_FAIL;
+            fprintf(stderr, "Un7ip: Error writing extracted file %s\n", full_path);
+         }
       }
+
+      if (temp)
+         free(temp);
+      IAlloc_Free(&allocImp, output);
+
+      if (res == SZ_ERROR_UNSUPPORTED)
+         fprintf(stderr, "Un7ip: Decoder doesn't support this archive\n");
+      else if (res == SZ_ERROR_MEM)
+         fprintf(stderr, "Un7ip: Can not allocate memory\n");
+      else if (res == SZ_ERROR_CRC)
+         fprintf(stderr, "Un7ip: CRC error\n");
    }
 
-   SzFree(NULL, temp);
    SzArEx_Free(&db, &allocImp);
-   IAlloc_Free(&allocImp, lookStream.buf);
-
    File_Close(&archiveStream.file);
-
-   if (res == SZ_OK)
-      return;
-
-   if (res == SZ_ERROR_UNSUPPORTED)
-      fprintf(stderr, "Un7ip: Decoder doesn't support this archive\n");
-   else if (res == SZ_ERROR_MEM)
-      fprintf(stderr, "Un7ip: Can not allocate memory\n");
-   else if (res == SZ_ERROR_CRC)
-      fprintf(stderr, "Un7ip: CRC error\n");
 }
 
 /* HDF tools */
