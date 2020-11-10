@@ -11,6 +11,7 @@ INCFLAGS := \
 	-I$(RETRODEP) \
 	-I$(LIBRETRO) \
 	-I$(LIBRETRO_COMM_DIR)/include \
+	-I$(DEPS_DIR)/libz
 
 SOURCES_C += \
 	$(EMU)/a2065.c \
