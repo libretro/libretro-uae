@@ -35,10 +35,8 @@ char CAPSLIB_PATH[RETRO_PATH_MAX];
 
 #ifdef _WIN32
 #define CAPSLIB_NAME    "capsimg.dll"
-#define DIR_SEP_CHR     '\\'
 #else
 #define CAPSLIB_NAME    "capsimg.so"
-#define DIR_SEP_CHR     '/'
 #endif
 
 /*

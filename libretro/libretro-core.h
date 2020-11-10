@@ -68,8 +68,10 @@ int umain (int argc, TCHAR **argv);
 
 #ifdef WIN32
 #define DIR_SEP_STR "\\"
+#define DIR_SEP_CHR '\\'
 #else
 #define DIR_SEP_STR "/"
+#define DIR_SEP_CHR '/'
 #endif
 
 /* VKBD */

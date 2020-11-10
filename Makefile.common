@@ -4,7 +4,13 @@ DEPS_DIR = $(CORE_DIR)/deps
 RETRODEP = $(CORE_DIR)/retrodep
 LIBRETRO_COMM_DIR := $(CORE_DIR)/libretro-common
 
-INCFLAGS := -I$(EMU) -I$(EMU)/include -I$(LIBRETRO) -I$(LIBRETRO_COMM_DIR)/include -I$(RETRODEP) -I$(CORE_DIR) -I$(DEPS_DIR)/zlib
+INCFLAGS := \
+	-I$(EMU) \
+	-I$(EMU)/include \
+	-I$(CORE_DIR) \
+	-I$(RETRODEP) \
+	-I$(LIBRETRO) \
+	-I$(LIBRETRO_COMM_DIR)/include \
 
 SOURCES_C += \
 	$(EMU)/a2065.c \
@@ -131,34 +137,52 @@ SOURCES_C += \
 	$(LIBRETRO)/libretro-glue.c \
 	$(LIBRETRO)/libretro-vkbd.c \
 	$(LIBRETRO)/libretro-graph.c \
-	$(DEPS_DIR)/zlib/unzip.c \
-	$(DEPS_DIR)/zlib/ioapi.c
+	$(DEPS_DIR)/libz/unzip.c \
+	$(DEPS_DIR)/libz/ioapi.c
 
 ifneq ($(STATIC_LINKING), 1)
 SOURCES_C += \
-    $(LIBRETRO_COMM_DIR)/file/file_path.c \
-	$(LIBRETRO_COMM_DIR)/compat/fopen_utf8.c \
 	$(LIBRETRO_COMM_DIR)/compat/compat_strl.c \
 	$(LIBRETRO_COMM_DIR)/compat/compat_strcasestr.c \
+	$(LIBRETRO_COMM_DIR)/compat/fopen_utf8.c \
 	$(LIBRETRO_COMM_DIR)/encodings/encoding_utf.c \
+	$(LIBRETRO_COMM_DIR)/file/file_path.c \
+	$(LIBRETRO_COMM_DIR)/file/file_path_io.c \
+	$(LIBRETRO_COMM_DIR)/streams/file_stream.c \
+	$(LIBRETRO_COMM_DIR)/streams/file_stream_transforms.c \
 	$(LIBRETRO_COMM_DIR)/string/stdstring.c \
+	$(LIBRETRO_COMM_DIR)/time/rtime.c \
 	$(LIBRETRO_COMM_DIR)/vfs/vfs_implementation.c
 
 SOURCES_C += \
-    $(DEPS_DIR)/zlib/adler32.c \
-	$(DEPS_DIR)/zlib/compress.c \
-	$(DEPS_DIR)/zlib/crc32.c \
-	$(DEPS_DIR)/zlib/deflate.c \
-	$(DEPS_DIR)/zlib/gzclose.c \
-	$(DEPS_DIR)/zlib/gzlib.c \
-	$(DEPS_DIR)/zlib/gzread.c \
-	$(DEPS_DIR)/zlib/gzwrite.c \
-	$(DEPS_DIR)/zlib/inffast.c \
-	$(DEPS_DIR)/zlib/inflate.c \
-	$(DEPS_DIR)/zlib/inftrees.c \
-	$(DEPS_DIR)/zlib/trees.c \
-	$(DEPS_DIR)/zlib/uncompr.c \
-	$(DEPS_DIR)/zlib/zutil.c
+	$(DEPS_DIR)/libz/adler32.c \
+	$(DEPS_DIR)/libz/compress.c \
+	$(DEPS_DIR)/libz/crc32.c \
+	$(DEPS_DIR)/libz/deflate.c \
+	$(DEPS_DIR)/libz/gzclose.c \
+	$(DEPS_DIR)/libz/gzlib.c \
+	$(DEPS_DIR)/libz/gzread.c \
+	$(DEPS_DIR)/libz/gzwrite.c \
+	$(DEPS_DIR)/libz/inffast.c \
+	$(DEPS_DIR)/libz/inflate.c \
+	$(DEPS_DIR)/libz/inftrees.c \
+	$(DEPS_DIR)/libz/trees.c \
+	$(DEPS_DIR)/libz/uncompr.c \
+	$(DEPS_DIR)/libz/zutil.c
+
+SOURCES_C += \
+	$(DEPS_DIR)/7zip/7zBuf.c \
+	$(DEPS_DIR)/7zip/7zCrc.c \
+	$(DEPS_DIR)/7zip/7zCrcOpt.c \
+	$(DEPS_DIR)/7zip/7zDec.c \
+	$(DEPS_DIR)/7zip/7zFile.c \
+	$(DEPS_DIR)/7zip/7zIn.c \
+	$(DEPS_DIR)/7zip/7zStream.c \
+	$(DEPS_DIR)/7zip/Bcj2.c \
+	$(DEPS_DIR)/7zip/Bra.c \
+	$(DEPS_DIR)/7zip/Bra86.c \
+	$(DEPS_DIR)/7zip/Lzma2Dec.c \
+	$(DEPS_DIR)/7zip/LzmaDec.c
 endif
 
 GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"

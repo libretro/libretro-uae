@@ -23,7 +23,7 @@
 #include "options.h"
 #include "zfile.h"
 #ifdef __LIBRETRO__
-#include "deps/zlib/unzip.h"
+#include "deps/libz/unzip.h"
 #else
 #include "archivers/zip/unzip.h"
 #endif
