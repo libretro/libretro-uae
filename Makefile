@@ -267,6 +267,11 @@ else
    LDFLAGS += -s
 endif
 
+# Skip 7zip for static builds
+ifneq ($(STATIC_LINKING), 1)
+   CFLAGS += -DHAVE_7ZIP
+endif
+
 CFLAGS += -fcommon -std=gnu99 -DINLINE="inline" -D__LIBRETRO__
 
 include Makefile.common
