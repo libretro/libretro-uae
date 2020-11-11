@@ -1072,6 +1072,7 @@ void zip_uncompress(char *in, char *out, char *lastfile)
 }
 
 /* 7zip */
+#ifdef HAVE_7ZIP
 struct sevenzip_context_t
 {
    uint8_t *output;
@@ -1266,6 +1267,11 @@ void sevenzip_uncompress(char *in, char *out, char *lastfile)
    SzArEx_Free(&db, &allocImp);
    File_Close(&archiveStream.file);
 }
+#else
+void sevenzip_uncompress(char *in, char *out, char *lastfile)
+{
+}
+#endif
 
 /* HDF tools */
 static int create_hdf (const char *path, off_t size)
