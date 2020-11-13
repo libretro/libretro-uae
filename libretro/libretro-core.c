@@ -397,7 +397,7 @@ void retro_set_environment(retro_environment_t cb)
             { "enabled", NULL },
             { NULL, NULL },
          },
-         "disabled"
+         "enabled"
       },
       {
          "puae_floppy_write_protection",
@@ -4261,11 +4261,7 @@ static bool retro_create_config()
                         fprintf(configfile, "floppy%dtype=%d\n", i, 0); /* 0 = 3.5" DD */
                      }
                      else
-                     {
                         log_cb(RETRO_LOG_WARN, "Too many disks for MultiDrive!\n");
-                        snprintf(retro_message_msg, sizeof(retro_message_msg), "Too many disks for MultiDrive!");
-                        retro_message = true;
-                     }
                   }
                }
             }
