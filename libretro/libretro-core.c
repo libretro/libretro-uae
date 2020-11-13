@@ -152,6 +152,7 @@ unsigned int video_config_allow_hz_change = 0;
 
 struct zfile *retro_deserialize_file = NULL;
 static size_t save_state_file_size = 0;
+static unsigned save_state_grace = 2;
 
 static int retro_keymap_id(const char *val)
 {
@@ -5319,6 +5320,10 @@ void retro_run(void)
       }
    }
 
+   /* Prevent serialize on startup frames */
+   if (save_state_grace > 0)
+      save_state_grace--;
+
    /* Check if a restart is required */
    if (restart_pending)
    {
@@ -5410,6 +5415,11 @@ bool retro_load_game(const struct retro_game_info *info)
     * > Ensure that save state file path is empty,
     *   since we use memory based save states */
    savestate_fname[0] = '\0';
+
+   /* > Prevent saving for a few frames to disable
+    *   run-ahead and prevent startup crashing */
+   save_state_grace = 2;
+
    /* > Get save state size
     *   Here we use initial size + 5%
     *   Should be sufficient in all cases
@@ -5478,7 +5488,7 @@ bool retro_serialize(void *data_, size_t size)
    struct zfile *state_file = save_state("libretro", (uae_u64)save_state_file_size);
    bool success = false;
 
-   if (state_file)
+   if (state_file && !save_state_grace)
    {
       uae_s64 state_file_size = zfile_size(state_file);
 
