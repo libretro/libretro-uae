@@ -157,7 +157,7 @@ static unsigned save_state_grace = 2;
 static int retro_keymap_id(const char *val)
 {
    int i = 0;
-   while (retro_keys[i].value != NULL)
+   while (retro_keys[i].id < RETROK_LAST)
    {
       if (!strcmp(retro_keys[i].value, val))
          return retro_keys[i].id;
@@ -1392,7 +1392,7 @@ void retro_set_environment(retro_environment_t cb)
    int hotkey = 0;
    int hotkeys_skipped = 0;
    /* Count special hotkeys */
-   while (retro_keys[j].value && j < RETRO_NUM_CORE_OPTION_VALUES_MAX - 1)
+   while (retro_keys[j].value[0] && j < RETRO_NUM_CORE_OPTION_VALUES_MAX - 1)
    {
       if (retro_keys[j].id < 0)
          hotkeys_skipped++;
@@ -1408,8 +1408,7 @@ void retro_set_environment(retro_environment_t cb)
             || strstr(core_options[i].key, "puae_mapper_mouse_toggle")
             || strstr(core_options[i].key, "puae_mapper_reset")
             || strstr(core_options[i].key, "puae_mapper_aspect_ratio_toggle")
-            || strstr(core_options[i].key, "puae_mapper_zoom_mode_toggle")
-         )
+            || strstr(core_options[i].key, "puae_mapper_zoom_mode_toggle"))
             hotkey = 1;
          else
             hotkey = 0;
@@ -1417,7 +1416,7 @@ void retro_set_environment(retro_environment_t cb)
          j = 0;
          if (hotkey)
          {
-            while (retro_keys[j].value && j < RETRO_NUM_CORE_OPTION_VALUES_MAX - 1)
+            while (retro_keys[j].value[0] && j < RETRO_NUM_CORE_OPTION_VALUES_MAX - 1)
             {
                if (j == 0) /* "---" unmapped */
                {
@@ -1443,7 +1442,7 @@ void retro_set_environment(retro_environment_t cb)
          }
          else
          {
-            while (retro_keys[j].value && j < RETRO_NUM_CORE_OPTION_VALUES_MAX - 1)
+            while (retro_keys[j].value[0] && j < RETRO_NUM_CORE_OPTION_VALUES_MAX - 1)
             {
                core_options[i].values[j].value = retro_keys[j].value;
 
