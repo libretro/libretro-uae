@@ -358,11 +358,7 @@ bool dc_replace_file(dc_storage* dc, int index, const char* filename)
                         changed_prefs.floppyslots[i].dfxtype = 0; /* 0 = 3.5" DD */
                     }
                     else
-                    {
                         log_cb(RETRO_LOG_WARN, "Too many disks for MultiDrive!\n");
-                        snprintf(retro_message_msg, sizeof(retro_message_msg), "Too many disks for MultiDrive!");
-                        retro_message = true;
-                    }
                 }
             }
         }
