@@ -66,7 +66,7 @@ else ifeq ($(platform), classic_armv7_a7)
 else ifeq ($(platform), classic_armv8_a35)
    TARGET := $(TARGET_NAME)_libretro.so
    fpic := -fPIC
-   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T  -Wl,--no-undefined
+   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
    LDFLAGS += -lm -lrt -lpthread -ldl
    CFLAGS += -Ofast -flto=4 \
            -fmerge-all-constants -fno-math-errno -march=armv8-a \
@@ -228,7 +228,7 @@ else ifeq ($(platform), tvos-arm64)
 # ARM
 else ifneq (,$(findstring armv,$(platform)))
    TARGET := $(TARGET_NAME)_libretro.so
-   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T  -Wl,--no-undefined
+   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
    fpic := -fPIC
    ifneq (,$(findstring cortexa8,$(platform)))
       CFLAGS += -marm -mcpu=cortex-a8
@@ -276,7 +276,7 @@ CFLAGS += -fcommon -std=gnu99 -DINLINE="inline" -D__LIBRETRO__
 
 include Makefile.common
 
-$(info CFLAGS:$(CFLAGS))
+$(info CFLAGS:$(PLATFLAGS)$(CFLAGS))
 $(info -------)
 
 OBJECTS += $(SOURCES_C:.c=.o) $(SOURCES_CXX:.cpp=.o) $(SOURCES_ASM:.S=.o)
