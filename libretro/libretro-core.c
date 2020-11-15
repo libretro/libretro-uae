@@ -78,6 +78,7 @@ extern uae_u32 natmem_size;
 
 static char RPATH[RETRO_PATH_MAX] = {0};
 char full_path[RETRO_PATH_MAX] = {0};
+char full_path_utf[RETRO_PATH_MAX] = {0};
 static char *uae_argv[] = { "puae", RPATH };
 static int restart_pending = 0;
 static char* core_options_legacy_strings = NULL;
@@ -3749,7 +3750,7 @@ static bool retro_create_config()
       return false;
    }
 
-   if (!string_is_empty(full_path) && (path_is_valid(full_path) || path_is_directory(full_path)))
+   if (!string_is_empty(full_path_utf) && (path_is_valid(full_path_utf) || path_is_directory(full_path_utf)))
    {
       /* Extract ZIP for examination */
       if (strendswith(full_path, "zip") || strendswith(full_path, "7z"))
@@ -5384,6 +5385,9 @@ bool retro_load_game(const struct retro_game_info *info)
    char *local_path;
    if (info)
    {
+      /* path_is_valid() requires unconverted */
+      strcpy(full_path_utf, info->path);
+
       /* Special unicode chars won't work without conversion */
       local_path = utf8_to_local_string_alloc(info->path);
       if (local_path)
