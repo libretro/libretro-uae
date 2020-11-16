@@ -850,7 +850,9 @@ void remove_recurse(const char *path)
    }
 
    closedir(dir);
+#if 0
    rmdir(path);
+#endif
 }
 
 void path_join(char* out, const char* basedir, const char* filename)
