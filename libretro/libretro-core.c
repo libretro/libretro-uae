@@ -92,7 +92,9 @@ extern bool mousemode_locked;
 extern bool retro_vkbd;
 extern void print_vkbd(unsigned short int *pixels);
 
-extern int turbo_fire_button;
+extern bool retro_turbo_fire;
+extern bool turbo_fire_locked;
+extern unsigned int turbo_fire_button;
 extern unsigned int turbo_pulse;
 extern bool inputdevice_finalized;
 unsigned int pix_bytes = 2;
@@ -1302,11 +1304,21 @@ void retro_set_environment(retro_environment_t cb)
          "---"
       },
       {
-         "puae_turbo_fire_button",
+         "puae_turbo_fire",
          "RetroPad > Turbo Fire",
-         "Replaces the mapped button with turbo fire button.",
+         "Hotkey toggling disables this option until core restart.",
          {
             { "disabled", NULL },
+            { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "disabled"
+      },
+      {
+         "puae_turbo_fire_button",
+         "RetroPad > Turbo Button",
+         "Replaces the mapped button with turbo fire button.",
+         {
             { "B", "RetroPad B" },
             { "A", "RetroPad A" },
             { "Y", "RetroPad Y" },
@@ -1317,7 +1329,7 @@ void retro_set_environment(retro_environment_t cb)
             { "R2", "RetroPad R2" },
             { NULL, NULL },
          },
-         "disabled"
+         "B"
       },
       {
          "puae_turbo_pulse",
@@ -2427,19 +2439,29 @@ static void update_variables(void)
       else if (!strcmp(var.value, "rotate_jump")) opt_cd32pad_options = 3;
    }
 
+   var.key = "puae_turbo_fire";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (!turbo_fire_locked)
+      {
+         if (!strcmp(var.value, "disabled")) retro_turbo_fire = false;
+         else                                retro_turbo_fire = true;
+      }
+   }
+
    var.key = "puae_turbo_fire_button";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if      (!strcmp(var.value, "disabled")) turbo_fire_button = -1;
-      else if (!strcmp(var.value, "B"))        turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_B;
-      else if (!strcmp(var.value, "A"))        turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_A;
-      else if (!strcmp(var.value, "Y"))        turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_Y;
-      else if (!strcmp(var.value, "X"))        turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_X;
-      else if (!strcmp(var.value, "L"))        turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_L;
-      else if (!strcmp(var.value, "R"))        turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_R;
-      else if (!strcmp(var.value, "L2"))       turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_L2;
-      else if (!strcmp(var.value, "R2"))       turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_R2;
+      if      (!strcmp(var.value, "B"))  turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_B;
+      else if (!strcmp(var.value, "A"))  turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_A;
+      else if (!strcmp(var.value, "Y"))  turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_Y;
+      else if (!strcmp(var.value, "X"))  turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_X;
+      else if (!strcmp(var.value, "L"))  turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_L;
+      else if (!strcmp(var.value, "R"))  turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_R;
+      else if (!strcmp(var.value, "L2")) turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_L2;
+      else if (!strcmp(var.value, "R2")) turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_R2;
    }
 
    var.key = "puae_turbo_pulse";
