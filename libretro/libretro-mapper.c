@@ -1204,16 +1204,17 @@ static void process_controller(int retro_port, int i)
 static void process_turbofire(int retro_port, int i)
 {
    int retro_port_uae = opt_joyport_order[retro_port] - 49;
-   int retro_fire_button = RETRO_DEVICE_ID_JOYPAD_B;
+   int fire_button = RETRO_DEVICE_ID_JOYPAD_B;
 
    /* Face button rotate correction for statusbar flag */
    if ((retro_devices[retro_port] == RETRO_DEVICE_JOYPAD && (opt_retropad_options == 1 || opt_retropad_options == 3))
     || (retro_devices[retro_port] == RETRO_DEVICE_PUAE_CD32PAD && (opt_cd32pad_options == 1 || opt_cd32pad_options == 3)))
-      retro_fire_button = RETRO_DEVICE_ID_JOYPAD_Y;
+      fire_button = RETRO_DEVICE_ID_JOYPAD_Y;
 
    if (turbo_fire_button != -1 && i == turbo_fire_button)
    {
-      if (joypad_bits[retro_port] & (1 << turbo_fire_button))
+      if (joypad_bits[retro_port] & (1 << turbo_fire_button)
+       && !(joypad_bits[retro_port] & (1 << fire_button)))
       {
          if (turbo_state[retro_port])
          {
@@ -1225,19 +1226,19 @@ static void process_turbofire(int retro_port, int i)
             if (turbo_toggle[retro_port] > (turbo_pulse / 2))
             {
                retro_joystick_button(retro_port_uae, 0, 0);
-               jflag[retro_port_uae][retro_fire_button] = mapper_flag[retro_port_uae][retro_fire_button] = 0;
+               jflag[retro_port_uae][fire_button] = mapper_flag[retro_port_uae][fire_button] = 0;
             }
             else
             {
                retro_joystick_button(retro_port_uae, 0, 1);
-               jflag[retro_port_uae][retro_fire_button] = mapper_flag[retro_port_uae][retro_fire_button] = 1;
+               jflag[retro_port_uae][fire_button] = mapper_flag[retro_port_uae][fire_button] = 1;
             }
          }
          else
          {
             turbo_state[retro_port] = 1;
             retro_joystick_button(retro_port_uae, 0, 1);
-            jflag[retro_port_uae][retro_fire_button] = mapper_flag[retro_port_uae][retro_fire_button] = 1;
+            jflag[retro_port_uae][fire_button] = mapper_flag[retro_port_uae][fire_button] = 1;
          }
       }
       else if (!(joypad_bits[retro_port] & (1 << turbo_fire_button)) && turbo_state[retro_port])
@@ -1245,7 +1246,7 @@ static void process_turbofire(int retro_port, int i)
          turbo_state[retro_port] = 0;
          turbo_toggle[retro_port] = 1;
          retro_joystick_button(retro_port_uae, 0, 0);
-         jflag[retro_port_uae][retro_fire_button] = mapper_flag[retro_port_uae][retro_fire_button] = 0;
+         jflag[retro_port_uae][fire_button] = mapper_flag[retro_port_uae][fire_button] = 0;
       }
    }
 }
