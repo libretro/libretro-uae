@@ -245,18 +245,18 @@ static char* joystick_value_human(int val[16], int uae_device)
       {
          case 1:
             if (opt_retropad_options == 1 || opt_retropad_options == 3)
-               str[1] = ('2' | 0x80);
+               str[1] = ('2' | -0x80);
             else
-               str[1] = ('1' | 0x80);
+               str[1] = ('1' | -0x80);
             break;
          case 3:
-            str[1] = ('L' | 0x80);
+            str[1] = ('L' | -0x80);
             break;
          case 4:
-            str[1] = ('1' | 0x80);
+            str[1] = ('1' | -0x80);
             break;
          default:
-            str[1] = (str[1] | 0x80);
+            str[1] = (str[1] | -0x80);
             break;
       }
    }
@@ -269,16 +269,16 @@ static char* joystick_value_human(int val[16], int uae_device)
             if (opt_retropad_options == 1 || opt_retropad_options == 3)
                ; /* no-op */
             else
-               str[1] = ('2' | 0x80);
+               str[1] = ('2' | -0x80);
             break;
          case 3:
-            str[1] = ('R' | 0x80);
+            str[1] = ('R' | -0x80);
             break;
          case 4:
-            str[1] = ('2' | 0x80);
+            str[1] = ('2' | -0x80);
             break;
          default:
-            str[1] = (str[1] | 0x80);
+            str[1] = (str[1] | -0x80);
             break;
       }
    }
@@ -289,16 +289,16 @@ static char* joystick_value_human(int val[16], int uae_device)
       {
          case 1:
             if (opt_retropad_options == 1 || opt_retropad_options == 3)
-               str[1] = ('1' | 0x80);
+               str[1] = ('1' | -0x80);
             break;
          case 3:
-            str[1] = ('M' | 0x80);
+            str[1] = ('M' | -0x80);
             break;
          case 4:
-            str[1] = ('3' | 0x80);
+            str[1] = ('3' | -0x80);
             break;
          default:
-            str[1] = (str[1] | 0x80);
+            str[1] = (str[1] | -0x80);
             break;
       }
    }
@@ -308,10 +308,10 @@ static char* joystick_value_human(int val[16], int uae_device)
       switch (uae_device)
       {
          case 4:
-            str[1] = ('4' | 0x80);
+            str[1] = ('4' | -0x80);
             break;
          default:
-            str[1] = (str[1] | 0x80);
+            str[1] = (str[1] | -0x80);
             break;
       }
    }
@@ -321,7 +321,7 @@ static char* joystick_value_human(int val[16], int uae_device)
       switch (uae_device)
       {
          case 2:
-            str[1] = ('P' | 0x80);
+            str[1] = ('P' | -0x80);
             break;
       }
    }
@@ -331,7 +331,7 @@ static char* joystick_value_human(int val[16], int uae_device)
       switch (uae_device)
       {
          case 2:
-            str[0] = ('R' | 0x80);
+            str[0] = ('R' | -0x80);
             break;
       }
    }
@@ -341,7 +341,7 @@ static char* joystick_value_human(int val[16], int uae_device)
       switch (uae_device)
       {
          case 2:
-            str[2] = ('F' | 0x80);
+            str[2] = ('F' | -0x80);
             break;
       }
    }
@@ -421,12 +421,12 @@ void display_current_image(const char *image, bool inserted)
    else
       snprintf(imagename, sizeof(imagename), "%.100s", imagename_prev);
 
-   snprintf(&(statusbar_text[0]), sizeof(statusbar_text), "%-100s", imagename);
+   snprintf(&statusbar_text[0], sizeof(statusbar_text), "%-100s", imagename);
 
    if (inserted)
-      statusbar_text[0] = (8 | 0x80);
+      statusbar_text[0] = (8 | -0x80);
    else if (!strcmp(image, ""))
-      statusbar_text[0] = (9 | 0x80);
+      statusbar_text[0] = (9 | -0x80);
 }
 
 void print_statusbar(void)

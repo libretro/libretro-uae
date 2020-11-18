@@ -411,8 +411,8 @@ void Draw_text(unsigned short *buffer, int x, int y,
 #if 0
    Draw_string(buffer, x, y, text, max, scalex, scaley, fgcol, bgcol, alpha);
 #else
-   unsigned int c;
-   unsigned char s[2] = {0};
+   char c;
+   char s[2] = {0};
    int charwidth = 6;
    int cmax;
    cmax = strlen(text);
@@ -422,7 +422,7 @@ void Draw_text(unsigned short *buffer, int x, int y,
       c = text[i];
       if (c == 0)
          break;
-      if (c & 0x80)
+      if (c & -0x80)
       {
          snprintf(s, sizeof(s), "%c", c & 0x7f);
          Draw_string(buffer, x+(i*charwidth*scalex), y, s, 1, scalex, scaley, bgcol, fgcol, alpha);
@@ -453,8 +453,8 @@ void Draw_text32(uint32_t *buffer, int x, int y,
 #if 0
    Draw_string32(buffer, x, y, text, max, scalex, scaley, fgcol, bgcol, alpha);
 #else
-   unsigned int c;
-   unsigned char s[2] = {0};
+   char c;
+   char s[2] = {0};
    int charwidth = 6;
    int cmax;
    cmax = strlen(text);
@@ -464,7 +464,7 @@ void Draw_text32(uint32_t *buffer, int x, int y,
       c = text[i];
       if (c == 0)
          break;
-      if (c & 0x80)
+      if (c & -0x80)
       {
          snprintf(s, sizeof(s), "%c", c & 0x7f);
          Draw_string32(buffer, x+(i*charwidth*scalex), y, s, 1, scalex, scaley, bgcol, fgcol, alpha);
