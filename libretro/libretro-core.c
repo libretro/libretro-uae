@@ -92,7 +92,9 @@ extern bool mousemode_locked;
 extern bool retro_vkbd;
 extern void print_vkbd(unsigned short int *pixels);
 
-extern int turbo_fire_button;
+extern bool retro_turbo_fire;
+extern bool turbo_fire_locked;
+extern unsigned int turbo_fire_button;
 extern unsigned int turbo_pulse;
 extern bool inputdevice_finalized;
 unsigned int pix_bytes = 2;
@@ -335,26 +337,26 @@ void retro_set_environment(retro_environment_t cb)
          "System > CPU Speed",
          "Ignored with 'Cycle-exact'.",
          {
-            { "-900.0", "-90\%" },
-            { "-800.0", "-80\%" },
-            { "-700.0", "-70\%" },
-            { "-600.0", "-60\%" },
-            { "-500.0", "-50\%" },
-            { "-400.0", "-40\%" },
-            { "-300.0", "-30\%" },
-            { "-200.0", "-20\%" },
-            { "-100.0", "-10\%" },
+            { "-900.0", "-90%" },
+            { "-800.0", "-80%" },
+            { "-700.0", "-70%" },
+            { "-600.0", "-60%" },
+            { "-500.0", "-50%" },
+            { "-400.0", "-40%" },
+            { "-300.0", "-30%" },
+            { "-200.0", "-20%" },
+            { "-100.0", "-10%" },
             { "0.0", "Default" },
-            { "1000.0", "+100\%" },
-            { "2000.0", "+200\%" },
-            { "3000.0", "+300\%" },
-            { "4000.0", "+400\%" },
-            { "5000.0", "+500\%" },
-            { "6000.0", "+600\%" },
-            { "7000.0", "+700\%" },
-            { "8000.0", "+800\%" },
-            { "9000.0", "+900\%" },
-            { "10000.0", "+1000\%" },
+            { "1000.0", "+100%" },
+            { "2000.0", "+200%" },
+            { "3000.0", "+300%" },
+            { "4000.0", "+400%" },
+            { "5000.0", "+500%" },
+            { "6000.0", "+600%" },
+            { "7000.0", "+700%" },
+            { "8000.0", "+800%" },
+            { "9000.0", "+900%" },
+            { "10000.0", "+1000%" },
             { NULL, NULL },
          },
          "0.0"
@@ -783,29 +785,29 @@ void retro_set_environment(retro_environment_t cb)
          "Video > Virtual KBD Transparency",
          "Keyboard transparency can be toggled with RetroPad A.",
          {
-            { "0\%", NULL },
-            { "5\%", NULL },
-            { "10\%", NULL },
-            { "15\%", NULL },
-            { "20\%", NULL },
-            { "25\%", NULL },
-            { "30\%", NULL },
-            { "35\%", NULL },
-            { "40\%", NULL },
-            { "45\%", NULL },
-            { "50\%", NULL },
-            { "55\%", NULL },
-            { "60\%", NULL },
-            { "65\%", NULL },
-            { "70\%", NULL },
-            { "75\%", NULL },
-            { "80\%", NULL },
-            { "85\%", NULL },
-            { "90\%", NULL },
-            { "95\%", NULL },
+            { "0%", NULL },
+            { "5%", NULL },
+            { "10%", NULL },
+            { "15%", NULL },
+            { "20%", NULL },
+            { "25%", NULL },
+            { "30%", NULL },
+            { "35%", NULL },
+            { "40%", NULL },
+            { "45%", NULL },
+            { "50%", NULL },
+            { "55%", NULL },
+            { "60%", NULL },
+            { "65%", NULL },
+            { "70%", NULL },
+            { "75%", NULL },
+            { "80%", NULL },
+            { "85%", NULL },
+            { "90%", NULL },
+            { "95%", NULL },
             { NULL, NULL },
          },
-         "20\%"
+         "20%"
       },
       {
          "puae_gfx_colors",
@@ -834,20 +836,20 @@ void retro_set_environment(retro_environment_t cb)
          "Audio > Stereo Separation",
          "Paula sound chip channel panning. Does not affect CD audio.",
          {
-            { "0\%", NULL },
-            { "10\%", NULL },
-            { "20\%", NULL },
-            { "30\%", NULL },
-            { "40\%", NULL },
-            { "50\%", NULL },
-            { "60\%", NULL },
-            { "70\%", NULL },
-            { "80\%", NULL },
-            { "90\%", NULL },
-            { "100\%", NULL },
+            { "0%", NULL },
+            { "10%", NULL },
+            { "20%", NULL },
+            { "30%", NULL },
+            { "40%", NULL },
+            { "50%", NULL },
+            { "60%", NULL },
+            { "70%", NULL },
+            { "80%", NULL },
+            { "90%", NULL },
+            { "100%", NULL },
             { NULL, NULL },
          },
-         "100\%"
+         "100%"
       },
       {
          "puae_sound_interpol",
@@ -892,30 +894,30 @@ void retro_set_environment(retro_environment_t cb)
          "Audio > CD Audio Volume",
          "",
          {
-            { "0\%", NULL },
-            { "5\%", NULL },
-            { "10\%", NULL },
-            { "15\%", NULL },
-            { "20\%", NULL },
-            { "25\%", NULL },
-            { "30\%", NULL },
-            { "35\%", NULL },
-            { "40\%", NULL },
-            { "45\%", NULL },
-            { "50\%", NULL },
-            { "55\%", NULL },
-            { "60\%", NULL },
-            { "65\%", NULL },
-            { "70\%", NULL },
-            { "75\%", NULL },
-            { "80\%", NULL },
-            { "85\%", NULL },
-            { "90\%", NULL },
-            { "95\%", NULL },
-            { "100\%", NULL },
+            { "0%", NULL },
+            { "5%", NULL },
+            { "10%", NULL },
+            { "15%", NULL },
+            { "20%", NULL },
+            { "25%", NULL },
+            { "30%", NULL },
+            { "35%", NULL },
+            { "40%", NULL },
+            { "45%", NULL },
+            { "50%", NULL },
+            { "55%", NULL },
+            { "60%", NULL },
+            { "65%", NULL },
+            { "70%", NULL },
+            { "75%", NULL },
+            { "80%", NULL },
+            { "85%", NULL },
+            { "90%", NULL },
+            { "95%", NULL },
+            { "100%", NULL },
             { NULL, NULL },
          },
-         "100\%"
+         "100%"
       },
       {
          "puae_floppy_sound",
@@ -923,26 +925,26 @@ void retro_set_environment(retro_environment_t cb)
          "",
          {
             { "100", "disabled" },
-            { "95", "5\%" },
-            { "90", "10\%" },
-            { "85", "15\%" },
-            { "80", "20\%" },
-            { "75", "25\%" },
-            { "70", "30\%" },
-            { "65", "35\%" },
-            { "60", "40\%" },
-            { "55", "45\%" },
-            { "50", "50\%" },
-            { "45", "55\%" },
-            { "40", "60\%" },
-            { "35", "65\%" },
-            { "30", "70\%" },
-            { "25", "75\%" },
-            { "20", "80\%" },
-            { "15", "85\%" },
-            { "10", "90\%" },
-            { "5", "95\%" },
-            { "0", "100\%" },
+            { "95", "5%" },
+            { "90", "10%" },
+            { "85", "15%" },
+            { "80", "20%" },
+            { "75", "25%" },
+            { "70", "30%" },
+            { "65", "35%" },
+            { "60", "40%" },
+            { "55", "45%" },
+            { "50", "50%" },
+            { "45", "55%" },
+            { "40", "60%" },
+            { "35", "65%" },
+            { "30", "70%" },
+            { "25", "75%" },
+            { "20", "80%" },
+            { "15", "85%" },
+            { "10", "90%" },
+            { "5", "95%" },
+            { "0", "100%" },
             { NULL, NULL },
          },
          "80"
@@ -988,17 +990,17 @@ void retro_set_environment(retro_environment_t cb)
          "Input > Analog Stick Mouse Deadzone",
          "",
          {
-            { "0", "0\%" },
-            { "5", "5\%" },
-            { "10", "10\%" },
-            { "15", "15\%" },
-            { "20", "20\%" },
-            { "25", "25\%" },
-            { "30", "30\%" },
-            { "35", "35\%" },
-            { "40", "40\%" },
-            { "45", "45\%" },
-            { "50", "50\%" },
+            { "0", "0%" },
+            { "5", "5%" },
+            { "10", "10%" },
+            { "15", "15%" },
+            { "20", "20%" },
+            { "25", "25%" },
+            { "30", "30%" },
+            { "35", "35%" },
+            { "40", "40%" },
+            { "45", "45%" },
+            { "50", "50%" },
             { NULL, NULL },
          },
          "20"
@@ -1008,17 +1010,17 @@ void retro_set_environment(retro_environment_t cb)
          "Input > Analog Stick Mouse Speed",
          "",
          {
-            { "0.5", "50\%" },
-            { "0.6", "60\%" },
-            { "0.7", "70\%" },
-            { "0.8", "80\%" },
-            { "0.9", "90\%" },
-            { "1.0", "100\%" },
-            { "1.1", "110\%" },
-            { "1.2", "120\%" },
-            { "1.3", "130\%" },
-            { "1.4", "140\%" },
-            { "1.5", "150\%" },
+            { "0.5", "50%" },
+            { "0.6", "60%" },
+            { "0.7", "70%" },
+            { "0.8", "80%" },
+            { "0.9", "90%" },
+            { "1.0", "100%" },
+            { "1.1", "110%" },
+            { "1.2", "120%" },
+            { "1.3", "130%" },
+            { "1.4", "140%" },
+            { "1.5", "150%" },
             { NULL, NULL },
          },
          "1.0"
@@ -1028,16 +1030,16 @@ void retro_set_environment(retro_environment_t cb)
          "Input > D-Pad Mouse Speed",
          "",
          {
-            { "3", "50\%" },
-            { "4", "66\%" },
-            { "5", "83\%" },
-            { "6", "100\%" },
-            { "7", "116\%" },
-            { "8", "133\%" },
-            { "9", "150\%" },
-            { "10", "166\%" },
-            { "11", "183\%" },
-            { "12", "200\%" },
+            { "3", "50%" },
+            { "4", "66%" },
+            { "5", "83%" },
+            { "6", "100%" },
+            { "7", "116%" },
+            { "8", "133%" },
+            { "9", "150%" },
+            { "10", "166%" },
+            { "11", "183%" },
+            { "12", "200%" },
             { NULL, NULL },
          },
          "6"
@@ -1047,26 +1049,26 @@ void retro_set_environment(retro_environment_t cb)
          "Input > Mouse Speed",
          "Affects mouse speed globally.",
          {
-            { "10", "10\%" },
-            { "20", "20\%" },
-            { "30", "30\%" },
-            { "40", "40\%" },
-            { "50", "50\%" },
-            { "60", "60\%" },
-            { "70", "70\%" },
-            { "80", "80\%" },
-            { "90", "90\%" },
-            { "100", "100\%" },
-            { "110", "110\%" },
-            { "120", "120\%" },
-            { "130", "130\%" },
-            { "140", "140\%" },
-            { "150", "150\%" },
-            { "160", "160\%" },
-            { "170", "170\%" },
-            { "180", "180\%" },
-            { "190", "190\%" },
-            { "200", "200\%" },
+            { "10", "10%" },
+            { "20", "20%" },
+            { "30", "30%" },
+            { "40", "40%" },
+            { "50", "50%" },
+            { "60", "60%" },
+            { "70", "70%" },
+            { "80", "80%" },
+            { "90", "90%" },
+            { "100", "100%" },
+            { "110", "110%" },
+            { "120", "120%" },
+            { "130", "130%" },
+            { "140", "140%" },
+            { "150", "150%" },
+            { "160", "160%" },
+            { "170", "170%" },
+            { "180", "180%" },
+            { "190", "190%" },
+            { "200", "200%" },
             { NULL, NULL },
          },
          "100"
@@ -1302,11 +1304,21 @@ void retro_set_environment(retro_environment_t cb)
          "---"
       },
       {
-         "puae_turbo_fire_button",
+         "puae_turbo_fire",
          "RetroPad > Turbo Fire",
-         "Replaces the mapped button with turbo fire button.",
+         "Hotkey toggling disables this option until core restart.",
          {
             { "disabled", NULL },
+            { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "disabled"
+      },
+      {
+         "puae_turbo_fire_button",
+         "RetroPad > Turbo Button",
+         "Replaces the mapped button with turbo fire button.",
+         {
             { "B", "RetroPad B" },
             { "A", "RetroPad A" },
             { "Y", "RetroPad Y" },
@@ -1317,7 +1329,7 @@ void retro_set_environment(retro_environment_t cb)
             { "R2", "RetroPad R2" },
             { NULL, NULL },
          },
-         "disabled"
+         "B"
       },
       {
          "puae_turbo_pulse",
@@ -2427,19 +2439,29 @@ static void update_variables(void)
       else if (!strcmp(var.value, "rotate_jump")) opt_cd32pad_options = 3;
    }
 
+   var.key = "puae_turbo_fire";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (!turbo_fire_locked)
+      {
+         if (!strcmp(var.value, "disabled")) retro_turbo_fire = false;
+         else                                retro_turbo_fire = true;
+      }
+   }
+
    var.key = "puae_turbo_fire_button";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if      (!strcmp(var.value, "disabled")) turbo_fire_button = -1;
-      else if (!strcmp(var.value, "B"))        turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_B;
-      else if (!strcmp(var.value, "A"))        turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_A;
-      else if (!strcmp(var.value, "Y"))        turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_Y;
-      else if (!strcmp(var.value, "X"))        turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_X;
-      else if (!strcmp(var.value, "L"))        turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_L;
-      else if (!strcmp(var.value, "R"))        turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_R;
-      else if (!strcmp(var.value, "L2"))       turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_L2;
-      else if (!strcmp(var.value, "R2"))       turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_R2;
+      if      (!strcmp(var.value, "B"))  turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_B;
+      else if (!strcmp(var.value, "A"))  turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_A;
+      else if (!strcmp(var.value, "Y"))  turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_Y;
+      else if (!strcmp(var.value, "X"))  turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_X;
+      else if (!strcmp(var.value, "L"))  turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_L;
+      else if (!strcmp(var.value, "R"))  turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_R;
+      else if (!strcmp(var.value, "L2")) turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_L2;
+      else if (!strcmp(var.value, "R2")) turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_R2;
    }
 
    var.key = "puae_turbo_pulse";
@@ -2847,37 +2869,36 @@ static bool retro_disk_set_eject_state(bool ejected)
       else
          dc->eject_state = ejected;
 
-      if (dc->files[dc->index] > 0 && path_is_valid(dc->files[dc->index]))
+      if (!dc->files[dc->index])
+         return false;
+
+      if (path_is_valid(dc->files[dc->index]))
           display_current_image(((!dc->eject_state) ? dc->labels[dc->index] : ""), !dc->eject_state);
 
       if (dc->eject_state)
       {
-         if (dc->files[dc->index] > 0)
+         switch (dc->types[dc->index])
          {
-            if (dc->types[dc->index] == DC_IMAGE_TYPE_FLOPPY)
-            {
+            case DC_IMAGE_TYPE_FLOPPY:
                changed_prefs.floppyslots[0].df[0] = 0;
                disk_eject(0);
-            }
-            else if (dc->types[dc->index] == DC_IMAGE_TYPE_CD)
-            {
+               break;
+            case DC_IMAGE_TYPE_CD:
                changed_prefs.cdslots[0].name[0] = 0;
-            }
+               break;
          }
       }
-      else
+      else if (path_is_valid(dc->files[dc->index]))
       {
-         if (dc->files[dc->index] > 0 && path_is_valid(dc->files[dc->index]))
+         switch (dc->types[dc->index])
          {
-            if (dc->types[dc->index] == DC_IMAGE_TYPE_FLOPPY)
-            {
+            case DC_IMAGE_TYPE_FLOPPY:
                strcpy(changed_prefs.floppyslots[0].df, dc->files[dc->index]);
                DISK_reinsert(0);
-            }
-            else if (dc->types[dc->index] == DC_IMAGE_TYPE_CD)
-            {
+               break;
+            case DC_IMAGE_TYPE_CD:
                strcpy(changed_prefs.cdslots[0].name, dc->files[dc->index]);
-            }
+               break;
          }
       }
    }
