@@ -2894,6 +2894,12 @@ static bool retro_disk_set_eject_state(bool ejected)
          {
             case DC_IMAGE_TYPE_FLOPPY:
                strcpy(changed_prefs.floppyslots[0].df, dc->files[dc->index]);
+
+               /* Need to remove duplicates from external drives */
+               for (unsigned i = 1; i < 4; i++)
+                  if (!strcmp(currprefs.floppyslots[i].df, dc->files[dc->index]))
+                     changed_prefs.floppyslots[i].df[0] = 0;
+
                DISK_reinsert(0);
                break;
             case DC_IMAGE_TYPE_CD:
