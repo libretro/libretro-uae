@@ -194,7 +194,7 @@ Supported formats are:
 - **ADF**, **ADZ**, **IPF**, **DMS**, **FDI** for floppy disk images
 - **ISO**, **CUE**, **CCD**, **NRG**, **MDS** for compact disc images
 - **HDF**, **HDZ**, **LHA** for hard drive images
-- **M3U** for multiple floppy disk image playlist
+- **M3U** for multiple image playlist
 - **ZIP** for various content (FD, HD, CD, WHDLoad)
 
 When launching these files the core will generate a temporary configuration file in RetroArch `saves` directory and use it to start the emulation.
@@ -222,9 +222,9 @@ The temporary directory is removed on exit. ZIP is not repacked, which means sav
 
 This allows:
 
-- Automatic M3U playlist generation of all floppy disks
+- Automatic M3U playlist generation of all disks
 - The use of zipped images in M3Us
-- Hard drive and CD images will be treated one by one and only the first file found is selected for launch
+- Hard drive images will be treated one by one and only the first file found is selected for launch
 - If no disk/drive images are found, the ZIP will be treated as a directory
 
 ### M3U support
@@ -310,7 +310,7 @@ For games that support multiple disk drives, append "**(MD)**" as in "MultiDrive
 - `<disks>.zip#<disk>.adf`
     - Specify a disk inside a ZIP with multiple disks (not needed with single file ZIPs)
 
-M3U playlist supports disks, tapes, cartridges and programs.
+M3U playlist supports floppy disks and compact discs.
 
 ## WHDLoad
 

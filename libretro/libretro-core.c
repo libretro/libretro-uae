@@ -3845,11 +3845,16 @@ static bool retro_create_config()
          }
       }
 
+      /* Inspect M3U */
+      int m3u = 0;
+      if (strendswith(full_path, "m3u"))
+         m3u = dc_inspect_m3u(full_path);
+
       /* Floppy disk, hard drive, WHDLoad or playlist */
       if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_FLOPPY
        || dc_get_image_type(full_path) == DC_IMAGE_TYPE_HD
        || dc_get_image_type(full_path) == DC_IMAGE_TYPE_WHDLOAD
-       || strendswith(full_path, "m3u"))
+       || m3u == DC_IMAGE_TYPE_FLOPPY)
       {
          /* Check if model is specified in the path on 'Automatic' */
          if (!strcmp(opt_model, "auto"))
@@ -4302,7 +4307,8 @@ static bool retro_create_config()
          fprintf(configfile, "%s", uae_config);
       }
       /* CD image */
-      else if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_CD)
+      else if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_CD
+            || m3u == DC_IMAGE_TYPE_CD)
       {
          /* Check if model is specified in the path on 'Automatic' */
          if (!strcmp(opt_model, "auto"))
@@ -4348,26 +4354,45 @@ static bool retro_create_config()
          /* Verify and write Kickstart */
          retro_print_kickstart(&configfile);
 
-         /* Add the file to disk control context */
-         char cd_image_label[RETRO_PATH_MAX];
-         cd_image_label[0] = '\0';
+         /* M3U playlist */
+         if (strendswith(full_path, "m3u"))
+         {
+            /* Parse the M3U file */
+            dc_parse_m3u(dc, full_path, retro_save_directory);
 
-         if (!string_is_empty(full_path))
-            fill_short_pathname_representation(
-                  cd_image_label, full_path, sizeof(cd_image_label));
+            /* Some debugging */
+            log_cb(RETRO_LOG_INFO, "M3U parsed, %d file(s) found\n", dc->count);
+            for (unsigned i = 0; i < dc->count; i++)
+               log_cb(RETRO_LOG_DEBUG, "File %d: %s\n", i+1, dc->files[i]);
+         }
+         /* Single file */
+         else
+         {
+            /* Add the file to disk control context */
+            char cd_image_label[RETRO_PATH_MAX];
+            cd_image_label[0] = '\0';
 
-         /* Must reset disk control struct here,
-          * otherwise duplicate entries will be
-          * added when calling retro_reset() */
-         dc_reset(dc);
-         dc_add_file(dc, full_path, cd_image_label);
+            if (!string_is_empty(full_path))
+               fill_short_pathname_representation(
+                     cd_image_label, full_path, sizeof(cd_image_label));
 
-         /* Init first disk */
-         dc->index = 0;
-         dc->eject_state = false;
-         display_current_image(dc->labels[dc->index], true);
-         log_cb(RETRO_LOG_INFO, "CD (%d) inserted in drive CD0: '%s'\n", dc->index+1, dc->files[dc->index]);
-         fprintf(configfile, "cdimage0=%s,%s\n", dc->files[0], (opt_cd_startup_delayed_insert ? "delay" : "")); /* ","-suffix needed if filename contains "," */
+            /* Must reset disk control struct here,
+             * otherwise duplicate entries will be
+             * added when calling retro_reset() */
+            dc_reset(dc);
+            dc_add_file(dc, full_path, cd_image_label);
+         }
+
+         /* Init only existing disks */
+         if (dc->count)
+         {
+            /* Init first disk */
+            dc->index = 0;
+            dc->eject_state = false;
+            display_current_image(dc->labels[dc->index], true);
+            log_cb(RETRO_LOG_INFO, "CD (%d) inserted in drive CD0: '%s'\n", dc->index+1, dc->files[dc->index]);
+            fprintf(configfile, "cdimage0=%s,%s\n", dc->files[0], (opt_cd_startup_delayed_insert ? "delay" : "")); /* ","-suffix needed if filename contains "," */
+         }
 
          /* Separator row for clarity */
          fprintf(configfile, "\n");
