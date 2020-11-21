@@ -75,7 +75,7 @@ char* m3u_search_file(const char* basedir, const char* dskName)
    }
 
    /* If basedir was provided */
-   if(basedir != NULL)
+   if (basedir != NULL)
    {
       /* Join basedir and dskName */
       char* dskPath = calloc(RETRO_PATH_MAX, sizeof(char));
@@ -97,18 +97,18 @@ char* m3u_search_file(const char* basedir, const char* dskName)
 void dc_reset(dc_storage* dc)
 {
    /* Verify */
-   if(dc == NULL)
+   if (dc == NULL)
       return;
 
    /* Clean the command */
-   if(dc->command)
+   if (dc->command)
    {
       free(dc->command);
       dc->command = NULL;
    }
 
    /* Clean the struct */
-   for(unsigned i=0; i < dc->count; i++)
+   for (unsigned i=0; i < dc->count; i++)
    {
       if (dc->files[i])
          free(dc->files[i]);
@@ -131,14 +131,14 @@ dc_storage* dc_create(void)
    /* Initialize the struct */
    dc_storage* dc = NULL;
 
-   if((dc = malloc(sizeof(dc_storage))) != NULL)
+   if ((dc = malloc(sizeof(dc_storage))) != NULL)
    {
       dc->count = 0;
       dc->index = -1;
       dc->eject_state = true;
       dc->replace = false;
       dc->command = NULL;
-      for(int i = 0; i < DC_MAX_SIZE; i++)
+      for (int i = 0; i < DC_MAX_SIZE; i++)
       {
          dc->files[i]  = NULL;
          dc->labels[i] = NULL;
@@ -159,7 +159,7 @@ bool dc_add_file_int(dc_storage* dc, char* filename, char* label)
       return false;
 
    /* If max size is not exceeded */
-   if(dc->count < DC_MAX_SIZE)
+   if (dc->count < DC_MAX_SIZE)
    {
       /* Add the file */
       dc->count++;
@@ -175,7 +175,7 @@ bool dc_add_file_int(dc_storage* dc, char* filename, char* label)
 bool dc_add_file(dc_storage* dc, const char* filename, const char* label)
 {
    /* Verify */
-   if(dc == NULL)
+   if (dc == NULL)
       return false;
 
    if (!filename || (*filename == '\0'))
@@ -391,13 +391,13 @@ static bool dc_add_m3u_save_disk(
    char volume_name[31]                      = {0};
 
    /* Verify */
-   if(dc == NULL)
+   if (dc == NULL)
       return false;
 
-   if(m3u_file == NULL)
+   if (m3u_file == NULL)
       return false;
 
-   if(save_dir == NULL)
+   if (save_dir == NULL)
       return false;
 
    /* It seems that we don't want to use "string/stdstring.h"
@@ -437,7 +437,7 @@ static bool dc_add_m3u_save_disk(
        *   no volume name is set */
       if (disk_name && (*disk_name != '\0'))
       {
-         if(strncasecmp(disk_name, "empty", strlen("empty")))
+         if (strncasecmp(disk_name, "empty", strlen("empty")))
          {
             char *scrub_pointer = NULL;
 
@@ -486,13 +486,13 @@ static bool dc_add_m3u_disk(
    char *disk_file_path = NULL;
 
    /* Verify */
-   if(dc == NULL)
+   if (dc == NULL)
       return false;
 
-   if(m3u_base_dir == NULL)
+   if (m3u_base_dir == NULL)
       return false;
 
-   if(!disk_file[0])
+   if (!disk_file[0])
       return false;
 
    /* "Browsed" file in ZIP */
@@ -567,13 +567,35 @@ static bool dc_add_m3u_disk(
    return false;
 }
 
+unsigned dc_inspect_m3u(const char* m3u_file)
+{
+   unsigned ret = 0;
+   FILE* fp = NULL;
+
+   /* Try to open the file */
+   if ((fp = fopen(m3u_file, "r")) == NULL)
+      return 0;
+
+   char buffer[2048];
+   while ((fgets(buffer, sizeof(buffer), fp) != NULL) && !ret)
+   {
+      char* string = trimwhitespace(buffer);
+      ret = dc_get_image_type(string);
+   }
+
+   /* Close the file */
+   fclose(fp);
+
+   return ret;
+}
+
 void dc_parse_m3u(dc_storage* dc, const char* m3u_file, const char* save_dir)
 {
    /* Verify */
-   if(dc == NULL)
+   if (dc == NULL)
       return;
 
-   if(m3u_file == NULL)
+   if (m3u_file == NULL)
       return;
 
    FILE* fp = NULL;
@@ -658,7 +680,7 @@ void dc_parse_m3u(dc_storage* dc, const char* m3u_file, const char* save_dir)
    }
 
    /* If basedir was provided */
-   if(basedir != NULL)
+   if (basedir != NULL)
       free(basedir);
 
    /* Close the file */
