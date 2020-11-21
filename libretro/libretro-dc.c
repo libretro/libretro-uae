@@ -28,11 +28,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define COMMENT "#"
+#define COMMENT             "#"
 #define M3U_SPECIAL_COMMAND "#COMMAND:"
-#define M3U_SAVEDISK "#SAVEDISK:"
-#define M3U_SAVEDISK_LABEL "Save Disk"
-#define M3U_PATH_DELIM '|'
+#define M3U_SAVEDISK        "#SAVEDISK:"
+#define M3U_SAVEDISK_LABEL  "Save Disk"
+#define M3U_PATH_DELIM      '|'
 
 extern char retro_save_directory[RETRO_PATH_MAX];
 extern char retro_temp_directory[RETRO_PATH_MAX];
@@ -120,10 +120,11 @@ void dc_reset(dc_storage* dc)
 
       dc->types[i] = DC_IMAGE_TYPE_NONE;
    }
-   dc->count = 0;
-   dc->index = 0;
+
+   dc->count       = 0;
+   dc->index       = 0;
    dc->eject_state = true;
-   dc->replace = false;
+   dc->replace     = false;
 }
 
 dc_storage* dc_create(void)
@@ -181,201 +182,202 @@ bool dc_add_file(dc_storage* dc, const char* filename, const char* label)
    if (!filename || (*filename == '\0'))
       return false;
 
-   return dc_add_file_int(dc, my_strdup(filename), my_strdup(label));
+   return dc_add_file_int(dc, my_strdup(filename),
+         string_is_empty(label) ? NULL : my_strdup(label));
 }
 
 bool dc_remove_file(dc_storage* dc, int index)
 {
-    if (dc == NULL)
-        return false;
+   if (dc == NULL)
+      return false;
 
-    if (index < 0 || index >= dc->count)
-        return false;
+   if (index < 0 || index >= dc->count)
+      return false;
 
-    /* "If ptr is a null pointer, no action occurs" */
-    free(dc->files[index]);
-    dc->files[index] = NULL;
-    free(dc->labels[index]);
-    dc->labels[index] = NULL;
-    dc->types[index] = DC_IMAGE_TYPE_NONE;
+   /* "If ptr is a null pointer, no action occurs" */
+   free(dc->files[index]);
+   dc->files[index] = NULL;
+   free(dc->labels[index]);
+   dc->labels[index] = NULL;
+   dc->types[index] = DC_IMAGE_TYPE_NONE;
 
-    /* Shift all entries after index one slot up */
-    if (index != dc->count - 1)
-    {
-        memmove(dc->files + index, dc->files + index + 1, (dc->count - 1 - index) * sizeof(dc->files[0]));
-        memmove(dc->labels + index, dc->labels + index + 1, (dc->count - 1 - index) * sizeof(dc->labels[0]));
-    }
+   /* Shift all entries after index one slot up */
+   if (index != dc->count - 1)
+   {
+      memmove(dc->files + index, dc->files + index + 1, (dc->count - 1 - index) * sizeof(dc->files[0]));
+      memmove(dc->labels + index, dc->labels + index + 1, (dc->count - 1 - index) * sizeof(dc->labels[0]));
+   }
 
-    dc->count--;
+   dc->count--;
 
-    return true;
+   return true;
 }
 
 bool dc_replace_file(dc_storage* dc, int index, const char* filename)
 {
-    if (dc == NULL)
-        return false;
+   if (dc == NULL)
+      return false;
 
-    if (index < 0 || index >= dc->count)
-        return false;
+   if (index < 0 || index >= dc->count)
+      return false;
 
-    /* "If ptr is a null pointer, no action occurs" */
-    free(dc->files[index]);
-    dc->files[index] = NULL;
-    free(dc->labels[index]);
-    dc->labels[index] = NULL;
-    dc->types[index] = DC_IMAGE_TYPE_NONE;
+   /* "If ptr is a null pointer, no action occurs" */
+   free(dc->files[index]);
+   dc->files[index] = NULL;
+   free(dc->labels[index]);
+   dc->labels[index] = NULL;
+   dc->types[index] = DC_IMAGE_TYPE_NONE;
 
-    if (filename == NULL)
-        dc_remove_file(dc, index);
-    else
-    {
-        dc->replace = false;
+   if (filename == NULL)
+      dc_remove_file(dc, index);
+   else
+   {
+      dc->replace = false;
 
-        /* Eject all floppy drives */
-        for (unsigned i = 0; i < 4; i++)
-            changed_prefs.floppyslots[i].df[0] = 0;
+      /* Eject all floppy drives */
+      for (unsigned i = 0; i < 4; i++)
+         changed_prefs.floppyslots[i].df[0] = 0;
 
-        char full_path_replace[RETRO_PATH_MAX] = {0};
-        strcpy(full_path_replace, (char*)filename);
+      char full_path_replace[RETRO_PATH_MAX] = {0};
+      strcpy(full_path_replace, (char*)filename);
 
-        /* Confs & hard drive images will replace full_path and requires restarting */
-        if (strendswith(full_path_replace, "uae")
-         || strendswith(full_path_replace, "hdf")
-         || strendswith(full_path_replace, "hdz")
-         || strendswith(full_path_replace, "lha"))
-        {
-            dc_reset(dc);
-            strcpy(full_path, (char*)filename);
-            display_current_image(full_path, true);
-            return false;
-        }
+      /* Confs & hard drive images will replace full_path and requires restarting */
+      if (strendswith(full_path_replace, "uae")
+       || strendswith(full_path_replace, "hdf")
+       || strendswith(full_path_replace, "hdz")
+       || strendswith(full_path_replace, "lha"))
+      {
+         dc_reset(dc);
+         strcpy(full_path, (char*)filename);
+         display_current_image(full_path, true);
+         return false;
+      }
 
-        /* ZIP */
-        else if (strendswith(full_path_replace, "zip") || strendswith(full_path_replace, "7z"))
-        {
-            char zip_basename[RETRO_PATH_MAX] = {0};
-            snprintf(zip_basename, sizeof(zip_basename), "%s", path_basename(full_path_replace));
-            snprintf(zip_basename, sizeof(zip_basename), "%s", path_remove_extension(zip_basename));
+      /* ZIP */
+      else if (strendswith(full_path_replace, "zip") || strendswith(full_path_replace, "7z"))
+      {
+         char zip_basename[RETRO_PATH_MAX] = {0};
+         snprintf(zip_basename, sizeof(zip_basename), "%s", path_basename(full_path_replace));
+         snprintf(zip_basename, sizeof(zip_basename), "%s", path_remove_extension(zip_basename));
 
-            path_mkdir(retro_temp_directory);
-            if (strendswith(full_path_replace, "zip"))
-               zip_uncompress(full_path_replace, retro_temp_directory, NULL);
-            else if (strendswith(full_path_replace, "7z"))
-               sevenzip_uncompress(full_path_replace, retro_temp_directory, NULL);
+         path_mkdir(retro_temp_directory);
+         if (strendswith(full_path_replace, "zip"))
+            zip_uncompress(full_path_replace, retro_temp_directory, NULL);
+         else if (strendswith(full_path_replace, "7z"))
+            sevenzip_uncompress(full_path_replace, retro_temp_directory, NULL);
 
-            /* Default to directory mode */
-            int zip_mode = 0;
-            snprintf(full_path_replace, sizeof(full_path_replace), "%s", retro_temp_directory);
+         /* Default to directory mode */
+         int zip_mode = 0;
+         snprintf(full_path_replace, sizeof(full_path_replace), "%s", retro_temp_directory);
 
-            FILE *zip_m3u;
-            char zip_m3u_list[DC_MAX_SIZE][RETRO_PATH_MAX] = {0};
-            char zip_m3u_path[RETRO_PATH_MAX] = {0};
-            snprintf(zip_m3u_path, sizeof(zip_m3u_path), "%s%s%s.m3u", retro_temp_directory, DIR_SEP_STR, zip_basename);
-            int zip_m3u_num = 0;
+         FILE *zip_m3u;
+         char zip_m3u_list[DC_MAX_SIZE][RETRO_PATH_MAX] = {0};
+         char zip_m3u_path[RETRO_PATH_MAX] = {0};
+         snprintf(zip_m3u_path, sizeof(zip_m3u_path), "%s%s%s.m3u", retro_temp_directory, DIR_SEP_STR, zip_basename);
+         int zip_m3u_num = 0;
 
-            DIR *zip_dir;
-            struct dirent *zip_dirp;
-            zip_dir = opendir(retro_temp_directory);
-            while ((zip_dirp = readdir(zip_dir)) != NULL)
+         DIR *zip_dir;
+         struct dirent *zip_dirp;
+         zip_dir = opendir(retro_temp_directory);
+         while ((zip_dirp = readdir(zip_dir)) != NULL)
+         {
+            if (zip_dirp->d_name[0] == '.' || strendswith(zip_dirp->d_name, "m3u") || zip_mode > 1)
+               continue;
+
+            /* Multi file mode, generate playlist */
+            if (dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_FLOPPY)
             {
-                if (zip_dirp->d_name[0] == '.' || strendswith(zip_dirp->d_name, "m3u") || zip_mode > 1)
-                    continue;
-
-                /* Multi file mode, generate playlist */
-                if (dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_FLOPPY)
-                {
-                    zip_mode = 1;
-                    zip_m3u_num++;
-                    snprintf(zip_m3u_list[zip_m3u_num-1], RETRO_PATH_MAX, "%s", zip_dirp->d_name);
-                }
-                /* Single file image mode */
-                else if (dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_CD
-                      || dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_HD)
-                {
-                    zip_mode = 2;
-                    snprintf(full_path_replace, sizeof(full_path_replace), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_dirp->d_name);
-                }
+               zip_mode = 1;
+               zip_m3u_num++;
+               snprintf(zip_m3u_list[zip_m3u_num-1], RETRO_PATH_MAX, "%s", zip_dirp->d_name);
             }
-            closedir(zip_dir);
-
-            switch (zip_mode)
+            /* Single file image mode */
+            else if (dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_CD
+                  || dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_HD)
             {
-                case 0: /* Extracted path */
-                    dc_reset(dc);
-                    strcpy(full_path, (char*)filename);
-                    display_current_image(full_path, true);
-                    return true;
-                    break;
-                case 2: /* Single image */
-                    break;
-                case 1: /* Generated playlist */
-                    if (zip_m3u_num == 1)
-                    {
-                        snprintf(full_path_replace, sizeof(full_path_replace), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_m3u_list[0]);
-                    }
-                    else
-                    {
-                        zip_m3u = fopen(zip_m3u_path, "w");
-                        qsort(zip_m3u_list, zip_m3u_num, RETRO_PATH_MAX, qstrcmp);
-                        for (int l = 0; l < zip_m3u_num; l++)
-                            fprintf(zip_m3u, "%s\n", zip_m3u_list[l]);
-                        fclose(zip_m3u);
-                        snprintf(full_path_replace, sizeof(full_path_replace), "%s", zip_m3u_path);
-                    }
-                    break;
+                zip_mode = 2;
+                snprintf(full_path_replace, sizeof(full_path_replace), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_dirp->d_name);
             }
-        }
+         }
+         closedir(zip_dir);
 
-        /* M3U replace */
-        if (strendswith(full_path_replace, "m3u"))
-        {
-            /* Parse the M3U file */
-            dc_parse_m3u(dc, full_path_replace, retro_save_directory);
+         switch (zip_mode)
+         {
+            case 0: /* Extracted path */
+               dc_reset(dc);
+               strcpy(full_path, (char*)filename);
+               display_current_image(full_path, true);
+               return true;
+               break;
+            case 2: /* Single image */
+               break;
+            case 1: /* Generated playlist */
+               if (zip_m3u_num == 1)
+               {
+                  snprintf(full_path_replace, sizeof(full_path_replace), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_m3u_list[0]);
+               }
+               else
+               {
+                  zip_m3u = fopen(zip_m3u_path, "w");
+                  qsort(zip_m3u_list, zip_m3u_num, RETRO_PATH_MAX, qstrcmp);
+                  for (unsigned l = 0; l < zip_m3u_num; l++)
+                     fprintf(zip_m3u, "%s\n", zip_m3u_list[l]);
+                  fclose(zip_m3u);
+                  snprintf(full_path_replace, sizeof(full_path_replace), "%s", zip_m3u_path);
+               }
+               break;
+         }
+      }
 
-            /* Some debugging */
-            log_cb(RETRO_LOG_INFO, "M3U parsed, %d file(s) found\n", dc->count);
-            for (unsigned i = 0; i < dc->count; i++)
-                log_cb(RETRO_LOG_DEBUG, "File %d: %s\n", i+1, dc->files[i]);
+      /* M3U replace */
+      if (strendswith(full_path_replace, "m3u"))
+      {
+         /* Parse the M3U file */
+         dc_parse_m3u(dc, full_path_replace, retro_save_directory);
 
-            /* Insert first disk */
-            retro_disk_set_image_index(0);
+         /* Some debugging */
+         log_cb(RETRO_LOG_INFO, "M3U parsed, %d file(s) found\n", dc->count);
+         for (unsigned i = 0; i < dc->count; i++)
+            log_cb(RETRO_LOG_DEBUG, "File %d: %s\n", i+1, dc->files[i]);
 
-            /* Trick frontend to return to index 0 after successful "append" does +1 */
-            dc->replace = true;
+         /* Insert first disk */
+         retro_disk_set_image_index(0);
 
-            /* Append rest of the disks to the config if M3U is a MultiDrive-M3U */
-            if (strstr(full_path_replace, "(MD)") != NULL || opt_floppy_multidrive)
+         /* Trick frontend to return to index 0 after successful "append" does +1 */
+         dc->replace = true;
+
+         /* Append rest of the disks to the config if M3U is a MultiDrive-M3U */
+         if (strstr(full_path_replace, "(MD)") != NULL || opt_floppy_multidrive)
+         {
+            for (unsigned i = 1; i < dc->count; i++)
             {
-                for (unsigned i = 1; i < dc->count; i++)
-                {
-                    if (i < 4)
-                    {
-                        log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF%d: '%s'\n", i+1, i, dc->files[i]);
-                        strcpy(changed_prefs.floppyslots[i].df, dc->files[i]);
+               if (i < 4)
+               {
+                  log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF%d: '%s'\n", i+1, i, dc->files[i]);
+                  strcpy(changed_prefs.floppyslots[i].df, dc->files[i]);
 
-                        /* By default only DF0: is enabled, so floppyXtype needs to be set on the extra drives */
-                        changed_prefs.floppyslots[i].dfxtype = 0; /* 0 = 3.5" DD */
-                    }
-                    else
-                        log_cb(RETRO_LOG_WARN, "Too many disks for MultiDrive!\n");
-                }
+                  /* By default only DF0: is enabled, so floppyXtype needs to be set on the extra drives */
+                  changed_prefs.floppyslots[i].dfxtype = 0; /* 0 = 3.5" DD */
+               }
+               else
+                  log_cb(RETRO_LOG_WARN, "Too many disks for MultiDrive!\n");
             }
-        }
-        /* Single append */
-        else
-        {
-            char image_label[RETRO_PATH_MAX];
-            image_label[0] = '\0';
-            fill_short_pathname_representation(image_label, full_path_replace, sizeof(image_label));
+         }
+      }
+      /* Single append */
+      else
+      {
+         char image_label[RETRO_PATH_MAX];
+         image_label[0] = '\0';
+         fill_short_pathname_representation(image_label, full_path_replace, sizeof(image_label));
 
-            dc->files[index]  = strdup(full_path_replace);
-            dc->labels[index] = strdup(image_label);
-            dc->types[index]  = dc_get_image_type(full_path_replace);
-        }
-    }
+         dc->files[index]  = strdup(full_path_replace);
+         dc->labels[index] = strdup(image_label);
+         dc->types[index]  = dc_get_image_type(full_path_replace);
+      }
+   }
 
-    return true;
+   return true;
 }
 
 static bool dc_add_m3u_save_disk(
@@ -409,8 +411,8 @@ static bool dc_add_m3u_save_disk(
       return false;
 
    /* Get m3u file name without extension */
-    snprintf(m3u_file_name_no_ext, sizeof(m3u_file_name_no_ext),
-             "%s", path_remove_extension((char*)m3u_file_name));
+   snprintf(m3u_file_name_no_ext, sizeof(m3u_file_name_no_ext),
+         "%s", path_remove_extension((char*)m3u_file_name));
 
    if (*m3u_file_name_no_ext == '\0')
       return false;
@@ -437,24 +439,24 @@ static bool dc_add_m3u_save_disk(
        *   no volume name is set */
       if (disk_name && (*disk_name != '\0'))
       {
-         if (strncasecmp(disk_name, "empty", strlen("empty")))
-         {
-            char *scrub_pointer = NULL;
+        if (strncasecmp(disk_name, "empty", strlen("empty")))
+        {
+          char *scrub_pointer = NULL;
 
-            /* Ensure volume name is valid
-             * > Must be <= 30 characters
-             * > Cannot contain '/' or ':' */
-            strncpy(volume_name, disk_name, sizeof(volume_name) - 1);
+          /* Ensure volume name is valid
+            * > Must be <= 30 characters
+            * > Cannot contain '/' or ':' */
+          strncpy(volume_name, disk_name, sizeof(volume_name) - 1);
 
-            while((scrub_pointer = strpbrk(volume_name, "/:")))
-               *scrub_pointer = '_';
-         }
+          while ((scrub_pointer = strpbrk(volume_name, "/:")))
+             *scrub_pointer = '_';
+        }
       }
 
       /* Set empty disk label as visible label */
       if (string_is_empty(volume_name))
-          snprintf(volume_name, sizeof(volume_name), "%s %u",
-                   M3U_SAVEDISK_LABEL, index);
+         snprintf(volume_name, sizeof(volume_name), "%s %u",
+               M3U_SAVEDISK_LABEL, index);
 
       /* Create save disk */
       save_disk_exists = disk_creatediskfile(
@@ -527,13 +529,13 @@ static bool dc_add_m3u_disk(
          const char *file_name = path_basename(disk_file_path);
          if (!string_is_empty(browsed_file))
          {
-             file_name = strdup(browsed_file);
-             file_name = path_basename(file_name);
+            file_name = strdup(browsed_file);
+            file_name = path_basename(file_name);
          }
 
          if (!(!file_name || (*file_name == '\0')))
-                snprintf(disk_label, sizeof(disk_label),
-                      "%s", path_remove_extension((char*)file_name));
+            snprintf(disk_label, sizeof(disk_label),
+                  "%s", path_remove_extension((char*)file_name));
       }
 
       /* ZIP */
@@ -551,15 +553,15 @@ static bool dc_add_m3u_disk(
             sevenzip_uncompress(full_path, retro_temp_directory, lastfile);
 
          if (!string_is_empty(browsed_file))
-             snprintf(lastfile, sizeof(lastfile), "%s", browsed_file);
+            snprintf(lastfile, sizeof(lastfile), "%s", browsed_file);
          snprintf(full_path, RETRO_PATH_MAX, "%s%s%s", retro_temp_directory, DIR_SEP_STR, lastfile);
       }
 
       /* Add the file to the list */
       if (path_is_valid(full_path))
-          dc_add_file(
-            dc, full_path,
-            (disk_label[0] == '\0') ? NULL : disk_label);
+         dc_add_file(
+               dc, full_path,
+               (disk_label[0] == '\0') ? NULL : disk_label);
 
       return true;
    }
