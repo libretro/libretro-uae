@@ -8,79 +8,163 @@
 
 #include "font.i"
 
-unsigned short blend(unsigned short fg, unsigned short bg, unsigned int alpha)
-{
-   /* Split foreground into components */
-   unsigned fg_r = fg >> 11;
-   unsigned fg_g = (fg >> 5) & ((1u << 6) - 1);
-   unsigned fg_b = fg & ((1u << 5) - 1);
+static unsigned char *linesurf = NULL;
+static int linesurf_w          = 0;
+static int linesurf_h          = 0;
 
-   /* Split background into components */
-   unsigned bg_r = bg >> 11;
-   unsigned bg_g = (bg >> 5) & ((1u << 6) - 1);
-   unsigned bg_b = bg & ((1u << 5) - 1);
+static uint32_t *linesurf32    = NULL;
+static int linesurf32_w        = 0;
+static int linesurf32_h        = 0;
 
-   /* Alpha blend components */
-   unsigned out_r = (fg_r * alpha + bg_r * (255 - alpha)) / 255;
-   unsigned out_g = (fg_g * alpha + bg_g * (255 - alpha)) / 255;
-   unsigned out_b = (fg_b * alpha + bg_b * (255 - alpha)) / 255;
-
-   /* Pack result */
-   return (unsigned short) ((out_r << 11) | (out_g << 5) | out_b);
+#define BLEND_ALPHA25(fg, bg, out)                                   \
+{                                                                    \
+   unsigned short color_50 = ((fg + bg + ((fg ^ bg) & 0x821)) >> 1); \
+   (*(out)) = ((color_50 + bg + ((color_50 ^ bg) & 0x821)) >> 1);    \
 }
 
-uint32_t blend32(uint32_t fg, uint32_t bg, unsigned int alpha)
-{
-   /* Split foreground into components */
-   unsigned fg_r = (fg >> 16) & 0xFF;
-   unsigned fg_g = (fg >> 8) & 0xFF;
-   unsigned fg_b = (fg >> 0) & 0xFF;
-
-   /* Split background into components */
-   unsigned bg_r = (bg >> 16) & 0xFF;
-   unsigned bg_g = (bg >> 8) & 0xFF;
-   unsigned bg_b = (bg >> 0) & 0xFF;
-
-   /* Alpha blend components */
-   unsigned out_r = (fg_r * alpha + bg_r * (255 - alpha)) / 255;
-   unsigned out_g = (fg_g * alpha + bg_g * (255 - alpha)) / 255;
-   unsigned out_b = (fg_b * alpha + bg_b * (255 - alpha)) / 255;
-
-   /* Pack result */
-   return (uint32_t) ((out_r << 16) | (out_g << 8) | out_b);
+#define BLEND_ALPHA50(fg, bg, out)                    \
+{                                                     \
+   (*(out)) = ((fg + bg + ((fg ^ bg) & 0x821)) >> 1); \
 }
 
-void DrawFBoxBmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color, unsigned int alpha)
-{
-   int i, j, idx;
+#define BLEND_ALPHA75(fg, bg, out)                                   \
+{                                                                    \
+   unsigned short color_50 = ((fg + bg + ((fg ^ bg) & 0x821)) >> 1); \
+   (*(out)) = ((fg + color_50 + ((fg ^ color_50) & 0x821)) >> 1);    \
+}
 
-   for (i=x; i<x+dx; i++)
+#define BLEND32_ALPHA25(fg, bg, out)                                \
+{                                                                   \
+   uint32_t color_50 = ((fg + bg + ((fg ^ bg) & 0x10101)) >> 1);    \
+   (*(out)) = ((color_50 + bg + ((color_50 ^ bg) & 0x10101)) >> 1); \
+}
+
+#define BLEND32_ALPHA50(fg, bg, out)                    \
+{                                                       \
+   (*(out)) = ((fg + bg + ((fg ^ bg) & 0x10101)) >> 1); \
+}
+
+#define BLEND32_ALPHA75(fg, bg, out)                                \
+{                                                                   \
+   uint32_t color_50 = ((fg + bg + ((fg ^ bg) & 0x10101)) >> 1);    \
+   (*(out)) = ((fg + color_50 + ((fg ^ color_50) & 0x10101)) >> 1); \
+}
+
+void DrawFBoxBmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color, libretro_graph_alpha_t alpha)
+{
+   int i, j;
+
+   switch (alpha)
    {
-      for (j=y; j<y+dy; j++)
-      {
-         idx = i+j*retrow;
-         if (alpha < 255)
-            buffer[idx] = blend(color, buffer[idx], alpha);
-         else
-            buffer[idx] = color;
-      }
+      case GRAPH_ALPHA_0:
+         /* Do nothing - buffer is already the
+          * correct colour */
+         break;
+      case GRAPH_ALPHA_25:
+         for (j=y; j<y+dy; j++)
+         {
+            unsigned short *buf_ptr = buffer + (j * retrow) + x;
+            for (i=x; i<x+dx; i++)
+            {
+               BLEND_ALPHA25(color, *buf_ptr, buf_ptr);
+               buf_ptr++;
+            }
+         }
+         break;
+      case GRAPH_ALPHA_50:
+         for (j=y; j<y+dy; j++)
+         {
+            unsigned short *buf_ptr = buffer + (j * retrow) + x;
+            for (i=x; i<x+dx; i++)
+            {
+               BLEND_ALPHA50(color, *buf_ptr, buf_ptr);
+               buf_ptr++;
+            }
+         }
+         break;
+      case GRAPH_ALPHA_75:
+         for (j=y; j<y+dy; j++)
+         {
+            unsigned short *buf_ptr = buffer + (j * retrow) + x;
+            for (i=x; i<x+dx; i++)
+            {
+               BLEND_ALPHA75(color, *buf_ptr, buf_ptr);
+               buf_ptr++;
+            }
+         }
+         break;
+      case GRAPH_ALPHA_100:
+      default:
+         for (j=y; j<y+dy; j++)
+         {
+            unsigned short *buf_ptr = buffer + (j * retrow) + x;
+            for (i=x; i<x+dx; i++)
+            {
+               *buf_ptr = color;
+               buf_ptr++;
+            }
+         }
+         break;
    }
 }
 
-void DrawFBoxBmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t color, unsigned int alpha)
+void DrawFBoxBmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t color, libretro_graph_alpha_t alpha)
 {
-   int i, j, idx;
+   int i, j;
 
-   for (i=x; i<x+dx; i++)
+   color = color & 0xFFFFFF;
+
+   switch (alpha)
    {
-      for (j=y; j<y+dy; j++)
-      {
-         idx = i+j*retrow;
-         if (alpha < 255)
-            buffer[idx] = blend32(color, buffer[idx], alpha);
-         else
-            buffer[idx] = color;
-      }
+      case GRAPH_ALPHA_0:
+         /* Do nothing - buffer is already the
+          * correct colour */
+         break;
+      case GRAPH_ALPHA_25:
+         for (j=y; j<y+dy; j++)
+         {
+            uint32_t *buf_ptr = buffer + (j * retrow) + x;
+            for (i=x; i<x+dx; i++)
+            {
+               BLEND32_ALPHA25(color, *buf_ptr, buf_ptr);
+               buf_ptr++;
+            }
+         }
+         break;
+      case GRAPH_ALPHA_50:
+         for (j=y; j<y+dy; j++)
+         {
+            uint32_t *buf_ptr = buffer + (j * retrow) + x;
+            for (i=x; i<x+dx; i++)
+            {
+               BLEND32_ALPHA50(color, *buf_ptr, buf_ptr);
+               buf_ptr++;
+            }
+         }
+         break;
+      case GRAPH_ALPHA_75:
+         for (j=y; j<y+dy; j++)
+         {
+            uint32_t *buf_ptr = buffer + (j * retrow) + x;
+            for (i=x; i<x+dx; i++)
+            {
+               BLEND32_ALPHA75(color, *buf_ptr, buf_ptr);
+               buf_ptr++;
+            }
+         }
+         break;
+      case GRAPH_ALPHA_100:
+      default:
+         for (j=y; j<y+dy; j++)
+         {
+            uint32_t *buf_ptr = buffer + (j * retrow) + x;
+            for (i=x; i<x+dx; i++)
+            {
+               *buf_ptr = color;
+               buf_ptr++;
+            }
+         }
+         break;
    }
 }
 
@@ -178,7 +262,7 @@ void DrawVlineBmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned
    {
       idx = x+j*retrow;
       buffer[idx] = color;
-   }
+   }	
 }
 
 void DrawlineBmp(unsigned short *buffer, int x1, int y1, int x2, int y2, unsigned short color)
@@ -263,11 +347,10 @@ void DrawlineBmp(unsigned short *buffer, int x1, int y1, int x2, int y2, unsigne
 void Draw_string(unsigned short *surf, signed short int x, signed short int y,
       const char *string, unsigned short maxstrlen,
       unsigned short xscale, unsigned short yscale,
-      unsigned short fg, unsigned short bg, unsigned int alpha)
+      unsigned short fg, unsigned short bg, libretro_graph_alpha_t alpha, bool draw_bg)
 {
    int k, strlen;
    int xrepeat, yrepeat;
-   unsigned char *linesurf;
    signed short int ypixel;
    unsigned short *yptr; 
    int col, bit;
@@ -279,10 +362,28 @@ void Draw_string(unsigned short *surf, signed short int x, signed short int y,
       return;
 
    /* Pseudo transparency for now */
-   if (alpha < 255)
+   switch (alpha)
    {
-      fg = blend(fg, ((bg == 0) ? 0xFFFF : bg), alpha);
-      bg = 0;
+      case GRAPH_ALPHA_0:
+         fg = ((bg == 0) ? 0xFFFF : bg);
+         bg = 0;
+         break;
+      case GRAPH_ALPHA_25:
+         BLEND_ALPHA25(fg, ((bg == 0) ? 0xFFFF : bg), &fg);
+         bg = 0;
+         break;
+      case GRAPH_ALPHA_50:
+         BLEND_ALPHA50(fg, ((bg == 0) ? 0xFFFF : bg), &fg);
+         bg = 0;
+         break;
+      case GRAPH_ALPHA_75:
+         BLEND_ALPHA75(fg, ((bg == 0) ? 0xFFFF : bg), &fg);
+         bg = 0;
+         break;
+      case GRAPH_ALPHA_100:
+      default:
+         bg = draw_bg ? bg : 0;
+         break;
    }
 
    for (strlen = 0; strlen < maxstrlen && string[strlen]; strlen++) {}
@@ -294,7 +395,16 @@ void Draw_string(unsigned short *surf, signed short int x, signed short int y,
    if ((surfw + x) > retrow)
       return;
 
-   linesurf = (unsigned char*)malloc(sizeof(unsigned short)*surfw*surfh);
+   if ((linesurf_w < surfw) || (linesurf_h < surfh))
+   {
+      if (linesurf)
+         free(linesurf);
+
+      linesurf   = (unsigned char*)malloc(sizeof(unsigned short)*surfw*surfh);
+      linesurf_w = surfw;
+      linesurf_h = surfh;
+   }
+
    yptr = (unsigned short *)&linesurf[0];
 
    /* Skip the 8th row */
@@ -321,20 +431,23 @@ void Draw_string(unsigned short *surf, signed short int x, signed short int y,
    yptr = (unsigned short*)&linesurf[0];
 
    for (yrepeat = y; yrepeat < y+surfh; yrepeat++)
+   {
+      unsigned short *surf_ptr = surf + (yrepeat * retrow) + x;
       for (xrepeat = x; xrepeat < x+surfw; xrepeat++, yptr++)
-         if (*yptr != 0) surf[xrepeat+yrepeat*retrow] = *yptr;
-
-   free(linesurf);
+      {
+         if (*yptr != 0) *surf_ptr = *yptr;
+         surf_ptr++;
+      }
+   }
 }
 
 void Draw_string32(uint32_t *surf, signed short int x, signed short int y,
       const char *string, unsigned short maxstrlen,
       unsigned short xscale, unsigned short yscale,
-      uint32_t fg, uint32_t bg, unsigned int alpha)
+      uint32_t fg, uint32_t bg, libretro_graph_alpha_t alpha, bool draw_bg)
 {
    int k, strlen;
    int xrepeat, yrepeat;
-   uint32_t *linesurf;
    signed short int ypixel;
    uint32_t *yptr;
    int col, bit;
@@ -346,10 +459,31 @@ void Draw_string32(uint32_t *surf, signed short int x, signed short int y,
       return;
 
    /* Pseudo transparency for now */
-   if (alpha < 255)
+   switch (alpha)
    {
-      fg = blend32(fg, ((bg == 0) ? 0xFFFFFFFF : bg), alpha);
-      bg = 0;
+      case GRAPH_ALPHA_0:
+         fg = ((bg == 0) ? 0xFFFFFFFF : bg);
+         bg = 0;
+         break;
+      case GRAPH_ALPHA_25:
+         fg = fg & 0xFFFFFF;
+         BLEND32_ALPHA25(fg, ((bg == 0) ? 0xFFFFFF : bg & 0xFFFFFF), &fg);
+         bg = 0;
+         break;
+      case GRAPH_ALPHA_50:
+         fg = fg & 0xFFFFFF;
+         BLEND32_ALPHA50(fg, ((bg == 0) ? 0xFFFFFF : bg & 0xFFFFFF), &fg);
+         bg = 0;
+         break;
+      case GRAPH_ALPHA_75:
+         fg = fg & 0xFFFFFF;
+         BLEND32_ALPHA75(fg, ((bg == 0) ? 0xFFFFFF : bg & 0xFFFFFF), &fg);
+         bg = 0;
+         break;
+      case GRAPH_ALPHA_100:
+      default:
+         bg = draw_bg ? bg : 0;
+         break;
    }
 
    for (strlen = 0; strlen < maxstrlen && string[strlen]; strlen++) {}
@@ -361,8 +495,17 @@ void Draw_string32(uint32_t *surf, signed short int x, signed short int y,
    if ((surfw + x) > retrow)
       return;
 
-   linesurf = (uint32_t *)malloc(sizeof(uint32_t)*surfw*surfh);
-   yptr = (uint32_t *)&linesurf[0];
+   if ((linesurf32_w < surfw) || (linesurf32_h < surfh))
+   {
+      if (linesurf32)
+         free(linesurf32);
+
+      linesurf32   = (uint32_t *)malloc(sizeof(uint32_t)*surfw*surfh);
+      linesurf32_w = surfw;
+      linesurf32_h = surfh;
+   }
+
+   yptr = (uint32_t *)&linesurf32[0];
 
    /* Skip the 8th row */
    surfh -= 1;
@@ -385,17 +528,21 @@ void Draw_string32(uint32_t *surf, signed short int x, signed short int y,
             *yptr = yptr[-surfw];
    }
 
-   yptr = (uint32_t *)&linesurf[0];
+   yptr = (uint32_t *)&linesurf32[0];
 
    for (yrepeat = y; yrepeat < y+surfh; yrepeat++)
+   {
+      uint32_t *surf_ptr = surf + (yrepeat * retrow) + x;
       for (xrepeat = x; xrepeat < x+surfw; xrepeat++, yptr++)
-         if (*yptr != 0) surf[xrepeat+yrepeat*retrow] = *yptr;
-
-   free(linesurf);
+      {
+         if (*yptr != 0) *surf_ptr = *yptr;
+         surf_ptr++;
+      }
+   }
 }
 
 void Draw_text(unsigned short *buffer, int x, int y,
-      unsigned short fgcol, unsigned short bgcol, unsigned int alpha,
+      unsigned short fgcol, unsigned short bgcol, libretro_graph_alpha_t alpha, bool draw_bg,
       int scalex, int scaley, int max, char *string, ...)
 {
    char text[256];
@@ -409,7 +556,7 @@ void Draw_text(unsigned short *buffer, int x, int y,
    va_end(ap);
 
 #if 0
-   Draw_string(buffer, x, y, text, max, scalex, scaley, fgcol, bgcol, alpha);
+   Draw_string(buffer, x, y, text, max, scalex, scaley, fgcol, bgcol, alpha, draw_bg);
 #else
    char c;
    char s[2] = {0};
@@ -425,19 +572,19 @@ void Draw_text(unsigned short *buffer, int x, int y,
       if (c & -0x80)
       {
          snprintf(s, sizeof(s), "%c", c & 0x7f);
-         Draw_string(buffer, x+(i*charwidth*scalex), y, s, 1, scalex, scaley, bgcol, fgcol, alpha);
+         Draw_string(buffer, x+(i*charwidth*scalex), y, s, 1, scalex, scaley, bgcol, fgcol, alpha, draw_bg);
       }
       else
       {
          snprintf(s, sizeof(s), "%c", c);
-         Draw_string(buffer, x+(i*charwidth*scalex), y, s, 1, scalex, scaley, fgcol, bgcol, alpha);
+         Draw_string(buffer, x+(i*charwidth*scalex), y, s, 1, scalex, scaley, fgcol, bgcol, alpha, draw_bg);
       }
    }
 #endif
 }
 
 void Draw_text32(uint32_t *buffer, int x, int y,
-      uint32_t fgcol, uint32_t bgcol, unsigned int alpha,
+      uint32_t fgcol, uint32_t bgcol, libretro_graph_alpha_t alpha, bool draw_bg,
       int scalex, int scaley, int max, char *string,...)
 {
    char text[256];
@@ -451,7 +598,7 @@ void Draw_text32(uint32_t *buffer, int x, int y,
    va_end(ap);
 
 #if 0
-   Draw_string32(buffer, x, y, text, max, scalex, scaley, fgcol, bgcol, alpha);
+   Draw_string32(buffer, x, y, text, max, scalex, scaley, fgcol, bgcol, alpha, draw_bg);
 #else
    char c;
    char s[2] = {0};
@@ -467,13 +614,29 @@ void Draw_text32(uint32_t *buffer, int x, int y,
       if (c & -0x80)
       {
          snprintf(s, sizeof(s), "%c", c & 0x7f);
-         Draw_string32(buffer, x+(i*charwidth*scalex), y, s, 1, scalex, scaley, bgcol, fgcol, alpha);
+         Draw_string32(buffer, x+(i*charwidth*scalex), y, s, 1, scalex, scaley, bgcol, fgcol, alpha, draw_bg);
       }
       else
       {
          snprintf(s, sizeof(s), "%c", c);
-         Draw_string32(buffer, x+(i*charwidth*scalex), y, s, 1, scalex, scaley, fgcol, bgcol, alpha);
+         Draw_string32(buffer, x+(i*charwidth*scalex), y, s, 1, scalex, scaley, fgcol, bgcol, alpha, draw_bg);
       }
    }
 #endif
+}
+
+void LibretroGraphFree(void)
+{
+   if (linesurf)
+      free(linesurf);
+   linesurf = NULL;
+
+   if (linesurf32)
+      free(linesurf32);
+   linesurf32 = NULL;
+
+   linesurf_w   = 0;
+   linesurf_h   = 0;
+   linesurf32_w = 0;
+   linesurf32_h = 0;
 }

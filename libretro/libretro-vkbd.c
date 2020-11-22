@@ -11,7 +11,7 @@ extern bool retro_capslock;
 extern int vkflag[10];
 extern unsigned int video_config_geometry;
 extern unsigned int opt_vkbd_theme;
-extern unsigned int opt_vkbd_alpha;
+extern libretro_graph_alpha_t opt_vkbd_alpha;
 
 int RGBc(int r, int g, int b)
 {
@@ -25,36 +25,36 @@ void print_vkbd(unsigned short int *pixels)
 {
    int x, y;
    bool shifted;
-   int page              = (retro_vkbd_page) ? VKBDX * VKBDY : 0;
-   uint16_t *pix         = &pixels[0];
+   int page                          = (retro_vkbd_page) ? VKBDX * VKBDY : 0;
+   uint16_t *pix                     = &pixels[0];
 
-   int XKEY              = 0;
-   int YKEY              = 0;
-   int XTEXT             = 0;
-   int YTEXT             = 0;
-   int XOFFSET           = 0;
-   int XPADDING          = 0;
-   int YOFFSET           = 0;
-   int YPADDING          = 0;
-   int XKEYSPACING       = 1;
-   int YKEYSPACING       = 1;
-   int ALPHA             = opt_vkbd_alpha;
-   int BKG_ALPHA         = ALPHA;
-   int BKG_PADDING_X     = 0;
-   int BKG_PADDING_Y     = 4;
-   int BKG_COLOR         = 0;
-   int BKG_COLOR_NORMAL  = 0;
-   int BKG_COLOR_ALT     = 0;
-   int BKG_COLOR_EXTRA   = 0;
-   int BKG_COLOR_SEL     = 0;
-   int BKG_COLOR_ACTIVE  = 0;
-   int FONT_MAX          = 4;
-   int FONT_WIDTH        = 1;
-   int FONT_HEIGHT       = 1;
-   int FONT_COLOR        = 0;
-   int FONT_COLOR_NORMAL = 0;
-   int FONT_COLOR_SEL    = 0;
-   int FONT_ALPHA        = 0;
+   int XKEY                          = 0;
+   int YKEY                          = 0;
+   int XTEXT                         = 0;
+   int YTEXT                         = 0;
+   int XOFFSET                       = 0;
+   int XPADDING                      = 0;
+   int YOFFSET                       = 0;
+   int YPADDING                      = 0;
+   int XKEYSPACING                   = 1;
+   int YKEYSPACING                   = 1;
+   libretro_graph_alpha_t ALPHA      = opt_vkbd_alpha;
+   libretro_graph_alpha_t BKG_ALPHA  = ALPHA;
+   int BKG_PADDING_X                 = 0;
+   int BKG_PADDING_Y                 = 4;
+   int BKG_COLOR                     = 0;
+   int BKG_COLOR_NORMAL              = 0;
+   int BKG_COLOR_ALT                 = 0;
+   int BKG_COLOR_EXTRA               = 0;
+   int BKG_COLOR_SEL                 = 0;
+   int BKG_COLOR_ACTIVE              = 0;
+   int FONT_MAX                      = 4;
+   int FONT_WIDTH                    = 1;
+   int FONT_HEIGHT                   = 1;
+   int FONT_COLOR                    = 0;
+   int FONT_COLOR_NORMAL             = 0;
+   int FONT_COLOR_SEL                = 0;
+   libretro_graph_alpha_t FONT_ALPHA = 0;
 
    switch (opt_vkbd_theme)
    {
@@ -180,10 +180,20 @@ void print_vkbd(unsigned short int *pixels)
    vkbd_y_max = YOFFSET + YBASEKEY + (YSIDE * VKBDY);
 
    /* Opacity */
-   BKG_ALPHA = (retro_vkbd_transparent) ? ALPHA : 255;
-   FONT_ALPHA = 255 - BKG_ALPHA;
-   FONT_ALPHA = (FONT_ALPHA < 60) ? 60 : FONT_ALPHA;
-   FONT_ALPHA = (FONT_ALPHA > 120) ? 120 : FONT_ALPHA;
+   BKG_ALPHA = (retro_vkbd_transparent) ? ALPHA : GRAPH_ALPHA_100;
+   switch (BKG_ALPHA)
+   {
+      case GRAPH_ALPHA_0:
+      case GRAPH_ALPHA_25:
+      case GRAPH_ALPHA_50:
+         FONT_ALPHA = GRAPH_ALPHA_50;
+         break;
+      case GRAPH_ALPHA_75:
+      case GRAPH_ALPHA_100:
+      default:
+         FONT_ALPHA = GRAPH_ALPHA_25;
+         break;
+   }
 
    /* Alternate color keys */
    int alt_keys[] =
@@ -216,7 +226,7 @@ void print_vkbd(unsigned short int *pixels)
       {
          /* Default key color */
          BKG_COLOR = BKG_COLOR_NORMAL;
-         BKG_ALPHA = (retro_vkbd_transparent) ? ALPHA : 255;
+         BKG_ALPHA = (retro_vkbd_transparent) ? ALPHA : GRAPH_ALPHA_100;
 
          /* Reset key color */
          if (vkeys[(y * VKBDX) + x].value == -20)
@@ -252,7 +262,20 @@ void print_vkbd(unsigned short int *pixels)
          {
             FONT_COLOR = FONT_COLOR_NORMAL;
             BKG_COLOR  = BKG_COLOR_ACTIVE;
-            BKG_ALPHA  = (BKG_ALPHA < 200) ? 200 : BKG_ALPHA;
+
+            switch (BKG_ALPHA)
+            {
+               case GRAPH_ALPHA_0:
+               case GRAPH_ALPHA_25:
+               case GRAPH_ALPHA_50:
+                  BKG_ALPHA = GRAPH_ALPHA_75;
+                  break;
+               case GRAPH_ALPHA_75:
+               case GRAPH_ALPHA_100:
+               default:
+                  /* Do nothing */
+                  break;
+            }
          }
 
          /* Key background */
@@ -271,27 +294,27 @@ void print_vkbd(unsigned short int *pixels)
                         (FONT_COLOR_SEL == RGBc(250, 250, 250) ? XTEXT+FONT_WIDTH : XTEXT-FONT_WIDTH),
                         (FONT_COLOR_SEL == RGBc(250, 250, 250) ? YTEXT+FONT_HEIGHT : YTEXT-FONT_HEIGHT),
                         (FONT_COLOR_SEL == RGBc(250, 250, 250) ? RGBc(100, 100, 100) : RGBc(50, 50, 50)),
-                        BKG_COLOR, FONT_ALPHA, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+                        BKG_COLOR, FONT_ALPHA, false, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
                         (!shifted) ? vkeys[(y * VKBDX) + x + page].normal : vkeys[(y * VKBDX) + x + page].shift);
          else
             Draw_text(pix,
                       (FONT_COLOR_SEL == RGBc(250, 250, 250) ? XTEXT+FONT_WIDTH : XTEXT-FONT_WIDTH),
                       (FONT_COLOR_SEL == RGBc(250, 250, 250) ? YTEXT+FONT_HEIGHT : YTEXT-FONT_HEIGHT),
                       (FONT_COLOR_SEL == RGBc(250, 250, 250) ? RGBc(100, 100, 100) : RGBc(50, 50, 50)),
-                      BKG_COLOR, FONT_ALPHA, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+                      BKG_COLOR, FONT_ALPHA, false, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
                       (!shifted) ? vkeys[(y * VKBDX) + x + page].normal : vkeys[(y * VKBDX) + x + page].shift);
 
          /* Key text */
          if (pix_bytes == 4)
          {
             Draw_text32((uint32_t *)pix,
-                        XTEXT, YTEXT, FONT_COLOR, BKG_COLOR, 250, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+                        XTEXT, YTEXT, FONT_COLOR, BKG_COLOR, GRAPH_ALPHA_100, false, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
                         (!shifted) ? vkeys[(y * VKBDX) + x + page].normal : vkeys[(y * VKBDX) + x + page].shift);
          }
          else
          {
             Draw_text(pix,
-                      XTEXT, YTEXT, FONT_COLOR, BKG_COLOR, 250, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+                      XTEXT, YTEXT, FONT_COLOR, BKG_COLOR, GRAPH_ALPHA_100, false, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
                       (!shifted) ? vkeys[(y * VKBDX) + x + page].normal : vkeys[(y * VKBDX) + x + page].shift);
          }
       }
@@ -304,7 +327,8 @@ void print_vkbd(unsigned short int *pixels)
    YTEXT = YOFFSET + YBASETEXT + BKG_PADDING_Y + (vkey_pos_y * YSIDE);
 
    /* Opacity */
-   BKG_ALPHA = (retro_vkbd_transparent) ? 220 : 250;
+   BKG_ALPHA = (retro_vkbd_transparent) ?
+         ((BKG_ALPHA == GRAPH_ALPHA_100) ? GRAPH_ALPHA_100 : GRAPH_ALPHA_75) : GRAPH_ALPHA_100;
 
    /* Pressed key color */
    if (vkflag[RETRO_DEVICE_ID_JOYPAD_B] && (vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].value == vkey_sticky1 ||
@@ -329,14 +353,14 @@ void print_vkbd(unsigned short int *pixels)
    if (pix_bytes == 4)
    {
       Draw_text32((uint32_t *)pix,
-                  XTEXT, YTEXT, FONT_COLOR, 0, BKG_ALPHA, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+                  XTEXT, YTEXT, FONT_COLOR, 0, GRAPH_ALPHA_100, false, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
                   (!shifted) ? vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].normal
                              : vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].shift);
    }
    else
    {
       Draw_text(pix,
-                XTEXT, YTEXT, FONT_COLOR, 0, BKG_ALPHA, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+                XTEXT, YTEXT, FONT_COLOR, 0, GRAPH_ALPHA_100, false, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
                 (!shifted) ? vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].normal
                            : vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].shift);
    }

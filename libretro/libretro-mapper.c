@@ -667,55 +667,55 @@ void print_statusbar(void)
    /* Statusbar output */
    if (pix_bytes == 4)
    {
-      DrawFBoxBmp32((uint32_t *)retro_bmp, 0, BOX_Y, BOX_WIDTH, BOX_HEIGHT, 0, 255);
+      DrawFBoxBmp32((uint32_t *)retro_bmp, 0, BOX_Y, BOX_WIDTH, BOX_HEIGHT, 0, GRAPH_ALPHA_100);
 
       if (imagename_timer > 0)
       {
-         Draw_text32((uint32_t *)retro_bmp, TEXT_X, TEXT_Y, FONT_COLOR, 0, 255, FONT_WIDTH, FONT_HEIGHT, TEXT_LENGTH, statusbar_text);
+         Draw_text32((uint32_t *)retro_bmp, TEXT_X, TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, true, FONT_WIDTH, FONT_HEIGHT, TEXT_LENGTH, statusbar_text);
          return;
       }
 
-      Draw_text32((uint32_t *)retro_bmp, TEXT_X_JOYMODE1,   TEXT_Y, FONT_COLOR, 0, 255, FONT_WIDTH, FONT_HEIGHT, 10, JOYMODE1);
-      Draw_text32((uint32_t *)retro_bmp, TEXT_X_JOYPORT1,   TEXT_Y, JOY1_COLOR, 0, 255, FONT_WIDTH, FONT_HEIGHT, 10, JOYPORT1);
+      Draw_text32((uint32_t *)retro_bmp, TEXT_X_JOYMODE1,   TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, true, FONT_WIDTH, FONT_HEIGHT, 10, JOYMODE1);
+      Draw_text32((uint32_t *)retro_bmp, TEXT_X_JOYPORT1,   TEXT_Y, JOY1_COLOR, 0, GRAPH_ALPHA_100, true, FONT_WIDTH, FONT_HEIGHT, 10, JOYPORT1);
 
-      Draw_text32((uint32_t *)retro_bmp, TEXT_X_JOYMODE2,   TEXT_Y, FONT_COLOR, 0, 255, FONT_WIDTH, FONT_HEIGHT, 10, JOYMODE2);
-      Draw_text32((uint32_t *)retro_bmp, TEXT_X_JOYPORT2,   TEXT_Y, JOY2_COLOR, 0, 255, FONT_WIDTH, FONT_HEIGHT, 10, JOYPORT2);
+      Draw_text32((uint32_t *)retro_bmp, TEXT_X_JOYMODE2,   TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, true, FONT_WIDTH, FONT_HEIGHT, 10, JOYMODE2);
+      Draw_text32((uint32_t *)retro_bmp, TEXT_X_JOYPORT2,   TEXT_Y, JOY2_COLOR, 0, GRAPH_ALPHA_100, true, FONT_WIDTH, FONT_HEIGHT, 10, JOYPORT2);
 
-      Draw_text32((uint32_t *)retro_bmp, TEXT_X_JOYMODE3,   TEXT_Y, FONT_COLOR, 0, 255, FONT_WIDTH, FONT_HEIGHT, 10, JOYMODE3);
-      Draw_text32((uint32_t *)retro_bmp, TEXT_X_JOYPORT3,   TEXT_Y, FONT_COLOR, 0, 255, FONT_WIDTH, FONT_HEIGHT, 10, JOYPORT3);
+      Draw_text32((uint32_t *)retro_bmp, TEXT_X_JOYMODE3,   TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, true, FONT_WIDTH, FONT_HEIGHT, 10, JOYMODE3);
+      Draw_text32((uint32_t *)retro_bmp, TEXT_X_JOYPORT3,   TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, true, FONT_WIDTH, FONT_HEIGHT, 10, JOYPORT3);
 
-      Draw_text32((uint32_t *)retro_bmp, TEXT_X_JOYMODE4,   TEXT_Y, FONT_COLOR, 0, 255, FONT_WIDTH, FONT_HEIGHT, 10, JOYMODE4);
-      Draw_text32((uint32_t *)retro_bmp, TEXT_X_JOYPORT4,   TEXT_Y, FONT_COLOR, 0, 255, FONT_WIDTH, FONT_HEIGHT, 10, JOYPORT4);
+      Draw_text32((uint32_t *)retro_bmp, TEXT_X_JOYMODE4,   TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, true, FONT_WIDTH, FONT_HEIGHT, 10, JOYMODE4);
+      Draw_text32((uint32_t *)retro_bmp, TEXT_X_JOYPORT4,   TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, true, FONT_WIDTH, FONT_HEIGHT, 10, JOYPORT4);
 
-      Draw_text32((uint32_t *)retro_bmp, TEXT_X_RESOLUTION, TEXT_Y, FONT_COLOR, 0, 255, FONT_WIDTH, FONT_HEIGHT, 10, RESOLUTION);
-      Draw_text32((uint32_t *)retro_bmp, TEXT_X_MEMORY,     TEXT_Y, FONT_COLOR, 0, 255, FONT_WIDTH, FONT_HEIGHT, 10, MEMORY);
-      Draw_text32((uint32_t *)retro_bmp, TEXT_X_MODEL,      TEXT_Y, FONT_COLOR, 0, 255, FONT_WIDTH, FONT_HEIGHT, 10, MODEL);
+      Draw_text32((uint32_t *)retro_bmp, TEXT_X_RESOLUTION, TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, true, FONT_WIDTH, FONT_HEIGHT, 10, RESOLUTION);
+      Draw_text32((uint32_t *)retro_bmp, TEXT_X_MEMORY,     TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, true, FONT_WIDTH, FONT_HEIGHT, 10, MEMORY);
+      Draw_text32((uint32_t *)retro_bmp, TEXT_X_MODEL,      TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, true, FONT_WIDTH, FONT_HEIGHT, 10, MODEL);
    }
    else
    {
-      DrawFBoxBmp(retro_bmp, 0, BOX_Y, BOX_WIDTH, BOX_HEIGHT, 0, 255);
+      DrawFBoxBmp(retro_bmp, 0, BOX_Y, BOX_WIDTH, BOX_HEIGHT, 0, GRAPH_ALPHA_100);
 
       if (imagename_timer > 0)
       {
-         Draw_text(retro_bmp, TEXT_X, TEXT_Y, FONT_COLOR, 0, 255, FONT_WIDTH, FONT_HEIGHT, TEXT_LENGTH, statusbar_text);
+         Draw_text(retro_bmp, TEXT_X, TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, true, FONT_WIDTH, FONT_HEIGHT, TEXT_LENGTH, statusbar_text);
          return;
       }
 
-      Draw_text(retro_bmp, TEXT_X_JOYMODE1,   TEXT_Y, FONT_COLOR, 0, 255, FONT_WIDTH, FONT_HEIGHT, 10, JOYMODE1);
-      Draw_text(retro_bmp, TEXT_X_JOYPORT1,   TEXT_Y, JOY1_COLOR, 0, 255, FONT_WIDTH, FONT_HEIGHT, 10, JOYPORT1);
+      Draw_text(retro_bmp, TEXT_X_JOYMODE1,   TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, true, FONT_WIDTH, FONT_HEIGHT, 10, JOYMODE1);
+      Draw_text(retro_bmp, TEXT_X_JOYPORT1,   TEXT_Y, JOY1_COLOR, 0, GRAPH_ALPHA_100, true, FONT_WIDTH, FONT_HEIGHT, 10, JOYPORT1);
 
-      Draw_text(retro_bmp, TEXT_X_JOYMODE2,   TEXT_Y, FONT_COLOR, 0, 255, FONT_WIDTH, FONT_HEIGHT, 10, JOYMODE2);
-      Draw_text(retro_bmp, TEXT_X_JOYPORT2,   TEXT_Y, JOY2_COLOR, 0, 255, FONT_WIDTH, FONT_HEIGHT, 10, JOYPORT2);
+      Draw_text(retro_bmp, TEXT_X_JOYMODE2,   TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, true, FONT_WIDTH, FONT_HEIGHT, 10, JOYMODE2);
+      Draw_text(retro_bmp, TEXT_X_JOYPORT2,   TEXT_Y, JOY2_COLOR, 0, GRAPH_ALPHA_100, true, FONT_WIDTH, FONT_HEIGHT, 10, JOYPORT2);
 
-      Draw_text(retro_bmp, TEXT_X_JOYMODE3,   TEXT_Y, FONT_COLOR, 0, 255, FONT_WIDTH, FONT_HEIGHT, 10, JOYMODE3);
-      Draw_text(retro_bmp, TEXT_X_JOYPORT3,   TEXT_Y, FONT_COLOR, 0, 255, FONT_WIDTH, FONT_HEIGHT, 10, JOYPORT3);
+      Draw_text(retro_bmp, TEXT_X_JOYMODE3,   TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, true, FONT_WIDTH, FONT_HEIGHT, 10, JOYMODE3);
+      Draw_text(retro_bmp, TEXT_X_JOYPORT3,   TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, true, FONT_WIDTH, FONT_HEIGHT, 10, JOYPORT3);
 
-      Draw_text(retro_bmp, TEXT_X_JOYMODE4,   TEXT_Y, FONT_COLOR, 0, 255, FONT_WIDTH, FONT_HEIGHT, 10, JOYMODE4);
-      Draw_text(retro_bmp, TEXT_X_JOYPORT4,   TEXT_Y, FONT_COLOR, 0, 255, FONT_WIDTH, FONT_HEIGHT, 10, JOYPORT4);
+      Draw_text(retro_bmp, TEXT_X_JOYMODE4,   TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, true, FONT_WIDTH, FONT_HEIGHT, 10, JOYMODE4);
+      Draw_text(retro_bmp, TEXT_X_JOYPORT4,   TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, true, FONT_WIDTH, FONT_HEIGHT, 10, JOYPORT4);
 
-      Draw_text(retro_bmp, TEXT_X_RESOLUTION, TEXT_Y, FONT_COLOR, 0, 255, FONT_WIDTH, FONT_HEIGHT, 10, RESOLUTION);
-      Draw_text(retro_bmp, TEXT_X_MEMORY,     TEXT_Y, FONT_COLOR, 0, 255, FONT_WIDTH, FONT_HEIGHT, 10, MEMORY);
-      Draw_text(retro_bmp, TEXT_X_MODEL,      TEXT_Y, FONT_COLOR, 0, 255, FONT_WIDTH, FONT_HEIGHT, 10, MODEL);
+      Draw_text(retro_bmp, TEXT_X_RESOLUTION, TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, true, FONT_WIDTH, FONT_HEIGHT, 10, RESOLUTION);
+      Draw_text(retro_bmp, TEXT_X_MEMORY,     TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, true, FONT_WIDTH, FONT_HEIGHT, 10, MEMORY);
+      Draw_text(retro_bmp, TEXT_X_MODEL,      TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, true, FONT_WIDTH, FONT_HEIGHT, 10, MODEL);
    }
 }
 
