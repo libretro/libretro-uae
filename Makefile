@@ -38,7 +38,7 @@ else ifeq ($(platform), rpi)
 else ifeq ($(platform), classic_armv7_a7)
 	TARGET := $(TARGET_NAME)_libretro.so
 	fpic := -fPIC
-    SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T  -Wl,--no-undefined
+    SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
     LDFLAGS += -lm -lpthread
     CFLAGS += -Ofast \
 	-flto=4 -fwhole-program -fuse-linker-plugin \
@@ -252,7 +252,7 @@ else
 ifneq ($(subplatform), 32)
    CFLAGS +=
 endif
-   PLATFLAGS += -DWIN32
+   PLATFLAGS += -DWIN32 -Wstringop-overflow=0
    TARGET := $(TARGET_NAME)_libretro.dll
    fpic := -fPIC
    SHARED := -shared -static-libgcc -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined -Wl,--gc-sections
@@ -276,7 +276,7 @@ CFLAGS += -fcommon -std=gnu99 -DINLINE="inline" -D__LIBRETRO__
 
 include Makefile.common
 
-$(info CFLAGS:$(PLATFLAGS)$(CFLAGS))
+$(info CFLAGS: $(PLATFLAGS) $(CFLAGS))
 $(info -------)
 
 OBJECTS += $(SOURCES_C:.c=.o) $(SOURCES_CXX:.cpp=.o) $(SOURCES_ASM:.S=.o)
