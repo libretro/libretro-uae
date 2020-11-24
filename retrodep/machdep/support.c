@@ -23,7 +23,7 @@
 #define LARGE_ALIGNMENT ".align 4,0x90\n"
 #endif
 
-struct flag_struct regflags;
+extern struct flag_struct regflags;
 
 #if defined(__CELLOS_LV2__) || defined(_WIN32) || defined(WIIU)
 

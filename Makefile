@@ -138,7 +138,7 @@ else ifeq ($(platform), libnx)
    include $(DEVKITPRO)/libnx/switch_rules
    TARGET := $(TARGET_NAME)_libretro_$(platform).a
    CFLAGS += -D__SWITCH__ -DHAVE_LIBNX -I$(DEVKITPRO)/libnx/include/ -specs=$(DEVKITPRO)/libnx/switch.specs
-   CFLAGS += -march=armv8-a -mtune=cortex-a57 -mtp=soft -mcpu=cortex-a57+crc+fp+simd -ffast-math -fPIE -ffunction-sections -fcommon
+   CFLAGS += -march=armv8-a -mtune=cortex-a57 -mtp=soft -mcpu=cortex-a57+crc+fp+simd -ffast-math -fPIE -ffunction-sections
    STATIC_LINKING=1
    STATIC_LINKING_LINK=1
 
@@ -151,7 +151,7 @@ else ifeq ($(platform), vita)
    COMMONFLAGS += -U__INT32_TYPE__ -U __UINT32_TYPE__ -D__INT32_TYPE__=int
    COMMONFLAGS += -DHAVE_STRTOUL -DVITA
    CFLAGS += $(COMMONFLAGS)
-   PLATFLAGS += -ffast-math -march=armv7-a -mfpu=neon -mfloat-abi=hard -mword-relocations -fno-optimize-sibling-calls -fno-exceptions -fcommon
+   PLATFLAGS += -ffast-math -march=armv7-a -mfpu=neon -mfloat-abi=hard -mword-relocations -fno-optimize-sibling-calls -fno-exceptions
    STATIC_LINKING = 1
    STATIC_LINKING_LINK=1
 
@@ -272,7 +272,7 @@ ifneq ($(STATIC_LINKING), 1)
    CFLAGS += -DHAVE_7ZIP
 endif
 
-CFLAGS += -fcommon -std=gnu99 -DINLINE="inline" -D__LIBRETRO__
+CFLAGS += -std=gnu99 -DINLINE="inline" -D__LIBRETRO__
 
 include Makefile.common
 

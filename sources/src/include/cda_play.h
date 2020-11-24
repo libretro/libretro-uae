@@ -29,28 +29,28 @@ public:
 typedef struct cda_audio cda_audio;
 #endif
 
-int cda_audio_bufsize;
-int cda_audio_volume[2];
-bool cda_audio_playing;
-bool cda_audio_active;
-int cda_audio_buffer_ids[2];
-uae_u8 *cda_audio_buffers[2];
+extern int cda_audio_bufsize;
+extern int cda_audio_volume[2];
+extern bool cda_audio_playing;
+extern bool cda_audio_active;
+extern int cda_audio_buffer_ids[2];
+extern uae_u8 *cda_audio_buffers[2];
 
-int cda_audio_num_sectors;
-int cda_audio_sectorsize;
-int cda_audio_samplerate;
-bool cda_audio_internalmode;
+extern int cda_audio_num_sectors;
+extern int cda_audio_sectorsize;
+extern int cda_audio_samplerate;
+extern bool cda_audio_internalmode;
 
-int cda_audio_setvolume;
-bool cda_audio_play;
-int cda_audio_wait;
-bool cda_audio_isplaying;
+extern int cda_audio_setvolume;
+extern bool cda_audio_play;
+extern int cda_audio_wait;
+extern bool cda_audio_isplaying;
 
-void cda_new(int num_sectors, int sectorsize, int samplerate, bool internalmode);
-void cda_delete();
-void cda_setvolume(int left, int right);
-bool cda_play(int bufnum);
-void cda_wait(int bufnum);
-bool cda_isplaying(int bufnum);
+extern void cda_new(int num_sectors, int sectorsize, int samplerate, bool internalmode);
+extern void cda_delete(void);
+extern void cda_setvolume(int left, int right);
+extern bool cda_play(int bufnum);
+extern void cda_wait(int bufnum);
+extern bool cda_isplaying(int bufnum);
 
 #endif /* CDA_PLAY_H */

@@ -346,52 +346,52 @@ STATIC_INLINE uae_u32 next_ilongi (void)
 	return r;
 }
 
-uae_u32 (*x_prefetch)(int);
-uae_u32 (*x_prefetch_long)(int);
-uae_u32 (*x_get_byte)(uaecptr addr);
-uae_u32 (*x_get_word)(uaecptr addr);
-uae_u32 (*x_get_long)(uaecptr addr);
-void (*x_put_byte)(uaecptr addr, uae_u32 v);
-void (*x_put_word)(uaecptr addr, uae_u32 v);
-void (*x_put_long)(uaecptr addr, uae_u32 v);
-uae_u32 (*x_next_iword)(void);
-uae_u32 (*x_next_ilong)(void);
-uae_u32 (*x_get_ilong)(int);
-uae_u32 (*x_get_iword)(int);
-uae_u32 (*x_get_ibyte)(int);
+extern uae_u32 (*x_prefetch)(int);
+extern uae_u32 (*x_prefetch_long)(int);
+extern uae_u32 (*x_get_byte)(uaecptr addr);
+extern uae_u32 (*x_get_word)(uaecptr addr);
+extern uae_u32 (*x_get_long)(uaecptr addr);
+extern void (*x_put_byte)(uaecptr addr, uae_u32 v);
+extern void (*x_put_word)(uaecptr addr, uae_u32 v);
+extern void (*x_put_long)(uaecptr addr, uae_u32 v);
+extern uae_u32 (*x_next_iword)(void);
+extern uae_u32 (*x_next_ilong)(void);
+extern uae_u32 (*x_get_ilong)(int);
+extern uae_u32 (*x_get_iword)(int);
+extern uae_u32 (*x_get_ibyte)(int);
 
-uae_u32 (*x_cp_get_byte)(uaecptr addr);
-uae_u32 (*x_cp_get_word)(uaecptr addr);
-uae_u32 (*x_cp_get_long)(uaecptr addr);
-void (*x_cp_put_byte)(uaecptr addr, uae_u32 v);
-void (*x_cp_put_word)(uaecptr addr, uae_u32 v);
-void (*x_cp_put_long)(uaecptr addr, uae_u32 v);
-uae_u32 (*x_cp_next_iword)(void);
-uae_u32 (*x_cp_next_ilong)(void);
+extern uae_u32 (*x_cp_get_byte)(uaecptr addr);
+extern uae_u32 (*x_cp_get_word)(uaecptr addr);
+extern uae_u32 (*x_cp_get_long)(uaecptr addr);
+extern void (*x_cp_put_byte)(uaecptr addr, uae_u32 v);
+extern void (*x_cp_put_word)(uaecptr addr, uae_u32 v);
+extern void (*x_cp_put_long)(uaecptr addr, uae_u32 v);
+extern uae_u32 (*x_cp_next_iword)(void);
+extern uae_u32 (*x_cp_next_ilong)(void);
 
-uae_u32 (REGPARAM3 *x_cp_get_disp_ea_020)(uae_u32 base, int idx) REGPARAM;
+extern uae_u32 (REGPARAM3 *x_cp_get_disp_ea_020)(uae_u32 base, int idx) REGPARAM;
 
-void (*x_do_cycles)(unsigned long);
-void (*x_do_cycles_pre)(unsigned long);
-void (*x_do_cycles_post)(unsigned long, uae_u32);
+extern void (*x_do_cycles)(unsigned long);
+extern void (*x_do_cycles_pre)(unsigned long);
+extern void (*x_do_cycles_post)(unsigned long, uae_u32);
 
-uae_u32 REGPARAM3 x_get_disp_ea_020 (uae_u32 base, int idx) REGPARAM;
-uae_u32 REGPARAM3 x_get_disp_ea_ce020 (uae_u32 base, int idx) REGPARAM;
-uae_u32 REGPARAM3 x_get_bitfield (uae_u32 src, uae_u32 bdata[2], uae_s32 offset, int width) REGPARAM;
-void REGPARAM3 x_put_bitfield (uae_u32 dst, uae_u32 bdata[2], uae_u32 val, uae_s32 offset, int width) REGPARAM;
+extern uae_u32 REGPARAM3 x_get_disp_ea_020 (uae_u32 base, int idx) REGPARAM;
+extern uae_u32 REGPARAM3 x_get_disp_ea_ce020 (uae_u32 base, int idx) REGPARAM;
+extern uae_u32 REGPARAM3 x_get_bitfield (uae_u32 src, uae_u32 bdata[2], uae_s32 offset, int width) REGPARAM;
+extern void REGPARAM3 x_put_bitfield (uae_u32 dst, uae_u32 bdata[2], uae_u32 val, uae_s32 offset, int width) REGPARAM;
 
-void m68k_setstopped (void);
-void m68k_resumestopped (void);
+extern void m68k_setstopped (void);
+extern void m68k_resumestopped (void);
 
-uae_u32 REGPARAM3 get_disp_ea_020 (uae_u32 base, int idx) REGPARAM;
-uae_u32 REGPARAM3 get_bitfield (uae_u32 src, uae_u32 bdata[2], uae_s32 offset, int width) REGPARAM;
-void REGPARAM3 put_bitfield (uae_u32 dst, uae_u32 bdata[2], uae_u32 val, uae_s32 offset, int width) REGPARAM;
+extern uae_u32 REGPARAM3 get_disp_ea_020 (uae_u32 base, int idx) REGPARAM;
+extern uae_u32 REGPARAM3 get_bitfield (uae_u32 src, uae_u32 bdata[2], uae_s32 offset, int width) REGPARAM;
+extern void REGPARAM3 put_bitfield (uae_u32 dst, uae_u32 bdata[2], uae_u32 val, uae_s32 offset, int width) REGPARAM;
 
-void m68k_disasm_ea (uaecptr addr, uaecptr *nextpc, int cnt, uae_u32 *seaddr, uae_u32 *deaddr);
-void m68k_disasm (uaecptr addr, uaecptr *nextpc, int cnt);
-void m68k_disasm_2 (TCHAR *buf, int bufsize, uaecptr addr, uaecptr *nextpc, int cnt, uae_u32 *seaddr, uae_u32 *deaddr, int safemode);
-void sm68k_disasm (TCHAR*, TCHAR*, uaecptr addr, uaecptr *nextpc);
-int get_cpu_model (void);
+extern void m68k_disasm_ea (uaecptr addr, uaecptr *nextpc, int cnt, uae_u32 *seaddr, uae_u32 *deaddr);
+extern void m68k_disasm (uaecptr addr, uaecptr *nextpc, int cnt);
+extern void m68k_disasm_2 (TCHAR *buf, int bufsize, uaecptr addr, uaecptr *nextpc, int cnt, uae_u32 *seaddr, uae_u32 *deaddr, int safemode);
+extern void sm68k_disasm (TCHAR*, TCHAR*, uaecptr addr, uaecptr *nextpc);
+extern int get_cpu_model (void);
 
 /* Hack to stop conflict with AROS Exception function */
 #ifdef __AROS__

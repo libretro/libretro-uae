@@ -10,6 +10,16 @@
 #include "sounddep/sound.h"
 #include "options.h"
 
+int cda_audio_bufsize;
+int cda_audio_volume[2];
+bool cda_audio_playing;
+bool cda_audio_active;
+int cda_audio_buffer_ids[2];
+uae_u8 *cda_audio_buffers[2];
+
+int cda_audio_num_sectors;
+int cda_audio_sectorsize;
+
 void cda_delete()
 {
     if (cda_audio_active) {
