@@ -225,7 +225,9 @@ typedef struct {
 
 static uae_u16 bigmfmbufw[0x4000 * DDHDMULT];
 static drive floppy[MAX_FLOPPY_DRIVES];
+#ifndef __LIBRETRO__
 static TCHAR dfxhistory[2][MAX_PREVIOUS_FLOPPIES][MAX_DPATH];
+#endif
 
 static uae_u8 exeheader[]={0x00,0x00,0x03,0xf3,0x00,0x00,0x00,0x00};
 static uae_u8 bootblock_ofs[]={
@@ -2508,6 +2510,9 @@ void disk_eject (int num)
 
 int DISK_history_add (const TCHAR *name, int idx, int type, int donotcheck)
 {
+#ifdef __LIBRETRO__
+	return 0;
+#else
 	int i;
 
 	if (idx >= MAX_PREVIOUS_FLOPPIES)
@@ -2558,13 +2563,18 @@ int DISK_history_add (const TCHAR *name, int idx, int type, int donotcheck)
 		_tcscpy (dfxhistory[type][i + 1], dfxhistory[type][i]);
 	_tcscpy (dfxhistory[type][0], name);
 	return 1;
+#endif
 }
 
 TCHAR *DISK_history_get (int idx, int type)
 {
+#ifdef __LIBRETRO__
+	return NULL;
+#else
 	if (idx >= MAX_PREVIOUS_FLOPPIES)
 		return NULL;
 	return dfxhistory[type][idx];
+#endif
 }
 
 static void disk_insert_2 (int num, const TCHAR *name, bool forced, bool forcedwriteprotect)

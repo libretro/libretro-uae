@@ -219,16 +219,16 @@ void inputdevice_compa_clear (struct uae_prefs *prefs, int index);
 int intputdevice_compa_get_eventtype (int evt, const int **axistable);
 void inputdevice_sparecopy (struct uae_input_device *uid, int num, int sub);
 
-uae_u16 potgo_value;
-uae_u16 POTGOR (void);
-void POTGO (uae_u16 v);
-uae_u16 POT0DAT (void);
-uae_u16 POT1DAT (void);
-void JOYTEST (uae_u16 v);
-uae_u16 JOY0DAT (void);
-uae_u16 JOY1DAT (void);
-void JOYSET (int num, uae_u16 v);
-uae_u16 JOYGET (int num);
+extern uae_u16 potgo_value;
+extern uae_u16 POTGOR (void);
+extern void POTGO (uae_u16 v);
+extern uae_u16 POT0DAT (void);
+extern uae_u16 POT1DAT (void);
+extern void JOYTEST (uae_u16 v);
+extern uae_u16 JOY0DAT (void);
+extern uae_u16 JOY1DAT (void);
+extern void JOYSET (int num, uae_u16 v);
+extern uae_u16 JOYGET (int num);
 
 void inputdevice_vsync (void);
 void inputdevice_hsync (void);

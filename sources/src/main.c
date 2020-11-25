@@ -115,7 +115,9 @@ static void hr (void)
 static void show_version (void)
 {
 	write_log (_T("PUAE %d.%d.%d (%s)\n"), UAEMAJOR, UAEMINOR, UAESUBREV, PACKAGE_COMMIT);
+#ifdef GIT_VERSION
 	write_log (_T("Git commit:%s\n"), GIT_VERSION);
+#endif
 	write_log (_T("Build date: " __DATE__ " " __TIME__ "\n"));
 }
 
