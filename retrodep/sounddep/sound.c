@@ -7,15 +7,11 @@
   * Copyright 2003 Richard Drummond
   */
 
-
-
 #include "sysconfig.h"
 #include "sysdeps.h"
 
 #include "options.h"
-#ifndef __CELLOS_LV2__ 
-#include "memory.h"
-#endif
+#include "memory_uae.h"
 #include "custom.h"
 #include "audio.h"
 #include "gensound.h"
