@@ -6,6 +6,9 @@
  * Copyright 1995 Bernd Schmidt
  */
 
+#ifndef UAE_MEMORY_H
+#define UAE_MEMORY_H
+
 #ifndef HAS_UAE_PREFS_STRUCT
 struct uae_prefs;
 #endif // HAS_UAEPREFS_STRUCT
@@ -434,3 +437,4 @@ void *arm_memcpy(void *dest, const void *src, size_t n);
 #define uae4all_memclr(p,l) memset(p, 0, l)
 #endif
 
+#endif /* UAE_MEMORY_H */

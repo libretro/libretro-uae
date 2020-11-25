@@ -29,7 +29,7 @@
 #include "threaddep/thread.h"
 #include "scsidev.h"
 #include "cda_play.h"
-#include "memory.h"
+#include "memory_uae.h"
 #include "audio.h"
 #include "uae.h"
 #include "cdrom.h"

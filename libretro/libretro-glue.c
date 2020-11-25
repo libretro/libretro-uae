@@ -7,7 +7,7 @@
 
 #include "options.h"
 #include "uae.h"
-#include "memory.h"
+#include "memory_uae.h"
 #include "xwin.h"
 #include "custom.h"
 #include "drawing.h"
