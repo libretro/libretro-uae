@@ -2268,7 +2268,7 @@ int zfile_zcompress (struct zfile *f, void *src, int size)
 		zs.next_out = outbuf;
 		zs.avail_out = sizeof (outbuf);
 		v = deflate (&zs, Z_NO_FLUSH | Z_FINISH);
-		if (sizeof (outbuf) - zs.avail_out > 0)
+		if (sizeof (outbuf) > zs.avail_out)
 			zfile_fwrite (outbuf, 1, sizeof (outbuf) - zs.avail_out, f);
 	}
 	deflateEnd (&zs);
