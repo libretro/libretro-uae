@@ -4138,6 +4138,7 @@ static bool retro_create_config()
                /* Manipulate WHDLoad.prefs */
                int WHDLoad_ConfigDelay = 0;
                int WHDLoad_SplashDelay = 0;
+               int WHDLoad_WriteDelay  = (opt_use_whdload == 2) ? 50 : 0;
 
                switch (opt_use_whdload_prefs)
                {
@@ -4203,12 +4204,12 @@ static bool retro_create_config()
                   {
                      while (fgets(whdload_filebuf, sizeof(whdload_filebuf), whdload_prefs))
                      {
-                        if (strstr(whdload_filebuf, ";ConfigDelay=") || strstr(whdload_filebuf, ";SplashDelay="))
-                           fprintf(whdload_prefs_new, "%s", whdload_filebuf);
-                        else if (strstr(whdload_filebuf, "ConfigDelay="))
-                           fprintf(whdload_prefs_new, "%s%d\n", "ConfigDelay=", WHDLoad_ConfigDelay);
-                        else if (strstr(whdload_filebuf, "SplashDelay="))
-                           fprintf(whdload_prefs_new, "%s%d\n", "SplashDelay=", WHDLoad_SplashDelay);
+                        if (strstr(whdload_filebuf, "ConfigDelay=") && whdload_filebuf[0] == 'C')
+                           fprintf(whdload_prefs_new, "ConfigDelay=%d\n", WHDLoad_ConfigDelay);
+                        else if (strstr(whdload_filebuf, "SplashDelay=") && whdload_filebuf[0] == 'S')
+                           fprintf(whdload_prefs_new, "SplashDelay=%d\n", WHDLoad_SplashDelay);
+                        else if (strstr(whdload_filebuf, "WriteDelay=") && whdload_filebuf[0] == 'W')
+                           fprintf(whdload_prefs_new, "WriteDelay=%d\n", WHDLoad_WriteDelay);
                         else
                            fprintf(whdload_prefs_new, "%s", whdload_filebuf);
                      }
