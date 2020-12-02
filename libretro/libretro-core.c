@@ -2880,6 +2880,8 @@ static bool retro_disk_set_eject_state(bool ejected)
             case DC_IMAGE_TYPE_CD:
                changed_prefs.cdslots[0].name[0] = 0;
                break;
+            default:
+               break;
          }
       }
       else if (path_is_valid(dc->files[dc->index]))
@@ -2898,6 +2900,8 @@ static bool retro_disk_set_eject_state(bool ejected)
                break;
             case DC_IMAGE_TYPE_CD:
                strcpy(changed_prefs.cdslots[0].name, dc->files[dc->index]);
+               break;
+            default:
                break;
          }
       }
@@ -4134,6 +4138,7 @@ static bool retro_create_config()
                /* Manipulate WHDLoad.prefs */
                int WHDLoad_ConfigDelay = 0;
                int WHDLoad_SplashDelay = 0;
+               int WHDLoad_WriteDelay  = (opt_use_whdload == 2) ? 50 : 0;
 
                switch (opt_use_whdload_prefs)
                {
@@ -4199,12 +4204,12 @@ static bool retro_create_config()
                   {
                      while (fgets(whdload_filebuf, sizeof(whdload_filebuf), whdload_prefs))
                      {
-                        if (strstr(whdload_filebuf, ";ConfigDelay=") || strstr(whdload_filebuf, ";SplashDelay="))
-                           fprintf(whdload_prefs_new, "%s", whdload_filebuf);
-                        else if (strstr(whdload_filebuf, "ConfigDelay="))
-                           fprintf(whdload_prefs_new, "%s%d\n", "ConfigDelay=", WHDLoad_ConfigDelay);
-                        else if (strstr(whdload_filebuf, "SplashDelay="))
-                           fprintf(whdload_prefs_new, "%s%d\n", "SplashDelay=", WHDLoad_SplashDelay);
+                        if (strstr(whdload_filebuf, "ConfigDelay=") && whdload_filebuf[0] == 'C')
+                           fprintf(whdload_prefs_new, "ConfigDelay=%d\n", WHDLoad_ConfigDelay);
+                        else if (strstr(whdload_filebuf, "SplashDelay=") && whdload_filebuf[0] == 'S')
+                           fprintf(whdload_prefs_new, "SplashDelay=%d\n", WHDLoad_SplashDelay);
+                        else if (strstr(whdload_filebuf, "WriteDelay=") && whdload_filebuf[0] == 'W')
+                           fprintf(whdload_prefs_new, "WriteDelay=%d\n", WHDLoad_WriteDelay);
                         else
                            fprintf(whdload_prefs_new, "%s", whdload_filebuf);
                      }
@@ -4691,11 +4696,11 @@ void update_audiovideo(void)
 #endif
 
       /* Super Skidmarks force to SuperHires */
-      if (current_resolution == 1 && bplcon0 == 0xC201 && ((diwfirstword_total == 210 && diwlastword_total && 786) || (diwfirstword_total == 420 && diwlastword_total && 1572)))
+      if (current_resolution == 1 && bplcon0 == 0xC201 && ((diwfirstword_total == 210 && diwlastword_total == 786) || (diwfirstword_total == 420 && diwlastword_total == 1572)))
          current_resolution = 2;
       /* Super Stardust force to SuperHires, rather pointless and causes a false positive on The Settlers */
 #if 0
-      else if (current_resolution == 0 && (bplcon0 == 0 /*CD32*/|| bplcon0 == 512 /*AGA*/) && ((diwfirstword_total == 114 && diwlastword_total && 818) || (diwfirstword_total == 228 && diwlastword_total && 1636)))
+      else if (current_resolution == 0 && (bplcon0 == 0 /*CD32*/|| bplcon0 == 512 /*AGA*/) && ((diwfirstword_total == 114 && diwlastword_total == 818) || (diwfirstword_total == 228 && diwlastword_total == 1636)))
          current_resolution = 2;
 #endif
       /* Lores force to Hires */
