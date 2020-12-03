@@ -1766,16 +1766,11 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (!strcmp(var.value, "0%"))
-         opt_vkbd_alpha = GRAPH_ALPHA_100;
-      else if (!strcmp(var.value, "25%"))
-         opt_vkbd_alpha = GRAPH_ALPHA_75;
-      else if (!strcmp(var.value, "50%"))
-         opt_vkbd_alpha = GRAPH_ALPHA_50;
-      else if (!strcmp(var.value, "75%"))
-         opt_vkbd_alpha = GRAPH_ALPHA_25;
-      else if (!strcmp(var.value, "100%"))
-         opt_vkbd_alpha = GRAPH_ALPHA_0;
+      if      (!strcmp(var.value, "0%"))   opt_vkbd_alpha = GRAPH_ALPHA_100;
+      else if (!strcmp(var.value, "25%"))  opt_vkbd_alpha = GRAPH_ALPHA_75;
+      else if (!strcmp(var.value, "50%"))  opt_vkbd_alpha = GRAPH_ALPHA_50;
+      else if (!strcmp(var.value, "75%"))  opt_vkbd_alpha = GRAPH_ALPHA_25;
+      else if (!strcmp(var.value, "100%")) opt_vkbd_alpha = GRAPH_ALPHA_0;
    }
 
    var.key = "puae_cpu_compatibility";
@@ -2696,7 +2691,7 @@ static void update_variables(void)
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_vkbd_theme";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_vkbd_alpha";
+   option_display.key = "puae_vkbd_transparency";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
 
    /* Audio options */
