@@ -4,14 +4,15 @@
 extern void print_virtual_kbd(unsigned short int *pixels);
 extern int check_vkey(int x, int y);
 
-typedef struct {
+typedef struct
+{
    char normal[9];
    char shift[9];
    int value;
 } retro_vkeys;
 
-static retro_vkeys vkeys[VKBDX * VKBDY * 2] = {
-
+static retro_vkeys vkeys[VKBDX * VKBDY * 2] =
+{
    /* -11 */
    { {10,'L'},{10,'L'},-15 },
    { {10,'R'},{10,'R'},-16 },
@@ -44,7 +45,7 @@ static retro_vkeys vkeys[VKBDX * VKBDY * 2] = {
    { "2"   ,"@"   ,AK_2 },
    { "3"   ,"#"   ,AK_3 },
    { "4"   ,"$"   ,AK_4 },
-   { "5"   ,"%%"  ,AK_5 },
+   { "5"   ,"%"   ,AK_5 },
    { "6"   ,"^"   ,AK_6 },
    { "7"   ,"&"   ,AK_7 },
    { "8"   ,"*"   ,AK_8 },
@@ -221,7 +222,6 @@ static retro_vkeys vkeys[VKBDX * VKBDY * 2] = {
    { {15,27},{15,27},AK_NP4 },
    { {15,28},{15,28},AK_NP2 },
    { {15,29},{15,29},AK_NP6 },
-
 };
 
 #endif /* LIBRETRO_VKBD_H */

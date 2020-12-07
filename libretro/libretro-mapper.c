@@ -92,6 +92,7 @@ extern bool libretro_supports_bitmasks;
 /* Core options */
 extern unsigned int video_config;
 extern unsigned int video_config_aspect;
+extern bool opt_aspect_ratio_locked;
 extern unsigned int zoom_mode_id;
 extern unsigned int opt_zoom_mode_id;
 extern int opt_statusbar;
@@ -108,7 +109,7 @@ extern int opt_retropad_options;
 extern char opt_joyport_order[5];
 
 int imagename_timer = 0;
-static char statusbar_text[RETRO_PATH_MAX] = {0};
+static unsigned char statusbar_text[RETRO_PATH_MAX] = {0};
 
 bool retro_turbo_fire = false;
 bool turbo_fire_locked = false;
@@ -174,6 +175,12 @@ void emu_function(int function)
          else if (video_config_aspect == PUAE_VIDEO_NTSC)
             video_config_aspect = PUAE_VIDEO_PAL;
          request_update_av_info = true;
+         /* Lock aspect ratio */
+         opt_aspect_ratio_locked = true;
+         /* Statusbar notification */
+         snprintf(statusbar_text, 56, "%c Pixel Aspect %-50s",
+               (' ' | 0x80), (video_config_aspect == PUAE_VIDEO_PAL) ? "PAL" : "NTSC");
+         imagename_timer = 50;
          break;
       case EMU_ZOOM_MODE:
          if (zoom_mode_id == 0 && opt_zoom_mode_id == 0)
@@ -188,6 +195,10 @@ void emu_function(int function)
          retro_turbo_fire = !retro_turbo_fire;
          /* Lock turbo fire */
          turbo_fire_locked = true;
+         /* Statusbar notification */
+         snprintf(statusbar_text, 56, "%c Turbo Fire %-50s",
+               (' ' | 0x80), (retro_turbo_fire) ? "ON" : "OFF");
+         imagename_timer = 50;
          break;
    }
 }
@@ -212,7 +223,7 @@ long GetTicks(void)
 #endif
 } 
 
-static char* joystick_value_human(int val[16], int uae_device)
+static unsigned char* joystick_value_human(int val[16], int uae_device)
 {
    /*
     * uae_device:
@@ -224,8 +235,8 @@ static char* joystick_value_human(int val[16], int uae_device)
     */
 
    unsigned str_len = 4;
-   char *str = malloc(sizeof(char)*str_len);
-   snprintf(str, sizeof(char)*str_len, "%3s", "   ");
+   unsigned char *str = malloc(sizeof(char)*str_len);
+   snprintf(str, sizeof(unsigned char)*str_len, "%3s", "   ");
 
    if (val[RETRO_DEVICE_ID_JOYPAD_UP] || val[RETRO_DEVICE_ID_JOYPAD_SELECT]) /* Unused SELECT acts as a jump button */
       str[1] = 30;
@@ -245,18 +256,18 @@ static char* joystick_value_human(int val[16], int uae_device)
       {
          case 1:
             if (opt_retropad_options == 1 || opt_retropad_options == 3)
-               str[1] = ('2' | -0x80);
+               str[1] = ('2' | 0x80);
             else
-               str[1] = ('1' | -0x80);
+               str[1] = ('1' | 0x80);
             break;
          case 3:
-            str[1] = ('L' | -0x80);
+            str[1] = ('L' | 0x80);
             break;
          case 4:
-            str[1] = ('1' | -0x80);
+            str[1] = ('1' | 0x80);
             break;
          default:
-            str[1] = (str[1] | -0x80);
+            str[1] = (str[1] | 0x80);
             break;
       }
    }
@@ -269,16 +280,16 @@ static char* joystick_value_human(int val[16], int uae_device)
             if (opt_retropad_options == 1 || opt_retropad_options == 3)
                ; /* no-op */
             else
-               str[1] = ('2' | -0x80);
+               str[1] = ('2' | 0x80);
             break;
          case 3:
-            str[1] = ('R' | -0x80);
+            str[1] = ('R' | 0x80);
             break;
          case 4:
-            str[1] = ('2' | -0x80);
+            str[1] = ('2' | 0x80);
             break;
          default:
-            str[1] = (str[1] | -0x80);
+            str[1] = (str[1] | 0x80);
             break;
       }
    }
@@ -289,16 +300,16 @@ static char* joystick_value_human(int val[16], int uae_device)
       {
          case 1:
             if (opt_retropad_options == 1 || opt_retropad_options == 3)
-               str[1] = ('1' | -0x80);
+               str[1] = ('1' | 0x80);
             break;
          case 3:
-            str[1] = ('M' | -0x80);
+            str[1] = ('M' | 0x80);
             break;
          case 4:
-            str[1] = ('3' | -0x80);
+            str[1] = ('3' | 0x80);
             break;
          default:
-            str[1] = (str[1] | -0x80);
+            str[1] = (str[1] | 0x80);
             break;
       }
    }
@@ -308,10 +319,10 @@ static char* joystick_value_human(int val[16], int uae_device)
       switch (uae_device)
       {
          case 4:
-            str[1] = ('4' | -0x80);
+            str[1] = ('4' | 0x80);
             break;
          default:
-            str[1] = (str[1] | -0x80);
+            str[1] = (str[1] | 0x80);
             break;
       }
    }
@@ -321,7 +332,7 @@ static char* joystick_value_human(int val[16], int uae_device)
       switch (uae_device)
       {
          case 2:
-            str[1] = ('P' | -0x80);
+            str[1] = ('P' | 0x80);
             break;
       }
    }
@@ -331,7 +342,7 @@ static char* joystick_value_human(int val[16], int uae_device)
       switch (uae_device)
       {
          case 2:
-            str[0] = ('R' | -0x80);
+            str[0] = ('R' | 0x80);
             break;
       }
    }
@@ -341,7 +352,7 @@ static char* joystick_value_human(int val[16], int uae_device)
       switch (uae_device)
       {
          case 2:
-            str[2] = ('F' | -0x80);
+            str[2] = ('F' | 0x80);
             break;
       }
    }
@@ -349,7 +360,7 @@ static char* joystick_value_human(int val[16], int uae_device)
    return str;
 }
 
-static int joystick_color(int val[16])
+static unsigned int joystick_color(int val[16])
 {
    unsigned color = 0;
 
@@ -424,9 +435,9 @@ void display_current_image(const char *image, bool inserted)
    snprintf(&statusbar_text[0], sizeof(statusbar_text), "%-100s", imagename);
 
    if (inserted)
-      statusbar_text[0] = (8 | -0x80);
+      statusbar_text[0] = (8 | 0x80);
    else if (!strcmp(image, ""))
-      statusbar_text[0] = (9 | -0x80);
+      statusbar_text[0] = (9 | 0x80);
 }
 
 void print_statusbar(void)
@@ -537,10 +548,10 @@ void print_statusbar(void)
    char JOYMODE3[5] = {0};
    char JOYMODE4[5] = {0};
 
-   char JOYPORT1[5] = {0};
-   char JOYPORT2[5] = {0};
-   char JOYPORT3[5] = {0};
-   char JOYPORT4[5] = {0};
+   unsigned char JOYPORT1[5] = {0};
+   unsigned char JOYPORT2[5] = {0};
+   unsigned char JOYPORT3[5] = {0};
+   unsigned char JOYPORT4[5] = {0};
 
    /* Joy port positions */
    int TEXT_X_JOYMODE1 = TEXT_X;
@@ -561,7 +572,7 @@ void print_statusbar(void)
       switch (retro_devices[0])
       {
          case RETRO_DEVICE_PUAE_CD32PAD:
-            snprintf(JOYMODE1, sizeof(JOYMODE1), "%2s", "P1");
+            snprintf(JOYMODE1, sizeof(JOYMODE1), "%2s", "C1");
             break;
          case RETRO_DEVICE_PUAE_ANALOG:
             snprintf(JOYMODE1, sizeof(JOYMODE1), "%2s", "A1");
@@ -574,7 +585,7 @@ void print_statusbar(void)
       switch (retro_devices[1])
       {
          case RETRO_DEVICE_PUAE_CD32PAD:
-            snprintf(JOYMODE2, sizeof(JOYMODE2), "%2s", "P2");
+            snprintf(JOYMODE2, sizeof(JOYMODE2), "%2s", "C2");
             break;
          case RETRO_DEVICE_PUAE_ANALOG:
             snprintf(JOYMODE1, sizeof(JOYMODE1), "%2s", "A2");
