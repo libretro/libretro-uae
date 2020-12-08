@@ -407,7 +407,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_floppy_write_protection",
          "Media > Floppy Write Protection",
-         "Makes all drives read only. Changing this while emulation is running ejects and reinserts all disks.",
+         "Makes all drives read only. Changing this while emulation is running ejects and reinserts all disks. IPF images are always read only!",
          {
             { "disabled", NULL },
             { "enabled", NULL },
