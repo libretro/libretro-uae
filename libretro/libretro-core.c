@@ -152,6 +152,7 @@ unsigned int video_config_old = 0;
 unsigned int video_config_aspect = 0;
 unsigned int video_config_geometry = 0;
 unsigned int video_config_allow_hz_change = 0;
+bool opt_aspect_ratio_locked = false;
 
 struct zfile *retro_deserialize_file = NULL;
 static size_t save_state_file_size = 0;
@@ -406,7 +407,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_floppy_write_protection",
          "Media > Floppy Write Protection",
-         "Makes all drives read only. Changing this while emulation is running ejects and reinserts all disks.",
+         "Makes all drives read only. Changing this while emulation is running ejects and reinserts all disks. IPF images are always read only!",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -552,7 +553,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_video_aspect",
          "Video > Pixel Aspect Ratio",
-         "- 'PAL': 1/1 = 1.000\n- 'NTSC': 44/52 = 0.846",
+         "Hotkey toggling disables this option until core restart.\n- 'PAL': 1/1 = 1.000\n- 'NTSC': 44/52 = 0.846",
          {
             { "auto", "Automatic" },
             { "PAL", NULL },
@@ -1605,9 +1606,15 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
+      int video_config_aspect_prev = video_config_aspect;
+
       if      (!strcmp(var.value, "PAL"))  video_config_aspect = PUAE_VIDEO_PAL;
       else if (!strcmp(var.value, "NTSC")) video_config_aspect = PUAE_VIDEO_NTSC;
       else                                 video_config_aspect = 0;
+
+      /* Revert if aspect ratio is locked */
+      if (opt_aspect_ratio_locked)
+         video_config_aspect = video_config_aspect_prev;
    }
 
    var.key = "puae_video_allow_hz_change";
@@ -3211,6 +3218,7 @@ void retro_deinit(void)
    real_ntsc = false;
    forced_video = false;
    locked_video_horizontal = false;
+   opt_aspect_ratio_locked = false;
    libretro_supports_bitmasks = false;
 }
 

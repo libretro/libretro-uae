@@ -543,35 +543,28 @@ void Draw_string32(uint32_t *surf, signed short int x, signed short int y,
 
 void Draw_text(unsigned short *buffer, int x, int y,
       unsigned short fgcol, unsigned short bgcol, libretro_graph_alpha_t alpha, bool draw_bg,
-      int scalex, int scaley, int max, char *string, ...)
+      int scalex, int scaley, int max, unsigned char *string)
 {
-   char text[256];
-   va_list ap;
-
    if (string == NULL)
       return;
-
-   va_start(ap, string);
-   vsnprintf(text, sizeof(text), string, ap);
-   va_end(ap);
 
 #if 0
    Draw_string(buffer, x, y, text, max, scalex, scaley, fgcol, bgcol, alpha, draw_bg);
 #else
-   char c;
+   unsigned char c;
    char s[2] = {0};
    int charwidth = 6;
    int cmax;
-   cmax = strlen(text);
+   cmax = strlen(string);
    cmax = (cmax > max) ? max : cmax;
    for (int i = 0; i < cmax; i++)
    {
-      c = text[i];
+      c = string[i];
       if (c == 0)
          break;
-      if (c & -0x80)
+      if (c & 0x80)
       {
-         snprintf(s, sizeof(s), "%c", c & 0x7f);
+         snprintf(s, sizeof(s), "%c", c - 0x80);
          Draw_string(buffer, x+(i*charwidth*scalex), y, s, 1, scalex, scaley, bgcol, fgcol, alpha, draw_bg);
       }
       else
@@ -585,35 +578,28 @@ void Draw_text(unsigned short *buffer, int x, int y,
 
 void Draw_text32(uint32_t *buffer, int x, int y,
       uint32_t fgcol, uint32_t bgcol, libretro_graph_alpha_t alpha, bool draw_bg,
-      int scalex, int scaley, int max, char *string,...)
+      int scalex, int scaley, int max, unsigned char *string)
 {
-   char text[256];
-   va_list ap;
-
    if (string == NULL)
       return;
-
-   va_start(ap, string);
-   vsnprintf(text, sizeof(text), string, ap);
-   va_end(ap);
 
 #if 0
    Draw_string32(buffer, x, y, text, max, scalex, scaley, fgcol, bgcol, alpha, draw_bg);
 #else
-   char c;
+   unsigned char c;
    char s[2] = {0};
    int charwidth = 6;
    int cmax;
-   cmax = strlen(text);
+   cmax = strlen(string);
    cmax = (cmax > max) ? max : cmax;
    for (int i = 0; i < cmax; i++)
    {
-      c = text[i];
+      c = string[i];
       if (c == 0)
          break;
-      if (c & -0x80)
+      if (c & 0x80)
       {
-         snprintf(s, sizeof(s), "%c", c & 0x7f);
+         snprintf(s, sizeof(s), "%c", c - 0x80);
          Draw_string32(buffer, x+(i*charwidth*scalex), y, s, 1, scalex, scaley, bgcol, fgcol, alpha, draw_bg);
       }
       else
