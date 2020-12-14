@@ -53,9 +53,6 @@
 #ifdef __LIBRETRO__
 #include "libretro-core.h"
 extern bool retro_statusbar;
-extern void retro_set_led(unsigned);
-static unsigned led_on_prev = 0;
-static unsigned led_on = 0;
 #endif
 
 /* internal prototypes */
@@ -3460,25 +3457,6 @@ void finish_drawing_frame (void)
 #ifdef __LIBRETRO__
 	if (retro_statusbar)
 		print_statusbar();
-
-    led_on = 0;
-    for (int i = 0; i < 4; i++)
-    {
-        if (!led_on && gui_data.df[i][0])
-            led_on = gui_data.drive_motor[i];
-    }
-    if (!led_on && gui_data.hd >= 0)
-        led_on = gui_data.hd;
-    if (!led_on && gui_data.cd >= 0)
-        led_on = gui_data.cd & (LED_CD_ACTIVE | LED_CD_AUDIO);
-    if (!led_on && gui_data.md >= 1)
-        led_on = gui_data.md;
-
-    if (led_on_prev != led_on)
-    {
-        led_on_prev = led_on;
-        retro_set_led(led_on);
-    }
 #endif
 	if (currprefs.leds_on_screen) {
 		int slx, sly;
