@@ -90,8 +90,8 @@ The following Kickstart ROMs are required in RetroArch `system` directory:
 Amiga Forever BIOS files must be renamed accordingly.
 
 | System | Version                       | Filename               | Amiga Forever             | Size      | MD5                              |
-|--------|-------------------------------|------------------------|---------------------------|-----------|----------------------------------|
-| A500 ! | KS v1.2 rev 33.180            | **kick33180.A500**     | amiga-os-120.rom          |   262 144 | 85ad74194e87c08904327de1a9443b7a |
+|--------|-------------------------------|------------------------|---------------------------|----------:|----------------------------------|
+| A500   | KS v1.2 rev 33.180 !          | **kick33180.A500**     | amiga-os-120.rom          |   262 144 | 85ad74194e87c08904327de1a9443b7a |
 | A500   | KS v1.3 rev 34.005            | **kick34005.A500**     | amiga-os-130.rom          |   262 144 | 82a21c1890cae844b3df741f2762d48d |
 | A500+  | KS v2.04 rev 37.175           | **kick37175.A500**     | amiga-os-204.rom          |   524 288 | dc10d7bdd1b6f450773dfb558477c230 |
 | A600   | KS v3.1 rev 40.063            | **kick40063.A600**     | amiga-os-310-a600.rom     |   524 288 | e40a5dfb3d017ba8779faba30cbd1c8e |
@@ -104,7 +104,7 @@ Amiga Forever BIOS files must be renamed accordingly.
 For CD32 you need either separate ROMs (Kickstart + extended ROM) or the combined ROM:
 
 | System | Version                       | Filename               | Amiga Forever             | Size      | MD5                              |
-|--------|-------------------------------|------------------------|---------------------------|-----------|----------------------------------|
+|--------|-------------------------------|------------------------|---------------------------|----------:|----------------------------------|
 | CD32   | KS + extended v3.1 rev 40.060 | **kick40060.CD32**     |                           | 1 048 576 | f2f241bf094168cfb9e7805dc2856433 |
 |        |                               | OR                     |                           |           |                                  |
 | CD32   | KS v3.1 rev 40.060            | **kick40060.CD32**     | amiga-os-310-cd32.rom     |   524 288 | 5f8924d013dd57a89cf349f4cdedc6b1 |
