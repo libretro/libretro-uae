@@ -258,7 +258,7 @@ bool dc_replace_file(dc_storage* dc, int index, const char* filename)
       {
          char zip_basename[RETRO_PATH_MAX] = {0};
          snprintf(zip_basename, sizeof(zip_basename), "%s", path_basename(full_path_replace));
-         snprintf(zip_basename, sizeof(zip_basename), "%s", path_remove_extension(zip_basename));
+         path_remove_extension(zip_basename);
 
          path_mkdir(retro_temp_directory);
          if (strendswith(full_path_replace, "zip"))
@@ -544,7 +544,7 @@ static bool dc_add_m3u_disk(
          char lastfile[RETRO_PATH_MAX];
          char zip_basename[RETRO_PATH_MAX];
          snprintf(zip_basename, sizeof(zip_basename), "%s", path_basename(full_path));
-         snprintf(zip_basename, sizeof(zip_basename), "%s", path_remove_extension(zip_basename));
+         path_remove_extension(zip_basename);
 
          path_mkdir(retro_temp_directory);
          if (strendswith(full_path, "zip"))
