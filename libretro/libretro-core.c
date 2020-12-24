@@ -3565,7 +3565,8 @@ static void retro_print_kickstart(FILE** configfile)
       else
       {
          snprintf(flash_filename, sizeof(flash_filename), "%s", path_basename(full_path));
-         snprintf(flash_filename, sizeof(flash_filename), "%s.nvr", path_remove_extension(flash_filename));
+         path_remove_extension(flash_filename);
+         snprintf(flash_filename, sizeof(flash_filename), "%s.nvr", flash_filename);
       }
       path_join((char*)&flash_filepath, retro_save_directory, flash_filename);
       log_cb(RETRO_LOG_INFO, "Using NVRAM: '%s'\n", flash_filepath);
@@ -3824,7 +3825,7 @@ static bool retro_create_config()
       {
          char zip_basename[RETRO_PATH_MAX] = {0};
          snprintf(zip_basename, sizeof(zip_basename), "%s", path_basename(full_path));
-         snprintf(zip_basename, sizeof(zip_basename), "%s", path_remove_extension(zip_basename));
+         path_remove_extension(zip_basename);
 
          path_mkdir(retro_temp_directory);
          if (strendswith(full_path, "zip"))
@@ -4082,7 +4083,7 @@ static bool retro_create_config()
                if (strendswith(full_path, "slave") || strendswith(full_path, "info"))
                {
                   snprintf(tmp_str_name, sizeof(tmp_str_name), "%s", path_basename(tmp_str));
-                  snprintf(tmp_str_name, sizeof(tmp_str_name), "%s", path_remove_extension(tmp_str_name));
+                  path_remove_extension(tmp_str_name);
                   path_parent_dir(tmp_str);
                   snprintf(tmp_str_path, sizeof(tmp_str_path), "%s%s", tmp_str, tmp_str_name);
                   if (!path_is_directory(tmp_str_path))
