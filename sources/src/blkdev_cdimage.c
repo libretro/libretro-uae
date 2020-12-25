@@ -17,6 +17,7 @@
 #else
 #include <sys/timeb.h>
 #endif
+#include <ctype.h>
 
 #include "sysconfig.h"
 #include "sysdeps.h"
