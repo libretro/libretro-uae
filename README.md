@@ -218,11 +218,11 @@ Please be aware that there are 32-bits and 64-bits versions of the library. Choo
 ### ZIP support
 
 ZIPs are extracted to a temporary directory in `saves`, bypassing the default frontend extraction.
-The temporary directory is removed on exit. ZIP is not repacked, which means saves and highscores are lost.
+The temporary directory is emptied but not removed on exit. ZIP is not repacked, which means saves and highscores are lost.
 
 This allows:
 
-- Automatic M3U playlist generation of all disks
+- Automatic M3U playlist generation of all files
 - The use of zipped images in M3Us
 - Hard drive images will be treated one by one and only the first file found is selected for launch
 - If no disk/drive images are found, the ZIP will be treated as a directory
