@@ -977,7 +977,9 @@ void zip_uncompress(char *in, char *out, char *lastfile)
 
       err = unzGetCurrentFileInfo(uf, &file_info, filename_inzip, sizeof(filename_inzip), NULL, 0, NULL, 0);
       snprintf(filename_withpath, sizeof(filename_withpath), "%s%s%s", out, DIR_SEP_STR, filename_inzip);
-      if (dc_get_image_type(filename_inzip) == DC_IMAGE_TYPE_FLOPPY && lastfile != NULL)
+      if (lastfile != NULL &&
+            (dc_get_image_type(filename_inzip) == DC_IMAGE_TYPE_FLOPPY ||
+             dc_get_image_type(filename_inzip) == DC_IMAGE_TYPE_CD))
          snprintf(lastfile, RETRO_PATH_MAX, "%s", filename_inzip);
 
       p = filename_withoutpath = filename_inzip;
