@@ -208,7 +208,7 @@ void print_vkbd(unsigned short int *pixels)
    /* Extra color keys */
    int extra_keys[] =
    {
-       -2 /*NUMPAD*/, -18 /*J/M*/, -19 /*TRBF*/, -22 /*ASPR*/, -21 /*STBR*/,
+       -2 /*NUMPAD*/, -18 /*J/M*/, -19 /*TRBF*/, -22 /*ASPR/ZOOM*/, -21 /*STBR*/,
    };
    int extra_keys_len = sizeof(extra_keys) / sizeof(extra_keys[0]);
 
