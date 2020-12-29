@@ -33,6 +33,7 @@ extern int libretro_frame_end;
 
 unsigned short int* pixbuf = NULL;
 extern unsigned short int retro_bmp[RETRO_BMP_SIZE];
+extern char retro_temp_directory[RETRO_PATH_MAX];
 void retro_audio_batch_cb(const int16_t *data, size_t frames);
 
 int prefs_changed = 0;
@@ -850,9 +851,10 @@ void remove_recurse(const char *path)
    }
 
    closedir(dir);
-#if 0
-   rmdir(path);
-#endif
+
+   /* Leave the root directory for RAM disk usage */
+   if (strcmp(retro_temp_directory, path))
+      rmdir(path);
 }
 
 void path_join(char* out, const char* basedir, const char* filename)
