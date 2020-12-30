@@ -328,7 +328,7 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
                 } else if (fps > 99) {
                     num1 = -1;
                     num2 = fps / 100;
-                    num3 = 13;
+                    num3 = 10;
                 } else {
                     num1 = fps / 100;
                     num2 = (fps - num1 * 100) / 10;
