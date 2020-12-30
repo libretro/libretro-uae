@@ -153,6 +153,8 @@ void emu_function(int function)
    {
       case EMU_VKBD:
          retro_vkbd = !retro_vkbd;
+         /* Release VKBD controllable joypads */
+         memset(joypad_bits, 0, 2*sizeof(joypad_bits[0]));
          break;
       case EMU_STATUSBAR:
          retro_statusbar = !retro_statusbar;
