@@ -582,6 +582,6 @@ int driveclick_fdrawcmd_open(int drive)
     return 0;
 }
 
-#endif // __LIBRETRO__
+#endif /* __LIBRETRO__ */
 
-#endif // DRIVESOUND
+#endif /* DRIVESOUND */
