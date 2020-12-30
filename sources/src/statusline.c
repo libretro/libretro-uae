@@ -57,13 +57,13 @@ void statusline_getpos (int *x, int *y, int width, int height)
 
 #ifdef __LIBRETRO__
 static const char *numbers = { /* ugly  0123456789CHD%+-PNKV */
-	"+++++++--++++-+++++++++++++++++-++++++++++++++++++++++++++++++++++++++-+++++++++-+++++++++--++---+--------------++++++++++-+++++++++++++-+++"
-	"+xxxxx+--+xx+-+xxxxx++xxxxx++x+-+x++xxxxx++xxxxx++xxxxx++xxxxx++xxxxx+++xxxx++x+-+x++xxxx+++xx+-+x---+----------+xxxxx++x+++x++x++x+++x+-+x+"
-	"+x+++x+--++x+-+++++x++++++x++x+++x++x++++++x++++++++++x++x+++x++x+++x++x++++++x+++x++x+++x+-+x++x+--+x+----+++--+x---x++xx++x++x+x++++x+++x+"
-	"+x+-+x+---+x+-+xxxxx++xxxxx++xxxxx++xxxxx++xxxxx+--++x+-+xxxxx++xxxxx++x+----+xxxxx++x+-+x+---+x+--+xxx+--+xxx+-+xxxxx++x+x+x++xx++++++x+x++"
-	"+x+++x+---+x+-+x++++++++++x++++++x++++++x++x+++x+--+x+--+x+++x++++++x++x++++++x+++x++x+++x+--+x+x+--+x+----+++--+x++++++x++xx++x+x+++-+x+x+-"
-	"+xxxxx+---+x+-+xxxxx++xxxxx+----+x++xxxxx++xxxxx+--+x+--+xxxxx++xxxxx+++xxxx++x+-+x++xxxx++-+x++xx--------------+x+----+x+++x++x++x++-++x++-"
-	"+++++++---+++-++++++++++++++----+++++++++++++++++--+++--++++++++++++++-+++++++++-+++++++++----------------------+++----+++-++++++++++--+++--"
+	"+++++++--++++-+++++++++++++++++-++++++++++++++++++++++++++++++++++++++-+++++++++-+++++++++-+++++++--------------++++++++++-++++++-++++++-+++"
+	"+xxxxx+--+xx+-+xxxxx++xxxxx++x+-+x++xxxxx++xxxxx++xxxxx++xxxxx++xxxxx+++xxxx++x+-+x++xxxx+++xx++x+---+++--------+xxxxx++x+++x++x+++x++x+-+x+"
+	"+x+++x+--++x+-+++++x++++++x++x+++x++x++++++x++++++++++x++x+++x++x+++x++x++++++x+++x++x+++x++xx+x++--++x++---+++-+x---x++xx++x++x++x+++x+++x+"
+	"+x+-+x+---+x+-+xxxxx++xxxxx++xxxxx++xxxxx++xxxxx+--++x+-+xxxxx++xxxxx++x+----+xxxxx++x+-+x++++x+++--+xxx+--+xxx++xxxxx++x+x+x++xxx++-++x+x++"
+	"+x+++x+---+x+-+x++++++++++x++++++x++++++x++x+++x+--+x+--+x+++x++++++x++x++++++x+++x++x+++x+++x+xx+--++x++---+++-+x++++++x++xx++x++x++-+x+x+-"
+	"+xxxxx+---+x+-+xxxxx++xxxxx+----+x++xxxxx++xxxxx+--+x+--+xxxxx++xxxxx+++xxxx++x+-+x++xxxx+++x++xx+---+++--------+x+----+x+++x++x+++x+-++x++-"
+	"+++++++---+++-++++++++++++++----+++++++++++++++++--+++--++++++++++++++-+++++++++-+++++++++-+++++++--------------+++----+++-++++++-+++--+++--"
 };
 #else
 static const char *numbers = { /* ugly  0123456789CHD%+-PNK */
@@ -321,10 +321,14 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
                 on_rgb = 0x000000;
                 off_rgb = gui_data.fps_color ? 0xcccc00 : 0x000000;
                 am = 2;
-                if (fps > 99) {
+                if (fps > 999) {
                     num1 = -1;
-                    num2 = 9;
-                    num3 = 9;
+                    num2 = fps / 1000;
+                    num3 = 18;
+                } else if (fps > 99) {
+                    num1 = -1;
+                    num2 = fps / 100;
+                    num3 = 13;
                 } else {
                     num1 = fps / 100;
                     num2 = (fps - num1 * 100) / 10;
