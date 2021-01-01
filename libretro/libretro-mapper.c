@@ -153,6 +153,8 @@ void emu_function(int function)
    {
       case EMU_VKBD:
          retro_vkbd = !retro_vkbd;
+         /* Release VKBD controllable joypads */
+         memset(joypad_bits, 0, 2*sizeof(joypad_bits[0]));
          break;
       case EMU_STATUSBAR:
          retro_statusbar = !retro_statusbar;
@@ -178,7 +180,7 @@ void emu_function(int function)
          /* Lock aspect ratio */
          opt_aspect_ratio_locked = true;
          /* Statusbar notification */
-         snprintf(statusbar_text, 56, "%c Pixel Aspect %-50s",
+         snprintf(statusbar_text, 56, "%c Pixel Aspect %-40s",
                (' ' | 0x80), (video_config_aspect == PUAE_VIDEO_PAL) ? "PAL" : "NTSC");
          imagename_timer = 50;
          break;
@@ -190,13 +192,17 @@ void emu_function(int function)
          else if (zoom_mode_id == 0)
             zoom_mode_id = opt_zoom_mode_id;
          request_update_av_info = true;
+         /* Statusbar notification */
+         snprintf(statusbar_text, 56, "%c Zoom Mode %-43s",
+               (' ' | 0x80), (zoom_mode_id) ? "ON" : "OFF");
+         imagename_timer = 50;
          break;
       case EMU_TURBO_FIRE:
          retro_turbo_fire = !retro_turbo_fire;
          /* Lock turbo fire */
          turbo_fire_locked = true;
          /* Statusbar notification */
-         snprintf(statusbar_text, 56, "%c Turbo Fire %-50s",
+         snprintf(statusbar_text, 56, "%c Turbo Fire %-42s",
                (' ' | 0x80), (retro_turbo_fire) ? "ON" : "OFF");
          imagename_timer = 50;
          break;
@@ -1961,9 +1967,12 @@ void update_input(int disable_physical_cursor_keys)
             {
                emu_function(EMU_STATUSBAR);
             }
-            else if (vkey_pressed == -22) /* Toggle aspect ratio */
+            else if (vkey_pressed == -22) /* Toggle aspect ratio / zoom mode */
             {
-               emu_function(EMU_ASPECT_RATIO);
+               if (retro_capslock)
+                  emu_function(EMU_ZOOM_MODE);
+               else
+                  emu_function(EMU_ASPECT_RATIO);
             }
          }
          else

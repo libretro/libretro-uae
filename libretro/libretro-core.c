@@ -3846,27 +3846,61 @@ static bool retro_create_config()
          DIR *zip_dir;
          struct dirent *zip_dirp;
          zip_dir = opendir(retro_temp_directory);
+         char *zip_lastfile;
          while ((zip_dirp = readdir(zip_dir)) != NULL)
          {
-            if (zip_dirp->d_name[0] == '.' || strendswith(zip_dirp->d_name, "m3u") || zip_mode > 1 || browsed_file[0] != '\0')
+            zip_lastfile = strdup(zip_dirp->d_name);
+
+            if (zip_lastfile[0] == '.' || strendswith(zip_lastfile, "m3u") || zip_mode > 1 || browsed_file[0] != '\0')
                continue;
 
             /* Multi file mode, generate playlist */
-            if (dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_FLOPPY)
+            if (dc_get_image_type(zip_lastfile) == DC_IMAGE_TYPE_FLOPPY ||
+                dc_get_image_type(zip_lastfile) == DC_IMAGE_TYPE_CD)
             {
                zip_mode = 1;
                zip_m3u_num++;
-               snprintf(zip_m3u_list[zip_m3u_num-1], RETRO_PATH_MAX, "%s", zip_dirp->d_name);
+               snprintf(zip_m3u_list[zip_m3u_num-1], RETRO_PATH_MAX, "%s", zip_lastfile);
             }
             /* Single file image mode */
-            else if (dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_CD
-                  || dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_HD)
+            else if (dc_get_image_type(zip_lastfile) == DC_IMAGE_TYPE_HD)
             {
                zip_mode = 2;
-               snprintf(full_path, sizeof(full_path), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_dirp->d_name);
+               snprintf(full_path, sizeof(full_path), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_lastfile);
+            }
+            else if (dc_get_image_type(zip_lastfile) == DC_IMAGE_TYPE_WHDLOAD)
+            {
+               /* Only accept infos if slave or dir exists
+                * in order to get proper content path */
+
+               char tmp_str[RETRO_PATH_MAX] = {0};
+               snprintf(tmp_str, sizeof(tmp_str), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_lastfile);
+               if (strendswith(tmp_str, "info"))
+               {
+                  path_remove_extension(tmp_str);
+                  if (!path_is_directory(tmp_str))
+                     snprintf(tmp_str, sizeof(tmp_str), "%s.slave", tmp_str);
+               }
+               if (path_is_valid(tmp_str) || path_is_directory(tmp_str))
+               {
+                  zip_mode = 2;
+                  snprintf(full_path, sizeof(full_path), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_lastfile);
+               }
             }
          }
+
+         /* Final check for single directories */
+         if (zip_mode == 0)
+         {
+            char tmp_str[RETRO_PATH_MAX] = {0};
+            snprintf(tmp_str, sizeof(tmp_str), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_lastfile);
+            if (path_is_directory(tmp_str))
+               snprintf(full_path, sizeof(full_path), "%s", tmp_str);
+         }
+
          closedir(zip_dir);
+         free(zip_lastfile);
+         zip_lastfile = NULL;
 
          switch (zip_mode)
          {
