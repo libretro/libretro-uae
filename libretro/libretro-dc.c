@@ -495,13 +495,10 @@ bool dc_save_disk_toggle(dc_storage* dc, bool file_check, bool select)
    if (!dc)
       return false;
 
-   bool file_exists = false;
    if (file_check)
-   {
-      file_exists = dc_add_m3u_save_disk(dc, full_path, retro_save_directory, NULL, 0, true);
-      return file_exists;
-   }
-   file_exists = dc_add_m3u_save_disk(dc, full_path, retro_save_directory, NULL, 0, false);
+      return dc_add_m3u_save_disk(dc, full_path, retro_save_directory, NULL, 0, true);
+
+   dc_add_m3u_save_disk(dc, full_path, retro_save_directory, NULL, 0, false);
    if (select)
    {
       unsigned save_disk_index = 0;
@@ -532,10 +529,13 @@ bool dc_save_disk_toggle(dc_storage* dc, bool file_check, bool select)
 
       /* Widget notification */
       snprintf(retro_message_msg, sizeof(retro_message_msg),
-               "%s (%d/%d)",
-               path_basename(dc->labels[dc->index]), dc->index+1, dc->count);
+               "%d/%d - %s",
+               dc->index+1, dc->count, path_basename(dc->labels[dc->index]));
       retro_message = true;
    }
+   else
+      log_cb(RETRO_LOG_INFO, "Save Disk 0 appended\n");
+
    return true;
 }
 
