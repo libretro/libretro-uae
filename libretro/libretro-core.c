@@ -3438,6 +3438,16 @@ static void retro_use_boot_hd(FILE** configfile)
 {
    char *tmp_str = NULL;
    char boothd_size[5] = {0};
+   char volume[10] = {0};
+   char label[10] = {0};
+
+   snprintf(label, sizeof(label), "%s", "BootHD");
+   snprintf(volume, sizeof(volume), "%s", "DH0");
+   /* Many HD installers have DH0: hardcoded as destination,
+   /* and WHDLoad + HDF launching require the use of DH0: */
+   if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_WHDLOAD ||
+       dc_get_image_type(full_path) == DC_IMAGE_TYPE_HD)
+      snprintf(volume, sizeof(volume), "%s", label);
 
    snprintf(boothd_size, sizeof(boothd_size), "%dM", 0);
    if (opt_use_boot_hd > 1)
@@ -3473,14 +3483,14 @@ static void retro_use_boot_hd(FILE** configfile)
       path_join((char*)&boothd_hdf, retro_save_directory, LIBRETRO_PUAE_PREFIX ".hdf");
       if (!path_is_valid(boothd_hdf))
       {
-         log_cb(RETRO_LOG_INFO, "Boot HD image file '%s' not found, attempting to create one\n", (const char*)&boothd_hdf);
-         if (make_hdf(boothd_hdf, boothd_size, "BOOT"))
-            log_cb(RETRO_LOG_ERROR, "Unable to create Boot HD image: '%s'\n", (const char*)&boothd_hdf);
+         log_cb(RETRO_LOG_INFO, "Boot HD image file '%s' not found, attempting to create one\n", boothd_hdf);
+         if (make_hdf(boothd_hdf, boothd_size, label))
+            log_cb(RETRO_LOG_ERROR, "Unable to create Boot HD image: '%s'\n", boothd_hdf);
       }
       if (path_is_valid(boothd_hdf))
       {
          tmp_str = string_replace_substring(boothd_hdf, "\\", "\\\\");
-         fprintf(*configfile, "hardfile2=rw,BOOT:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
+         fprintf(*configfile, "hardfile2=rw,%s:\"%s\",32,1,2,512,0,,uae0\n", volume, tmp_str);
          free(tmp_str);
          tmp_str = NULL;
       }
@@ -3489,22 +3499,22 @@ static void retro_use_boot_hd(FILE** configfile)
    else if (opt_use_boot_hd == 1)
    {
       char boothd_path[RETRO_PATH_MAX];
-      path_join((char*)&boothd_path, retro_save_directory, "BootHD");
+      path_join((char*)&boothd_path, retro_save_directory, label);
 
       if (!path_is_directory(boothd_path))
       {
-         log_cb(RETRO_LOG_INFO, "Boot HD image directory '%s' not found, attempting to create one\n", (const char*)&boothd_path);
+         log_cb(RETRO_LOG_INFO, "Boot HD image directory '%s' not found, attempting to create one\n", boothd_path);
          path_mkdir(boothd_path);
       }
       if (path_is_directory(boothd_path))
       {
          tmp_str = string_replace_substring(boothd_path, "\\", "\\\\");
-         fprintf(*configfile, "filesystem2=rw,BOOT:Boot:\"%s\",0\n", (const char*)tmp_str);
+         fprintf(*configfile, "filesystem2=rw,%s:%s:\"%s\",0\n", volume, label, tmp_str);
          free(tmp_str);
          tmp_str = NULL;
       }
       else
-         log_cb(RETRO_LOG_ERROR, "Unable to create Boot HD directory: '%s'\n", (const char*)&boothd_path);
+         log_cb(RETRO_LOG_ERROR, "Unable to create Boot HD directory: '%s'\n", boothd_path);
    }
 }
 
