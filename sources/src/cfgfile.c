@@ -5188,6 +5188,7 @@ void default_prefs (struct uae_prefs *p, int type)
 	p->fastmem_autoconfig = true;
 
 #ifdef __LIBRETRO__
+	p->floppy_auto_ext2 = 2;
 	p->nr_floppies = 1;
 #else
 	p->nr_floppies = 2;

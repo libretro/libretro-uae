@@ -2892,7 +2892,7 @@ static void update_variables(void)
 
 /*****************************************************************************/
 /* Disk Control */
-static bool retro_disk_set_eject_state(bool ejected)
+bool retro_disk_set_eject_state(bool ejected)
 {
    if (dc)
    {
@@ -4363,6 +4363,9 @@ static bool retro_create_config()
                   {
                      if (i < 4)
                      {
+                        if (strstr(dc->labels[i], M3U_SAVEDISK_LABEL))
+                           continue;
+
                         log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF%d: '%s'\n", i+1, i, dc->files[i]);
                         fprintf(configfile, "floppy%d=%s\n", i, dc->files[i]);
 
@@ -4373,6 +4376,14 @@ static bool retro_create_config()
                         log_cb(RETRO_LOG_WARN, "Too many disks for MultiDrive!\n");
                   }
                }
+            }
+
+            /* Scan for save disk 0, append if exists */
+            if (dc->count)
+            {
+               bool file_check = dc_save_disk_toggle(dc, true, false);
+               if (file_check)
+                  dc_save_disk_toggle(dc, false, false);
             }
          }
 

@@ -23,7 +23,7 @@ static retro_vkeys vkeys[VKBDX * VKBDY * 2] =
    { "J/M" ,"J/M" ,-18 },
    { "TRBF","TRBF",-19 },
    { "ASPR","ZOOM",-22 },
-   { "STBR","STBR",-21 },
+   { "STBR","SDSK",-21 },
    { {17}  ,{17}  ,-20 }, /* Reset */
 
    /* 0 PG1 */
