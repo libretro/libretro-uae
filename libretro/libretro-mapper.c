@@ -481,7 +481,7 @@ void print_statusbar(void)
    int FONT_COLOR           = (pix_bytes == 4) ? 0xffffff : 0xffff;;
    int FONT_SLOT            = 34 * FONT_WIDTH;
 
-   int TEXT_X               = 2;
+   int TEXT_X               = 2 * FONT_WIDTH;
    int TEXT_Y               = 0;
    int TEXT_LENGTH          = (video_config & PUAE_VIDEO_DOUBLELINE) ? 100 : 43;
 
