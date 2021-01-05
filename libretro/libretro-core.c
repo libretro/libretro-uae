@@ -1464,7 +1464,7 @@ void retro_set_environment(retro_environment_t cb)
                   /* Append "Keyboard " for keyboard keys */
                   if (retro_keys[j + hotkeys_skipped + 1].id > 0)
                   {
-                     char key_label[25] = {0};
+                     char key_label[10+25] = {0};
                      sprintf(key_label, "Keyboard %s", retro_keys[j + hotkeys_skipped + 1].label);
                      core_options[i].values[j].label = strdup(key_label);
                   }
@@ -1483,7 +1483,7 @@ void retro_set_environment(retro_environment_t cb)
                /* Append "Keyboard " for keyboard keys */
                if (retro_keys[j].id > 0)
                {
-                  char key_label[25] = {0};
+                  char key_label[10+25] = {0};
                   sprintf(key_label, "Keyboard %s", retro_keys[j].label);
                   core_options[i].values[j].label = strdup(key_label);
                }
@@ -5553,9 +5553,7 @@ bool retro_load_game(const struct retro_game_info *info)
    }
 
    /* UAE config */
-   static bool retro_return;
-   retro_return = retro_create_config();
-   if (!retro_return)
+   if (!retro_create_config())
       return false;
 
    /* Initialise emulation */
