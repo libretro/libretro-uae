@@ -79,7 +79,6 @@ extern uae_u32 natmem_size;
 
 static char RPATH[RETRO_PATH_MAX] = {0};
 char full_path[RETRO_PATH_MAX] = {0};
-char full_path_utf[RETRO_PATH_MAX] = {0};
 static char *uae_argv[] = { "puae", RPATH };
 static int restart_pending = 0;
 static char* core_options_legacy_strings = NULL;
@@ -3828,7 +3827,7 @@ static bool retro_create_config()
       return false;
    }
 
-   if (!string_is_empty(full_path_utf) && (path_is_valid(full_path_utf) || path_is_directory(full_path_utf)))
+   if (!string_is_empty(full_path) && (path_is_valid(full_path) || path_is_directory(full_path)))
    {
       /* Extract ZIP for examination */
       if (strendswith(full_path, "zip") || strendswith(full_path, "7z"))
@@ -3850,7 +3849,8 @@ static bool retro_create_config()
          FILE *zip_m3u;
          char zip_m3u_list[DC_MAX_SIZE][RETRO_PATH_MAX] = {0};
          char zip_m3u_path[RETRO_PATH_MAX];
-         snprintf(zip_m3u_path, sizeof(zip_m3u_path), "%s%s%s.m3u", retro_temp_directory, DIR_SEP_STR, zip_basename);
+         snprintf(zip_m3u_path, sizeof(zip_m3u_path), "%s%s%s.m3u",
+            retro_temp_directory, DIR_SEP_STR, utf8_to_local_string_alloc(zip_basename));
          int zip_m3u_num = 0;
 
          DIR *zip_dir;
@@ -4122,6 +4122,7 @@ static bool retro_create_config()
 
                /* Attach hard drive */
                tmp_str = string_replace_substring(full_path, "\\", "\\\\");
+               tmp_str = utf8_to_local_string_alloc(tmp_str);
                char tmp_str_name[RETRO_PATH_MAX];
                char tmp_str_path[RETRO_PATH_MAX];
                snprintf(tmp_str_name, sizeof(tmp_str_name), "%s", path_basename(tmp_str));
@@ -4319,6 +4320,7 @@ static bool retro_create_config()
             else
             {
                tmp_str = string_replace_substring(full_path, "\\", "\\\\");
+               tmp_str = utf8_to_local_string_alloc(tmp_str);
                if (path_is_directory(full_path))
                   fprintf(configfile, "filesystem2=rw,DH0:%s:\"%s\",0\n", path_basename(tmp_str), (const char*)tmp_str);
                else
@@ -4329,6 +4331,8 @@ static bool retro_create_config()
          }
          else
          {
+            char *tmp_str = NULL;
+
             /* M3U playlist */
             if (strendswith(full_path, "m3u"))
             {
@@ -4366,7 +4370,8 @@ static bool retro_create_config()
                dc->eject_state = false;
                display_current_image(dc->labels[dc->index], true);
                log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF0: '%s'\n", dc->index+1, dc->files[dc->index]);
-               fprintf(configfile, "floppy0=%s\n", dc->files[0]);
+               tmp_str = utf8_to_local_string_alloc(dc->files[0]);
+               fprintf(configfile, "floppy0=%s\n", tmp_str);
 
                /* Append rest of the disks to the config if M3U is a MultiDrive-M3U */
                if (strstr(full_path, "(MD)") != NULL || opt_floppy_multidrive)
@@ -4379,7 +4384,8 @@ static bool retro_create_config()
                            continue;
 
                         log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF%d: '%s'\n", i+1, i, dc->files[i]);
-                        fprintf(configfile, "floppy%d=%s\n", i, dc->files[i]);
+                        tmp_str = utf8_to_local_string_alloc(dc->files[i]);
+                        fprintf(configfile, "floppy%d=%s\n", i, tmp_str);
 
                         /* By default only DF0: is enabled, so floppyXtype needs to be set on the extra drives */
                         fprintf(configfile, "floppy%dtype=%d\n", i, 0); /* 0 = 3.5" DD */
@@ -4389,6 +4395,10 @@ static bool retro_create_config()
                   }
                }
             }
+
+            if (tmp_str)
+               free(tmp_str);
+            tmp_str = NULL;
 
             /* Scan for save disk 0, append if exists */
             if (dc->count)
@@ -5536,22 +5546,10 @@ void retro_run(void)
 bool retro_load_game(const struct retro_game_info *info)
 {
    /* Content */
-   char *local_path;
    if (info)
    {
-      /* path_is_valid() requires unconverted */
-      strcpy(full_path_utf, info->path);
-
-      /* Special unicode chars won't work without conversion */
-      local_path = utf8_to_local_string_alloc(info->path);
-      if (local_path)
-      {
-         strcpy(full_path, local_path);
-         free(local_path);
-         local_path = NULL;
-      }
-      else
-         return false;
+      /* path_is_valid() requires raw path */
+      strcpy(full_path, info->path);
    }
 
    /* UAE config */
