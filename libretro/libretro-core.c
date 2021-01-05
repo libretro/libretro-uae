@@ -2892,7 +2892,7 @@ static void update_variables(void)
 
 /*****************************************************************************/
 /* Disk Control */
-static bool retro_disk_set_eject_state(bool ejected)
+bool retro_disk_set_eject_state(bool ejected)
 {
    if (dc)
    {
@@ -3438,6 +3438,16 @@ static void retro_use_boot_hd(FILE** configfile)
 {
    char *tmp_str = NULL;
    char boothd_size[5] = {0};
+   char volume[10] = {0};
+   char label[10] = {0};
+
+   snprintf(label, sizeof(label), "%s", "BootHD");
+   snprintf(volume, sizeof(volume), "%s", "DH0");
+   /* Many HD installers have DH0: hardcoded as destination,
+   /* and WHDLoad + HDF launching require the use of DH0: */
+   if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_WHDLOAD ||
+       dc_get_image_type(full_path) == DC_IMAGE_TYPE_HD)
+      snprintf(volume, sizeof(volume), "%s", label);
 
    snprintf(boothd_size, sizeof(boothd_size), "%dM", 0);
    if (opt_use_boot_hd > 1)
@@ -3473,14 +3483,14 @@ static void retro_use_boot_hd(FILE** configfile)
       path_join((char*)&boothd_hdf, retro_save_directory, LIBRETRO_PUAE_PREFIX ".hdf");
       if (!path_is_valid(boothd_hdf))
       {
-         log_cb(RETRO_LOG_INFO, "Boot HD image file '%s' not found, attempting to create one\n", (const char*)&boothd_hdf);
-         if (make_hdf(boothd_hdf, boothd_size, "BOOT"))
-            log_cb(RETRO_LOG_ERROR, "Unable to create Boot HD image: '%s'\n", (const char*)&boothd_hdf);
+         log_cb(RETRO_LOG_INFO, "Boot HD image file '%s' not found, attempting to create one\n", boothd_hdf);
+         if (make_hdf(boothd_hdf, boothd_size, label))
+            log_cb(RETRO_LOG_ERROR, "Unable to create Boot HD image: '%s'\n", boothd_hdf);
       }
       if (path_is_valid(boothd_hdf))
       {
          tmp_str = string_replace_substring(boothd_hdf, "\\", "\\\\");
-         fprintf(*configfile, "hardfile2=rw,BOOT:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
+         fprintf(*configfile, "hardfile2=rw,%s:\"%s\",32,1,2,512,0,,uae0\n", volume, tmp_str);
          free(tmp_str);
          tmp_str = NULL;
       }
@@ -3489,22 +3499,22 @@ static void retro_use_boot_hd(FILE** configfile)
    else if (opt_use_boot_hd == 1)
    {
       char boothd_path[RETRO_PATH_MAX];
-      path_join((char*)&boothd_path, retro_save_directory, "BootHD");
+      path_join((char*)&boothd_path, retro_save_directory, label);
 
       if (!path_is_directory(boothd_path))
       {
-         log_cb(RETRO_LOG_INFO, "Boot HD image directory '%s' not found, attempting to create one\n", (const char*)&boothd_path);
+         log_cb(RETRO_LOG_INFO, "Boot HD image directory '%s' not found, attempting to create one\n", boothd_path);
          path_mkdir(boothd_path);
       }
       if (path_is_directory(boothd_path))
       {
          tmp_str = string_replace_substring(boothd_path, "\\", "\\\\");
-         fprintf(*configfile, "filesystem2=rw,BOOT:Boot:\"%s\",0\n", (const char*)tmp_str);
+         fprintf(*configfile, "filesystem2=rw,%s:%s:\"%s\",0\n", volume, label, tmp_str);
          free(tmp_str);
          tmp_str = NULL;
       }
       else
-         log_cb(RETRO_LOG_ERROR, "Unable to create Boot HD directory: '%s'\n", (const char*)&boothd_path);
+         log_cb(RETRO_LOG_ERROR, "Unable to create Boot HD directory: '%s'\n", boothd_path);
    }
 }
 
@@ -4114,36 +4124,27 @@ static bool retro_create_config()
                tmp_str = string_replace_substring(full_path, "\\", "\\\\");
                char tmp_str_name[RETRO_PATH_MAX];
                char tmp_str_path[RETRO_PATH_MAX];
+               snprintf(tmp_str_name, sizeof(tmp_str_name), "%s", path_basename(tmp_str));
+               path_remove_extension(tmp_str_name);
+
                if (strendswith(full_path, "slave") || strendswith(full_path, "info"))
                {
-                  snprintf(tmp_str_name, sizeof(tmp_str_name), "%s", path_basename(tmp_str));
-                  path_remove_extension(tmp_str_name);
                   path_parent_dir(tmp_str);
                   snprintf(tmp_str_path, sizeof(tmp_str_path), "%s%s", tmp_str, tmp_str_name);
                   if (!path_is_directory(tmp_str_path))
                      snprintf(tmp_str_path, sizeof(tmp_str_path), "%s", tmp_str);
                }
                if (strendswith(full_path, "lha"))
-                  fprintf(configfile, "filesystem2=ro,DH0:LHA:\"%s\",0\n", (const char*)tmp_str);
+                  fprintf(configfile, "filesystem2=ro,DH0:%s:\"%s\",0\n", tmp_str_name, tmp_str);
                else if (path_is_directory(full_path))
-                  fprintf(configfile, "filesystem2=rw,DH0:%s:\"%s\",0\n", path_basename(tmp_str), (const char*)tmp_str);
+                  fprintf(configfile, "filesystem2=rw,DH0:%s:\"%s\",0\n", tmp_str_name, tmp_str);
                else if (strendswith(full_path, "slave") || strendswith(full_path, "info"))
                   fprintf(configfile, "filesystem2=rw,DH0:%s:\"%s\",0\n", tmp_str_name, tmp_str_path);
                else
-                  fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae1\n", (const char*)tmp_str);
+                  fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae1\n", tmp_str);
                free(tmp_str);
                tmp_str = NULL;
 
-               /* Attach retro_system_directory as a read only hard drive for WHDLoad kickstarts/prefs/key */
-#ifdef WIN32
-               tmp_str = string_replace_substring(retro_system_directory, "\\", "\\\\");
-               fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s\",-128\n", (const char*)tmp_str);
-               free(tmp_str);
-               tmp_str = NULL;
-#else
-               /* Force the ending slash to make sure the path is not treated as a file */
-               fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s%s\",-128\n", retro_system_directory, "/");
-#endif
                /* WHDSaves HDF mode */
                if (opt_use_whdload == 2)
                {
@@ -4303,6 +4304,17 @@ static bool retro_create_config()
                      fclose(whdload_prefs);
                   }
                }
+
+               /* Attach retro_system_directory as a read only hard drive for WHDLoad kickstarts/prefs/key */
+#ifdef WIN32
+               tmp_str = string_replace_substring(retro_system_directory, "\\", "\\\\");
+               fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s\",-128\n", (const char*)tmp_str);
+               free(tmp_str);
+               tmp_str = NULL;
+#else
+               /* Force the ending slash to make sure the path is not treated as a file */
+               fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s%s\",-128\n", retro_system_directory, "/");
+#endif
             }
             else
             {
@@ -4363,6 +4375,9 @@ static bool retro_create_config()
                   {
                      if (i < 4)
                      {
+                        if (strstr(dc->labels[i], M3U_SAVEDISK_LABEL))
+                           continue;
+
                         log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF%d: '%s'\n", i+1, i, dc->files[i]);
                         fprintf(configfile, "floppy%d=%s\n", i, dc->files[i]);
 
@@ -4373,6 +4388,14 @@ static bool retro_create_config()
                         log_cb(RETRO_LOG_WARN, "Too many disks for MultiDrive!\n");
                   }
                }
+            }
+
+            /* Scan for save disk 0, append if exists */
+            if (dc->count)
+            {
+               bool file_check = dc_save_disk_toggle(dc, true, false);
+               if (file_check)
+                  dc_save_disk_toggle(dc, false, false);
             }
          }
 

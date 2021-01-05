@@ -21,6 +21,12 @@
 
 #include <stdbool.h>
 
+#define COMMENT             "#"
+#define M3U_SPECIAL_COMMAND "#COMMAND:"
+#define M3U_SAVEDISK        "#SAVEDISK:"
+#define M3U_SAVEDISK_LABEL  "Save Disk"
+#define M3U_PATH_DELIM      '|'
+
 /* Disk control structure and functions */
 #define DC_MAX_SIZE 20
 
@@ -44,6 +50,7 @@ struct dc_storage
    int index;
    bool eject_state;
    bool replace;
+   unsigned index_prev;
 };
 
 typedef struct dc_storage dc_storage;
@@ -56,5 +63,6 @@ void dc_reset(dc_storage* dc);
 bool dc_replace_file(dc_storage* dc, int index, const char* filename);
 bool dc_remove_file(dc_storage* dc, int index);
 enum dc_image_type dc_get_image_type(const char* filename);
+bool dc_save_disk_toggle(dc_storage* dc, bool file_check, bool select);
 
 #endif /* LIBRETRO_DC_H */

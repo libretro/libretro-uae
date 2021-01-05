@@ -23,7 +23,7 @@ static retro_vkeys vkeys[VKBDX * VKBDY * 2] =
    { "J/M" ,"J/M" ,-18 },
    { "TRBF","TRBF",-19 },
    { "ASPR","ZOOM",-22 },
-   { "STBR","STBR",-21 },
+   { "STBR","SVDS",-21 },
    { {17}  ,{17}  ,-20 }, /* Reset */
 
    /* 0 PG1 */
@@ -128,8 +128,8 @@ static retro_vkeys vkeys[VKBDX * VKBDY * 2] =
    { {10,29},{10,29},-14 },
    { "J/M" ,"J/M" ,-18 },
    { "TRBF","TRBF",-19 },
-   { "ASPR","ASPR",-22 },
-   { "STBR","STBR",-21 },
+   { "ASPR","ZOOM",-22 },
+   { "STBR","SVDS",-21 },
    { {17}  ,{17}  ,-20 }, /* Reset */
 
    /* 0 PG2 */

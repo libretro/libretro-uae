@@ -3,6 +3,7 @@
 #include "libretro-mapper.h"
 #include "libretro-graph.h"
 #include "libretro-vkbd.h"
+#include "libretro-dc.h"
 
 #include "uae_types.h"
 #include "sysconfig.h"
@@ -88,6 +89,7 @@ extern unsigned int retro_devices[RETRO_DEVICES];
 static unsigned retro_key_state[RETROK_LAST] = {0};
 static int16_t joypad_bits[RETRO_DEVICES];
 extern bool libretro_supports_bitmasks;
+extern dc_storage *dc;
 
 /* Core options */
 extern unsigned int video_config;
@@ -124,6 +126,7 @@ enum EMU_FUNCTIONS
    EMU_STATUSBAR,
    EMU_JOYMOUSE,
    EMU_RESET,
+   EMU_SAVE_DISK,
    EMU_ASPECT_RATIO,
    EMU_ZOOM_MODE,
    EMU_TURBO_FIRE,
@@ -205,6 +208,9 @@ void emu_function(int function)
          snprintf(statusbar_text, 56, "%c Turbo Fire %-42s",
                (' ' | 0x80), (retro_turbo_fire) ? "ON" : "OFF");
          imagename_timer = 50;
+         break;
+      case EMU_SAVE_DISK:
+         dc_save_disk_toggle(dc, false, true);
          break;
    }
 }
@@ -475,7 +481,7 @@ void print_statusbar(void)
    int FONT_COLOR           = (pix_bytes == 4) ? 0xffffff : 0xffff;;
    int FONT_SLOT            = 34 * FONT_WIDTH;
 
-   int TEXT_X               = 2;
+   int TEXT_X               = 2 * FONT_WIDTH;
    int TEXT_Y               = 0;
    int TEXT_LENGTH          = (video_config & PUAE_VIDEO_DOUBLELINE) ? 100 : 43;
 
@@ -1963,9 +1969,12 @@ void update_input(int disable_physical_cursor_keys)
             {
                emu_function(EMU_RESET);
             }
-            else if (vkey_pressed == -21) /* Toggle statusbar */
+            else if (vkey_pressed == -21) /* Toggle statusbar / save disk */
             {
-               emu_function(EMU_STATUSBAR);
+               if (retro_capslock)
+                  emu_function(EMU_SAVE_DISK);
+               else
+                  emu_function(EMU_STATUSBAR);
             }
             else if (vkey_pressed == -22) /* Toggle aspect ratio / zoom mode */
             {

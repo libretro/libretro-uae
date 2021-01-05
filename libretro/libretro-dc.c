@@ -28,15 +28,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define COMMENT             "#"
-#define M3U_SPECIAL_COMMAND "#COMMAND:"
-#define M3U_SAVEDISK        "#SAVEDISK:"
-#define M3U_SAVEDISK_LABEL  "Save Disk"
-#define M3U_PATH_DELIM      '|'
-
 extern char retro_save_directory[RETRO_PATH_MAX];
 extern char retro_temp_directory[RETRO_PATH_MAX];
 extern bool retro_disk_set_image_index(unsigned index);
+extern bool retro_disk_set_eject_state(bool ejected);
 extern bool opt_floppy_multidrive;
 extern char full_path[RETRO_PATH_MAX];
 extern void display_current_image(const char *image, bool inserted);
@@ -175,12 +170,19 @@ bool dc_add_file_int(dc_storage* dc, char* filename, char* label)
 
 bool dc_add_file(dc_storage* dc, const char* filename, const char* label)
 {
+   unsigned index = 0;
+
    /* Verify */
    if (dc == NULL)
       return false;
 
    if (!filename || (*filename == '\0'))
       return false;
+
+   /* Dupecheck */
+   for (index = 0; index < dc->count; index++)
+      if (!strcmp(dc->files[index], filename))
+         return true;
 
    return dc_add_file_int(dc, my_strdup(filename),
          string_is_empty(label) ? NULL : my_strdup(label));
@@ -353,6 +355,9 @@ bool dc_replace_file(dc_storage* dc, int index, const char* filename)
             {
                if (i < 4)
                {
+                  if (strstr(dc->labels[i], M3U_SAVEDISK_LABEL))
+                     continue;
+
                   log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF%d: '%s'\n", i+1, i, dc->files[i]);
                   strcpy(changed_prefs.floppyslots[i].df, dc->files[i]);
 
@@ -380,10 +385,11 @@ bool dc_replace_file(dc_storage* dc, int index, const char* filename)
    return true;
 }
 
-static bool dc_add_m3u_save_disk(
+bool dc_add_m3u_save_disk(
       dc_storage* dc,
       const char* m3u_file, const char* save_dir,
-      const char* disk_name, unsigned int index)
+      const char* disk_name, unsigned int index,
+      bool file_check)
 {
    bool save_disk_exists                     = false;
    const char *m3u_file_name                 = NULL;
@@ -412,7 +418,8 @@ static bool dc_add_m3u_save_disk(
 
    /* Get m3u file name without extension */
    snprintf(m3u_file_name_no_ext, sizeof(m3u_file_name_no_ext),
-         "%s", path_remove_extension((char*)m3u_file_name));
+         "%s", m3u_file_name);
+   path_remove_extension(m3u_file_name_no_ext);
 
    if (*m3u_file_name_no_ext == '\0')
       return false;
@@ -430,6 +437,9 @@ static bool dc_add_m3u_save_disk(
     * it differs from 'disk_name'. This is quite
     * fiddly, however - perhaps it can be added later... */
    save_disk_exists = path_is_valid(save_disk_path);
+
+   if (file_check)
+      return save_disk_exists;
 
    /* ...if not, create a new one */
    if (!save_disk_exists)
@@ -478,6 +488,55 @@ static bool dc_add_m3u_save_disk(
    }
 
    return false;
+}
+
+bool dc_save_disk_toggle(dc_storage* dc, bool file_check, bool select)
+{
+   if (!dc)
+      return false;
+
+   if (file_check)
+      return dc_add_m3u_save_disk(dc, full_path, retro_save_directory, NULL, 0, true);
+
+   dc_add_m3u_save_disk(dc, full_path, retro_save_directory, NULL, 0, false);
+   if (select)
+   {
+      unsigned save_disk_index = 0;
+      unsigned index = 0;
+      char save_disk_label[64] = {0};
+
+      snprintf(save_disk_label, 64, "%s %u",
+            M3U_SAVEDISK_LABEL, 0);
+
+      /* Scan for save disk index */
+      for (index = 0; index < dc->count; index++)
+         if (!strcmp(dc->labels[index], save_disk_label))
+            save_disk_index = index;
+
+      /* Remember previous index */
+      if (dc->index != save_disk_index)
+         dc->index_prev = dc->index;
+
+      /* Switch index */
+      if (save_disk_index == dc->index)
+         dc->index = dc->index_prev;
+      else
+         dc->index = save_disk_index;
+
+      /* Cycle disk tray */
+      retro_disk_set_eject_state(true);
+      retro_disk_set_eject_state(false);
+
+      /* Widget notification */
+      snprintf(retro_message_msg, sizeof(retro_message_msg),
+               "%d/%d - %s",
+               dc->index+1, dc->count, path_basename(dc->labels[dc->index]));
+      retro_message = true;
+   }
+   else
+      log_cb(RETRO_LOG_INFO, "Save Disk 0 appended\n");
+
+   return true;
 }
 
 static bool dc_add_m3u_disk(
@@ -632,7 +691,8 @@ void dc_parse_m3u(dc_storage* dc, const char* m3u_file, const char* save_dir)
          /* Add save disk, creating it if necessary */
          if (dc_add_m3u_save_disk(
                dc, m3u_file, save_dir,
-               disk_name, save_disk_index))
+               disk_name, save_disk_index,
+               false))
             save_disk_index++;
 
          /* Clean up */
