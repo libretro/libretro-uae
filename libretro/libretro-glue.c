@@ -946,7 +946,13 @@ void gz_uncompress(gzFile in, FILE *out)
 void zip_uncompress(char *in, char *out, char *lastfile)
 {
    unzFile uf = NULL;
-   uf = unzOpen(in);
+   char *in_local = NULL;
+   in_local = utf8_to_local_string_alloc(in);
+
+   uf = unzOpen(in_local);
+
+   free(in_local);
+   in_local = NULL;
 
    uLong i;
    unz_global_info gi;

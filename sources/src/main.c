@@ -1030,7 +1030,9 @@ void leave_program (void)
 	do_leave_program ();
 #ifdef __LIBRETRO__
 	quit_program = 0;
+#if 0
 	zfile_exit ();
+#endif
 #endif
 }
 
