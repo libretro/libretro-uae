@@ -141,8 +141,12 @@ struct my_opendir_s
 
 struct my_openfile_s
 {
+#ifdef FD_OPEN
 	int fd;
-    char *path;
+#else
+	FILE *fp;
+#endif
+	char *path;
 };
 
 extern TCHAR *nname_begin (TCHAR *);

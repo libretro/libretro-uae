@@ -22,7 +22,7 @@
 #include "fsdb.h"
 #include "misc.h"
 
-#include "filesys_host.c"
+#include "fsdb_host.c"
 
 /* The on-disk format is as follows:
  * Offset 0, 1 byte, valid
