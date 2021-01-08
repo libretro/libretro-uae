@@ -3583,6 +3583,50 @@ static void retro_print_kickstart(FILE** configfile)
    }
 }
 
+static void whdload_kscopy()
+{
+   char ks_src[RETRO_PATH_MAX] = {0};
+   char ks_dst[RETRO_PATH_MAX] = {0};
+
+   char kickstart[4][20] =
+   {
+      "kick33180.A500",
+      "kick34005.A500",
+      "kick40063.A600",
+      "kick40068.A1200"
+   };
+
+   unsigned int ks_size[4] =
+   {
+      262144,
+      262144,
+      524288,
+      524288
+   };
+
+   struct stat ks_stat;
+
+   for (unsigned x = 0; x < 4; x++)
+   {
+      snprintf(ks_src, sizeof(ks_src), "%s%s%s",
+            retro_system_directory, DIR_SEP_STR, kickstart[x]);
+      snprintf(ks_dst, sizeof(ks_dst), "%s%sWHDLoad%sDevs%sKickstarts%s%s",
+            retro_save_directory, DIR_SEP_STR, DIR_SEP_STR, DIR_SEP_STR, DIR_SEP_STR, kickstart[x]);
+
+      if (path_is_valid(ks_src) && !path_is_valid(ks_dst))
+      {
+         stat(ks_src, &ks_stat);
+
+         if (ks_stat.st_size != ks_size[x])
+            log_cb(RETRO_LOG_INFO, "WHDLoad not installing Kickstart '%s' due to incorrect size, %d != %d\n", kickstart[x], ks_stat.st_size, ks_size[x]);
+         else if (fcopy(ks_src, ks_dst) < 0)
+            log_cb(RETRO_LOG_INFO, "WHDLoad failed to install '%s'\n", kickstart[x]);
+         else
+            log_cb(RETRO_LOG_INFO, "WHDLoad found and installed '%s'\n", kickstart[x]);
+      }
+   }
+}
+
 static char* emu_config_string(char* mode, int config)
 {
    if (!strcmp(mode, "model"))
@@ -4106,6 +4150,9 @@ static bool retro_create_config()
                         /* Extract ZIP */
                         zip_uncompress(whdload_files_zip, whdload_path, NULL);
                         remove(whdload_files_zip);
+
+                        /* Copy Kickstarts */
+                        whdload_kscopy();
                      }
                      else
                         log_cb(RETRO_LOG_ERROR, "Unable to create WHDLoad image directory: '%s'\n", (const char*)&whdload_path);

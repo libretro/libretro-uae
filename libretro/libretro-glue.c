@@ -857,6 +857,51 @@ void remove_recurse(const char *path)
       rmdir(path);
 }
 
+int fcopy(const char *src, const char *dst)
+{
+   char buf[BUFSIZ] = {0};
+   size_t n         = 0;
+   int ret          = 0;
+
+   char path_dst[RETRO_PATH_MAX] = {0};
+   snprintf(path_dst, sizeof(path_dst), "%s", dst);
+   path_basedir(path_dst);
+
+   if (!path_is_directory(path_dst))
+   {
+      printf("Mkdir: %s\n", path_dst);
+      path_mkdir(path_dst);
+   }
+
+   FILE *fp_src = fopen(src, "rb");
+   FILE *fp_dst = fopen(dst, "wb");
+   if (!fp_src)
+      ret = -1;
+   if (!fp_dst)
+      ret = -2;
+
+   if (ret < 0)
+      goto close;
+
+   while ((n = fread(buf, sizeof(char), sizeof(buf), fp_src)) > 0 && ret == 0)
+   {
+      if (fwrite(buf, sizeof(char), n, fp_dst) != n)
+         ret = -1;
+   }
+
+close:
+   if (fp_src)
+      fclose(fp_src);
+   if (fp_dst);
+      fclose(fp_dst);
+
+#if 0
+   if (ret == 0)
+      printf("Fcopy: %s -> %s = %d\n", src, dst, ret);
+#endif
+   return ret;
+}
+
 void path_join(char* out, const char* basedir, const char* filename)
 {
    snprintf(out, RETRO_PATH_MAX, "%s%s%s", basedir, RETRO_PATH_SEPARATOR, filename);
