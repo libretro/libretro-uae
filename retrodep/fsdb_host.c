@@ -1,6 +1,8 @@
 #include "fsdb.h"
 #include "zfile.h"
 
+#include "libretro-core.h"
+
 #include <sys/time.h>
 #if !defined(_WIN32) && !defined(__CELLOS_LV2__)
 #include <sys/timeb.h>
@@ -85,47 +87,20 @@ bool my_utime (const TCHAR *name, struct mytimeval *tv)
 
 int my_existsfile (const char *name)
 {
-#if 1
-	FILE *file = fopen(name, "r");
-	if (file)
-	{
-		fclose(file);
-		return 1;
-	}
-	return 0;
-#else
-	struct stat sonuc;
-	if (lstat (name, &sonuc) == -1) {
+	if (!path_is_valid(name))
 		return 0;
-	} else {
-		if (!S_ISDIR(sonuc.st_mode))
-			return 1;
-	}
-	return 0;
-#endif
+	if (path_is_directory(name))
+		return 0;
+	return 1;
 }
 
 int my_existsdir(const char *name)
 {
-#if 1
-	DIR *dir = opendir(name);
-	if (dir)
-	{
-		closedir(dir);
-		return 1;
-	}
-	return 0;
-#else
-	struct stat sonuc;
-
-	if (lstat (name, &sonuc) == -1) {
+	if (!path_is_valid(name))
 		return 0;
-	} else {
-		if (S_ISDIR(sonuc.st_mode))
-			return 1;
-	}
+	if (path_is_directory(name))
+		return 1;
 	return 0;
-#endif
 }
 
 int my_getvolumeinfo(const char *root)
