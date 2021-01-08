@@ -29,8 +29,8 @@ void write_log (const char *fmt, ...)
        return;
 
     va_start (ap, fmt);
-    vsprintf(text, fmt, ap);
-    va_end(ap);
+    vsprintf (text, fmt, ap);
+    va_end (ap);
 
     if (text[strlen(text)-1] == '\n')
        text[strlen(text)-1] = '\0';

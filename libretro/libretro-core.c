@@ -1886,9 +1886,9 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      int val = atoi(var.value) / 10;
+      unsigned char val = atoi(var.value) / 10;
       char valbuf[4];
-      snprintf(valbuf, 4, "%d", val);
+      snprintf(valbuf, sizeof(valbuf), "%d", val);
 
       strcat(uae_config, "sound_stereo_separation=");
       strcat(uae_config, valbuf);
@@ -3443,7 +3443,7 @@ static void retro_use_boot_hd(FILE** configfile)
    snprintf(label, sizeof(label), "%s", "BootHD");
    snprintf(volume, sizeof(volume), "%s", "DH0");
    /* Many HD installers have DH0: hardcoded as destination,
-   /* and WHDLoad + HDF launching require the use of DH0: */
+    * and WHDLoad + HDF launching require the use of DH0: */
    if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_WHDLOAD ||
        dc_get_image_type(full_path) == DC_IMAGE_TYPE_HD)
       snprintf(volume, sizeof(volume), "%s", label);
@@ -3900,7 +3900,7 @@ static bool retro_create_config()
          DIR *zip_dir;
          struct dirent *zip_dirp;
          zip_dir = opendir(retro_temp_directory);
-         char *zip_lastfile;
+         char *zip_lastfile = {0};
          while ((zip_dirp = readdir(zip_dir)) != NULL)
          {
             zip_lastfile = strdup(zip_dirp->d_name);
@@ -3924,9 +3924,8 @@ static bool retro_create_config()
             }
             else if (dc_get_image_type(zip_lastfile) == DC_IMAGE_TYPE_WHDLOAD)
             {
-               /* Only accept infos if slave or dir exists
+               /* Only accept infos if slave or dir exists,
                 * in order to get proper content path */
-
                char tmp_str[RETRO_PATH_MAX] = {0};
                snprintf(tmp_str, sizeof(tmp_str), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_lastfile);
                if (strendswith(tmp_str, "info"))
@@ -3953,7 +3952,8 @@ static bool retro_create_config()
          }
 
          closedir(zip_dir);
-         free(zip_lastfile);
+         if (zip_lastfile)
+            free(zip_lastfile);
          zip_lastfile = NULL;
 
          switch (zip_mode)

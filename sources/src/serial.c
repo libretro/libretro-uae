@@ -296,17 +296,11 @@ static int serial_read (char *buffer)
 
 void serial_flush_buffer (void)
 {
+    int ret;
     if (serdev == 1) {
 		if (outlast) {
 		    if (sd != 0) {
-				/* There is absolutely nothing we can do about a write failure,
-				 * but the warning (-Wunused-result) is irritating, so deactivate
-				 * it just here.
-				*/
-//#pragma GCC diagnostic ignored "-Wunused"
-//				GCC_DIAG_OFF(unused-result)
-				write (sd, outbuf, outlast);
-//				GCC_DIAG_ON(unused-result)
+				ret = write (sd, outbuf, outlast);
 		    }
 		}
 		outlast = 0;

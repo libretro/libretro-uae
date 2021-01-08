@@ -21,7 +21,8 @@ ifneq (,$(findstring unix,$(platform)))
    TARGET := $(TARGET_NAME)_libretro.so
    fpic := -fPIC
    LDFLAGS += -lpthread
-   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T
+   CFLAGS += -Wstringop-overflow=0
+   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--gc-sections
 
 # RPI
 else ifeq ($(platform), rpi)
@@ -249,10 +250,8 @@ else ifneq (,$(findstring armv,$(platform)))
 
 # Windows
 else
-ifneq ($(subplatform), 32)
-   CFLAGS +=
-endif
-   PLATFLAGS += -DWIN32 -Wstringop-overflow=0
+   CFLAGS += -Wstringop-overflow=0
+   PLATFLAGS += -DWIN32
    TARGET := $(TARGET_NAME)_libretro.dll
    fpic := -fPIC
    SHARED := -shared -static-libgcc -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined -Wl,--gc-sections
@@ -263,7 +262,7 @@ endif
 ifeq ($(DEBUG), 1)
    CFLAGS += -O0 -g
 else
-   CFLAGS += -O3
+   CFLAGS += -O3 -Wno-format
    LDFLAGS += -s
 endif
 
