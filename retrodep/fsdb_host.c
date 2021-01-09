@@ -17,7 +17,7 @@
 #include <psp2/io/dirent.h>
 #include <psp2/kernel/threadmgr.h>
 #define rmdir(name) sceIoRmdir(name)
-#define mkdir(name) sceIoMkdir(name, 0777)
+#define mkdir(name, mode) sceIoMkdir(name, mode)
 #endif
 
 #if defined(__CELLOS_LV2__) || defined(_WIN32) || defined(WIIU) || defined(VITA)
