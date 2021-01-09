@@ -55,13 +55,6 @@
 #include "blkdev.h"
 #include "isofs_api.h"
 
-#ifdef VITA
-#include <psp2/types.h>
-#include <psp2/io/dirent.h>
-#include <psp2/kernel/threadmgr.h>
-#define mkdir(name,mode) sceIoMkdir(name, 0777)
-#endif
-
 #ifdef TARGET_AMIGAOS
 #include <dos/dos.h>
 #include <proto/dos.h>
@@ -5387,23 +5380,6 @@ static void
 	TRACE((_T("=%x %d\n"), GET_PCK_RES1 (packet), GET_PCK_RES2 (packet)));
 }
 
-#ifdef _WIN32
-int my_mkdir (const TCHAR *name)
-{
-        const TCHAR *namep;
-        TCHAR path[MAX_DPATH];
-/*        
-        if (currprefs.win32_filesystem_mangle_reserved_names == false) {
-                _tcscpy (path, PATHPREFIX);
-                _tcscat (path, name);
-                namep = path;
-        } else */{
-                namep = name;
-        }
-        return CreateDirectory (namep, NULL) == 0 ? -1 : 0;
-}
-#endif
-
 static void
 	action_create_dir (Unit *unit, dpacket packet)
 {
@@ -5439,19 +5415,12 @@ static void
 		PUT_PCK_RES2 (packet, ERROR_DISK_IS_FULL); /* best we can do */
 		return;
 	}
-#ifdef _WIN32
-   if (my_mkdir (aino->nname) == -1) {
-                PUT_PCK_RES1 (packet, DOS_FALSE);
-                PUT_PCK_RES2 (packet, dos_errno ());
-                return;
-        }
-#else
-	if (mkdir (aino->nname, 0777) == -1) {
+
+	if (my_mkdir (aino->nname) == -1) {
 		PUT_PCK_RES1 (packet, DOS_FALSE);
 		PUT_PCK_RES2 (packet, dos_errno ());
 		return;
 	}
-#endif
 	aino->shlock = 1;
 	fsdb_set_file_attrs (aino);
 	de_recycle_aino (unit, aino);

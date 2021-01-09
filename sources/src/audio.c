@@ -1765,7 +1765,11 @@ void audio_reset (void)
 		for (i = 0; i < AUDIO_CHANNELS_PAULA; i++) {
 			cdp = &audio_channel[i];
 			memset (cdp, 0, sizeof *audio_channel);
+#ifdef __LIBRETRO__
+			cdp->per = -2;
+#else
 			cdp->per = PERIOD_MAX - 1;
+#endif
 			cdp->data.vol = 0;
 			cdp->evtime = MAX_EV;
 		}

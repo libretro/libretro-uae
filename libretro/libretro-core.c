@@ -1886,9 +1886,9 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      int val = atoi(var.value) / 10;
+      unsigned char val = atoi(var.value) / 10;
       char valbuf[4];
-      snprintf(valbuf, 4, "%d", val);
+      snprintf(valbuf, sizeof(valbuf), "%d", val);
 
       strcat(uae_config, "sound_stereo_separation=");
       strcat(uae_config, valbuf);
@@ -3443,7 +3443,7 @@ static void retro_use_boot_hd(FILE** configfile)
    snprintf(label, sizeof(label), "%s", "BootHD");
    snprintf(volume, sizeof(volume), "%s", "DH0");
    /* Many HD installers have DH0: hardcoded as destination,
-   /* and WHDLoad + HDF launching require the use of DH0: */
+    * and WHDLoad + HDF launching require the use of DH0: */
    if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_WHDLOAD ||
        dc_get_image_type(full_path) == DC_IMAGE_TYPE_HD)
       snprintf(volume, sizeof(volume), "%s", label);
@@ -3580,6 +3580,50 @@ static void retro_print_kickstart(FILE** configfile)
       path_join((char*)&flash_filepath, retro_save_directory, flash_filename);
       log_cb(RETRO_LOG_INFO, "Using NVRAM: '%s'\n", flash_filepath);
       fprintf(*configfile, "flash_file=%s\n", (const char*)&flash_filepath);
+   }
+}
+
+static void whdload_kscopy()
+{
+   char ks_src[RETRO_PATH_MAX] = {0};
+   char ks_dst[RETRO_PATH_MAX] = {0};
+
+   char kickstart[4][20] =
+   {
+      "kick33180.A500",
+      "kick34005.A500",
+      "kick40063.A600",
+      "kick40068.A1200"
+   };
+
+   unsigned int ks_size[4] =
+   {
+      262144,
+      262144,
+      524288,
+      524288
+   };
+
+   struct stat ks_stat;
+
+   for (unsigned x = 0; x < 4; x++)
+   {
+      snprintf(ks_src, sizeof(ks_src), "%s%s%s",
+            retro_system_directory, DIR_SEP_STR, kickstart[x]);
+      snprintf(ks_dst, sizeof(ks_dst), "%s%sWHDLoad%sDevs%sKickstarts%s%s",
+            retro_save_directory, DIR_SEP_STR, DIR_SEP_STR, DIR_SEP_STR, DIR_SEP_STR, kickstart[x]);
+
+      if (path_is_valid(ks_src) && !path_is_valid(ks_dst))
+      {
+         stat(ks_src, &ks_stat);
+
+         if (ks_stat.st_size != ks_size[x])
+            log_cb(RETRO_LOG_INFO, "WHDLoad not installing Kickstart '%s' due to incorrect size, %d != %d\n", kickstart[x], ks_stat.st_size, ks_size[x]);
+         else if (fcopy(ks_src, ks_dst) < 0)
+            log_cb(RETRO_LOG_INFO, "WHDLoad failed to install '%s'\n", kickstart[x]);
+         else
+            log_cb(RETRO_LOG_INFO, "WHDLoad found and installed '%s'\n", kickstart[x]);
+      }
    }
 }
 
@@ -3856,7 +3900,7 @@ static bool retro_create_config()
          DIR *zip_dir;
          struct dirent *zip_dirp;
          zip_dir = opendir(retro_temp_directory);
-         char *zip_lastfile;
+         char *zip_lastfile = {0};
          while ((zip_dirp = readdir(zip_dir)) != NULL)
          {
             zip_lastfile = strdup(zip_dirp->d_name);
@@ -3880,9 +3924,8 @@ static bool retro_create_config()
             }
             else if (dc_get_image_type(zip_lastfile) == DC_IMAGE_TYPE_WHDLOAD)
             {
-               /* Only accept infos if slave or dir exists
+               /* Only accept infos if slave or dir exists,
                 * in order to get proper content path */
-
                char tmp_str[RETRO_PATH_MAX] = {0};
                snprintf(tmp_str, sizeof(tmp_str), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_lastfile);
                if (strendswith(tmp_str, "info"))
@@ -3909,7 +3952,8 @@ static bool retro_create_config()
          }
 
          closedir(zip_dir);
-         free(zip_lastfile);
+         if (zip_lastfile)
+            free(zip_lastfile);
          zip_lastfile = NULL;
 
          switch (zip_mode)
@@ -4106,6 +4150,9 @@ static bool retro_create_config()
                         /* Extract ZIP */
                         zip_uncompress(whdload_files_zip, whdload_path, NULL);
                         remove(whdload_files_zip);
+
+                        /* Copy Kickstarts */
+                        whdload_kscopy();
                      }
                      else
                         log_cb(RETRO_LOG_ERROR, "Unable to create WHDLoad image directory: '%s'\n", (const char*)&whdload_path);

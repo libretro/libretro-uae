@@ -21,7 +21,8 @@ ifneq (,$(findstring unix,$(platform)))
    TARGET := $(TARGET_NAME)_libretro.so
    fpic := -fPIC
    LDFLAGS += -lpthread
-   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T
+   CFLAGS += -Wstringop-overflow=0
+   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--gc-sections
 
 # RPI
 else ifeq ($(platform), rpi)
@@ -119,7 +120,7 @@ else ifneq (,$(filter $(platform), ngc wii wiiu))
    CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
    CXX = $(DEVKITPPC)/bin/powerpc-eabi-g++$(EXE_EXT)
    AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
-   COMMONFLAGS += -DGEKKO -mcpu=750 -meabi -mhard-float -D__POWERPC__ -D__ppc__ -DMSB_FIRST -DWORDS_BIGENDIAN=1
+   COMMONFLAGS += -DGEKKO -mcpu=750 -meabi -mhard-float -D__POWERPC__ -D__ppc__ -DWORDS_BIGENDIAN=1
    COMMONFLAGS += -U__INT32_TYPE__ -U __UINT32_TYPE__ -D__INT32_TYPE__=int
    COMMONFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DBYTE_ORDER=BIG_ENDIAN
    STATIC_LINKING=1
@@ -177,7 +178,7 @@ else ifeq ($(platform), psl1ght)
    AR = $(PS3DEV)/ppu/bin/ppu-ar$(EXE_EXT)
    ZLIB_DIR = $(LIBUTILS)/zlib/
    LDFLAGS := -lm -lpthread -lc
-   CFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DMSB_FIRST -DBYTE_ORDER=BIG_ENDIAN -D__CELLOS_LV2__ -DHAVE_MEMALIGN -DHAVE_ASPRINTF -I$(ZLIB_DIR)
+   CFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DBYTE_ORDER=BIG_ENDIAN -D__CELLOS_LV2__ -DHAVE_MEMALIGN -DHAVE_ASPRINTF -I$(ZLIB_DIR)
    STATIC_LINKING=1
 
 # Emscripten
@@ -249,10 +250,8 @@ else ifneq (,$(findstring armv,$(platform)))
 
 # Windows
 else
-ifneq ($(subplatform), 32)
-   CFLAGS +=
-endif
-   PLATFLAGS += -DWIN32 -Wstringop-overflow=0
+   CFLAGS += -Wstringop-overflow=0
+   PLATFLAGS += -DWIN32
    TARGET := $(TARGET_NAME)_libretro.dll
    fpic := -fPIC
    SHARED := -shared -static-libgcc -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined -Wl,--gc-sections
@@ -263,7 +262,7 @@ endif
 ifeq ($(DEBUG), 1)
    CFLAGS += -O0 -g
 else
-   CFLAGS += -O3
+   CFLAGS += -O3 -Wno-format
    LDFLAGS += -s
 endif
 
