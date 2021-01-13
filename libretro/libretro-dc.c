@@ -792,6 +792,11 @@ enum dc_image_type dc_get_image_type(const char* filename)
        strendswith(filename, "info"))
       return DC_IMAGE_TYPE_WHDLOAD;
 
+   /* Archive */
+   if (strendswith(filename, "zip") ||
+       strendswith(filename, "7z"))
+      return DC_IMAGE_TYPE_ARCHIVE;
+
    /* Fallback */
    return DC_IMAGE_TYPE_UNKNOWN;
 }

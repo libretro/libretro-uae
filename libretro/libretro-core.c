@@ -3983,7 +3983,8 @@ static bool retro_create_config()
       if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_FLOPPY
        || dc_get_image_type(full_path) == DC_IMAGE_TYPE_HD
        || dc_get_image_type(full_path) == DC_IMAGE_TYPE_WHDLOAD
-       || m3u == DC_IMAGE_TYPE_FLOPPY)
+       || m3u == DC_IMAGE_TYPE_FLOPPY
+       || m3u == DC_IMAGE_TYPE_ARCHIVE)
       {
          /* Check if model is specified in the path on 'Automatic' */
          if (!strcmp(opt_model, "auto"))
