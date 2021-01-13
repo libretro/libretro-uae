@@ -2,7 +2,6 @@
 #include "libretro-core.h"
 #include "libretro-mapper.h"
 #include "libretro-graph.h"
-#include "encodings/utf.h"
 
 #include "retrodep/WHDLoad_files.zip.c"
 #include "retrodep/WHDLoad_hdf.gz.c"
@@ -3490,8 +3489,6 @@ static void retro_use_boot_hd(FILE** configfile)
       {
          tmp_str = string_replace_substring(boothd_hdf, "\\", "\\\\");
          fprintf(*configfile, "hardfile2=rw,%s:\"%s\",32,1,2,512,0,,uae0\n", volume, tmp_str);
-         free(tmp_str);
-         tmp_str = NULL;
       }
    }
    /* Directory mode */
@@ -3509,12 +3506,14 @@ static void retro_use_boot_hd(FILE** configfile)
       {
          tmp_str = string_replace_substring(boothd_path, "\\", "\\\\");
          fprintf(*configfile, "filesystem2=rw,%s:%s:\"%s\",0\n", volume, label, tmp_str);
-         free(tmp_str);
-         tmp_str = NULL;
       }
       else
          log_cb(RETRO_LOG_ERROR, "Unable to create Boot HD directory: '%s'\n", boothd_path);
    }
+
+   if (tmp_str)
+      free(tmp_str);
+   tmp_str = NULL;
 }
 
 static void retro_print_kickstart(FILE** configfile)
@@ -3581,6 +3580,46 @@ static void retro_print_kickstart(FILE** configfile)
       log_cb(RETRO_LOG_INFO, "Using NVRAM: '%s'\n", flash_filepath);
       fprintf(*configfile, "flash_file=%s\n", (const char*)&flash_filepath);
    }
+}
+
+static void retro_print_harddrives(FILE** configfile)
+{
+   char *tmp_str = NULL;
+
+   if (!dc->count)
+      return;
+
+   for (unsigned i = 0; i < dc->count; i++)
+   {
+      tmp_str = string_replace_substring(dc->files[i], "\\", "\\\\");
+      tmp_str = utf8_to_local_string_alloc(tmp_str);
+      char tmp_str_name[RETRO_PATH_MAX];
+      char tmp_str_path[RETRO_PATH_MAX];
+      snprintf(tmp_str_name, sizeof(tmp_str_name), "%s", path_basename(tmp_str));
+      path_remove_extension(tmp_str_name);
+
+      if (strendswith(dc->files[i], "slave") || strendswith(dc->files[i], "info"))
+      {
+         path_parent_dir(tmp_str);
+         snprintf(tmp_str_path, sizeof(tmp_str_path), "%s%s", tmp_str, tmp_str_name);
+         if (!path_is_directory(tmp_str_path))
+            snprintf(tmp_str_path, sizeof(tmp_str_path), "%s", tmp_str);
+      }
+      if (strendswith(dc->files[i], "lha"))
+         fprintf(*configfile, "filesystem2=ro,DH%d:%s:\"%s\",0\n", i, tmp_str_name, tmp_str);
+      else if (path_is_directory(dc->files[i]))
+         fprintf(*configfile, "filesystem2=rw,DH%d:%s:\"%s\",0\n", i, tmp_str_name, tmp_str);
+      else if (strendswith(dc->files[i], "slave") || strendswith(dc->files[i], "info"))
+         fprintf(*configfile, "filesystem2=rw,DH%d:%s:\"%s\",0\n", i, tmp_str_name, tmp_str_path);
+      else
+         fprintf(*configfile, "hardfile2=rw,DH%d:\"%s\",32,1,2,512,0,,uae1\n", i, tmp_str);
+
+      log_cb(RETRO_LOG_INFO, "HD (%d) inserted in drive DH%d: '%s'\n", i+1, i, dc->files[i]);
+   }
+
+   if (tmp_str)
+      free(tmp_str);
+   tmp_str = NULL;
 }
 
 static void whdload_kscopy()
@@ -3836,6 +3875,7 @@ static void retro_build_preset(char* model)
 
 static bool retro_create_config()
 {
+   char *tmp_str = NULL;
    RPATH[0] = '\0';
    path_join((char*)&RPATH, retro_save_directory, LIBRETRO_PUAE_PREFIX ".uae");
    log_cb(RETRO_LOG_INFO, "Generating config file: '%s'\n", (const char*)&RPATH);
@@ -3894,7 +3934,7 @@ static bool retro_create_config()
          char zip_m3u_list[DC_MAX_SIZE][RETRO_PATH_MAX] = {0};
          char zip_m3u_path[RETRO_PATH_MAX];
          snprintf(zip_m3u_path, sizeof(zip_m3u_path), "%s%s%s.m3u",
-            retro_temp_directory, DIR_SEP_STR, utf8_to_local_string_alloc(zip_basename));
+               retro_temp_directory, DIR_SEP_STR, utf8_to_local_string_alloc(zip_basename));
          int zip_m3u_num = 0;
 
          DIR *zip_dir;
@@ -3910,31 +3950,28 @@ static bool retro_create_config()
 
             /* Multi file mode, generate playlist */
             if (dc_get_image_type(zip_lastfile) == DC_IMAGE_TYPE_FLOPPY ||
-                dc_get_image_type(zip_lastfile) == DC_IMAGE_TYPE_CD)
+                dc_get_image_type(zip_lastfile) == DC_IMAGE_TYPE_CD ||
+                dc_get_image_type(zip_lastfile) == DC_IMAGE_TYPE_HD)
             {
                zip_mode = 1;
                zip_m3u_num++;
                snprintf(zip_m3u_list[zip_m3u_num-1], RETRO_PATH_MAX, "%s", zip_lastfile);
             }
-            /* Single file image mode */
-            else if (dc_get_image_type(zip_lastfile) == DC_IMAGE_TYPE_HD)
-            {
-               zip_mode = 2;
-               snprintf(full_path, sizeof(full_path), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_lastfile);
-            }
             else if (dc_get_image_type(zip_lastfile) == DC_IMAGE_TYPE_WHDLOAD)
             {
                /* Only accept infos if slave or dir exists,
                 * in order to get proper content path */
-               char tmp_str[RETRO_PATH_MAX] = {0};
-               snprintf(tmp_str, sizeof(tmp_str), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_lastfile);
-               if (strendswith(tmp_str, "info"))
+               char zip_lastfile_path[RETRO_PATH_MAX] = {0};
+               snprintf(zip_lastfile_path, sizeof(zip_lastfile_path), "%s%s%s",
+                     retro_temp_directory, DIR_SEP_STR, zip_lastfile);
+               if (strendswith(zip_lastfile_path, "info"))
                {
-                  path_remove_extension(tmp_str);
-                  if (!path_is_directory(tmp_str))
-                     snprintf(tmp_str, sizeof(tmp_str), "%s.slave", tmp_str);
+                  path_remove_extension(zip_lastfile_path);
+                  if (!path_is_directory(zip_lastfile_path))
+                     snprintf(zip_lastfile_path, sizeof(zip_lastfile_path), "%s.slave",
+                           zip_lastfile_path);
                }
-               if (path_is_valid(tmp_str) || path_is_directory(tmp_str))
+               if (path_is_valid(zip_lastfile_path) || path_is_directory(zip_lastfile_path))
                {
                   zip_mode = 2;
                   snprintf(full_path, sizeof(full_path), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_lastfile);
@@ -3945,10 +3982,11 @@ static bool retro_create_config()
          /* Final check for single directories */
          if (zip_mode == 0)
          {
-            char tmp_str[RETRO_PATH_MAX] = {0};
-            snprintf(tmp_str, sizeof(tmp_str), "%s%s%s", retro_temp_directory, DIR_SEP_STR, zip_lastfile);
-            if (path_is_directory(tmp_str))
-               snprintf(full_path, sizeof(full_path), "%s", tmp_str);
+            char zip_lastfile_path[RETRO_PATH_MAX] = {0};
+            snprintf(zip_lastfile_path, sizeof(zip_lastfile_path), "%s%s%s",
+                  retro_temp_directory, DIR_SEP_STR, zip_lastfile);
+            if (path_is_directory(zip_lastfile_path))
+               snprintf(full_path, sizeof(full_path), "%s", zip_lastfile_path);
          }
 
          closedir(zip_dir);
@@ -3984,7 +4022,9 @@ static bool retro_create_config()
        || dc_get_image_type(full_path) == DC_IMAGE_TYPE_HD
        || dc_get_image_type(full_path) == DC_IMAGE_TYPE_WHDLOAD
        || m3u == DC_IMAGE_TYPE_FLOPPY
-       || m3u == DC_IMAGE_TYPE_ARCHIVE)
+       || m3u == DC_IMAGE_TYPE_ARCHIVE
+       || m3u == DC_IMAGE_TYPE_HD
+       || m3u == DC_IMAGE_TYPE_WHDLOAD)
       {
          /* Check if model is specified in the path on 'Automatic' */
          if (!strcmp(opt_model, "auto"))
@@ -4042,7 +4082,9 @@ static bool retro_create_config()
                /* Hard disks must default to a machine with HD interface */
                if (!opt_use_boot_hd &&
                    (dc_get_image_type(full_path) == DC_IMAGE_TYPE_HD ||
-                    dc_get_image_type(full_path) == DC_IMAGE_TYPE_WHDLOAD))
+                    dc_get_image_type(full_path) == DC_IMAGE_TYPE_WHDLOAD ||
+                    m3u == DC_IMAGE_TYPE_HD ||
+                    m3u == DC_IMAGE_TYPE_WHDLOAD))
                   retro_build_preset(opt_model_hd);
 
                /* No model specified */
@@ -4069,9 +4111,47 @@ static bool retro_create_config()
 
          /* Hard drive or WHDLoad image */
          if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_HD
-          || dc_get_image_type(full_path) == DC_IMAGE_TYPE_WHDLOAD)
+          || dc_get_image_type(full_path) == DC_IMAGE_TYPE_WHDLOAD
+          || m3u == DC_IMAGE_TYPE_HD
+          || m3u == DC_IMAGE_TYPE_WHDLOAD)
          {
-            char *tmp_str = NULL;
+            /* M3U playlist */
+            if (strendswith(full_path, "m3u"))
+            {
+               /* Parse the M3U file */
+               dc_parse_m3u(dc, full_path, retro_save_directory);
+
+               /* Some debugging */
+               log_cb(RETRO_LOG_INFO, "M3U parsed, %d file(s) found\n", dc->count);
+               for (unsigned i = 0; i < dc->count; i++)
+                  log_cb(RETRO_LOG_DEBUG, "File %d: %s\n", i+1, dc->files[i]);
+            }
+            /* Single file */
+            else
+            {
+               /* Add the file to disk control context */
+               char hd_image_label[RETRO_PATH_MAX];
+               hd_image_label[0] = '\0';
+
+               if (!string_is_empty(full_path))
+                  fill_short_pathname_representation(
+                        hd_image_label, full_path, sizeof(hd_image_label));
+
+               /* Must reset disk control struct here,
+                * otherwise duplicate entries will be
+                * added when calling retro_reset() */
+               dc_reset(dc);
+               dc_add_file(dc, full_path, hd_image_label);
+            }
+
+            /* Init only existing disks */
+            if (dc->count)
+            {
+               /* Init first disk */
+               dc->index = 0;
+               dc->eject_state = false;
+               display_current_image(dc->labels[0], true);
+            }
 
             /* WHDLoad support */
             if (opt_use_whdload)
@@ -4119,8 +4199,6 @@ static bool retro_create_config()
                   {
                      tmp_str = string_replace_substring(whdload_hdf, "\\", "\\\\");
                      fprintf(configfile, "hardfile2=rw,WHDLoad:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
-                     free(tmp_str);
-                     tmp_str = NULL;
                   }
                }
                /* WHDLoad file mode */
@@ -4163,36 +4241,11 @@ static bool retro_create_config()
                   {
                      tmp_str = string_replace_substring(whdload_path, "\\", "\\\\");
                      fprintf(configfile, "filesystem2=rw,WHDLoad:WHDLoad:\"%s\",0\n", (const char*)tmp_str);
-                     free(tmp_str);
-                     tmp_str = NULL;
                   }
                }
 
-               /* Attach hard drive */
-               tmp_str = string_replace_substring(full_path, "\\", "\\\\");
-               tmp_str = utf8_to_local_string_alloc(tmp_str);
-               char tmp_str_name[RETRO_PATH_MAX];
-               char tmp_str_path[RETRO_PATH_MAX];
-               snprintf(tmp_str_name, sizeof(tmp_str_name), "%s", path_basename(tmp_str));
-               path_remove_extension(tmp_str_name);
-
-               if (strendswith(full_path, "slave") || strendswith(full_path, "info"))
-               {
-                  path_parent_dir(tmp_str);
-                  snprintf(tmp_str_path, sizeof(tmp_str_path), "%s%s", tmp_str, tmp_str_name);
-                  if (!path_is_directory(tmp_str_path))
-                     snprintf(tmp_str_path, sizeof(tmp_str_path), "%s", tmp_str);
-               }
-               if (strendswith(full_path, "lha"))
-                  fprintf(configfile, "filesystem2=ro,DH0:%s:\"%s\",0\n", tmp_str_name, tmp_str);
-               else if (path_is_directory(full_path))
-                  fprintf(configfile, "filesystem2=rw,DH0:%s:\"%s\",0\n", tmp_str_name, tmp_str);
-               else if (strendswith(full_path, "slave") || strendswith(full_path, "info"))
-                  fprintf(configfile, "filesystem2=rw,DH0:%s:\"%s\",0\n", tmp_str_name, tmp_str_path);
-               else
-                  fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae1\n", tmp_str);
-               free(tmp_str);
-               tmp_str = NULL;
+               /* Attach hard drive(s) */
+               retro_print_harddrives(&configfile);
 
                /* WHDSaves HDF mode */
                if (opt_use_whdload == 2)
@@ -4236,8 +4289,6 @@ static bool retro_create_config()
                   {
                      tmp_str = string_replace_substring(whdsaves_hdf, "\\", "\\\\");
                      fprintf(configfile, "hardfile2=rw,WHDSaves:\"%s\",32,1,2,512,0,,uae2\n", (const char*)tmp_str);
-                     free(tmp_str);
-                     tmp_str = NULL;
                   }
                }
                /* WHDSaves file mode */
@@ -4252,8 +4303,6 @@ static bool retro_create_config()
                   {
                      tmp_str = string_replace_substring(whdsaves_path, "\\", "\\\\");
                      fprintf(configfile, "filesystem2=rw,WHDSaves:WHDSaves:\"%s\",-128\n", (const char*)tmp_str);
-                     free(tmp_str);
-                     tmp_str = NULL;
                   }
                   else
                      log_cb(RETRO_LOG_ERROR, "Unable to create WHDSaves image directory: '%s'\n", (const char*)&whdsaves_path);
@@ -4358,8 +4407,6 @@ static bool retro_create_config()
 #ifdef WIN32
                tmp_str = string_replace_substring(retro_system_directory, "\\", "\\\\");
                fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s\",-128\n", (const char*)tmp_str);
-               free(tmp_str);
-               tmp_str = NULL;
 #else
                /* Force the ending slash to make sure the path is not treated as a file */
                fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s%s\",-128\n", retro_system_directory, "/");
@@ -4367,20 +4414,12 @@ static bool retro_create_config()
             }
             else
             {
-               tmp_str = string_replace_substring(full_path, "\\", "\\\\");
-               tmp_str = utf8_to_local_string_alloc(tmp_str);
-               if (path_is_directory(full_path))
-                  fprintf(configfile, "filesystem2=rw,DH0:%s:\"%s\",0\n", path_basename(tmp_str), (const char*)tmp_str);
-               else
-                  fprintf(configfile, "hardfile2=rw,DH0:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
-               free(tmp_str);
-               tmp_str = NULL;
+               /* Attach hard drive(s) */
+               retro_print_harddrives(&configfile);
             }
          }
          else
          {
-            char *tmp_str = NULL;
-
             /* M3U playlist */
             if (strendswith(full_path, "m3u"))
             {
@@ -4444,9 +4483,6 @@ static bool retro_create_config()
                }
             }
 
-            if (tmp_str)
-               free(tmp_str);
-            tmp_str = NULL;
 
             /* Scan for save disk 0, append if exists */
             if (dc->count)
@@ -4726,6 +4762,10 @@ static bool retro_create_config()
       }
       fclose(configfile);
    }
+
+   if (tmp_str)
+      free(tmp_str);
+   tmp_str = NULL;
 
    return true;
 }

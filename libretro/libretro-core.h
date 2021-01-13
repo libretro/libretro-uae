@@ -26,6 +26,7 @@
 #include "libretro-dc.h"
 #include "string/stdstring.h"
 #include "file/file_path.h"
+#include "encodings/utf.h"
 
 extern int imagename_timer;
 extern void reset_drawing(void);
