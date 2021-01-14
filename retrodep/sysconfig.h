@@ -25,7 +25,7 @@
 //#define CPUEMU_25 /* 68040 "cycle-exact" + blitter */
 #define CPUEMU_31 /* Aranym 68040 MMU */
 #define CPUEMU_32 /* Previous 68030 MMU */
-#define CPUEMU_33 /* 68060 MMU */
+//#define CPUEMU_33 /* 68060 MMU */
 //#define CPUEMU_34 /* 68030 MMU + cache */
 //#define CPUEMU_35 /* 68030 MMU + cache + CE */
 #define MMUEMU /* Aranym 68040 MMU */
