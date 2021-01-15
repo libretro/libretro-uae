@@ -224,8 +224,7 @@ This allows:
 
 - Automatic M3U playlist generation of all files
 - The use of zipped images in M3Us
-- Hard drive images will be treated one by one and only the first file found is selected for launch
-- If no disk/drive images are found, the ZIP will be treated as a directory
+- If no compatible images are found, the ZIP will be treated as a directory
 
 ### M3U support
 
@@ -287,6 +286,8 @@ Secret of Monkey Island_Disk 4.adf
 
 Some games require save disks to have a specific label - for example, `It Came from the Desert` will only save to a disk named `DSAVE`:
 
+***Virtual keyboard has a key labeled `SVDS` (CapsLock+STBR) which creates and switches to/from the save disk, which makes this step obsolete.***
+
 `It Came from the Desert.m3u`
 ```
 It Came from the Desert_Disk 1.adf
@@ -310,7 +311,7 @@ For games that support multiple disk drives, append "**(MD)**" as in "MultiDrive
 - `<disks>.zip#<disk>.adf`
     - Specify a disk inside a ZIP with multiple disks (not needed with single file ZIPs)
 
-M3U playlist supports floppy disks and compact discs.
+M3U playlist supports floppy disks, hard drives (all images are mounted at once) and compact discs.
 
 ## WHDLoad
 
