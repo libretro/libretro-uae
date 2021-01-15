@@ -85,22 +85,34 @@ bool my_utime (const TCHAR *name, struct mytimeval *tv)
 	return false;
 }
 
+static int my_existstype(const char *name, bool file)
+{
+	int ret = 0;
+
+	char *utf8 = NULL;
+	utf8 = local_to_utf8_string_alloc(name);
+	if (path_is_valid(utf8))
+	{
+		if (file)
+			ret = path_is_directory(utf8) ? 0 : 1;
+		else
+			ret = path_is_directory(utf8) ? 1 : 0;
+	}
+
+	free(utf8);
+	utf8 = NULL;
+
+	return ret;
+}
+
 int my_existsfile (const char *name)
 {
-	if (!path_is_valid(name))
-		return 0;
-	if (path_is_directory(name))
-		return 0;
-	return 1;
+	return my_existstype(name, 1);
 }
 
 int my_existsdir(const char *name)
 {
-	if (!path_is_valid(name))
-		return 0;
-	if (path_is_directory(name))
-		return 1;
-	return 0;
+	return my_existstype(name, 0);
 }
 
 int my_getvolumeinfo(const char *root)

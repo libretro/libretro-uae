@@ -32,5 +32,6 @@ char* strright(const char* str, int len);
 bool strstartswith(const char* str, const char* start);
 bool strendswith(const char* str, const char* end);
 void path_join(char* out, const char* basedir, const char* filename);
+char* path_join_dup(const char* basedir, const char* filename);
 
 #endif /* LIBRETRO_GLUE_H */
