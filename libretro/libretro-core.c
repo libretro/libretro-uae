@@ -158,9 +158,7 @@ static size_t save_state_file_size = 0;
 static unsigned save_state_grace = 2;
 
 unsigned int retro_devices[RETRO_DEVICES];
-extern void retro_poll_event();
 extern int cd32_pad_enabled[NORMAL_JPORTS];
-extern int mapper_keys[RETRO_MAPPER_LAST];
 extern void display_current_image(const char *image, bool inserted);
 
 retro_log_printf_t log_cb = NULL;
@@ -3207,6 +3205,9 @@ void retro_init(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_INPUT_BITMASKS, NULL))
       libretro_supports_bitmasks = true;
+
+   static struct retro_keyboard_callback keyboard_callback = {retro_keyboard_event};
+   environ_cb(RETRO_ENVIRONMENT_SET_KEYBOARD_CALLBACK, &keyboard_callback);
 
    enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
    if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
