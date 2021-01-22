@@ -39,6 +39,10 @@
 #define JOYSTICK_FIRE                   -7
 #define JOYSTICK_2ND_FIRE               -8
 
+extern int mapper_keys[RETRO_MAPPER_LAST];
+extern void retro_poll_event();
+extern void retro_keyboard_event(bool, unsigned, uint32_t, uint16_t);
+
 typedef struct
 {
    int id;

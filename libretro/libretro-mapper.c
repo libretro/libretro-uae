@@ -87,6 +87,7 @@ extern void retro_joystick_button(int, int, int);
 extern unsigned int retro_devices[RETRO_DEVICES];
 
 static unsigned retro_key_state[RETROK_LAST] = {0};
+static unsigned retro_key_event_state[RETROK_LAST] = {0};
 static int16_t joypad_bits[RETRO_DEVICES];
 extern bool libretro_supports_bitmasks;
 extern dc_storage *dc;
@@ -1267,33 +1268,32 @@ static void process_turbofire(int retro_port, int i)
    }
 }
 
-static void process_key(int disable_keys)
+static void process_key(unsigned disable_keys)
 {
-   int i = 0;
-   unsigned state = 0;
+   unsigned i = 0;
 
    for (i = RETROK_BACKSPACE; i < RETROK_LAST; i++)
    {
-      state = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, i);
-
       /* CapsLock */
       if (keyboard_translation[i] == AK_CAPSLOCK)
       {
-         if (state && !retro_key_state[i])
+         if (retro_key_event_state[i] && !retro_key_state[i])
          {
             retro_key_down(keyboard_translation[i]);
             retro_key_up(keyboard_translation[i]);
             retro_capslock = !retro_capslock;
             retro_key_state[i] = 1;
          }
-         else if (!state && retro_key_state[i])
+         else if (!retro_key_event_state[i] && retro_key_state[i])
             retro_key_state[i] = 0;
       }
       else if (keyboard_translation[i] != -1)
       {
          /* Override cursor keys if used as a RetroPad */
-         if (disable_keys && (i == RETROK_DOWN || i == RETROK_UP || i == RETROK_LEFT || i == RETROK_RIGHT))
-            continue;
+         if (disable_keys == 1 && (i == RETROK_UP || i == RETROK_DOWN || i == RETROK_LEFT || i == RETROK_RIGHT)
+          || disable_keys == 2)
+            retro_key_event_state[i] = 0;
+
 
          /* Skip numpad if Keyrah is active */
          if (opt_keyrah_keypad)
@@ -1314,7 +1314,7 @@ static void process_key(int disable_keys)
             }
          }
 
-         if (state && !retro_key_state[i])
+         if (retro_key_event_state[i] && !retro_key_state[i])
          {
             /* Skip keydown if VKBD is active */
             if (retro_vkbd)
@@ -1326,7 +1326,7 @@ static void process_key(int disable_keys)
             retro_key_down(keyboard_translation[i]);
             retro_key_state[i] = 1;
          }
-         else if (!state && retro_key_state[i])
+         else if (!retro_key_event_state[i] && retro_key_state[i])
          {
             retro_key_up(keyboard_translation[i]);
             retro_key_state[i] = 0;
@@ -1338,7 +1338,20 @@ static void process_key(int disable_keys)
    }
 }
 
-void update_input(int disable_physical_cursor_keys)
+void retro_keyboard_event(bool down, unsigned code,
+      uint32_t character, uint16_t mod)
+{
+   switch (code)
+   {
+      case RETROK_UNKNOWN:
+      case RETROK_PAUSE:
+         return;
+   }
+
+   retro_key_event_state[code] = down;
+}
+
+void update_input(unsigned disable_keys)
 {
    /* RETRO  B  Y  SL ST UP DN LT RT A  X  L   R   L2  R2  L3  R3  LR  LL  LD  LU  RR  RL  RD  RU
     * INDEX  0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23
@@ -1459,18 +1472,16 @@ void update_input(int disable_physical_cursor_keys)
 
    /* The check for kbt[i] here prevents the hotkey from generating key events */
    /* retro_vkbd check is now in process_key() to allow certain keys while retro_vkbd */
-   int processkey = 1;
    for (i = 0; i < (sizeof(kbt)/sizeof(kbt[0])); i++)
    {
       if (kbt[i])
       {
-         processkey = 0;
+         disable_keys = 2;
          break;
       }
    }
 
-   if (processkey && disable_physical_cursor_keys != 2)
-      process_key(disable_physical_cursor_keys);
+   process_key(disable_keys);
 
    if (opt_keyrah_keypad)
       process_keyrah();
@@ -2353,10 +2364,10 @@ void retro_poll_event()
    }
 
    /* Keyboard pass-through */
-   unsigned process_key = 0;
+   unsigned disable_keys = 0;
    if (!opt_keyboard_pass_through)
-      process_key = process_keyboard_pass_through();
-   update_input(process_key);
+      disable_keys = process_keyboard_pass_through();
+   update_input(disable_keys);
 
    /* retro joypad take control over keyboard joy */
    /* override keydown, but allow keyup, to prevent key sticking during keyboard use, if held down on opening keyboard */
