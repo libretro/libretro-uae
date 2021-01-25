@@ -192,7 +192,7 @@ They are for automatically selecting the appropriate model with certain WHDLoad 
 Supported formats are:
 
 - **ADF**, **ADZ**, **IPF**, **DMS**, **FDI** for floppy disk images
-- **ISO**, **CUE**, **CCD**, **NRG**, **MDS** for compact disc images
+- **ISO**, **CUE**, **CCD**, **NRG**, **MDS**, **CHD** for compact disc images
 - **HDF**, **HDZ**, **LHA** for hard drive images
 - **M3U** for multiple image playlist
 - **ZIP** for various content (FD, HD, CD, WHDLoad)
