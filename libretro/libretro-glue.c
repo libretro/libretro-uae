@@ -1480,9 +1480,8 @@ int make_hdf (char *hdf_path, char *hdf_size, char *device_name)
     return EXIT_SUCCESS;
 }
 
-
-
-
+/* CHD */
+#ifdef WITH_CHD
 
 /***************************************************************************
     INLINE FUNCTIONS
@@ -1533,8 +1532,6 @@ UINT64 be_read(const UINT8 *base, int numbytes)
 		result = (result << 8) | *base++;
 	return result;
 }
-
-
 
 /*-------------------------------------------------
     get_bigendian_uint32 - fetch a UINT32 from
@@ -1866,7 +1863,6 @@ cdrom_file *cdrom_open(chd_file *chd)
 	return file;
 }
 
-
 /*-------------------------------------------------
     cdrom_close - "close" a CD-ROM file
 -------------------------------------------------*/
@@ -1888,7 +1884,6 @@ void cdrom_close(cdrom_file *file)
 	    free(file);
 	file = NULL;
 }
-
 
 static const UINT8 V34_MAP_ENTRY_FLAG_TYPE_MASK = 0x0f;     // what type of hunk
 static const UINT8 V34_MAP_ENTRY_FLAG_NO_CRC = 0x10;        // no CRC is present
@@ -1986,7 +1981,6 @@ chd_error chd_hunk_info(chd_file *cf, UINT32 hunknum, chd_codec_type *compressor
 	}
 	return CHDERR_NONE;
 }
-
 
 //-------------------------------------------------
 //  read_bytes - read from the CHD at a byte level,
@@ -2292,7 +2286,6 @@ const char *cdrom_get_type_string(UINT32 trktype)
 	}
 }
 
-
 /*-------------------------------------------------
     cdrom_get_subtype_string - get the string
     associated with the given subcode type
@@ -2307,7 +2300,6 @@ const char *cdrom_get_subtype_string(UINT32 subtype)
 		default:                        return "NONE";
 	}
 }
-
 
 chd_error metadata_find_entry(chd_file *chd, UINT32 metatag, UINT32 metaindex, metadata_entry *metaentry)
 {
@@ -2516,3 +2508,5 @@ chd_error cdrom_parse_metadata(chd_file *chd, cdrom_toc *toc)
 
 	return CHDERR_NONE;
 }
+
+#endif /* WITH_CHD */

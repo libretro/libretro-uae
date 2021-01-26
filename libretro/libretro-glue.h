@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 
+#ifdef WITH_CHD
 /*** CHD ***/
 #include "macros.h"
 #include "deps/libz/zlib.h"
@@ -250,6 +251,7 @@ int cdrom_get_adr_control(cdrom_file *file, int track);
 int cdrom_get_track_type(cdrom_file *file, int track);
 const cdrom_toc *cdrom_get_toc(cdrom_file *file);
 /*** CHD ***/
+#endif
 
 /* zlib */
 #include "deps/libz/zlib.h"

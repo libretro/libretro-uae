@@ -4,6 +4,10 @@ CORE_DIR := $(LOCAL_PATH)/..
 
 SOURCES_C :=
 
+# CHD
+HAVE_CHD = 1
+HAVE_SYS_PARAM = 1
+
 include $(CORE_DIR)/Makefile.common
 
 COREFLAGS := -DANDROID -D__LIBRETRO__ $(CFLAGS) $(INCFLAGS) -I$(LOCAL_PATH)/include
