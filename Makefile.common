@@ -192,15 +192,13 @@ endif
 
 ifeq ($(HAVE_CHD), 1)
 	CFLAGS  += -DWITH_CHD -DPACKAGE_VERSION=\"1.3.2\" -DFLAC_API_EXPORTS -DFLAC__HAS_OGG=0 -DHAVE_LROUND -DHAVE_STDINT_H -D_7ZIP_ST -DWANT_SUBCODE
-endif
 
-ifeq ($(HAVE_SYS_PARAM), 1)
-	CFLAGS += -DHAVE_SYS_PARAM_H
-else
-	CFLAGS += -Dflac_max=MAX -Dflac_min=MIN -Dfseeko=fseek -Dftello=ftell
-endif
+	ifeq ($(HAVE_SYS_PARAM), 1)
+		CFLAGS += -DHAVE_SYS_PARAM_H
+	else
+		CFLAGS += -Dflac_max=MAX -Dflac_min=MIN -Dfseeko=fseek -Dftello=ftell
+	endif
 
-ifeq ($(HAVE_CHD), 1)
 	CHDLIBDIR := $(DEPS_DIR)/libchdr
 	INCFLAGS += \
 		-I$(CHDLIBDIR)/src \
