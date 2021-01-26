@@ -377,7 +377,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "2.6.1"
+/* #define PACKAGE_VERSION "2.6.1" */
 
 /* Define to the necessary symbol if this constant uses a non-standard name on
    your system. */

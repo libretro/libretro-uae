@@ -771,7 +771,8 @@ enum dc_image_type dc_get_image_type(const char* filename)
        strendswith(filename, "ccd") ||
        strendswith(filename, "nrg") ||
        strendswith(filename, "mds") ||
-       strendswith(filename, "iso"))
+       strendswith(filename, "iso") ||
+       strendswith(filename, "chd"))
       return DC_IMAGE_TYPE_CD;
 
    /* HD image */

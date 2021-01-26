@@ -3320,7 +3320,7 @@ void retro_get_system_info(struct retro_system_info *info)
    info->library_version  = "2.6.1" GIT_VERSION;
    info->need_fullpath    = true;
    info->block_extract    = true;
-   info->valid_extensions = "adf|adz|dms|fdi|ipf|hdf|hdz|lha|slave|info|cue|ccd|nrg|mds|iso|uae|m3u|zip|7z";
+   info->valid_extensions = "adf|adz|dms|fdi|ipf|hdf|hdz|lha|slave|info|cue|ccd|nrg|mds|iso|chd|uae|m3u|zip|7z";
 }
 
 double retro_get_aspect_ratio(unsigned int width, unsigned int height, bool pixel_aspect)
@@ -3573,9 +3573,10 @@ static void retro_print_kickstart(FILE** configfile)
       /* Per game */
       else
       {
-         snprintf(flash_filename, sizeof(flash_filename), "%s", path_basename(full_path));
-         path_remove_extension(flash_filename);
-         snprintf(flash_filename, sizeof(flash_filename), "%s.nvr", flash_filename);
+         char flash_filebase[RETRO_PATH_MAX];
+         snprintf(flash_filebase, sizeof(flash_filebase), "%s", path_basename(full_path));
+         path_remove_extension(flash_filebase);
+         snprintf(flash_filename, sizeof(flash_filename), "%s.nvr", flash_filebase);
       }
       path_join((char*)&flash_filepath, retro_save_directory, flash_filename);
       log_cb(RETRO_LOG_INFO, "Using NVRAM: '%s'\n", flash_filepath);

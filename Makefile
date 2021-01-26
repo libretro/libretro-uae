@@ -271,6 +271,10 @@ ifneq ($(STATIC_LINKING), 1)
    CFLAGS += -DHAVE_7ZIP
 endif
 
+# CHD
+HAVE_CHD = 1
+HAVE_SYS_PARAM = 1
+
 CFLAGS += -std=gnu99 -DINLINE="inline" -D__LIBRETRO__
 
 include Makefile.common

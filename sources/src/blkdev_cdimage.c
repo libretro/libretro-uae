@@ -49,9 +49,16 @@
 
 //#define WITH_CHD
 #ifdef WITH_CHD
+#ifdef __LIBRETRO__
+#include "libretro-glue.h"
+#include "deps/libchdr/src/chd.h"
+#include "deps/libchdr/src/cdrom.h"
+#include "deps/libchdr/src/flac.h"
+#else
 #include "archivers/chd/chdtypes.h"
 #include "archivers/chd/chd.h"
 #include "archivers/chd/chdcd.h"
+#endif
 #endif
 
 #define scsi_log write_log
@@ -422,7 +429,6 @@ static void *cdda_unpack_func (void *v)
 			uae_u8 b;
 			zfile_fread (&b, 1, 1, t->handle);
 			zfile_fseek (t->handle, pos, SEEK_SET);
-#if defined(WITH_MP3) && defined(WITH_CHD)
 			if (!t->data && (t->enctype == AUDENC_MP3 || t->enctype == AUDENC_FLAC)) {
 				t->data = xcalloc (uae_u8, t->filesize + 2352);
 				cdimage_unpack_active = 1;
@@ -444,7 +450,6 @@ static void *cdda_unpack_func (void *v)
 					}
 				}
 			}
-#endif
 		}
 		cdimage_unpack_active = 2;
 	}
@@ -1427,8 +1432,9 @@ static int parsechd (struct cdunit *cdu, struct zfile *zcue, const TCHAR *img)
 	struct zfile *f = zfile_dup (zcue);
 	if (!f)
 		return 0;
-	chd_file *cf = new chd_file();
-	err = cf->open(f, false, NULL);
+	chd_file *cf;
+	cf = xmalloc(chd_file, 1);
+	err = chd_open(img, CHD_OPEN_READ, NULL, &cf);
 	if (err != CHDERR_NONE) {
 		write_log (_T("CHD '%s' err=%d\n"), zfile_getname (zcue), err);
 		zfile_fclose (f);
@@ -1436,17 +1442,22 @@ static int parsechd (struct cdunit *cdu, struct zfile *zcue, const TCHAR *img)
 	}
 	if (!(cdf = cdrom_open (cf))) {
 		write_log (_T("Couldn't open CHD '%s' as CD\n"), zfile_getname (zcue));
-		cf->close ();
+		chd_close(cf);
 		zfile_fclose (f);
 		return 0;
 	}
 	cdu->chd_f = cf;
 	cdu->chd_cdf = cdf;
-	
+
 	const cdrom_toc *stoc = cdrom_get_toc (cdf);
 	cdu->tracks = stoc->numtrks;
+#ifdef __LIBRETRO__
+	uae_u32 hunkcnt = cf->header.hunkcount;
+	uae_u32 hunksize = cf->header.hunkbytes;
+#else
 	uae_u32 hunkcnt = cf->hunk_count ();
 	uae_u32 hunksize = cf->hunk_bytes ();
+#endif
 	uae_u32 cbytes;
 	chd_codec_type compr;
 
@@ -1484,10 +1495,14 @@ static int parsechd (struct cdunit *cdu, struct zfile *zcue, const TCHAR *img)
 		dtrack->size = size;
 		dtrack->enctype = ENC_CHD;
 		dtrack->fname = my_strdup (zfile_getname (zcue));
+#ifdef __LIBRETRO__
+		dtrack->filesize = cf->header.logicalbytes;
+#else
 		dtrack->filesize = cf->logical_bytes ();
+#endif
 		dtrack->track = i + 1;
 		dtrack[1].address = dtrack->address + strack->frames;
-		if (cf->hunk_info(dtrack->offset * CD_FRAME_SIZE / hunksize, compr, cbytes) == CHDERR_NONE) {
+		if (chd_hunk_info(cf, dtrack->offset * CD_FRAME_SIZE / hunksize, &compr, &cbytes) == CHDERR_NONE) {
 			TCHAR tmp[100];
 			uae_u32 c = (uae_u32)compr;
 			for (int j = 0; j < 4; j++) {
@@ -1502,7 +1517,6 @@ static int parsechd (struct cdunit *cdu, struct zfile *zcue, const TCHAR *img)
 			tmp[4] = 0;
 			dtrack->extrainfo = my_strdup (tmp);
 		}
-
 	}
 	return cdu->tracks;
 }
@@ -1647,7 +1661,11 @@ static int parsecue (struct cdunit *cdu, struct zfile *zcue, const TCHAR *img)
 	uae_s64 fileoffset;
 	int index0;
 	TCHAR *fname, *fnametype;
-	int fnametypeid;//audenc fnametypeid;
+#ifdef __LIBRETRO__
+	int fnametypeid;
+#else
+	audenc fnametypeid;
+#endif
 	int ctrl;
 #ifdef WITH_MP3
 	mp3decoder *mp3dec = NULL;
@@ -2126,10 +2144,8 @@ static int parse_image (struct cdunit *cdu, const TCHAR *img)
 			parsemds (cdu, zcue, img);
 		} else if (!_tcsicmp(ext, _T("nrg"))) {
 			parsenrg (cdu, zcue, img);
-#if USE_CHD
+#if WITH_CHD
 		} else if (!_tcsicmp (ext, _T("chd"))) {
-			if (oldcurdir[0])
-				my_setcurrentdir (oldcurdir, NULL);
 			parsechd (cdu, zcue, img);
 #endif
 		}
@@ -2282,7 +2298,11 @@ static void unload_image (struct cdunit *cdu)
 	cdrom_close (cdu->chd_cdf);
 	cdu->chd_cdf = NULL;
 	if (cdu->chd_f)
+#ifdef __LIBRETRO__
+		chd_close(cdu->chd_f);
+#else
 		cdu->chd_f->close();
+#endif
 	cdu->chd_f = NULL;
 #endif
 	memset (cdu->toc, 0, sizeof cdu->toc);
