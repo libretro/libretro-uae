@@ -927,16 +927,9 @@ static uae_u32 command_volume (int unitnum, uae_u16 volume_left, uae_u16 volume_
 	struct cdunit *cdu = unitisopen (unitnum);
 	if (!cdu)
 		return -1;
-
 	uae_u32 old = (cdu->cdda_volume[1] << 16) | (cdu->cdda_volume[0] << 0);
-#ifdef __LIBRETRO__
-	// Actual CDA volume is set elsewhere, this prevents volume from being 0 after cold-boot-loading a savestate which is saved during CDA play
-	cdu->cdda_volume[0] = 0x7fff;
-	cdu->cdda_volume[1] = 0x7fff;
-#else
 	cdu->cdda_volume[0] = volume_left;
 	cdu->cdda_volume[1] = volume_right;
-#endif
 	return old;
 }
 
