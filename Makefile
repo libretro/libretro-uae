@@ -78,10 +78,21 @@ else ifeq ($(platform), classic_armv8_a35)
 # OSX
 else ifeq ($(platform), osx)
    TARGET := $(TARGET_NAME)_libretro.dylib
-   fpic := -fPIC -mmacosx-version-min=10.6
+   MINVERSION := -mmacosx-version-min=10.6
+   fpic := -fPIC 
    LDFLAGS :=
    SHARED := -dynamiclib
    PLATFLAGS += -DUSE_NAMED_SEMAPHORES
+
+   ifeq ($(CROSS_COMPILE),1)
+	TARGET_RULE   = -target $(LIBRETRO_APPLE_PLATFORM) -isysroot $(LIBRETRO_APPLE_ISYSROOT)
+	CFLAGS     += $(TARGET_RULE)
+	CXXFLAGS   += $(TARGET_RULE)
+	LDFLAGS    += $(TARGET_RULE)
+	MINVERSION =
+   endif
+
+   fpic += $(MINVERSION)
 
 # Android
 else ifeq ($(platform), android-armv7)
