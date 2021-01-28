@@ -61,7 +61,11 @@
 #endif
 
 #define TRACING_ENABLED 0
+#ifdef __SWITCH__
+int log_filesys = 1;
+#else
 int log_filesys = 0;
+#endif
 
 #if TRACING_ENABLED
 #if 0
