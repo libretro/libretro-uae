@@ -3668,6 +3668,48 @@ static void whdload_kscopy()
    }
 }
 
+static void whdload_prefs_copy()
+{
+   char src[RETRO_PATH_MAX] = {0};
+   char dst[RETRO_PATH_MAX] = {0};
+   char filename[20] = {0};
+
+   /* WHDLoad.prefs always */
+   snprintf(filename, sizeof(filename), "%s", "WHDLoad.prefs");
+
+   snprintf(src, sizeof(src), "%s%s%s",
+         retro_system_directory, DIR_SEP_STR, filename);
+   snprintf(dst, sizeof(dst), "%s%sWHDLoad%sS%s%s",
+         retro_save_directory, DIR_SEP_STR, DIR_SEP_STR, DIR_SEP_STR, filename);
+
+   if (path_is_valid(src))
+   {
+      if (path_is_valid(dst))
+         remove(dst);
+
+      if (fcopy(src, dst) < 0)
+         log_cb(RETRO_LOG_INFO, "%s not updated\n", filename);
+      else
+         log_cb(RETRO_LOG_INFO, "%s updated\n", filename);
+   }
+
+   /* WHDLoad.key only when not found */
+   snprintf(filename, sizeof(filename), "%s", "WHDLoad.key");
+
+   snprintf(src, sizeof(src), "%s%s%s",
+         retro_system_directory, DIR_SEP_STR, filename);
+   snprintf(dst, sizeof(dst), "%s%sWHDLoad%sL%s%s",
+         retro_save_directory, DIR_SEP_STR, DIR_SEP_STR, DIR_SEP_STR, filename);
+
+   if (!path_is_valid(dst) && path_is_valid(src))
+   {
+      if (fcopy(src, dst) < 0)
+         log_cb(RETRO_LOG_INFO, "%s failed to install\n", filename);
+      else
+         log_cb(RETRO_LOG_INFO, "%s installed\n", filename);
+   }
+}
+
 static char* emu_config_string(char* mode, int config)
 {
    if (!strcmp(mode, "model"))
@@ -4246,9 +4288,6 @@ static bool retro_create_config()
                   }
                }
 
-               /* Attach hard drive(s) */
-               retro_print_harddrives(&configfile);
-
                /* WHDSaves HDF mode */
                if (opt_use_whdload == 2)
                {
@@ -4290,7 +4329,7 @@ static bool retro_create_config()
                   if (path_is_valid(whdsaves_hdf))
                   {
                      tmp_str = string_replace_substring(whdsaves_hdf, "\\", "\\\\");
-                     fprintf(configfile, "hardfile2=rw,WHDSaves:\"%s\",32,1,2,512,0,,uae2\n", (const char*)tmp_str);
+                     fprintf(configfile, "hardfile2=rw,WHDSaves:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
                   }
                }
                /* WHDSaves file mode */
@@ -4304,11 +4343,14 @@ static bool retro_create_config()
                   if (path_is_directory(whdsaves_path))
                   {
                      tmp_str = string_replace_substring(whdsaves_path, "\\", "\\\\");
-                     fprintf(configfile, "filesystem2=rw,WHDSaves:WHDSaves:\"%s\",-128\n", (const char*)tmp_str);
+                     fprintf(configfile, "filesystem2=rw,WHDSaves:WHDSaves:\"%s\",0\n", (const char*)tmp_str);
                   }
                   else
                      log_cb(RETRO_LOG_ERROR, "Unable to create WHDSaves image directory: '%s'\n", (const char*)&whdsaves_path);
                }
+
+               /* Attach hard drive(s) */
+               retro_print_harddrives(&configfile);
 
                /* Manipulate WHDLoad.prefs */
                int WHDLoad_ConfigDelay = 0;
@@ -4321,7 +4363,7 @@ static bool retro_create_config()
                      WHDLoad_ConfigDelay = -1;
                      break;
                   case 2:
-                     WHDLoad_SplashDelay = 150;
+                     WHDLoad_SplashDelay = 200;
                      break;
                   case 3:
                      WHDLoad_ConfigDelay = -1;
@@ -4405,14 +4447,25 @@ static bool retro_create_config()
                   }
                }
 
-               /* Attach retro_system_directory as a read only hard drive for WHDLoad kickstarts/prefs/key */
+               /* Copy required files host-wise with file mode */
+               if (opt_use_whdload == 1)
+               {
+                  if (path_is_valid(whdload_prefs_path))
+                     whdload_prefs_copy();
+               }
+               else if (opt_use_whdload == 2)
+               {
+                  /* Attach retro_system_directory as a read only hard drive for WHDLoad kickstarts/prefs/key */
 #ifdef WIN32
-               tmp_str = string_replace_substring(retro_system_directory, "\\", "\\\\");
-               fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s\",-128\n", (const char*)tmp_str);
+                  tmp_str = string_replace_substring(retro_system_directory, "\\", "\\\\");
 #else
-               /* Force the ending slash to make sure the path is not treated as a file */
-               fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s%s\",-128\n", retro_system_directory, "/");
+                  tmp_str = strdup(retro_system_directory);
+                  /* Force ending slash with empty path_join to make sure the path is not treated as a file */
+                  if (tmp_str[strlen(tmp_str)-1] != '/')
+                     path_join(tmp_str, retro_system_directory, "");
 #endif
+                  fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s\",-128\n", tmp_str);
+               }
             }
             else
             {

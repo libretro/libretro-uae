@@ -29,7 +29,7 @@ extern int log_filesys;
 bool my_stat (const TCHAR *name, struct mystat *ms) {
 	struct stat sonuc;
 	if (stat(name, &sonuc) == -1) {
-		write_log("my_stat: stat on file %s failed\n", name);
+		write_log("my_stat: stat on file '%s' failed\n", name);
 		return false;
 	}
 	if (log_filesys)
@@ -234,7 +234,7 @@ int my_rename(const TCHAR *oldname, const TCHAR *newname)
 struct my_openfile_s *my_open(const TCHAR *name, int flags)
 {
 	if (log_filesys)
-		write_log("my_open %s flags=%x\n", name, flags);
+		write_log("my_open '%s' flags=%x\n", name, flags);
 
 #ifdef FD_OPEN
 	int open_flags = O_BINARY;
@@ -255,15 +255,14 @@ struct my_openfile_s *my_open(const TCHAR *name, int flags)
 	FILE *fp = NULL;
 	char* fopen_flags = strdup("rb");
 
+	if (flags & O_WRONLY)
+		fopen_flags = strdup("wb");
+
 	if (flags & O_RDWR)
 		fopen_flags = strdup("rb+");
-	else if (flags & O_WRONLY)
-		fopen_flags = strdup("wb");
 
 	if (flags & O_TRUNC)
 		fopen_flags = strdup("wb+");
-	if (flags & O_CREAT)
-		fopen_flags = strdup("wb");
 
 	fp = fopen(name, fopen_flags);
 
@@ -287,7 +286,7 @@ struct my_openfile_s *my_open(const TCHAR *name, int flags)
 void my_close(struct my_openfile_s* mos)
 {
 	if (log_filesys)
-		write_log("my_close (%s)\n", mos->path);
+		write_log("my_close '%s'\n", mos->path);
 #ifdef FD_OPEN
 	int result = close(mos->fd);
 #else
@@ -302,7 +301,7 @@ void my_close(struct my_openfile_s* mos)
 uae_s64 my_lseek(struct my_openfile_s *mos, uae_s64 offset, int whence)
 {
 	if (log_filesys)
-		write_log("my_lseek %s %lld %d\n", mos->path, offset, whence);
+		write_log("my_lseek '%s' %lld %d\n", mos->path, offset, whence);
 #ifdef FD_OPEN
 	off_t result = lseek(mos->fd, offset, whence);
 #else
@@ -317,7 +316,7 @@ uae_s64 my_lseek(struct my_openfile_s *mos, uae_s64 offset, int whence)
 int my_truncate(const TCHAR *name, uae_u64 len) {
 	int int_len = (int) len;
 	if (log_filesys)
-		write_log("my_truncate %s len = %d\n", name, int_len);
+		write_log("my_truncate '%s' len = %d\n", name, int_len);
 #ifdef FD_OPEN
 	struct my_openfile_s *mos = my_open(name, O_WRONLY);
 	if (mos == NULL) {
@@ -338,12 +337,12 @@ uae_s64 my_fsize(struct my_openfile_s* mos) {
 	struct stat sonuc;
 #ifdef FD_OPEN
 	if (fstat(mos->fd, &sonuc) == -1) {
-		write_log("my_fsize: fstat on file %s failed\n", mos->path);
+		write_log("my_fsize: fstat on file '%s' failed\n", mos->path);
 		return -1;
 	}
 #else
 	if (stat(mos->path, &sonuc) == -1) {
-		write_log("my_fsize: stat on file %s failed\n", mos->path);
+		write_log("my_fsize: stat on file '%s' failed\n", mos->path);
 		return -1;
 	}
 #endif
