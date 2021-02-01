@@ -3701,7 +3701,13 @@ static void whdload_prefs_copy()
    if (path_is_valid(src))
    {
       if (path_is_valid(dst))
+      {
+         /* No need to do anything without changes */
+         if (!fcmp(src, dst))
+            return;
+
          remove(dst);
+      }
 
       if (fcopy(src, dst) < 0)
          log_cb(RETRO_LOG_INFO, "%s not updated\n", filename);
@@ -4262,24 +4268,43 @@ static bool retro_create_config()
                char whdload_prefs_backup_path[RETRO_PATH_MAX];
                path_join((char*)&whdload_prefs_backup_path, retro_system_directory, "WHDLoad.prefs_backup");
 
-               char whdload_filebuf[512];
+               char whdload_buf[256] = {0};
+               char whdload_buf_row[256] = {0};
+               char whdload_buf_new[2048] = {0};
                if ((whdload_prefs = fopen(whdload_prefs_path, "r")))
                {
-                  if ((whdload_prefs_new = fopen(whdload_prefs_new_path, "w")))
+                  bool whdload_prefs_changes = false;
+                  while (fgets(whdload_buf, sizeof(whdload_buf), whdload_prefs))
                   {
-                     while (fgets(whdload_filebuf, sizeof(whdload_filebuf), whdload_prefs))
+                     if (strstr(whdload_buf, "ConfigDelay=") && whdload_buf[0] == 'C')
+                        snprintf(whdload_buf_row, sizeof(whdload_buf_row), "ConfigDelay=%d\n", WHDLoad_ConfigDelay);
+                     else if (strstr(whdload_buf, "SplashDelay=") && whdload_buf[0] == 'S')
+                        snprintf(whdload_buf_row, sizeof(whdload_buf_row), "SplashDelay=%d\n", WHDLoad_SplashDelay);
+                     else if (strstr(whdload_buf, "WriteDelay=") && whdload_buf[0] == 'W')
+                        snprintf(whdload_buf_row, sizeof(whdload_buf_row), "WriteDelay=%d\n", WHDLoad_WriteDelay);
+                     else
+                        snprintf(whdload_buf_row, sizeof(whdload_buf_row), "%s", whdload_buf);
+
+                     if (memcmp(whdload_buf, whdload_buf_row, sizeof(whdload_buf)))
+                        whdload_prefs_changes = true;
+
+                     strlcat(whdload_buf_new, whdload_buf_row, sizeof(whdload_buf_new));
+                  }
+
+                  fclose(whdload_prefs);
+
+                  if (whdload_prefs_changes)
+                  {
+                     if ((whdload_prefs_new = fopen(whdload_prefs_new_path, "w")))
                      {
-                        if (strstr(whdload_filebuf, "ConfigDelay=") && whdload_filebuf[0] == 'C')
-                           fprintf(whdload_prefs_new, "ConfigDelay=%d\n", WHDLoad_ConfigDelay);
-                        else if (strstr(whdload_filebuf, "SplashDelay=") && whdload_filebuf[0] == 'S')
-                           fprintf(whdload_prefs_new, "SplashDelay=%d\n", WHDLoad_SplashDelay);
-                        else if (strstr(whdload_filebuf, "WriteDelay=") && whdload_filebuf[0] == 'W')
-                           fprintf(whdload_prefs_new, "WriteDelay=%d\n", WHDLoad_WriteDelay);
-                        else
-                           fprintf(whdload_prefs_new, "%s", whdload_filebuf);
+                        fprintf(whdload_prefs_new, "%s", whdload_buf_new);
+                        fclose(whdload_prefs_new);
                      }
-                     fclose(whdload_prefs_new);
-                     fclose(whdload_prefs);
+                     else
+                     {
+                        log_cb(RETRO_LOG_ERROR, "Unable to create new WHDLoad.prefs: '%s'\n", (const char*)&whdload_prefs_new_path);
+                        fclose(whdload_prefs);
+                     }
 
                      /* Remove backup config */
                      remove(whdload_prefs_backup_path);
@@ -4287,11 +4312,6 @@ static bool retro_create_config()
                      /* Replace old and new config */
                      rename(whdload_prefs_path, whdload_prefs_backup_path);
                      rename(whdload_prefs_new_path, whdload_prefs_path);
-                  }
-                  else
-                  {
-                     log_cb(RETRO_LOG_ERROR, "Unable to create new WHDLoad.prefs: '%s'\n", (const char*)&whdload_prefs_new_path);
-                     fclose(whdload_prefs);
                   }
                }
 

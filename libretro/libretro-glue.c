@@ -898,7 +898,42 @@ close:
 
 #if 0
    if (ret == 0)
-      printf("Fcopy: %s -> %s = %d\n", src, dst, ret);
+      printf("fcopy: %s -> %s = %d\n", src, dst, ret);
+#endif
+   return ret;
+}
+
+int fcmp(const char *src, const char *dst)
+{
+   char buf_src[BUFSIZ] = {0};
+   char buf_dst[BUFSIZ] = {0};
+   size_t n             = 0;
+   int ret              = 0;
+
+   FILE *fp_src = fopen(src, "rb");
+   FILE *fp_dst = fopen(dst, "rb");
+   if (!fp_src)
+      ret = -1;
+   if (!fp_dst)
+      ret = -2;
+
+   if (ret < 0)
+      goto close;
+
+   while ((n = fread(buf_src, sizeof(char), sizeof(buf_src), fp_src)) > 0 && ret == 0)
+   {
+      fread(buf_dst, sizeof(char), sizeof(buf_dst), fp_dst);
+      ret = memcmp(buf_src, buf_dst, sizeof(buf_src));
+   }
+
+close:
+   if (fp_src)
+      fclose(fp_src);
+   if (fp_dst);
+      fclose(fp_dst);
+
+#if 0
+   printf("fcmp: %s -> %s = %d\n", src, dst, ret);
 #endif
    return ret;
 }
