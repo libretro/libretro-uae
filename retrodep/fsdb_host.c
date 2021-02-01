@@ -85,7 +85,7 @@ bool my_utime (const TCHAR *name, struct mytimeval *tv)
 	return false;
 }
 
-static int my_existstype(const char *name, bool file)
+int my_existstype(const char *name, int mode)
 {
 	int ret = 0;
 
@@ -93,10 +93,18 @@ static int my_existstype(const char *name, bool file)
 	utf8 = local_to_utf8_string_alloc(name);
 	if (path_is_valid(utf8))
 	{
-		if (file)
-			ret = path_is_directory(utf8) ? 0 : 1;
-		else
-			ret = path_is_directory(utf8) ? 1 : 0;
+		switch (mode)
+		{
+			case 0: /* Dir */
+				ret = path_is_directory(utf8) ? 1 : 0;
+				break;
+			case 1: /* File */
+				ret = path_is_directory(utf8) ? 0 : 1;
+				break;
+			case 2: /* Dir/File */
+				ret = path_is_directory(utf8) ? 2 : 1;
+				break;
+		}
 	}
 
 	free(utf8);
@@ -105,7 +113,7 @@ static int my_existstype(const char *name, bool file)
 	return ret;
 }
 
-int my_existsfile (const char *name)
+int my_existsfile(const char *name)
 {
 	return my_existstype(name, 1);
 }

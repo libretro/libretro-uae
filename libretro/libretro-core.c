@@ -3614,7 +3614,7 @@ static void retro_print_harddrives(FILE** configfile)
       else if (strendswith(dc->files[i], "slave") || strendswith(dc->files[i], "info"))
          fprintf(*configfile, "filesystem2=rw,DH%d:%s:\"%s\",0\n", i, tmp_str_name, tmp_str_path);
       else
-         fprintf(*configfile, "hardfile2=rw,DH%d:\"%s\",32,1,2,512,0,,uae1\n", i, tmp_str);
+         fprintf(*configfile, "hardfile2=rw,DH%d:\"%s\",32,1,2,512,0,,uae0\n", i, tmp_str);
 
       log_cb(RETRO_LOG_INFO, "HD (%d) inserted in drive DH%d: '%s'\n", i+1, i, dc->files[i]);
    }
@@ -3674,25 +3674,6 @@ static void whdload_prefs_copy()
    char dst[RETRO_PATH_MAX] = {0};
    char filename[20] = {0};
 
-   /* WHDLoad.prefs always */
-   snprintf(filename, sizeof(filename), "%s", "WHDLoad.prefs");
-
-   snprintf(src, sizeof(src), "%s%s%s",
-         retro_system_directory, DIR_SEP_STR, filename);
-   snprintf(dst, sizeof(dst), "%s%sWHDLoad%sS%s%s",
-         retro_save_directory, DIR_SEP_STR, DIR_SEP_STR, DIR_SEP_STR, filename);
-
-   if (path_is_valid(src))
-   {
-      if (path_is_valid(dst))
-         remove(dst);
-
-      if (fcopy(src, dst) < 0)
-         log_cb(RETRO_LOG_INFO, "%s not updated\n", filename);
-      else
-         log_cb(RETRO_LOG_INFO, "%s updated\n", filename);
-   }
-
    /* WHDLoad.key only when not found */
    snprintf(filename, sizeof(filename), "%s", "WHDLoad.key");
 
@@ -3707,6 +3688,31 @@ static void whdload_prefs_copy()
          log_cb(RETRO_LOG_INFO, "%s failed to install\n", filename);
       else
          log_cb(RETRO_LOG_INFO, "%s installed\n", filename);
+   }
+
+   /* WHDLoad.prefs always */
+   snprintf(filename, sizeof(filename), "%s", "WHDLoad.prefs");
+
+   snprintf(src, sizeof(src), "%s%s%s",
+         retro_system_directory, DIR_SEP_STR, filename);
+   snprintf(dst, sizeof(dst), "%s%sWHDLoad%sS%s%s",
+         retro_save_directory, DIR_SEP_STR, DIR_SEP_STR, DIR_SEP_STR, filename);
+
+   if (path_is_valid(src))
+   {
+      if (path_is_valid(dst))
+      {
+         /* No need to do anything without changes */
+         if (!fcmp(src, dst))
+            return;
+
+         remove(dst);
+      }
+
+      if (fcopy(src, dst) < 0)
+         log_cb(RETRO_LOG_INFO, "%s not updated\n", filename);
+      else
+         log_cb(RETRO_LOG_INFO, "%s updated\n", filename);
    }
 }
 
@@ -4200,158 +4206,6 @@ static bool retro_create_config()
             /* WHDLoad support */
             if (opt_use_whdload)
             {
-               /* WHDLoad HDF mode */
-               if (opt_use_whdload == 2)
-               {
-                  char whdload_hdf[RETRO_PATH_MAX];
-                  path_join((char*)&whdload_hdf, retro_save_directory, "WHDLoad.hdf");
-
-                  /* Verify WHDLoad */
-                  if (!path_is_valid(whdload_hdf))
-                  {
-                     log_cb(RETRO_LOG_INFO, "WHDLoad image file '%s' not found, attempting to create one\n", (const char*)&whdload_hdf);
-
-                     char whdload_hdf_gz[RETRO_PATH_MAX];
-                     path_join((char*)&whdload_hdf_gz, retro_save_directory, "WHDLoad.hdf.gz");
-
-                     FILE *whdload_hdf_gz_fp;
-                     if ((whdload_hdf_gz_fp = fopen(whdload_hdf_gz, "wb")))
-                     {
-                        /* Write GZ */
-                        fwrite(___whdload_WHDLoad_hdf_gz, ___whdload_WHDLoad_hdf_gz_len, 1, whdload_hdf_gz_fp);
-                        fclose(whdload_hdf_gz_fp);
-
-                        /* Extract GZ */
-                        struct gzFile_s *whdload_hdf_gz_fp;
-                        if ((whdload_hdf_gz_fp = gzopen(whdload_hdf_gz, "r")))
-                        {
-                           FILE *whdload_hdf_fp;
-                           if ((whdload_hdf_fp = fopen(whdload_hdf, "wb")))
-                           {
-                              gz_uncompress(whdload_hdf_gz_fp, whdload_hdf_fp);
-                              fclose(whdload_hdf_fp);
-                           }
-                           gzclose(whdload_hdf_gz_fp);
-                        }
-                        remove(whdload_hdf_gz);
-                     }
-                     else
-                        log_cb(RETRO_LOG_ERROR, "Unable to create WHDLoad image file: '%s'\n", (const char*)&whdload_hdf);
-                  }
-                  /* Attach HDF */
-                  if (path_is_valid(whdload_hdf))
-                  {
-                     tmp_str = string_replace_substring(whdload_hdf, "\\", "\\\\");
-                     fprintf(configfile, "hardfile2=rw,WHDLoad:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
-                  }
-               }
-               /* WHDLoad file mode */
-               else
-               {
-                  char whdload_path[RETRO_PATH_MAX];
-                  path_join((char*)&whdload_path, retro_save_directory, "WHDLoad");
-
-                  char whdload_c_path[RETRO_PATH_MAX];
-                  path_join((char*)&whdload_c_path, retro_save_directory, "WHDLoad/C");
-
-                  /* Verify WHDLoad */
-                  if (!path_is_directory(whdload_path) || (path_is_directory(whdload_path) && !path_is_directory(whdload_c_path)))
-                  {
-                     log_cb(RETRO_LOG_INFO, "WHDLoad image directory '%s' not found, attempting to create one\n", (const char*)&whdload_path);
-                     path_mkdir(whdload_path);
-
-                     char whdload_files_zip[RETRO_PATH_MAX];
-                     path_join((char*)&whdload_files_zip, retro_save_directory, "WHDLoad_files.zip");
-
-                     FILE *whdload_files_zip_fp;
-                     if ((whdload_files_zip_fp = fopen(whdload_files_zip, "wb")))
-                     {
-                        /* Write ZIP */
-                        fwrite(___whdload_WHDLoad_files_zip, ___whdload_WHDLoad_files_zip_len, 1, whdload_files_zip_fp);
-                        fclose(whdload_files_zip_fp);
-
-                        /* Extract ZIP */
-                        zip_uncompress(whdload_files_zip, whdload_path, NULL);
-                        remove(whdload_files_zip);
-
-                        /* Copy Kickstarts */
-                        whdload_kscopy();
-                     }
-                     else
-                        log_cb(RETRO_LOG_ERROR, "Unable to create WHDLoad image directory: '%s'\n", (const char*)&whdload_path);
-                  }
-                  /* Attach directory */
-                  if (path_is_directory(whdload_path) && path_is_directory(whdload_c_path))
-                  {
-                     tmp_str = string_replace_substring(whdload_path, "\\", "\\\\");
-                     fprintf(configfile, "filesystem2=rw,WHDLoad:WHDLoad:\"%s\",0\n", (const char*)tmp_str);
-                  }
-               }
-
-               /* WHDSaves HDF mode */
-               if (opt_use_whdload == 2)
-               {
-                  /* Attach WHDSaves.hdf if available */
-                  char whdsaves_hdf[RETRO_PATH_MAX];
-                  path_join((char*)&whdsaves_hdf, retro_save_directory, "WHDSaves.hdf");
-                  if (!path_is_valid(whdsaves_hdf))
-                  {
-                     log_cb(RETRO_LOG_INFO, "WHDSaves image file '%s' not found, attempting to create one\n", (const char*)&whdsaves_hdf);
-
-                     char whdsaves_hdf_gz[RETRO_PATH_MAX];
-                     path_join((char*)&whdsaves_hdf_gz, retro_save_directory, "WHDSaves.hdf.gz");
-
-                     FILE *whdsaves_hdf_gz_fp;
-                     if ((whdsaves_hdf_gz_fp = fopen(whdsaves_hdf_gz, "wb")))
-                     {
-                        /* Write GZ */
-                        fwrite(___whdload_WHDSaves_hdf_gz, ___whdload_WHDSaves_hdf_gz_len, 1, whdsaves_hdf_gz_fp);
-                        fclose(whdsaves_hdf_gz_fp);
-
-                        /* Extract GZ */
-                        struct gzFile_s *whdsaves_hdf_gz_fp;
-                        if ((whdsaves_hdf_gz_fp = gzopen(whdsaves_hdf_gz, "r")))
-                        {
-                           FILE *whdsaves_hdf_fp;
-                           if ((whdsaves_hdf_fp = fopen(whdsaves_hdf, "wb")))
-                           {
-                              gz_uncompress(whdsaves_hdf_gz_fp, whdsaves_hdf_fp);
-                              fclose(whdsaves_hdf_fp);
-                           }
-                           gzclose(whdsaves_hdf_gz_fp);
-                        }
-                        remove(whdsaves_hdf_gz);
-                     }
-                     else
-                        log_cb(RETRO_LOG_ERROR, "Unable to create WHDSaves image file: '%s'\n", (const char*)&whdsaves_hdf);
-                  }
-                  /* Attach HDF */
-                  if (path_is_valid(whdsaves_hdf))
-                  {
-                     tmp_str = string_replace_substring(whdsaves_hdf, "\\", "\\\\");
-                     fprintf(configfile, "hardfile2=rw,WHDSaves:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
-                  }
-               }
-               /* WHDSaves file mode */
-               else
-               {
-                  char whdsaves_path[RETRO_PATH_MAX];
-                  path_join((char*)&whdsaves_path, retro_save_directory, "WHDSaves");
-                  if (!path_is_directory(whdsaves_path))
-                     path_mkdir(whdsaves_path);
-                  /* Attach directory */
-                  if (path_is_directory(whdsaves_path))
-                  {
-                     tmp_str = string_replace_substring(whdsaves_path, "\\", "\\\\");
-                     fprintf(configfile, "filesystem2=rw,WHDSaves:WHDSaves:\"%s\",0\n", (const char*)tmp_str);
-                  }
-                  else
-                     log_cb(RETRO_LOG_ERROR, "Unable to create WHDSaves image directory: '%s'\n", (const char*)&whdsaves_path);
-               }
-
-               /* Attach hard drive(s) */
-               retro_print_harddrives(&configfile);
-
                /* Manipulate WHDLoad.prefs */
                int WHDLoad_ConfigDelay = 0;
                int WHDLoad_SplashDelay = 0;
@@ -4414,24 +4268,43 @@ static bool retro_create_config()
                char whdload_prefs_backup_path[RETRO_PATH_MAX];
                path_join((char*)&whdload_prefs_backup_path, retro_system_directory, "WHDLoad.prefs_backup");
 
-               char whdload_filebuf[512];
+               char whdload_buf[256] = {0};
+               char whdload_buf_row[256] = {0};
+               char whdload_buf_new[2048] = {0};
                if ((whdload_prefs = fopen(whdload_prefs_path, "r")))
                {
-                  if ((whdload_prefs_new = fopen(whdload_prefs_new_path, "w")))
+                  bool whdload_prefs_changes = false;
+                  while (fgets(whdload_buf, sizeof(whdload_buf), whdload_prefs))
                   {
-                     while (fgets(whdload_filebuf, sizeof(whdload_filebuf), whdload_prefs))
+                     if (strstr(whdload_buf, "ConfigDelay=") && whdload_buf[0] == 'C')
+                        snprintf(whdload_buf_row, sizeof(whdload_buf_row), "ConfigDelay=%d\n", WHDLoad_ConfigDelay);
+                     else if (strstr(whdload_buf, "SplashDelay=") && whdload_buf[0] == 'S')
+                        snprintf(whdload_buf_row, sizeof(whdload_buf_row), "SplashDelay=%d\n", WHDLoad_SplashDelay);
+                     else if (strstr(whdload_buf, "WriteDelay=") && whdload_buf[0] == 'W')
+                        snprintf(whdload_buf_row, sizeof(whdload_buf_row), "WriteDelay=%d\n", WHDLoad_WriteDelay);
+                     else
+                        snprintf(whdload_buf_row, sizeof(whdload_buf_row), "%s", whdload_buf);
+
+                     if (memcmp(whdload_buf, whdload_buf_row, sizeof(whdload_buf)))
+                        whdload_prefs_changes = true;
+
+                     strlcat(whdload_buf_new, whdload_buf_row, sizeof(whdload_buf_new));
+                  }
+
+                  fclose(whdload_prefs);
+
+                  if (whdload_prefs_changes)
+                  {
+                     if ((whdload_prefs_new = fopen(whdload_prefs_new_path, "w")))
                      {
-                        if (strstr(whdload_filebuf, "ConfigDelay=") && whdload_filebuf[0] == 'C')
-                           fprintf(whdload_prefs_new, "ConfigDelay=%d\n", WHDLoad_ConfigDelay);
-                        else if (strstr(whdload_filebuf, "SplashDelay=") && whdload_filebuf[0] == 'S')
-                           fprintf(whdload_prefs_new, "SplashDelay=%d\n", WHDLoad_SplashDelay);
-                        else if (strstr(whdload_filebuf, "WriteDelay=") && whdload_filebuf[0] == 'W')
-                           fprintf(whdload_prefs_new, "WriteDelay=%d\n", WHDLoad_WriteDelay);
-                        else
-                           fprintf(whdload_prefs_new, "%s", whdload_filebuf);
+                        fprintf(whdload_prefs_new, "%s", whdload_buf_new);
+                        fclose(whdload_prefs_new);
                      }
-                     fclose(whdload_prefs_new);
-                     fclose(whdload_prefs);
+                     else
+                     {
+                        log_cb(RETRO_LOG_ERROR, "Unable to create new WHDLoad.prefs: '%s'\n", (const char*)&whdload_prefs_new_path);
+                        fclose(whdload_prefs);
+                     }
 
                      /* Remove backup config */
                      remove(whdload_prefs_backup_path);
@@ -4440,21 +4313,154 @@ static bool retro_create_config()
                      rename(whdload_prefs_path, whdload_prefs_backup_path);
                      rename(whdload_prefs_new_path, whdload_prefs_path);
                   }
-                  else
-                  {
-                     log_cb(RETRO_LOG_ERROR, "Unable to create new WHDLoad.prefs: '%s'\n", (const char*)&whdload_prefs_new_path);
-                     fclose(whdload_prefs);
-                  }
                }
 
-               /* Copy required files host-wise with file mode */
+               /* WHDLoad file mode */
                if (opt_use_whdload == 1)
                {
+                  char whdload_path[RETRO_PATH_MAX];
+                  path_join((char*)&whdload_path, retro_save_directory, "WHDLoad");
+
+                  char whdload_c_path[RETRO_PATH_MAX];
+                  path_join((char*)&whdload_c_path, retro_save_directory, "WHDLoad/C");
+
+                  /* Verify WHDLoad */
+                  if (!path_is_directory(whdload_path) || (path_is_directory(whdload_path) && !path_is_directory(whdload_c_path)))
+                  {
+                     log_cb(RETRO_LOG_INFO, "WHDLoad image directory '%s' not found, attempting to create one\n", (const char*)&whdload_path);
+                     path_mkdir(whdload_path);
+
+                     char whdload_files_zip[RETRO_PATH_MAX];
+                     path_join((char*)&whdload_files_zip, retro_save_directory, "WHDLoad_files.zip");
+
+                     FILE *whdload_files_zip_fp;
+                     if ((whdload_files_zip_fp = fopen(whdload_files_zip, "wb")))
+                     {
+                        /* Write ZIP */
+                        fwrite(___whdload_WHDLoad_files_zip, ___whdload_WHDLoad_files_zip_len, 1, whdload_files_zip_fp);
+                        fclose(whdload_files_zip_fp);
+
+                        /* Extract ZIP */
+                        zip_uncompress(whdload_files_zip, whdload_path, NULL);
+                        remove(whdload_files_zip);
+
+                        /* Copy Kickstarts */
+                        whdload_kscopy();
+                     }
+                     else
+                        log_cb(RETRO_LOG_ERROR, "Unable to create WHDLoad image directory: '%s'\n", (const char*)&whdload_path);
+                  }
+                  /* Attach directory */
+                  if (path_is_directory(whdload_path) && path_is_directory(whdload_c_path))
+                  {
+                     tmp_str = string_replace_substring(whdload_path, "\\", "\\\\");
+                     fprintf(configfile, "filesystem2=rw,WHDLoad:WHDLoad:\"%s\",0\n", (const char*)tmp_str);
+                  }
+
+                  /* Verify WHDSaves */
+                  char whdsaves_path[RETRO_PATH_MAX];
+                  path_join((char*)&whdsaves_path, retro_save_directory, "WHDSaves");
+                  if (!path_is_directory(whdsaves_path))
+                     path_mkdir(whdsaves_path);
+                  /* Attach directory */
+                  if (path_is_directory(whdsaves_path))
+                  {
+                     tmp_str = string_replace_substring(whdsaves_path, "\\", "\\\\");
+                     fprintf(configfile, "filesystem2=rw,WHDSaves:WHDSaves:\"%s\",0\n", (const char*)tmp_str);
+                  }
+                  else
+                     log_cb(RETRO_LOG_ERROR, "Unable to create WHDSaves image directory: '%s'\n", (const char*)&whdsaves_path);
+
+                  /* Copy required files host-wise with file mode */
                   if (path_is_valid(whdload_prefs_path))
                      whdload_prefs_copy();
                }
+               /* WHDLoad HDF mode */
                else if (opt_use_whdload == 2)
                {
+                  char whdload_hdf[RETRO_PATH_MAX] = {0};
+                  path_join((char*)&whdload_hdf, retro_save_directory, "WHDLoad.hdf");
+
+                  /* Verify WHDLoad.hdf */
+                  if (!path_is_valid(whdload_hdf))
+                  {
+                     log_cb(RETRO_LOG_INFO, "WHDLoad image file '%s' not found, attempting to create one\n", (const char*)&whdload_hdf);
+
+                     char whdload_hdf_gz[RETRO_PATH_MAX];
+                     path_join((char*)&whdload_hdf_gz, retro_save_directory, "WHDLoad.hdf.gz");
+
+                     FILE *whdload_hdf_gz_fp;
+                     if ((whdload_hdf_gz_fp = fopen(whdload_hdf_gz, "wb")))
+                     {
+                        /* Write GZ */
+                        fwrite(___whdload_WHDLoad_hdf_gz, ___whdload_WHDLoad_hdf_gz_len, 1, whdload_hdf_gz_fp);
+                        fclose(whdload_hdf_gz_fp);
+
+                        /* Extract GZ */
+                        struct gzFile_s *whdload_hdf_gz_fp;
+                        if ((whdload_hdf_gz_fp = gzopen(whdload_hdf_gz, "r")))
+                        {
+                           FILE *whdload_hdf_fp;
+                           if ((whdload_hdf_fp = fopen(whdload_hdf, "wb")))
+                           {
+                              gz_uncompress(whdload_hdf_gz_fp, whdload_hdf_fp);
+                              fclose(whdload_hdf_fp);
+                           }
+                           gzclose(whdload_hdf_gz_fp);
+                        }
+                        remove(whdload_hdf_gz);
+                     }
+                     else
+                        log_cb(RETRO_LOG_ERROR, "Unable to create WHDLoad image file: '%s'\n", (const char*)&whdload_hdf);
+                  }
+                  /* Attach HDF */
+                  if (path_is_valid(whdload_hdf))
+                  {
+                     tmp_str = string_replace_substring(whdload_hdf, "\\", "\\\\");
+                     fprintf(configfile, "hardfile2=rw,WHDLoad:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
+                  }
+
+                  /* Verify WHDSaves.hdf */
+                  char whdsaves_hdf[RETRO_PATH_MAX] = {0};
+                  path_join((char*)&whdsaves_hdf, retro_save_directory, "WHDSaves.hdf");
+                  if (!path_is_valid(whdsaves_hdf))
+                  {
+                     log_cb(RETRO_LOG_INFO, "WHDSaves image file '%s' not found, attempting to create one\n", (const char*)&whdsaves_hdf);
+
+                     char whdsaves_hdf_gz[RETRO_PATH_MAX];
+                     path_join((char*)&whdsaves_hdf_gz, retro_save_directory, "WHDSaves.hdf.gz");
+
+                     FILE *whdsaves_hdf_gz_fp;
+                     if ((whdsaves_hdf_gz_fp = fopen(whdsaves_hdf_gz, "wb")))
+                     {
+                        /* Write GZ */
+                        fwrite(___whdload_WHDSaves_hdf_gz, ___whdload_WHDSaves_hdf_gz_len, 1, whdsaves_hdf_gz_fp);
+                        fclose(whdsaves_hdf_gz_fp);
+
+                        /* Extract GZ */
+                        struct gzFile_s *whdsaves_hdf_gz_fp;
+                        if ((whdsaves_hdf_gz_fp = gzopen(whdsaves_hdf_gz, "r")))
+                        {
+                           FILE *whdsaves_hdf_fp;
+                           if ((whdsaves_hdf_fp = fopen(whdsaves_hdf, "wb")))
+                           {
+                              gz_uncompress(whdsaves_hdf_gz_fp, whdsaves_hdf_fp);
+                              fclose(whdsaves_hdf_fp);
+                           }
+                           gzclose(whdsaves_hdf_gz_fp);
+                        }
+                        remove(whdsaves_hdf_gz);
+                     }
+                     else
+                        log_cb(RETRO_LOG_ERROR, "Unable to create WHDSaves image file: '%s'\n", (const char*)&whdsaves_hdf);
+                  }
+                  /* Attach HDF */
+                  if (path_is_valid(whdsaves_hdf))
+                  {
+                     tmp_str = string_replace_substring(whdsaves_hdf, "\\", "\\\\");
+                     fprintf(configfile, "hardfile2=rw,WHDSaves:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
+                  }
+
                   /* Attach retro_system_directory as a read only hard drive for WHDLoad kickstarts/prefs/key */
 #ifdef WIN32
                   tmp_str = string_replace_substring(retro_system_directory, "\\", "\\\\");
@@ -4467,11 +4473,9 @@ static bool retro_create_config()
                   fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s\",-128\n", tmp_str);
                }
             }
-            else
-            {
-               /* Attach hard drive(s) */
-               retro_print_harddrives(&configfile);
-            }
+
+            /* Attach hard drive(s) */
+            retro_print_harddrives(&configfile);
          }
          else
          {
@@ -4537,7 +4541,6 @@ static bool retro_create_config()
                   }
                }
             }
-
 
             /* Scan for save disk 0, append if exists */
             if (dc->count)

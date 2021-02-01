@@ -456,11 +456,13 @@ int custom_fsdb_used_as_nname(a_inode *base, const TCHAR *nname)
     return 0;
 }
 
+extern int my_existstype(const char *name, int mode);
+
 static int fsdb_get_file_info(const char *nname, fsdb_file_info *info)
 {
     int error = 0;
     info->comment = NULL;
-    info->type = my_existsdir(nname) ? 2 : 1;
+    info->type = my_existstype(nname, 2);
     info->mode = 15;
     return error;
 }
