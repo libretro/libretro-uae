@@ -5164,7 +5164,7 @@ void update_audiovideo(void)
          visible_left_border_update_frame_timer--;
          if (visible_left_border_update_frame_timer == 0)
          {
-            visible_left_border = retro_max_diwlastword - retrow - opt_horizontal_offset;
+            visible_left_border = retro_max_diwlastword - retrow - (opt_horizontal_offset * width_multiplier);
             request_reset_drawing = true;
          }
       }
@@ -5425,6 +5425,14 @@ static bool retro_update_av_info(void)
          zoomed_height = 200;
          break;
       case 8:
+         /* Automatic width sense fooling */
+         /* Walker */
+         if (retro_min_diwstart == (89 * width_multiplier) && retro_max_diwstop == (425 * width_multiplier))
+            retro_max_diwstop -= (16 * width_multiplier);
+         /* AfterBurner */
+         else if (retro_min_diwstart == (41 * width_multiplier) && retro_max_diwstop == (393 * width_multiplier))
+            retro_min_diwstart += (32 * width_multiplier);
+
          if (retro_min_diwstart != retro_max_diwstop
           && retro_min_diwstart > 0
           && retro_max_diwstop > 0)
@@ -5543,6 +5551,8 @@ static bool retro_update_av_info(void)
    /* Horizontal centering needs to be done also after geometry change */
    if (opt_horizontal_offset_auto)
       update_video_center_horizontal();
+   else
+      visible_left_border = retro_max_diwlastword - retrow - (opt_horizontal_offset * width_multiplier);
 
    /* Logging */
    if (av_log)
