@@ -2225,11 +2225,10 @@ void restore_akiko_final(void)
 	write_comm_pipe_u32(&requests, 0x0102, 1); // pause
 	write_comm_pipe_u32(&requests, 0x0104, 1); // stop
 	write_comm_pipe_u32(&requests, 0x0103, 1); // unpause
-#ifdef __LIBRETRO__
-	if (cdrom_playing && !cdrom_paused && akiko_isaudiotrack(last_play_pos)) {
-		akiko_mute(0);
-#else
 	if (cdrom_playing && akiko_isaudiotrack(last_play_pos)) {
+#ifdef __LIBRETRO__
+		akiko_mute(0);
+		if (!cdrom_paused)
 #endif
 		write_comm_pipe_u32(&requests, 0x0111, 0); // play immediate
 		write_comm_pipe_u32(&requests, last_play_pos, 0);
