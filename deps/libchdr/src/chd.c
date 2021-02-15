@@ -1564,6 +1564,7 @@ void chd_close(chd_file *chd)
 	}
 	else
 	{
+#if 0
 		int i;
 		/* Free the codecs */
 		for (i = 0 ; i < 4 ; i++)
@@ -1588,6 +1589,7 @@ void chd_close(chd_file *chd)
 				(*chd->codecintf[i]->free)(codec);
 			}
 		}
+#endif
 
 		/* Free the raw map */
 		if (chd->header.rawmap != NULL)

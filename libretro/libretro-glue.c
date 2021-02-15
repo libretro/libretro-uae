@@ -1800,7 +1800,7 @@ UINT32 cdrom_read_subcode(cdrom_file *file, UINT32 lbasector, void *buffer, bool
 cdrom_file *cdrom_open(chd_file *chd)
 {
 	int i;
-	cdrom_file *file;
+	cdrom_file *file = NULL;
 	UINT32 physofs, chdofs, logofs;
 	chd_error err;
 
@@ -1855,7 +1855,7 @@ cdrom_file *cdrom_open(chd_file *chd)
 
 		physofs += file->cdtoc.tracks[i].frames;
 		chdofs  += file->cdtoc.tracks[i].frames;
-		chdofs  += file->cdtoc.tracks[i].extraframes;
+		chdofs  += file->cdtoc.tracks[i].extraframes - 1;
 		logofs  += file->cdtoc.tracks[i].frames;
 
 #if 0
@@ -2007,7 +2007,7 @@ chd_error chd_hunk_info(chd_file *cf, UINT32 hunknum, chd_codec_type *compressor
 //  read_bytes - read from the CHD at a byte level,
 //  using the cache to handle partial hunks
 //-------------------------------------------------
-UINT8 m_cache[CD_FRAME_SIZE*CD_FRAMES_PER_HUNK] = {0};
+UINT8 m_cache[CD_FRAME_SIZE*CD_FRAMES_PER_HUNK*2] = {0};
 UINT32 m_cachehunk = 0;
 
 chd_error chd_read_bytes(chd_file *chd, UINT64 offset, void *buffer, UINT32 bytes)
@@ -2077,6 +2077,7 @@ chd_error read_partial_sector(cdrom_file *file, void *dest, UINT32 lbasector, UI
 	}
 	else
 	{
+#if 0
 		// else read from the appropriate file
 		core_file *srcfile = file->fhandle[tracknum];
 
@@ -2093,6 +2094,7 @@ chd_error read_partial_sector(cdrom_file *file, void *dest, UINT32 lbasector, UI
 		core_fread(srcfile, dest, length);
 
 		needswap = file->track_info.track[tracknum].swap;
+#endif
 	}
 
 	if (needswap)

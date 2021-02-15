@@ -2,6 +2,7 @@
 #define LIBRETRO_GLUE_H
 
 #include <stdio.h>
+#include "libretro-core.h"
 
 #ifdef WITH_CHD
 /*** CHD ***/
@@ -24,6 +25,7 @@
 typedef UINT32 chd_codec_type;
 typedef UINT32 chd_metadata_tag;
 
+#if 0
 typedef struct chdcd_track_input_entry
 {
 #if 0
@@ -34,7 +36,7 @@ typedef struct chdcd_track_input_entry
 #if 0
 	astring fname;      // filename for each track
 #else
-	char* fname;
+	char fname[RETRO_PATH_MAX];
 #endif
 	UINT32 offset;      // offset in the data file for each track
 	bool swap;          // data needs to be byte swapped
@@ -50,6 +52,7 @@ typedef struct chdcd_track_input_info
 
 	chdcd_track_input_entry track[CD_MAX_TRACKS];
 } chdcd_track_input_info;
+#endif
 
 typedef struct cdrom_track_info
 {
@@ -87,7 +90,9 @@ typedef struct cdrom_file
 {
 	chd_file *          chd;                /* CHD file */
 	cdrom_toc           cdtoc;              /* TOC for the CD */
+#if 0
 	chdcd_track_input_info track_info;      /* track info */
+#endif
 	core_file *         fhandle[CD_MAX_TRACKS];/* file handle */
 } cdrom_file;
 
