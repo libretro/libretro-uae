@@ -3,6 +3,8 @@
 #include "keyboard.h"
 #include "libretro-vkbd.h"
 
+#include "options.h"
+
 bool retro_vkbd = false;
 bool retro_vkbd_page = false;
 bool retro_vkbd_position = false;
@@ -56,13 +58,31 @@ void print_vkbd(unsigned short int *pixels)
    int FONT_COLOR_SEL                = 0;
 
    unsigned COLOR_BLACK              = RGBc(  5,   5,   5);
-   unsigned COLOR_GRAY               = RGBc(125, 125, 125);
+   unsigned COLOR_GRAYBLACK          = RGBc( 25,  25,  25);
+   unsigned COLOR_GRAYWHITE          = RGBc(125, 125, 125);
    unsigned COLOR_WHITE              = RGBc(250, 250, 250);
 
-   switch (opt_vkbd_theme)
+   unsigned theme                    = opt_vkbd_theme;
+   if (!theme)
+   {
+      switch (currprefs.cs_compatible)
+      {
+         case CP_CD32:
+            theme = 2;
+            break;
+         case CP_CDTV:
+            theme = 3;
+            break;
+         default:
+            theme = 1;
+            break;
+      }
+   }
+
+   switch (theme)
    {
       default:
-      case 0: /* Classic */
+      case 1: /* Classic */
          BKG_COLOR_NORMAL  = RGBc(216, 209, 201);
          BKG_COLOR_ALT     = RGBc(159, 154, 150);
          BKG_COLOR_EXTRA   = RGBc(143, 140, 129);
@@ -72,7 +92,7 @@ void print_vkbd(unsigned short int *pixels)
          FONT_COLOR_SEL    = COLOR_WHITE;
          break;
 
-      case 1: /* CD32 */
+      case 2: /* CD32 */
          BKG_COLOR_NORMAL  = RGBc( 64,  64,  64);
          BKG_COLOR_ALT     = RGBc( 32,  32,  32);
          BKG_COLOR_EXTRA   = RGBc( 16,  16,  16);
@@ -82,7 +102,7 @@ void print_vkbd(unsigned short int *pixels)
          FONT_COLOR_SEL    = COLOR_BLACK;
          break;
 
-      case 2: /* Dark */
+      case 3: /* Dark */
          BKG_COLOR_NORMAL  = RGBc( 32,  32,  32);
          BKG_COLOR_ALT     = RGBc( 70,  70,  70);
          BKG_COLOR_EXTRA   = RGBc( 14,  14,  14);
@@ -92,7 +112,7 @@ void print_vkbd(unsigned short int *pixels)
          FONT_COLOR_SEL    = COLOR_BLACK;
          break;
 
-      case 3: /* Light */
+      case 4: /* Light */
          BKG_COLOR_NORMAL  = RGBc(210, 210, 210);
          BKG_COLOR_ALT     = RGBc(180, 180, 180);
          BKG_COLOR_EXTRA   = RGBc(150, 150, 150);
@@ -261,7 +281,7 @@ void print_vkbd(unsigned short int *pixels)
                               XTEXT+(sx*FONT_WIDTH),
                               YTEXT+(sy*FONT_HEIGHT),
                               BKG_COLOR,
-                              (FONT_COLOR == COLOR_WHITE ? COLOR_BLACK : COLOR_GRAY),
+                              (FONT_COLOR == COLOR_WHITE ? COLOR_GRAYBLACK : COLOR_GRAYWHITE),
                               GRAPH_ALPHA_75+(-sx-sy), false, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
                               (!shifted) ? vkeys[(y * VKBDX) + x + page].normal : vkeys[(y * VKBDX) + x + page].shift);
                else
@@ -269,7 +289,7 @@ void print_vkbd(unsigned short int *pixels)
                               XTEXT+(sx*FONT_WIDTH),
                               YTEXT+(sy*FONT_HEIGHT),
                               BKG_COLOR,
-                              (FONT_COLOR == COLOR_WHITE ? COLOR_BLACK : COLOR_GRAY),
+                              (FONT_COLOR == COLOR_WHITE ? COLOR_GRAYBLACK : COLOR_GRAYWHITE),
                               GRAPH_ALPHA_75+(-sx-sy), false, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
                               (!shifted) ? vkeys[(y * VKBDX) + x + page].normal : vkeys[(y * VKBDX) + x + page].shift);
             }

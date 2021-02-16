@@ -800,13 +800,14 @@ void retro_set_environment(retro_environment_t cb)
          "Video > Virtual KBD Theme",
          "By default, the keyboard comes up with RetroPad Select.",
          {
-            { "0", "Classic" },
-            { "3", "Light" },
-            { "1", "CD32" },
-            { "2", "Dark" },
+            { "auto", "Automatic" },
+            { "beige", "Beige" },
+            { "cd32", "CD32" },
+            { "light", "Light" },
+            { "dark", "Dark" },
             { NULL, NULL },
          },
-         "0"
+         "auto"
       },
       {
          "puae_vkbd_transparency",
@@ -1798,7 +1799,11 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      opt_vkbd_theme = atoi(var.value);
+      if      (!strcmp(var.value, "auto"))  opt_vkbd_theme = 0;
+      else if (!strcmp(var.value, "beige")) opt_vkbd_theme = 1;
+      else if (!strcmp(var.value, "cd32"))  opt_vkbd_theme = 2;
+      else if (!strcmp(var.value, "dark"))  opt_vkbd_theme = 3;
+      else if (!strcmp(var.value, "light")) opt_vkbd_theme = 4;
    }
 
    var.key = "puae_vkbd_transparency";
