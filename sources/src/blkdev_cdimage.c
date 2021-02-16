@@ -15,9 +15,10 @@
 #ifdef __CELLOS_LV2__
 #include "ps3_headers.h"
 #else
+#if 0
 #include <sys/timeb.h>
 #endif
-#include <ctype.h>
+#endif
 
 #include "sysconfig.h"
 #include "sysdeps.h"
@@ -36,6 +37,7 @@
 #include "cdrom.h"
 #include "sleep.h"
 #include "misc.h"
+#include "hrtimer.h"
 
 //#define WITH_MP3
 #ifdef WITH_MP3
@@ -525,12 +527,20 @@ static bool cdda_play_func2 (struct cdunit *cdu, int *outpos)
 		if (oldplay != cdu->cdda_play) {
 			struct cdtoc *t;
 			int sector, diff;
+#if 0
 			struct timeb tb1, tb2;
+#else
+			uae_s64 tb1, tb2;
+#endif
 
 			idleframes = 0;
 			silentframes = 0;
 			foundsub = false;
+#if 0
 			ftime (&tb1);
+#else
+			tb1 = read_processor_time();
+#endif
 			cdda_pos = cdu->cdda_start;
 			oldplay = cdu->cdda_play;
 			sector = cdu->cd_last_pos = cdda_pos;
@@ -585,8 +595,13 @@ static bool cdda_play_func2 (struct cdunit *cdu, int *outpos)
 			cdda_pos -= idleframes;
 
 			if (*outpos < 0) {
+#if 0
 				ftime (&tb2);
 				diff = (tb2.time * (uae_s64)1000 + tb2.millitm) - (tb1.time * (uae_s64)1000 + tb1.millitm);
+#else
+				tb2 = read_processor_time();
+				diff = (tb2 - tb1) / 1000;
+#endif
 				diff -= cdu->cdda_delay;
 				if (idleframes >= 0 && diff < 0 && cdu->cdda_play > 0)
 					sleep_millis(-diff);

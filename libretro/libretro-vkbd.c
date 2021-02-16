@@ -55,8 +55,9 @@ void print_vkbd(unsigned short int *pixels)
    int FONT_COLOR_NORMAL             = 0;
    int FONT_COLOR_SEL                = 0;
 
-   unsigned COLOR_BLACK = RGBc(  5,   5,   5);
-   unsigned COLOR_WHITE = RGBc(250, 250, 250);
+   unsigned COLOR_BLACK              = RGBc(  5,   5,   5);
+   unsigned COLOR_GRAY               = RGBc(125, 125, 125);
+   unsigned COLOR_WHITE              = RGBc(250, 250, 250);
 
    switch (opt_vkbd_theme)
    {
@@ -260,16 +261,16 @@ void print_vkbd(unsigned short int *pixels)
                               XTEXT+(sx*FONT_WIDTH),
                               YTEXT+(sy*FONT_HEIGHT),
                               BKG_COLOR,
-                              (FONT_COLOR == COLOR_WHITE ? COLOR_BLACK : COLOR_WHITE),
-                              GRAPH_ALPHA_100-1, false, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+                              (FONT_COLOR == COLOR_WHITE ? COLOR_BLACK : COLOR_GRAY),
+                              GRAPH_ALPHA_75+(-sx-sy), false, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
                               (!shifted) ? vkeys[(y * VKBDX) + x + page].normal : vkeys[(y * VKBDX) + x + page].shift);
                else
                   Draw_text(pix,
                               XTEXT+(sx*FONT_WIDTH),
                               YTEXT+(sy*FONT_HEIGHT),
                               BKG_COLOR,
-                              (FONT_COLOR == COLOR_WHITE ? COLOR_BLACK : COLOR_WHITE),
-                              GRAPH_ALPHA_100-1, false, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+                              (FONT_COLOR == COLOR_WHITE ? COLOR_BLACK : COLOR_GRAY),
+                              GRAPH_ALPHA_75+(-sx-sy), false, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
                               (!shifted) ? vkeys[(y * VKBDX) + x + page].normal : vkeys[(y * VKBDX) + x + page].shift);
             }
          }

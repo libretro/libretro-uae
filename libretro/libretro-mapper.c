@@ -14,13 +14,12 @@
 #include "gui.h"
 #include "xwin.h"
 #include "disk.h"
+#include "hrtimer.h"
 
 #ifdef __CELLOS_LV2__
 #include "ps3_headers.h"
 #else
 #include <sys/types.h>
-#include <sys/time.h>
-#include <time.h>
 #endif
 
 static retro_input_state_t input_state_cb;
@@ -216,24 +215,10 @@ void emu_function(int function)
    }
 }
 
-#ifdef WIIU
-#include <features_cpu.h>
-#endif
-
 /* in milliseconds */
 long GetTicks(void)
 {
-#ifdef _ANDROID_
-   struct timespec now;
-   clock_gettime(CLOCK_MONOTONIC, &now);
-   return (now.tv_sec*1000000 + now.tv_nsec/1000)/1000;
-#elif defined(WIIU)
-   return (cpu_features_get_time_usec())/1000;
-#else
-   struct timeval tv;
-   gettimeofday (&tv, NULL);
-   return (tv.tv_sec*1000000 + tv.tv_usec)/1000;
-#endif
+   return osdep_gethrtime()/1000;
 } 
 
 static unsigned char* joystick_value_human(int val[16], int uae_device)

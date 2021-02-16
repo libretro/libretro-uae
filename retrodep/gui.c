@@ -81,9 +81,6 @@ static void gui_flicker_led2 (int led, int unitnum, int status)
         return;
     }
 
-    if (status == 0 && led == LED_CD && old == LED_CD_AUDIO)
-        resetcounter[led] = 0;
-
     if (status == 0) {
         resetcounter[led]--;
         if (resetcounter[led] > 0)
@@ -91,7 +88,10 @@ static void gui_flicker_led2 (int led, int unitnum, int status)
     }
     *p = status;
 
-    resetcounter[led] = 5;
+    if (led == LED_CD && status == LED_CD_AUDIO)
+        resetcounter[led] = 15;
+    else
+        resetcounter[led] = 5;
 }
 
 void gui_flicker_led (int led, int unitnum, int status)
@@ -99,10 +99,8 @@ void gui_flicker_led (int led, int unitnum, int status)
     if (led < 0) {
         if (gui_data.hd >= 0)
             gui_flicker_led2(LED_HD, 0, 0);
-#if 0
         if (gui_data.cd >= 0)
             gui_flicker_led2(LED_CD, 0, 0);
-#endif
         if (gui_data.net >= 0)
             gui_flicker_led2(LED_NET, 0, 0);
         if (gui_data.md >= 0)
