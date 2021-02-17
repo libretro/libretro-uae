@@ -241,7 +241,11 @@ void blkdev_fix_prefs (struct uae_prefs *p)
 static bool getsem2 (int unitnum, bool dowait)
 {
 	struct blkdevstate *st = &state[unitnum];
+#ifdef _WIN32
 	if (st->sema == NULL)
+#else
+	if (st->sema.sem == NULL)
+#endif
 		uae_sem_init (&st->sema, 0, 1);
 	bool gotit = false;
 	if (dowait) {
@@ -283,7 +287,11 @@ static void sys_command_close_internal (int unitnum)
 	freesem (unitnum);
 	if (st->isopen == 0) {
 		uae_sem_destroy (&st->sema);
+#ifdef _WIN32
 		st->sema = NULL;
+#else
+		st->sema.sem = NULL;
+#endif
 	}
 }
 
@@ -291,7 +299,11 @@ static int sys_command_open_internal (int unitnum, const TCHAR *ident, unsigned 
 {
 	struct blkdevstate *st = &state[unitnum];
 	int ret = 0;
+#ifdef _WIN32
 	if (st->sema == NULL)
+#else
+	if (st->sema.sem == NULL)
+#endif
 		uae_sem_init (&st->sema, 0, 1);
 	getsem2 (unitnum, true);
 	if (st->isopen)
@@ -593,7 +605,11 @@ static void check_changes (int unitnum)
 
 	if (changed) {
 		bool wasimage = currprefs.cdslots[unitnum].name[0] != 0;
+#ifdef _WIN32
 		if (st->sema)
+#else
+		if (st->sema.sem)
+#endif
 			gotsem = getsem2 (unitnum, true);
 		st->cdimagefileinuse = changed_prefs.cdslots[unitnum].inuse;
 		_tcscpy (st->newimagefile, changed_prefs.cdslots[unitnum].name);
@@ -632,7 +648,11 @@ static void check_changes (int unitnum)
 	st->imagechangetime--;
 	if (st->imagechangetime > 0)
 		return;
+#ifdef _WIN32
 	if (st->sema)
+#else
+	if (st->sema.sem)
+#endif
 		gotsem = getsem2 (unitnum, true);
 	_tcscpy (currprefs.cdslots[unitnum].name, st->newimagefile);
 	_tcscpy (changed_prefs.cdslots[unitnum].name, st->newimagefile);
