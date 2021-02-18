@@ -359,7 +359,7 @@ static time_t generic_to_unix_stamp(long t)
 
 	/* Knowing the days, we can find seconds */
 	longtime = (((days * 24) + hour) * 60 + min) * 60 + sec;
-#ifndef __SWITCH__
+#ifdef TZSET
 	longtime += gettz();	/* adjust for timezone */
 #endif
 	/* LONGTIME is now the time in seconds, since 1970/01/01 00:00:00.  */
