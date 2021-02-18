@@ -14,13 +14,12 @@
 #include "gui.h"
 #include "xwin.h"
 #include "disk.h"
+#include "hrtimer.h"
 
 #ifdef __CELLOS_LV2__
 #include "ps3_headers.h"
 #else
 #include <sys/types.h>
-#include <sys/time.h>
-#include <time.h>
 #endif
 
 static retro_input_state_t input_state_cb;
@@ -216,24 +215,10 @@ void emu_function(int function)
    }
 }
 
-#ifdef WIIU
-#include <features_cpu.h>
-#endif
-
 /* in milliseconds */
 long GetTicks(void)
 {
-#ifdef _ANDROID_
-   struct timespec now;
-   clock_gettime(CLOCK_MONOTONIC, &now);
-   return (now.tv_sec*1000000 + now.tv_nsec/1000)/1000;
-#elif defined(WIIU)
-   return (cpu_features_get_time_usec())/1000;
-#else
-   struct timeval tv;
-   gettimeofday (&tv, NULL);
-   return (tv.tv_sec*1000000 + tv.tv_usec)/1000;
-#endif
+   return osdep_gethrtime()/1000;
 } 
 
 static unsigned char* joystick_value_human(int val[16], int uae_device)
@@ -501,7 +486,7 @@ void print_statusbar(void)
 
    /* Video resolution */
    int TEXT_X_RESOLUTION = TEXT_X + (FONT_SLOT*4) + (FONT_WIDTH*16) - (ZOOMED_WIDTH_OFFSET/2);
-   char RESOLUTION[10] = {0};
+   unsigned char RESOLUTION[10] = {0};
    snprintf(RESOLUTION, sizeof(RESOLUTION), "%4dx%3d", zoomed_width, zoomed_height);
 
    /* Model & memory */
@@ -514,10 +499,10 @@ void print_statusbar(void)
          TEXT_X_MEMORY = -1;
    }
 
-   char MODEL[10] = {0};
-   char MEMORY[5] = {0};
+   unsigned char MODEL[10] = {0};
+   unsigned char MEMORY[5] = {0};
    float mem_size = 0;
-   mem_size = (float)(currprefs.chipmem_size / 0x80000) / 2;
+   mem_size  = (float)(currprefs.chipmem_size / 0x80000) / 2;
    mem_size += (float)(currprefs.bogomem_size / 0x40000) / 4;
    mem_size += (float)(currprefs.fastmem_size / 0x100000);
    if (TEXT_X_MEMORY > 0)
@@ -556,10 +541,10 @@ void print_statusbar(void)
    }
 
    /* Joy port indicators */
-   char JOYMODE1[5] = {0};
-   char JOYMODE2[5] = {0};
-   char JOYMODE3[5] = {0};
-   char JOYMODE4[5] = {0};
+   unsigned char JOYMODE1[5] = {0};
+   unsigned char JOYMODE2[5] = {0};
+   unsigned char JOYMODE3[5] = {0};
+   unsigned char JOYMODE4[5] = {0};
 
    unsigned char JOYPORT1[5] = {0};
    unsigned char JOYPORT2[5] = {0};

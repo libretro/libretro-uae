@@ -8,6 +8,7 @@
 
 #ifndef EUAE_OSDEP_HRTIMER_H
 #define EUAE_OSDEP_HRTIMER_H
+
 #ifdef WIIU
 #include <features_cpu.h>
 #endif
@@ -26,28 +27,18 @@
 
 #include "machdep/rpt.h"
 
-
 STATIC_INLINE frame_time_t osdep_gethrtime (void)
 {
-#ifndef _ANDROID_
-
-#ifdef WIIU
+#if defined(_ANDROID_)
+   struct timespec now;
+   clock_gettime(CLOCK_MONOTONIC, &now);
+   return (now.tv_sec*1000000 + now.tv_nsec/1000);
+#elif defined(WIIU)
    return cpu_features_get_time_usec();
 #else
    struct timeval tv;
    gettimeofday (&tv, NULL);
    return tv.tv_sec*1000000 + tv.tv_usec;
-#endif
-
-#else
-#define osd_ticks_t uae_s64
-   struct timeval    tp;
-   static osd_ticks_t start_sec1 = 0;
-
-   gettimeofday(&tp, NULL);
-   if (start_sec1==0)
-      start_sec1 = tp.tv_sec;
-   return (tp.tv_sec - start_sec1) * (osd_ticks_t) 1000000 + tp.tv_usec;
 #endif
 }
 

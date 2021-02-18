@@ -800,13 +800,14 @@ void retro_set_environment(retro_environment_t cb)
          "Video > Virtual KBD Theme",
          "By default, the keyboard comes up with RetroPad Select.",
          {
-            { "0", "Classic" },
-            { "3", "Light" },
-            { "1", "CD32" },
-            { "2", "Dark" },
+            { "auto", "Automatic" },
+            { "beige", "Beige" },
+            { "cd32", "CD32" },
+            { "light", "Light" },
+            { "dark", "Dark" },
             { NULL, NULL },
          },
-         "0"
+         "auto"
       },
       {
          "puae_vkbd_transparency",
@@ -1798,7 +1799,11 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      opt_vkbd_theme = atoi(var.value);
+      if      (!strcmp(var.value, "auto"))  opt_vkbd_theme = 0;
+      else if (!strcmp(var.value, "beige")) opt_vkbd_theme = 1;
+      else if (!strcmp(var.value, "cd32"))  opt_vkbd_theme = 2;
+      else if (!strcmp(var.value, "dark"))  opt_vkbd_theme = 3;
+      else if (!strcmp(var.value, "light")) opt_vkbd_theme = 4;
    }
 
    var.key = "puae_vkbd_transparency";
@@ -5933,36 +5938,3 @@ void retro_cheat_set(unsigned index, bool enabled, const char *code)
    (void)enabled;
    (void)code;
 }
-
-#if defined(ANDROID) || defined(__SWITCH__) || defined(WIIU) || defined(__CELLOS_LV2__)
-#ifndef __CELLOS_LV2__
-#include <sys/timeb.h>
-#else
-#include "ps3_headers.h"
-#undef timezone
-#endif
-
-int ftime(struct timeb *tb)
-{
-    struct timeval  tv;
-    struct timezone tz;
-
-    if (gettimeofday (&tv, &tz) < 0)
-        return -1;
-
-    tb->time    = tv.tv_sec;
-    tb->millitm = (tv.tv_usec + 500) / 1000;
-
-    if (tb->millitm == 1000)
-    {
-        ++tb->time;
-        tb->millitm = 0;
-    }
-#ifndef __CELLOS_LV2__    
-    tb->timezone = tz.tz_minuteswest;
-    tb->dstflag  = tz.tz_dsttime;
-#endif
-
-    return 0;
-}
-#endif

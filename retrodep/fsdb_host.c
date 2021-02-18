@@ -3,9 +3,11 @@
 
 #include "libretro-core.h"
 
+#if 0
 #include <sys/time.h>
 #if !defined(_WIN32) && !defined(__CELLOS_LV2__)
 #include <sys/timeb.h>
+#endif
 #endif
 
 #ifdef __CELLOS_LV2__
@@ -60,23 +62,17 @@ bool my_utime (const TCHAR *name, struct mytimeval *tv)
 	int tolocal;
 	int days, mins, ticks;
 	struct mytimeval tv2;
-#if !defined(__CELLOS_LV2__) && !defined(WIIU) && !defined(__SWITCH__) && !defined(VITA)
-	if (!tv) {
-		struct timeb time;
-		ftime (&time);
-		tv2.tv_sec = time.time;
-		tv2.tv_usec = time.millitm * 1000;
-		tolocal = 0;
-	} else
-#else
-		tv2.tv_sec = 1;
-		tv2.tv_usec = 1000;
-		tolocal = 0;
-#endif
+	if (tv)
 	{
 		tv2.tv_sec = tv->tv_sec;
 		tv2.tv_usec = tv->tv_usec;
 		tolocal = 1;
+	}
+	else
+	{
+		tv2.tv_sec = 1;
+		tv2.tv_usec = 1000;
+		tolocal = 0;
 	}
 	timeval_to_amiga (&tv2, &days, &mins, &ticks);
 	if (setfiletime (name, days, mins, ticks, tolocal))

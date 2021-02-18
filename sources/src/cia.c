@@ -82,7 +82,7 @@ static unsigned long ciaata_passed, ciaatb_passed, ciabta_passed, ciabtb_passed;
 
 static unsigned long ciaatod, ciabtod, ciaatol, ciabtol, ciaaalarm, ciabalarm;
 static int ciaatlatch, ciabtlatch;
-static bool oldled, oldovl, oldcd32mute;
+static bool oldled, oldovl;
 static bool led;
 static int led_old_brightness;
 static unsigned long led_cycles_on, led_cycles_off, led_cycle;
@@ -809,10 +809,7 @@ static void bfe001_change (void)
 		}
 	}
 #ifdef CD32
-	if (currprefs.cs_cd32cd && (v & 1) != oldcd32mute) {
-		oldcd32mute = v & 1;
-		akiko_mute (oldcd32mute ? 0 : 1);
-	}
+	akiko_mute((v & 1) == 0);
 #endif
 }
 
@@ -1402,7 +1399,6 @@ void CIA_reset (void)
 
 	kblostsynccnt = 0;
 	serbits = 0;
-	oldcd32mute = 1;
 	oldled = true;
 	resetwarning_phase = resetwarning_timer = 0;
 	heartbeat_cnt = 0;

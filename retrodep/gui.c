@@ -59,53 +59,39 @@ void gui_cd_led (int led)
 
 static void gui_flicker_led2 (int led, int unitnum, int status)
 {
-	static int resetcounter[LED_MAX];
-	uae_s8 old;
-	uae_s8 *p;
+    static int resetcounter[LED_MAX];
+    uae_s8 old;
+    uae_s8 *p;
 
-	if (led == LED_HD)
-		p = &gui_data.hd;
-	else if (led == LED_CD)
-		p = &gui_data.cd;
-	else if (led == LED_MD)
-		p = &gui_data.md;
-	else if (led == LED_NET)
-		p = &gui_data.net;
-	else
-		return;
-	old = *p;
-	if (status < 0) {
-		if (old < 0) {
-			gui_led (led, -1);
-		} else {
-			gui_led (led, 0);
-		}
-		return;
-	}
-	if (status == 0 && old < 0) {
-		*p = 0;
-		resetcounter[led] = 0;
-		gui_led (led, 0);
-		return;
-	}
-	if (status == 0) {
-		resetcounter[led]--;
-		if (resetcounter[led] > 0)
-			return;
-	}
-#ifdef RETROPLATFORM
-	if (unitnum >= 0) {
-		if (led == LED_HD) {
-			rp_hd_activity(unitnum, status ? 1 : 0, status == 2 ? 1 : 0);
-		} else if (led == LED_CD) {
-			rp_cd_activity(unitnum, status);
-		}
-	}
-#endif
-	*p = status;
-	resetcounter[led] = 4;
-	if (old != *p)
-		gui_led (led, *p);
+    if (led == LED_HD)
+        p = &gui_data.hd;
+    else if (led == LED_CD)
+        p = &gui_data.cd;
+    else if (led == LED_MD)
+        p = &gui_data.md;
+    else if (led == LED_NET)
+        p = &gui_data.net;
+    else
+        return;
+    old = *p;
+
+    if (status == 0 && old < 0) {
+        *p = 0;
+        resetcounter[led] = 0;
+        return;
+    }
+
+    if (status == 0) {
+        resetcounter[led]--;
+        if (resetcounter[led] > 0)
+            return;
+    }
+    *p = status;
+
+    if (led == LED_CD && status == LED_CD_AUDIO)
+        resetcounter[led] = 15;
+    else
+        resetcounter[led] = 5;
 }
 
 void gui_flicker_led (int led, int unitnum, int status)

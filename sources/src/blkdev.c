@@ -53,7 +53,6 @@ struct blkdevstate
 
 static struct blkdevstate state[MAX_TOTAL_SCSI_DEVICES];
 
-static bool blkdevsema;
 static bool dev_init;
 
 /* convert minutes, seconds and frames -> logical sector number */
@@ -239,12 +238,11 @@ void blkdev_fix_prefs (struct uae_prefs *p)
 
 }
 
-/*
 static bool getsem2 (int unitnum, bool dowait)
 {
 	struct blkdevstate *st = &state[unitnum];
 #ifdef _WIN32
-	if (st->sema == INVALID_HANDLE_VALUE)
+	if (st->sema == NULL)
 #else
 	if (st->sema.sem == NULL)
 #endif
@@ -261,27 +259,6 @@ static bool getsem2 (int unitnum, bool dowait)
 	if (st->sema_cnt > 1)
 		write_log (_T("CD: unitsem%d acquire mismatch! cnt=%d\n"), unitnum, st->sema_cnt);
 	return gotit;
-}
-*/
-static bool getsem2 (int unitnum, bool dowait)
-{
-    struct blkdevstate *st = &state[unitnum];
-    if (!blkdevsema) {
-        blkdevsema = true;
-        uae_sem_init (&st->sema, 0, 1);
-    }
-    bool gotit = false;
-    if (dowait) {
-        uae_sem_wait (&st->sema);
-        gotit = true;
-    } else {
-        gotit = uae_sem_trywait (&st->sema) == 0;
-    }
-    if (gotit)
-        st->sema_cnt++;
-    if (st->sema_cnt > 1)
-        write_log (_T("CD: unitsem%d acquire mismatch! cnt=%d\n"), unitnum, st->sema_cnt);
-    return gotit;
 }
 static bool getsem (int unitnum)
 {
@@ -310,8 +287,11 @@ static void sys_command_close_internal (int unitnum)
 	freesem (unitnum);
 	if (st->isopen == 0) {
 		uae_sem_destroy (&st->sema);
-		blkdevsema = false;
-		//st->sema = NULL;
+#ifdef _WIN32
+		st->sema = NULL;
+#else
+		st->sema.sem = NULL;
+#endif
 	}
 }
 
@@ -319,10 +299,12 @@ static int sys_command_open_internal (int unitnum, const TCHAR *ident, unsigned 
 {
 	struct blkdevstate *st = &state[unitnum];
 	int ret = 0;
-	if (!blkdevsema) {
-		blkdevsema = true;
+#ifdef _WIN32
+	if (st->sema == NULL)
+#else
+	if (st->sema.sem == NULL)
+#endif
 		uae_sem_init (&st->sema, 0, 1);
-	}
 	getsem2 (unitnum, true);
 	if (st->isopen)
 		write_log (_T("BUG unit %d open: opencnt=%d!\n"), unitnum, st->isopen);
@@ -623,7 +605,11 @@ static void check_changes (int unitnum)
 
 	if (changed) {
 		bool wasimage = currprefs.cdslots[unitnum].name[0] != 0;
-		if (blkdevsema)
+#ifdef _WIN32
+		if (st->sema)
+#else
+		if (st->sema.sem)
+#endif
 			gotsem = getsem2 (unitnum, true);
 		st->cdimagefileinuse = changed_prefs.cdslots[unitnum].inuse;
 		_tcscpy (st->newimagefile, changed_prefs.cdslots[unitnum].name);
@@ -662,7 +648,11 @@ static void check_changes (int unitnum)
 	st->imagechangetime--;
 	if (st->imagechangetime > 0)
 		return;
-	if (blkdevsema)
+#ifdef _WIN32
+	if (st->sema)
+#else
+	if (st->sema.sem)
+#endif
 		gotsem = getsem2 (unitnum, true);
 	_tcscpy (currprefs.cdslots[unitnum].name, st->newimagefile);
 	_tcscpy (changed_prefs.cdslots[unitnum].name, st->newimagefile);
@@ -1439,24 +1429,24 @@ int scsi_cd_emulate (int unitnum, uae_u8 *cmdbuf, int scsi_cmd_len,
 		}
 		for (;;) {
 			psize = 0;
-		if (pcode == 0) {
-			p[0] = 0;
-			p[1] = 0;
-			p[2] = 0x20;
-			p[3] = 0;
+			if (pcode == 0) {
+				p[0] = 0;
+				p[1] = 0;
+				p[2] = 0x20;
+				p[3] = 0;
 				psize = 4;
-		} else if (pcode == 14) { // CD audio control
-			uae_u32 vol = sys_command_cd_volume (unitnum, 0xffff, 0xffff);
-			p[0] = 0x0e;
-			p[1] = 0x0e;
+			} else if (pcode == 14) { // CD audio control
+				uae_u32 vol = sys_command_cd_volume (unitnum, 0xffff, 0xffff);
+				p[0] = 0x0e;
+				p[1] = 0x0e;
 				p[2] = 4|1;
-			p[3] = 4;
-			p[6] = 0;
-			p[7] = 75;
-			p[8] = 1;
-			p[9] = pc == 0 ? (vol >> 7) & 0xff : 0xff;
-			p[10] = 2;
-			p[11] = pc == 0 ? (vol >> (16 + 7)) & 0xff : 0xff;
+				p[3] = 4;
+				p[6] = 0;
+				p[7] = 75;
+				p[8] = 1;
+				p[9] = pc == 0 ? (vol >> 7) & 0xff : 0xff;
+				p[10] = 2;
+				p[11] = pc == 0 ? (vol >> (16 + 7)) & 0xff : 0xff;
 				psize = p[1] + 2;
 			} else if (pcode == 0x2a) {  // cd/dvd capabilities
 				p[0] = 0x2a;
@@ -1501,7 +1491,7 @@ int scsi_cd_emulate (int unitnum, uae_u8 *cmdbuf, int scsi_cmd_len,
 			totalsize += bdsize;
 			r[3] = bdsize & 0xff;
 			r[0] = totalsize & 0xff;
-	}
+		}
 		scsi_len = lr = totalsize + 1;
 		if (scsi_len > maxlen)
 			scsi_len = maxlen;
