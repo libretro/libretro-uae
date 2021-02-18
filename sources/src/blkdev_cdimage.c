@@ -460,6 +460,7 @@ static void *cdda_unpack_func (void *v)
 	delete mp3dec;
 #endif
 	cdimage_unpack_thread = -1;
+	return NULL;
 }
 
 static void audio_unpack (struct cdunit *cdu, struct cdtoc *t)
@@ -842,6 +843,7 @@ static void *cdda_play_func (void *v)
 		cdu->cdda_play = 1;
 	}
 	cdu->thread_active = false;
+	return NULL;
 }
 
 static void cdda_stop (struct cdunit *cdu)
