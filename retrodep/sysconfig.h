@@ -44,6 +44,7 @@
 //#define ACTION_REPLAY /* Action Replay 1/2/3 support */
 #define NCR /* A4000T/A4091, 53C710/53C770 SCSI */
 #define A2091 /* A590/A2091 SCSI */
+#define SCSI
 #define SCSIEMU /* uaescsi.device emulation */
 #define CDTV /* CDTV emulation */
 #define CD32 /* CD32 emulation */

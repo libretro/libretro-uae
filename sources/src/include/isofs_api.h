@@ -1,3 +1,5 @@
+#ifndef UAE_ISOFS_API_H
+#define UAE_ISOFS_API_H
 
 struct cd_opendir_s;
 struct cd_openfile_s;
@@ -30,3 +32,5 @@ void isofs_closefile(struct cd_openfile_s*);
 uae_s64 isofs_lseek(struct cd_openfile_s*, uae_s64, int);
 uae_s64 isofs_fsize(struct cd_openfile_s*);
 uae_s64 isofs_read(struct cd_openfile_s*, void*, unsigned int);
+
+#endif /* UAE_ISOFS_API_H */

@@ -1,9 +1,13 @@
-
 #ifndef _ISOFS_FS_H
 #define _ISOFS_FS_H
 
 typedef int gid_t;
 typedef int uid_t;
+
+typedef int isofs_gid_t;
+typedef int isofs_uid_t;
+typedef int isofs_mode_t;
+typedef uae_s64 isofs_off_t;
 
 #define ISO_SYSTEM_ID_CDTV "CDTV"
 

@@ -1315,10 +1315,10 @@ static struct fs_dirhandle *fs_opendir (Unit *u, a_inode *aino)
 		fsd->od = my_opendir (aino->nname, 0);
 		if (fsd->od)
 			return fsd;
-	/*} else if (fsd->fstype == FS_CDFS) {
+	} else if (fsd->fstype == FS_CDFS) {
 		fsd->isod = isofs_opendir (u->ui.cdfs_superblock, aino->uniq_external);
 		if (fsd->isod)
-			return fsd;*/
+			return fsd;
 	}
 	xfree (fsd);
 	return NULL;
@@ -1331,8 +1331,8 @@ static void fs_closedir (struct fs_dirhandle *fsd)
 		zfile_closedir_archive (fsd->zd);
 	else if (fsd->fstype == FS_DIRECTORY)
 		my_closedir (fsd->od);
-	/*else if (fsd->fstype == FS_CDFS)
-		isofs_closedir (fsd->isod);*/
+	else if (fsd->fstype == FS_CDFS)
+		isofs_closedir (fsd->isod);
 	xfree (fsd);
 }
 static struct fs_filehandle *fs_openfile (Unit *u, a_inode *aino, int flags)
@@ -1347,10 +1347,10 @@ static struct fs_filehandle *fs_openfile (Unit *u, a_inode *aino, int flags)
 		fsf->of = my_open (aino->nname, flags);
 		if (fsf->of)
 			return fsf;
-	/*} else if (fsf->fstype == FS_CDFS) {
+	} else if (fsf->fstype == FS_CDFS) {
 		fsf->isof = isofs_openfile (u->ui.cdfs_superblock, aino->uniq_external, flags);
 		if (fsf->isof)
-			return fsf;*/
+			return fsf;
 	}
 	xfree (fsf);
 	return NULL;
@@ -1363,8 +1363,8 @@ static void fs_closefile (struct fs_filehandle *fsf)
 		zfile_close_archive (fsf->zf);
 	} else if (fsf->fstype == FS_DIRECTORY) {
 		my_close (fsf->of);
-	/*} else if (fsf->fstype == FS_CDFS) {
-		isofs_closefile (fsf->isof);*/
+	} else if (fsf->fstype == FS_CDFS) {
+		isofs_closefile (fsf->isof);
 	}
 	xfree (fsf);
 }
@@ -1374,8 +1374,8 @@ static unsigned int fs_read (struct fs_filehandle *fsf, void *b, unsigned int si
 		return zfile_read_archive (fsf->zf, b, size);
 	else if (fsf->fstype == FS_DIRECTORY)
 		return my_read (fsf->of, b, size);
-	/*else if (fsf->fstype == FS_CDFS)
-		return isofs_read (fsf->isof, b, size);*/
+	else if (fsf->fstype == FS_CDFS)
+		return isofs_read (fsf->isof, b, size);
 	return 0;
 }
 static unsigned int fs_write (struct fs_filehandle *fsf, void *b, unsigned int size)
@@ -1392,8 +1392,8 @@ static uae_u64 fs_lseek64 (struct fs_filehandle *fsf, uae_s64 offset, int whence
 		return zfile_lseek_archive (fsf->zf, offset, whence);
 	else if (fsf->fstype == FS_DIRECTORY)
 		return my_lseek (fsf->of, offset, whence);
-	/*else if (fsf->fstype == FS_CDFS)
-		return isofs_lseek (fsf->isof, offset, whence);*/
+	else if (fsf->fstype == FS_CDFS)
+		return isofs_lseek (fsf->isof, offset, whence);
 	return -1;
 }
 static uae_u32 fs_lseek (struct fs_filehandle *fsf, uae_s32 offset, int whence)
@@ -1406,8 +1406,8 @@ static uae_u64 fs_fsize64 (struct fs_filehandle *fsf)
 		return zfile_fsize_archive (fsf->zf);
 	else if (fsf->fstype == FS_DIRECTORY)
 		return my_fsize (fsf->of);
-	/*else if (fsf->fstype == FS_CDFS)
-		return isofs_fsize (fsf->isof);*/
+	else if (fsf->fstype == FS_CDFS)
+		return isofs_fsize (fsf->isof);
 	return -1;
 }
 static uae_u32 fs_fsize (struct fs_filehandle *fsf)
@@ -2253,11 +2253,11 @@ static TCHAR *get_nname (Unit *unit, a_inode *base, TCHAR *rel, TCHAR **modified
 		return NULL;
 	}
 #ifdef SCSI	
-	 /*else if (unit->volflags & MYVOLUMEINFO_CDFS) {
+	 else if (unit->volflags & MYVOLUMEINFO_CDFS) {
 		if (isofs_exists (unit->ui.cdfs_superblock, base->uniq_external, rel, uniq_ext))
 			return build_nname (base->nname, rel);
 		return NULL;
-	}*/
+	}
 #endif
 
 	aino_test (base);
@@ -2749,7 +2749,6 @@ static Unit *startup_create_unit (UnitInfo *uinfo, int num)
 
 static bool mount_cd (UnitInfo *uinfo, int nr, struct mytimeval *ctime, uae_u64 *uniq)
 {
-#ifndef __LIBRETRO__
 	uinfo->cddevno = nr - cd_unit_offset;
 	if (!sys_command_open (uinfo->cddevno)) {
 		write_log (_T("Failed attempt to open CD unit %d\n"), uinfo->cddevno);
@@ -2781,9 +2780,6 @@ static bool mount_cd (UnitInfo *uinfo, int nr, struct mytimeval *ctime, uae_u64 
 	}
 	uinfo->cd_open = true;
 	return true;
-#else
-    return false;
-#endif
 }
 
 #ifdef UAE_FILESYS_THREADS
@@ -2808,9 +2804,9 @@ static void filesys_start_thread (UnitInfo *ui, int nr)
 	}
 #endif
 	if (isrestore ()) {
-		/*if (ui->unit_type == UNIT_CDFS) {
+		if (ui->unit_type == UNIT_CDFS) {
 			mount_cd (ui, nr, NULL, &ui->self->rootnode.uniq_external);
-		}*/
+		}
 		startup_update_unit (ui->self, ui);
 	}
 }
@@ -2868,21 +2864,21 @@ static uae_u32 REGPARAM2 startup_handler (TrapContext *context)
 	if (uinfo->unit_type == UNIT_CDFS) {
 #ifdef SCSI
 		ed = ef = 0;
-		/*if (!mount_cd (uinfo, nr, &ctime, &uniq)) {
+		if (!mount_cd (uinfo, nr, &ctime, &uniq)) {
 			put_long (pkt + dp_Res1, DOS_FALSE);
 			put_long (pkt + dp_Res2, ERROR_DEVICE_NOT_MOUNTED);
 			return 0;
-		}*/
+		}
 #endif
 	} else {
-	ed = my_existsdir (uinfo->rootdir);
-	ef = my_existsfile (uinfo->rootdir);
+		ed = my_existsdir (uinfo->rootdir);
+		ef = my_existsfile (uinfo->rootdir);
 		if (!uinfo->wasisempty && !ef && !ed) {
 			write_log (_T("Failed attempt to mount device '%s' (%s)\n"), uinfo->devname, uinfo->rootdir);
-		put_long (pkt + dp_Res1, DOS_FALSE);
-		put_long (pkt + dp_Res2, ERROR_DEVICE_NOT_MOUNTED);
-		return 0;
-	}
+			put_long (pkt + dp_Res1, DOS_FALSE);
+			put_long (pkt + dp_Res2, ERROR_DEVICE_NOT_MOUNTED);
+			return 0;
+		}
 	}
 
 	if (!uinfo->unit_pipe) {
@@ -3729,8 +3725,8 @@ static bool get_statinfo(Unit *unit, a_inode *aino, struct mystat *statbuf)
 	/* No error checks - this had better work. */
 	if (unit->volflags & MYVOLUMEINFO_ARCHIVE)
 		ok = zfile_stat_archive (aino->nname, statbuf) != 0;
-	/*else if (unit->volflags & MYVOLUMEINFO_CDFS)
-		ok = isofs_stat (unit->ui.cdfs_superblock, aino->uniq_external, statbuf);*/
+	else if (unit->volflags & MYVOLUMEINFO_CDFS)
+		ok = isofs_stat (unit->ui.cdfs_superblock, aino->uniq_external, statbuf);
 	else
 		my_stat (aino->nname, statbuf);
 	return ok;
@@ -3741,7 +3737,7 @@ static void	get_fileinfo (Unit *unit, dpacket packet, uaecptr info, a_inode *ain
 	struct mystat statbuf;
 	int days, mins, ticks;
 	int i, n, entrytype, blocksize;
-	//uae_s64 numblocks;
+	uae_s64 numblocks;
 	int fsdb_can = fsdb_cando (unit);
 	TCHAR *xs = NULL;
 	char *x = NULL;
@@ -3755,8 +3751,8 @@ static void	get_fileinfo (Unit *unit, dpacket packet, uaecptr info, a_inode *ain
 	/* No error checks - this had better work. */
 	if (unit->volflags & MYVOLUMEINFO_ARCHIVE)
 		ok = zfile_stat_archive (aino->nname, &statbuf) != 0;
-	/*else if (unit->volflags & MYVOLUMEINFO_CDFS)
-		ok = isofs_stat (unit->ui.cdfs_superblock, aino->uniq_external, &statbuf);*/
+	else if (unit->volflags & MYVOLUMEINFO_CDFS)
+		ok = isofs_stat (unit->ui.cdfs_superblock, aino->uniq_external, &statbuf);
 	else
 		my_stat (aino->nname, &statbuf);
 
@@ -3784,8 +3780,8 @@ static void	get_fileinfo (Unit *unit, dpacket packet, uaecptr info, a_inode *ain
 	x_ptr = ua_fs (xs, -1);
 	x = x_ptr;
 	n = strlen (x);
-	if (n > 106)
-		n = 106;
+	if (n > 107)
+		n = 107;
 	i = 8;
 	put_byte (info + i, n); i++;
 	while (n--)
@@ -3799,9 +3795,11 @@ static void	get_fileinfo (Unit *unit, dpacket packet, uaecptr info, a_inode *ain
 
 	put_long (info + 116, fsdb_can ? aino->amigaos_mode : fsdb_mode_supported (aino));
 	put_long (info + 124, statbuf.size > MAXFILESIZE32 ? MAXFILESIZE32 : (uae_u32)statbuf.size);
+
 	blocksize = (unit->volflags & MYVOLUMEINFO_CDFS) ? 2048 : 512;
-	//numblocks = (statbuf.size + blocksize - 1) / blocksize;
-	put_long (info + 128, (statbuf.size + blocksize - 1) / blocksize);
+	numblocks = (statbuf.size + blocksize - 1) / blocksize;
+	put_long (info + 128, numblocks > MAXFILESIZE32 ? MAXFILESIZE32 : numblocks);
+
 	timeval_to_amiga (&statbuf.mtime, &days, &mins, &ticks);
 	put_long (info + 132, days);
 	put_long (info + 136, mins);
@@ -4101,8 +4099,8 @@ static int exalldo (uaecptr exalldata, uae_u32 exalldatasize, uae_u32 type, uaec
 	memset (&statbuf, 0, sizeof statbuf);
 	if (unit->volflags & MYVOLUMEINFO_ARCHIVE)
 		zfile_stat_archive (aino->nname, &statbuf);
-	/*else if (unit->volflags & MYVOLUMEINFO_CDFS)
-		isofs_stat (unit->ui.cdfs_superblock, aino->uniq_external, &statbuf);*/
+	else if (unit->volflags & MYVOLUMEINFO_CDFS)
+		isofs_stat (unit->ui.cdfs_superblock, aino->uniq_external, &statbuf);
 	else
 		my_stat (aino->nname, &statbuf);
 
@@ -4217,8 +4215,8 @@ static int filesys_readdir(struct fs_dirhandle *d, TCHAR *fn, uae_u64 *uniq)
 		ok = zfile_readdir_archive(d->zd, fn);
 	else if (d->fstype == FS_DIRECTORY)
 		ok = my_readdir(d->od, fn);
-	/*else if (d->fstype == FS_CDFS)
-		ok = isofs_readdir(d->isod, fn, uniq);*/
+	else if (d->fstype == FS_CDFS)
+		ok = isofs_readdir(d->isod, fn, uniq);
 	return ok;
 }
 
@@ -4496,7 +4494,7 @@ static void populate_directory (Unit *unit, a_inode *base)
 		unit->total_locked_ainos++;
 	}
 	TRACE3((_T("Populating directory, child %p, locked_children %d\n"),
-		base->child, base->locked_children));
+		base->child ? base->child->nname : _T("<NULL>"), base->locked_children));
 	for (;;) {
 		uae_u64 uniq = 0;
 		TCHAR fn[MAX_DPATH];

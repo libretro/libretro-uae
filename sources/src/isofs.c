@@ -1,20 +1,21 @@
-
 /*
-* UAE - The Un*x Amiga Emulator
-*
-* Linux isofs/UAE filesystem wrapperr
-*
-* Copyright 2012 Toni Wilen
-*
-*/
+ * UAE - The Un*x Amiga Emulator
+ *
+ * Linux isofs/UAE filesystem wrapper
+ *
+ * Copyright 2012 Toni Wilen
+ *
+ */
 
 #include "sysconfig.h"
 #include "sysdeps.h"
 
 #include "options.h"
 #include "blkdev.h"
-#include "isofs_api.h"
 #include "fsdb.h"
+#include "isofs_api.h"
+#include "zfile.h"
+#include "misc.h"
 
 #include "isofs.h"
 
@@ -23,7 +24,7 @@
 #define HASH_SIZE 65536
 
 #define CD_BLOCK_SIZE 2048
-#define ISOFS_INVALID_MODE -1
+#define ISOFS_INVALID_MODE ((isofs_mode_t) -1)
 
 #define ISOFS_I(x) (&x->ei)
 #define ISOFS_SB(x) (&x->ei)
@@ -56,10 +57,10 @@ struct inode
 	uae_u32 i_size;
 	uae_u32 i_blocks;
 	struct super_block *i_sb;
-	timeval i_mtime;
-	timeval i_atime;
-	timeval i_ctime;
-	iso_inode_info ei;
+	struct timeval i_mtime;
+	struct timeval i_atime;
+	struct timeval i_ctime;
+	struct iso_inode_info ei;
 	TCHAR *name;
 	int i_blkbits;
 	bool linked;
@@ -76,7 +77,7 @@ struct super_block
 	int s_high_sierra;
 	int s_blocksize;
 	int s_blocksize_bits;
-	isofs_sb_info ei;
+	struct isofs_sb_info ei;
 	int unitnum;
 	struct inode *inodes, *root;
 	int inode_cnt;
@@ -124,10 +125,11 @@ static void unlock_inode(struct inode *inode)
 
 static void iput(struct inode *inode)
 {
-	struct super_block *sb = inode->i_sb;
-
 	if (!inode || inode->linked)
 		return;
+
+	struct super_block *sb = inode->i_sb;
+
 #if 0
 	struct inode *in;
 	while (inode->i_sb->inode_cnt > MAX_CACHE_INODE_COUNT) {
@@ -181,7 +183,7 @@ static struct inode *find_inode(struct super_block *sb, uae_u64 uniq)
 	return NULL;
 }
 
-static buffer_head *sb_bread(struct super_block *sb, uae_u32 block)
+static struct buffer_head *sb_bread(struct super_block *sb, uae_u32 block)
 {
 	struct buffer_head *bh;
 	
@@ -419,7 +421,6 @@ static int iso_ltime(char *p)
 	return make_date(year - 1970, month, day, hour, minute, second, 0);
 }
 
-
 static int isofs_read_level3_size(struct inode *inode)
 {
 	unsigned long bufsize = ISOFS_BUFFER_SIZE(inode);
@@ -512,7 +513,7 @@ out_nomem:
 	return -ENOMEM;
 
 out_noread:
-	write_log (_T("ISOFS: unable to read i-node block %u\n"), block);
+	write_log (_T("ISOFS: unable to read i-node block %lu\n"), block);
 	xfree(tmpde);
 	return -EIO;
 
@@ -900,7 +901,7 @@ static int rock_check_overflow(struct rock_state *rs, int sig)
 /*
  * return length of name field; 0: not found, -1: to be ignored
  */
-int get_rock_ridge_filename(struct iso_directory_record *de,
+static int get_rock_ridge_filename(struct iso_directory_record *de,
 			    char *retname, struct inode *inode)
 {
 	struct rock_state rs;
@@ -1075,6 +1076,17 @@ repeat:
 			break;
 		case SIG('E', 'R'):
 			ISOFS_SB(inode->i_sb)->s_rock = 1;
+#ifdef __LIBRETRO__
+			{
+				char ext[20] = {0};
+				int p;
+				for (p = 0; p < rr->u.ER.len_id; p++)
+					ext[p] = rr->u.ER.data[p];
+				p++;
+				ext[p] = '\0';
+				write_log(_T("ISO 9660 Extensions: %s"), ext);
+			}
+#else
 			write_log(_T("ISO 9660 Extensions: "));
 			{
 				int p;
@@ -1082,6 +1094,7 @@ repeat:
 					write_log(_T("%c"), rr->u.ER.data[p]);
 			}
 			write_log(_T("\n"));
+#endif
 			break;
 		case SIG('P', 'X'):
 			inode->i_mode = isonum_733(rr->u.PX.mode);
@@ -1491,47 +1504,52 @@ error:
 #endif
 
 
-static TCHAR *get_joliet_filename(struct iso_directory_record * de, struct inode * inode)
+static TCHAR *get_joliet_name(char *name, unsigned char len, bool utf8)
 {
-	unsigned char utf8;
-	//struct nls_table *nls;
-	int len;
 	TCHAR *out;
-
-	utf8 = ISOFS_SB(inode->i_sb)->s_utf8;
-	//nls = ISOFS_SB(inode->i_sb)->s_nls_iocharset;
 
 	if (utf8) {
 		/* probably never used */
-		len = de->name_len[0];
-		uae_char *o = xmalloc (uae_char, len + 1);
+		uae_char *o = xmalloc(uae_char, len + 1);
 		for (int i = 0; i < len; i++)
-			o[i] = de->name[i];
+			o[i] = name[i];
 		o[len] = 0;
-		out = utf8u (o);
-		xfree (o);
+		out = utf8u(o);
+		xfree(o);
 	} else {
-		len = de->name_len[0] / 2;
-		out = xmalloc (TCHAR, len + 1);
-		for (unsigned int i = 0; i < len; i++)
-			out[i] = isonum_722 (de->name + i * 2);
+		len /= 2;
+		out = xmalloc(TCHAR, len + 1);
+		for (int i = 0; i < len; i++)
+			out[i] = isonum_722(name + i * 2);
 		out[len] = 0;
 	}
 
-	if ((len > 2) && (out[len-2] == ';') && (out[len-1] == '1')) {
+	if ((len > 2) && (out[len - 2] == ';') && (out[len - 1] == '1')) {
 		len -= 2;
 		out[len] = 0;
 	}
 
 	/*
-	 * Windows doesn't like periods at the end of a name,
-	 * so neither do we
-	 */
-	while (len >= 2 && (out[len-1] == '.')) {
+	* Windows doesn't like periods at the end of a name,
+	* so neither do we
+	*/
+	while (len >= 2 && (out[len - 1] == '.')) {
 		len--;
 		out[len] = 0;
 	}
+	return out;
+}
 
+static TCHAR *get_joliet_filename(struct iso_directory_record * de, struct inode * inode)
+{
+	unsigned char utf8;
+	//struct nls_table *nls;
+	TCHAR *out;
+
+	utf8 = ISOFS_SB(inode->i_sb)->s_utf8;
+	//nls = ISOFS_SB(inode->i_sb)->s_nls_iocharset;
+
+	out = get_joliet_name(de->name, de->name_len[0], utf8 != 0);
 	return out;
 }
 
@@ -1547,10 +1565,10 @@ static TCHAR *get_joliet_filename(struct iso_directory_record * de, struct inode
  */
 static int isofs_get_blocks(struct inode *inode, uae_u32 iblock, struct buffer_head *bh, unsigned long nblocks)
 {
-	unsigned long b_off = iblock;
+	unsigned int b_off = iblock;
 	unsigned offset, sect_size;
 	unsigned int firstext;
-	unsigned long nextblk, nextoff;
+	unsigned int nextblk, nextoff;
 	int section, rv, error;
 	struct iso_inode_info *ei = ISOFS_I(inode);
 
@@ -1746,8 +1764,8 @@ static int isofs_fill_super(struct super_block *s, void *data, int silent, uae_u
 					}
 					goto root_found;
 				} else {
-				/* Unknown supplementary volume descriptor */
-				sec = NULL;
+					/* Unknown supplementary volume descriptor */
+					sec = NULL;
 				}
 			}
 		} else {
@@ -1846,8 +1864,8 @@ root_found:
 	first_data_zone = isonum_733(rootp->extent) + isonum_711(rootp->ext_attr_length);
 	sbi->s_firstdatazone = first_data_zone;
 
-	write_log (_T("ISOFS: Max size:%d   Log zone size:%d\n"), sbi->s_max_size, 1UL << sbi->s_log_zone_size);
-	write_log (_T("ISOFS: First datazone:%d\n"), sbi->s_firstdatazone);
+	write_log (_T("ISOFS: Max size:%ld   Log zone size:%ld\n"), sbi->s_max_size, 1UL << sbi->s_log_zone_size);
+	write_log (_T("ISOFS: First datazone:%ld\n"), sbi->s_firstdatazone);
 	if(sbi->s_high_sierra)
 		write_log(_T("ISOFS: Disc in High Sierra format.\n"));
 	ch = getname(pri->system_id, 4);
@@ -1950,6 +1968,14 @@ root_found:
 			inode = isofs_iget(s, sbi->s_firstdatazone, 0, NULL);
 			if (IS_ERR(inode))
 				goto out_no_root;
+			TCHAR *volname = get_joliet_name(pri->volume_id, 28, sbi->s_utf8);
+			if (volname && _tcslen(volname) > 0) {
+				xfree(volume_name);
+				volume_name = volname;
+				write_log(_T("ISOFS: Joliet Volume ID: '%s'\n"), volume_name);
+			} else {
+				xfree(volname);
+			}
 		}
 	}
 
@@ -2007,7 +2033,7 @@ out_no_read:
 	write_log (_T("ISOFS: bread failed, dev=%d, iso_blknum=%d, block=%d\n"), s->unitnum, iso_blknum, block);
 	goto out_freebh;
 out_bad_zone_size:
-	write_log(_T("ISOFS: Bad logical zone size %d\n"), sbi->s_log_zone_size);
+	write_log(_T("ISOFS: Bad logical zone size %ld\n"), sbi->s_log_zone_size);
 	goto out_freebh;
 out_bad_size:
 	write_log (_T("ISOFS: Logical zone size(%d) < hardware blocksize(%u)\n"), orig_zonesize, opt.blocksize);
@@ -2027,7 +2053,7 @@ static int isofs_name_translate(struct iso_directory_record *de, char *newn, str
 {
 	char * old = de->name;
 	int len = de->name_len[0];
-	unsigned int i;
+	int i;
 
 	for (i = 0; i < len; i++) {
 		unsigned char c = old[i];
@@ -2144,7 +2170,7 @@ static struct inode *isofs_find_entry(struct inode *dir, char *tmpname, TCHAR *t
 		dpnt = de->name;
 		/* Basic sanity check, whether name doesn't exceed dir entry */
 		if (de_len < dlen + sizeof(struct iso_directory_record)) {
-			write_log (_T("iso9660: Corrupted directory entry in block %u of inode %u\n"), block, dir->i_ino);
+			write_log (_T("iso9660: Corrupted directory entry in block %lu of inode %u\n"), block, dir->i_ino);
 			return 0;
 		}
 
@@ -2185,7 +2211,7 @@ static struct inode *isofs_find_entry(struct inode *dir, char *tmpname, TCHAR *t
 }
 
 /* Acorn extensions written by Matthew Wilcox <willy@bofh.ai> 1998 */
-int get_acorn_filename(struct iso_directory_record *de, char *retname, struct inode *inode)
+static int get_acorn_filename(struct iso_directory_record *de, char *retname, struct inode *inode)
 {
 	int std;
 	unsigned char *chr;
@@ -2287,7 +2313,7 @@ static int do_isofs_readdir(struct inode *inode, struct file *filp, char *tmpnam
 		}
 		/* Basic sanity check, whether name doesn't exceed dir entry */
 		if (de_len < de->name_len[0] + sizeof(struct iso_directory_record)) {
-			write_log (_T("iso9660: Corrupted directory entry in block %u of inode %u\n"), block, inode->i_ino);
+			write_log (_T("iso9660: Corrupted directory entry in block %lu of inode %u\n"), block, inode->i_ino);
 			return 0;
 		}
 
@@ -2358,10 +2384,16 @@ static int do_isofs_readdir(struct inode *inode, struct file *filp, char *tmpnam
 		filp->f_pos += de_len;
 		if (len > 0) {
 			if (jname == NULL) {
-				char t = p[len];
-				p[len] = 0;
-				au_copy (outname, 1000, p);
-				p[len] = t;
+				if (p == NULL) {
+					write_log(_T("ISOFS: no name copied (p == NULL)\n"));
+					outname[0] = _T('\0');
+				}
+				else {
+					char t = p[len];
+					p[len] = 0;
+					au_copy (outname, MAX_DPATH, p);
+					p[len] = t;
+				}
 			} else {
 				_tcscpy (outname, jname);
 				xfree (jname);
@@ -2441,7 +2473,11 @@ bool isofs_mediainfo(void *sbp, struct isofs_info *ii)
 		}
 		ii->unknown_media = sb->unknown_media;
 		if (sb->root) {
-			_tcscpy (ii->volumename, sb->root->name);
+			if (_tcslen(sb->root->name) == 0) {
+				_tcscpy(ii->volumename, _T("NO_LABEL"));
+			} else {
+				_tcscpy (ii->volumename, sb->root->name);
+			}
 			ii->blocks = sbi->s_max_size;
 			ii->totalblocks = totalblocks ? totalblocks : ii->blocks;
 			ii->creation = sb->root->i_ctime.tv_sec;
@@ -2501,7 +2537,7 @@ void isofss_fill_file_attrs(void *sbp, uae_u64 parent, int *dir, int *flags, TCH
 		*comment = my_strdup(inode->i_comment);
 }
 
-bool isofs_stat(void *sbp, uae_u64 uniq, struct _stat64 *statbuf)
+bool isofs_stat(void *sbp, uae_u64 uniq, struct mystat *statbuf)
 {
 	struct super_block *sb = (struct super_block*)sbp;
 	struct inode *inode = find_inode(sb, uniq);
@@ -2509,12 +2545,10 @@ bool isofs_stat(void *sbp, uae_u64 uniq, struct _stat64 *statbuf)
 	if (!inode)
 		return false;
 
-	statbuf->st_mode = FILEFLAG_READ;
-	statbuf->st_mtime = inode->i_mtime.tv_sec;
-	if (XS_ISDIR(inode->i_mode)) {
-		statbuf->st_mode |= FILEFLAG_DIR;
-	} else {
-		statbuf->st_size = inode->i_size;
+	statbuf->mtime.tv_sec = inode->i_mtime.tv_sec;
+	statbuf->mtime.tv_usec = 0;
+	if (!XS_ISDIR(inode->i_mode)) {
+		statbuf->size = inode->i_size;
 	}
 	return true;
 }
@@ -2570,7 +2604,7 @@ struct cd_openfile_s
 {
 	struct super_block *sb;
 	struct inode *inode;
-	uae_u64 seek;
+	uae_s64 seek;
 };
 
 struct cd_openfile_s *isofs_openfile(void *sbp, uae_u64 uniq, int flags)
