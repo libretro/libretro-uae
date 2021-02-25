@@ -277,7 +277,7 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
             off_rgb = 0x330000;
 #endif
         } else if (led == LED_CD && gui_data.cd >= 0) {
-            pos = 9;
+            pos = (gui_data.hd >= 0) ? 8 : 9;
             if (gui_data.cd >= 0) {
                 on = gui_data.cd & (LED_CD_AUDIO | LED_CD_ACTIVE);
                 on_rgb = (on & LED_CD_AUDIO) ? YELLOW_DIM : YELLOW_BRIGHT;

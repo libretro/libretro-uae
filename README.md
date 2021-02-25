@@ -157,7 +157,7 @@ It delivers the best of both worlds, and looks great with high resolution games,
 
 You can force a specific model if a game needs one (AGA games for instance) either by the "Model" core option or by file path tags.
 
-The "Model" core option at "**Automatic**" will default to A500 when booting floppy disks, A600 when booting hard drives, and CD32 when booting CD images.
+The "Model" core option at "**Automatic**" will default to A500 when booting floppy disks, A1200 when booting hard drives, and CD32 when booting CD images.
 
 The whole path (filename and directory) will be searched for the following tags if the model is "**Automatic**":
 

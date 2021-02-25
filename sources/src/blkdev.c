@@ -218,7 +218,7 @@ void blkdev_fix_prefs (struct uae_prefs *p)
 			continue;
 #ifdef __LIBRETRO__
 		cdscsidevicetype[i] = SCSI_UNIT_IMAGE;
-		continue;
+		return;
 #endif
 		if (p->cdslots[i].inuse || p->cdslots[i].name[0]) {
 			TCHAR *name = p->cdslots[i].name;
@@ -239,7 +239,6 @@ void blkdev_fix_prefs (struct uae_prefs *p)
 			cdscsidevicetype[i] = SCSI_UNIT_IOCTL;
 		}
 	}
-
 }
 
 static bool getsem2 (int unitnum, bool dowait)
@@ -516,6 +515,10 @@ void device_func_free(void)
 {
     for (int i = 0; i < MAX_TOTAL_SCSI_DEVICES; i++) {
         struct blkdevstate *st = &state[i];
+#ifdef __LIBRETRO__
+        if (currprefs.scsi && i == 0)
+           sys_command_cd_stop(i);
+#endif
         st->wasopen = 0;
         st->waspaused = false;
         st->mediawaschanged = false;
