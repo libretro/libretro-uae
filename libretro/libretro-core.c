@@ -334,7 +334,7 @@ void retro_set_environment(retro_environment_t cb)
             { "A4040", "A4000/040 (2MB Chip + 8MB Fast)" },
             { NULL, NULL },
          },
-         "A600"
+         "A1200"
       },
       {
          "puae_model_cd",
@@ -4597,7 +4597,10 @@ static bool retro_create_config()
             else
             {
                /* Default CD model */
-               retro_build_preset(opt_model_cd);
+               if (opt_use_boot_hd)
+                  retro_build_preset(opt_model_hd);
+               else
+                  retro_build_preset(opt_model_cd);
 
                /* No model specified */
                log_cb(RETRO_LOG_INFO, "No model specified in: '%s'\n", full_path);
@@ -4616,6 +4619,13 @@ static bool retro_create_config()
 
          /* Verify and write Kickstart */
          retro_print_kickstart(&configfile);
+
+         /* Bootable HD exception */
+         if (opt_use_boot_hd)
+         {
+            retro_use_boot_hd(&configfile);
+            fprintf(configfile, "scsi=true\n");
+         }
 
          /* M3U playlist */
          if (strendswith(full_path, "m3u"))

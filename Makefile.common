@@ -71,6 +71,7 @@ SOURCES_C += \
 	$(EMU)/hardfile_unix.c \
 	$(EMU)/identify.c \
 	$(EMU)/inputdevice.c \
+	$(EMU)/isofs.c \
 	$(EMU)/keybuf.c \
 	$(EMU)/main.c \
 	$(EMU)/memory.c \
@@ -84,7 +85,7 @@ SOURCES_C += \
 	$(EMU)/rommgr.c \
 	$(EMU)/savestate.c \
 	$(EMU)/scsi.c \
-	$(EMU)/scsi-none.c \
+	$(EMU)/scsiemul.c \
 	$(EMU)/serial.c \
 	$(EMU)/sinctable.c \
 	$(EMU)/specialmonitors.c \
