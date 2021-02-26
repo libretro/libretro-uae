@@ -325,7 +325,11 @@ int scsi_do_disk_change (int unitnum, int insert, int *pollmode)
 	int i, j, ret;
 
 	ret = -1;
+#ifdef _WIN32
 	if (!change_sem)
+#else
+	if (!change_sem.sem)
+#endif
 		return ret;
 	uae_sem_wait (&change_sem);
 	for (i = 0; i < MAX_TOTAL_SCSI_DEVICES; i++) {

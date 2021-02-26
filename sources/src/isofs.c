@@ -51,8 +51,8 @@ struct inode
 {
 	struct inode *next;
 	uae_u32 i_mode;
-	uid_t i_uid;
-	gid_t i_gid;
+	isofs_uid_t i_uid;
+	isofs_gid_t i_gid;
 	uae_u32 i_ino;
 	uae_u32 i_size;
 	uae_u32 i_blocks;
@@ -2099,7 +2099,7 @@ static int isofs_cmp(const char *name, char *compare, int dlen)
 	}
 	char tmp = compare[dlen];
 	compare[dlen] = 0;
-	int c = stricmp(name, compare);
+	int c = strcasecmp(name, compare);
 	compare[dlen] = tmp;
 	return c;
 }

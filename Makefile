@@ -21,7 +21,7 @@ ifneq (,$(findstring unix,$(platform)))
    TARGET := $(TARGET_NAME)_libretro.so
    fpic := -fPIC
    LDFLAGS += -lpthread
-   CFLAGS += -Wstringop-overflow=0
+   CFLAGS += -Wstringop-overflow=0 -Wno-unused-result
    SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--gc-sections
 
 # RPI

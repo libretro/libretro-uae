@@ -922,7 +922,7 @@ int fcmp(const char *src, const char *dst)
 
    while ((n = fread(buf_src, sizeof(char), sizeof(buf_src), fp_src)) > 0 && ret == 0)
    {
-      fread(buf_dst, sizeof(char), sizeof(buf_dst), fp_dst);
+      ret = fread(buf_dst, sizeof(char), sizeof(buf_dst), fp_dst);
       ret = memcmp(buf_src, buf_dst, sizeof(buf_src));
    }
 
