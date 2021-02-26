@@ -91,10 +91,10 @@ void print_vkbd(unsigned short int *pixels)
    {
       default:
       case 1: /* Classic */
-         BKG_COLOR_NORMAL  = RGBc(216, 209, 201);
-         BKG_COLOR_ALT     = RGBc(159, 154, 150);
-         BKG_COLOR_EXTRA   = RGBc(143, 140, 129);
-         BKG_COLOR_SEL     = RGBc( 60,  60,  60);
+         BKG_COLOR_NORMAL  = RGBc(208, 208, 202);
+         BKG_COLOR_ALT     = RGBc(154, 154, 150);
+         BKG_COLOR_EXTRA   = RGBc(132, 132, 132);
+         BKG_COLOR_SEL     = RGBc( 40,  40,  40);
          BKG_COLOR_ACTIVE  = RGBc(250, 250, 250);
          FONT_COLOR_NORMAL = COLOR_BLACK;
          FONT_COLOR_SEL    = COLOR_WHITE;
@@ -121,10 +121,10 @@ void print_vkbd(unsigned short int *pixels)
          break;
 
       case 4: /* Light */
-         BKG_COLOR_NORMAL  = RGBc(210, 210, 210);
-         BKG_COLOR_ALT     = RGBc(180, 180, 180);
-         BKG_COLOR_EXTRA   = RGBc(150, 150, 150);
-         BKG_COLOR_SEL     = RGBc( 60,  60,  60);
+         BKG_COLOR_NORMAL  = RGBc(200, 204, 206);
+         BKG_COLOR_ALT     = RGBc(160, 160, 160);
+         BKG_COLOR_EXTRA   = RGBc(132, 132, 132);
+         BKG_COLOR_SEL     = RGBc( 40,  40,  40);
          BKG_COLOR_ACTIVE  = RGBc(250, 250, 250);
          FONT_COLOR_NORMAL = COLOR_BLACK;
          FONT_COLOR_SEL    = COLOR_WHITE;
@@ -313,7 +313,7 @@ void print_vkbd(unsigned short int *pixels)
                            YTEXT+1,
                            BKG_COLOR,
                            (FONT_COLOR == COLOR_WHITE ? COLOR_GRAYBLACK : COLOR_GRAYWHITE),
-                           GRAPH_ALPHA_75, false, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+                           GRAPH_ALPHA_75-1, false, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
                            (!shifted) ? vkeys[(y * VKBDX) + x + page].normal : vkeys[(y * VKBDX) + x + page].shift);
             else
                Draw_text(pix,
@@ -321,7 +321,7 @@ void print_vkbd(unsigned short int *pixels)
                            YTEXT+1,
                            BKG_COLOR,
                            (FONT_COLOR == COLOR_WHITE ? COLOR_GRAYBLACK : COLOR_GRAYWHITE),
-                           GRAPH_ALPHA_75, false, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+                           GRAPH_ALPHA_75-1, false, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
                            (!shifted) ? vkeys[(y * VKBDX) + x + page].normal : vkeys[(y * VKBDX) + x + page].shift);
          }
 
