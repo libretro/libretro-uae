@@ -62,7 +62,7 @@ unsigned int opt_vkbd_theme = 0;
 libretro_graph_alpha_t opt_vkbd_alpha = GRAPH_ALPHA_75;
 bool opt_keyrah_keypad = false;
 bool opt_keyboard_pass_through = false;
-bool opt_multimouse = false;
+unsigned int opt_physicalmouse = 1;
 unsigned int opt_dpadmouse_speed = 4;
 unsigned int opt_analogmouse = 0;
 unsigned int opt_analogmouse_deadzone = 20;
@@ -1098,15 +1098,16 @@ void retro_set_environment(retro_environment_t cb)
          "100"
       },
       {
-         "puae_multimouse",
-         "Input > Multiple Physical Mouse",
-         "Requirements: raw/udev input driver and proper mouse index in RA input configs.\nOnly for real mice, not RetroPad emulated.",
+         "puae_physicalmouse",
+         "Input > Physical Mouse",
+         "Double requirements: raw/udev input driver and proper mouse index per port.\nDoes not affect RetroPad emulated mice.",
          {
-            { "disabled", NULL },
-            { "enabled", NULL },
+            { "disabled", "disabled" },
+            { "enabled", "enabled" },
+            { "double", "Double" },
             { NULL, NULL },
          },
-         "disabled"
+         "enabled"
       },
       {
          "puae_keyrah_keypad_mappings",
@@ -2385,12 +2386,13 @@ static void update_variables(void)
       opt_dpadmouse_speed = atoi(var.value);
    }
 
-   var.key = "puae_multimouse";
+   var.key = "puae_physicalmouse";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (!strcmp(var.value, "disabled")) opt_multimouse = false;
-      else                                opt_multimouse = true;
+      if      (!strcmp(var.value, "disabled")) opt_physicalmouse = 0;
+      else if (!strcmp(var.value, "enabled"))  opt_physicalmouse = 1;
+      else if (!strcmp(var.value, "double"))   opt_physicalmouse = 2;
    }
 
    var.key = "puae_keyrah_keypad_mappings";

@@ -103,7 +103,7 @@ extern unsigned int opt_analogmouse;
 extern unsigned int opt_analogmouse_deadzone;
 extern float opt_analogmouse_speed;
 extern unsigned int opt_dpadmouse_speed;
-extern bool opt_multimouse;
+extern unsigned int opt_physicalmouse;
 extern bool opt_keyrah_keypad;
 extern bool opt_keyboard_pass_through;
 extern int opt_cd32pad_options;
@@ -2493,7 +2493,7 @@ void retro_poll_event()
    /* Real mouse buttons only when virtual keyboard hidden */
    if (!retro_vkbd)
    {
-      if (!uae_mouse_l[0] && !uae_mouse_r[0])
+      if (opt_physicalmouse > 0 && !uae_mouse_l[0] && !uae_mouse_r[0])
       {
          uae_mouse_l[0] = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_LEFT);
          uae_mouse_r[0] = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_RIGHT);
@@ -2501,7 +2501,7 @@ void retro_poll_event()
       }
 
       /* Second real mouse buttons only when enabled */
-      if (opt_multimouse && !uae_mouse_l[1] && !uae_mouse_r[1])
+      if (opt_physicalmouse > 1 && !uae_mouse_l[1] && !uae_mouse_r[1])
       {
          uae_mouse_l[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_LEFT);
          uae_mouse_r[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_RIGHT);
@@ -2688,7 +2688,7 @@ void retro_poll_event()
    /* Real mouse movement only when virtual keyboard hidden */
    if (!retro_vkbd)
    {
-      if (!uae_mouse_x[0] && !uae_mouse_y[0])
+      if (opt_physicalmouse > 0 && !uae_mouse_x[0] && !uae_mouse_y[0])
       {
          mouse_x[0] = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_X);
          mouse_y[0] = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_Y);
@@ -2701,7 +2701,7 @@ void retro_poll_event()
       }
 
       /* Second real mouse movement only when enabled */
-      if (opt_multimouse && !uae_mouse_x[1] && !uae_mouse_y[1])
+      if (opt_physicalmouse > 1 && !uae_mouse_x[1] && !uae_mouse_y[1])
       {
          mouse_x[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_X);
          mouse_y[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_Y);
