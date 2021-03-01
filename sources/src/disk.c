@@ -2456,7 +2456,11 @@ static void setdskchangetime (drive *drv, int dsktime)
 void DISK_reinsert (int num)
 {
 	drive_eject (&floppy[num]);
+#ifdef __LIBRETRO__
+	setdskchangetime (&floppy[num], 50);
+#else
 	setdskchangetime (&floppy[num], 100);
+#endif
 }
 
 int disk_setwriteprotect (struct uae_prefs *p, int num, const TCHAR *name, bool writeprotected)

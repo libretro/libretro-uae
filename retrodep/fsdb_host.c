@@ -164,7 +164,8 @@ struct my_opendir_s *my_opendir(const TCHAR *name, const TCHAR *mask)
 	if (!dir) {
 		write_log("my_opendir '%s' failed\n", name);
 		return NULL;
-	} else if (log_filesys)
+	}
+	else if (log_filesys)
 		write_log("my_opendir '%s'\n", name);
 
 	mod->dh = dir;
@@ -338,19 +339,30 @@ int my_truncate(const TCHAR *name, uae_u64 len) {
 }
 
 uae_s64 my_fsize(struct my_openfile_s* mos) {
-	struct stat sonuc;
 #ifdef FD_OPEN
+	struct stat sonuc;
 	if (fstat(mos->fd, &sonuc) == -1) {
 		write_log("my_fsize: fstat on file '%s' failed\n", mos->path);
 		return -1;
 	}
+	else if (log_filesys)
+		write_log("my_fsize: '%s' = %d\n", mos->path, sonuc.st_size);
+
+	return sonuc.st_size;
 #else
-	if (stat(mos->path, &sonuc) == -1) {
-		write_log("my_fsize: stat on file '%s' failed\n", mos->path);
+	size_t size = 0;
+	int current = ftell(mos->fp);
+	if (fseek(mos->fp, 0, SEEK_END)) {
+		write_log("my_fsize: fseek on file '%s' failed\n", mos->path);
 		return -1;
 	}
+	else if (log_filesys)
+		write_log("my_fsize: '%s' = %d\n", mos->path, size);
+
+	size = ftell(mos->fp);
+	fseek(mos->fp, current, SEEK_SET);
+	return size;
 #endif
-	return sonuc.st_size;
 }
 
 unsigned int my_read(struct my_openfile_s *mos, void *b, unsigned int size) {
