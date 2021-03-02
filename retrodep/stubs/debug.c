@@ -11,12 +11,13 @@
 #include "sysconfig.h"
 #include "sysdeps.h"
 
+#if 0
+
 #include <ctype.h>
-#ifndef __CELLOS_LV2__
+#ifdef HAVE_SIGNAL
 #include <signal.h>
 #endif
 
-#if 0
 #include "options.h"
 #include "uae.h"
 #include "sources/src/include/memory_uae.h"

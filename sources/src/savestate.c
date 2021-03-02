@@ -83,6 +83,7 @@ static int savestate_docompress, savestate_specialdump, savestate_nodialogs;
 
 TCHAR savestate_fname[MAX_DPATH];
 
+#ifndef __LIBRETRO__
 #define STATEFILE_ALLOC_SIZE 600000
 static int statefile_alloc;
 static int staterecords_max = 1000;
@@ -99,9 +100,13 @@ struct staterecord
 };
 
 static struct staterecord **staterecords;
+#endif /* __LIBRETRO__ */
 
 static void state_incompatible_warn (void)
 {
+#ifdef __LIBRETRO__
+	return;
+#endif
 	static int warned;
 	int dowarn = 0;
 	int i;
@@ -295,12 +300,14 @@ TCHAR *restore_path_func (uae_u8 **dstp, int type)
 			return my_strdup (tmp2);
 		}
 	}
+#ifndef __LIBRETRO__
 	getpathpart(tmp2, sizeof tmp2 / sizeof (TCHAR), savestate_fname);
 	_tcscat (tmp2, tmp);
 	if (zfile_exists (tmp2)) {
 		xfree (s);
 		return my_strdup (tmp2);
 	}
+#endif
 	return s;
 }
 
@@ -836,13 +843,17 @@ bool savestate_restore_finish (void)
 void savestate_initsave (const TCHAR *filename, int mode, int nodialogs, bool save)
 {
 	if (filename == NULL) {
+#if 0
 		savestate_fname[0] = 0;
+#endif
 		savestate_docompress = 0;
 		savestate_specialdump = 0;
 		savestate_nodialogs = 0;
 		return;
 	}
+#if 0
 	_tcscpy (savestate_fname, filename);
+#endif
 	savestate_docompress = (mode == 1) ? 1 : 0;
 	savestate_specialdump = (mode == 3) ? 1 : (mode == 4) ? 2 : 0;
 	savestate_nodialogs = nodialogs;
@@ -1237,11 +1248,13 @@ void savestate_quick (int slot, int save)
 
 bool savestate_check (void)
 {
+#ifndef __LIBRETRO__
 	if (vpos == 0 && !savestate_state) {
 		if (hsync_counter == 0 && input_play == INPREC_PLAY_NORMAL)
 			savestate_memorysave ();
 		savestate_capture (0);
 	}
+#endif
 	if (savestate_state == STATE_DORESTORE) {
 		savestate_state = STATE_RESTORE;
 		return true;
@@ -1252,8 +1265,15 @@ bool savestate_check (void)
 	return false;
 }
 
+#ifdef __LIBRETRO__
+void savestate_capture (int force) {}
+int savestate_dorewind (int pos) {}
+void savestate_init (void) {}
+void savestate_free (void) {}
+void savestate_rewind (void) {}
+void savestate_memorysave (void) {}
+#else
 static int rewindmode;
-
 
 static struct staterecord *canrewind (int pos)
 {
@@ -1829,8 +1849,8 @@ void savestate_init (void)
 		inprec_open (NULL, NULL);
 		savestate_first_capture = 1;
 	}
-}
 
+}
 
 void statefile_save_recording (const TCHAR *filename)
 {
@@ -1847,7 +1867,7 @@ void statefile_save_recording (const TCHAR *filename)
 	}
 }
 
-
+#endif
 /*
 
 My (Toni Wilen <twilen@arabuusimiehet.com>)

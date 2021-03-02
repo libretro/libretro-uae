@@ -12,12 +12,8 @@
  *
  */
 
-#ifdef __CELLOS_LV2__
-#include "ps3_headers.h"
-#else
 #if 0
 #include <sys/timeb.h>
-#endif
 #endif
 
 #include "sysconfig.h"

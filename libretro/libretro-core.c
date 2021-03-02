@@ -22,12 +22,14 @@
 #include "disk.h"
 #include "gui.h"
 
-int libretro_runloop_active = 0;
-int retrow = 0;
-int retroh = 0;
+unsigned int libretro_runloop_active = 0;
+unsigned short int retro_bmp[RETRO_BMP_SIZE] = {0};
 int defaultw = EMULATOR_DEF_WIDTH;
 int defaulth = EMULATOR_DEF_HEIGHT;
-unsigned short int retro_bmp[RETRO_BMP_SIZE] = {0};
+int retrow = 0;
+int retroh = 0;
+int zoomed_width = 0;
+int zoomed_height = 0;
 
 extern int bplcon0;
 extern int diwlastword_total;
@@ -82,6 +84,9 @@ static char *uae_argv[] = { "puae", RPATH };
 static int restart_pending = 0;
 static char* core_options_legacy_strings = NULL;
 
+static long retro_now = 0;
+static double retro_refresh = 0;
+
 bool retro_message = false;
 char retro_message_msg[1024] = {0};
 bool retro_statusbar = false;
@@ -115,8 +120,6 @@ unsigned int request_check_prefs_timer = 0;
 unsigned int zoom_mode_id = 0;
 unsigned int opt_zoom_mode_id = 0;
 unsigned int zoom_mode_crop_id = 0;
-int zoomed_width = 0;
-int zoomed_height = 0;
 unsigned int width_multiplier = 1;
 
 static int opt_vertical_offset = 0;
@@ -168,6 +171,8 @@ static retro_audio_sample_t audio_cb = NULL;
 static retro_audio_sample_batch_t audio_batch_cb = NULL;
 static retro_environment_t environ_cb = NULL;
 
+static struct retro_perf_callback perf_cb;
+
 bool libretro_supports_bitmasks = false;
 static unsigned int retro_led_state[3] = {0};
 
@@ -185,6 +190,15 @@ static char uae_kickstart[RETRO_PATH_MAX] = {0};
 static char uae_kickstart_ext[RETRO_PATH_MAX] = {0};
 static char uae_config[4096] = {0};
 static char uae_custom_config[4096] = {0};
+
+/* FPS counter + mapper tick */
+long retro_ticks(void)
+{
+   if (!perf_cb.get_time_usec)
+      return retro_now;
+
+   return perf_cb.get_time_usec();
+}
 
 static int retro_keymap_id(const char *val)
 {
@@ -2922,6 +2936,7 @@ bool retro_disk_set_eject_state(bool ejected)
          switch (dc->types[dc->index])
          {
             case DC_IMAGE_TYPE_FLOPPY:
+            case DC_IMAGE_TYPE_ARCHIVE:
                changed_prefs.floppyslots[0].df[0] = 0;
                disk_eject(0);
                break;
@@ -2937,6 +2952,7 @@ bool retro_disk_set_eject_state(bool ejected)
          switch (dc->types[dc->index])
          {
             case DC_IMAGE_TYPE_FLOPPY:
+            case DC_IMAGE_TYPE_ARCHIVE:
                strcpy(changed_prefs.floppyslots[0].df, dc->files[dc->index]);
 
                /* Need to remove duplicates from external drives */
@@ -3118,6 +3134,9 @@ void retro_init(void)
    log_cb = fallback_log;
    if (environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log))
       log_cb = log.log;
+
+   if (!environ_cb(RETRO_ENVIRONMENT_GET_PERF_INTERFACE, &perf_cb))
+      perf_cb.get_time_usec = NULL;
 
    const char *system_dir = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &system_dir) && system_dir)
@@ -3396,7 +3415,8 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
    info->geometry.aspect_ratio = retro_get_aspect_ratio(retrow, retroh, false);
 
    info->timing.sample_rate    = 44100.0;
-   info->timing.fps            = (retro_get_region() == RETRO_REGION_NTSC) ? PUAE_VIDEO_HZ_NTSC : PUAE_VIDEO_HZ_PAL;
+   retro_refresh               = (retro_get_region() == RETRO_REGION_NTSC) ? PUAE_VIDEO_HZ_NTSC : PUAE_VIDEO_HZ_PAL;
+   info->timing.fps            = retro_refresh;
 }
 
 void retro_set_video_refresh(retro_video_refresh_t cb)
@@ -4708,12 +4728,16 @@ static bool retro_create_config()
          char filebuf[512];
          if ((configfile_custom = fopen(full_path, "r")))
          {
+            char disk_image_label[RETRO_PATH_MAX];
+            disk_image_label[0] = '\0';
+
             while (fgets(filebuf, sizeof(filebuf), configfile_custom))
             {
                fprintf(configfile, "%s", filebuf);
 
-               /* Parse diskimage-rows for disk control */
-               if (strstr(filebuf, "diskimage") && filebuf[0] == 'd')
+               /* Parse diskimage & floppy rows */
+               if ((strstr(filebuf, "diskimage") && filebuf[0] == 'd') ||
+                   (strstr(filebuf, "floppy") && filebuf[0] == 'f'))
                {
                   char *token = strtok((char*)filebuf, "=");
                   while (token != NULL)
@@ -4724,14 +4748,13 @@ static bool retro_create_config()
                   strtok(disk_image, "\n");
                   if (!string_is_empty(disk_image) && path_is_valid(disk_image))
                   {
-                     /* Add the file to disk control context */
-                     char disk_image_label[RETRO_PATH_MAX];
-                     disk_image_label[0] = '\0';
+                     /* Add the file to Disk Control */
                      fill_short_pathname_representation(disk_image_label, disk_image, sizeof(disk_image_label));
                      dc_add_file(dc, disk_image, disk_image_label);
                   }
                }
             }
+            
             fclose(configfile_custom);
          }
 
@@ -5678,6 +5701,7 @@ void retro_run(void)
 
    /* Resume emulation for 1 frame */
    restart_pending = m68k_go(1, 1);
+   retro_now += 1000000 / retro_refresh;
 
    /* Warning messages */
    if (retro_message)

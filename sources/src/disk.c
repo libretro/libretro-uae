@@ -14,12 +14,6 @@
 #include "sysconfig.h"
 #include "sysdeps.h"
 
-#if defined(__CELLOS_LV2__) || defined(_WIN32) || defined(WIIU) || defined(__SWITCH__) || defined(VITA)
-#define tzset() 
-#define timezone 0
-#define daylight 0
-#endif
-
 int disk_debug_logging = 0;
 int disk_debug_mode = 0;
 int disk_debug_track = -1;
@@ -2979,8 +2973,8 @@ void DISK_handler (uae_u32 data)
 	if (flag & DISK_INDEXSYNC) {
 		if (!indexdecay) {
 			indexdecay = 2;
-		cia_diskindex ();
-}
+			cia_diskindex ();
+		}
 	}
 }
 
@@ -3170,10 +3164,10 @@ static int doreaddma (void)
 				write_log (_T("doreaddma() fifo overflow detected, retrying..\n"));
 				return -1;
 			} else {
-			DSKDAT (word);
-			dsklength--;
+				DSKDAT (word);
+				dsklength--;
+			}
 		}
-	}
 		return 1;
 	}
 	return 0;
@@ -3264,7 +3258,7 @@ static void disk_doupdate_read (drive * drv, int floppybits)
 			}
 			if (adkcon & 0x400) {
 				bitoffset = 15;
-		}
+			}
 		}
 		bitoffset++;
 		bitoffset &= 15;

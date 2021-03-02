@@ -61,11 +61,7 @@
 #endif
 
 #define TRACING_ENABLED 0
-#ifdef __SWITCH__
-int log_filesys = 1;
-#else
 int log_filesys = 0;
-#endif
 
 #if TRACING_ENABLED
 #if 0
@@ -344,12 +340,10 @@ int get_filesys_unitconfig (struct uae_prefs *p, int index, struct mountedinfo *
 			ui->hf.ci.blocksize = uci->ci.blocksize;
 			mi->size = -1;
 			mi->ismounted = true;
-#if !defined(ANDROID) && !defined(_WIN32) && !defined(__CELLOS_LV2__) 
 			if (blkdev_get_info (p, ui->hf.ci.cd_emu_unit, &di)) {
 				mi->ismedia = di.media_inserted != 0;
 				_tcscpy (mi->rootdir, di.label);
 			}
-#endif
 #if 0
 			if (ui->hf.ci.cd_emu_unit == 0)
 				_tcscpy (mi->rootdir, _T("CD"));
