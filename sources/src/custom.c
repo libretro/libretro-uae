@@ -495,14 +495,13 @@ void alloc_cycle_ext(int hpos, int type)
 void alloc_cycle_blitter (int hpos, uaecptr *ptr, int chnum)
 {
 	if (cycle_line[hpos] & CYCLE_COPPER_SPECIAL) {
-		static int warned = 100;
-		uaecptr srcptr = cop_state.strobe == 1 ? cop1lc : cop2lc;
-		if (warned > 0) {
-			write_log (_T("buggy copper cycle conflict with blitter ch %c %08x <- %08x PC=%08x\n"), 'A' + (chnum - 1), *ptr, srcptr, m68k_getpc ());
-			warned--;
-		}
-		if ((currprefs.cs_hacks & 1) && currprefs.cpu_model == 68000)
+		if ((currprefs.cs_hacks & 1) && currprefs.cpu_model == 68000) {
+			uaecptr srcptr = cop_state.strobe == 1 ? cop1lc : cop2lc;
+			//if (currprefs.cpu_model == 68000 && currprefs.cpu_cycle_exact && currprefs.blitter_cycle_exact) {
+			// batman group / batman vuelve triggers this incorrectly. More testing needed.
 			*ptr = srcptr;
+			//activate_debugger();
+		}
 	}
 	alloc_cycle (hpos, CYCLE_BLITTER);
 }
@@ -1186,8 +1185,10 @@ STATIC_INLINE void fetch (int nr, int fm, int hpos)
 		if (plf_state == plf_passed_stop2 && fetch_cycle >= (fetch_cycle & ~fetchunit_mask) + fetch_modulo_cycle) {
 			add_modulo (nr);
 
+#if 0
 			if ((currprefs.cs_hacks & 2) || 0)
 				do_right_ddf_hack (nr, hpos);
+#endif
 		}
 	} else {
 		// use whatever left in BPLxDAT if no DMA
@@ -2971,6 +2972,11 @@ int vsynctimebase_orig;
 
 void compute_vsynctime (void)
 {
+	double svpos = maxvpos_nom;
+	double shpos = maxhpos_short;
+	double syncadjust = 1.0;
+
+#ifndef __LIBRETRO__
 	fake_vblank_hz = 0;
 	vblank_hz_mult = 0;
 	vblank_hz_state = 1;
@@ -2985,6 +2991,7 @@ void compute_vsynctime (void)
 			}
 		}
 	}
+#endif
 	if (!fake_vblank_hz)
 		fake_vblank_hz = vblank_hz;
 #ifdef __LIBRETRO__
@@ -3006,8 +3013,22 @@ void compute_vsynctime (void)
 #endif
 	}
 #endif
-	if (currprefs.produce_sound > 1)
-		update_sound (fake_vblank_hz, (bplcon0 & 4) ? -1 : lof_store, islinetoggle ());
+
+	if (islinetoggle ()) {
+		shpos += 0.5;
+	}
+	if (interlace_seen) {
+		svpos += 0.5;
+	} else if (lof_current) {
+		svpos += 1.0;
+	}
+	if (currprefs.produce_sound > 1) {
+		double clk = svpos * shpos * fake_vblank_hz;
+#if 0
+		write_log (_T("SNDRATE %.1f*%.1f*%.6f=%.6f\n"), svpos, shpos, fake_vblank_hz, clk);
+#endif
+		devices_update_sound(clk, syncadjust);
+	}
 }
 
 
