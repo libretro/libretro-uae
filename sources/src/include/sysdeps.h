@@ -536,7 +536,9 @@ DWORD GetLastError(void);
 typedef int64_t off64_t;
 #endif
 
+#ifndef O_NDELAY
 #define O_NDELAY 0
+#endif
 
 /* Types */
 #define UINT16 uint16_t
@@ -576,6 +578,11 @@ typedef uint8_t uint8;
 
 #ifdef __LIBRETRO__
 #include "string/stdstring.h"
+
+#ifdef WIIU
+#include <features/features_cpu.h>
 #endif
+
+#endif /* __LIBRETRO__ */
 
 #endif /* UAE_SYSDEPS_H */

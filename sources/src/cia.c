@@ -487,10 +487,6 @@ STATIC_INLINE void ciaa_checkalarm (int inc)
 }
 
 #ifdef TOD_HACK
-
-#if defined(WIIU)
-#include <features_cpu.h>
-#endif
 static uae_u64 tod_hack_tv, tod_hack_tod, tod_hack_tod_last;
 static int tod_hack_enabled;
 #define TOD_HACK_TIME 312 * 50 * 10
@@ -506,7 +502,7 @@ static void tod_hack_reset (void)
 	tod_hack_tod = ciaatod;
 	tod_hack_tod_last = tod_hack_tod;
 }
-#endif
+#endif /* TOD_HACK */
 
 static int heartbeat_cnt;
 void cia_heartbeat (void)

@@ -143,7 +143,7 @@ else ifneq (,$(filter $(platform), ngc wii wiiu))
    else ifneq (,$(findstring ngc,$(platform)))
       COMMONFLAGS += -DHW_DOL -mrvl
    endif
-   CFLAGS += $(COMMONFLAGS) -I$(DEVKITPRO)/portlibs/ppc/include -I$(CORE_DIR)/wiiu-deps
+   CFLAGS += $(COMMONFLAGS) -I$(DEVKITPRO)/portlibs/ppc/include -I$(CORE_DIR)/deps-wiiu
 
 # Nintendo Switch (libnx)
 else ifeq ($(platform), libnx)
@@ -175,8 +175,8 @@ else ifeq ($(platform), ps3)
    ZLIB_DIR = $(LIBUTILS)/zlib/
    LDFLAGS := -lm -lpthread -lc
    CFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DBYTE_ORDER=BIG_ENDIAN -D__CELLOS_LV2__ -DHAVE_MEMALIGN -DHAVE_ASPRINTF -DBIG_ENDIAN \
-   -DLITTLE_ENDIAN -I$(ZLIB_DIR) -I./ps3-deps
-   SOURCES_C += $(CORE_DIR)/ps3-deps/ps3_functions.c
+   -DLITTLE_ENDIAN -I$(ZLIB_DIR) -I./deps-ps3
+   SOURCES_C += $(CORE_DIR)/deps-ps3/ps3_functions.c
    STATIC_LINKING=1
    STATIC_LINKING_LINK=1
 

@@ -71,10 +71,6 @@
 
 #define SPRBORDER 0
 
-#ifdef WIIU
-#include <features_cpu.h>
-#endif
-
 #ifdef __LIBRETRO__
 extern bool request_update_av_info;
 extern bool retro_av_info_change_timing;
