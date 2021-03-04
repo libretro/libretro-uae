@@ -18,7 +18,7 @@
 /*
  * Handle break signal
  */
-#ifndef __CELLOS_LV2__
+#ifdef HAVE_SIGNAL
 #include <signal.h>
 #endif
 
@@ -32,7 +32,6 @@ static RETSIGTYPE sigbrkhandler (int foo)
 
 void setup_brkhandler (void)
 {
-#ifndef __CELLOS_LV2__
 #if defined(__unix) && !defined(__NeXT__)
     struct sigaction sa;
     sa.sa_handler = sigbrkhandler;
@@ -42,8 +41,7 @@ void setup_brkhandler (void)
 #endif
     sigemptyset (&sa.sa_mask);
     sigaction (SIGINT, &sa, NULL);
-#else
+#elif defined(HAVE_SIGNAL)
     signal (SIGINT, sigbrkhandler);
-#endif
 #endif
 }

@@ -136,6 +136,7 @@ struct regstruct
 
 	uae_u16 irc, ir;
 	uae_u32 spcflags;
+	int instruction_cnt;
 
 	uaecptr usp, isp, msp;
 	uae_u16 sr;

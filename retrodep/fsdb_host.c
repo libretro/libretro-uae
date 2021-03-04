@@ -1,30 +1,10 @@
+#include "sysconfig.h"
+#include "sysdeps.h"
+
 #include "fsdb.h"
 #include "zfile.h"
 
 #include "libretro-core.h"
-
-#if 0
-#include <sys/time.h>
-#if !defined(_WIN32) && !defined(__CELLOS_LV2__)
-#include <sys/timeb.h>
-#endif
-#endif
-
-#ifdef __CELLOS_LV2__
-#include "ps3_headers.h"
-#endif
-
-#ifdef VITA
-#include <psp2/types.h>
-#include <psp2/io/dirent.h>
-#include <psp2/kernel/threadmgr.h>
-#define rmdir(name) sceIoRmdir(name)
-#define mkdir(name, mode) sceIoMkdir(name, mode)
-#endif
-
-#if defined(__CELLOS_LV2__) || defined(_WIN32) || defined(WIIU) || defined(VITA)
-#define lstat stat
-#endif
 
 extern int log_filesys;
 

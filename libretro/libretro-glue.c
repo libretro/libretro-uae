@@ -1,10 +1,6 @@
 #include "sysconfig.h"
 #include "sysdeps.h"
 
-#ifdef __CELLOS_LV2__
-#include <ctype.h>
-#endif
-
 #include "options.h"
 #include "uae.h"
 #include "memory_uae.h"
@@ -27,10 +23,10 @@ extern int mouse_port[NORMAL_JPORTS];
 extern unsigned int retro_devices[RETRO_DEVICES];
 bool inputdevice_finalized = false;
 
-extern int defaultw;
-extern int defaulth;
-extern int libretro_runloop_active;
-extern int libretro_frame_end;
+extern unsigned int defaultw;
+extern unsigned int defaulth;
+extern unsigned int libretro_runloop_active;
+extern unsigned int libretro_frame_end;
 
 unsigned short int* pixbuf = NULL;
 extern unsigned short int retro_bmp[RETRO_BMP_SIZE];
@@ -940,17 +936,17 @@ close:
 
 void path_join(char* out, const char* basedir, const char* filename)
 {
-   snprintf(out, RETRO_PATH_MAX, "%s%s%s", basedir, RETRO_PATH_SEPARATOR, filename);
+   snprintf(out, RETRO_PATH_MAX, "%s%s%s", basedir, DIR_SEP_STR, filename);
 }
 
 char* path_join_dup(const char* basedir, const char* filename)
 {
     size_t dirlen = strlen(basedir);
-    size_t seplen = strlen(RETRO_PATH_SEPARATOR);
+    size_t seplen = strlen(DIR_SEP_STR);
     size_t filelen = strlen(filename);
     char* result = (char*)malloc(dirlen + seplen + filelen + 1);
     strcpy(result, basedir);
-    strcpy(result + dirlen, RETRO_PATH_SEPARATOR);
+    strcpy(result + dirlen, DIR_SEP_STR);
     strcpy(result + dirlen + seplen, filename);
     return result;
 }

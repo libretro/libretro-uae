@@ -94,7 +94,7 @@ typedef unsigned IPos;
  * save space in the various tables. IPos is used only for parameter passing.
  */
 
-typedef struct internal_state {
+typedef struct internal_state_deflate {
     z_streamp strm;      /* pointer back to this zlib stream */
     int   status;        /* as the name implies */
     Bytef *pending_buf;  /* output still pending */
@@ -104,7 +104,7 @@ typedef struct internal_state {
     int   wrap;          /* bit 0 true for zlib, bit 1 true for gzip */
     gz_headerp  gzhead;  /* gzip header information to write */
     uInt   gzindex;      /* where in extra, name, or comment */
-    Byte  method;        /* STORED (for zip only) or DEFLATED */
+    Byte  method;        /* can only be DEFLATED */
     int   last_flush;    /* value of flush param for previous deflate call */
 
                 /* used by deflate.c: */
@@ -249,11 +249,6 @@ typedef struct internal_state {
     uInt matches;       /* number of string matches in current block */
     uInt insert;        /* bytes at end of window left to insert */
 
-#ifdef DEBUG
-    ulg compressed_len; /* total bit length of compressed file mod 2^32 */
-    ulg bits_sent;      /* bit length of compressed data sent mod 2^32 */
-#endif
-
     ush bi_buf;
     /* Output buffer. bits are inserted starting at the bottom (least
      * significant bits).
@@ -270,7 +265,7 @@ typedef struct internal_state {
      * updated to the new high water mark.
      */
 
-} FAR deflate_state;
+} deflate_state;
 
 /* Output a byte on the stream.
  * IN assertion: there is enough room in pending_buf.
@@ -309,16 +304,10 @@ void ZLIB_INTERNAL _tr_stored_block OF((deflate_state *s, charf *buf,
  * used.
  */
 
-#ifndef DEBUG
 /* Inline versions of _tr_tally for speed: */
 
-#if defined(GEN_TREES_H) || !defined(STDC)
-  extern uch ZLIB_INTERNAL _length_code[];
-  extern uch ZLIB_INTERNAL _dist_code[];
-#else
-  extern const uch ZLIB_INTERNAL _length_code[];
-  extern const uch ZLIB_INTERNAL _dist_code[];
-#endif
+extern const uch ZLIB_INTERNAL _length_code[];
+extern const uch ZLIB_INTERNAL _dist_code[];
 
 # define _tr_tally_lit(s, c, flush) \
   { uch cc = (c); \
@@ -337,10 +326,5 @@ void ZLIB_INTERNAL _tr_stored_block OF((deflate_state *s, charf *buf,
     s->dyn_dtree[d_code(dist)].Freq++; \
     flush = (s->last_lit == s->lit_bufsize-1); \
   }
-#else
-# define _tr_tally_lit(s, c, flush) flush = _tr_tally(s, 0, c)
-# define _tr_tally_dist(s, distance, length, flush) \
-              flush = _tr_tally(s, distance, length)
-#endif
 
 #endif /* DEFLATE_H */

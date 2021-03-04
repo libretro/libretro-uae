@@ -87,9 +87,9 @@
 #      define uae_msleep(msecs) SDL_Delay (msecs)
 #     else
 #      error "No system sleep function found"
-#endif // Get uae_msleep working
+#endif
 
-#endif // __LIBRETRO__
+#endif /* __LIBRETRO__ */
 void sleep_test (void);
 
-#endif // UAE_SLEEP_H
+#endif /* UAE_SLEEP_H */

@@ -232,7 +232,7 @@ extern long     timezone;		/* not defined in time.h */
 #endif
 
 /* ------------------------------------------------------------------------ */
-#if (defined(FTIME) || defined(GETTIMEOFDAY) || defined(TZSET)) && !defined(__SWITCH__) && !defined(VITA) && !defined(__CELLOS_LV2__)
+#if (defined(FTIME) || defined(GETTIMEOFDAY) || defined(TZSET))
 static long
 gettz()
 #ifdef TZSET
@@ -260,7 +260,7 @@ gettz()
 
 	time(&tt);
 	return -localtime(&tt)->tm_gmtoff;
-#else /* HAVE_TM_ZONE */
+#elseif defined(GETTIMEOFDAY) /* HAVE_TM_ZONE */
 	struct timeval  tp;
 	struct timezone tzp;
 	gettimeofday(&tp, &tzp);/* specific to 4.3BSD */
@@ -695,7 +695,7 @@ void init_header(char *name, struct stat *v_stat, LzHeader *hdr)
 		bcopy(LZHDIRS_METHOD, hdr->method, METHOD_TYPE_STRAGE);
 		hdr->attribute = GENERIC_DIRECTORY_ATTRIBUTE;
 		hdr->original_size = 0;
-#if !defined(ANDROID) && !defined(__SWITCH__) && !defined(WIIU) && !defined(VITA) && !defined(__CELLOS_LV2__)
+#if 0
 		len = readlink(name, lkname, 256);
 #endif
 		lkname[len] = (char)'\0';

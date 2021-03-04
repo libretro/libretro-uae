@@ -30,7 +30,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#ifndef __CELLOS_LV2__
+#ifdef HAVE_SIGNAL
 #include <signal.h>
 #endif
 

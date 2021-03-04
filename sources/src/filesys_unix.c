@@ -12,10 +12,8 @@
 
 #include "filesys.h"
 
-#ifndef __CELLOS_LV2__
 #if HAVE_SYS_PARAM_H
 # include <sys/param.h>
-#endif
 #endif
 
 #if HAVE_SYS_MOUNT_H

@@ -593,7 +593,7 @@ void fixup_prefs (struct uae_prefs *p)
 
 int quit_program = 0;
 #ifdef __LIBRETRO__
-int libretro_frame_end = 0;
+unsigned int libretro_frame_end = 0;
 #endif
 static int restart_program;
 static TCHAR restart_config[MAX_DPATH];
@@ -839,7 +839,6 @@ static void parse_cmdline (int argc, TCHAR **argv)
 
 static void parse_cmdline_and_init_file (int argc, TCHAR **argv)
 {
-
 	_tcscpy (optionsfile, _T(""));
 
 #ifdef OPTIONS_IN_HOME
@@ -854,13 +853,8 @@ static void parse_cmdline_and_init_file (int argc, TCHAR **argv)
 #endif
 
 #ifdef __LIBRETRO__
-#ifdef ANDROID
-_tcscpy (optionsfile, "/mnt/sdcard/euae");
-_tcscat (optionsfile, _T("/"));
-#else
-_tcscpy (optionsfile, ".");
-_tcscat (optionsfile, _T("/"));
-#endif
+	_tcscpy (optionsfile, ".");
+	_tcscat (optionsfile, _T("/"));
 #endif
 	parse_cmdline_2 (argc, argv);
 

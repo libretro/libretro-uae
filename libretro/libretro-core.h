@@ -8,18 +8,6 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif
-
-#ifdef VITA
-#include <psp2/types.h>
-#include <psp2/io/dirent.h>
-#include <psp2/kernel/threadmgr.h>
-#define rmdir(name) sceIoRmdir(name)
-#endif
-
 #include "zfile.h"
 
 #include "libretro-glue.h"
@@ -43,29 +31,11 @@ extern char retro_system_directory[512];
 extern struct zfile *retro_deserialize_file;
 extern dc_storage *retro_dc;
 extern retro_log_printf_t log_cb;
-
-#ifndef _WIN32
-#define TCHAR char /* from sysdeps.h */
-#endif
-
-/* Types */
-#define UINT16 uint16_t
-#define UINT32 uint32_t
-typedef uint32_t uint32;
-typedef uint8_t uint8;
-
-int umain (int argc, TCHAR **argv);
+extern long retro_ticks(void);
+extern int umain (int argc, TCHAR **argv);
 
 /* File helpers functions */
 #define RETRO_PATH_MAX 512
-
-#ifdef _WIN32
-#define RETRO_PATH_SEPARATOR        "\\"
-/* Windows also support the unix path separator */
-#define RETRO_PATH_SEPARATOR_ALT    "/"
-#else
-#define RETRO_PATH_SEPARATOR        "/"
-#endif
 
 #ifdef WIN32
 #define DIR_SEP_STR "\\"

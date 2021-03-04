@@ -45,12 +45,12 @@ char* dirname_int(const char* filename)
    char* right;
    int len = strlen(filename);
 
-   if ((right = strrchr(filename, RETRO_PATH_SEPARATOR[0])) != NULL)
+   if ((right = strrchr(filename, DIR_SEP_CHR)) != NULL)
       return strleft(filename, len - strlen(right));
 
 #ifdef _WIN32
-   /* Alternative search for windows beceause it also support the UNIX seperator */
-   if ((right = strrchr(filename, RETRO_PATH_SEPARATOR_ALT[0])) != NULL)
+   /* Alternative search for Windows because it also support the UNIX separator */
+   if ((right = strrchr(filename, '/')) != NULL)
       return strleft(filename, len - strlen(right));
 #endif
 

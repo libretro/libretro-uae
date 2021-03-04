@@ -16,12 +16,6 @@
 #include "disk.h"
 #include "hrtimer.h"
 
-#ifdef __CELLOS_LV2__
-#include "ps3_headers.h"
-#else
-#include <sys/types.h>
-#endif
-
 static retro_input_state_t input_state_cb;
 static retro_input_poll_t input_poll_cb;
 
@@ -214,12 +208,6 @@ void emu_function(int function)
          break;
    }
 }
-
-/* in milliseconds */
-long GetTicks(void)
-{
-   return osdep_gethrtime()/1000;
-} 
 
 static unsigned char* joystick_value_human(int val[16], int uae_device)
 {
@@ -1355,7 +1343,7 @@ void update_input(unsigned disable_keys)
    static int jbt[2][24] = {0};
    static int kbt[EMU_FUNCTION_COUNT] = {0};
 
-   now = GetTicks();
+   now = retro_ticks() / 1000;
 
    if (vkey_sticky && last_vkey_pressed != -1 && last_vkey_pressed > 0)
    {
@@ -2362,7 +2350,7 @@ void retro_poll_event()
    static long dpadmouse_press[2] = {0};
    static int dpadmouse_pressed[2] = {0};
    static long now = 0;
-   now = GetTicks();
+   now = retro_ticks();
 
    int uae_mouse_x[2] = {0}, uae_mouse_y[2] = {0};
    unsigned int uae_mouse_l[2] = {0}, uae_mouse_r[2] = {0}, uae_mouse_m[2] = {0};

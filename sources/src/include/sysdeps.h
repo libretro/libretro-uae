@@ -536,5 +536,53 @@ DWORD GetLastError(void);
 typedef int64_t off64_t;
 #endif
 
+#ifndef O_NDELAY
+#define O_NDELAY 0
+#endif
+
+/* Types */
+#define UINT16 uint16_t
+#define UINT32 uint32_t
+typedef uint32_t uint32;
+typedef uint8_t uint8;
+
+#ifndef _WIN32
+#define TCHAR char
+#endif
+
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
+#if defined(__CELLOS_LV2__) || defined(_WIN32) || defined(WIIU) || defined(__SWITCH__) || defined(VITA)
+#define tzset()
+#define timezone 0
+#define daylight 0
+#define lstat stat
+#endif
+
+#ifdef VITA
+#include <psp2/types.h>
+#include <psp2/io/dirent.h>
+#include <psp2/kernel/threadmgr.h>
+#define mkdir(name, mode) sceIoMkdir(name, mode)
+#define rmdir(name) sceIoRmdir(name)
+#define chmod(a, b)
+#endif
+
+#ifdef __CELLOS_LV2__
+#include <ctype.h>
+#include "ps3_headers.h"
+#endif
+
+#ifdef __LIBRETRO__
+#include "string/stdstring.h"
+
+#ifdef WIIU
+#include <features/features_cpu.h>
+#endif
+
+#endif /* __LIBRETRO__ */
 
 #endif /* UAE_SYSDEPS_H */

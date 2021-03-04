@@ -11,21 +11,12 @@
 #include "sysconfig.h"
 #include "sysdeps.h"
 
-#include "options.h"
-#include "autoconf.h"
-#ifndef WIIU
-#ifndef ANDROID
-#ifndef __CELLOS_LV2__
-#ifndef _WIN32
-#ifndef VITA
-#ifdef __APPLE__
+#ifdef HAVE_SYS_SYSCTL_H
 #include <sys/sysctl.h>
 #endif
-#endif
-#endif
-#endif
-#endif
-#endif
+
+#include "options.h"
+#include "autoconf.h"
 #include "include/memory_uae.h"
 #include "misc.h"
 

@@ -14,13 +14,6 @@
 #include "fsdb.h"
 #include "misc.h"
 
-#ifdef __LIBRETRO__
-#include "string/stdstring.h"
-#ifdef __CELLOS_LV2__
-#include "ps3_headers.h"
-#endif
-#endif
-
 /* these are deadly (but I think allowed on the Amiga): */
 #define NUM_EVILCHARS 9
 static TCHAR evilchars[NUM_EVILCHARS] = { '%', '\\', '*', '?', '\"', '/', '<', '>', '|' };

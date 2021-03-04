@@ -32,10 +32,6 @@ unsigned long now_time;
 unsigned long stat_time;
 unsigned long stat_count;
 
-#if 0
-static unsigned long scaled_sample_evtime;
-#endif
-
 void sound_mute (int newmute)
 {
 }
@@ -99,11 +95,6 @@ int init_sound (void)
     sndbufpt = sndbuffer;
     sample_handler =  sample16s_handler;
     sound_initialized = 1;
-
-#if 0
-    init_sound_table16();
-    scaled_sample_evtime = (unsigned long)(MAXHPOS_PAL * MAXVPOS_PAL * VBLANK_HZ_PAL + rate - 1) / DEFAULT_SOUND_FREQ;
-#endif
 
 #ifdef DRIVESOUND
 	driveclick_init();

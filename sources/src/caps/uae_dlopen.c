@@ -8,7 +8,7 @@
 #include "windows.h"
 #define UAE_DLOPEN_SUPPORT 1
 #else
-#if defined(HAVE_DLOPEN) && !defined(WIIU) && !defined(__CELLOS_LV2__) // According to travis it seems that WiiU and PS3 wrongly report to HAVE_DLOPEN...
+#if defined(HAVE_DLOPEN)
 #include <dlfcn.h>
 #define UAE_DLOPEN_SUPPORT 1
 #endif

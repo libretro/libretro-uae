@@ -1,7 +1,12 @@
 /* gzguts.h -- zlib internal header definitions for gz* operations
- * Copyright (C) 2004, 2005, 2010, 2011, 2012 Mark Adler
+ * Copyright (C) 2004, 2005, 2010, 2011, 2012, 2013 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
+
+#ifndef _GZGUTS_H
+#define _GZGUTS_H
+
+#define NO_GZCOMPRESS
 
 #ifdef _LARGEFILE64_SOURCE
 #  ifndef _LARGEFILE_SOURCE
@@ -19,7 +24,7 @@
 #endif
 
 #include <stdio.h>
-#include "zlib.h"
+#include <zlib.h>
 #ifdef STDC
 #  include <string.h>
 #  include <stdlib.h>
@@ -29,10 +34,19 @@
 
 #ifdef _WIN32
 #  include <stddef.h>
+#else
+#  include <unistd.h>
 #endif
 
 #if defined(__TURBOC__) || defined(_MSC_VER) || defined(_WIN32)
 #  include <io.h>
+#endif
+
+#ifdef WINAPI_FAMILY
+#  define open _open
+#  define read _read
+#  define write _write
+#  define close _close
 #endif
 
 #ifdef NO_DEFLATE       /* for compatibility with old definition */
@@ -60,7 +74,7 @@
 #ifndef HAVE_VSNPRINTF
 #  ifdef MSDOS
 /* vsnprintf may exist on some MS-DOS compilers (DJGPP?),
- but for now we just assume it doesn't. */
+   but for now we just assume it doesn't. */
 #    define NO_vsnprintf
 #  endif
 #  ifdef __TURBOC__
@@ -86,6 +100,16 @@
 #  ifdef __MVS__
 #    define NO_vsnprintf
 #  endif
+#endif
+
+/* unlike snprintf (which is required in C99, yet still not supported by
+   Microsoft more than a decade later!), _snprintf does not guarantee null
+   termination of the result -- however this is only used in gzlib.c where
+   the result is assured to fit in the space provided */
+#ifdef _MSC_VER
+#ifndef snprintf
+#define snprintf _snprintf
+#endif
 #endif
 
 #ifndef local
@@ -114,10 +138,14 @@
 
 /* provide prototypes for these when building zlib without LFS */
 #if !defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0
-    ZEXTERN gzFile ZEXPORT gzopen64 OF((const char *, const char *));
-    ZEXTERN z_off64_t ZEXPORT gzseek64 OF((gzFile, z_off64_t, int));
-    ZEXTERN z_off64_t ZEXPORT gztell64 OF((gzFile));
-    ZEXTERN z_off64_t ZEXPORT gzoffset64 OF((gzFile));
+#ifndef z_off64_t
+#define z_off64_t z_off_t
+#endif
+
+    gzFile gzopen64 OF((const char *, const char *));
+    z_off64_t gzseek64 OF((gzFile, z_off64_t, int));
+    z_off64_t gztell64 OF((gzFile));
+    z_off64_t gzoffset64 OF((gzFile));
 #endif
 
 /* default memLevel */
@@ -127,7 +155,8 @@
 #  define DEF_MEM_LEVEL  MAX_MEM_LEVEL
 #endif
 
-/* default i/o buffer size -- double this for output when reading */
+/* default i/o buffer size -- double this for output when reading (this and
+   twice this must be able to fit in an unsigned type) */
 #define GZBUFSIZE 8192
 
 /* gzip modes, also provide a little integrity check on the passed structure */
@@ -138,8 +167,10 @@
 
 /* values for gz_state how */
 #define LOOK 0      /* look for a gzip header */
-#define COPY 1      /* copy input directly */
-#define GZIP 2      /* decompress a gzip stream */
+#define MODE_COPY 1      /* copy input directly */
+#define MODE_GZIP 2      /* decompress a gzip stream */
+
+#include "gzfile.h"
 
 /* internal gzip file state data structure */
 typedef struct {
@@ -190,4 +221,6 @@ char ZLIB_INTERNAL *gz_strwinerror OF((DWORD error));
 #else
 unsigned ZLIB_INTERNAL gz_intmax OF((void));
 #  define GT_OFF(x) (sizeof(int) == sizeof(z_off64_t) && (x) > gz_intmax())
+#endif
+
 #endif

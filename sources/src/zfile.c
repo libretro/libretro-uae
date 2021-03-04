@@ -24,7 +24,9 @@
 #include "diskutil.h"
 #include "fdi2raw.h"
 
+#ifndef __LIBRETRO__
 #include "archivers/zip/unzip.h"
+#endif
 #include "archivers/dms/cdata.h"
 #include "archivers/dms/pfile.h"
 #include "archivers/wrp/warp.h"

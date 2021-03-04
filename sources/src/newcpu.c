@@ -5017,9 +5017,10 @@ void m68k_go (int may_quit)
 				savestate_check ();
 			}
 		}
-
+#ifndef __LIBRETRO__
 		if (changed_prefs.inprecfile[0] && input_record)
 			inprec_prepare_record (savestate_fname[0] ? savestate_fname : NULL);
+#endif
 
 		set_cpu_tracer (false);
 
