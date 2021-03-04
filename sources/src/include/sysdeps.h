@@ -367,19 +367,12 @@ extern void mallocemu_free (void *ptr);
 #define ASM_SYM_FOR_FUNC(a)
 #endif
 
-#ifdef __CELLOS_LV2__
-#define timezone 0
-#define daylight 0
-#endif
-
 #ifdef ANDROID
 #include "targets/t-android.h"
 #else
 #include "target.h"
 #endif
 
-
-//#include "target.h"
 #if !defined(RECUR) && !defined(NO_MACHDEP)
 #include "machdep/machdep.h"
 #include "gfxdep/gfx.h"
@@ -557,7 +550,7 @@ typedef uint8_t uint8;
 
 #if defined(__CELLOS_LV2__) || defined(_WIN32) || defined(WIIU) || defined(__SWITCH__) || defined(VITA)
 #define tzset()
-#define timezone 0
+#define timezone() 0
 #define daylight 0
 #define lstat stat
 #endif
