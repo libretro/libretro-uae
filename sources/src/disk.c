@@ -60,6 +60,7 @@ extern dc_storage *dc;
 #endif
 
 #undef CATWEASEL
+#undef TZSET
 
 /* external prototypes */
 extern uae_u32 uaerand (void);
@@ -284,7 +285,9 @@ static void disk_date (uae_u8 *p)
 	struct mytimeval mtv;
 
 	gettimeofday (&tv, NULL);
+#if defined(TZSET)
 	tv.tv_sec -= timezone;
+#endif
 	mtv.tv_sec = tv.tv_sec;
 	mtv.tv_usec = tv.tv_usec;
 	timeval_to_amiga (&mtv, &days, &mins, &ticks);

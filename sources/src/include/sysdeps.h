@@ -555,7 +555,6 @@ typedef uint8_t uint8;
 #define mkdir(name, mode) sceIoMkdir(name, mode)
 #define rmdir(name) sceIoRmdir(name)
 #define chmod(a, b)
-#define timezone()
 #endif
 
 #ifdef __CELLOS_LV2__
@@ -565,11 +564,9 @@ typedef uint8_t uint8;
 
 #ifdef __LIBRETRO__
 #include "string/stdstring.h"
-
 #ifdef WIIU
 #include <features/features_cpu.h>
 #endif
-
 #endif /* __LIBRETRO__ */
 
 #ifndef lstat
@@ -584,6 +581,5 @@ typedef uint8_t uint8;
 #ifndef daylight
 #define daylight 0
 #endif
-
 
 #endif /* UAE_SYSDEPS_H */
