@@ -4866,6 +4866,10 @@ static bool retro_create_config()
             cpu_cycle_exact_force = true;
       }
       fclose(configfile);
+
+      if (real_ntsc && video_config & PUAE_VIDEO_PAL ||
+         !real_ntsc && video_config & PUAE_VIDEO_NTSC)
+         forced_video = true;
    }
 
    if (tmp_str)
@@ -4877,8 +4881,9 @@ static bool retro_create_config()
 
 void retro_reset(void)
 {
+   if (!forced_video)
+      video_config_old = 0;
    fake_ntsc = false;
-   video_config_old = 0;
    update_variables();
    retro_create_config();
    uae_restart(1, RPATH); /* 1=nogui */
@@ -5303,6 +5308,7 @@ static bool retro_update_av_info(void)
          video_config &= ~PUAE_VIDEO_PAL;
          video_config_geometry = video_config;
          fake_ntsc = true;
+         forced_video = true;
       }
 
       /* If still no change */

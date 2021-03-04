@@ -1595,7 +1595,7 @@ static void audio_state_channel2 (int nr, bool perfin)
 	}
 	audio_activate ();
 
-	if (usehacks() && (cdp->state == 2 || cdp->state == 3)) {
+	if (cdp->state == 2 || cdp->state == 3) {
 		if (!chan_ena && old_dma) {
 			// DMA switched off, state=2/3 and "too fast CPU": set flag
 			cdp->dmaofftime_active = true;
@@ -1606,11 +1606,19 @@ static void audio_state_channel2 (int nr, bool perfin)
 		// disable audio DMA, then set new sample, then re-enable without actually wanting to start
 		// new sample immediately.
 		if (cdp->dmaofftime_active && !old_dma && chan_ena) {
+#ifdef __LIBRETRO__
+			static int warned = 1;
+#else
 			static int warned = 100;
+#endif
 			// We are still in state=2/3 and program is going to re-enable
 			// DMA. Force state to zero to prevent CPU timed DMA wait
 			// routines in common tracker players to lose notes.
+#ifdef __LIBRETRO__
+			if (usehacks()) {
+#else
 			if (usehacks() && (currprefs.cachesize || (regs.instruction_cnt - cdp->dmaofftime_cpu_cnt) >= 60)) {
+#endif
 				if (warned >= 0) {
 					warned--;
 					write_log(_T("Audio %d DMA wait hack: ENABLED. OFF=%08x, ON=%08x\n"), nr, cdp->dmaofftime_pc, M68K_GETPC);
