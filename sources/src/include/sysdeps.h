@@ -548,9 +548,9 @@ typedef uint8_t uint8;
 #include <windows.h>
 #endif
 
-#if defined(__CELLOS_LV2__) || defined(_WIN32) || defined(WIIU) || defined(__SWITCH__) || defined(VITA)
+#if defined(__CELLOS_LV2__) || defined(_WIN32) || defined(WIIU) || defined(__SWITCH__)
 #define tzset()
-#define timezone() 0
+#define timezone 0
 #define daylight 0
 #define lstat stat
 #endif
@@ -562,6 +562,10 @@ typedef uint8_t uint8;
 #define mkdir(name, mode) sceIoMkdir(name, mode)
 #define rmdir(name) sceIoRmdir(name)
 #define chmod(a, b)
+#define tzset()
+#define timezone()
+#define daylight 0
+#define lstat stat
 #endif
 
 #ifdef __CELLOS_LV2__
