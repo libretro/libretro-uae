@@ -30,6 +30,8 @@
 
 #include <zlib.h>
 
+#undef TZSET
+
 #define unpack_log write_log
 #undef unpack_log
 #define unpack_log(...) { }
@@ -53,7 +55,7 @@ static time_t fromdostime (uae_u32 dd)
 	struct tm* tm_local;
 	tm_local = localtime(&time_now);
 	t -= tm_local->tm_gmtoff;
-#else
+#elif defined(TZSET)
 	t -= (time_t)timezone;
 #endif
 	return t;
@@ -334,7 +336,9 @@ struct zvolume *archive_directory_tar (struct zfile *z)
 			zai.tv.tv_sec += tm_local->tm_gmtoff;
 			if (tm_local->tm_isdst)
 #else
+#if defined(TZSET)
 			zai.tv.tv_sec += timezone;
+#endif
 			if (daylight)
 #endif
 				zai.tv.tv_sec -= 1 * 60 * 60;
