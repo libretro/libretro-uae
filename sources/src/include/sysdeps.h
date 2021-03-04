@@ -548,13 +548,6 @@ typedef uint8_t uint8;
 #include <windows.h>
 #endif
 
-#if defined(__CELLOS_LV2__) || defined(_WIN32) || defined(WIIU) || defined(__SWITCH__)
-#define tzset()
-#define timezone 0
-#define daylight 0
-#define lstat stat
-#endif
-
 #ifdef VITA
 #include <psp2/types.h>
 #include <psp2/io/dirent.h>
@@ -562,10 +555,7 @@ typedef uint8_t uint8;
 #define mkdir(name, mode) sceIoMkdir(name, mode)
 #define rmdir(name) sceIoRmdir(name)
 #define chmod(a, b)
-#define tzset()
 #define timezone()
-#define daylight 0
-#define lstat stat
 #endif
 
 #ifdef __CELLOS_LV2__
@@ -581,5 +571,19 @@ typedef uint8_t uint8;
 #endif
 
 #endif /* __LIBRETRO__ */
+
+#ifndef lstat
+#define lstat stat
+#endif
+#ifndef tzset
+#define tzset()
+#endif
+#ifndef timezone
+#define timezone 0
+#endif
+#ifndef daylight
+#define daylight 0
+#endif
+
 
 #endif /* UAE_SYSDEPS_H */
