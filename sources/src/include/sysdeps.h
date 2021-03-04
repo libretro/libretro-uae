@@ -555,6 +555,7 @@ typedef uint8_t uint8;
 #define mkdir(name, mode) sceIoMkdir(name, mode)
 #define rmdir(name) sceIoRmdir(name)
 #define chmod(a, b)
+#define timezone()
 #endif
 
 #ifdef __CELLOS_LV2__
