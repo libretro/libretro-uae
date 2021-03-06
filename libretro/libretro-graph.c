@@ -8,7 +8,7 @@
 
 #include "font.i"
 
-static unsigned char *linesurf = NULL;
+static unsigned short int *linesurf = NULL;
 static int linesurf_w          = 0;
 static int linesurf_h          = 0;
 
@@ -50,7 +50,17 @@ static int linesurf32_h        = 0;
    (*(out)) = ((fg + color_50 + ((fg ^ color_50) & 0x10101)) >> 1); \
 }
 
-void DrawFBoxBmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color, libretro_graph_alpha_t alpha)
+
+
+void draw_fbox(int x, int y, int dx, int dy, uint32_t color, libretro_graph_alpha_t alpha)
+{
+   if (pix_bytes == 4)
+      draw_fbox_bmp32((uint32_t *)retro_bmp, x, y, dx, dy, color, alpha);
+   else
+      draw_fbox_bmp(retro_bmp, x, y, dx, dy, color, alpha);
+}
+
+void draw_fbox_bmp(unsigned short *buffer, int x, int y, int dx, int dy, uint32_t color, libretro_graph_alpha_t alpha)
 {
    int i, j;
 
@@ -108,7 +118,7 @@ void DrawFBoxBmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned 
    }
 }
 
-void DrawFBoxBmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t color, libretro_graph_alpha_t alpha)
+void draw_fbox_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t color, libretro_graph_alpha_t alpha)
 {
    int i, j;
 
@@ -168,7 +178,9 @@ void DrawFBoxBmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t colo
    }
 }
 
-void DrawBoxBmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color)
+
+
+void draw_box_bmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color)
 {
    int i, j, idx;
 
@@ -189,7 +201,7 @@ void DrawBoxBmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned s
    }
 }
 
-void DrawBoxBmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t color)
+void draw_box_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t color)
 {
    int i, j, idx;
 
@@ -210,7 +222,9 @@ void DrawBoxBmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t color
    }
 }
 
-void DrawPointBmp(unsigned short *buffer, int x, int y, unsigned short color)
+
+
+void draw_point_bmp(unsigned short *buffer, int x, int y, unsigned short color)
 {
    int idx;
 
@@ -218,41 +232,45 @@ void DrawPointBmp(unsigned short *buffer, int x, int y, unsigned short color)
    buffer[idx] = color;
 }
 
-void DrawHlineBmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color)
-{
-   int i, j, idx;
 
-   (void)j;
 
-   for (i=x; i<x+dx; i++)
-   {
-      idx = i+y*retrow;
-      buffer[idx] = color;
-   }
-}
-
-void DrawHlineBmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t color)
-{
-   int i, j, idx;
-
-   (void)j;
-
-   for (i=x; i<x+dx; i++)
-   {
-      idx = i+y*retrow;
-      buffer[idx] = color;
-   }
-}
-
-void DrawHline(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color)
+void draw_hline(int x, int y, int dx, int dy, uint32_t color)
 {
    if (pix_bytes == 4)
-      DrawHlineBmp32((uint32_t *)buffer, x, y, dx, dy, (uint32_t)color);
+      draw_hline_bmp32((uint32_t *)retro_bmp, x, y, dx, dy, color);
    else
-      DrawHlineBmp(buffer, x, y, dx, dy, color);
+      draw_hline_bmp(retro_bmp, x, y, dx, dy, color);
 }
 
-void DrawVlineBmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color)
+void draw_hline_bmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color)
+{
+   int i, j, idx;
+
+   (void)j;
+
+   for (i=x; i<x+dx; i++)
+   {
+      idx = i+y*retrow;
+      buffer[idx] = color;
+   }
+}
+
+void draw_hline_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t color)
+{
+   int i, j, idx;
+
+   (void)j;
+
+   for (i=x; i<x+dx; i++)
+   {
+      idx = i+y*retrow;
+      buffer[idx] = color;
+   }
+}
+
+
+
+void draw_vline_bmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color)
 {
    int i, j, idx;
 
@@ -265,7 +283,7 @@ void DrawVlineBmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned
    }	
 }
 
-void DrawlineBmp(unsigned short *buffer, int x1, int y1, int x2, int y2, unsigned short color)
+void draw_line_bmp(unsigned short *buffer, int x1, int y1, int x2, int y2, unsigned short color)
 {
    int pixx, pixy, x, y, dx, dy, sx, sy, swaptmp, idx;
 
@@ -278,12 +296,12 @@ void DrawlineBmp(unsigned short *buffer, int x1, int y1, int x2, int y2, unsigne
    {
       if (dy > 0)
       {
-         DrawVlineBmp(buffer, x1, y1, 0, dy, color);
+         draw_vline_bmp(buffer, x1, y1, 0, dy, color);
          return;
       }
       else if (dy < 0)
       {
-         DrawVlineBmp(buffer, x1, y2, 0, -dy, color);
+         draw_vline_bmp(buffer, x1, y2, 0, -dy, color);
          return;
       }
       else
@@ -298,12 +316,12 @@ void DrawlineBmp(unsigned short *buffer, int x1, int y1, int x2, int y2, unsigne
    {
       if (dx > 0)
       {
-         DrawHlineBmp(buffer, x1, y1, dx, 0, color);
+         draw_hline_bmp(buffer, x1, y1, dx, 0, color);
          return;
       }
       else if (dx < 0)
       {
-         DrawHlineBmp(buffer, x2, y1, -dx,0, color);
+         draw_hline_bmp(buffer, x2, y1, -dx,0, color);
          return;
       }
    }
@@ -344,21 +362,343 @@ void DrawlineBmp(unsigned short *buffer, int x1, int y1, int x2, int y2, unsigne
    }
 }
 
-void Draw_string(unsigned short *surf, signed short int x, signed short int y,
-      const char *string, unsigned short maxstrlen,
-      unsigned short xscale, unsigned short yscale,
-      unsigned short fg, unsigned short bg, libretro_graph_alpha_t alpha, bool draw_bg)
-{
-   int k, strlen;
-   int xrepeat, yrepeat;
-   signed short int ypixel;
-   unsigned short *yptr; 
-   int col, bit;
-   unsigned char b;
 
-   (void)k;
+static void draw_char_1pass(const char *string, unsigned int strlen,
+      int charw, int charh,
+      unsigned short int xscale, unsigned short int yscale,
+      unsigned short int fg, unsigned short int bg)
+{
+   unsigned char b = 0;
+   unsigned short int col = 0;
+   unsigned short int bit = 0;
+   unsigned short int ypixel = 0;
+   unsigned short int xrepeat = 0;
+   unsigned short int yrepeat = 0;
+   unsigned short int surfw = 0;
+
+   unsigned short int *yptr;
+
+   if (!linesurf)
+      return;
+
+   surfw = linesurf_w;
+   yptr  = &linesurf[0];
+
+   for (ypixel = 0; ypixel < charh + 1; ypixel++)
+   {
+      /* Fill */
+      for (col = 0; col < strlen; col++)
+      {
+         b = font_array[(string[col] ^ 0x80)*charw + ypixel - 1];
+         for (bit = 0; bit < charw + 1; bit++, yptr++)
+         {
+            *yptr = (b & (1 << (charw - 1 - bit) + 1)) ? fg : bg;
+            for (xrepeat = 1; xrepeat < xscale; xrepeat++, yptr++)
+               yptr[1] = *yptr;
+         }
+      }
+
+      /* Scale */
+      for (yrepeat = 1; yrepeat < yscale; yrepeat++)
+         for (xrepeat = 0; xrepeat < surfw; xrepeat++, yptr++)
+            *yptr = yptr[-surfw];
+   }
+}
+
+static void draw_char_1pass32(const char *string, unsigned int strlen,
+      int charw, int charh,
+      unsigned short int xscale, unsigned short int yscale,
+      uint32_t fg, uint32_t bg)
+{
+   unsigned char b = 0;
+   unsigned short int col = 0;
+   unsigned short int bit = 0;
+   unsigned short int ypixel = 0;
+   unsigned short int xrepeat = 0;
+   unsigned short int yrepeat = 0;
+   unsigned short int surfw = 0;
+
+   uint32_t *yptr32;
+
+   if (!linesurf32)
+      return;
+
+   surfw  = linesurf32_w;
+   yptr32 = &linesurf32[0];
+
+   for (ypixel = 0; ypixel < charh + 1; ypixel++)
+   {
+      /* Fill */
+      for (col = 0; col < strlen; col++)
+      {
+         b = font_array[(string[col] ^ 0x80)*charw + ypixel - 1];
+         for (bit = 0; bit < charw + 1; bit++, yptr32++)
+         {
+            *yptr32 = (b & (1 << (charw - 1 - bit) + 1)) ? fg : bg;
+            for (xrepeat = 1; xrepeat < xscale; xrepeat++, yptr32++)
+               yptr32[1] = *yptr32;
+         }
+      }
+
+      /* Scale */
+      for (yrepeat = 1; yrepeat < yscale; yrepeat++)
+         for (xrepeat = 0; xrepeat < surfw; xrepeat++, yptr32++)
+            *yptr32 = yptr32[-surfw];
+   }
+}
+
+static void draw_char_2pass(unsigned short *surf,
+      unsigned short int x, unsigned short int y,
+      unsigned short int xscale, unsigned short int yscale,
+      unsigned short int fg, unsigned short int bg, libretro_graph_bg_t draw_bg)
+{
+   unsigned short int xrepeat = 0;
+   unsigned short int yrepeat = 0;
+   unsigned short int surfw = 0;
+   unsigned short int surfh = 0;
+   unsigned short int surfhxscale = 0;
+
+   unsigned short int *yptr;
+   unsigned short *surf_ptr;
+
+   if (!linesurf)
+      return;
+
+   surfw = linesurf_w;
+   surfh = linesurf_h;
+   yptr  = &linesurf[0];
+
+   surfhxscale = surfh * xscale;
+
+   switch (draw_bg)
+   {
+      case GRAPH_BG_ALL:
+         for (yrepeat = y - yscale; yrepeat < surfh + y - yscale; yrepeat++)
+         {
+            surf_ptr = surf + (yrepeat * retrow) + x - xscale;
+            for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr++)
+            {
+               if (*yptr == bg)
+               {
+                  if (yrepeat > y - yscale && yrepeat < surfh + y - (yscale * 2) &&
+                      xrepeat >= x + xscale && xrepeat < surfw + x - xscale)
+                     ; /* no-op */
+                  else
+                     *yptr = 0;
+               }
+
+               if (*yptr != 0)
+                  *surf_ptr = *yptr;
+               surf_ptr++;
+            }
+         }
+         break;
+
+      case GRAPH_BG_SHADOW:
+         for (yrepeat = y - yscale; yrepeat < surfh + y - yscale; yrepeat++)
+         {
+            surf_ptr = surf + (yrepeat * retrow) + x - xscale;
+            for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr++)
+            {
+               if (*yptr == bg)
+               {
+                  /* Bottom right */
+                  if (yptr[-surfhxscale-xscale] == fg)
+                     ; /* no-op */
+                  else
+                     *yptr = 0;
+               }
+
+               if (*yptr != 0)
+                  *surf_ptr = *yptr;
+               surf_ptr++;
+            }
+         }
+         break;
+
+      case GRAPH_BG_OUTLINE:
+         for (yrepeat = y - yscale; yrepeat < surfh + y - yscale; yrepeat++)
+         {
+            surf_ptr = surf + (yrepeat * retrow) + x - xscale;
+            for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr++)
+            {
+               if (*yptr == bg)
+               {
+                  if (
+                      /* Diagonals */
+                      yptr[-surfhxscale-xscale] == fg || yptr[+surfhxscale-xscale] == fg ||
+                      yptr[-surfhxscale+xscale] == fg || yptr[+surfhxscale+xscale] == fg ||
+                      /* Verticals */
+                      yptr[-surfhxscale] == fg        || yptr[+surfhxscale] == fg        ||
+                      /* Horizontals */
+                      yptr[-xscale] == fg             || yptr[+xscale] == fg
+                  )
+                     ; /* no-op */
+                  else
+                     *yptr = 0;
+               }
+
+               if (*yptr != 0)
+                  *surf_ptr = *yptr;
+               surf_ptr++;
+            }
+         }
+         break;
+
+      case GRAPH_BG_NONE:
+      default:
+         for (yrepeat = y - yscale; yrepeat < surfh + y - yscale; yrepeat++)
+         {
+            surf_ptr = surf + (yrepeat * retrow) + x - xscale;
+            for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr++)
+            {
+               if (*yptr != 0)
+                  *surf_ptr = *yptr;
+               surf_ptr++;
+            }
+         }
+         break;
+   }
+}
+
+static void draw_char_2pass32(uint32_t *surf,
+      unsigned short int x, unsigned short int y,
+      unsigned short int xscale, unsigned short int yscale,
+      uint32_t fg, uint32_t bg, libretro_graph_bg_t draw_bg)
+{
+   unsigned short int xrepeat = 0;
+   unsigned short int yrepeat = 0;
+   unsigned short int surfw = 0;
+   unsigned short int surfh = 0;
+   unsigned short int surfhxscale = 0;
+
+   uint32_t *yptr32;
+   uint32_t *surf_ptr32;
+
+   if (!linesurf32)
+      return;
+
+   surfw  = linesurf32_w;
+   surfh  = linesurf32_h;
+   yptr32 = &linesurf32[0];
+
+   surfhxscale = surfh * xscale;
+
+   switch (draw_bg)
+   {
+      case GRAPH_BG_ALL:
+         for (yrepeat = y - yscale; yrepeat < surfh + y - yscale; yrepeat++)
+         {
+            surf_ptr32 = surf + (yrepeat * retrow) + x - xscale;
+            for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr32++)
+            {
+               if (*yptr32 == bg)
+               {
+                  if (yrepeat > y - yscale && yrepeat < surfh + y - (yscale * 2) &&
+                      xrepeat >= x + xscale && xrepeat < surfw + x - xscale)
+                     ; /* no-op */
+                  else
+                     *yptr32 = 0;
+               }
+
+               if (*yptr32 != 0)
+                  *surf_ptr32 = *yptr32;
+               surf_ptr32++;
+            }
+         }
+         break;
+
+      case GRAPH_BG_SHADOW:
+         for (yrepeat = y - yscale; yrepeat < surfh + y - yscale; yrepeat++)
+         {
+            surf_ptr32 = surf + (yrepeat * retrow) + x - xscale;
+            for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr32++)
+            {
+               if (*yptr32 == bg)
+               {
+                  /* Bottom right */
+                  if (yptr32[-surfhxscale-xscale] == fg)
+                     ; /* no-op */
+                  else
+                     *yptr32 = 0;
+               }
+
+               if (*yptr32 != 0)
+                  *surf_ptr32 = *yptr32;
+               surf_ptr32++;
+            }
+         }
+         break;
+
+      case GRAPH_BG_OUTLINE:
+         for (yrepeat = y - yscale; yrepeat < surfh + y - yscale; yrepeat++)
+         {
+            surf_ptr32 = surf + (yrepeat * retrow) + x - xscale;
+            for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr32++)
+            {
+               if (*yptr32 == bg)
+               {
+                  if (
+                      /* Diagonals */
+                      yptr32[-surfhxscale-xscale] == fg || yptr32[+surfhxscale-xscale] == fg ||
+                      yptr32[-surfhxscale+xscale] == fg || yptr32[+surfhxscale+xscale] == fg ||
+                      /* Verticals */
+                      yptr32[-surfhxscale] == fg        || yptr32[+surfhxscale] == fg        ||
+                      /* Horizontals */
+                      yptr32[-xscale] == fg             || yptr32[+xscale] == fg
+                  )
+                     ; /* no-op */
+                  else
+                     *yptr32 = 0;
+               }
+
+               if (*yptr32 != 0)
+                  *surf_ptr32 = *yptr32;
+               surf_ptr32++;
+            }
+         }
+         break;
+
+      case GRAPH_BG_NONE:
+      default:
+         for (yrepeat = y - yscale; yrepeat < surfh + y - yscale; yrepeat++)
+         {
+            surf_ptr32 = (uint32_t *)surf + (yrepeat * retrow) + x - xscale;
+            for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr32++)
+            {
+               if (*yptr32 != 0)
+                  *surf_ptr32 = *yptr32;
+               surf_ptr32++;
+            }
+         }
+         break;
+   }
+}
+
+void draw_string_bmp(unsigned short *surf, unsigned short int x, unsigned short int y,
+      const char *string, unsigned short int maxstrlen,
+      unsigned short int xscale, unsigned short int yscale,
+      unsigned short int fg, unsigned short int bg, libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg)
+{
+   int strlen;
+   int surfw;
+   int surfh;
+   unsigned int charw = 8;
+   unsigned int charh = 8;
 
    if (!string)
+      return;
+
+   for (strlen = 0; strlen < maxstrlen && string[strlen]; strlen++) {}
+
+   surfw = xscale * charw * strlen;
+   surfh = yscale * charh;
+   /* Background breather */
+   surfw += xscale;
+   surfh += yscale;
+
+   /* No horizontal wrap */
+   if ((surfw + x - xscale) > retrow)
       return;
 
    /* Pseudo transparency for now */
@@ -386,76 +726,44 @@ void Draw_string(unsigned short *surf, signed short int x, signed short int y,
          break;
    }
 
-   for (strlen = 0; strlen < maxstrlen && string[strlen]; strlen++) {}
-
-   int surfw = strlen * 7 * xscale;
-   int surfh = 8 * yscale;
-
-   /* No horizontal wrap */
-   if ((surfw + x) > retrow)
-      return;
-
-   if ((linesurf_w < surfw) || (linesurf_h < surfh))
+   if ((linesurf_w != surfw) || (linesurf_h != surfh))
    {
       if (linesurf)
          free(linesurf);
 
-      linesurf   = (unsigned char*)malloc(sizeof(unsigned short)*surfw*surfh);
+      linesurf   = (unsigned short*)malloc(sizeof(unsigned short)*surfw*surfh);
       linesurf_w = surfw;
       linesurf_h = surfh;
    }
 
-   yptr = (unsigned short *)&linesurf[0];
-
-   /* Skip the 8th row */
-   surfh -= 1;
-
-   for (ypixel = 0; ypixel < 8; ypixel++)
-   {
-      for (col = 0; col < strlen; col++)
-      {
-         b = font_array[(string[col]^0x80)*8 + ypixel];
-         for (bit = 0; bit < 7; bit++, yptr++)
-         {
-            *yptr = (b & (1<<(7-bit))) ? fg : bg;
-            for (xrepeat = 1; xrepeat < xscale; xrepeat++, yptr++)
-               yptr[1] = *yptr;
-         }
-      }
-
-      for (yrepeat = 1; yrepeat < yscale; yrepeat++)
-         for (xrepeat = 0; xrepeat < surfw; xrepeat++, yptr++)
-            *yptr = yptr[-surfw];
-   }
-
-   yptr = (unsigned short*)&linesurf[0];
-
-   for (yrepeat = y; yrepeat < y+surfh; yrepeat++)
-   {
-      unsigned short *surf_ptr = surf + (yrepeat * retrow) + x;
-      for (xrepeat = x; xrepeat < x+surfw; xrepeat++, yptr++)
-      {
-         if (*yptr != 0) *surf_ptr = *yptr;
-         surf_ptr++;
-      }
-   }
+   draw_char_1pass(string, strlen, charw, charh, xscale, yscale, fg, bg);
+   draw_char_2pass(surf, x, y, xscale, yscale, fg, bg, draw_bg);
 }
 
-void Draw_string32(uint32_t *surf, signed short int x, signed short int y,
-      const char *string, unsigned short maxstrlen,
-      unsigned short xscale, unsigned short yscale,
-      uint32_t fg, uint32_t bg, libretro_graph_alpha_t alpha, bool draw_bg)
+void draw_string_bmp32(uint32_t *surf, unsigned short int x, unsigned short int y,
+      const char *string, unsigned short int maxstrlen,
+      unsigned short int xscale, unsigned short int yscale,
+      uint32_t fg, uint32_t bg, libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg)
 {
-   int k, strlen;
-   int xrepeat, yrepeat;
-   signed short int ypixel;
-   uint32_t *yptr;
-   int col, bit;
-   unsigned char b;
-
-   (void)k;
+   int strlen;
+   int surfw;
+   int surfh;
+   unsigned int charw = 8;
+   unsigned int charh = 8;
 
    if (!string)
+      return;
+
+   for (strlen = 0; strlen < maxstrlen && string[strlen]; strlen++) {}
+
+   surfw = xscale * charw * strlen;
+   surfh = yscale * charh;
+   /* Background breather */
+   surfw += xscale;
+   surfh += yscale;
+
+   /* No horizontal wrap */
+   if ((surfw + x - xscale) > retrow)
       return;
 
    /* Pseudo transparency for now */
@@ -486,16 +794,7 @@ void Draw_string32(uint32_t *surf, signed short int x, signed short int y,
          break;
    }
 
-   for (strlen = 0; strlen < maxstrlen && string[strlen]; strlen++) {}
-
-   int surfw = strlen * 7 * xscale;
-   int surfh = 8 * yscale;
-
-   /* No horizontal wrap */
-   if ((surfw + x) > retrow)
-      return;
-
-   if ((linesurf32_w < surfw) || (linesurf32_h < surfh))
+   if ((linesurf32_w != surfw) || (linesurf32_h != surfh))
    {
       if (linesurf32)
          free(linesurf32);
@@ -505,51 +804,29 @@ void Draw_string32(uint32_t *surf, signed short int x, signed short int y,
       linesurf32_h = surfh;
    }
 
-   yptr = (uint32_t *)&linesurf32[0];
-
-   /* Skip the 8th row */
-   surfh -= 1;
-
-   for (ypixel = 0; ypixel < 8; ypixel++)
-   {
-      for (col = 0; col < strlen; col++)
-      {
-         b = font_array[(string[col]^0x80)*8 + ypixel];
-         for (bit = 0; bit < 7; bit++, yptr++)
-         {
-            *yptr = (b & (1<<(7-bit))) ? fg : bg;
-            for (xrepeat = 1; xrepeat < xscale; xrepeat++, yptr++)
-               yptr[1] = *yptr;
-         }
-      }
-
-      for (yrepeat = 1; yrepeat < yscale; yrepeat++)
-         for (xrepeat = 0; xrepeat < surfw; xrepeat++, yptr++)
-            *yptr = yptr[-surfw];
-   }
-
-   yptr = (uint32_t *)&linesurf32[0];
-
-   for (yrepeat = y; yrepeat < y+surfh; yrepeat++)
-   {
-      uint32_t *surf_ptr = surf + (yrepeat * retrow) + x;
-      for (xrepeat = x; xrepeat < x+surfw; xrepeat++, yptr++)
-      {
-         if (*yptr != 0) *surf_ptr = *yptr;
-         surf_ptr++;
-      }
-   }
+   draw_char_1pass32(string, strlen, charw, charh, xscale, yscale, fg, bg);
+   draw_char_2pass32(surf, x, y, xscale, yscale, fg, bg, draw_bg);
 }
 
-void Draw_text(unsigned short *buffer, int x, int y,
-      unsigned short fgcol, unsigned short bgcol, libretro_graph_alpha_t alpha, bool draw_bg,
-      int scalex, int scaley, int max, unsigned char *string)
+void draw_text(unsigned short int x, unsigned short int y,
+      uint32_t fgcol, uint32_t bgcol, libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg,
+      unsigned short int scalex, unsigned short int scaley, unsigned short int max, unsigned char *string)
+{
+   if (pix_bytes == 4)
+      draw_text_bmp32((uint32_t *)retro_bmp, x, y, fgcol, bgcol, alpha, draw_bg, scalex, scaley, max, string);
+   else
+      draw_text_bmp(retro_bmp, x, y, fgcol, bgcol, alpha, draw_bg, scalex, scaley, max, string);
+}
+
+void draw_text_bmp(unsigned short *buffer, unsigned short int x, unsigned short int y,
+      unsigned short int fgcol, unsigned short int bgcol, libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg,
+      unsigned short int scalex, unsigned short int scaley, unsigned short int max, unsigned char *string)
 {
    if (string == NULL)
       return;
 
 #if 0
-   Draw_string(buffer, x, y, text, max, scalex, scaley, fgcol, bgcol, alpha, draw_bg);
+   draw_string_bmp(buffer, x, y, text, max, scalex, scaley, fgcol, bgcol, alpha, draw_bg);
 #else
    unsigned char c;
    char s[2] = {0};
@@ -565,26 +842,26 @@ void Draw_text(unsigned short *buffer, int x, int y,
       if (c & 0x80)
       {
          snprintf(s, sizeof(s), "%c", c - 0x80);
-         Draw_string(buffer, x+(i*charwidth*scalex), y, s, 1, scalex, scaley, bgcol, fgcol, alpha, draw_bg);
+         draw_string_bmp((unsigned short *)buffer, x+(i*charwidth*scalex), y, s, 1, scalex, scaley, bgcol, fgcol, alpha, draw_bg);
       }
       else
       {
          snprintf(s, sizeof(s), "%c", c);
-         Draw_string(buffer, x+(i*charwidth*scalex), y, s, 1, scalex, scaley, fgcol, bgcol, alpha, draw_bg);
+         draw_string_bmp((unsigned short *)buffer, x+(i*charwidth*scalex), y, s, 1, scalex, scaley, fgcol, bgcol, alpha, draw_bg);
       }
    }
 #endif
 }
 
-void Draw_text32(uint32_t *buffer, int x, int y,
-      uint32_t fgcol, uint32_t bgcol, libretro_graph_alpha_t alpha, bool draw_bg,
-      int scalex, int scaley, int max, unsigned char *string)
+void draw_text_bmp32(uint32_t *buffer, unsigned short int x, unsigned short int y,
+      uint32_t fgcol, uint32_t bgcol, libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg,
+      unsigned short int scalex, unsigned short int scaley, unsigned short int max, unsigned char *string)
 {
    if (string == NULL)
       return;
 
 #if 0
-   Draw_string32(buffer, x, y, text, max, scalex, scaley, fgcol, bgcol, alpha, draw_bg);
+   draw_string_bmp32(buffer, x, y, text, max, scalex, scaley, fgcol, bgcol, alpha, draw_bg);
 #else
    unsigned char c;
    char s[2] = {0};
@@ -600,18 +877,18 @@ void Draw_text32(uint32_t *buffer, int x, int y,
       if (c & 0x80)
       {
          snprintf(s, sizeof(s), "%c", c - 0x80);
-         Draw_string32(buffer, x+(i*charwidth*scalex), y, s, 1, scalex, scaley, bgcol, fgcol, alpha, draw_bg);
+         draw_string_bmp32(buffer, x+(i*charwidth*scalex), y, s, 1, scalex, scaley, bgcol, fgcol, alpha, draw_bg);
       }
       else
       {
          snprintf(s, sizeof(s), "%c", c);
-         Draw_string32(buffer, x+(i*charwidth*scalex), y, s, 1, scalex, scaley, fgcol, bgcol, alpha, draw_bg);
+         draw_string_bmp32(buffer, x+(i*charwidth*scalex), y, s, 1, scalex, scaley, fgcol, bgcol, alpha, draw_bg);
       }
    }
 #endif
 }
 
-void LibretroGraphFree(void)
+void libretro_graph_free(void)
 {
    if (linesurf)
       free(linesurf);

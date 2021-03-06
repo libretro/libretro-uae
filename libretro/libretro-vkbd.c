@@ -23,9 +23,8 @@ int RGBc(int r, int g, int b)
       return RGB565(r, g, b);
 }
 
-void print_vkbd(unsigned short int *pixels)
+void print_vkbd(void)
 {
-   uint16_t *pix                     = &pixels[0];
    bool shifted                      = false;
    bool text_outline                 = false;
    int page                          = (retro_vkbd_page) ? VKBDX * VKBDY : 0;
@@ -60,8 +59,6 @@ void print_vkbd(unsigned short int *pixels)
    int FONT_COLOR_SEL                = 0;
 
    unsigned COLOR_BLACK              = RGBc(  5,   5,   5);
-   unsigned COLOR_GRAYBLACK          = RGBc( 25,  25,  25);
-   unsigned COLOR_GRAYWHITE          = RGBc(125, 125, 125);
    unsigned COLOR_WHITE              = RGBc(250, 250, 250);
 
    unsigned theme                    = opt_vkbd_theme;
@@ -268,72 +265,13 @@ void print_vkbd(unsigned short int *pixels)
          }
 
          /* Key background */
-         if (pix_bytes == 4)
-            DrawFBoxBmp32((uint32_t *)pix,
-                          XKEY+XKEYSPACING, YKEY+YKEYSPACING, XSIDE-XKEYSPACING, YSIDE-YKEYSPACING,
-                          BKG_COLOR, BKG_ALPHA);
-         else
-            DrawFBoxBmp(pix,
-                          XKEY+XKEYSPACING, YKEY+YKEYSPACING, XSIDE-XKEYSPACING, YSIDE-YKEYSPACING,
-                          BKG_COLOR, BKG_ALPHA);
-
-         /* Key text shadow */
-         if (text_outline)
-         {
-            for (int sx = -1; sx < 2; sx++)
-            {
-               for (int sy = -1; sy < 2; sy++)
-               {
-                  if (sx == 0 && sy == 0)
-                     continue;
-                  if (pix_bytes == 4)
-                     Draw_text32((uint32_t *)pix,
-                                 XTEXT+(sx*FONT_WIDTH),
-                                 YTEXT+(sy*FONT_HEIGHT),
-                                 BKG_COLOR,
-                                 (FONT_COLOR == COLOR_WHITE ? COLOR_GRAYBLACK : COLOR_GRAYWHITE),
-                                 GRAPH_ALPHA_75+(-sx-sy), false, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
-                                 (!shifted) ? vkeys[(y * VKBDX) + x + page].normal : vkeys[(y * VKBDX) + x + page].shift);
-                  else
-                     Draw_text(pix,
-                                 XTEXT+(sx*FONT_WIDTH),
-                                 YTEXT+(sy*FONT_HEIGHT),
-                                 BKG_COLOR,
-                                 (FONT_COLOR == COLOR_WHITE ? COLOR_GRAYBLACK : COLOR_GRAYWHITE),
-                                 GRAPH_ALPHA_75+(-sx-sy), false, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
-                                 (!shifted) ? vkeys[(y * VKBDX) + x + page].normal : vkeys[(y * VKBDX) + x + page].shift);
-               }
-            }
-         }
-         else
-         {
-            if (pix_bytes == 4)
-               Draw_text32((uint32_t *)pix,
-                           XTEXT+1,
-                           YTEXT+1,
-                           BKG_COLOR,
-                           (FONT_COLOR == COLOR_WHITE ? COLOR_GRAYBLACK : COLOR_GRAYWHITE),
-                           GRAPH_ALPHA_75-1, false, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
-                           (!shifted) ? vkeys[(y * VKBDX) + x + page].normal : vkeys[(y * VKBDX) + x + page].shift);
-            else
-               Draw_text(pix,
-                           XTEXT+1,
-                           YTEXT+1,
-                           BKG_COLOR,
-                           (FONT_COLOR == COLOR_WHITE ? COLOR_GRAYBLACK : COLOR_GRAYWHITE),
-                           GRAPH_ALPHA_75-1, false, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
-                           (!shifted) ? vkeys[(y * VKBDX) + x + page].normal : vkeys[(y * VKBDX) + x + page].shift);
-         }
+         draw_fbox(XKEY+XKEYSPACING, YKEY+YKEYSPACING, XSIDE-XKEYSPACING, YSIDE-YKEYSPACING,
+                   BKG_COLOR, BKG_ALPHA);
 
          /* Key text */
-         if (pix_bytes == 4)
-            Draw_text32((uint32_t *)pix,
-                        XTEXT, YTEXT, FONT_COLOR, BKG_COLOR, GRAPH_ALPHA_100, false, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
-                        (!shifted) ? vkeys[(y * VKBDX) + x + page].normal : vkeys[(y * VKBDX) + x + page].shift);
-         else
-            Draw_text(pix,
-                        XTEXT, YTEXT, FONT_COLOR, BKG_COLOR, GRAPH_ALPHA_100, false, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
-                        (!shifted) ? vkeys[(y * VKBDX) + x + page].normal : vkeys[(y * VKBDX) + x + page].shift);
+         draw_text(XTEXT, YTEXT, FONT_COLOR, BKG_COLOR, GRAPH_ALPHA_100,
+                   (text_outline) ? GRAPH_BG_OUTLINE : GRAPH_BG_SHADOW, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+                   (!shifted) ? vkeys[(y * VKBDX) + x + page].normal : vkeys[(y * VKBDX) + x + page].shift);
       }
    }
 
@@ -357,36 +295,17 @@ void print_vkbd(unsigned short int *pixels)
       FONT_COLOR = FONT_COLOR_SEL;
 
    /* Selected key background */
-   if (pix_bytes == 4)
-      DrawFBoxBmp32((uint32_t *)pix,
-                    XKEY+XKEYSPACING, YKEY+YKEYSPACING, XSIDE-XKEYSPACING, YSIDE-YKEYSPACING,
-                    BKG_COLOR_SEL, BKG_ALPHA);
-   else
-      DrawFBoxBmp(pix,
-                    XKEY+XKEYSPACING, YKEY+YKEYSPACING, XSIDE-XKEYSPACING, YSIDE-YKEYSPACING,
-                    BKG_COLOR_SEL, BKG_ALPHA);
+   draw_fbox(XKEY+XKEYSPACING, YKEY+YKEYSPACING, XSIDE-XKEYSPACING, YSIDE-YKEYSPACING,
+             BKG_COLOR_SEL, BKG_ALPHA);
 
    /* Selected key text */
-   if (pix_bytes == 4)
-      Draw_text32((uint32_t *)pix,
-                  XTEXT, YTEXT, FONT_COLOR, 0, GRAPH_ALPHA_100, false, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
-                  (!shifted) ? vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].normal
-                             : vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].shift);
-   else
-      Draw_text(pix,
-                  XTEXT, YTEXT, FONT_COLOR, 0, GRAPH_ALPHA_100, false, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
-                  (!shifted) ? vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].normal
-                             : vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].shift);
+   draw_text(XTEXT, YTEXT, FONT_COLOR, 0, GRAPH_ALPHA_100,
+             GRAPH_BG_NONE, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+             (!shifted) ? vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].normal
+                        : vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].shift);
 
 #ifdef POINTER_DEBUG
-   if (pix_bytes == 4)
-      DrawHlineBmp32((uint32_t *)retro_bmp,
-                     pointer_x, pointer_y, 1, 1,
-                     RGBc(255, 0, 255));
-   else
-      DrawHlineBmp(retro_bmp,
-                     pointer_x, pointer_y, 1, 1,
-                     RGBc(255, 0, 255));
+   draw_hline(pointer_x, pointer_y, 1, 1, RGBc(255, 0, 255));
 #endif
 }
 
