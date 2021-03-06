@@ -1,7 +1,7 @@
 #ifndef LIBRETRO_VKBD_H
 #define LIBRETRO_VKBD_H
 
-extern void print_virtual_kbd(unsigned short int *pixels);
+extern void print_virtual_kbd(void);
 extern int check_vkey(int x, int y);
 
 typedef struct

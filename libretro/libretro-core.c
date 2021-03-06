@@ -94,7 +94,7 @@ bool retro_statusbar = false;
 extern bool retro_mousemode;
 extern bool mousemode_locked;
 extern bool retro_vkbd;
-extern void print_vkbd(unsigned short int *pixels);
+extern void print_vkbd(void);
 
 extern bool retro_turbo_fire;
 extern bool turbo_fire_locked;
@@ -3276,7 +3276,7 @@ void retro_deinit(void)
       remove_recurse(retro_temp_directory);
 
    /* Free buffers used by libretro-graph */
-   LibretroGraphFree();
+   libretro_graph_free();
 
    /* 'Reset' troublesome static variables */
    pix_bytes_initialized = false;
@@ -5724,7 +5724,7 @@ void retro_run(void)
 
    /* Virtual keyboard */
    if (retro_vkbd)
-      print_vkbd(retro_bmp);
+      print_vkbd();
 
    /* Maximum 288p/576p PAL shenanigans:
     * Mask the last line(s), since UAE does not refresh the last line, and even internal OSD will leave trails */
@@ -5734,20 +5734,20 @@ void retro_run(void)
       {
          if (interlace_seen)
          {
-            DrawHline(retro_bmp, 0, 572, zoomed_width, 0, 0);
-            DrawHline(retro_bmp, 0, 573, zoomed_width, 0, 0);
-            DrawHline(retro_bmp, 0, 574, zoomed_width, 0, 0);
-            DrawHline(retro_bmp, 0, 575, zoomed_width, 0, 0);
+            draw_hline(0, 572, zoomed_width, 0, 0);
+            draw_hline(0, 573, zoomed_width, 0, 0);
+            draw_hline(0, 574, zoomed_width, 0, 0);
+            draw_hline(0, 575, zoomed_width, 0, 0);
          }
          else
          {
-            DrawHline(retro_bmp, 0, 574, zoomed_width, 0, 0);
-            DrawHline(retro_bmp, 0, 575, zoomed_width, 0, 0);
+            draw_hline(0, 574, zoomed_width, 0, 0);
+            draw_hline(0, 575, zoomed_width, 0, 0);
          }
       }
       else
       {
-         DrawHline(retro_bmp, 0, 287, zoomed_width, 0, 0);
+         draw_hline(0, 287, zoomed_width, 0, 0);
       }
    }
    video_cb(retro_bmp, zoomed_width, zoomed_height, retrow << (pix_bytes / 2));
