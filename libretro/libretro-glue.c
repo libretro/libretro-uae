@@ -1850,8 +1850,9 @@ cdrom_file *cdrom_open(chd_file *chd)
 		logofs += file->cdtoc.tracks[i].postgap;
 
 		physofs += file->cdtoc.tracks[i].frames;
+		physofs += file->cdtoc.tracks[i].extraframes;
 		chdofs  += file->cdtoc.tracks[i].frames;
-		chdofs  += file->cdtoc.tracks[i].extraframes - 1;
+		chdofs  += file->cdtoc.tracks[i].extraframes;
 		logofs  += file->cdtoc.tracks[i].frames;
 
 #if 0
