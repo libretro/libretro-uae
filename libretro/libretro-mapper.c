@@ -49,6 +49,8 @@ int vkbd_y_max = 0;
 /* Mouse speed multipliers */
 #define MOUSE_SPEED_SLOW 5
 #define MOUSE_SPEED_FAST 2
+/* Mouse D-Pad acceleration */
+#define MOUSE_DPAD_ACCEL
 
 /* Core flags */
 int mapper_keys[RETRO_MAPPER_LAST] = {0};
@@ -2318,10 +2320,11 @@ void retro_poll_event()
    /* keyup allowing most likely not needed on actual keyboard presses even though they get stuck also */
    static float mouse_multiplier = 1;
    static int dpadmouse_speed[2] = {0};
-   static long dpadmouse_press[2] = {0};
    static int dpadmouse_pressed[2] = {0};
+#ifdef MOUSE_DPAD_ACCEL
    static long now = 0;
-   now = retro_ticks();
+   now = retro_ticks() / 1000;
+#endif
 
    int uae_mouse_x[2] = {0}, uae_mouse_y[2] = {0};
    unsigned int uae_mouse_l[2] = {0}, uae_mouse_r[2] = {0}, uae_mouse_m[2] = {0};
@@ -2475,25 +2478,30 @@ void retro_poll_event()
       for (j = 0; j < 2; j++)
       {
          /* Digital mouse speed modifiers */
-         if (dpadmouse_pressed[j] == 0)
+         if (!dpadmouse_pressed[j])
+#ifdef MOUSE_DPAD_ACCEL
+            dpadmouse_speed[j] = opt_dpadmouse_speed - 2;
+#else
             dpadmouse_speed[j] = opt_dpadmouse_speed;
+#endif
 
          if (mouse_speed[j] & MOUSE_SPEED_FASTER)
             dpadmouse_speed[j] = dpadmouse_speed[j] + 3;
          if (mouse_speed[j] & MOUSE_SPEED_SLOWER)
             dpadmouse_speed[j] = dpadmouse_speed[j] - 4;
 
+#ifdef MOUSE_DPAD_ACCEL
          /* Digital mouse acceleration */
-         if (dpadmouse_pressed[j] == 1)
-            if (now - dpadmouse_press[j] > 200)
-            {
-               dpadmouse_speed[j]++;
-               dpadmouse_press[j] = now;
-            }
+         if (dpadmouse_pressed[j] && (now - dpadmouse_pressed[j] > 300))
+         {
+            dpadmouse_speed[j]++;
+            dpadmouse_pressed[j] = now;
+         }
+#endif
 
          /* Digital mouse speed limits */
-         if (dpadmouse_speed[j] < 3) dpadmouse_speed[j] = 2;
-         if (dpadmouse_speed[j] > 13) dpadmouse_speed[j] = 14;
+         if (dpadmouse_speed[j] < 2) dpadmouse_speed[j] = 2;
+         if (dpadmouse_speed[j] > 14) dpadmouse_speed[j] = 14;
 
          if (joypad_bits[j] & (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT))
             uae_mouse_x[j] += dpadmouse_speed[j];
@@ -2504,17 +2512,13 @@ void retro_poll_event()
          else if (joypad_bits[j] & (1 << RETRO_DEVICE_ID_JOYPAD_UP))
             uae_mouse_y[j] -= dpadmouse_speed[j];
 
+#ifdef MOUSE_DPAD_ACCEL
          /* Acceleration timestamps */
-         if ((uae_mouse_x[j] != 0 || uae_mouse_y[j] != 0) && dpadmouse_pressed[j] == 0)
-         {
-            dpadmouse_press[j] = now;
-            dpadmouse_pressed[j] = 1;
-         }
-         else if ((uae_mouse_x[j] == 0 && uae_mouse_y[j] == 0) && dpadmouse_pressed[j] == 1)
-         {
-            dpadmouse_press[j] = 0;
+         if ((uae_mouse_x[j] != 0 || uae_mouse_y[j] != 0) && !dpadmouse_pressed[j])
+            dpadmouse_pressed[j] = now;
+         else if ((uae_mouse_x[j] == 0 && uae_mouse_y[j] == 0) && dpadmouse_pressed[j])
             dpadmouse_pressed[j] = 0;
-         }
+#endif
       }
    }
 
