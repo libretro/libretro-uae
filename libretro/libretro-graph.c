@@ -685,7 +685,7 @@ void draw_string_bmp(unsigned short *surf, unsigned short int x, unsigned short 
    short int surfh;
    unsigned short int charw = 8;
    unsigned short int charh = 8;
-   unsigned short int fg_blend = fg;
+   unsigned short int fg_blend = (fg == COLOR_BLACK_16) ? COLOR_GRAY_16 : COLOR_BLACK_16;
 
    if (!string)
       return;
@@ -704,15 +704,6 @@ void draw_string_bmp(unsigned short *surf, unsigned short int x, unsigned short 
 
    /* Background transparency */
    bg = draw_bg ? bg : 0;
-   if (draw_bg && alpha > 0)
-   {
-      if (fg == COLOR_WHITE_16)
-         fg_blend = COLOR_BLACK_16;
-      else if (fg == COLOR_BLACK_16)
-         fg_blend = COLOR_WHITE_16;
-      fg_blend = fg_blend & 0xFFFF;
-   }
-
    switch (alpha)
    {
       case GRAPH_ALPHA_0:
@@ -757,7 +748,7 @@ void draw_string_bmp32(uint32_t *surf, unsigned short int x, unsigned short int 
    short int surfh;
    unsigned short int charw = 8;
    unsigned short int charh = 8;
-   uint32_t fg_blend = fg;
+   uint32_t fg_blend = (fg == COLOR_BLACK_32) ? COLOR_GRAY_32 & 0xFFFFFF : COLOR_BLACK_32 & 0xFFFFFF;
 
    if (!string)
       return;
@@ -776,15 +767,6 @@ void draw_string_bmp32(uint32_t *surf, unsigned short int x, unsigned short int 
 
    /* Background transparency */
    bg = draw_bg ? bg : 0;
-   if (draw_bg && alpha > 0)
-   {
-      if (fg == COLOR_WHITE_32)
-         fg_blend = COLOR_BLACK_32;
-      else if (fg == COLOR_BLACK_32)
-         fg_blend = COLOR_WHITE_32;
-      fg_blend = fg_blend & 0xFFFFFF;
-   }
-
    switch (alpha)
    {
       case GRAPH_ALPHA_0:
