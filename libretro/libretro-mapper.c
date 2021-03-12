@@ -72,6 +72,7 @@ extern bool retro_vkbd;
 extern bool retro_vkbd_page;
 extern bool retro_vkbd_position;
 extern bool retro_vkbd_transparent;
+extern short int retro_vkbd_ready;
 extern void retro_key_up(int);
 extern void retro_key_down(int);
 extern void retro_mouse(int, int, int);
@@ -152,6 +153,8 @@ void emu_function(int function)
    {
       case EMU_VKBD:
          retro_vkbd = !retro_vkbd;
+         /* Reset VKBD input readiness */
+         retro_vkbd_ready = -2;
          /* Release VKBD controllable joypads */
          memset(joypad_bits, 0, 2*sizeof(joypad_bits[0]));
          break;
@@ -1668,7 +1671,16 @@ void update_input(unsigned disable_keys)
    /* Virtual keyboard for ports 1 & 2 */
    if (retro_vkbd)
    {
-      /* Mouse acceleration */
+      /* Wait for all inputs to be released */
+      if (retro_vkbd_ready < 1)
+      {
+         if ((retro_vkbd_ready == 0 && !joypad_bits[0] && !joypad_bits[1]) ||
+              retro_vkbd_ready < 0)
+            retro_vkbd_ready++;
+         return;
+      }
+
+      /* VKBD Mouse acceleration */
       const int mspeed_default = 3;
       static int mspeed;
       if (!vkflag[RETRO_DEVICE_ID_JOYPAD_B])
