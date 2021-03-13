@@ -371,10 +371,10 @@ static void draw_char_1pass(const char *string, unsigned int strlen,
    unsigned char b = 0;
    unsigned short int col = 0;
    unsigned short int bit = 0;
-   unsigned short int ypixel = 0;
-   unsigned short int xrepeat = 0;
-   unsigned short int yrepeat = 0;
    unsigned short int surfw = 0;
+   short int ypixel = 0;
+   short int xrepeat = 0;
+   short int yrepeat = 0;
 
    unsigned short int *yptr;
 
@@ -413,10 +413,10 @@ static void draw_char_1pass32(const char *string, unsigned int strlen,
    unsigned char b = 0;
    unsigned short int col = 0;
    unsigned short int bit = 0;
-   unsigned short int ypixel = 0;
-   unsigned short int xrepeat = 0;
-   unsigned short int yrepeat = 0;
    unsigned short int surfw = 0;
+   short int ypixel = 0;
+   short int xrepeat = 0;
+   short int yrepeat = 0;
 
    uint32_t *yptr32;
 
@@ -452,8 +452,8 @@ static void draw_char_2pass(unsigned short *surf,
       unsigned short int xscale, unsigned short int yscale,
       unsigned short int fg, unsigned short int bg, libretro_graph_bg_t draw_bg)
 {
-   unsigned short int xrepeat = 0;
-   unsigned short int yrepeat = 0;
+   short int xrepeat = 0;
+   short int yrepeat = 0;
    unsigned short int surfw = 0;
    unsigned short int surfh = 0;
    unsigned short int surfhxscale = 0;
@@ -566,8 +566,8 @@ static void draw_char_2pass32(uint32_t *surf,
       unsigned short int xscale, unsigned short int yscale,
       uint32_t fg, uint32_t bg, libretro_graph_bg_t draw_bg)
 {
-   unsigned short int xrepeat = 0;
-   unsigned short int yrepeat = 0;
+   short int xrepeat = 0;
+   short int yrepeat = 0;
    unsigned short int surfw = 0;
    unsigned short int surfh = 0;
    unsigned short int surfhxscale = 0;
@@ -680,11 +680,12 @@ void draw_string_bmp(unsigned short *surf, unsigned short int x, unsigned short 
       unsigned short int xscale, unsigned short int yscale,
       unsigned short int fg, unsigned short int bg, libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg)
 {
-   int strlen;
-   int surfw;
-   int surfh;
-   unsigned int charw = 8;
-   unsigned int charh = 8;
+   short int strlen;
+   short int surfw;
+   short int surfh;
+   unsigned short int charw = 8;
+   unsigned short int charh = 8;
+   unsigned short int fg_blend = (fg == COLOR_BLACK_16) ? COLOR_GRAY_16 : COLOR_BLACK_16;
 
    if (!string)
       return;
@@ -701,7 +702,8 @@ void draw_string_bmp(unsigned short *surf, unsigned short int x, unsigned short 
    if ((surfw + x - xscale) > retrow)
       return;
 
-   /* Pseudo transparency for now */
+   /* Background transparency */
+   bg = draw_bg ? bg : 0;
    switch (alpha)
    {
       case GRAPH_ALPHA_0:
@@ -709,20 +711,16 @@ void draw_string_bmp(unsigned short *surf, unsigned short int x, unsigned short 
          bg = 0;
          break;
       case GRAPH_ALPHA_25:
-         BLEND_ALPHA25(fg, ((bg == 0) ? 0xFFFF : bg), &fg);
-         bg = 0;
+         BLEND_ALPHA25(fg_blend, ((bg == 0) ? 0xFFFF : bg), &bg);
          break;
       case GRAPH_ALPHA_50:
-         BLEND_ALPHA50(fg, ((bg == 0) ? 0xFFFF : bg), &fg);
-         bg = 0;
+         BLEND_ALPHA50(fg_blend, ((bg == 0) ? 0xFFFF : bg), &bg);
          break;
       case GRAPH_ALPHA_75:
-         BLEND_ALPHA75(fg, ((bg == 0) ? 0xFFFF : bg), &fg);
-         bg = 0;
+         BLEND_ALPHA75(fg_blend, ((bg == 0) ? 0xFFFF : bg), &bg);
          break;
       case GRAPH_ALPHA_100:
       default:
-         bg = draw_bg ? bg : 0;
          break;
    }
 
@@ -745,11 +743,12 @@ void draw_string_bmp32(uint32_t *surf, unsigned short int x, unsigned short int 
       unsigned short int xscale, unsigned short int yscale,
       uint32_t fg, uint32_t bg, libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg)
 {
-   int strlen;
-   int surfw;
-   int surfh;
-   unsigned int charw = 8;
-   unsigned int charh = 8;
+   short int strlen;
+   short int surfw;
+   short int surfh;
+   unsigned short int charw = 8;
+   unsigned short int charh = 8;
+   uint32_t fg_blend = (fg == COLOR_BLACK_32) ? COLOR_GRAY_32 & 0xFFFFFF : COLOR_BLACK_32 & 0xFFFFFF;
 
    if (!string)
       return;
@@ -766,7 +765,8 @@ void draw_string_bmp32(uint32_t *surf, unsigned short int x, unsigned short int 
    if ((surfw + x - xscale) > retrow)
       return;
 
-   /* Pseudo transparency for now */
+   /* Background transparency */
+   bg = draw_bg ? bg : 0;
    switch (alpha)
    {
       case GRAPH_ALPHA_0:
@@ -775,22 +775,18 @@ void draw_string_bmp32(uint32_t *surf, unsigned short int x, unsigned short int 
          break;
       case GRAPH_ALPHA_25:
          fg = fg & 0xFFFFFF;
-         BLEND32_ALPHA25(fg, ((bg == 0) ? 0xFFFFFF : bg & 0xFFFFFF), &fg);
-         bg = 0;
+         BLEND32_ALPHA25(fg_blend, ((bg == 0) ? 0xFFFFFF : bg & 0xFFFFFF), &bg);
          break;
       case GRAPH_ALPHA_50:
          fg = fg & 0xFFFFFF;
-         BLEND32_ALPHA50(fg, ((bg == 0) ? 0xFFFFFF : bg & 0xFFFFFF), &fg);
-         bg = 0;
+         BLEND32_ALPHA50(fg_blend, ((bg == 0) ? 0xFFFFFF : bg & 0xFFFFFF), &bg);
          break;
       case GRAPH_ALPHA_75:
          fg = fg & 0xFFFFFF;
-         BLEND32_ALPHA75(fg, ((bg == 0) ? 0xFFFFFF : bg & 0xFFFFFF), &fg);
-         bg = 0;
+         BLEND32_ALPHA75(fg_blend, ((bg == 0) ? 0xFFFFFF : bg & 0xFFFFFF), &bg);
          break;
       case GRAPH_ALPHA_100:
       default:
-         bg = draw_bg ? bg : 0;
          break;
    }
 
