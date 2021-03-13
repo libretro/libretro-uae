@@ -25,13 +25,11 @@ bool inputdevice_finalized = false;
 
 extern unsigned int defaultw;
 extern unsigned int defaulth;
-extern unsigned int libretro_runloop_active;
 extern unsigned int libretro_frame_end;
 
 unsigned short int* pixbuf = NULL;
 extern unsigned short int retro_bmp[RETRO_BMP_SIZE];
 extern char retro_temp_directory[RETRO_PATH_MAX];
-void retro_audio_batch_cb(const int16_t *data, size_t frames);
 
 int prefs_changed = 0;
 
@@ -122,18 +120,6 @@ void retro_key_up(int key)
 
 
 /* retro */
-void retro_renderSound(short* samples, int sampleCount)
-{
-   if ((sampleCount < 1) || !libretro_runloop_active)
-      return;
-#if 0
-   for (int i=0; i<sampleCount; i+=2)
-      retro_audio_cb(samples[i], samples[i+1]);
-#else
-   retro_audio_batch_cb(samples, sampleCount/2);
-#endif
-}
-
 void retro_flush_screen (struct vidbuf_description *gfxinfo, int ystart, int yend)
 {
    /* These values must be cached here, since the
