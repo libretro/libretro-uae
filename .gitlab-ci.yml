@@ -24,6 +24,10 @@ include:
   # Linux 64-bit
   - project: 'libretro-infrastructure/ci-templates'
     file: '/linux-x64.yml'
+
+  # Linux 32-bit
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/linux-i686.yml'
     
   # MacOS 64-bit
   - project: 'libretro-infrastructure/ci-templates'
@@ -37,6 +41,14 @@ include:
   # Android
   - project: 'libretro-infrastructure/ci-templates'
     file: '/android-jni.yml'
+
+  # iOS
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/ios-arm64.yml'
+
+  # iOS (armv7)
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/ios9.yml'
     
   ################################## CONSOLES ################################
   # Nintendo WiiU
@@ -50,6 +62,12 @@ include:
   # PlayStation Vita
   - project: 'libretro-infrastructure/ci-templates'
     file: '/vita-static.yml'
+
+  # tvOS (AppleTV)
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/tvos-arm64.yml'
+
+  #################################### MISC ##################################
 
 # Stages for building
 stages:
@@ -78,6 +96,12 @@ libretro-build-windows-i686:
 libretro-build-linux-x64:
   extends:
     - .libretro-linux-x64-make-default
+    - .core-defs
+
+# Linux 32-bit
+libretro-build-linux-i686:
+  extends:
+    - .libretro-linux-i686-make-default
     - .core-defs
    
 # MacOS 64-bit
@@ -115,6 +139,24 @@ android-x86_64:
 android-x86:
   extends:
     - .libretro-android-jni-x86
+    - .core-defs
+
+# iOS
+libretro-build-ios-arm64:
+  extends:
+    - .libretro-ios-arm64-make-default
+    - .core-defs
+
+# iOS (armv7) [iOS 9 and up]
+libretro-build-ios9:
+  extends:
+    - .libretro-ios9-make-default
+    - .core-defs
+    
+# tvOS
+libretro-build-tvos-arm64:
+  extends:
+    - .libretro-tvos-arm64-make-default
     - .core-defs
 
 ################################### CONSOLES #################################    
