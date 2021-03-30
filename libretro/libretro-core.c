@@ -1478,16 +1478,7 @@ void retro_set_environment(retro_environment_t cb)
                else
                {
                   core_options[i].values[j].value = retro_keys[j + hotkeys_skipped + 1].value;
-
-                  /* Append "Keyboard " for keyboard keys */
-                  if (retro_keys[j + hotkeys_skipped + 1].id > 0)
-                  {
-                     char key_label[10+25] = {0};
-                     sprintf(key_label, "Keyboard %s", retro_keys[j + hotkeys_skipped + 1].label);
-                     core_options[i].values[j].label = strdup(key_label);
-                  }
-                  else
-                     core_options[i].values[j].label = retro_keys[j + hotkeys_skipped + 1].label;
+                  core_options[i].values[j].label = retro_keys[j + hotkeys_skipped + 1].label;
                }
                ++j;
             };
@@ -1497,17 +1488,7 @@ void retro_set_environment(retro_environment_t cb)
             while (retro_keys[j].value[0] && j < RETRO_NUM_CORE_OPTION_VALUES_MAX - 1)
             {
                core_options[i].values[j].value = retro_keys[j].value;
-
-               /* Append "Keyboard " for keyboard keys */
-               if (retro_keys[j].id > 0)
-               {
-                  char key_label[10+25] = {0};
-                  sprintf(key_label, "Keyboard %s", retro_keys[j].label);
-                  core_options[i].values[j].label = strdup(key_label);
-               }
-               else
-                  core_options[i].values[j].label = retro_keys[j].label;
-
+               core_options[i].values[j].label = retro_keys[j].label;
                ++j;
             };
          }
