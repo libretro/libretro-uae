@@ -311,7 +311,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_model_options_display",
          "Show Automatic Model Options",
-         "Shows/hides default model options (Floppy/HD/CD) for 'Automatic' model.\nCore options page refresh required.",
+         "Show/hide default model options (Floppy/HD/CD) for 'Automatic' model.\nPage refresh by menu toggle required!",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -365,7 +365,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_cpu_compatibility",
          "System > CPU Compatibility",
-         "Some games require 'Cycle-exact'. 'Cycle-exact' can be forced with '(CE)' file path tag.",
+         "Some games have graphic and/or speed issues without 'Cycle-exact'. 'Cycle-exact' can be forced with '(CE)' file path tag.",
          {
             { "normal", "Normal" },
             { "compatible", "More compatible" },
@@ -437,7 +437,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_floppy_multidrive",
          "Media > Floppy MultiDrive",
-         "Inserts each disk in different drives. Can be forced with '(MD)' file path tag. Maximum is 4 disks due to external drive limit! Not all games support external drives!\nCore restart required.",
+         "Insert each disk in different drives. Can be forced with '(MD)' file path tag. Maximum is 4 disks due to external drive limit! Not all games support external drives!\nCore restart required.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -448,7 +448,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_floppy_write_protection",
          "Media > Floppy Write Protection",
-         "Makes all drives read only. Changing this while emulation is running ejects and reinserts all disks. IPF images are always read only!",
+         "Set all drives read only. Changing this while emulation is running ejects and reinserts all disks. IPF images are always read only!",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -534,7 +534,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_video_options_display",
          "Show Video Options",
-         "Shows/hides video related options.\nCore options page refresh required.",
+         "Page refresh by menu toggle required!",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -545,7 +545,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_video_allow_hz_change",
          "Video > Allow PAL/NTSC Hz Change",
-         "Lets Amiga decide the exact output Hz.",
+         "Let Amiga decide the exact output Hz.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -606,7 +606,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_zoom_mode",
          "Video > Zoom Mode",
-         "Crops the borders to fit various host screens. Requirements in RetroArch settings:\n- Aspect Ratio: Core provided,\n- Integer Scale: Off.",
+         "Crop the borders to fit various host screens. Requirements in RetroArch settings:\n- Aspect Ratio: Core provided,\n- Integer Scale: Off.",
          {
             { "disabled", NULL },
             { "minimum", "Minimum" },
@@ -624,7 +624,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_zoom_mode_crop",
          "Video > Zoom Mode Crop",
-         "Use 'Horizontal + Vertical' & 'Automatic' to remove borders completely.",
+         "'Horizontal + Vertical' & 'Automatic' removes borders completely.",
          {
             { "both", "Horizontal + Vertical" },
             { "horizontal", "Horizontal" },
@@ -747,7 +747,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_gfx_flickerfixer",
          "Video > Remove Interlace Artifacts",
-         "Best suited for stationary screens, Workbench etc.",
+         "Best suited for still screens, Workbench etc.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -856,7 +856,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_audio_options_display",
          "Show Audio Options",
-         "Shows/hides audio related options.\nCore options page refresh required.",
+         "Page refresh by menu toggle required!",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -985,7 +985,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_floppy_sound_empty_mute",
          "Audio > Floppy Sound Mute Ejected",
-         "Mutes drive head clicking when floppy is not inserted.",
+         "Mute drive head clicking when floppy is not inserted.",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -1114,7 +1114,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_physicalmouse",
          "Input > Physical Mouse",
-         "Double requirements: raw/udev input driver and proper mouse index per port.\nDoes not affect RetroPad emulated mice.",
+         "'Double' requirements: raw/udev input driver and proper mouse index per port.\nDoes not affect RetroPad emulated mice.",
          {
             { "disabled", "disabled" },
             { "enabled", "enabled" },
@@ -1148,7 +1148,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapping_options_display",
          "Show Mapping Options",
-         "Shows/hides hotkey & RetroPad mapping options.\nCore options page refresh required.",
+         "Page refresh by menu toggle required!",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -1288,28 +1288,28 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapper_lu",
          "RetroPad > Left Analog > Up",
-         "Mapping for left analog stick up.",
+         "",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_ld",
          "RetroPad > Left Analog > Down",
-         "Mapping for left analog stick down.",
+         "",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_ll",
          "RetroPad > Left Analog > Left",
-         "Mapping for left analog stick left.",
+         "",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_lr",
          "RetroPad > Left Analog > Right",
-         "Mapping for left analog stick right.",
+         "",
          {{ NULL, NULL }},
          "---"
       },
@@ -1317,28 +1317,28 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapper_ru",
          "RetroPad > Right Analog > Up",
-         "Mapping for right analog stick up.",
+         "",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_rd",
          "RetroPad > Right Analog > Down",
-         "Mapping for right analog stick down.",
+         "",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_rl",
          "RetroPad > Right Analog > Left",
-         "Mapping for right analog stick left.",
+         "",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_rr",
          "RetroPad > Right Analog > Right",
-         "Mapping for right analog stick right.",
+         "",
          {{ NULL, NULL }},
          "---"
       },
@@ -1356,7 +1356,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_turbo_fire_button",
          "RetroPad > Turbo Button",
-         "Replaces the mapped button with turbo fire button.",
+         "Replace the mapped button with turbo fire button.",
          {
             { "B", "RetroPad B" },
             { "A", "RetroPad A" },
@@ -1388,7 +1388,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_joyport",
          "RetroPad > Joystick/Mouse",
-         "Changes D-Pad control between joyports. Hotkey toggling disables this option until core restart.",
+         "Change D-Pad control between joyports. Hotkey toggling disables this option until core restart.",
          {
             { "joystick", "Joystick (Port 1)" },
             { "mouse", "Mouse (Port 2)" },
@@ -1399,7 +1399,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_joyport_order",
          "RetroPad > Joyport Order",
-         "Plugs RetroPads in different ports. Useful for Arcadia system and games that use the 4-player adapter.",
+         "Plug RetroPads in different ports. Useful for Arcadia system and games that use the 4-player adapter.",
          {
             { "1234", "1-2-3-4" },
             { "2143", "2-1-4-3" },
@@ -1412,7 +1412,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_retropad_options",
          "RetroPad > Face Button Options",
-         "Rotates face buttons clockwise and/or makes 2nd fire press up.",
+         "Rotate face buttons clockwise and/or makes 2nd fire press up.",
          {
             { "disabled", "B = Fire, A = 2nd fire" },
             { "jump", "B = Fire, A = Up" },
@@ -1425,7 +1425,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_cd32pad_options",
          "CD32 Pad > Face Button Options",
-         "Rotates face buttons clockwise and/or makes blue button press up.",
+         "Rotate face buttons clockwise and/or makes blue button press up.",
          {
             { "disabled", "B = Red, A = Blue" },
             { "jump", "B = Red, A = Up" },
