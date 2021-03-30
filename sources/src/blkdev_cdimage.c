@@ -35,6 +35,10 @@
 #include "misc.h"
 #include "hrtimer.h"
 
+#ifdef __LIBRETRO__
+#include "savestate.h"
+#endif
+
 //#define WITH_MP3
 #ifdef WITH_MP3
 #include "mp3decoder.h"
@@ -1466,6 +1470,14 @@ static int parsechd (struct cdunit *cdu, struct zfile *zcue, const TCHAR *img)
 	struct zfile *f = zfile_dup (zcue);
 	if (!f)
 		return 0;
+
+#ifdef __LIBRETRO__
+	if (cdu->chd_cdf)
+		cdrom_close(cdu->chd_cdf);
+	if (cdu->chd_f)
+		chd_close(cdu->chd_f);
+#endif
+
 	chd_file *cf;
 	cf = xmalloc(chd_file, 1);
 	err = chd_open(img, CHD_OPEN_READ, NULL, &cf);
@@ -2341,15 +2353,28 @@ static void unload_image (struct cdunit *cdu)
 		xfree (t->extrainfo);
 	}
 #ifdef WITH_CHD
+#ifdef __LIBRETRO__
+	/* Postpone 'chd_close' to 'parsechd' while restoring state,
+	 * otherwise Windows build will randomly crash depending
+	 * on the amount of CDA tracks. 'parsechd' will be executed
+	 * on restore shortly after 'unload_image' anyway. */
+	if (savestate_state != STATE_RESTORE)
+	{
+		cdrom_close (cdu->chd_cdf);
+		cdu->chd_cdf = NULL;
+
+		if (cdu->chd_f)
+			chd_close(cdu->chd_f);
+		cdu->chd_f = NULL;
+	}
+#else
 	cdrom_close (cdu->chd_cdf);
 	cdu->chd_cdf = NULL;
+
 	if (cdu->chd_f)
-#ifdef __LIBRETRO__
-		chd_close(cdu->chd_f);
-#else
 		cdu->chd_f->close();
-#endif
 	cdu->chd_f = NULL;
+#endif
 #endif
 	memset (cdu->toc, 0, sizeof cdu->toc);
 	cdu->tracks = 0;
