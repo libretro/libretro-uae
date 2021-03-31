@@ -1238,7 +1238,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapper_x",
          "RetroPad > X",
-         "VKBD: Toggle position. Remapping to non-keyboard keys overrides VKBD function!",
+         "VKBD: Press 'Space'. Remapping to non-keyboard keys overrides VKBD function!",
          {{ NULL, NULL }},
          "RETROK_SPACE"
       },

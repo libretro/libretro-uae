@@ -43,7 +43,7 @@ WinUAE), and many more.
 | B / Enter       | Keypress                      |
 | A               | Toggle transparency           |
 | Y               | Toggle CapsLock               |
-| X               | Toggle position               |
+| X               | Press Space                   |
 | Start           | Press Return                  |
 
 Long press for sticky keys. Stickying the third key will replace the second.
