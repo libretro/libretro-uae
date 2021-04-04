@@ -3635,11 +3635,10 @@ static void retro_print_harddrives(FILE** configfile)
          fprintf(*configfile, "hardfile2=rw,DH%d:\"%s\",32,1,2,512,0,,uae0\n", i, tmp_str);
 
       log_cb(RETRO_LOG_INFO, "HD (%d) inserted in drive DH%d: '%s'\n", i+1, i, dc->files[i]);
-   }
 
-   if (tmp_str)
       free(tmp_str);
-   tmp_str = NULL;
+      tmp_str = NULL;
+   }
 }
 
 static void whdload_kscopy()
@@ -4373,6 +4372,8 @@ static bool retro_create_config()
                   {
                      tmp_str = string_replace_substring(whdload_path, "\\", "\\\\");
                      fprintf(configfile, "filesystem2=rw,WHDLoad:WHDLoad:\"%s\",0\n", (const char*)tmp_str);
+                     free(tmp_str);
+                     tmp_str = NULL;
                   }
 
                   /* Verify WHDSaves */
@@ -4385,6 +4386,8 @@ static bool retro_create_config()
                   {
                      tmp_str = string_replace_substring(whdsaves_path, "\\", "\\\\");
                      fprintf(configfile, "filesystem2=rw,WHDSaves:WHDSaves:\"%s\",0\n", (const char*)tmp_str);
+                     free(tmp_str);
+                     tmp_str = NULL;
                   }
                   else
                      log_cb(RETRO_LOG_ERROR, "Unable to create WHDSaves image directory: '%s'\n", (const char*)&whdsaves_path);
@@ -4436,6 +4439,8 @@ static bool retro_create_config()
                   {
                      tmp_str = string_replace_substring(whdload_hdf, "\\", "\\\\");
                      fprintf(configfile, "hardfile2=rw,WHDLoad:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
+                     free(tmp_str);
+                     tmp_str = NULL;
                   }
 
                   /* Verify WHDSaves.hdf */
@@ -4477,6 +4482,8 @@ static bool retro_create_config()
                   {
                      tmp_str = string_replace_substring(whdsaves_hdf, "\\", "\\\\");
                      fprintf(configfile, "hardfile2=rw,WHDSaves:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
+                     free(tmp_str);
+                     tmp_str = NULL;
                   }
 
                   /* Attach retro_system_directory as a read only hard drive for WHDLoad kickstarts/prefs/key */
@@ -4489,6 +4496,8 @@ static bool retro_create_config()
                      path_join(tmp_str, retro_system_directory, "");
 #endif
                   fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s\",-128\n", tmp_str);
+                  free(tmp_str);
+                  tmp_str = NULL;
                }
             }
 
@@ -4536,6 +4545,8 @@ static bool retro_create_config()
                log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF0: '%s'\n", dc->index+1, dc->files[dc->index]);
                tmp_str = utf8_to_local_string_alloc(dc->files[0]);
                fprintf(configfile, "floppy0=%s\n", tmp_str);
+               free(tmp_str);
+               tmp_str = NULL;
 
                /* Append rest of the disks to the config if M3U is a MultiDrive-M3U */
                if (strstr(full_path, "(MD)") != NULL || opt_floppy_multidrive)
@@ -4550,6 +4561,8 @@ static bool retro_create_config()
                         log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF%d: '%s'\n", i+1, i, dc->files[i]);
                         tmp_str = utf8_to_local_string_alloc(dc->files[i]);
                         fprintf(configfile, "floppy%d=%s\n", i, tmp_str);
+                        free(tmp_str);
+                        tmp_str = NULL;
 
                         /* By default only DF0: is enabled, so floppyXtype needs to be set on the extra drives */
                         fprintf(configfile, "floppy%dtype=%d\n", i, 0); /* 0 = 3.5" DD */

@@ -238,16 +238,17 @@ struct my_openfile_s *my_open(const TCHAR *name, int flags)
 	int fd = open(name, open_flags, 0644);
 #else
 	FILE *fp = NULL;
-	char* fopen_flags = strdup("rb");
+	char *fopen_flags = malloc(4*sizeof(char));
+	strcpy(fopen_flags, "rb");
 
 	if (flags & O_WRONLY)
-		fopen_flags = strdup("wb");
+		strcpy(fopen_flags, "wb");
 
 	if (flags & O_RDWR)
-		fopen_flags = strdup("rb+");
+		strcpy(fopen_flags, "rb+");
 
 	if (flags & O_TRUNC)
-		fopen_flags = strdup("wb+");
+		strcpy(fopen_flags, "wb+");
 
 	fp = fopen(name, fopen_flags);
 

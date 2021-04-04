@@ -1336,7 +1336,7 @@ static struct fs_filehandle *fs_openfile (Unit *u, a_inode *aino, int flags)
 	if (fsf->fstype == FS_ARCHIVE) {
 		fsf->zf = zfile_open_archive (aino->nname, flags);
 		if (fsf->zf)
-	return fsf;
+			return fsf;
 	} else if (fsf->fstype == FS_DIRECTORY) {
 		fsf->of = my_open (aino->nname, flags);
 		if (fsf->of)

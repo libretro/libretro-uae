@@ -1072,6 +1072,9 @@ static int save_state_internal (struct zfile *f, const TCHAR *description, int c
 	dst = save_filesys_common (&len);
 	if (dst) {
 		save_chunk (f, dst, len, _T("FSYC"), 0);
+#ifdef __LIBRETRO__
+		xfree (dst);
+#endif
 		for (i = 0; i < nr_units (); i++) {
 			dst = save_filesys (i, &len);
 			if (dst) {
