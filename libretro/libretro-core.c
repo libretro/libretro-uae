@@ -4370,7 +4370,14 @@ static bool retro_create_config()
                   /* Attach directory */
                   if (path_is_directory(whdload_path) && path_is_directory(whdload_c_path))
                   {
+#ifdef WIN32
                      tmp_str = string_replace_substring(whdload_path, "\\", "\\\\");
+#else
+                     tmp_str = strdup(whdload_path);
+                     /* Force ending slash with empty path_join to make sure the path is not treated as a file */
+                     if (tmp_str[strlen(tmp_str)-1] != '/')
+                        path_join(tmp_str, whdload_path, "");
+#endif
                      fprintf(configfile, "filesystem2=rw,WHDLoad:WHDLoad:\"%s\",0\n", (const char*)tmp_str);
                      free(tmp_str);
                      tmp_str = NULL;
@@ -4384,7 +4391,14 @@ static bool retro_create_config()
                   /* Attach directory */
                   if (path_is_directory(whdsaves_path))
                   {
+#ifdef WIN32
                      tmp_str = string_replace_substring(whdsaves_path, "\\", "\\\\");
+#else
+                     tmp_str = strdup(whdsaves_path);
+                     /* Force ending slash with empty path_join to make sure the path is not treated as a file */
+                     if (tmp_str[strlen(tmp_str)-1] != '/')
+                        path_join(tmp_str, whdsaves_path, "");
+#endif
                      fprintf(configfile, "filesystem2=rw,WHDSaves:WHDSaves:\"%s\",0\n", (const char*)tmp_str);
                      free(tmp_str);
                      tmp_str = NULL;
