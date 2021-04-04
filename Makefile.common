@@ -9,6 +9,7 @@ INCFLAGS := \
 	-I$(EMU)/include \
 	-I$(CORE_DIR) \
 	-I$(RETRODEP) \
+	-I$(DEPS_DIR)/7zip \
 	-I$(LIBRETRO) \
 	-I$(LIBRETRO_COMM_DIR)/include \
 	-I$(LIBRETRO_COMM_DIR)/include/compat/zlib
@@ -188,50 +189,20 @@ ifneq ($(GIT_VERSION)," unknown")
 endif
 
 ifeq ($(HAVE_CHD), 1)
-	CFLAGS  += -DWITH_CHD -DPACKAGE_VERSION=\"1.3.2\" -DFLAC_API_EXPORTS -DFLAC__HAS_OGG=0 -DHAVE_LROUND -DHAVE_STDINT_H -D_7ZIP_ST -DWANT_SUBCODE
-
-	ifeq ($(HAVE_SYS_PARAM), 1)
-		CFLAGS += -DHAVE_SYS_PARAM_H
-	else
-		CFLAGS += -Dflac_max=MAX -Dflac_min=MIN -Dfseeko=fseek -Dftello=ftell
-	endif
-
-	CHDLIBDIR := $(DEPS_DIR)/libchdr
+	CFLAGS += -DWITH_CHD
 	INCFLAGS += \
-		-I$(CHDLIBDIR)/src \
-		-I$(CHDLIBDIR)/deps/libFLAC/include \
-		-I$(CHDLIBDIR)/deps/lzma \
-		-I$(CHDLIBDIR)/deps/zlib
+		-I$(DEPS_DIR)/libchdr/include
 
 	SOURCES_C += \
-		$(CHDLIBDIR)/src/bitstream.c \
-		$(CHDLIBDIR)/src/cdrom.c \
-		$(CHDLIBDIR)/src/chd.c \
-		$(CHDLIBDIR)/src/flac.c \
-		$(CHDLIBDIR)/src/huffman.c \
-		$(CHDLIBDIR)/deps/libFLAC/bitmath.c \
-		$(CHDLIBDIR)/deps/libFLAC/bitreader.c \
-		$(CHDLIBDIR)/deps/libFLAC/cpu.c \
-		$(CHDLIBDIR)/deps/libFLAC/crc.c \
-		$(CHDLIBDIR)/deps/libFLAC/fixed.c \
-		$(CHDLIBDIR)/deps/libFLAC/float.c \
-		$(CHDLIBDIR)/deps/libFLAC/format.c \
-		$(CHDLIBDIR)/deps/libFLAC/lpc.c \
-		$(CHDLIBDIR)/deps/libFLAC/lpc_intrin_avx2.c \
-		$(CHDLIBDIR)/deps/libFLAC/lpc_intrin_sse.c \
-		$(CHDLIBDIR)/deps/libFLAC/lpc_intrin_sse2.c \
-		$(CHDLIBDIR)/deps/libFLAC/lpc_intrin_sse41.c \
-		$(CHDLIBDIR)/deps/libFLAC/md5.c \
-		$(CHDLIBDIR)/deps/libFLAC/memory.c \
-		$(CHDLIBDIR)/deps/libFLAC/stream_decoder.c \
-		$(CHDLIBDIR)/deps/lzma/LzFind.c \
-		$(CHDLIBDIR)/deps/lzma/LzmaEnc.c
+		$(DEPS_DIR)/7zip/LzFind.c \
+		$(DEPS_DIR)/7zip/LzmaEnc.c \
+		$(DEPS_DIR)/libchdr/src/libchdr_bitstream.c \
+		$(DEPS_DIR)/libchdr/src/libchdr_cdrom.c \
+		$(DEPS_DIR)/libchdr/src/libchdr_chd.c \
+		$(DEPS_DIR)/libchdr/src/libchdr_flac.c \
+		$(DEPS_DIR)/libchdr/src/libchdr_huffman.c
 
 	ifeq ($(STATIC_LINKING), 1)
-		SOURCES_C += $(CHDLIBDIR)/deps/lzma/LzmaDec.c
-	endif
-
-	ifeq ($(platform), win)
-		CFLAGS += -DHAVE_FSEEKO
+		SOURCES_C += $(DEPS_DIR)/7zip/LzmaDec.c
 	endif
 endif

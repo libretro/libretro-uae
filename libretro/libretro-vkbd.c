@@ -7,7 +7,6 @@
 
 bool retro_vkbd = false;
 bool retro_vkbd_page = false;
-bool retro_vkbd_position = false;
 bool retro_vkbd_transparent = true;
 short int retro_vkbd_ready = 0;
 extern bool retro_capslock;
@@ -156,12 +155,7 @@ void print_vkbd(void)
    int YSIDE     = (zoomed_height - YPADDING) / VKBDY;
    int YSIDE_MAX = 21 * FONT_HEIGHT;
    YSIDE         = (YSIDE > YSIDE_MAX) ? YSIDE_MAX : YSIDE;
-
-   /* Position toggle */
-   if (retro_vkbd_position && zoomed_height > (YSIDE * VKBDY) + (YPADDING * 6))
-      YOFFSET = -zoomed_height + ((YSIDE * VKBDY) + (YPADDING * 3));
-   else
-      YOFFSET = -(YPADDING * 2);
+   YOFFSET       = -(YPADDING * 2);
 
    int XBASEKEY  = (XPADDING > 0) ? (XPADDING / 2) : 0;
    int YBASEKEY  = (zoomed_height - (YSIDE * VKBDY)) - (YPADDING / 2);
@@ -244,7 +238,8 @@ void print_vkbd(void)
          if ( (vkey_sticky1 == vkeys[(y * VKBDX) + x + page].value
           ||   vkey_sticky2 == vkeys[(y * VKBDX) + x + page].value
           ||(retro_capslock && vkeys[(y * VKBDX) + x + page].value == AK_CAPSLOCK)
-          ||(vkflag[RETRO_DEVICE_ID_JOYPAD_START] && vkeys[(y * VKBDX) + x + page].value == AK_RET))
+          ||(vkflag[RETRO_DEVICE_ID_JOYPAD_START] && vkeys[(y * VKBDX) + x + page].value == AK_RET)
+          ||(vkflag[RETRO_DEVICE_ID_JOYPAD_X]     && vkeys[(y * VKBDX) + x + page].value == AK_SPC))
           && BKG_COLOR != BKG_COLOR_EXTRA && vkeys[(y * VKBDX) + x + page].value != -20)
          {
             FONT_COLOR = FONT_COLOR_NORMAL;

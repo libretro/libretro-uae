@@ -205,6 +205,9 @@ static void zfile_free (struct zfile *f)
 	xfree (f->data);
 	xfree (f->mode);
 	xfree (f->userdata);
+#ifdef __LIBRETRO__
+	xfree (f->originalname);
+#endif
 	xfree (f);
 }
 

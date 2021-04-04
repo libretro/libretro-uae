@@ -1499,44 +1499,6 @@ int make_hdf (char *hdf_path, char *hdf_size, char *device_name)
 
 /* CHD */
 #ifdef WITH_CHD
-
-/***************************************************************************
-    INLINE FUNCTIONS
-***************************************************************************/
-
-INLINE UINT32 msf_to_lba(UINT32 msf)
-{
-	return ( ((msf&0x00ff0000)>>16) * 60 * 75) + (((msf&0x0000ff00)>>8) * 75) + ((msf&0x000000ff)>>0);
-}
-
-UINT32 lba_to_msf(UINT32 lba)
-{
-	UINT8 m, s, f;
-
-	m = lba / (60 * 75);
-	lba -= m * (60 * 75);
-	s = lba / 75;
-	f = lba % 75;
-
-	return ((m / 10) << 20) | ((m % 10) << 16) |
-			((s / 10) << 12) | ((s % 10) <<  8) |
-			((f / 10) <<  4) | ((f % 10) <<  0);
-}
-
-// segacd needs it like this.. investigate
-// Angelo also says PCE tracks often start playing at the
-// wrong address.. related?
-INLINE UINT32 lba_to_msf_alt(int lba)
-{
-	UINT32 ret = 0;
-
-	ret |= ((lba / (60 * 75))&0xff)<<16;
-	ret |= (((lba / 75) % 60)&0xff)<<8;
-	ret |= ((lba % 75)&0xff)<<0;
-
-	return ret;
-}
-
 //-------------------------------------------------
 //  be_read - extract a big-endian number from
 //  a byte buffer
@@ -1608,29 +1570,6 @@ enum
 	COMPRESSION_PARENT_SELF,                    // same block in the parent
 	COMPRESSION_PARENT_0,                       // same as the last COMPRESSION_PARENT block
 	COMPRESSION_PARENT_1                        // same as the last COMPRESSION_PARENT block + 1
-};
-
-// currently-defined codecs
-const chd_codec_type CHD_CODEC_NONE         = 0;
-
-// general codecs
-const chd_codec_type CHD_CODEC_ZLIB         = CHD_MAKE_TAG('z','l','i','b');
-const chd_codec_type CHD_CODEC_LZMA         = CHD_MAKE_TAG('l','z','m','a');
-const chd_codec_type CHD_CODEC_HUFFMAN      = CHD_MAKE_TAG('h','u','f','f');
-const chd_codec_type CHD_CODEC_FLAC         = CHD_MAKE_TAG('f','l','a','c');
-
-// general codecs with CD frontend
-const chd_codec_type CHD_CODEC_CD_ZLIB      = CHD_MAKE_TAG('c','d','z','l');
-const chd_codec_type CHD_CODEC_CD_LZMA      = CHD_MAKE_TAG('c','d','l','z');
-const chd_codec_type CHD_CODEC_CD_FLAC      = CHD_MAKE_TAG('c','d','f','l');
-
-// A/V codecs
-const chd_codec_type CHD_CODEC_AVHUFF       = CHD_MAKE_TAG('a','v','h','u');
-
-// A/V codec configuration parameters
-enum
-{
-	AVHUFF_CODEC_DECOMPRESS_CONFIG = 1
 };
 
 /*-------------------------------------------------

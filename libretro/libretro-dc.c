@@ -635,6 +635,8 @@ unsigned dc_inspect_m3u(const char* m3u_file)
    while ((fgets(buffer, sizeof(buffer), fp) != NULL) && !ret)
    {
       char* string = trimwhitespace(buffer);
+      /* Remove label */
+      char* token = strtok(string, "|");
       ret = dc_get_image_type(string);
    }
 

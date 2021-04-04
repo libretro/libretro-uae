@@ -49,6 +49,12 @@ typedef int64_t WRes;
 #define RINOK(x) { int __result__ = (x); if (__result__ != 0) return __result__; }
 #endif
 
+#ifdef _LZMA_NO_SYSTEM_SIZE_T
+typedef UInt32 SizeT;
+#else
+typedef size_t SizeT;
+#endif
+
 #ifdef _MSC_VER
 #define MY_FAST_CALL __fastcall
 #else

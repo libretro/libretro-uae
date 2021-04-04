@@ -35,7 +35,10 @@
 #include "misc.h"
 #include "hrtimer.h"
 
-//#define WITH_MP3
+#ifdef __LIBRETRO__
+#include "savestate.h"
+#endif
+
 #ifdef WITH_MP3
 #include "mp3decoder.h"
 #endif
@@ -45,13 +48,9 @@
 #include "rp.h"
 #endif
 
-//#define WITH_CHD
 #ifdef WITH_CHD
 #ifdef __LIBRETRO__
 #include "libretro-glue.h"
-#include "deps/libchdr/src/chd.h"
-#include "deps/libchdr/src/cdrom.h"
-#include "deps/libchdr/src/flac.h"
 #else
 #include "archivers/chd/chdtypes.h"
 #include "archivers/chd/chd.h"
@@ -209,7 +208,7 @@ static int do_read (struct cdunit *cdu, struct cdtoc *t, uae_u8 *data, int secto
 }
 
 // WOHOO, library that supports virtual file access functions. Perfect!
-#ifdef WITH_CHD
+#ifdef WITH_FLAC
 static void flac_metadata_callback (const FLAC__StreamDecoder *decoder, const FLAC__StreamMetadata *metadata, void *client_data)
 {
 	struct cdtoc *t = (struct cdtoc*)client_data;
@@ -443,7 +442,7 @@ static void *cdda_unpack_func (void *v)
 							t->data = mp3dec->get (t->handle, t->data, t->filesize);
 #endif
 					} else if (t->enctype == AUDENC_FLAC) {
-#ifdef WITH_CHD
+#ifdef WITH_FLAC
 						flac_get_data (t);
 #endif
 					}
@@ -1466,6 +1465,14 @@ static int parsechd (struct cdunit *cdu, struct zfile *zcue, const TCHAR *img)
 	struct zfile *f = zfile_dup (zcue);
 	if (!f)
 		return 0;
+
+#ifdef __LIBRETRO__
+	if (cdu->chd_cdf)
+		cdrom_close(cdu->chd_cdf);
+	if (cdu->chd_f)
+		chd_close(cdu->chd_f);
+#endif
+
 	chd_file *cf;
 	cf = xmalloc(chd_file, 1);
 	err = chd_open(img, CHD_OPEN_READ, NULL, &cf);
@@ -1942,7 +1949,7 @@ static int parsecue (struct cdunit *cdu, struct zfile *zcue, const TCHAR *img)
 						}
 #endif
 					} else if (fnametypeid == AUDENC_FLAC && t->handle) {
-#ifdef WITH_CHD
+#ifdef WITH_FLAC
 						flac_get_size (t);
 						if (t->filesize)
 							t->enctype = fnametypeid;
@@ -2341,15 +2348,28 @@ static void unload_image (struct cdunit *cdu)
 		xfree (t->extrainfo);
 	}
 #ifdef WITH_CHD
+#ifdef __LIBRETRO__
+	/* Postpone 'chd_close' to 'parsechd' while restoring state,
+	 * otherwise Windows build will randomly crash depending
+	 * on the amount of CDA tracks. 'parsechd' will be executed
+	 * on restore shortly after 'unload_image' anyway. */
+	if (savestate_state != STATE_RESTORE)
+	{
+		cdrom_close (cdu->chd_cdf);
+		cdu->chd_cdf = NULL;
+
+		if (cdu->chd_f)
+			chd_close(cdu->chd_f);
+		cdu->chd_f = NULL;
+	}
+#else
 	cdrom_close (cdu->chd_cdf);
 	cdu->chd_cdf = NULL;
+
 	if (cdu->chd_f)
-#ifdef __LIBRETRO__
-		chd_close(cdu->chd_f);
-#else
 		cdu->chd_f->close();
-#endif
 	cdu->chd_f = NULL;
+#endif
 #endif
 	memset (cdu->toc, 0, sizeof cdu->toc);
 	cdu->tracks = 0;

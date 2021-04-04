@@ -6,53 +6,20 @@
 
 #ifdef WITH_CHD
 /*** CHD ***/
-#include "macros.h"
 #include "deps/libz/zlib.h"
 #include "deps/7zip/LzmaDec.h"
 
-#include "deps/libchdr/src/chd.h"
-#include "deps/libchdr/src/cdrom.h"
-#include "deps/libchdr/src/flac.h"
+#include "libchdr/chd.h"
+#include "libchdr/cdrom.h"
+#include "libchdr/flac.h"
 #include "archivers/chd/chdtypes.h"
 
-#define CHD_MAKE_TAG(a,b,c,d)       (((a) << 24) | ((b) << 16) | ((c) << 8) | (d))
-#define GDROM_OLD_METADATA_TAG      CHD_MAKE_TAG('C','H','G','T')
-
 #define METADATA_HEADER_SIZE        16
-#define MAX_ZLIB_ALLOCS				64
+#define MAX_ZLIB_ALLOCS             64
 #define MAX_LZMA_ALLOCS             64
 
 typedef UINT32 chd_codec_type;
 typedef UINT32 chd_metadata_tag;
-
-#if 0
-typedef struct chdcd_track_input_entry
-{
-#if 0
-	void chdcd_track_input_entry() { reset(); }
-	void reset() { fname.reset(); offset = idx0offs = idx1offs = 0; swap = false; }
-#endif
-
-#if 0
-	astring fname;      // filename for each track
-#else
-	char fname[RETRO_PATH_MAX];
-#endif
-	UINT32 offset;      // offset in the data file for each track
-	bool swap;          // data needs to be byte swapped
-	UINT32 idx0offs;
-	UINT32 idx1offs;
-} chdcd_track_input_entry;
-
-typedef struct chdcd_track_input_info
-{
-#if 0
-	void reset() { for (int i = 0; i < CD_MAX_TRACKS; i++) track[i].reset(); }
-#endif
-
-	chdcd_track_input_entry track[CD_MAX_TRACKS];
-} chdcd_track_input_info;
-#endif
 
 typedef struct cdrom_track_info
 {

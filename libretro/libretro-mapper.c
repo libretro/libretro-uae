@@ -70,7 +70,6 @@ extern void retro_reset_soft();
 extern bool retro_statusbar;
 extern bool retro_vkbd;
 extern bool retro_vkbd_page;
-extern bool retro_vkbd_position;
 extern bool retro_vkbd_transparent;
 extern short int retro_vkbd_ready;
 extern void retro_key_up(int);
@@ -1824,7 +1823,7 @@ void update_input(unsigned disable_keys)
          retro_key_up(AK_RET);
       }
 
-      /* CapsLock, RetroPad Y */
+      /* Toggle CapsLock, RetroPad Y */
       i = RETRO_DEVICE_ID_JOYPAD_Y;
       if (!vkflag[i] && mapper_keys[i] >= 0 && ((joypad_bits[0] & (1 << i)) ||
                                                 (joypad_bits[1] & (1 << i))))
@@ -1839,22 +1838,23 @@ void update_input(unsigned disable_keys)
          vkflag[i] = 0;
       }
 
-      /* Position toggle, RetroPad X */
+      /* Press Space, RetroPad X */
       i = RETRO_DEVICE_ID_JOYPAD_X;
       if (!vkflag[i] && mapper_keys[i] >= 0 && ((joypad_bits[0] & (1 << i)) ||
                                                 (joypad_bits[1] & (1 << i))))
       {
          vkflag[i] = 1;
-         retro_vkbd_position = !retro_vkbd_position;
+         retro_key_down(AK_SPC);
       }
       else
       if (vkflag[i] && (!(joypad_bits[0] & (1 << i)) &&
                         !(joypad_bits[1] & (1 << i))))
       {
          vkflag[i] = 0;
+         retro_key_up(AK_SPC);
       }
 
-      /* Transparency toggle, RetroPad A */
+      /* Toggle transparency, RetroPad A */
       i = RETRO_DEVICE_ID_JOYPAD_A;
       if (!vkflag[i] && mapper_keys[i] >= 0 && ((joypad_bits[0] & (1 << i)) ||
                                                 (joypad_bits[1] & (1 << i))))
