@@ -606,7 +606,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_zoom_mode",
          "Video > Zoom Mode",
-         "Crop the borders to fit various host screens. Requirements in RetroArch settings:\n- Aspect Ratio: Core provided,\n- Integer Scale: Off.",
+         "Crop borders to fit various host screens. Requirements in RetroArch settings:\n- Aspect Ratio: Core provided,\n- Integer Scale: Off.",
          {
             { "disabled", NULL },
             { "minimum", "Minimum" },
@@ -996,7 +996,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_floppy_sound_type",
          "Audio > Floppy Sound Type",
-         "External files go in 'system/uae_data/'.",
+         "External files go in 'system/uae_data/' or 'system/uae/'.",
          {
             { "internal", "Internal" },
             { "A500", "External: A500" },
@@ -1412,7 +1412,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_retropad_options",
          "RetroPad > Face Button Options",
-         "Rotate face buttons clockwise and/or makes 2nd fire press up.",
+         "Rotate face buttons clockwise and/or make 2nd fire press up.",
          {
             { "disabled", "B = Fire, A = 2nd fire" },
             { "jump", "B = Fire, A = Up" },
@@ -1425,7 +1425,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_cd32pad_options",
          "CD32 Pad > Face Button Options",
-         "Rotate face buttons clockwise and/or makes blue button press up.",
+         "Rotate face buttons clockwise and/or make blue button press up.",
          {
             { "disabled", "B = Red, A = Blue" },
             { "jump", "B = Red, A = Up" },
