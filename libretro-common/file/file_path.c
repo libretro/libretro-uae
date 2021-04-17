@@ -509,7 +509,7 @@ void path_basedir(char *path)
    if (last)
       last[1] = '\0';
    else
-      snprintf(path, 3, "." PATH_DEFAULT_SLASH());
+      strlcpy(path, "." PATH_DEFAULT_SLASH(), 3);
 }
 
 /**
@@ -571,6 +571,16 @@ const char *path_basename(const char *path)
          return last + 1;
    }
 
+   return path;
+}
+
+/* Specialized version */
+const char *path_basename_nocompression(const char *path)
+{
+   /* We cut at the last slash */
+   const char *last  = find_last_slash(path);
+   if (last)
+      return last + 1;
    return path;
 }
 
@@ -1189,7 +1199,7 @@ void path_basedir_wrapper(char *path)
    if (last)
       last[1] = '\0';
    else
-      snprintf(path, 3, "." PATH_DEFAULT_SLASH());
+      strlcpy(path, "." PATH_DEFAULT_SLASH(), 3);
 }
 
 #if !defined(RARCH_CONSOLE) && defined(RARCH_INTERNAL)
