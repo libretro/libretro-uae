@@ -1,6 +1,7 @@
 CORE_DIR  := .
 ROOT_DIR  := .
 PLATFLAGS :=
+SOURCES_C :=
 TARGET_NAME := puae
 
 ifeq ($(platform),)
@@ -167,30 +168,21 @@ else ifeq ($(platform), vita)
    STATIC_LINKING = 1
    STATIC_LINKING_LINK=1
 
-# PS3
-else ifeq ($(platform), ps3)
+# PS3/PSl1GHT
+else ifneq (,$(filter $(platform), ps3 psl1ght))
+   ifeq ($(platform), psl1ght)
+	   CFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DBYTE_ORDER=BIG_ENDIAN -D__PSL1GHT__ -DHAVE_MEMALIGN -DHAVE_ASPRINTF -DBIG_ENDIAN -I$(ZLIB_DIR) -I./deps-ps3
+   else
+	   CFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DBYTE_ORDER=BIG_ENDIAN -D__PS3__ -DHAVE_MEMALIGN -DHAVE_ASPRINTF -DBIG_ENDIAN -I$(ZLIB_DIR) -I./deps-ps3
+   endif
    TARGET := $(TARGET_NAME)_libretro_$(platform).a
-   CC = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-gcc.exe
-   AR = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-ar.exe
+   CC = $(PS3DEV)/ppu/bin/ppu-$(COMMONLV)gcc$(EXE_EXT)
+   AR = $(PS3DEV)/ppu/bin/ppu-$(COMMONLV)ar$(EXE_EXT)
    ZLIB_DIR = $(LIBUTILS)/zlib/
    LDFLAGS := -lm -lpthread -lc
-   CFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DBYTE_ORDER=BIG_ENDIAN -D__CELLOS_LV2__ -DHAVE_MEMALIGN -DHAVE_ASPRINTF -DBIG_ENDIAN \
-   -DLITTLE_ENDIAN -I$(ZLIB_DIR) -I./deps-ps3
    SOURCES_C += $(CORE_DIR)/deps-ps3/ps3_functions.c
    STATIC_LINKING=1
    STATIC_LINKING_LINK=1
-
-# Psl1ght
-else ifeq ($(platform), psl1ght)
-   TARGET := $(TARGET_NAME)_libretro_$(platform).a
-   CC = $(PS3DEV)/ppu/bin/ppu-gcc$(EXE_EXT)
-   CXX = $(PS3DEV)/ppu/bin/ppu-g++$(EXE_EXT)
-   CC_AS = $(PS3DEV)/ppu/bin/ppu-gcc$(EXE_EXT)
-   AR = $(PS3DEV)/ppu/bin/ppu-ar$(EXE_EXT)
-   ZLIB_DIR = $(LIBUTILS)/zlib/
-   LDFLAGS := -lm -lpthread -lc
-   CFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DBYTE_ORDER=BIG_ENDIAN -D__CELLOS_LV2__ -DHAVE_MEMALIGN -DHAVE_ASPRINTF -I$(ZLIB_DIR)
-   STATIC_LINKING=1
 
 # Emscripten
 else ifeq ($(platform), emscripten)

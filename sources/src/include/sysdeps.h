@@ -558,7 +558,7 @@ typedef uint8_t uint8;
 #define timezone()
 #endif
 
-#ifdef __CELLOS_LV2__
+#ifdef __PS3__
 #include <ctype.h>
 #include "ps3_headers.h"
 #endif

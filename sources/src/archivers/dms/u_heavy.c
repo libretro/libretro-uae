@@ -30,7 +30,7 @@ USHORT dms_heavy_text_loc;
 
 static USHORT read_tree_c(void);
 static USHORT read_tree_p(void);
-#ifdef __CELLOS_LV2__
+#ifdef __PS3__
 INLINE USHORT decode_c(void);
 INLINE USHORT decode_p(void);
 #else
