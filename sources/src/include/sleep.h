@@ -54,7 +54,7 @@
 # define uae_msleep(msecs) snooze (msecs * ONE_THOUSAND)
 #elif defined(WIIU)
 #define uae_msleep(msecs) //usleep (msecs * ONE_THOUSAND)
-#elif defined(__CELLOS_LV2__)
+#elif defined(__PS3__)
 #define uae_msleep(msec) sys_timer_usleep(msec*1000)
 #elif defined TARGET_AMIGAOS
 #   if defined __amigaos4__ || defined __MORPHOS__

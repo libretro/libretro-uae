@@ -91,7 +91,7 @@
 #define HAVE_DIRENT_H 1
 
 /* "Define to 1 if you have 'dlopen' function */
-#if !defined(WIIU) && !defined(__SWITCH__) && !defined(VITA) && !defined(__CELLOS_LV2__)
+#if !defined(WIIU) && !defined(__SWITCH__) && !defined(VITA) && !defined(__PS3__)
 #define HAVE_DLOPEN 1
 #endif
 
@@ -166,7 +166,7 @@
 #define HAVE_SELECT 1
 
 /* Define to 1 if you have the `setitimer' function. */
-#if !defined(__SWITCH__) && !defined(VITA) && !defined(__CELLOS_LV2__)
+#if !defined(__SWITCH__) && !defined(VITA) && !defined(__PS3__)
 #define HAVE_SETITIMER 1
 #endif
 
@@ -174,7 +174,7 @@
 #define HAVE_SIGACTION 1
 
 /* Define to 1 if you have the <signal.h> header file. */
-#if !defined(__CELLOS_LV2__) && !defined(_WIN32) && !defined(WIIU)
+#if !defined(__PS3__) && !defined(_WIN32) && !defined(WIIU)
 #define HAVE_SIGNAL 1
 #endif
 
@@ -253,7 +253,7 @@
 /* #undef HAVE_SUN_AUDIOIO_H */
 
 /* Define to 1 if you have the `sync' function. */
-#if !defined(__SWITCH__) && !defined(VITA) && !defined(__CELLOS_LV2__)
+#if !defined(__SWITCH__) && !defined(VITA) && !defined(__PS3__)
 #define HAVE_SYNC 1
 #endif
 
@@ -298,7 +298,7 @@
 /* #undef HAVE_SYS_NDIR_H */
 
 /* Define to 1 if you have the <sys/param.h> header file. */
-#ifndef __CELLOS_LV2__
+#ifndef __PS3__
 #define HAVE_SYS_PARAM_H 1
 #endif
 

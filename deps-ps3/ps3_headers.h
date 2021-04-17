@@ -10,6 +10,7 @@
 #ifndef PS3_HEADERS
 #define PS3_HEADERS
 
+#ifndef __PSL1GHT__
 #define S_ISDIR(mode)  (((mode) & S_IFMT) == S_IFDIR)
 #define usleep  sys_timer_usleep
 #define	getcwd(a,b)	"/dev_hdd0/SSNE10000/USRDIR/"
@@ -36,4 +37,6 @@ struct timeb {
 
 int gettimeofday(struct timeval* tv, void* blah);
 int fseeko(FILE* stream, off_t pos, int whence);
+off_t ftello( FILE* stream );
 int ftime(struct timeb* tb);
+#endif

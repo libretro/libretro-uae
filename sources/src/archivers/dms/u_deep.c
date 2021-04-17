@@ -16,7 +16,7 @@
 #include "u_deep.h"
 #include "getbits.h"
 
-#ifdef __CELLOS_LV2__
+#ifdef __PS3__
 INLINE USHORT DecodeChar(void);
 INLINE USHORT DecodePosition(void);
 INLINE void update(USHORT c);

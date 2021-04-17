@@ -14,7 +14,7 @@ INCFLAGS := \
 	-I$(LIBRETRO_COMM_DIR)/include \
 	-I$(LIBRETRO_COMM_DIR)/include/compat/zlib
 
-SOURCES_C := \
+SOURCES_C += \
     $(LIBRETRO)/libretro-core.c \
 	$(LIBRETRO)/libretro-mapper.c \
 	$(LIBRETRO)/libretro-dc.c \
