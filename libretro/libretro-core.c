@@ -290,7 +290,7 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_model",
          "Model",
-         "'Automatic' defaults to 'A500' with floppy disks, 'A600' with hard drives and 'CD32' with CD images. 'Automatic' can be overridden with file path tags.\nCore restart required.",
+         "'Automatic' defaults to 'A500' with floppy disks, 'A1200' with hard drives and 'CD32' with compact discs. 'Automatic' can be overridden with file path tags.\nCore restart required.",
          {
             { "auto", "Automatic" },
             { "A500OG", "A500 (512KB Chip)" },

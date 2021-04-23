@@ -267,7 +267,7 @@ endif
 ifeq ($(DEBUG), 1)
    CFLAGS += -O0 -g
 else
-   CFLAGS += -O3 -Wno-format
+   CFLAGS += -O3 -Wno-format -Wno-format-security
    LDFLAGS += -s
 endif
 
