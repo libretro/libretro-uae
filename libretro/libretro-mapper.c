@@ -1810,7 +1810,8 @@ void update_input(unsigned disable_keys)
       /* Press Return, RetroPad Start */
       i = RETRO_DEVICE_ID_JOYPAD_START;
       if (!vkflag[i] && mapper_keys[i] >= 0 && ((joypad_bits[0] & (1 << i)) ||
-                                                (joypad_bits[1] & (1 << i))))
+                                                (joypad_bits[1] & (1 << i)))
+                                            && !input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_RETURN))
       {
          vkflag[i] = 1;
          retro_key_down(AK_RET);
