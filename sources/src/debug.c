@@ -12,7 +12,7 @@
 #include "sysdeps.h"
 
 #include <ctype.h>
-#ifndef __CELLOS_LV2__
+#ifndef __PS3__
 #include <signal.h>
 #endif
 

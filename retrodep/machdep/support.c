@@ -23,9 +23,9 @@
 #define LARGE_ALIGNMENT ".align 4,0x90\n"
 #endif
 
-struct flag_struct regflags;
+extern struct flag_struct regflags;
 
-#if defined(__CELLOS_LV2__) || defined(_WIN32) || defined(WIIU)
+#ifndef HAVE_SIGNAL
 
 frame_time_t machdep_gethrtimebase (void)
 {
@@ -54,7 +54,6 @@ int machdep_parse_option (struct uae_prefs *p, const char *option, const char *v
 void machdep_default_options (struct uae_prefs *p)
 {
 }
-
 
 #else
 

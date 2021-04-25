@@ -25,16 +25,12 @@
 #if defined HAVE_SYS_TERMIOS_H && defined HAVE_POSIX_OPT_H && defined HAVE_SYS_IOCTL_H && defined HAVE_TCGETATTR
 #define POSIX_SERIAL
 #endif
-#define POSIX_SERIAL
 
-#if !defined(__CELLOS_LV2__) && !defined(_WIN32) && !defined(WIIU) && !defined(__SWITCH__) && !defined(VITA)
 #ifdef POSIX_SERIAL
 #include <termios.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
 #endif
-#endif
-
 
 #if !defined B300 || !defined B1200 || !defined B2400 || !defined B4800 || !defined B9600
 #undef POSIX_SERIAL
@@ -43,14 +39,8 @@
 #undef POSIX_SERIAL
 #endif
 
-#if !defined(__CELLOS_LV2__) && !defined(_WIN32)
 #ifndef O_NONBLOCK
 #define O_NONBLOCK O_NDELAY
-#endif
-#else
-#ifndef O_NONBLOCK
-#define O_NONBLOCK 0
-#endif
 #endif
 
 #define SERIALDEBUG 0 /* 0, 1, 2 3 */
@@ -296,17 +286,11 @@ static int serial_read (char *buffer)
 
 void serial_flush_buffer (void)
 {
+    int ret;
     if (serdev == 1) {
 		if (outlast) {
 		    if (sd != 0) {
-				/* There is absolutely nothing we can do about a write failure,
-				 * but the warning (-Wunused-result) is irritating, so deactivate
-				 * it just here.
-				*/
-//#pragma GCC diagnostic ignored "-Wunused"
-//				GCC_DIAG_OFF(unused-result)
-				write (sd, outbuf, outlast);
-//				GCC_DIAG_ON(unused-result)
+				ret = write (sd, outbuf, outlast);
 		    }
 		}
 		outlast = 0;

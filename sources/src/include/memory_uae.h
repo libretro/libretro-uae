@@ -6,6 +6,9 @@
  * Copyright 1995 Bernd Schmidt
  */
 
+#ifndef UAE_MEMORY_H
+#define UAE_MEMORY_H
+
 #ifndef HAS_UAE_PREFS_STRUCT
 struct uae_prefs;
 #endif // HAS_UAEPREFS_STRUCT
@@ -63,13 +66,17 @@ extern void wait_cpu_cycle_write_ce020 (uaecptr addr, int mode, uae_u32 v);
 
 #undef DIRECT_MEMFUNCS_SUCCESSFUL
 #include "machdep/maccess.h"
-
 #include "retrodep/memory_uae.h"
 
 #define chipmem_start 0x00000000
 #define bogomem_start 0x00C00000
 #define cardmem_start 0x00E00000
 #define kickmem_start 0x00F80000
+
+#define ROM_SIZE_512 524288
+#define ROM_SIZE_256 262144
+#define ROM_SIZE_128 131072
+
 extern uaecptr z3fastmem_start, z3fastmem2_start, z3chipmem_start;
 extern uaecptr p96ram_start;
 extern uaecptr fastmem_start;
@@ -430,3 +437,4 @@ void *arm_memcpy(void *dest, const void *src, size_t n);
 #define uae4all_memclr(p,l) memset(p, 0, l)
 #endif
 
+#endif /* UAE_MEMORY_H */

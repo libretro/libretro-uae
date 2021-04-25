@@ -24,7 +24,9 @@
 #include "diskutil.h"
 #include "fdi2raw.h"
 
+#ifndef __LIBRETRO__
 #include "archivers/zip/unzip.h"
+#endif
 #include "archivers/dms/cdata.h"
 #include "archivers/dms/pfile.h"
 #include "archivers/wrp/warp.h"
@@ -203,6 +205,9 @@ static void zfile_free (struct zfile *f)
 	xfree (f->data);
 	xfree (f->mode);
 	xfree (f->userdata);
+#ifdef __LIBRETRO__
+	xfree (f->originalname);
+#endif
 	xfree (f);
 }
 

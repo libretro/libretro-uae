@@ -9,51 +9,11 @@
 #ifndef EUAE_MACHDEP_M68KOPS_H
 #define EUAE_MACHDEP_M68KOPS_H
 
-#ifdef WORDS_BIGENDIAN
-#define FLAGBIT_N	31
-#define FLAGBIT_Z	29
-#define FLAGBIT_V	22
-#define FLAGBIT_C	21
-#define FLAGBIT_X	21
-#else
-#define FLAGBIT_N	15
-#define FLAGBIT_Z	14
-#define FLAGBIT_C	8
-#define FLAGBIT_V	0
-#define FLAGBIT_X	8
-#endif
-
-#define FLAGVAL_N	(1 << FLAGBIT_N)
-#define FLAGVAL_Z 	(1 << FLAGBIT_Z)
-#define FLAGVAL_C	(1 << FLAGBIT_C)
-#define FLAGVAL_V	(1 << FLAGBIT_V)
-#define FLAGVAL_X	(1 << FLAGBIT_X)
-
-#define SET_ZFLG(y)	(regflags.cznv = (regflags.cznv & ~FLAGVAL_Z) | (((y) ? 1 : 0) << FLAGBIT_Z))
-#define SET_CFLG(y)	(regflags.cznv = (regflags.cznv & ~FLAGVAL_C) | (((y) ? 1 : 0) << FLAGBIT_C))
-#define SET_VFLG(y)	(regflags.cznv = (regflags.cznv & ~FLAGVAL_V) | (((y) ? 1 : 0) << FLAGBIT_V))
-#define SET_NFLG(y)	(regflags.cznv = (regflags.cznv & ~FLAGVAL_N) | (((y) ? 1 : 0) << FLAGBIT_N))
-#define SET_XFLG(y)	(regflags.x    = ((y) ? 1 : 0) << FLAGBIT_X)
-
-#define GET_ZFLG()	((regflags.cznv >> FLAGBIT_Z) & 1)
-#define GET_CFLG()	((regflags.cznv >> FLAGBIT_C) & 1)
-#define GET_VFLG()	((regflags.cznv >> FLAGBIT_V) & 1)
-#define GET_NFLG()	((regflags.cznv >> FLAGBIT_N) & 1)
-#define GET_XFLG()	((regflags.x    >> FLAGBIT_X) & 1)
-
-#define CLEAR_CZNV()	(regflags.cznv  = 0)
-#define GET_CZNV	(regflags.cznv)
-#define IOR_CZNV(X)	(regflags.cznv |= (X))
-#define SET_CZNV(X)	(regflags.cznv  = (X))
-
-#define COPY_CARRY() (regflags.x = regflags.cznv)
-
 /*
  * Test operations
  *
  * Evaluate operand and set Z and N flags. Always clear C and V.
  */
-
 
 #define optflag_testl(v) \
     do { \

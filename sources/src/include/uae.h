@@ -50,8 +50,8 @@ extern uae_u32 getlocaltime (void);
 
 extern int quit_program;
 #ifdef __LIBRETRO__
-extern int libretro_runloop_active;
-extern int libretro_frame_end;
+extern unsigned int libretro_runloop_active;
+extern unsigned int libretro_frame_end;
 #endif
 extern bool console_emulation;
 

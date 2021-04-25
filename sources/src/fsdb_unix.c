@@ -14,13 +14,6 @@
 #include "fsdb.h"
 #include "misc.h"
 
-#ifdef __LIBRETRO__
-#include "string/stdstring.h"
-#ifdef __CELLOS_LV2__
-#include "ps3_headers.h"
-#endif
-#endif
-
 /* these are deadly (but I think allowed on the Amiga): */
 #define NUM_EVILCHARS 9
 static TCHAR evilchars[NUM_EVILCHARS] = { '%', '\\', '*', '?', '\"', '/', '<', '>', '|' };
@@ -456,11 +449,13 @@ int custom_fsdb_used_as_nname(a_inode *base, const TCHAR *nname)
     return 0;
 }
 
+extern int my_existstype(const char *name, int mode);
+
 static int fsdb_get_file_info(const char *nname, fsdb_file_info *info)
 {
     int error = 0;
     info->comment = NULL;
-    info->type = my_existsdir(nname) ? 2 : 1;
+    info->type = my_existstype(nname, 2);
     info->mode = 15;
     return error;
 }

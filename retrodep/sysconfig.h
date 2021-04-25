@@ -1,9 +1,6 @@
 #ifndef UAE_SYSCONFIG_H
 #define UAE_SYSCONFIG_H
 
-/* src/sysconfig.h.  Generated from sysconfig.h.in by configure.  */
-/* src/sysconfig.h.in.  Generated from configure.ac by autoheader.  */
-
 #define CAPS /* CAPS-image support */
 #define FDI2RAW /* FDI 1.0 and 2.x image support */
 //#define WITH_CHD
@@ -25,7 +22,7 @@
 //#define CPUEMU_25 /* 68040 "cycle-exact" + blitter */
 #define CPUEMU_31 /* Aranym 68040 MMU */
 #define CPUEMU_32 /* Previous 68030 MMU */
-#define CPUEMU_33 /* 68060 MMU */
+//#define CPUEMU_33 /* 68060 MMU */
 //#define CPUEMU_34 /* 68030 MMU + cache */
 //#define CPUEMU_35 /* 68030 MMU + cache + CE */
 #define MMUEMU /* Aranym 68040 MMU */
@@ -41,9 +38,10 @@
 //#define USE_JIT_FPU
 #define AUTOCONFIG /* autoconfig support, fast ram, harddrives etc.. */
 #define SAVESTATE /* State file support */
-#define ACTION_REPLAY /* Action Replay 1/2/3 support */
+//#define ACTION_REPLAY /* Action Replay 1/2/3 support */
 #define NCR /* A4000T/A4091, 53C710/53C770 SCSI */
 #define A2091 /* A590/A2091 SCSI */
+#define SCSI
 #define SCSIEMU /* uaescsi.device emulation */
 #define CDTV /* CDTV emulation */
 #define CD32 /* CD32 emulation */
@@ -93,7 +91,7 @@
 #define HAVE_DIRENT_H 1
 
 /* "Define to 1 if you have 'dlopen' function */
-#if !defined(__SWITCH__) && !defined(VITA) && !defined(__CELLOS_LV2__)
+#if !defined(WIIU) && !defined(__SWITCH__) && !defined(VITA) && !defined(__PS3__)
 #define HAVE_DLOPEN 1
 #endif
 
@@ -168,12 +166,17 @@
 #define HAVE_SELECT 1
 
 /* Define to 1 if you have the `setitimer' function. */
-#if !defined(__SWITCH__) && !defined(VITA) && !defined(__CELLOS_LV2__)
+#if !defined(__SWITCH__) && !defined(VITA) && !defined(__PS3__)
 #define HAVE_SETITIMER 1
 #endif
 
 /* Define to 1 if you have the `sigaction' function. */
 #define HAVE_SIGACTION 1
+
+/* Define to 1 if you have the <signal.h> header file. */
+#if !defined(__PS3__) && !defined(_WIN32) && !defined(WIIU)
+#define HAVE_SIGNAL 1
+#endif
 
 /* Define to 1 if you have the `sleep' function. */
 #define HAVE_SLEEP 1
@@ -250,7 +253,7 @@
 /* #undef HAVE_SUN_AUDIOIO_H */
 
 /* Define to 1 if you have the `sync' function. */
-#if !defined(__SWITCH__) && !defined(VITA) && !defined(__CELLOS_LV2__)
+#if !defined(__SWITCH__) && !defined(VITA) && !defined(__PS3__)
 #define HAVE_SYNC 1
 #endif
 
@@ -276,6 +279,11 @@
 /* Define to 1 if you have the <sys/ioctl.h> header file. */
 #define HAVE_SYS_IOCTL_H 1
 
+/* Define to 1 if you have the <sys/sysctl.h> header file. */
+#ifdef __APPLE__
+#define HAVE_SYS_SYSCTL_H 1
+#endif
+
 /* Define to 1 if you have the <sys/ipc.h> header file. */
 //#define HAVE_SYS_IPC_H 1
 
@@ -290,7 +298,9 @@
 /* #undef HAVE_SYS_NDIR_H */
 
 /* Define to 1 if you have the <sys/param.h> header file. */
+#ifndef __PS3__
 #define HAVE_SYS_PARAM_H 1
+#endif
 
 /* Define to 1 if you have the <sys/shm.h> header file. */
 //#define HAVE_SYS_SHM_H 1
@@ -377,7 +387,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "2.6.1"
+/* #define PACKAGE_VERSION "2.6.1" */
 
 /* Define to the necessary symbol if this constant uses a non-standard name on
    your system. */
@@ -402,7 +412,7 @@
 #define SIZEOF_SHORT 2
 
 /* The size of `void *', as computed by sizeof. */
-#if defined(__SWITCH__) || defined(WIN32)
+#if defined(__SWITCH__) || defined(__x86_64__)
 #define SIZEOF_VOID_P 8
 #else
 #define SIZEOF_VOID_P 4
@@ -472,7 +482,6 @@
 # define __EXTENSIONS__ 1
 #endif
 
-
 /* Version number of package */
 #define VERSION "2.6.1"
 
@@ -535,9 +544,5 @@
 /* Define to empty if the keyword `volatile' does not work. Warning: valid
    code using `volatile' can become incorrect without. Disable with care. */
 /* #undef volatile */
-
-#ifdef VITA
-#define chmod(a, b)
-#endif
 
 #endif /* UAE_SYSCONFIG_H */

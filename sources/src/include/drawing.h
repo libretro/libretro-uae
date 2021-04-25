@@ -121,9 +121,10 @@ STATIC_INLINE int color_reg_get (struct color_entry *ce, int c)
 #ifdef AGA
 	if (aga_mode)
 		return ce->color_regs_aga[c];
-	else
+	else if (c < 32)
 #endif
 		return ce->color_regs_ecs[c];
+	return 0;
 }
 STATIC_INLINE void color_reg_set (struct color_entry *ce, int c, int v)
 {

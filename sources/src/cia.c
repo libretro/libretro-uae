@@ -82,7 +82,7 @@ static unsigned long ciaata_passed, ciaatb_passed, ciabta_passed, ciabtb_passed;
 
 static unsigned long ciaatod, ciabtod, ciaatol, ciabtol, ciaaalarm, ciabalarm;
 static int ciaatlatch, ciabtlatch;
-static bool oldled, oldovl, oldcd32mute;
+static bool oldled, oldovl;
 static bool led;
 static int led_old_brightness;
 static unsigned long led_cycles_on, led_cycles_off, led_cycle;
@@ -487,10 +487,6 @@ STATIC_INLINE void ciaa_checkalarm (int inc)
 }
 
 #ifdef TOD_HACK
-
-#if defined(WIIU)
-#include <features_cpu.h>
-#endif
 static uae_u64 tod_hack_tv, tod_hack_tod, tod_hack_tod_last;
 static int tod_hack_enabled;
 #define TOD_HACK_TIME 312 * 50 * 10
@@ -506,7 +502,7 @@ static void tod_hack_reset (void)
 	tod_hack_tod = ciaatod;
 	tod_hack_tod_last = tod_hack_tod;
 }
-#endif
+#endif /* TOD_HACK */
 
 static int heartbeat_cnt;
 void cia_heartbeat (void)
@@ -809,10 +805,7 @@ static void bfe001_change (void)
 		}
 	}
 #ifdef CD32
-	if (currprefs.cs_cd32cd && (v & 1) != oldcd32mute) {
-		oldcd32mute = v & 1;
-		akiko_mute (oldcd32mute ? 0 : 1);
-	}
+	akiko_mute((v & 1) == 0);
 #endif
 }
 
@@ -1402,7 +1395,6 @@ void CIA_reset (void)
 
 	kblostsynccnt = 0;
 	serbits = 0;
-	oldcd32mute = 1;
 	oldled = true;
 	resetwarning_phase = resetwarning_timer = 0;
 	heartbeat_cnt = 0;

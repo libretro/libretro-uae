@@ -14,12 +14,6 @@
 #include "sysconfig.h"
 #include "sysdeps.h"
 
-#if defined(__CELLOS_LV2__) || defined(_WIN32) || defined(WIIU) || defined(__SWITCH__) || defined(VITA)
-#define tzset() 
-#define timezone 0
-#define daylight 0
-#endif
-
 int disk_debug_logging = 0;
 int disk_debug_mode = 0;
 int disk_debug_track = -1;
@@ -62,11 +56,11 @@ int disk_debug_track = -1;
 
 #ifdef __LIBRETRO__
 #include "libretro-core.h"
-#include "retro_strings.h"
 extern dc_storage *dc;
 #endif
 
 #undef CATWEASEL
+#undef TZSET
 
 /* external prototypes */
 extern uae_u32 uaerand (void);
@@ -226,7 +220,9 @@ typedef struct {
 
 static uae_u16 bigmfmbufw[0x4000 * DDHDMULT];
 static drive floppy[MAX_FLOPPY_DRIVES];
+#ifndef __LIBRETRO__
 static TCHAR dfxhistory[2][MAX_PREVIOUS_FLOPPIES][MAX_DPATH];
+#endif
 
 static uae_u8 exeheader[]={0x00,0x00,0x03,0xf3,0x00,0x00,0x00,0x00};
 static uae_u8 bootblock_ofs[]={
@@ -289,7 +285,9 @@ static void disk_date (uae_u8 *p)
 	struct mytimeval mtv;
 
 	gettimeofday (&tv, NULL);
+#if defined(TZSET)
 	tv.tv_sec -= timezone;
+#endif
 	mtv.tv_sec = tv.tv_sec;
 	mtv.tv_usec = tv.tv_usec;
 	timeval_to_amiga (&mtv, &days, &mins, &ticks);
@@ -2455,7 +2453,11 @@ static void setdskchangetime (drive *drv, int dsktime)
 void DISK_reinsert (int num)
 {
 	drive_eject (&floppy[num]);
+#ifdef __LIBRETRO__
+	setdskchangetime (&floppy[num], 50);
+#else
 	setdskchangetime (&floppy[num], 100);
+#endif
 }
 
 int disk_setwriteprotect (struct uae_prefs *p, int num, const TCHAR *name, bool writeprotected)
@@ -2509,6 +2511,9 @@ void disk_eject (int num)
 
 int DISK_history_add (const TCHAR *name, int idx, int type, int donotcheck)
 {
+#ifdef __LIBRETRO__
+	return 0;
+#else
 	int i;
 
 	if (idx >= MAX_PREVIOUS_FLOPPIES)
@@ -2559,13 +2564,18 @@ int DISK_history_add (const TCHAR *name, int idx, int type, int donotcheck)
 		_tcscpy (dfxhistory[type][i + 1], dfxhistory[type][i]);
 	_tcscpy (dfxhistory[type][0], name);
 	return 1;
+#endif
 }
 
 TCHAR *DISK_history_get (int idx, int type)
 {
+#ifdef __LIBRETRO__
+	return NULL;
+#else
 	if (idx >= MAX_PREVIOUS_FLOPPIES)
 		return NULL;
 	return dfxhistory[type][idx];
+#endif
 }
 
 static void disk_insert_2 (int num, const TCHAR *name, bool forced, bool forcedwriteprotect)
@@ -2966,8 +2976,8 @@ void DISK_handler (uae_u32 data)
 	if (flag & DISK_INDEXSYNC) {
 		if (!indexdecay) {
 			indexdecay = 2;
-		cia_diskindex ();
-}
+			cia_diskindex ();
+		}
 	}
 }
 
@@ -3157,10 +3167,10 @@ static int doreaddma (void)
 				write_log (_T("doreaddma() fifo overflow detected, retrying..\n"));
 				return -1;
 			} else {
-			DSKDAT (word);
-			dsklength--;
+				DSKDAT (word);
+				dsklength--;
+			}
 		}
-	}
 		return 1;
 	}
 	return 0;
@@ -3251,7 +3261,7 @@ static void disk_doupdate_read (drive * drv, int floppybits)
 			}
 			if (adkcon & 0x400) {
 				bitoffset = 15;
-		}
+			}
 		}
 		bitoffset++;
 		bitoffset &= 15;
@@ -4303,11 +4313,3 @@ int disk_prevnext (int drive, int dir)
 	_tcscpy (changed_prefs.floppyslots[drive].df, img);
 	return 1;
 }
-
-/// REMOVEME: nowhere used
-#if 0
-int getdebug(void)
-{
-	return floppy[0].mfmpos;
-}
-#endif

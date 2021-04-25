@@ -22,13 +22,11 @@ static int caps_locked[4];
 static int caps_flags = DI_LOCK_DENVAR|DI_LOCK_DENNOISE|DI_LOCK_NOISE|DI_LOCK_UPDATEFD|DI_LOCK_TYPE;
 #define LIB_TYPE 1
 
-
+#ifndef HAVE_CAPS_CAPSIMAGE_H
 #if !defined HAVE_FRAMEWORK_CAPSIMAGE
-
 #include "uae_dlopen.h"
 
 #ifdef __LIBRETRO__
-#include "retro_files.h"
 #include "libretro-core.h"
 extern char retro_system_directory[];
 extern bool retro_message;
@@ -38,10 +36,8 @@ char CAPSLIB_PATH[RETRO_PATH_MAX];
 
 #ifdef _WIN32
 #define CAPSLIB_NAME    "capsimg.dll"
-#define DIR_SEP_CHR     '\\'
 #else
 #define CAPSLIB_NAME    "capsimg.so"
-#define DIR_SEP_CHR     '/'
 #endif
 
 /*
@@ -78,9 +74,9 @@ static int load_capslib (void)
 
 #ifdef __LIBRETRO__
     snprintf(CAPSLIB_PATH, RETRO_PATH_MAX, "%s%c%s", retro_system_directory, DIR_SEP_CHR, CAPSLIB_NAME);
-    if (!file_exists(CAPSLIB_PATH))
+    if (!path_is_valid(CAPSLIB_PATH))
         snprintf(CAPSLIB_PATH, RETRO_PATH_MAX, "%s", CAPSLIB_NAME);
-    if (!file_exists(CAPSLIB_PATH))
+    if (!path_is_valid(CAPSLIB_PATH))
     {
         snprintf(retro_message_msg, sizeof(retro_message_msg), "CAPS library '%s' not found!", CAPSLIB_NAME);
         retro_message = true;
@@ -453,6 +449,7 @@ static int load_capslib (void)
 #endif
 #endif
 #endif
+#endif //HAVE_CAPS_CAPSIMAGE_H
 
 /*
  * CAPS support proper starts here
@@ -465,6 +462,7 @@ int caps_init (void)
     unsigned int i;
     struct CapsVersionInfo cvi;
 
+#ifndef HAVE_CAPS_CAPSIMAGE_H
     if (init)
 		return 1;
 
@@ -478,6 +476,7 @@ int caps_init (void)
 		noticed = 1;
 		return 0;
     }
+#endif //HAVE_CAPS_CAPSIMAGE_H
     init = 1;
     cvi.type = LIB_TYPE;
 	CAPSGetVersionInfo (&cvi, 0);

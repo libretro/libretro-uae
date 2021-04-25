@@ -54,7 +54,7 @@
 # define uae_msleep(msecs) snooze (msecs * ONE_THOUSAND)
 #elif defined(WIIU)
 #define uae_msleep(msecs) //usleep (msecs * ONE_THOUSAND)
-#elif defined(__CELLOS_LV2__)
+#elif defined(__PS3__)
 #define uae_msleep(msec) sys_timer_usleep(msec*1000)
 #elif defined TARGET_AMIGAOS
 #   if defined __amigaos4__ || defined __MORPHOS__
@@ -87,9 +87,9 @@
 #      define uae_msleep(msecs) SDL_Delay (msecs)
 #     else
 #      error "No system sleep function found"
-#endif // Get uae_msleep working
+#endif
 
-#endif // __LIBRETRO__
+#endif /* __LIBRETRO__ */
 void sleep_test (void);
 
-#endif // UAE_SLEEP_H
+#endif /* UAE_SLEEP_H */

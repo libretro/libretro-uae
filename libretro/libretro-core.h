@@ -8,21 +8,13 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif
-
-#ifdef VITA
-#include <psp2/types.h>
-#include <psp2/io/dirent.h>
-#include <psp2/kernel/threadmgr.h>
-#define rmdir(name) sceIoRmdir(name)
-#endif
-
 #include "zfile.h"
-#include "libretro.h"
-#include "retro_disk_control.h"
+
+#include "libretro-glue.h"
+#include "libretro-dc.h"
+#include "string/stdstring.h"
+#include "file/file_path.h"
+#include "encodings/utf.h"
 
 extern int imagename_timer;
 extern void reset_drawing(void);
@@ -39,17 +31,18 @@ extern char retro_system_directory[512];
 extern struct zfile *retro_deserialize_file;
 extern dc_storage *retro_dc;
 extern retro_log_printf_t log_cb;
+extern long retro_ticks(void);
+extern int umain (int argc, TCHAR **argv);
 
-#ifndef _WIN32
-#define TCHAR char /* from sysdeps.h */
-#endif
-
-int umain (int argc, TCHAR **argv);
+/* File helpers functions */
+#define RETRO_PATH_MAX 512
 
 #ifdef WIN32
 #define DIR_SEP_STR "\\"
+#define DIR_SEP_CHR '\\'
 #else
 #define DIR_SEP_STR "/"
+#define DIR_SEP_CHR '/'
 #endif
 
 /* VKBD */
@@ -85,6 +78,13 @@ extern int vkbd_y_max;
 #define RGB565(r, g, b) ((((r>>3)<<11) | ((g>>2)<<5) | (b>>3)))
 #define RGB888(r, g, b) (((r * 255 / 31) << (16)) | ((g * 255 / 31) << 8) | (b * 255 / 31))
 #define ARGB888(a, r, g, b) ((a << 24) | (r << 16) | (g << 8) | b)
+
+#define COLOR_BLACK_16        RGB565( 10,  10,  10)
+#define COLOR_GRAY_16         RGB565( 96,  96,  96)
+#define COLOR_WHITE_16        RGB565(255, 255, 255)
+#define COLOR_BLACK_32  ARGB888(255,  10,  10,  10)
+#define COLOR_GRAY_32   ARGB888(255,  96,  96,  96)
+#define COLOR_WHITE_32  ARGB888(255, 255, 255, 255)
 
 /* Configs */
 enum EMU_CONFIG {

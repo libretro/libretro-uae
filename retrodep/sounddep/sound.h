@@ -9,7 +9,7 @@
 #ifndef OSDEP_SOUND_H
 #define OSDEP_SOUND_H
 #define SOUNDSTUFF 1
-extern void retro_renderSound(short* samples, int sampleCount);
+extern void retro_audio_render(const int16_t *data, size_t frames);
 
 #define sndbuffer paula_sndbuffer
 #define sndbufpt paula_sndbufpt
@@ -30,7 +30,7 @@ static __inline__ void check_sound_buffers (void)
 #ifdef DRIVESOUND
         driveclick_mix ((uae_s16*)sndbuffer, sndbufsize >> 1, currprefs.dfxclickchannelmask);
 #endif	
-        retro_renderSound((short*)sndbuffer, sndbufsize >> 1);
+        retro_audio_render((short*)sndbuffer, sndbufsize >> 1);
         sndbufpt = sndbuffer;
     }
 }
@@ -63,9 +63,8 @@ void restart_sound_buffer (void);
 #define SOUND16_BASE_VAL 0
 #define SOUND8_BASE_VAL 128
 
-#define DMULTIPLICATION_PROFITABLE
-#define DEFAULT_SOUND_MAXB 16384
-#define DEFAULT_SOUND_MINB 1024
+#define DEFAULT_SOUND_MAXB 4096
+#define DEFAULT_SOUND_MINB 2048
 #define DEFAULT_SOUND_BITS 16
 #define DEFAULT_SOUND_FREQ 44100
 

@@ -325,7 +325,11 @@ int scsi_do_disk_change (int unitnum, int insert, int *pollmode)
 	int i, j, ret;
 
 	ret = -1;
+#ifdef _WIN32
+	if (!change_sem)
+#else
 	if (!change_sem.sem)
+#endif
 		return ret;
 	uae_sem_wait (&change_sem);
 	for (i = 0; i < MAX_TOTAL_SCSI_DEVICES; i++) {
@@ -738,7 +742,7 @@ static int dev_do_io (struct devstruct *dev, uaecptr request)
 		uae_u16 status = 0;
 		struct cd_toc_head toc;
 		uae_u8 subq[SUBQ_SIZE] = { 0 };
-		sys_command_cd_qcode (dev->di.unitnum, subq);
+		sys_command_cd_qcode (dev->di.unitnum, subq, -1, false);
 		status |= 1 << 0; // door closed
 		if (dev->di.media_inserted) {
 			status |= 1 << 1;
@@ -835,7 +839,7 @@ static int dev_do_io (struct devstruct *dev, uaecptr request)
 	case CD_QCODELSN:
 	{
 		uae_u8 subq[SUBQ_SIZE];
-		if (sys_command_cd_qcode (dev->di.unitnum, subq)) {
+		if (sys_command_cd_qcode (dev->di.unitnum, subq, -1, false)) {
 			if (subq[1] == AUDIO_STATUS_IN_PROGRESS || subq[1] == AUDIO_STATUS_PAUSED) {
 				put_byte (io_data + 0, subq[4 + 0]);
 				put_byte (io_data + 1, frombcd (subq[4 + 1]));

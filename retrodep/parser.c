@@ -12,6 +12,7 @@
 
 #include "sysdeps.h"
 #include "options.h"
+#if 0
 #include "gensound.h"
 #include "events.h"
 #include "uae.h"
@@ -25,9 +26,10 @@
 #include "savestate.h"
 #include "xwin.h"
 #include "drawing.h"
-
 #define MIN_PRTBYTES 10
-
+#else
+#include "threaddep/thread.h"
+#endif
 struct uaeserialdata
 {
 	long hCom;
@@ -91,6 +93,7 @@ void uaeser_close (void *vsd)
 {
 }
 
+#if 0
 #define SERIAL_WRITE_BUFFER 100
 #define SERIAL_READ_BUFFER 100
 static uae_u8 outputbuffer[SERIAL_WRITE_BUFFER];
@@ -99,3 +102,4 @@ static uae_u8 inputbuffer[SERIAL_READ_BUFFER];
 static int datainoutput;
 static int dataininput, dataininputcnt;
 static int writepending;
+#endif

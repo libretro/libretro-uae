@@ -5,12 +5,12 @@
 #include "sysdeps.h"
 #include "zfile.h"
 
-#define SYSTIME_HAS_NO_TM
-#define NODIRECTORY
-#define FTIME
+/*#define SYSTIME_HAS_NO_TM*/
+/*#define NODIRECTORY*/
+/*#define FTIME*/
 #define NOBSTRING
 #define NOINDEX
-#define MKTIME
+/*#define MKTIME*/
 
 /* ------------------------------------------------------------------------ */
 /* LHa for UNIX    Archiver Driver											*/
@@ -30,7 +30,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#ifndef __CELLOS_LV2__
+#ifdef HAVE_SIGNAL
 #include <signal.h>
 #endif
 

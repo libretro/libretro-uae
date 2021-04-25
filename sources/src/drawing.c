@@ -53,9 +53,6 @@
 #ifdef __LIBRETRO__
 #include "libretro-core.h"
 extern bool retro_statusbar;
-extern void retro_set_led(unsigned);
-static unsigned led_on_prev = 0;
-static unsigned led_on = 0;
 #endif
 
 /* internal prototypes */
@@ -259,11 +256,7 @@ uae_sem_t gui_sem;
 int inhibit_frame;
 
 int framecnt = 0;
-#ifdef __LIBRETRO__
-int frame_redraw_necessary;
-#else
 static int frame_redraw_necessary;
-#endif
 static int picasso_redraw_necessary;
 
 #ifdef XLINECHECK
@@ -3474,26 +3467,6 @@ void finish_drawing_frame (void)
 			do_flush_line (line);
 		}
 	}
-#ifdef __LIBRETRO__
-    led_on = 0;
-    for (int i = 0; i < 4; i++)
-    {
-        if (!led_on && gui_data.df[i][0])
-            led_on = gui_data.drive_motor[i];
-    }
-    if (!led_on && gui_data.hd >= 0)
-        led_on = gui_data.hd;
-    if (!led_on && gui_data.cd >= 0)
-        led_on = gui_data.cd & (LED_CD_ACTIVE | LED_CD_AUDIO);
-    if (!led_on && gui_data.md >= 1)
-        led_on = gui_data.md;
-
-    if (led_on_prev != led_on)
-    {
-        led_on_prev = led_on;
-        retro_set_led(led_on);
-    }
-#endif
 
 #ifdef DEBUGGER
 	if (debug_dma > 1) {
@@ -3513,7 +3486,8 @@ void finish_drawing_frame (void)
 		lightpen_update ();
 #endif
 
-/*	if (currprefs.monitoremu && gfxvidinfo.tempbuffer.bufmem_allocated) {
+#if 0
+	if (currprefs.monitoremu && gfxvidinfo.tempbuffer.bufmem_allocated) {
 		static bool specialon;
 		if (emulate_specialmonitors (vb, &gfxvidinfo.tempbuffer)) {
 			vb = gfxvidinfo.outbuffer = &gfxvidinfo.tempbuffer;
@@ -3537,10 +3511,11 @@ void finish_drawing_frame (void)
 				compute_framesync ();
 			specialmonitoron = false;
 		}
-        }*/
-
+	}
+#endif
 	if (!didflush)
 		do_flush_screen (first_drawn_line, last_drawn_line);
+	unlockscr ();
 }
 
 void hardware_line_completed (int lineno)
@@ -3684,15 +3659,16 @@ void hsync_record_line_state (int lineno, enum nln_how how, int changed)
 		return;
 
 	state = linestate + lineno;
-#if 1
+#ifdef __LIBRETRO__
+	changed = 1;
+#elif 1
 	changed |= frame_redraw_necessary != 0 || (lineno >= lightpen_y1 && lineno <= lightpen_y2);
 #else
-	changed += frame_redraw_necessary + ((lineno >= lightpen_y1 && lineno <= lightpen_y2) ? 1 : 0);
-#endif
-	/*changed |= ad->frame_redraw_necessary != 0 || refresh_indicator_buffer != NULL ||
+	changed |= ad->frame_redraw_necessary != 0 || refresh_indicator_buffer != NULL ||
 		((lineno >= lightpen_y1[0] && lineno < lightpen_y2[0]) ||
 		(lineno >= lightpen_y1[1] && lineno < lightpen_y2[1]) ||
-		(lineno >= statusbar_y1 && lineno < statusbar_y2));*/
+		(lineno >= statusbar_y1 && lineno < statusbar_y2));
+#endif
 
 	switch (how) {
 	case nln_normal:

@@ -115,7 +115,9 @@ static void hr (void)
 static void show_version (void)
 {
 	write_log (_T("PUAE %d.%d.%d (%s)\n"), UAEMAJOR, UAEMINOR, UAESUBREV, PACKAGE_COMMIT);
+#ifdef GIT_VERSION
 	write_log (_T("Git commit:%s\n"), GIT_VERSION);
+#endif
 	write_log (_T("Build date: " __DATE__ " " __TIME__ "\n"));
 }
 
@@ -591,7 +593,7 @@ void fixup_prefs (struct uae_prefs *p)
 
 int quit_program = 0;
 #ifdef __LIBRETRO__
-int libretro_frame_end = 0;
+unsigned int libretro_frame_end = 0;
 #endif
 static int restart_program;
 static TCHAR restart_config[MAX_DPATH];
@@ -837,7 +839,6 @@ static void parse_cmdline (int argc, TCHAR **argv)
 
 static void parse_cmdline_and_init_file (int argc, TCHAR **argv)
 {
-
 	_tcscpy (optionsfile, _T(""));
 
 #ifdef OPTIONS_IN_HOME
@@ -852,13 +853,8 @@ static void parse_cmdline_and_init_file (int argc, TCHAR **argv)
 #endif
 
 #ifdef __LIBRETRO__
-#ifdef ANDROID
-_tcscpy (optionsfile, "/mnt/sdcard/euae");
-_tcscat (optionsfile, _T("/"));
-#else
-_tcscpy (optionsfile, ".");
-_tcscat (optionsfile, _T("/"));
-#endif
+	_tcscpy (optionsfile, ".");
+	_tcscat (optionsfile, _T("/"));
 #endif
 	parse_cmdline_2 (argc, argv);
 
@@ -1028,7 +1024,9 @@ void leave_program (void)
 	do_leave_program ();
 #ifdef __LIBRETRO__
 	quit_program = 0;
+#if 0
 	zfile_exit ();
+#endif
 #endif
 }
 
@@ -1056,6 +1054,8 @@ void virtualdevice_init (void)
 #endif
 #ifdef AUTOCONFIG
 	expansion_init ();
+#endif
+#ifndef __LIBRETRO__
 	emulib_install ();
 	uaeexe_install ();
 #endif
@@ -1098,10 +1098,12 @@ static int real_main2 (int argc, TCHAR **argv)
 		return -1;
 	}
 
+#ifndef __LIBRETRO__
 	if (console_emulation) {
 		consolehook_config (&currprefs);
 		fixup_prefs (&currprefs);
 	}
+#endif
 
 	if (! setup_sound ()) {
 		write_log (_T("Sound driver unavailable: Sound output disabled\n"));

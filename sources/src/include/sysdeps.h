@@ -367,19 +367,12 @@ extern void mallocemu_free (void *ptr);
 #define ASM_SYM_FOR_FUNC(a)
 #endif
 
-#ifdef __CELLOS_LV2__
-#define timezone 0
-#define daylight 0
-#endif
-
 #ifdef ANDROID
 #include "targets/t-android.h"
 #else
 #include "target.h"
 #endif
 
-
-//#include "target.h"
 #if !defined(RECUR) && !defined(NO_MACHDEP)
 #include "machdep/machdep.h"
 #include "gfxdep/gfx.h"
@@ -398,7 +391,22 @@ extern int gui_message_multibutton (int flags, const char *format,...);
 #endif
 
 #ifndef O_BINARY
-#define O_BINARY 0
+#define O_BINARY 0x8000
+#endif
+#ifndef O_TRUNC
+#define O_TRUNC 0x0200
+#endif
+#ifndef O_CREAT
+#define O_CREAT 0x0100
+#endif
+#ifndef O_RDWR
+#define O_RDWR 0x0002
+#endif
+#ifndef O_WRONLY
+#define O_WRONLY 0x0001
+#endif
+#ifndef O_RDONLY
+#define O_RDONLY 0x0000
 #endif
 
 #ifndef STATIC_INLINE
@@ -521,5 +529,58 @@ DWORD GetLastError(void);
 typedef int64_t off64_t;
 #endif
 
+#ifndef O_NDELAY
+#define O_NDELAY 0
+#endif
+
+/* Types */
+#define UINT16 uint16_t
+#define UINT32 uint32_t
+typedef uint32_t uint32;
+typedef uint8_t uint8;
+
+#ifndef _WIN32
+#define TCHAR char
+#endif
+
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
+#ifdef VITA
+#include <psp2/types.h>
+#include <psp2/io/dirent.h>
+#include <psp2/kernel/threadmgr.h>
+#define mkdir(name, mode) sceIoMkdir(name, mode)
+#define rmdir(name) sceIoRmdir(name)
+#define chmod(a, b)
+#define timezone()
+#endif
+
+#ifdef __PS3__
+#include <ctype.h>
+#include "ps3_headers.h"
+#endif
+
+#ifdef __LIBRETRO__
+#include "string/stdstring.h"
+#ifdef WIIU
+#include <features/features_cpu.h>
+#endif
+#endif /* __LIBRETRO__ */
+
+#ifndef lstat
+#define lstat stat
+#endif
+#ifndef tzset
+#define tzset()
+#endif
+#ifndef timezone
+#define timezone 0
+#endif
+#ifndef daylight
+#define daylight 0
+#endif
 
 #endif /* UAE_SYSDEPS_H */

@@ -9,12 +9,6 @@
 #include "sysconfig.h"
 #include "sysdeps.h"
 
-#if defined(__CELLOS_LV2__) || defined(_WIN32) || defined(WIIU) || defined(__SWITCH__) || defined(VITA)
-#define tzset() 
-#define timezone 0
-#define daylight 0
-#endif
-
 #if defined(__FreeBSD__)
 #include <time.h>
 #include <sys/time.h>
@@ -23,7 +17,7 @@
 #include "options.h"
 #include "zfile.h"
 #ifdef __LIBRETRO__
-#include "deps/zlib/unzip.h"
+#include "deps/libz/unzip.h"
 #else
 #include "archivers/zip/unzip.h"
 #endif
@@ -35,6 +29,8 @@
 #include "misc.h"
 
 #include <zlib.h>
+
+#undef TZSET
 
 #define unpack_log write_log
 #undef unpack_log
@@ -59,7 +55,7 @@ static time_t fromdostime (uae_u32 dd)
 	struct tm* tm_local;
 	tm_local = localtime(&time_now);
 	t -= tm_local->tm_gmtoff;
-#else
+#elif defined(TZSET)
 	t -= (time_t)timezone;
 #endif
 	return t;
@@ -340,7 +336,9 @@ struct zvolume *archive_directory_tar (struct zfile *z)
 			zai.tv.tv_sec += tm_local->tm_gmtoff;
 			if (tm_local->tm_isdst)
 #else
+#if defined(TZSET)
 			zai.tv.tv_sec += timezone;
+#endif
 			if (daylight)
 #endif
 				zai.tv.tv_sec -= 1 * 60 * 60;

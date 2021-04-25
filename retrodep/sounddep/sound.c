@@ -7,15 +7,11 @@
   * Copyright 2003 Richard Drummond
   */
 
-
-
 #include "sysconfig.h"
 #include "sysdeps.h"
 
 #include "options.h"
-#ifndef __CELLOS_LV2__ 
-#include "memory.h"
-#endif
+#include "memory_uae.h"
 #include "custom.h"
 #include "audio.h"
 #include "gensound.h"
@@ -35,8 +31,6 @@ unsigned long now_time;
 
 unsigned long stat_time;
 unsigned long stat_count;
-
-static unsigned long scaled_sample_evtime;
 
 void sound_mute (int newmute)
 {
@@ -101,11 +95,6 @@ int init_sound (void)
     sndbufpt = sndbuffer;
     sample_handler =  sample16s_handler;
     sound_initialized = 1;
-
-#if 0
-    init_sound_table16();
-    scaled_sample_evtime = (unsigned long)(MAXHPOS_PAL * MAXVPOS_PAL * VBLANK_HZ_PAL + rate - 1) / DEFAULT_SOUND_FREQ;
-#endif
 
 #ifdef DRIVESOUND
 	driveclick_init();

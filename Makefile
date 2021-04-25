@@ -1,6 +1,7 @@
 CORE_DIR  := .
 ROOT_DIR  := .
 PLATFLAGS :=
+SOURCES_C :=
 TARGET_NAME := puae
 
 ifeq ($(platform),)
@@ -21,7 +22,8 @@ ifneq (,$(findstring unix,$(platform)))
    TARGET := $(TARGET_NAME)_libretro.so
    fpic := -fPIC
    LDFLAGS += -lpthread
-   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T
+   CFLAGS += -Wstringop-overflow=0 -Wno-unused-result
+   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--gc-sections
 
 # RPI
 else ifeq ($(platform), rpi)
@@ -38,7 +40,7 @@ else ifeq ($(platform), rpi)
 else ifeq ($(platform), classic_armv7_a7)
 	TARGET := $(TARGET_NAME)_libretro.so
 	fpic := -fPIC
-    SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T  -Wl,--no-undefined
+    SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
     LDFLAGS += -lm -lpthread
     CFLAGS += -Ofast \
 	-flto=4 -fwhole-program -fuse-linker-plugin \
@@ -66,7 +68,7 @@ else ifeq ($(platform), classic_armv7_a7)
 else ifeq ($(platform), classic_armv8_a35)
    TARGET := $(TARGET_NAME)_libretro.so
    fpic := -fPIC
-   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T  -Wl,--no-undefined
+   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
    LDFLAGS += -lm -lrt -lpthread -ldl
    CFLAGS += -Ofast -flto=4 \
            -fmerge-all-constants -fno-math-errno -march=armv8-a \
@@ -77,10 +79,21 @@ else ifeq ($(platform), classic_armv8_a35)
 # OSX
 else ifeq ($(platform), osx)
    TARGET := $(TARGET_NAME)_libretro.dylib
-   fpic := -fPIC -mmacosx-version-min=10.6
+   MINVERSION := -mmacosx-version-min=10.6
+   fpic := -fPIC 
    LDFLAGS :=
    SHARED := -dynamiclib
    PLATFLAGS += -DUSE_NAMED_SEMAPHORES
+
+   ifeq ($(CROSS_COMPILE),1)
+	TARGET_RULE   = -target $(LIBRETRO_APPLE_PLATFORM) -isysroot $(LIBRETRO_APPLE_ISYSROOT)
+	CFLAGS     += $(TARGET_RULE)
+	CXXFLAGS   += $(TARGET_RULE)
+	LDFLAGS    += $(TARGET_RULE)
+	MINVERSION =
+   endif
+
+   fpic += $(MINVERSION)
 
 # Android
 else ifeq ($(platform), android-armv7)
@@ -119,7 +132,7 @@ else ifneq (,$(filter $(platform), ngc wii wiiu))
    CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
    CXX = $(DEVKITPPC)/bin/powerpc-eabi-g++$(EXE_EXT)
    AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
-   COMMONFLAGS += -DGEKKO -mcpu=750 -meabi -mhard-float -D__POWERPC__ -D__ppc__ -DMSB_FIRST -DWORDS_BIGENDIAN=1
+   COMMONFLAGS += -DGEKKO -mcpu=750 -meabi -mhard-float -D__POWERPC__ -D__ppc__ -DWORDS_BIGENDIAN=1
    COMMONFLAGS += -U__INT32_TYPE__ -U __UINT32_TYPE__ -D__INT32_TYPE__=int
    COMMONFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DBYTE_ORDER=BIG_ENDIAN
    STATIC_LINKING=1
@@ -131,14 +144,14 @@ else ifneq (,$(filter $(platform), ngc wii wiiu))
    else ifneq (,$(findstring ngc,$(platform)))
       COMMONFLAGS += -DHW_DOL -mrvl
    endif
-   CFLAGS += $(COMMONFLAGS) -I$(DEVKITPRO)/portlibs/ppc/include -I$(CORE_DIR)/wiiu-deps
+   CFLAGS += $(COMMONFLAGS) -I$(DEVKITPRO)/portlibs/ppc/include -I$(CORE_DIR)/deps-wiiu
 
 # Nintendo Switch (libnx)
 else ifeq ($(platform), libnx)
    include $(DEVKITPRO)/libnx/switch_rules
    TARGET := $(TARGET_NAME)_libretro_$(platform).a
    CFLAGS += -D__SWITCH__ -DHAVE_LIBNX -I$(DEVKITPRO)/libnx/include/ -specs=$(DEVKITPRO)/libnx/switch.specs
-   CFLAGS += -march=armv8-a -mtune=cortex-a57 -mtp=soft -mcpu=cortex-a57+crc+fp+simd -ffast-math -fPIE -ffunction-sections -fcommon
+   CFLAGS += -march=armv8-a -mtune=cortex-a57 -mtp=soft -mcpu=cortex-a57+crc+fp+simd -ffast-math -fPIE -ffunction-sections
    STATIC_LINKING=1
    STATIC_LINKING_LINK=1
 
@@ -151,34 +164,28 @@ else ifeq ($(platform), vita)
    COMMONFLAGS += -U__INT32_TYPE__ -U __UINT32_TYPE__ -D__INT32_TYPE__=int
    COMMONFLAGS += -DHAVE_STRTOUL -DVITA
    CFLAGS += $(COMMONFLAGS)
-   PLATFLAGS += -ffast-math -march=armv7-a -mfpu=neon -mfloat-abi=hard -mword-relocations -fno-optimize-sibling-calls -fno-exceptions -fcommon
+   PLATFLAGS += -ffast-math -march=armv7-a -mfpu=neon -mfloat-abi=hard -mword-relocations -fno-optimize-sibling-calls -fno-exceptions
    STATIC_LINKING = 1
    STATIC_LINKING_LINK=1
 
-# PS3
-else ifeq ($(platform), ps3)
+# PS3/PSl1GHT
+else ifneq (,$(filter $(platform), ps3 psl1ght))
+   ifeq ($(platform), psl1ght)
+	   CFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DBYTE_ORDER=BIG_ENDIAN -D__PSL1GHT__ -DHAVE_MEMALIGN -DHAVE_ASPRINTF -DBIG_ENDIAN -I$(ZLIB_DIR) -I./deps-ps3
+   else
+	   CFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DBYTE_ORDER=BIG_ENDIAN -D__PS3__ -DHAVE_MEMALIGN -DHAVE_ASPRINTF -DBIG_ENDIAN -I$(ZLIB_DIR) -I./deps-ps3
+   endif
    TARGET := $(TARGET_NAME)_libretro_$(platform).a
-   CC = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-gcc.exe
-   AR = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-ar.exe
+   CC = $(PS3DEV)/ppu/bin/ppu-$(COMMONLV)gcc$(EXE_EXT)
+   AR = $(PS3DEV)/ppu/bin/ppu-$(COMMONLV)ar$(EXE_EXT)
    ZLIB_DIR = $(LIBUTILS)/zlib/
    LDFLAGS := -lm -lpthread -lc
-   CFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DBYTE_ORDER=BIG_ENDIAN -D__CELLOS_LV2__ -DHAVE_MEMALIGN -DHAVE_ASPRINTF -DBIG_ENDIAN \
-   -DLITTLE_ENDIAN -I$(ZLIB_DIR) -I./ps3-deps
-   SOURCES_C += $(CORE_DIR)/ps3-deps/ps3_functions.c
+   SOURCES_C += $(CORE_DIR)/deps-ps3/ps3_functions.c
    STATIC_LINKING=1
    STATIC_LINKING_LINK=1
-
-# Psl1ght
-else ifeq ($(platform), psl1ght)
-   TARGET := $(TARGET_NAME)_libretro_$(platform).a
-   CC = $(PS3DEV)/ppu/bin/ppu-gcc$(EXE_EXT)
-   CXX = $(PS3DEV)/ppu/bin/ppu-g++$(EXE_EXT)
-   CC_AS = $(PS3DEV)/ppu/bin/ppu-gcc$(EXE_EXT)
-   AR = $(PS3DEV)/ppu/bin/ppu-ar$(EXE_EXT)
-   ZLIB_DIR = $(LIBUTILS)/zlib/
-   LDFLAGS := -lm -lpthread -lc
-   CFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DMSB_FIRST -DBYTE_ORDER=BIG_ENDIAN -D__CELLOS_LV2__ -DHAVE_MEMALIGN -DHAVE_ASPRINTF -I$(ZLIB_DIR)
-   STATIC_LINKING=1
+   ifeq ($(capsimg), 1)
+       CFLAGS += -DHAVE_CAPS_CAPSIMAGE_H
+   endif
 
 # Emscripten
 else ifeq ($(platform), emscripten)
@@ -193,6 +200,7 @@ else ifneq (,$(findstring ios,$(platform)))
    fpic := -fPIC
    SHARED := -dynamiclib
    COMMONFLAGS += -DIOS
+   MINVERSION :=
    ifeq ($(IOSSDK),)
       IOSSDK := $(shell xcodebuild -version -sdk iphoneos Path)
    endif
@@ -205,12 +213,11 @@ else ifneq (,$(findstring ios,$(platform)))
       CXX = c++ -arch armv7 -isysroot $(IOSSDK)
    endif
    ifeq ($(platform),$(filter $(platform),ios9 ios-arm64))
-      CC += -miphoneos-version-min=8.0
-      COMMONFLAGS += -miphoneos-version-min=8.0
+      MINVERSION = -miphoneos-version-min=8.0
    else
-      CC += -miphoneos-version-min=5.0
-      COMMONFLAGS += -miphoneos-version-min=5.0
+      MINVERSION = -miphoneos-version-min=5.0
    endif
+   COMMONFLAGS += $(MINVERSION)
    CFLAGS += $(COMMONFLAGS)
 
 else ifeq ($(platform), tvos-arm64)
@@ -224,11 +231,13 @@ else ifeq ($(platform), tvos-arm64)
    ifeq ($(IOSSDK),)
       IOSSDK := $(shell xcodebuild -version -sdk appletvos Path)
    endif
+   CC = cc -arch arm64 -isysroot $(IOSSDK)
+   CXX = c++ -arch arm64 -isysroot $(IOSSDK)
 
 # ARM
 else ifneq (,$(findstring armv,$(platform)))
    TARGET := $(TARGET_NAME)_libretro.so
-   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T  -Wl,--no-undefined
+   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
    fpic := -fPIC
    ifneq (,$(findstring cortexa8,$(platform)))
       CFLAGS += -marm -mcpu=cortex-a8
@@ -249,13 +258,11 @@ else ifneq (,$(findstring armv,$(platform)))
 
 # Windows
 else
-ifneq ($(subplatform), 32)
-   CFLAGS +=
-endif
+   CFLAGS += -Wstringop-overflow=0
    PLATFLAGS += -DWIN32
    TARGET := $(TARGET_NAME)_libretro.dll
    fpic := -fPIC
-   SHARED := -shared -static-libgcc -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
+   SHARED := -shared -static-libgcc -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined -Wl,--gc-sections
    LDFLAGS += -lm
 endif
 
@@ -263,14 +270,23 @@ endif
 ifeq ($(DEBUG), 1)
    CFLAGS += -O0 -g
 else
-   CFLAGS += -O3
+   CFLAGS += -O3 -Wno-format -Wno-format-security
+   LDFLAGS += -s
 endif
 
-CFLAGS += -D__LIBRETRO__ -DINLINE="inline" -std=gnu99
+# Skip 7zip for static builds
+ifneq ($(STATIC_LINKING), 1)
+   CFLAGS += -DHAVE_7ZIP
+endif
+
+# CHD
+HAVE_CHD = 1
+
+CFLAGS += -std=gnu99 -DINLINE="inline" -D__LIBRETRO__
 
 include Makefile.common
 
-$(info CFLAGS:$(CFLAGS))
+$(info CFLAGS: $(PLATFLAGS) $(CFLAGS))
 $(info -------)
 
 OBJECTS += $(SOURCES_C:.c=.o) $(SOURCES_CXX:.cpp=.o) $(SOURCES_ASM:.S=.o)

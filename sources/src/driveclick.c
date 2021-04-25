@@ -22,6 +22,7 @@
 
 #ifdef __LIBRETRO__
 #include "libretro-core.h"
+#include "file/file_path.h"
 extern char retro_system_directory[];
 extern bool opt_floppy_sound_empty_mute;
 #endif
@@ -203,6 +204,8 @@ void driveclick_init (void)
 					drvs[i][DS_CLICK].lengths[j] = drvs[i][DS_CLICK].len;
 #ifdef __LIBRETRO__
 				_stprintf (path2, "%s%cuae_data%c", retro_system_directory, FSDB_DIR_SEPARATOR, FSDB_DIR_SEPARATOR);
+				if (!path_is_directory(path2))
+				   _stprintf (path2, "%s%cuae%c", retro_system_directory, FSDB_DIR_SEPARATOR, FSDB_DIR_SEPARATOR);
 #else
 				get_plugin_path (path2, sizeof path2 / sizeof (TCHAR), _T("floppysounds"));
 				_stprintf (path2, "%suae_data%c", "./", FSDB_DIR_SEPARATOR);
@@ -540,8 +543,7 @@ void driveclick_check_prefs (void)
 int driveclick_loadresource (struct drvsample *sp, int drivetype)
 {
     for (int type = 0; type < DS_END; type++) {
-        const char *name = NULL;
-        char *data = NULL;
+        unsigned char *data = NULL;
         int size = 0;
         switch (type) {
         case 0:
@@ -569,7 +571,6 @@ int driveclick_loadresource (struct drvsample *sp, int drivetype)
         }
         int len = (int) size;
         struct drvsample* s = sp + type;
-        uae_u8 *p = (uae_u8*)data;
         s->p = decodewav(data, &len);
         s->len = len;
     }
@@ -581,6 +582,6 @@ int driveclick_fdrawcmd_open(int drive)
     return 0;
 }
 
-#endif // __LIBRETRO__
+#endif /* __LIBRETRO__ */
 
-#endif // DRIVESOUND
+#endif /* DRIVESOUND */

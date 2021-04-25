@@ -29,7 +29,7 @@ void statusline_getpos (int *x, int *y, int width, int height)
 {
 #ifdef __LIBRETRO__
 	currprefs.osd_pos.x=0;
-	currprefs.osd_pos.y=(opt_statusbar_position == -1) ? 30000 : opt_statusbar_position; // Have to fake -1 to get -0 as top position
+	currprefs.osd_pos.y=(opt_statusbar_position == -1) ? 30000 : opt_statusbar_position; /* Have to fake -1 to get -0 as top position */
 #endif
 	if (currprefs.osd_pos.x >= 20000) {
 		if (currprefs.osd_pos.x >= 30000)
@@ -57,13 +57,13 @@ void statusline_getpos (int *x, int *y, int width, int height)
 
 #ifdef __LIBRETRO__
 static const char *numbers = { /* ugly  0123456789CHD%+-PNKV */
-	"+++++++--++++-+++++++++++++++++-++++++++++++++++++++++++++++++++++++++-+++++++++-+++++++++--++---+--------------++++++++++-+++++++++++++-+++"
-	"+xxxxx+--+xx+-+xxxxx++xxxxx++x+-+x++xxxxx++xxxxx++xxxxx++xxxxx++xxxxx+++xxxx++x+-+x++xxxx+++xx+-+x---+----------+xxxxx++x+++x++x++x+++x+-+x+"
-	"+x+++x+--++x+-+++++x++++++x++x+++x++x++++++x++++++++++x++x+++x++x+++x++x++++++x+++x++x+++x+-+x++x+--+x+----+++--+x---x++xx++x++x+x++++x+++x+"
-	"+x+-+x+---+x+-+xxxxx++xxxxx++xxxxx++xxxxx++xxxxx+--++x+-+xxxxx++xxxxx++x+----+xxxxx++x+-+x+---+x+--+xxx+--+xxx+-+xxxxx++x+x+x++xx++++++x+x++"
-	"+x+++x+---+x+-+x++++++++++x++++++x++++++x++x+++x+--+x+--+x+++x++++++x++x++++++x+++x++x+++x+--+x+x+--+x+----+++--+x++++++x++xx++x+x+++-+x+x+-"
-	"+xxxxx+---+x+-+xxxxx++xxxxx+----+x++xxxxx++xxxxx+--+x+--+xxxxx++xxxxx+++xxxx++x+-+x++xxxx++-+x++xx--------------+x+----+x+++x++x++x++-++x++-"
-	"+++++++---+++-++++++++++++++----+++++++++++++++++--+++--++++++++++++++-+++++++++-+++++++++----------------------+++----+++-++++++++++--+++--"
+	"+++++++--++++-+++++++++++++++++-++++++++++++++++++++++++++++++++++++++-+++++++++-+++++++++-+++++++--------------++++++++++-++++++-++++++-+++"
+	"+xxxxx+--+xx+-+xxxxx++xxxxx++x+-+x++xxxxx++xxxxx++xxxxx++xxxxx++xxxxx+++xxxx++x+-+x++xxxx+++xx++x+---+++--------+xxxxx++x+++x++x+++x++x+-+x+"
+	"+x+++x+--++x+-+++++x++++++x++x+++x++x++++++x++++++++++x++x+++x++x+++x++x++++++x+++x++x+++x++xx+x++--++x++---+++-+x---x++xx++x++x++x+++x+++x+"
+	"+x+-+x+---+x+-+xxxxx++xxxxx++xxxxx++xxxxx++xxxxx+--++x+-+xxxxx++xxxxx++x+----+xxxxx++x+-+x++++x+++--+xxx+--+xxx++xxxxx++x+x+x++xxx++-++x+x++"
+	"+x+++x+---+x+-+x++++++++++x++++++x++++++x++x+++x+--+x+--+x+++x++++++x++x++++++x+++x++x+++x+++x+xx+--++x++---+++-+x++++++x++xx++x++x++-+x+x+-"
+	"+xxxxx+---+x+-+xxxxx++xxxxx+----+x++xxxxx++xxxxx+--+x+--+xxxxx++xxxxx+++xxxx++x+-+x++xxxx+++x++xx+---+++--------+x+----+x+++x++x+++x+-++x++-"
+	"+++++++---+++-++++++++++++++----+++++++++++++++++--+++--++++++++++++++-+++++++++-+++++++++-+++++++--------------+++----+++-++++++-+++--+++--"
 };
 #else
 static const char *numbers = { /* ugly  0123456789CHD%+-PNK */
@@ -153,16 +153,16 @@ static void write_tdnumber (uae_u8 *buf, int bpp, int x, int y, int num, uae_u32
 #ifdef __LIBRETRO__
 #define BLACK           0x000000
 #define YELLOW_DISABLED 0x222200
-#define YELLOW_DARK     0x444400
-#define YELLOW_DIM      0x666600
-#define YELLOW_BRIGHT   0x999900
+#define YELLOW_DARK     0x555500
+#define YELLOW_DIM      0x888800
+#define YELLOW_BRIGHT   0xCCCC00
 #define GREEN_DISABLED  0x002200
-#define GREEN_DARK      0x004400
-#define GREEN_DIM       0x006600
-#define GREEN_BRIGHT    0x009900
-#define RED_DARK        0x440000
-#define RED_DIM         0x660000
-#define RED_BRIGHT      0x990000
+#define GREEN_DARK      0x005500
+#define GREEN_DIM       0x008800
+#define GREEN_BRIGHT    0x00CC00
+#define RED_DARK        0x550000
+#define RED_DIM         0x880000
+#define RED_BRIGHT      0xCC0000
 
 void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u32 *rc, uae_u32 *gc, uae_u32 *bc, uae_u32 *alpha)
 {
@@ -221,7 +221,7 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
             pos = 6 + pled;
             if ((gui_data.hd >= 0 || gui_data.cd >= 0 || gui_data.md >= 0) && !gui_data.df[0][0] && !gui_data.df[1][0])
             {
-                on_rgb = BLACK;
+                on_rgb  = BLACK;
                 on_rgb2 = BLACK;
                 off_rgb = BLACK;
             }
@@ -229,13 +229,13 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
             {
                 if (currprefs.chipset_mask & CSMASK_MASK)
                 {
-                    on_rgb = YELLOW_BRIGHT;
+                    on_rgb  = YELLOW_BRIGHT;
                     on_rgb2 = YELLOW_DIM;
                     off_rgb = YELLOW_DARK;
                 }
                 else
                 {
-                    on_rgb = GREEN_BRIGHT;
+                    on_rgb  = GREEN_BRIGHT;
                     on_rgb2 = GREEN_DIM;
                     off_rgb = GREEN_DARK;
                 }
@@ -245,7 +245,7 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
                 num3 = track % 10;
                 on = gui_data.drive_motor[pled];
                 if (gui_data.drive_writing[pled]) {
-                    on_rgb = RED_BRIGHT;
+                    on_rgb  = RED_BRIGHT;
                     on_rgb2 = RED_DIM;
                 }
                 half = gui_data.drive_side ? 1 : -1;
@@ -269,21 +269,25 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
 
             if (opt_statusbar & STATUSBAR_MINIMAL)
                 num1 = num2 = num3 = -1;
-        /*} else if (led == LED_POWER) {
+#if 0
+        } else if (led == LED_POWER) {
             pos = 3;
             on_rgb = ((gui_data.powerled_brightness * 10 / 16) + 0x33) << 16;
             on = 1;
-            off_rgb = 0x330000;*/
+            off_rgb = 0x330000;
+#endif
         } else if (led == LED_CD && gui_data.cd >= 0) {
-            pos = 9;
+            pos = (gui_data.hd >= 0) ? 8 : 9;
             if (gui_data.cd >= 0) {
                 on = gui_data.cd & (LED_CD_AUDIO | LED_CD_ACTIVE);
                 on_rgb = (on & LED_CD_AUDIO) ? YELLOW_DIM : YELLOW_BRIGHT;
                 off_rgb = YELLOW_DARK;
+#if 0
                 if ((gui_data.cd & LED_CD_ACTIVE2) && !(gui_data.cd & LED_CD_AUDIO)) {
                     on_rgb &= 0xfefefe;
                     on_rgb >>= 1;
                 }
+#endif
                 if (!currprefs.cdslots[0].name[0])
                 {
                     pen_rgb = ledcolor (YELLOW_DIM, rc, gc, bc, alpha);
@@ -299,7 +303,7 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
             pos = 9;
             if (gui_data.hd >= 0) {
                 on = gui_data.hd;
-                on_rgb = on == 2 ? RED_BRIGHT : YELLOW_BRIGHT;
+                on_rgb  = on == 2 ? RED_BRIGHT : YELLOW_BRIGHT;
                 off_rgb = YELLOW_DARK;
                 num1 = -1;
                 num2 = 11;
@@ -313,18 +317,22 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
                 num1 = -1;
                 num2 = -1;
                 num3 = 16;
-                on_rgb = 0xcccccc;
+                on_rgb  = 0xcccccc;
                 off_rgb = 0x000000;
                 am = 2;
             } else {
                 int fps = (gui_data.fps + 5) / 10;
-                on_rgb = 0x000000;
+                on_rgb  = 0x000000;
                 off_rgb = gui_data.fps_color ? 0xcccc00 : 0x000000;
                 am = 2;
-                if (fps > 99) {
+                if (fps > 999) {
                     num1 = -1;
-                    num2 = 9;
-                    num3 = 9;
+                    num2 = fps / 1000;
+                    num3 = 18;
+                } else if (fps > 99) {
+                    num1 = -1;
+                    num2 = fps / 100;
+                    num3 = 10;
                 } else {
                     num1 = fps / 100;
                     num2 = (fps - num1 * 100) / 10;
@@ -335,18 +343,19 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
             }
             if (currprefs.chipset_mask & CSMASK_MASK)
             {
-                on_rgb = ((gui_data.powerled_brightness * 10 / 16) + 0x33) << 9;
+                on_rgb  = GREEN_BRIGHT;
                 off_rgb = GREEN_DARK;
             }
             else
             {
-                on_rgb = ((gui_data.powerled_brightness * 10 / 16) + 0x33) << 16;
+                on_rgb  = RED_BRIGHT;
                 off_rgb = RED_DARK;
             }
-            on = 1;
+            on = (gui_data.powerled_brightness > 0) ? 1 : 0;
             if (opt_statusbar & STATUSBAR_MINIMAL)
                 num1 = num2 = num3 = -1;
-        /*} else if (led == LED_CPU) {
+#if 0
+        } else if (led == LED_CPU) {
             int idle = (gui_data.idle + 5) / 10;
             pos = 1;
             on_rgb = 0xcc0000;
@@ -374,8 +383,8 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
                 num3 = idle % 10;
                 num4 = num1 == 0 ? 13 : -1;
                 am = 3;
-            }*/
-        /*} else if (led == LED_SND) {
+            }
+        } else if (led == LED_SND) {
             int snd = abs(gui_data.sndbuf + 5) / 10;
             if (snd > 99)
                 snd = 99;
@@ -394,7 +403,8 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
             else if (on == 1)
                 on_rgb = 0x0000cc; // "normal" overflow
             off_rgb = 0x000000;
-            am = 3;*/
+            am = 3;
+#endif
         } else if (led == LED_MD && gui_data.drive_disabled[3] && gui_data.md >= 1) {
             // DF3 reused as internal non-volatile ram led (cd32/cdtv)
             pos = 8;
@@ -414,7 +424,8 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
             }
             if (opt_statusbar & STATUSBAR_MINIMAL)
                 num1 = num2 = num3 = -1;
-        /*} else if (led == LED_NET) {
+#if 0
+        } else if (led == LED_NET) {
             pos = 6;
             if (gui_data.net >= 0) {
                 on = gui_data.net;
@@ -428,7 +439,8 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
                 num2 = -1;
                 num3 = 17;
                 am = 1;
-            }*/
+            }
+#endif
         } else {
             continue;
         }

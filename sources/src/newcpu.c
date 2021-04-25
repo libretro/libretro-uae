@@ -1046,12 +1046,14 @@ static void build_cpufunctbl (void)
 #ifdef CPUEMU_0
 #ifndef CPUEMU_68000_ONLY
 	case 68060:
+#ifdef CPUEMU_33
 		lvl = 5;
 		tbl = op_smalltbl_0_ff;
 		if (currprefs.cpu_cycle_exact)
 			tbl = op_smalltbl_22_ff;
 		if (currprefs.mmu_model)
 			tbl = op_smalltbl_33_ff;
+#endif
 		break;
 	case 68040:
 		lvl = 4;
@@ -5015,9 +5017,10 @@ void m68k_go (int may_quit)
 				savestate_check ();
 			}
 		}
-
+#ifndef __LIBRETRO__
 		if (changed_prefs.inprecfile[0] && input_record)
 			inprec_prepare_record (savestate_fname[0] ? savestate_fname : NULL);
+#endif
 
 		set_cpu_tracer (false);
 
@@ -5083,7 +5086,9 @@ void m68k_go (int may_quit)
 #ifdef MMUEMU
 				currprefs.cpu_model == 68030 && currprefs.mmu_model ? m68k_run_mmu030 :
 				currprefs.cpu_model == 68040 && currprefs.mmu_model ? m68k_run_mmu040 :
+#ifdef CPUEMU_33
 				currprefs.cpu_model == 68060 && currprefs.mmu_model ? m68k_run_mmu060 :
+#endif
 #endif
 				currprefs.cpu_model >= 68020 && currprefs.cpu_cycle_exact ? m68k_run_2ce :
 				currprefs.cpu_compatible ? (currprefs.cpu_model <= 68020 ? m68k_run_2p : m68k_run_2pf) : m68k_run_2;
