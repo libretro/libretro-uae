@@ -17,6 +17,10 @@ else ifneq ($(findstring win,$(shell uname -a)),)
 endif
 endif
 
+ifeq ($(capsimg), 1)
+   CFLAGS += -DHAVE_CAPS_CAPSIMAGE_H
+endif
+   
 # Unix
 ifneq (,$(findstring unix,$(platform)))
    TARGET := $(TARGET_NAME)_libretro.so

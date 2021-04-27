@@ -22,6 +22,7 @@ static int caps_locked[4];
 static int caps_flags = DI_LOCK_DENVAR|DI_LOCK_DENNOISE|DI_LOCK_NOISE|DI_LOCK_UPDATEFD|DI_LOCK_TYPE;
 #define LIB_TYPE 1
 
+#ifndef HAVE_CAPS_CAPSIMAGE_H
 #if !defined HAVE_FRAMEWORK_CAPSIMAGE
 #include "uae_dlopen.h"
 
@@ -448,6 +449,7 @@ static int load_capslib (void)
 #endif
 #endif
 #endif
+#endif //HAVE_CAPS_CAPSIMAGE_H
 
 /*
  * CAPS support proper starts here
@@ -460,6 +462,7 @@ int caps_init (void)
     unsigned int i;
     struct CapsVersionInfo cvi;
 
+#ifndef HAVE_CAPS_CAPSIMAGE_H
     if (init)
 		return 1;
 
@@ -473,6 +476,7 @@ int caps_init (void)
 		noticed = 1;
 		return 0;
     }
+#endif //HAVE_CAPS_CAPSIMAGE_H
     init = 1;
     cvi.type = LIB_TYPE;
 	CAPSGetVersionInfo (&cvi, 0);
