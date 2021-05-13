@@ -28,6 +28,13 @@ ifneq (,$(findstring unix,$(platform)))
    LDFLAGS += -lpthread
    CFLAGS += -Wstringop-overflow=0 -Wno-unused-result
    SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--gc-sections
+   ifneq ($(findstring Haiku,$(shell uname -s)),)
+      LDFLAGS += -lroot -lnetwork
+      ifneq ($(findstring BePC,$(shell uname -m)),)
+         CC = gcc-x86
+         CXX = g++-x86
+      endif
+   endif
 
 # RPI
 else ifeq ($(platform), rpi)
