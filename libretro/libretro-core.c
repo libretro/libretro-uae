@@ -1502,12 +1502,7 @@ void retro_set_environment(retro_environment_t cb)
    cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, (void*)ports);
 
    unsigned version = 0;
-   if (!cb(RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION, &version))
-   {
-      if (log_cb)
-         log_cb(RETRO_LOG_DEBUG, "retro_set_environment: GET_CORE_OPTIONS_VERSION failed, not setting CORE_OPTIONS now.\n");
-   }
-   else if (version == 1)
+   if (environ_cb(RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION, &version) && (version >= 1))
    {
       cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS, core_options);
    }
