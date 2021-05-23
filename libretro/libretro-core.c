@@ -21,6 +21,7 @@
 #include "blkdev.h"
 #include "disk.h"
 #include "gui.h"
+#include "memory_uae.h"
 
 unsigned int libretro_runloop_active = 0;
 unsigned short int retro_bmp[RETRO_BMP_SIZE] = {0};
@@ -5814,6 +5815,16 @@ bool retro_load_game(const struct retro_game_info *info)
       zfile_fclose(state_file);
    }
 
+   struct retro_memory_descriptor memdesc[] = {
+      {RETRO_MEMDESC_SYSTEM_RAM, chipmemory, 0, 0, 0, 0, allocated_chipmem, NULL}
+   };
+
+   struct retro_memory_map mmap = {
+      memdesc,
+      sizeof(memdesc) / sizeof(memdesc[0])
+   };
+
+   environ_cb(RETRO_ENVIRONMENT_SET_MEMORY_MAPS, &mmap);
    return true;
 }
 
