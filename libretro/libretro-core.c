@@ -3227,6 +3227,9 @@ void retro_init(void)
       return;
    }
 
+   bool achievements = true;
+   environ_cb(RETRO_ENVIRONMENT_SET_SUPPORT_ACHIEVEMENTS, &achievements);
+
    memset(retro_bmp, 0, sizeof(retro_bmp));
 
    libretro_runloop_active = 0;
