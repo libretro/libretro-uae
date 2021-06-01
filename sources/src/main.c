@@ -855,12 +855,10 @@ static void parse_cmdline_and_init_file (int argc, TCHAR **argv)
 #ifdef __LIBRETRO__
 	_tcscpy (optionsfile, ".");
 	_tcscat (optionsfile, _T("/"));
-#endif
+	target_cfgfile_load (&currprefs, NULL, 0, default_config);
+#else
 	parse_cmdline_2 (argc, argv);
-
-#ifndef __LIBRETRO__
 	_tcscat (optionsfile, restart_config);
-#endif
 
 	if (argc > 1 && ! target_cfgfile_load (&currprefs, argv[1], 0, default_config)) {
 		write_log (_T("failed to load config '%s'\n"), optionsfile);
@@ -870,6 +868,7 @@ static void parse_cmdline_and_init_file (int argc, TCHAR **argv)
 		target_cfgfile_load (&currprefs, optionsfile, 0, default_config);
 #endif
 	}
+#endif
 	fixup_prefs (&currprefs);
 
 	parse_cmdline (argc, argv);

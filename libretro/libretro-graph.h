@@ -29,8 +29,9 @@ void draw_hline(int x, int y, int dx, int dy, uint32_t color);
 void draw_hline_bmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color);
 void draw_hline_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t color);
 
+void draw_vline(int x, int y, int dx, int dy, uint32_t color);
 void draw_vline_bmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color);
-void draw_vline_bmp(unsigned short *buffer, int x1, int y1, int x2, int y2, unsigned short color);
+void draw_vline_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t color);
 
 void draw_string(unsigned short *surf, unsigned short int x, unsigned short int y,
       const char *string, unsigned short int maxstrlen,

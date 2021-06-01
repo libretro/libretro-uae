@@ -268,7 +268,13 @@ void draw_hline_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t c
    }
 }
 
-
+void draw_vline(int x, int y, int dx, int dy, uint32_t color)
+{
+   if (pix_bytes == 4)
+      draw_vline_bmp32((uint32_t *)retro_bmp, x, y, dx, dy, color);
+   else
+      draw_vline_bmp(retro_bmp, x, y, dx, dy, color);
+}
 
 void draw_vline_bmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color)
 {
@@ -280,7 +286,20 @@ void draw_vline_bmp(unsigned short *buffer, int x, int y, int dx, int dy, unsign
    {
       idx = x+j*retrow;
       buffer[idx] = color;
-   }	
+   }
+}
+
+void draw_vline_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t color)
+{
+   int i, j, idx;
+
+   (void)i;
+
+   for (j=y; j<y+dy; j++)
+   {
+      idx = x+j*retrow;
+      buffer[idx] = color;
+   }
 }
 
 void draw_line_bmp(unsigned short *buffer, int x1, int y1, int x2, int y2, unsigned short color)

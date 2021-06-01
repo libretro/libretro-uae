@@ -286,10 +286,10 @@ static int qs_override;
 int target_cfgfile_load (struct uae_prefs *p, const TCHAR *filename, int type, int isdefault)
 {
 	int v, i, type2;
-	int ct, ct2 = 0;//, size;
+	int ct, ct2 = 0;
 	char tmp1[MAX_DPATH], tmp2[MAX_DPATH];
 	char fname[MAX_DPATH];
-
+#if 0
 	_tcscpy (fname, filename);
 	if (!zfile_exists (fname)) {
 		fetch_configurationpath (fname, sizeof (fname) / sizeof (TCHAR));
@@ -298,6 +298,7 @@ int target_cfgfile_load (struct uae_prefs *p, const TCHAR *filename, int type, i
 		else
 			_tcscpy (fname, filename);
 	}
+#endif
 
 	if (!isdefault)
 		qs_override = 1;
@@ -313,7 +314,6 @@ int target_cfgfile_load (struct uae_prefs *p, const TCHAR *filename, int type, i
 		default_prefs (p, type);
 	}
 		
-	//regqueryint (NULL, "ConfigFile_NoAuto", &ct2);
 	v = cfgfile_load (p, fname, &type2, ct2, isdefault ? 0 : 1);
 	if (!v)
 		return v;
@@ -321,12 +321,8 @@ int target_cfgfile_load (struct uae_prefs *p, const TCHAR *filename, int type, i
 		return v;
 	for (i = 1; i <= 2; i++) {
 		if (type != i) {
-			// size = sizeof (ct);
 			ct = 0;
-			//regqueryint (NULL, configreg2[i], &ct);
 			if (ct && ((i == 1 && p->config_hardware_path[0] == 0) || (i == 2 && p->config_host_path[0] == 0) || ct2)) {
-				// size = sizeof (tmp1) / sizeof (TCHAR);
-				//regquerystr (NULL, configreg[i], tmp1, &size);
 				fetch_path ("ConfigurationPath", tmp2, sizeof (tmp2) / sizeof (TCHAR));
 				_tcscat (tmp2, tmp1);
 				v = i;
@@ -386,13 +382,12 @@ int scan_roms (int show)
 // writelog
 TCHAR* buf_out (TCHAR *buffer, int *bufsize, const TCHAR *format, ...)
 {
-	/// REMOVEME: unused: int count;
 	va_list parms;
 	va_start (parms, format);
 
 	if (buffer == NULL)
 		return 0;
-	/** REMOVEME: unused: count = **/
+
 	vsnprintf (buffer, (*bufsize) - 1, format, parms);
 	va_end (parms);
 	*bufsize -= _tcslen (buffer);
@@ -402,7 +397,6 @@ TCHAR* buf_out (TCHAR *buffer, int *bufsize, const TCHAR *format, ...)
 // dinput
 void setid (struct uae_input_device *uid, int i, int slot, int sub, int port, int evt)
 {
-	// wrong place!
 	uid->eventid[slot][SPARE_SUB_EVENT] = uid->eventid[slot][sub];
 	uid->flags[slot][SPARE_SUB_EVENT] = uid->flags[slot][sub];
 	uid->port[slot][SPARE_SUB_EVENT] = MAX_JPORTS + 1;
