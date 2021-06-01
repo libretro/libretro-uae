@@ -4366,9 +4366,6 @@ static bool retro_create_config()
                         /* Extract ZIP */
                         zip_uncompress(whdload_files_zip, whdload_path, NULL);
                         remove(whdload_files_zip);
-
-                        /* Copy Kickstarts */
-                        whdload_kscopy();
                      }
                      else
                         log_cb(RETRO_LOG_ERROR, "Unable to create WHDLoad image directory: '%s'\n", (const char*)&whdload_path);
@@ -4411,6 +4408,9 @@ static bool retro_create_config()
                   }
                   else
                      log_cb(RETRO_LOG_ERROR, "Unable to create WHDSaves image directory: '%s'\n", (const char*)&whdsaves_path);
+
+                  /* Copy Kickstarts */
+                  whdload_kscopy();
 
                   /* Copy required files host-wise with file mode */
                   if (path_is_valid(whdload_prefs_path))
