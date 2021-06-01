@@ -1517,7 +1517,7 @@ UINT64 be_read(const UINT8 *base, int numbytes)
     the data stream in bigendian order
 -------------------------------------------------*/
 
-INLINE UINT32 get_bigendian_uint32(const UINT8 *base)
+UINT32 get_bigendian_uint32(const UINT8 *base)
 {
 	return (base[0] << 24) | (base[1] << 16) | (base[2] << 8) | base[3];
 }
@@ -1527,7 +1527,7 @@ INLINE UINT32 get_bigendian_uint32(const UINT8 *base)
     the data stream in bigendian order
 -------------------------------------------------*/
 
-INLINE UINT64 get_bigendian_uint64(const UINT8 *base)
+UINT64 get_bigendian_uint64(const UINT8 *base)
 {
 	return ((UINT64)base[0] << 56) | ((UINT64)base[1] << 48) | ((UINT64)base[2] << 40) | ((UINT64)base[3] << 32) |
 			((UINT64)base[4] << 24) | ((UINT64)base[5] << 16) | ((UINT64)base[6] << 8) | (UINT64)base[7];

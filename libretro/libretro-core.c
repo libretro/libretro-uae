@@ -79,11 +79,10 @@ extern uae_u8 *natmem_offset;
 extern uae_u32 natmem_size;
 #endif
 
-static char RPATH[RETRO_PATH_MAX] = {0};
 char full_path[RETRO_PATH_MAX] = {0};
-static char *uae_argv[] = { "puae", RPATH };
+static char *uae_argv[] = { "puae" };
 static int restart_pending = 0;
-static char* core_options_legacy_strings = NULL;
+static char *core_options_legacy_strings = NULL;
 
 static long retro_now = 0;
 static double retro_refresh = 0;
@@ -189,8 +188,9 @@ dc_storage *dc = NULL;
 static char uae_model[256] = {0};
 static char uae_kickstart[RETRO_PATH_MAX] = {0};
 static char uae_kickstart_ext[RETRO_PATH_MAX] = {0};
-static char uae_config[4096] = {0};
-static char uae_custom_config[4096] = {0};
+static char uae_config[2048] = {0};
+static char uae_custom_config[2048] = {0};
+char uae_full_config[4096] = {0};
 
 /* FPS counter + mapper tick */
 long retro_ticks(void)
@@ -1568,7 +1568,7 @@ void retro_set_environment(retro_environment_t cb)
 
 static void update_variables(void)
 {
-   uae_model[0] = '\0';
+   uae_model[0]  = '\0';
    uae_config[0] = '\0';
 
    struct retro_variable var = {0};
@@ -3424,13 +3424,30 @@ void retro_audio_render(const int16_t *data, size_t frames)
 #endif
 }
 
-static void retro_force_region(FILE** configfile)
+
+
+static void retro_config_append(const char *row, ...)
+{
+   char output[512];
+   va_list ap;
+
+   if (row == NULL)
+      return;
+
+   va_start(ap, row);
+   vsprintf(output, row, ap);
+   va_end(ap);
+
+   strcat(uae_full_config, output);
+}
+
+static void retro_force_region()
 {
    /* If region was specified in the path */
    if (strstr(full_path, "NTSC") || strstr(full_path, "(USA)"))
    {
       log_cb(RETRO_LOG_INFO, "Forcing NTSC mode\n");
-      fprintf(*configfile, "ntsc=true\n");
+      retro_config_append("ntsc=true\n");
       real_ntsc = true;
       forced_video = true;
    }
@@ -3441,18 +3458,18 @@ static void retro_force_region(FILE** configfile)
          || strstr(full_path, "(Sweden)"))
    {
       log_cb(RETRO_LOG_INFO, "Forcing PAL mode\n");
-      fprintf(*configfile, "ntsc=false\n");
+      retro_config_append("ntsc=false\n");
       real_ntsc = false;
       forced_video = true;
    }
 }
 
-static void retro_use_boot_hd(FILE** configfile)
+static void retro_use_boot_hd()
 {
-   char *tmp_str = NULL;
+   char *tmp_str       = NULL;
    char boothd_size[5] = {0};
-   char volume[10] = {0};
-   char label[10] = {0};
+   char volume[10]     = {0};
+   char label[10]      = {0};
 
    snprintf(label, sizeof(label), "%s", "BootHD");
    snprintf(volume, sizeof(volume), "%s", "DH0");
@@ -3503,7 +3520,7 @@ static void retro_use_boot_hd(FILE** configfile)
       if (path_is_valid(boothd_hdf))
       {
          tmp_str = string_replace_substring(boothd_hdf, "\\", "\\\\");
-         fprintf(*configfile, "hardfile2=rw,%s:\"%s\",32,1,2,512,0,,uae0\n", volume, tmp_str);
+         retro_config_append("hardfile2=rw,%s:\"%s\",32,1,2,512,0,,uae0\n", volume, tmp_str);
       }
    }
    /* Directory mode */
@@ -3520,7 +3537,7 @@ static void retro_use_boot_hd(FILE** configfile)
       if (path_is_directory(boothd_path))
       {
          tmp_str = string_replace_substring(boothd_path, "\\", "\\\\");
-         fprintf(*configfile, "filesystem2=rw,%s:%s:\"%s\",0\n", volume, label, tmp_str);
+         retro_config_append("filesystem2=rw,%s:%s:\"%s\",0\n", volume, label, tmp_str);
       }
       else
          log_cb(RETRO_LOG_ERROR, "Unable to create Boot HD directory: '%s'\n", boothd_path);
@@ -3531,7 +3548,7 @@ static void retro_use_boot_hd(FILE** configfile)
    tmp_str = NULL;
 }
 
-static void retro_print_kickstart(FILE** configfile)
+static void retro_print_kickstart()
 {
    char kickstart[RETRO_PATH_MAX];
    path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
@@ -3546,7 +3563,7 @@ static void retro_print_kickstart(FILE** configfile)
       retro_message = true;
    }
    else
-      fprintf(*configfile, "kickstart_rom_file=%s\n", (const char*)&kickstart);
+      retro_config_append("kickstart_rom_file=%s\n", (const char*)&kickstart);
 
    /* Extended KS + NVRAM */
    if (!string_is_empty(uae_kickstart_ext))
@@ -3570,7 +3587,7 @@ static void retro_print_kickstart(FILE** configfile)
             retro_message = true;
          }
          else
-            fprintf(*configfile, "kickstart_ext_rom_file=%s\n", (const char*)&kickstart_ext);
+            retro_config_append("kickstart_ext_rom_file=%s\n", (const char*)&kickstart_ext);
       }
 
       /* NVRAM */
@@ -3594,11 +3611,11 @@ static void retro_print_kickstart(FILE** configfile)
       }
       path_join((char*)&flash_filepath, retro_save_directory, flash_filename);
       log_cb(RETRO_LOG_INFO, "Using NVRAM: '%s'\n", flash_filepath);
-      fprintf(*configfile, "flash_file=%s\n", (const char*)&flash_filepath);
+      retro_config_append("flash_file=%s\n", (const char*)&flash_filepath);
    }
 }
 
-static void retro_print_harddrives(FILE** configfile)
+static void retro_print_harddrives()
 {
    char *tmp_str = NULL;
 
@@ -3622,13 +3639,13 @@ static void retro_print_harddrives(FILE** configfile)
             snprintf(tmp_str_path, sizeof(tmp_str_path), "%s", tmp_str);
       }
       if (strendswith(dc->files[i], "lha"))
-         fprintf(*configfile, "filesystem2=ro,DH%d:%s:\"%s\",0\n", i, tmp_str_name, tmp_str);
+         retro_config_append("filesystem2=ro,DH%d:%s:\"%s\",0\n", i, tmp_str_name, tmp_str);
       else if (path_is_directory(dc->files[i]))
-         fprintf(*configfile, "filesystem2=rw,DH%d:%s:\"%s\",0\n", i, tmp_str_name, tmp_str);
+         retro_config_append("filesystem2=rw,DH%d:%s:\"%s\",0\n", i, tmp_str_name, tmp_str);
       else if (strendswith(dc->files[i], "slave") || strendswith(dc->files[i], "info"))
-         fprintf(*configfile, "filesystem2=rw,DH%d:%s:\"%s\",0\n", i, tmp_str_name, tmp_str_path);
+         retro_config_append("filesystem2=rw,DH%d:%s:\"%s\",0\n", i, tmp_str_name, tmp_str_path);
       else
-         fprintf(*configfile, "hardfile2=rw,DH%d:\"%s\",32,1,2,512,0,,uae0\n", i, tmp_str);
+         retro_config_append("hardfile2=rw,DH%d:\"%s\",32,1,2,512,0,,uae0\n", i, tmp_str);
 
       log_cb(RETRO_LOG_INFO, "HD (%d) inserted in drive DH%d: '%s'\n", i+1, i, dc->files[i]);
 
@@ -3928,7 +3945,7 @@ static char* emu_config(int config)
    }
 }
 
-static void retro_build_preset(char* model)
+static void retro_build_preset(char *model)
 {
    int model_int = emu_config_int(model);
    strcpy(uae_model, emu_config(model_int));
@@ -3938,10 +3955,8 @@ static void retro_build_preset(char* model)
 
 static bool retro_create_config()
 {
-   char *tmp_str = NULL;
-   RPATH[0] = '\0';
-   path_join((char*)&RPATH, retro_save_directory, LIBRETRO_PUAE_PREFIX ".uae");
-   log_cb(RETRO_LOG_INFO, "Generating config file: '%s'\n", (const char*)&RPATH);
+   uae_full_config[0] = '\0';
+   char *tmp_str      = NULL;
 
    /* Model preset */
    if (!strcmp(opt_model, "auto"))
@@ -3964,14 +3979,6 @@ static bool retro_create_config()
          snprintf(browsed_file, sizeof(browsed_file), "%s", token);
          token = strtok(NULL, "#");
       }
-   }
-
-   /* Open tmp config file */
-   FILE * configfile;
-   if (!(configfile = fopen(RPATH, "w")))
-   {
-      log_cb(RETRO_LOG_ERROR, "Unable to write file: '%s'\n", (const char*)&RPATH);
-      return false;
    }
 
    if (!string_is_empty(full_path) && (path_is_valid(full_path) || path_is_directory(full_path)))
@@ -4160,17 +4167,17 @@ static bool retro_create_config()
             log_cb(RETRO_LOG_INFO, "Booting model: '%s'\n", uae_kickstart);
 
          /* Write model preset */
-         fprintf(configfile, "%s", uae_model);
+         retro_config_append(uae_model);
 
          /* Separator row for clarity */
-         fprintf(configfile, "\n");
+         retro_config_append("\n");
 
          /* Verify and write Kickstart */
-         retro_print_kickstart(&configfile);
+         retro_print_kickstart();
 
          /* Bootable HD exception */
          if (opt_use_boot_hd)
-            retro_use_boot_hd(&configfile);
+            retro_use_boot_hd();
 
          /* Hard drive or WHDLoad image */
          if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_HD
@@ -4374,7 +4381,7 @@ static bool retro_create_config()
                      if (tmp_str[strlen(tmp_str)-1] != '/')
                         path_join(tmp_str, whdload_path, "");
 #endif
-                     fprintf(configfile, "filesystem2=rw,WHDLoad:WHDLoad:\"%s\",0\n", (const char*)tmp_str);
+                     retro_config_append("filesystem2=rw,WHDLoad:WHDLoad:\"%s\",0\n", (const char*)tmp_str);
                      free(tmp_str);
                      tmp_str = NULL;
                   }
@@ -4395,7 +4402,7 @@ static bool retro_create_config()
                      if (tmp_str[strlen(tmp_str)-1] != '/')
                         path_join(tmp_str, whdsaves_path, "");
 #endif
-                     fprintf(configfile, "filesystem2=rw,WHDSaves:WHDSaves:\"%s\",0\n", (const char*)tmp_str);
+                     retro_config_append("filesystem2=rw,WHDSaves:WHDSaves:\"%s\",0\n", (const char*)tmp_str);
                      free(tmp_str);
                      tmp_str = NULL;
                   }
@@ -4448,7 +4455,7 @@ static bool retro_create_config()
                   if (path_is_valid(whdload_hdf))
                   {
                      tmp_str = string_replace_substring(whdload_hdf, "\\", "\\\\");
-                     fprintf(configfile, "hardfile2=rw,WHDLoad:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
+                     retro_config_append("hardfile2=rw,WHDLoad:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
                      free(tmp_str);
                      tmp_str = NULL;
                   }
@@ -4491,7 +4498,7 @@ static bool retro_create_config()
                   if (path_is_valid(whdsaves_hdf))
                   {
                      tmp_str = string_replace_substring(whdsaves_hdf, "\\", "\\\\");
-                     fprintf(configfile, "hardfile2=rw,WHDSaves:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
+                     retro_config_append("hardfile2=rw,WHDSaves:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
                      free(tmp_str);
                      tmp_str = NULL;
                   }
@@ -4505,14 +4512,14 @@ static bool retro_create_config()
                   if (tmp_str[strlen(tmp_str)-1] != '/')
                      path_join(tmp_str, retro_system_directory, "");
 #endif
-                  fprintf(configfile, "filesystem2=ro,RASystem:RASystem:\"%s\",-128\n", tmp_str);
+                  retro_config_append("filesystem2=ro,RASystem:RASystem:\"%s\",-128\n", tmp_str);
                   free(tmp_str);
                   tmp_str = NULL;
                }
             }
 
             /* Attach hard drive(s) */
-            retro_print_harddrives(&configfile);
+            retro_print_harddrives();
          }
          else
          {
@@ -4554,7 +4561,7 @@ static bool retro_create_config()
                display_current_image(dc->labels[dc->index], true);
                log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF0: '%s'\n", dc->index+1, dc->files[dc->index]);
                tmp_str = utf8_to_local_string_alloc(dc->files[0]);
-               fprintf(configfile, "floppy0=%s\n", tmp_str);
+               retro_config_append("floppy0=%s\n", tmp_str);
                free(tmp_str);
                tmp_str = NULL;
 
@@ -4570,12 +4577,12 @@ static bool retro_create_config()
 
                         log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF%d: '%s'\n", i+1, i, dc->files[i]);
                         tmp_str = utf8_to_local_string_alloc(dc->files[i]);
-                        fprintf(configfile, "floppy%d=%s\n", i, tmp_str);
+                        retro_config_append("floppy%d=%s\n", i, tmp_str);
                         free(tmp_str);
                         tmp_str = NULL;
 
                         /* By default only DF0: is enabled, so floppyXtype needs to be set on the extra drives */
-                        fprintf(configfile, "floppy%dtype=%d\n", i, 0); /* 0 = 3.5" DD */
+                        retro_config_append("floppy%dtype=%d\n", i, 0); /* 0 = 3.5" DD */
                      }
                      else
                         log_cb(RETRO_LOG_WARN, "Too many disks for MultiDrive!\n");
@@ -4593,10 +4600,10 @@ static bool retro_create_config()
          }
 
          /* Separator row for clarity */
-         fprintf(configfile, "\n");
+         retro_config_append("\n");
 
          /* Write common config */
-         fprintf(configfile, "%s", uae_config);
+         retro_config_append(uae_config);
       }
       /* CD image */
       else if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_CD
@@ -4641,19 +4648,19 @@ static bool retro_create_config()
             log_cb(RETRO_LOG_INFO, "Booting model: '%s'\n", uae_kickstart);
 
          /* Write model preset */
-         fprintf(configfile, "%s", uae_model);
+         retro_config_append(uae_model);
 
          /* Separator row for clarity */
-         fprintf(configfile, "\n");
+         retro_config_append("\n");
 
          /* Verify and write Kickstart */
-         retro_print_kickstart(&configfile);
+         retro_print_kickstart();
 
          /* Bootable HD exception */
          if (opt_use_boot_hd)
          {
-            retro_use_boot_hd(&configfile);
-            fprintf(configfile, "scsi=true\n");
+            retro_use_boot_hd();
+            retro_config_append("scsi=true\n");
          }
 
          /* M3U playlist */
@@ -4693,14 +4700,14 @@ static bool retro_create_config()
             dc->eject_state = false;
             display_current_image(dc->labels[dc->index], true);
             log_cb(RETRO_LOG_INFO, "CD (%d) inserted in drive CD0: '%s'\n", dc->index+1, dc->files[dc->index]);
-            fprintf(configfile, "cdimage0=%s,%s\n", dc->files[0], (opt_cd_startup_delayed_insert ? "delay" : "")); /* ","-suffix needed if filename contains "," */
+            retro_config_append("cdimage0=%s,%s\n", dc->files[0], (opt_cd_startup_delayed_insert ? "delay" : "")); /* ","-suffix needed if filename contains "," */
          }
 
          /* Separator row for clarity */
-         fprintf(configfile, "\n");
+         retro_config_append("\n");
 
          /* Write common config */
-         fprintf(configfile, "%s", uae_config);
+         retro_config_append(uae_config);
       }
       /* UAE config file */
       else if (strendswith(full_path, "uae"))
@@ -4708,22 +4715,22 @@ static bool retro_create_config()
          char disk_image[RETRO_PATH_MAX] = {0};
 
          /* Write model preset */
-         fprintf(configfile, "%s", uae_model);
+         retro_config_append(uae_model);
 
          /* Separator row for clarity */
-         fprintf(configfile, "\n");
+         retro_config_append("\n");
 
          /* Verify and write Kickstart */
-         retro_print_kickstart(&configfile);
+         retro_print_kickstart();
 
          /* Separator row for clarity */
-         fprintf(configfile, "\n");
+         retro_config_append("\n");
 
          /* Write common config */
-         fprintf(configfile, "%s", uae_config);
+         retro_config_append(uae_config);
 
          /* Separator row for clarity */
-         fprintf(configfile, "\n");
+         retro_config_append("\n");
 
          /* Must reset disk control struct here,
           * otherwise duplicate entries will be
@@ -4740,7 +4747,7 @@ static bool retro_create_config()
 
             while (fgets(filebuf, sizeof(filebuf), configfile_custom))
             {
-               fprintf(configfile, "%s", filebuf);
+               retro_config_append(filebuf);
 
                /* Parse diskimage & floppy rows */
                if ((strstr(filebuf, "diskimage") && filebuf[0] == 'd') ||
@@ -4779,19 +4786,19 @@ static bool retro_create_config()
       else
       {
          /* Write model preset */
-         fprintf(configfile, "%s", uae_model);
+         retro_config_append(uae_model);
 
          /* Separator row for clarity */
-         fprintf(configfile, "\n");
+         retro_config_append("\n");
 
          /* Verify and write Kickstart */
-         retro_print_kickstart(&configfile);
+         retro_print_kickstart();
 
          /* Separator row for clarity */
-         fprintf(configfile, "\n");
+         retro_config_append("\n");
 
          /* Write common config */
-         fprintf(configfile, "%s", uae_config);
+         retro_config_append(uae_config);
 
          /* Unsupported file format */
          log_cb(RETRO_LOG_ERROR, "Unsupported file format: '%s'\n", full_path);
@@ -4806,28 +4813,28 @@ static bool retro_create_config()
       log_cb(RETRO_LOG_INFO, "Booting model: '%s'\n", uae_kickstart);
 
       /* Write model preset */
-      fprintf(configfile, "%s", uae_model);
+      retro_config_append(uae_model);
 
       /* Separator row for clarity */
-      fprintf(configfile, "\n");
+      retro_config_append("\n");
 
       /* Verify and write Kickstart */
-      retro_print_kickstart(&configfile);
+      retro_print_kickstart();
 
       /* Bootable HD exception, not for CD systems */
       if (opt_use_boot_hd)
          if (strcmp(opt_model, "CD32") && strcmp(opt_model, "CD32FR") && strcmp(opt_model, "CDTV"))
-            retro_use_boot_hd(&configfile);
+            retro_use_boot_hd();
 
       /* Separator row for clarity */
-      fprintf(configfile, "\n");
+      retro_config_append("\n");
 
       /* Write common config */
-      fprintf(configfile, "%s", uae_config);
+      retro_config_append(uae_config);
    }
 
    /* Separator row for clarity */
-   fprintf(configfile, "\n");
+   retro_config_append("\n");
 
    /* Iterate global config file and append all rows to the temporary config */
    char configfile_global_path[RETRO_PATH_MAX];
@@ -4836,52 +4843,51 @@ static bool retro_create_config()
    {
       log_cb(RETRO_LOG_INFO, "Appending global configuration: '%s'\n", configfile_global_path);
       /* Separator row for clarity */
-      fprintf(configfile, "\n");
+      retro_config_append("\n");
 
       FILE * configfile_global;
       char filebuf[512];
       if ((configfile_global = fopen(configfile_global_path, "r")))
       {
          while (fgets(filebuf, sizeof(filebuf), configfile_global))
-            fprintf(configfile, "%s", filebuf);
+            retro_config_append(filebuf);
          fclose(configfile_global);
       }
    }
 
    /* Scan region tags only with automatic region */
    if (opt_region_auto)
-      retro_force_region(&configfile);
+      retro_force_region();
 
    /* Forced Cycle-exact */
    if (strstr(full_path, "(CE)"))
-      fprintf(configfile, "cycle_exact=true\n");
+      retro_config_append("cycle_exact=true\n");
 
-   /* Close tmp config */
-   fclose(configfile);
 
    /* Scan for specific rows */
-   char filebuf[512];
-   if ((configfile = fopen(RPATH, "r")))
+   char *token;
+   char uae_full_config_temp[4096];
+   strcpy(uae_full_config_temp, uae_full_config);
+   for (token = strtok(uae_full_config_temp, "\n"); token; token = strtok(NULL, "\n"))
    {
-      while (fgets(filebuf, sizeof(filebuf), configfile))
-      {
-         if (strstr(filebuf, "ntsc=true") && filebuf[0] == 'n')
-            real_ntsc = true;
-         if (strstr(filebuf, "ntsc=false") && filebuf[0] == 'n')
-            real_ntsc = false;
-         if (strstr(filebuf, "cycle_exact=true") && filebuf[0] == 'c')
-            cpu_cycle_exact_force = true;
-      }
-      fclose(configfile);
-
-      if (real_ntsc && video_config & PUAE_VIDEO_PAL ||
-         !real_ntsc && video_config & PUAE_VIDEO_NTSC)
-         forced_video = true;
+      if (strstr(token, "ntsc=true") && token[0] == 'n')
+         real_ntsc = true;
+      if (strstr(token, "ntsc=false") && token[0] == 'n')
+         real_ntsc = false;
+      if (strstr(token, "cycle_exact=true") && token[0] == 'c')
+         cpu_cycle_exact_force = true;
    }
+
+   if (real_ntsc && video_config & PUAE_VIDEO_PAL ||
+      !real_ntsc && video_config & PUAE_VIDEO_NTSC)
+      forced_video = true;
 
    if (tmp_str)
       free(tmp_str);
    tmp_str = NULL;
+
+   /* Print the final config in debug log for copypaste purposes */
+   log_cb(RETRO_LOG_DEBUG, "Generated config:\n%s", uae_full_config);
 
    return true;
 }
@@ -4893,7 +4899,7 @@ void retro_reset(void)
    fake_ntsc = false;
    update_variables();
    retro_create_config();
-   uae_restart(1, RPATH); /* 1=nogui */
+   uae_restart(1, 0); /* 1=nogui */
 }
 
 void retro_reset_soft()

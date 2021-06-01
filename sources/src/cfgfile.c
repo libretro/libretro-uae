@@ -38,6 +38,10 @@
 #include "sounddep/sound.h"
 #include "misc.h"
 
+#ifdef __LIBRETRO__
+extern char uae_full_config[4096];
+#endif
+
 static int config_newfilesystem;
 static struct strlist *temp_lines;
 static struct zfile *default_file, *configstore;
@@ -3906,7 +3910,12 @@ static int cfgfile_load_2 (struct uae_prefs *p, const TCHAR *filename, bool real
 		config_newfilesystem = 0;
 		//reset_inputdevice_config (p);
 	}
-
+#ifdef __LIBRETRO__
+    fh = NULL;
+    char *token;
+    for (token = strtok(uae_full_config, "\n"); token; token = strtok(NULL, "\n")) {
+		strcpy(linea, token);
+#else
 	write_log ("Opening cfgfile '%s' ", filename);
 	fh = zfile_fopen (filename, _T("r"), ZFD_NORMAL);
 #ifndef	SINGLEFILE
@@ -3918,6 +3927,7 @@ static int cfgfile_load_2 (struct uae_prefs *p, const TCHAR *filename, bool real
 	//write_log ("OK\n");
 
 	while (cfg_fgets (linea, sizeof (linea), fh) != 0) {
+#endif /* __LIBRETRO__ */
 		trimwsa (linea);
 		if (strlen (linea) > 0) {
 			if (linea[0] == '#' || linea[0] == ';') {
