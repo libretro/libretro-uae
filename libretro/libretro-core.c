@@ -3249,7 +3249,10 @@ void retro_deinit(void)
 
    /* Clean legacy strings */
    if (core_options_legacy_strings)
+   {
       free(core_options_legacy_strings);
+      core_options_legacy_strings = NULL;
+   }
 
    /* Clean ZIP temp */
    if (!string_is_empty(retro_temp_directory) && path_is_directory(retro_temp_directory))
