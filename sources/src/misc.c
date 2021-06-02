@@ -34,6 +34,10 @@
 #include "sleep.h"
 #include "zfile.h"
 
+#ifdef __LIBRETRO__
+#include "libretro-core.h"
+#endif
+
 // this is handled by the graphics drivers and set up in picasso96.c
 #if defined(PICASSO96)
 extern int screen_is_picasso;
@@ -428,25 +432,44 @@ void target_fixup_options (struct uae_prefs *p)
 
 void fetch_path (TCHAR *name, TCHAR *out, int size)
 {
-    _tcscpy (start_path_data, "./");
-    _tcscpy (out, start_path_data);
+	_tcscpy (start_path_data, "./");
+	_tcscpy (out, start_path_data);
+#ifdef __LIBRETRO__
+	_tcscpy (out, retro_system_directory);
+	if (!name)
+		return;
+	if (!_tcscmp (name, "FloppyPath"))
+		_tcscpy (out, retro_save_directory);
+	else if (!_tcscmp (name, "CDPath"))
+		_tcscpy (out, retro_save_directory);
+	else if (!_tcscmp (name, "hdfPath"))
+		_tcscpy (out, retro_save_directory);
+	else if (!_tcscmp (name, "SaveimagePath"))
+		_tcscpy (out, retro_save_directory);
+	else if (!_tcscmp (name, "KickstartPath"))
+		_tcscpy (out, retro_system_directory);
+	else if (!_tcscmp (name, "ConfigurationPath"))
+		_tcscpy (out, retro_system_directory);
+	_tcscat (out, DIR_SEP_STR);
+#else
     if (!name)
         return;
     if (!_tcscmp (name, "FloppyPath"))
         _tcscat (out, "./");
     else if (!_tcscmp (name, "CDPath"))
         _tcscat (out, "./");
-    if (!_tcscmp (name, "hdfPath"))
+    else if (!_tcscmp (name, "hdfPath"))
         _tcscat (out, "./");
-    if (!_tcscmp (name, "KickstartPath"))
+    else if (!_tcscmp (name, "KickstartPath"))
         _tcscat (out, "./");
-    if (!_tcscmp (name, "ConfigurationPath"))
+    else if (!_tcscmp (name, "ConfigurationPath"))
         _tcscat (out, "./");
+#endif
 }
 
 void fetch_saveimagepath (TCHAR *out, int size, int dir)
 {
-    fetch_path ("SaveimagePath", out, size);
+	fetch_path ("SaveimagePath", out, size);
 }
 
 void fetch_configurationpath (TCHAR *out, int size)
