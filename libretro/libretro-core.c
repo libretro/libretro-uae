@@ -2930,13 +2930,15 @@ bool retro_disk_set_eject_state(bool ejected)
          {
             case DC_IMAGE_TYPE_FLOPPY:
             case DC_IMAGE_TYPE_ARCHIVE:
-               strcpy(changed_prefs.floppyslots[0].df, dc->files[dc->index]);
-
                /* Need to remove duplicates from external drives */
                for (unsigned i = 1; i < 4; i++)
                   if (!strcmp(currprefs.floppyslots[i].df, dc->files[dc->index]))
+                  {
                      changed_prefs.floppyslots[i].df[0] = 0;
+                     disk_eject(i);
+                  }
 
+               strcpy(changed_prefs.floppyslots[0].df, dc->files[dc->index]);
                DISK_reinsert(0);
                break;
             case DC_IMAGE_TYPE_CD:
@@ -3249,7 +3251,10 @@ void retro_deinit(void)
 
    /* Clean legacy strings */
    if (core_options_legacy_strings)
+   {
       free(core_options_legacy_strings);
+      core_options_legacy_strings = NULL;
+   }
 
    /* Clean ZIP temp */
    if (!string_is_empty(retro_temp_directory) && path_is_directory(retro_temp_directory))
@@ -3444,7 +3449,7 @@ static void retro_config_append(const char *row, ...)
    strcat(uae_full_config, output);
 }
 
-static void retro_force_region()
+static void retro_config_force_region()
 {
    /* If region was specified in the path */
    if (strstr(full_path, "NTSC") || strstr(full_path, "(USA)"))
@@ -3467,7 +3472,7 @@ static void retro_force_region()
    }
 }
 
-static void retro_use_boot_hd()
+static void retro_config_boot_hd()
 {
    char *tmp_str       = NULL;
    char boothd_size[5] = {0};
@@ -3551,7 +3556,7 @@ static void retro_use_boot_hd()
    tmp_str = NULL;
 }
 
-static void retro_print_kickstart()
+static void retro_config_kickstart()
 {
    char kickstart[RETRO_PATH_MAX];
    path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
@@ -3618,7 +3623,7 @@ static void retro_print_kickstart()
    }
 }
 
-static void retro_print_harddrives()
+static void retro_config_harddrives()
 {
    char *tmp_str = NULL;
 
@@ -3948,7 +3953,7 @@ static char* emu_config(int config)
    }
 }
 
-static void retro_build_preset(char *model)
+static void retro_config_preset(char *model)
 {
    int model_int = emu_config_int(model);
    strcpy(uae_model, emu_config(model_int));
@@ -3965,12 +3970,12 @@ static bool retro_create_config()
    if (!strcmp(opt_model, "auto"))
    {
       if (opt_use_boot_hd)
-         retro_build_preset(opt_model_hd);
+         retro_config_preset(opt_model_hd);
       else
-         retro_build_preset(opt_model_fd);
+         retro_config_preset(opt_model_fd);
    }
    else
-      retro_build_preset(opt_model);
+      retro_config_preset(opt_model);
 
    /* "Browsed" file in ZIP */
    char browsed_file[RETRO_PATH_MAX] = {0};
@@ -4106,49 +4111,49 @@ static bool retro_create_config()
             {
                log_cb(RETRO_LOG_INFO, "Found '(A4030)' or '(030)' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting A4000/030: '%s'\n", A4000_ROM);
-               retro_build_preset("A4030");
+               retro_config_preset("A4030");
             }
             else if (strstr(full_path, "(A4040)") || strstr(full_path, "(040)"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(A4040)' or '(040)' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting A4000/040: '%s'\n", A4000_ROM);
-               retro_build_preset("A4040");
+               retro_config_preset("A4040");
             }
             else if (strstr(full_path, "(A1200OG)") || strstr(full_path, "(A1200NF)"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(A1200OG)' or '(A1200NF)' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting A1200 NoFast: '%s'\n", A1200_ROM);
-               retro_build_preset("A1200OG");
+               retro_config_preset("A1200OG");
             }
             else if (strstr(full_path, "(A1200)") || strstr(full_path, "AGA") || strstr(full_path, "CD32") || strstr(full_path, "AmigaCD"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(A1200)', 'AGA', 'CD32', or 'AmigaCD' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting A1200: '%s'\n", A1200_ROM);
-               retro_build_preset("A1200");
+               retro_config_preset("A1200");
             }
             else if (strstr(full_path, "(A600)") || strstr(full_path, "ECS"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(A600)' or 'ECS' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting A600: '%s'\n", A600_ROM);
-               retro_build_preset("A600");
+               retro_config_preset("A600");
             }
             else if (strstr(full_path, "(A500+)") || strstr(full_path, "(A500PLUS)"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(A500+)' or '(A500PLUS)' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting A500+: '%s'\n", A500KS2_ROM);
-               retro_build_preset("A500PLUS");
+               retro_config_preset("A500PLUS");
             }
             else if (strstr(full_path, "(A500OG)") || strstr(full_path, "(512K)"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(A500OG)' or '(512K)' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting A500 512K: '%s'\n", A500_ROM);
-               retro_build_preset("A500OG");
+               retro_config_preset("A500OG");
             }
             else if (strstr(full_path, "(A500)") || strstr(full_path, "OCS"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(A500)' or 'OCS' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting A500: '%s'\n", A500_ROM);
-               retro_build_preset("A500");
+               retro_config_preset("A500");
             }
             else
             {
@@ -4158,7 +4163,7 @@ static bool retro_create_config()
                     dc_get_image_type(full_path) == DC_IMAGE_TYPE_WHDLOAD ||
                     m3u == DC_IMAGE_TYPE_HD ||
                     m3u == DC_IMAGE_TYPE_WHDLOAD))
-                  retro_build_preset(opt_model_hd);
+                  retro_config_preset(opt_model_hd);
 
                /* No model specified */
                log_cb(RETRO_LOG_INFO, "No model specified in: '%s'\n", full_path);
@@ -4176,11 +4181,11 @@ static bool retro_create_config()
          retro_config_append("\n");
 
          /* Verify and write Kickstart */
-         retro_print_kickstart();
+         retro_config_kickstart();
 
          /* Bootable HD exception */
          if (opt_use_boot_hd)
-            retro_use_boot_hd();
+            retro_config_boot_hd();
 
          /* Hard drive or WHDLoad image */
          if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_HD
@@ -4522,7 +4527,7 @@ static bool retro_create_config()
             }
 
             /* Attach hard drive(s) */
-            retro_print_harddrives();
+            retro_config_harddrives();
          }
          else
          {
@@ -4619,27 +4624,27 @@ static bool retro_create_config()
             {
                log_cb(RETRO_LOG_INFO, "Found '(CD32FR)' or 'FastRAM' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting CD32 FastRAM: '%s'\n", CD32_ROM);
-               retro_build_preset("CD32FR");
+               retro_config_preset("CD32FR");
             }
             else if (strstr(full_path, "(CD32)") || strstr(full_path, "(CD32NF)"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(CD32)' or '(CD32NF)' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting CD32: '%s'\n", CD32_ROM);
-               retro_build_preset("CD32");
+               retro_config_preset("CD32");
             }
             else if (strstr(full_path, "CDTV"))
             {
                log_cb(RETRO_LOG_INFO, "Found 'CDTV' in: '%s'\n", full_path);
                log_cb(RETRO_LOG_INFO, "Booting CDTV: '%s'\n", CDTV_ROM);
-               retro_build_preset("CDTV");
+               retro_config_preset("CDTV");
             }
             else
             {
                /* Default CD model */
                if (opt_use_boot_hd)
-                  retro_build_preset(opt_model_hd);
+                  retro_config_preset(opt_model_hd);
                else
-                  retro_build_preset(opt_model_cd);
+                  retro_config_preset(opt_model_cd);
 
                /* No model specified */
                log_cb(RETRO_LOG_INFO, "No model specified in: '%s'\n", full_path);
@@ -4657,12 +4662,12 @@ static bool retro_create_config()
          retro_config_append("\n");
 
          /* Verify and write Kickstart */
-         retro_print_kickstart();
+         retro_config_kickstart();
 
          /* Bootable HD exception */
          if (opt_use_boot_hd)
          {
-            retro_use_boot_hd();
+            retro_config_boot_hd();
             retro_config_append("scsi=true\n");
          }
 
@@ -4724,7 +4729,7 @@ static bool retro_create_config()
          retro_config_append("\n");
 
          /* Verify and write Kickstart */
-         retro_print_kickstart();
+         retro_config_kickstart();
 
          /* Separator row for clarity */
          retro_config_append("\n");
@@ -4795,7 +4800,7 @@ static bool retro_create_config()
          retro_config_append("\n");
 
          /* Verify and write Kickstart */
-         retro_print_kickstart();
+         retro_config_kickstart();
 
          /* Separator row for clarity */
          retro_config_append("\n");
@@ -4822,12 +4827,12 @@ static bool retro_create_config()
       retro_config_append("\n");
 
       /* Verify and write Kickstart */
-      retro_print_kickstart();
+      retro_config_kickstart();
 
       /* Bootable HD exception, not for CD systems */
       if (opt_use_boot_hd)
          if (strcmp(opt_model, "CD32") && strcmp(opt_model, "CD32FR") && strcmp(opt_model, "CDTV"))
-            retro_use_boot_hd();
+            retro_config_boot_hd();
 
       /* Separator row for clarity */
       retro_config_append("\n");
@@ -4860,7 +4865,7 @@ static bool retro_create_config()
 
    /* Scan region tags only with automatic region */
    if (opt_region_auto)
-      retro_force_region();
+      retro_config_force_region();
 
    /* Forced Cycle-exact */
    if (strstr(full_path, "(CE)"))

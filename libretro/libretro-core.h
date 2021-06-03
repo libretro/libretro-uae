@@ -27,13 +27,6 @@ extern int retro_thisframe_last_drawn_line;
 extern int retro_min_diwstart;
 extern int retro_max_diwstop;
 
-extern char retro_system_directory[512];
-extern struct zfile *retro_deserialize_file;
-extern dc_storage *retro_dc;
-extern retro_log_printf_t log_cb;
-extern long retro_ticks(void);
-extern int umain (int argc, TCHAR **argv);
-
 /* File helpers functions */
 #define RETRO_PATH_MAX 512
 
@@ -44,6 +37,15 @@ extern int umain (int argc, TCHAR **argv);
 #define DIR_SEP_STR "/"
 #define DIR_SEP_CHR '/'
 #endif
+
+/* Usual suspects */
+extern char retro_system_directory[RETRO_PATH_MAX];
+extern char retro_save_directory[RETRO_PATH_MAX];
+extern struct zfile *retro_deserialize_file;
+extern dc_storage *retro_dc;
+extern retro_log_printf_t log_cb;
+extern long retro_ticks(void);
+extern int umain (int argc, TCHAR **argv);
 
 /* VKBD */
 #define VKBDX 11
