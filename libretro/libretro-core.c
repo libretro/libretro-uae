@@ -4872,12 +4872,17 @@ static bool retro_create_config()
       retro_config_append("cycle_exact=true\n");
 
 
-   /* Scan for specific rows */
+   /* Scan for specific rows and print the final config in debug log for copypaste purposes */
+   log_cb(RETRO_LOG_DEBUG, "Generated config:\n");
+   log_cb(RETRO_LOG_DEBUG, "-----------------\n");
+
    char *token;
    char uae_full_config_temp[4096];
    strcpy(uae_full_config_temp, uae_full_config);
    for (token = strtok(uae_full_config_temp, "\n"); token; token = strtok(NULL, "\n"))
    {
+      log_cb(RETRO_LOG_DEBUG, "%s\n", token);
+
       if (strstr(token, "ntsc=true") && token[0] == 'n')
          real_ntsc = true;
       if (strstr(token, "ntsc=false") && token[0] == 'n')
@@ -4893,9 +4898,6 @@ static bool retro_create_config()
    if (tmp_str)
       free(tmp_str);
    tmp_str = NULL;
-
-   /* Print the final config in debug log for copypaste purposes */
-   log_cb(RETRO_LOG_DEBUG, "Generated config:\n%s", uae_full_config);
 
    return true;
 }
