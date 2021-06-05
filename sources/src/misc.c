@@ -293,7 +293,7 @@ int target_cfgfile_load (struct uae_prefs *p, const TCHAR *filename, int type, i
 	int ct, ct2 = 0;
 	char tmp1[MAX_DPATH], tmp2[MAX_DPATH];
 	char fname[MAX_DPATH];
-#if 0
+#ifndef __LIBRETRO__
 	_tcscpy (fname, filename);
 	if (!zfile_exists (fname)) {
 		fetch_configurationpath (fname, sizeof (fname) / sizeof (TCHAR));
@@ -434,36 +434,24 @@ void fetch_path (TCHAR *name, TCHAR *out, int size)
 {
 	_tcscpy (start_path_data, "./");
 	_tcscpy (out, start_path_data);
-#ifdef __LIBRETRO__
-	_tcscpy (out, retro_system_directory);
 	if (!name)
 		return;
-	if (!_tcscmp (name, "FloppyPath"))
-		_tcscpy (out, retro_save_directory);
-	else if (!_tcscmp (name, "CDPath"))
-		_tcscpy (out, retro_save_directory);
-	else if (!_tcscmp (name, "hdfPath"))
-		_tcscpy (out, retro_save_directory);
-	else if (!_tcscmp (name, "SaveimagePath"))
-		_tcscpy (out, retro_save_directory);
-	else if (!_tcscmp (name, "KickstartPath"))
-		_tcscpy (out, retro_system_directory);
-	else if (!_tcscmp (name, "ConfigurationPath"))
-		_tcscpy (out, retro_system_directory);
+#ifdef __LIBRETRO__
+	_tcscpy (out, retro_save_directory);
 	_tcscat (out, DIR_SEP_STR);
 #else
-    if (!name)
-        return;
-    if (!_tcscmp (name, "FloppyPath"))
-        _tcscat (out, "./");
-    else if (!_tcscmp (name, "CDPath"))
-        _tcscat (out, "./");
-    else if (!_tcscmp (name, "hdfPath"))
-        _tcscat (out, "./");
-    else if (!_tcscmp (name, "KickstartPath"))
-        _tcscat (out, "./");
-    else if (!_tcscmp (name, "ConfigurationPath"))
-        _tcscat (out, "./");
+	if (!_tcscmp (name, "FloppyPath"))
+		_tcscat (out, "./");
+	else if (!_tcscmp (name, "CDPath"))
+		_tcscat (out, "./");
+	else if (!_tcscmp (name, "hdfPath"))
+		_tcscat (out, "./");
+	else if (!_tcscmp (name, "KickstartPath"))
+		_tcscat (out, "./");
+	else if (!_tcscmp (name, "ConfigurationPath"))
+		_tcscat (out, "./");
+	else if (!_tcscmp (name, "SaveimagePath"))
+		_tcscat (out, "./");
 #endif
 }
 

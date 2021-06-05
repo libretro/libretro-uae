@@ -855,7 +855,7 @@ static void parse_cmdline_and_init_file (int argc, TCHAR **argv)
 #ifdef __LIBRETRO__
 	_tcscpy (optionsfile, ".");
 	_tcscat (optionsfile, _T("/"));
-	target_cfgfile_load (&currprefs, NULL, 0, default_config);
+	target_cfgfile_load (&currprefs, "", 0, default_config);
 #else
 	parse_cmdline_2 (argc, argv);
 	_tcscat (optionsfile, restart_config);
