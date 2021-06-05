@@ -3436,7 +3436,7 @@ void retro_audio_render(const int16_t *data, size_t frames)
 
 static void retro_config_append(const char *row, ...)
 {
-   char output[512];
+   char output[2048];
    va_list ap;
 
    if (row == NULL)
@@ -3449,7 +3449,7 @@ static void retro_config_append(const char *row, ...)
    strcat(uae_full_config, output);
 }
 
-static void retro_config_force_region()
+static void retro_config_force_region(void)
 {
    /* If region was specified in the path */
    if (strstr(full_path, "NTSC") || strstr(full_path, "(USA)"))
@@ -3472,7 +3472,7 @@ static void retro_config_force_region()
    }
 }
 
-static void retro_config_boot_hd()
+static void retro_config_boot_hd(void)
 {
    char *tmp_str       = NULL;
    char boothd_size[5] = {0};
@@ -3518,7 +3518,7 @@ static void retro_config_boot_hd()
    {
       /* Init Boot HD */
       char boothd_hdf[RETRO_PATH_MAX];
-      path_join((char*)&boothd_hdf, retro_save_directory, LIBRETRO_PUAE_PREFIX ".hdf");
+      path_join(boothd_hdf, retro_save_directory, LIBRETRO_PUAE_PREFIX ".hdf");
       if (!path_is_valid(boothd_hdf))
       {
          log_cb(RETRO_LOG_INFO, "Boot HD image file '%s' not found, attempting to create one\n", boothd_hdf);
@@ -3535,7 +3535,7 @@ static void retro_config_boot_hd()
    else if (opt_use_boot_hd == 1)
    {
       char boothd_path[RETRO_PATH_MAX];
-      path_join((char*)&boothd_path, retro_save_directory, label);
+      path_join(boothd_path, retro_save_directory, label);
 
       if (!path_is_directory(boothd_path))
       {
@@ -3556,28 +3556,28 @@ static void retro_config_boot_hd()
    tmp_str = NULL;
 }
 
-static void retro_config_kickstart()
+static void retro_config_kickstart(void)
 {
    char kickstart[RETRO_PATH_MAX];
-   path_join((char*)&kickstart, retro_system_directory, uae_kickstart);
+   path_join(kickstart, retro_system_directory, uae_kickstart);
 
    /* Main Kickstart */
    if (!path_is_valid(kickstart))
    {
       /* Kickstart ROM not found */
-      log_cb(RETRO_LOG_ERROR, "Kickstart ROM '%s' not found!\n", (const char*)&kickstart);
+      log_cb(RETRO_LOG_ERROR, "Kickstart ROM '%s' not found!\n", kickstart);
       snprintf(retro_message_msg, sizeof(retro_message_msg),
-               "Kickstart ROM '%s' not found!", path_basename((const char*)kickstart));
+               "Kickstart ROM '%s' not found!", path_basename(kickstart));
       retro_message = true;
    }
    else
-      retro_config_append("kickstart_rom_file=%s\n", (const char*)&kickstart);
+      retro_config_append("kickstart_rom_file=%s\n", kickstart);
 
    /* Extended KS + NVRAM */
    if (!string_is_empty(uae_kickstart_ext))
    {
       char kickstart_ext[RETRO_PATH_MAX];
-      path_join((char*)&kickstart_ext, retro_system_directory, uae_kickstart_ext);
+      path_join(kickstart_ext, retro_system_directory, uae_kickstart_ext);
 
       /* Decide if CD32 ROM is combined based on filesize */
       struct stat kickstart_st;
@@ -3589,13 +3589,13 @@ static void retro_config_kickstart()
          if (!path_is_valid(kickstart_ext))
          {
             /* Kickstart extended ROM not found */
-            log_cb(RETRO_LOG_ERROR, "Kickstart extended ROM '%s' not found!\n", (const char*)&kickstart_ext);
+            log_cb(RETRO_LOG_ERROR, "Kickstart extended ROM '%s' not found!\n", kickstart_ext);
             snprintf(retro_message_msg, sizeof(retro_message_msg),
-                     "Kickstart extended ROM '%s' not found!", path_basename((const char*)kickstart_ext));
+                     "Kickstart extended ROM '%s' not found!", path_basename(kickstart_ext));
             retro_message = true;
          }
          else
-            retro_config_append("kickstart_ext_rom_file=%s\n", (const char*)&kickstart_ext);
+            retro_config_append("kickstart_ext_rom_file=%s\n", kickstart_ext);
       }
 
       /* NVRAM */
@@ -3617,13 +3617,13 @@ static void retro_config_kickstart()
          path_remove_extension(flash_filebase);
          snprintf(flash_filename, sizeof(flash_filename), "%s.nvr", flash_filebase);
       }
-      path_join((char*)&flash_filepath, retro_save_directory, flash_filename);
+      path_join(flash_filepath, retro_save_directory, flash_filename);
       log_cb(RETRO_LOG_INFO, "Using NVRAM: '%s'\n", flash_filepath);
-      retro_config_append("flash_file=%s\n", (const char*)&flash_filepath);
+      retro_config_append("flash_file=%s\n", flash_filepath);
    }
 }
 
-static void retro_config_harddrives()
+static void retro_config_harddrives(void)
 {
    char *tmp_str = NULL;
 
@@ -3662,7 +3662,7 @@ static void retro_config_harddrives()
    }
 }
 
-static void whdload_kscopy()
+static void whdload_kscopy(void)
 {
    char ks_src[RETRO_PATH_MAX] = {0};
    char ks_dst[RETRO_PATH_MAX] = {0};
@@ -3706,7 +3706,7 @@ static void whdload_kscopy()
    }
 }
 
-static void whdload_prefs_copy()
+static void whdload_prefs_copy(void)
 {
    char src[RETRO_PATH_MAX] = {0};
    char dst[RETRO_PATH_MAX] = {0};
@@ -3754,7 +3754,7 @@ static void whdload_prefs_copy()
    }
 }
 
-static char* emu_config_string(char* mode, int config)
+static char* emu_config_string(char *mode, int config)
 {
    if (!strcmp(mode, "model"))
    {
@@ -3810,9 +3810,9 @@ static char* emu_config_string(char* mode, int config)
    return "";
 }
 
-static int emu_config_int(char* model)
+static int emu_config_int(char *model)
 {
-   if (!strcmp(model, "A500"))          return EMU_CONFIG_A500;
+   if      (!strcmp(model, "A500"))     return EMU_CONFIG_A500;
    else if (!strcmp(model, "A500OG"))   return EMU_CONFIG_A500OG;
    else if (!strcmp(model, "A500PLUS")) return EMU_CONFIG_A500PLUS;
    else if (!strcmp(model, "A600"))     return EMU_CONFIG_A600;
@@ -3839,7 +3839,7 @@ static char* emu_config(int config)
    {
       log_cb(RETRO_LOG_INFO, "Replacing model preset with: '%s'\n", custom_config_path);
 
-      char filebuf[512] = {0};
+      char filebuf[RETRO_PATH_MAX] = {0};
       FILE * custom_config_fp;
       if ((custom_config_fp = fopen(custom_config_path, "r")))
       {
@@ -3961,10 +3961,10 @@ static void retro_config_preset(char *model)
    strcpy(uae_kickstart_ext, emu_config_string("kickstart_ext", model_int));
 }
 
-static bool retro_create_config()
+static bool retro_create_config(void)
 {
-   uae_full_config[0] = '\0';
    char *tmp_str      = NULL;
+   uae_full_config[0] = '\0';
 
    /* Model preset */
    if (!strcmp(opt_model, "auto"))
@@ -3981,7 +3981,7 @@ static bool retro_create_config()
    char browsed_file[RETRO_PATH_MAX] = {0};
    if (!string_is_empty(full_path) && (strstr(full_path, ".zip#") || strstr(full_path, ".7z#")))
    {
-      char *token = strtok((char*)full_path, "#");
+      char *token = strtok(full_path, "#");
       while (token != NULL)
       {
          snprintf(browsed_file, sizeof(browsed_file), "%s", token);
@@ -4177,9 +4177,6 @@ static bool retro_create_config()
          /* Write model preset */
          retro_config_append(uae_model);
 
-         /* Separator row for clarity */
-         retro_config_append("\n");
-
          /* Verify and write Kickstart */
          retro_config_kickstart();
 
@@ -4255,14 +4252,14 @@ static bool retro_create_config()
 
                FILE *whdload_prefs;
                char whdload_prefs_path[RETRO_PATH_MAX];
-               path_join((char*)&whdload_prefs_path, retro_system_directory, "WHDLoad.prefs");
+               path_join(whdload_prefs_path, retro_system_directory, "WHDLoad.prefs");
 
                if (!path_is_valid(whdload_prefs_path))
                {
-                  log_cb(RETRO_LOG_INFO, "WHDLoad.prefs '%s' not found, attempting to create one\n", (const char*)&whdload_prefs_path);
+                  log_cb(RETRO_LOG_INFO, "WHDLoad.prefs '%s' not found, attempting to create one\n", whdload_prefs_path);
 
                   char whdload_prefs_gz[RETRO_PATH_MAX];
-                  path_join((char*)&whdload_prefs_gz, retro_system_directory, "WHDLoad.prefs.gz");
+                  path_join(whdload_prefs_gz, retro_system_directory, "WHDLoad.prefs.gz");
 
                   FILE *whdload_prefs_gz_fp;
                   if ((whdload_prefs_gz_fp = fopen(whdload_prefs_gz, "wb")))
@@ -4286,15 +4283,15 @@ static bool retro_create_config()
                      remove(whdload_prefs_gz);
                   }
                   else
-                     log_cb(RETRO_LOG_ERROR, "Unable to create WHDLoad.prefs: '%s'\n", (const char*)&whdload_prefs_path);
+                     log_cb(RETRO_LOG_ERROR, "Unable to create WHDLoad.prefs: '%s'\n", whdload_prefs_path);
                }
 
                FILE *whdload_prefs_new;
                char whdload_prefs_new_path[RETRO_PATH_MAX];
-               path_join((char*)&whdload_prefs_new_path, retro_system_directory, "WHDLoad.prefs_new");
+               path_join(whdload_prefs_new_path, retro_system_directory, "WHDLoad.prefs_new");
 
                char whdload_prefs_backup_path[RETRO_PATH_MAX];
-               path_join((char*)&whdload_prefs_backup_path, retro_system_directory, "WHDLoad.prefs_backup");
+               path_join(whdload_prefs_backup_path, retro_system_directory, "WHDLoad.prefs_backup");
 
                char whdload_buf[256] = {0};
                char whdload_buf_row[256] = {0};
@@ -4330,7 +4327,7 @@ static bool retro_create_config()
                      }
                      else
                      {
-                        log_cb(RETRO_LOG_ERROR, "Unable to create new WHDLoad.prefs: '%s'\n", (const char*)&whdload_prefs_new_path);
+                        log_cb(RETRO_LOG_ERROR, "Unable to create new WHDLoad.prefs: '%s'\n", whdload_prefs_new_path);
                         fclose(whdload_prefs);
                      }
 
@@ -4347,19 +4344,19 @@ static bool retro_create_config()
                if (opt_use_whdload == 1)
                {
                   char whdload_path[RETRO_PATH_MAX];
-                  path_join((char*)&whdload_path, retro_save_directory, "WHDLoad");
+                  path_join(whdload_path, retro_save_directory, "WHDLoad");
 
                   char whdload_c_path[RETRO_PATH_MAX];
-                  path_join((char*)&whdload_c_path, retro_save_directory, "WHDLoad/C");
+                  path_join(whdload_c_path, retro_save_directory, "WHDLoad/C");
 
                   /* Verify WHDLoad */
                   if (!path_is_directory(whdload_path) || (path_is_directory(whdload_path) && !path_is_directory(whdload_c_path)))
                   {
-                     log_cb(RETRO_LOG_INFO, "WHDLoad image directory '%s' not found, attempting to create one\n", (const char*)&whdload_path);
+                     log_cb(RETRO_LOG_INFO, "WHDLoad image directory '%s' not found, attempting to create one\n", whdload_path);
                      path_mkdir(whdload_path);
 
                      char whdload_files_zip[RETRO_PATH_MAX];
-                     path_join((char*)&whdload_files_zip, retro_save_directory, "WHDLoad_files.zip");
+                     path_join(whdload_files_zip, retro_save_directory, "WHDLoad_files.zip");
 
                      FILE *whdload_files_zip_fp;
                      if ((whdload_files_zip_fp = fopen(whdload_files_zip, "wb")))
@@ -4373,7 +4370,7 @@ static bool retro_create_config()
                         remove(whdload_files_zip);
                      }
                      else
-                        log_cb(RETRO_LOG_ERROR, "Unable to create WHDLoad image directory: '%s'\n", (const char*)&whdload_path);
+                        log_cb(RETRO_LOG_ERROR, "Unable to create WHDLoad image directory: '%s'\n", whdload_path);
                   }
                   /* Attach directory */
                   if (path_is_directory(whdload_path) && path_is_directory(whdload_c_path))
@@ -4386,14 +4383,14 @@ static bool retro_create_config()
                      if (tmp_str[strlen(tmp_str)-1] != '/')
                         path_join(tmp_str, whdload_path, "");
 #endif
-                     retro_config_append("filesystem2=rw,WHDLoad:WHDLoad:\"%s\",0\n", (const char*)tmp_str);
+                     retro_config_append("filesystem2=rw,WHDLoad:WHDLoad:\"%s\",0\n", tmp_str);
                      free(tmp_str);
                      tmp_str = NULL;
                   }
 
                   /* Verify WHDSaves */
                   char whdsaves_path[RETRO_PATH_MAX];
-                  path_join((char*)&whdsaves_path, retro_save_directory, "WHDSaves");
+                  path_join(whdsaves_path, retro_save_directory, "WHDSaves");
                   if (!path_is_directory(whdsaves_path))
                      path_mkdir(whdsaves_path);
                   /* Attach directory */
@@ -4407,12 +4404,12 @@ static bool retro_create_config()
                      if (tmp_str[strlen(tmp_str)-1] != '/')
                         path_join(tmp_str, whdsaves_path, "");
 #endif
-                     retro_config_append("filesystem2=rw,WHDSaves:WHDSaves:\"%s\",0\n", (const char*)tmp_str);
+                     retro_config_append("filesystem2=rw,WHDSaves:WHDSaves:\"%s\",0\n", tmp_str);
                      free(tmp_str);
                      tmp_str = NULL;
                   }
                   else
-                     log_cb(RETRO_LOG_ERROR, "Unable to create WHDSaves image directory: '%s'\n", (const char*)&whdsaves_path);
+                     log_cb(RETRO_LOG_ERROR, "Unable to create WHDSaves image directory: '%s'\n", whdsaves_path);
 
                   /* Copy Kickstarts */
                   whdload_kscopy();
@@ -4425,15 +4422,15 @@ static bool retro_create_config()
                else if (opt_use_whdload == 2)
                {
                   char whdload_hdf[RETRO_PATH_MAX] = {0};
-                  path_join((char*)&whdload_hdf, retro_save_directory, "WHDLoad.hdf");
+                  path_join(whdload_hdf, retro_save_directory, "WHDLoad.hdf");
 
                   /* Verify WHDLoad.hdf */
                   if (!path_is_valid(whdload_hdf))
                   {
-                     log_cb(RETRO_LOG_INFO, "WHDLoad image file '%s' not found, attempting to create one\n", (const char*)&whdload_hdf);
+                     log_cb(RETRO_LOG_INFO, "WHDLoad image file '%s' not found, attempting to create one\n", whdload_hdf);
 
                      char whdload_hdf_gz[RETRO_PATH_MAX];
-                     path_join((char*)&whdload_hdf_gz, retro_save_directory, "WHDLoad.hdf.gz");
+                     path_join(whdload_hdf_gz, retro_save_directory, "WHDLoad.hdf.gz");
 
                      FILE *whdload_hdf_gz_fp;
                      if ((whdload_hdf_gz_fp = fopen(whdload_hdf_gz, "wb")))
@@ -4457,26 +4454,26 @@ static bool retro_create_config()
                         remove(whdload_hdf_gz);
                      }
                      else
-                        log_cb(RETRO_LOG_ERROR, "Unable to create WHDLoad image file: '%s'\n", (const char*)&whdload_hdf);
+                        log_cb(RETRO_LOG_ERROR, "Unable to create WHDLoad image file: '%s'\n", whdload_hdf);
                   }
                   /* Attach HDF */
                   if (path_is_valid(whdload_hdf))
                   {
                      tmp_str = string_replace_substring(whdload_hdf, "\\", "\\\\");
-                     retro_config_append("hardfile2=rw,WHDLoad:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
+                     retro_config_append("hardfile2=rw,WHDLoad:\"%s\",32,1,2,512,0,,uae0\n", tmp_str);
                      free(tmp_str);
                      tmp_str = NULL;
                   }
 
                   /* Verify WHDSaves.hdf */
                   char whdsaves_hdf[RETRO_PATH_MAX] = {0};
-                  path_join((char*)&whdsaves_hdf, retro_save_directory, "WHDSaves.hdf");
+                  path_join(whdsaves_hdf, retro_save_directory, "WHDSaves.hdf");
                   if (!path_is_valid(whdsaves_hdf))
                   {
-                     log_cb(RETRO_LOG_INFO, "WHDSaves image file '%s' not found, attempting to create one\n", (const char*)&whdsaves_hdf);
+                     log_cb(RETRO_LOG_INFO, "WHDSaves image file '%s' not found, attempting to create one\n", whdsaves_hdf);
 
                      char whdsaves_hdf_gz[RETRO_PATH_MAX];
-                     path_join((char*)&whdsaves_hdf_gz, retro_save_directory, "WHDSaves.hdf.gz");
+                     path_join(whdsaves_hdf_gz, retro_save_directory, "WHDSaves.hdf.gz");
 
                      FILE *whdsaves_hdf_gz_fp;
                      if ((whdsaves_hdf_gz_fp = fopen(whdsaves_hdf_gz, "wb")))
@@ -4500,13 +4497,13 @@ static bool retro_create_config()
                         remove(whdsaves_hdf_gz);
                      }
                      else
-                        log_cb(RETRO_LOG_ERROR, "Unable to create WHDSaves image file: '%s'\n", (const char*)&whdsaves_hdf);
+                        log_cb(RETRO_LOG_ERROR, "Unable to create WHDSaves image file: '%s'\n", whdsaves_hdf);
                   }
                   /* Attach HDF */
                   if (path_is_valid(whdsaves_hdf))
                   {
                      tmp_str = string_replace_substring(whdsaves_hdf, "\\", "\\\\");
-                     retro_config_append("hardfile2=rw,WHDSaves:\"%s\",32,1,2,512,0,,uae0\n", (const char*)tmp_str);
+                     retro_config_append("hardfile2=rw,WHDSaves:\"%s\",32,1,2,512,0,,uae0\n", tmp_str);
                      free(tmp_str);
                      tmp_str = NULL;
                   }
@@ -4607,9 +4604,6 @@ static bool retro_create_config()
             }
          }
 
-         /* Separator row for clarity */
-         retro_config_append("\n");
-
          /* Write common config */
          retro_config_append(uae_config);
       }
@@ -4657,9 +4651,6 @@ static bool retro_create_config()
 
          /* Write model preset */
          retro_config_append(uae_model);
-
-         /* Separator row for clarity */
-         retro_config_append("\n");
 
          /* Verify and write Kickstart */
          retro_config_kickstart();
@@ -4711,9 +4702,6 @@ static bool retro_create_config()
             retro_config_append("cdimage0=%s,%s\n", dc->files[0], (opt_cd_startup_delayed_insert ? "delay" : "")); /* ","-suffix needed if filename contains "," */
          }
 
-         /* Separator row for clarity */
-         retro_config_append("\n");
-
          /* Write common config */
          retro_config_append(uae_config);
       }
@@ -4725,20 +4713,11 @@ static bool retro_create_config()
          /* Write model preset */
          retro_config_append(uae_model);
 
-         /* Separator row for clarity */
-         retro_config_append("\n");
-
          /* Verify and write Kickstart */
          retro_config_kickstart();
 
-         /* Separator row for clarity */
-         retro_config_append("\n");
-
          /* Write common config */
          retro_config_append(uae_config);
-
-         /* Separator row for clarity */
-         retro_config_append("\n");
 
          /* Must reset disk control struct here,
           * otherwise duplicate entries will be
@@ -4747,7 +4726,7 @@ static bool retro_create_config()
 
          /* Iterate parsed file and append all rows to the temporary config */
          FILE * configfile_custom;
-         char filebuf[512];
+         char filebuf[RETRO_PATH_MAX];
          if ((configfile_custom = fopen(full_path, "r")))
          {
             char disk_image_label[RETRO_PATH_MAX];
@@ -4761,7 +4740,7 @@ static bool retro_create_config()
                if ((strstr(filebuf, "diskimage") && filebuf[0] == 'd') ||
                    (strstr(filebuf, "floppy") && filebuf[0] == 'f'))
                {
-                  char *token = strtok((char*)filebuf, "=");
+                  char *token = strtok(filebuf, "=");
                   while (token != NULL)
                   {
                      snprintf(disk_image, sizeof(disk_image), "%s", token);
@@ -4796,14 +4775,8 @@ static bool retro_create_config()
          /* Write model preset */
          retro_config_append(uae_model);
 
-         /* Separator row for clarity */
-         retro_config_append("\n");
-
          /* Verify and write Kickstart */
          retro_config_kickstart();
-
-         /* Separator row for clarity */
-         retro_config_append("\n");
 
          /* Write common config */
          retro_config_append(uae_config);
@@ -4823,9 +4796,6 @@ static bool retro_create_config()
       /* Write model preset */
       retro_config_append(uae_model);
 
-      /* Separator row for clarity */
-      retro_config_append("\n");
-
       /* Verify and write Kickstart */
       retro_config_kickstart();
 
@@ -4834,27 +4804,19 @@ static bool retro_create_config()
          if (strcmp(opt_model, "CD32") && strcmp(opt_model, "CD32FR") && strcmp(opt_model, "CDTV"))
             retro_config_boot_hd();
 
-      /* Separator row for clarity */
-      retro_config_append("\n");
-
       /* Write common config */
       retro_config_append(uae_config);
    }
 
-   /* Separator row for clarity */
-   retro_config_append("\n");
-
    /* Iterate global config file and append all rows to the temporary config */
    char configfile_global_path[RETRO_PATH_MAX];
-   path_join((char*)&configfile_global_path, retro_save_directory, LIBRETRO_PUAE_PREFIX "_global.uae");
+   path_join(configfile_global_path, retro_save_directory, LIBRETRO_PUAE_PREFIX "_global.uae");
    if (path_is_valid(configfile_global_path))
    {
       log_cb(RETRO_LOG_INFO, "Appending global configuration: '%s'\n", configfile_global_path);
-      /* Separator row for clarity */
-      retro_config_append("\n");
 
       FILE * configfile_global;
-      char filebuf[512];
+      char filebuf[RETRO_PATH_MAX];
       if ((configfile_global = fopen(configfile_global_path, "r")))
       {
          while (fgets(filebuf, sizeof(filebuf), configfile_global))
@@ -4870,7 +4832,6 @@ static bool retro_create_config()
    /* Forced Cycle-exact */
    if (strstr(full_path, "(CE)"))
       retro_config_append("cycle_exact=true\n");
-
 
    /* Scan for specific rows and print the final config in debug log for copypaste purposes */
    log_cb(RETRO_LOG_DEBUG, "Generated config:\n");
