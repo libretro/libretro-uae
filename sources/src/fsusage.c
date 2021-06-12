@@ -61,8 +61,8 @@ static long adjust_blocks (long blocks, int fromsize, int tosize)
 #ifdef __LIBRETRO__
 static int get_fs_usage_fake (const TCHAR *path, const TCHAR *disk, struct fs_usage *fsp)
 {
-    fsp->total = 0x7fffff;
-    fsp->avail = 0x3fffff;
+    fsp->total = 0xfffffff;
+    fsp->avail = 0x7ffffff;
     return 0;
 }
 
