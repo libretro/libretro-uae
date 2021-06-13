@@ -651,7 +651,7 @@ static int set_filesys_unit_1 (int nr, struct uaedev_config_info *ci)
 		ui->volname = 0;
 		if (ui->hf.ci.rootdir[0]) {
 			if (!hdf_open (&ui->hf, NULL) && !c.readonly) {
-			write_log (_T("Attempting to open in read-only mode\n"));
+				write_log (_T("Attempting to open in read-only mode\n"));
 				ui->hf.ci.readonly = c.readonly = true;
 				hdf_open (&ui->hf, NULL);
 			}

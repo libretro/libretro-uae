@@ -247,6 +247,7 @@ int qstrcmp(const void *a, const void *b);
 void remove_recurse(const char *path);
 int fcopy(const char *src, const char *dst);
 int fcmp(const char *src, const char *dst);
+uint64_t fsize(const char *path);
 
 /* String helpers functions */
 char* trimwhitespace(char *str);

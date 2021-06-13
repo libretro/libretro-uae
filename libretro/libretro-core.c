@@ -3479,12 +3479,19 @@ static void retro_config_boot_hd(void)
    char volume[10]     = {0};
    char label[10]      = {0};
 
+   int m3u = 0;
+   if (strendswith(full_path, "m3u"))
+      m3u = dc_inspect_m3u(full_path);
+
    snprintf(label, sizeof(label), "%s", "BootHD");
    snprintf(volume, sizeof(volume), "%s", "DH0");
    /* Many HD installers have DH0: hardcoded as destination,
-    * and WHDLoad + HDF launching require the use of DH0: */
+    * and WHDLoad + HDF launching require the use of DH0:,
+    * therefore use 'BootHD:' as volume name */
    if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_WHDLOAD ||
-       dc_get_image_type(full_path) == DC_IMAGE_TYPE_HD)
+       dc_get_image_type(full_path) == DC_IMAGE_TYPE_HD ||
+       m3u == DC_IMAGE_TYPE_HD ||
+       m3u == DC_IMAGE_TYPE_WHDLOAD)
       snprintf(volume, sizeof(volume), "%s", label);
 
    snprintf(boothd_size, sizeof(boothd_size), "%dM", 0);
@@ -3626,11 +3633,12 @@ static void retro_config_kickstart(void)
 static void retro_config_harddrives(void)
 {
    char *tmp_str = NULL;
+   unsigned i    = 0;
 
    if (!dc->count)
       return;
 
-   for (unsigned i = 0; i < dc->count; i++)
+   for (i = 0; i < dc->count; i++)
    {
       tmp_str = string_replace_substring(dc->files[i], "\\", "\\\\");
       tmp_str = utf8_to_local_string_alloc(tmp_str);
@@ -3653,7 +3661,32 @@ static void retro_config_harddrives(void)
       else if (strendswith(dc->files[i], "slave") || strendswith(dc->files[i], "info"))
          retro_config_append("filesystem2=rw,DH%d:%s:\"%s\",0\n", i, tmp_str_name, tmp_str_path);
       else
-         retro_config_append("hardfile2=rw,DH%d:\"%s\",32,1,2,512,0,,uae0\n", i, tmp_str);
+      {
+         /* Detect RDB */
+         bool hdf_rdb = false;
+         FILE * hdf_handle;
+         char filebuf[4];
+         if ((hdf_handle = fopen(tmp_str, "r")))
+         {
+            fgets(filebuf, sizeof(filebuf), hdf_handle);
+            fclose(hdf_handle);
+
+            if (!strcmp(filebuf, "RDS"))
+               hdf_rdb = true;
+         }
+
+         if (hdf_rdb)
+            retro_config_append("hardfile2=rw,DH%d:\"%s\",0,0,0,512,0,,uae0\n", i, tmp_str);
+         else
+         {
+            /* Guesstimate surfaces */
+            unsigned surfaces = 1;
+            if ((fsize(tmp_str) / 1024) >= (1024 * 1024))
+               surfaces = 16;
+
+            retro_config_append("hardfile2=rw,DH%d:\"%s\",32,%d,2,512,0,,uae0\n", i, tmp_str, surfaces);
+         }
+      }
 
       log_cb(RETRO_LOG_INFO, "HD (%d) inserted in drive DH%d: '%s'\n", i+1, i, dc->files[i]);
 

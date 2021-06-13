@@ -920,6 +920,21 @@ close:
    return ret;
 }
 
+uint64_t fsize(const char *path)
+{
+   FILE *handle  = INVALID_HANDLE_VALUE;
+   uint64_t size = 0;
+
+   handle = fopen(path, "rb");
+   if (handle != INVALID_HANDLE_VALUE)
+   {
+      if (!fseeko(handle, 0, SEEK_END))
+         size = ftello(handle);
+      fclose(handle);
+   }
+   return size;
+}
+
 void path_join(char* out, const char* basedir, const char* filename)
 {
    snprintf(out, RETRO_PATH_MAX, "%s%s%s", basedir, DIR_SEP_STR, filename);

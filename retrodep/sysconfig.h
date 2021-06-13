@@ -501,7 +501,7 @@
 /* #undef X_DISPLAY_MISSING */
 
 /* Number of bits in a file offset, on hosts where this is settable. */
-//#define _FILE_OFFSET_BITS 64
+#define _FILE_OFFSET_BITS 64
 
 /* Define for large files, on AIX-style hosts. */
 /* #undef _LARGE_FILES */
