@@ -433,10 +433,11 @@ Linux tip:
 
 - Leave the ending slash to the path to make sure UAE sees it as a directory.
 
-If you are using RDB HDF files, please use `0,0,0,0` instead of geometry numbers like `32,1,2,512`. The geometry will then be read from the file. This only works for RDB HDF files.
+If you are using RDB HDF files, please use `0,0,0,512` instead of geometry numbers like `32,1,2,512`. The geometry will then be read from the file. This only works for RDB HDF files.
 
 ## Latest features
 
+- Large HDF support (sonninnos)
 - Full framerate double line interlace backport (sonninnos)
 - Core-based ZIP extraction with automatic M3U generation (sonninnos)
 - CDTV support (sonninnos)

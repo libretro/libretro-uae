@@ -922,11 +922,11 @@ close:
 
 uint64_t fsize(const char *path)
 {
-   FILE *handle  = INVALID_HANDLE_VALUE;
+   FILE *handle  = NULL;
    uint64_t size = 0;
 
    handle = fopen(path, "rb");
-   if (handle != INVALID_HANDLE_VALUE)
+   if (handle)
    {
       if (!fseeko(handle, 0, SEEK_END))
          size = ftello(handle);
