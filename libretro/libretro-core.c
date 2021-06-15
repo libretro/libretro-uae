@@ -3732,9 +3732,9 @@ static void whdload_kscopy(void)
          if (ks_stat.st_size != ks_size[x])
             log_cb(RETRO_LOG_INFO, "WHDLoad not installing Kickstart '%s' due to incorrect size, %d != %d\n", kickstart[x], ks_stat.st_size, ks_size[x]);
          else if (fcopy(ks_src, ks_dst) < 0)
-            log_cb(RETRO_LOG_INFO, "WHDLoad failed to install '%s'\n", kickstart[x]);
+            log_cb(RETRO_LOG_INFO, "WHDLoad failed to install '%s' to '%s'\n", kickstart[x], ks_dst);
          else
-            log_cb(RETRO_LOG_INFO, "WHDLoad found and installed '%s'\n", kickstart[x]);
+            log_cb(RETRO_LOG_INFO, "WHDLoad found and installed '%s' to '%s'\n", kickstart[x], ks_dst);
       }
    }
 }
@@ -4402,7 +4402,8 @@ static bool retro_create_config(void)
                         zip_uncompress(whdload_files_zip, whdload_path, NULL);
                         remove(whdload_files_zip);
                      }
-                     else
+
+                     if (!path_is_directory(whdload_c_path))
                         log_cb(RETRO_LOG_ERROR, "Unable to create WHDLoad image directory: '%s'\n", whdload_path);
                   }
                   /* Attach directory */
@@ -4419,6 +4420,13 @@ static bool retro_create_config(void)
                      retro_config_append("filesystem2=rw,WHDLoad:WHDLoad:\"%s\",0\n", tmp_str);
                      free(tmp_str);
                      tmp_str = NULL;
+
+                     /* Check and copy Kickstarts */
+                     whdload_kscopy();
+
+                     /* Copy required files host-wise with file mode */
+                     if (path_is_valid(whdload_prefs_path))
+                        whdload_prefs_copy();
                   }
 
                   /* Verify WHDSaves */
@@ -4443,13 +4451,6 @@ static bool retro_create_config(void)
                   }
                   else
                      log_cb(RETRO_LOG_ERROR, "Unable to create WHDSaves image directory: '%s'\n", whdsaves_path);
-
-                  /* Copy Kickstarts */
-                  whdload_kscopy();
-
-                  /* Copy required files host-wise with file mode */
-                  if (path_is_valid(whdload_prefs_path))
-                     whdload_prefs_copy();
                }
                /* WHDLoad HDF mode */
                else if (opt_use_whdload == 2)
