@@ -248,14 +248,16 @@ bool dc_replace_file(dc_storage* dc, int index, const char* filename)
       }
 
       /* ZIP */
-      else if (strendswith(full_path_replace, "zip") || strendswith(full_path_replace, "7z"))
+      else if (strendswith(full_path_replace, "zip")
+       || strendswith(full_path_replace, "7z")
+       || strendswith(full_path_replace, "rp9"))
       {
          char zip_basename[RETRO_PATH_MAX] = {0};
          snprintf(zip_basename, sizeof(zip_basename), "%s", path_basename(full_path_replace));
          path_remove_extension(zip_basename);
 
          path_mkdir(retro_temp_directory);
-         if (strendswith(full_path_replace, "zip"))
+         if (strendswith(full_path_replace, "zip") || strendswith(full_path_replace, "rp9"))
             zip_uncompress(full_path_replace, retro_temp_directory, NULL);
          else if (strendswith(full_path_replace, "7z"))
             sevenzip_uncompress(full_path_replace, retro_temp_directory, NULL);
