@@ -168,7 +168,7 @@ int graphics_init(void)
    pixbuf = (unsigned short int*) &retro_bmp[0];
    if (pixbuf == NULL)
    {
-      printf("Error: not enough memory to initialize screen buffer!\n");
+      log_cb(RETRO_LOG_ERROR, "Error: not enough memory to initialize screen buffer!\n");
       return -1;
    }
 
@@ -825,7 +825,7 @@ void remove_recurse(const char *path)
          continue;
 
       sprintf(filename, "%s%s%s", path, DIR_SEP_STR, dirp->d_name);
-      fprintf(stdout, "Clean: %s\n", filename);
+      log_cb(RETRO_LOG_INFO, "Clean: %s\n", filename);
 
       if (path_is_directory(filename))
          remove_recurse(filename);
@@ -852,7 +852,7 @@ int fcopy(const char *src, const char *dst)
 
    if (!path_is_directory(path_dst))
    {
-      printf("Mkdir: %s\n", path_dst);
+      log_cb(RETRO_LOG_INFO, "Mkdir: %s\n", path_dst);
       path_mkdir(path_dst);
    }
 
@@ -1025,11 +1025,11 @@ void gz_uncompress(gzFile in, FILE *out)
    {
       len = gzread(in, gzbuf, sizeof(gzbuf));
       if (len < 0)
-         fprintf(stdout, "%s", gzerror(in, &err));
+         log_cb(RETRO_LOG_ERROR, "%s", gzerror(in, &err));
       if (len == 0)
          break;
       if ((int)fwrite(gzbuf, 1, (unsigned)len, out) != len)
-         fprintf(stdout, "Write error!\n");
+         log_cb(RETRO_LOG_ERROR, "GZ write error!\n");
    }
 }
 
@@ -1067,7 +1067,7 @@ void zip_uncompress(char *in, char *out, char *lastfile)
       buf = (void*)malloc(size_buf);
       if (buf == NULL)
       {
-         fprintf(stderr, "Unzip: Error allocating memory\n");
+         log_cb(RETRO_LOG_ERROR, "Unzip: Error allocating memory\n");
          return;
       }
 
@@ -1088,7 +1088,7 @@ void zip_uncompress(char *in, char *out, char *lastfile)
 
       if ((*filename_withoutpath) == '\0')
       {
-         fprintf(stdout, "Mkdir: %s\n", filename_withpath);
+         log_cb(RETRO_LOG_INFO, "Mkdir: %s\n", filename_withpath);
          path_mkdir(filename_withpath);
       }
       else if (!path_is_valid(filename_withpath))
@@ -1100,36 +1100,32 @@ void zip_uncompress(char *in, char *out, char *lastfile)
 
          err = unzOpenCurrentFilePassword(uf, password);
          if (err != UNZ_OK)
-         {
-            fprintf(stderr, "Unzip: Error %d with zipfile in unzOpenCurrentFilePassword: %s\n", err, write_filename);
-         }
+            log_cb(RETRO_LOG_ERROR, "Unzip: Error %d with zipfile in unzOpenCurrentFilePassword: %s\n", err, write_filename);
 
          if ((skip == 0) && (err == UNZ_OK))
          {
             fout = fopen(write_filename, "wb");
             if (fout == NULL)
-            {
-               fprintf(stderr, "Unzip: Error opening %s\n", write_filename);
-            }
+               log_cb(RETRO_LOG_ERROR, "Unzip: Error opening %s\n", write_filename);
          }
 
          if (fout != NULL)
          {
-            fprintf(stdout, "Unzip: %s\n", write_filename);
+            log_cb(RETRO_LOG_INFO, "Unzip: %s\n", write_filename);
 
             do
             {
                err = unzReadCurrentFile(uf, buf, size_buf);
                if (err < 0)
                {
-                  fprintf(stderr, "Unzip: Error %d with zipfile in unzReadCurrentFile\n", err);
+                  log_cb(RETRO_LOG_ERROR, "Unzip: Error %d with zipfile in unzReadCurrentFile\n", err);
                   break;
                }
                if (err > 0)
                {
                   if (!fwrite(buf, err, 1, fout))
                   {
-                     fprintf(stderr, "Unzip: Error in writing extracted file\n");
+                     log_cb(RETRO_LOG_ERROR, "Unzip: Error in writing extracted file\n");
                      err = UNZ_ERRNO;
                      break;
                   }
@@ -1144,9 +1140,7 @@ void zip_uncompress(char *in, char *out, char *lastfile)
          {
             err = unzCloseCurrentFile(uf);
             if (err != UNZ_OK)
-            {
-               fprintf(stderr, "Unzip: Error %d with zipfile in unzCloseCurrentFile\n", err);
-            }
+               log_cb(RETRO_LOG_ERROR, "Unzip: Error %d with zipfile in unzCloseCurrentFile\n", err);
          }
          else
             unzCloseCurrentFile(uf);
@@ -1159,7 +1153,7 @@ void zip_uncompress(char *in, char *out, char *lastfile)
          err = unzGoToNextFile(uf);
          if (err != UNZ_OK)
          {
-            fprintf(stderr, "Unzip: Error %d with zipfile in unzGoToNextFile\n", err);
+            log_cb(RETRO_LOG_ERROR, "Unzip: Error %d with zipfile in unzGoToNextFile\n", err);
             break;
          }
       }
@@ -1338,19 +1332,19 @@ void sevenzip_uncompress(char *in, char *out, char *lastfile)
          else if (f->IsDir)
          {
             path_mkdir((const char *)temp);
-            fprintf(stdout, "Mkdir: %s\n", full_path);
+            log_cb(RETRO_LOG_INFO, "Mkdir: %s\n", full_path);
             continue;
          }
 
          if (filestream_write_file(full_path, ptr, outsize))
          {
             res = SZ_OK;
-            fprintf(stdout, "Un7ip: %s\n", full_path);
+            log_cb(RETRO_LOG_INFO, "Un7ip: %s\n", full_path);
          }
          else
          {
             res = SZ_ERROR_FAIL;
-            fprintf(stderr, "Un7ip: Error writing extracted file %s\n", full_path);
+            log_cb(RETRO_LOG_ERROR, "Un7ip: Error writing extracted file %s\n", full_path);
          }
       }
 
@@ -1359,11 +1353,11 @@ void sevenzip_uncompress(char *in, char *out, char *lastfile)
       IAlloc_Free(&allocImp, output);
 
       if (res == SZ_ERROR_UNSUPPORTED)
-         fprintf(stderr, "Un7ip: Decoder doesn't support this archive\n");
+         log_cb(RETRO_LOG_ERROR, "Un7ip: Decoder doesn't support this archive\n");
       else if (res == SZ_ERROR_MEM)
-         fprintf(stderr, "Un7ip: Can not allocate memory\n");
+         log_cb(RETRO_LOG_ERROR, "Un7ip: Can not allocate memory\n");
       else if (res == SZ_ERROR_CRC)
-         fprintf(stderr, "Un7ip: CRC error\n");
+         log_cb(RETRO_LOG_ERROR, "Un7ip: CRC error\n");
    }
 
    SzArEx_Free(&db, &allocImp);
