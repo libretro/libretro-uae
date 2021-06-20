@@ -320,6 +320,7 @@ bool dc_replace_file(dc_storage* dc, int index, const char* filename)
                      fprintf(zip_m3u, "%s\n", zip_m3u_list[l]);
                   fclose(zip_m3u);
                   snprintf(full_path_replace, sizeof(full_path_replace), "%s", zip_m3u_path);
+                  log_cb(RETRO_LOG_INFO, "->M3U: %s\n", zip_m3u_path);
                }
                break;
          }
