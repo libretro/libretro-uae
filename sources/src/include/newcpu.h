@@ -244,6 +244,8 @@ STATIC_INLINE void unset_special (uae_u32 x)
 
 STATIC_INLINE void m68k_setpc (uaecptr newpc)
 {
+	if (newpc > 0xffffffff)
+	   return;
 	regs.pc_p = regs.pc_oldp = get_real_address (newpc);
 	regs.instruction_pc = regs.pc = newpc;
 }
