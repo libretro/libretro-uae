@@ -427,12 +427,12 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_floppy_speed",
          "Media > Floppy Speed",
-         "'Turbo' removes disk rotation emulation.",
+         "Default speed is 300RPM. 'Turbo' removes disk rotation emulation.",
          {
-            { "100", "Default (300RPM)" },
-            { "200", "2x (600RPM)" },
-            { "400", "4x (1200RPM)" },
-            { "800", "8x (2400RPM)" },
+            { "100", "Default" },
+            { "200", "2x" },
+            { "400", "4x" },
+            { "800", "8x" },
             { "0", "Turbo" },
             { NULL, NULL },
          },
