@@ -1615,12 +1615,14 @@ static void update_variables(void)
          if (strstr(var.value, "PAL"))
          {
             video_config |= PUAE_VIDEO_PAL;
+            video_config &= ~PUAE_VIDEO_NTSC;
             strcat(uae_config, "ntsc=false\n");
             real_ntsc = false;
          }
          else
          {
             video_config |= PUAE_VIDEO_NTSC;
+            video_config &= ~PUAE_VIDEO_PAL;
             strcat(uae_config, "ntsc=true\n");
             real_ntsc = true;
          }
@@ -4917,7 +4919,7 @@ void retro_reset(void)
    fake_ntsc = false;
    update_variables();
    retro_create_config();
-   uae_restart(1, 0); /* 1=nogui */
+   uae_restart(0, NULL); /* opengui, cfgfile */
 }
 
 void retro_reset_soft()
