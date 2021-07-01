@@ -38,7 +38,7 @@ void print_vkbd(void)
    int XOFFSET                       = 0;
    int XPADDING                      = 0;
    int YOFFSET                       = 0;
-   int YPADDING                      = 6;
+   int YPADDING                      = 0;
    int XKEYSPACING                   = 1;
    int YKEYSPACING                   = 1;
    libretro_graph_alpha_t ALPHA      = opt_vkbd_alpha;
@@ -132,6 +132,7 @@ void print_vkbd(void)
    {
       FONT_WIDTH         = 2;
       XKEYSPACING        = 2;
+      XOFFSET            = -1;
 
       if (video_config_geometry & PUAE_VIDEO_DOUBLELINE)
       {
@@ -146,19 +147,18 @@ void print_vkbd(void)
       {
          FONT_WIDTH     *= 2;
          XKEYSPACING    *= 2;
+         XOFFSET        *= 2;
       }
    }
 
-   XPADDING      = zoomed_width - (320 * FONT_WIDTH);
+   int XSIDE     = (320 * FONT_WIDTH) / VKBDX;
+   int YSIDE     = 21 * FONT_HEIGHT;
 
-   int XSIDE     = (zoomed_width - XPADDING) / VKBDX;
-   int YSIDE     = (zoomed_height - YPADDING) / VKBDY;
-   int YSIDE_MAX = 21 * FONT_HEIGHT;
-   YSIDE         = (YSIDE > YSIDE_MAX) ? YSIDE_MAX : YSIDE;
-   YOFFSET       = -(YPADDING * 2);
+   XPADDING      = zoomed_width - (XSIDE * VKBDX);
+   YPADDING      = zoomed_height - (YSIDE * VKBDY);
 
    int XBASEKEY  = (XPADDING > 0) ? (XPADDING / 2) : 0;
-   int YBASEKEY  = (zoomed_height - (YSIDE * VKBDY)) - (YPADDING / 2);
+   int YBASEKEY  = (YPADDING > 0) ? (YPADDING / 2) : 0;
 
    int XBASETEXT = XBASEKEY + (3 * FONT_WIDTH);
    int YBASETEXT = YBASEKEY + (3 * FONT_HEIGHT);

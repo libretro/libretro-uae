@@ -3020,6 +3020,11 @@ static void center_image (void)
 	if (visible_right_border > max_diwlastword)
 		visible_right_border = max_diwlastword;
 
+	int max_drawn_amiga_line_tmp = max_drawn_amiga_line;
+	if (max_drawn_amiga_line_tmp > gfxvidinfo.inheight)
+		max_drawn_amiga_line_tmp = gfxvidinfo.inheight;
+	max_drawn_amiga_line_tmp >>= linedbl;
+
 #ifndef __LIBRETRO__
 	thisframe_y_adjust = minfirstline;
 	if (currprefs.gfx_ycenter && thisframe_first_drawn_line >= 0 && !currprefs.gfx_filter_autoscale) {
@@ -3036,33 +3041,29 @@ static void center_image (void)
 				thisframe_y_adjust = prev_y_adjust;
 		}
 	}
-
-	/* Make sure the value makes sense */
-	if (thisframe_y_adjust + max_drawn_amiga_line > maxvpos_nom)
-		thisframe_y_adjust = maxvpos_nom - max_drawn_amiga_line;
-	if (thisframe_y_adjust < minfirstline)
-		thisframe_y_adjust = minfirstline;
 #endif
 
-	thisframe_y_adjust_real = thisframe_y_adjust << linedbl;
-	tmp = (maxvpos_nom - thisframe_y_adjust + 1) << linedbl;
-	if (tmp != max_ypos_thisframe) {
-		last_max_ypos = tmp;
-		if (last_max_ypos < 0)
-			last_max_ypos = 0;
-	}
-	max_ypos_thisframe = tmp;
+	/* Make sure the value makes sense */
+	if (thisframe_y_adjust + max_drawn_amiga_line_tmp > maxvpos + maxvpos / 2)
+		thisframe_y_adjust = maxvpos + maxvpos / 2 - max_drawn_amiga_line_tmp;
+	if (thisframe_y_adjust < 0)
+		thisframe_y_adjust = 0;
 
-	/* @@@ interlace_seen used to be (bplcon0 & 4), but this is probably
-	 * better.  */
-	if (prev_x_adjust != visible_left_border || prev_y_adjust != thisframe_y_adjust)
-		frame_redraw_necessary |= (interlace_seen > 0 && linedbl) ? 2 : 1;
+	thisframe_y_adjust_real = thisframe_y_adjust << linedbl;
+	max_ypos_thisframe = (maxvpos_display - minfirstline + 1) << linedbl;
+
+	if (prev_x_adjust != visible_left_border || prev_y_adjust != thisframe_y_adjust) {
+		int redraw = interlace_seen > 0 && linedbl ? 2 : 1;
+		if (redraw > frame_redraw_necessary)
+			frame_redraw_necessary = redraw;
+	}
 
 	max_diwstop = 0;
 	min_diwstart = MAX_STOP;
 
 	gfxvidinfo.xoffset = (DISPLAY_LEFT_SHIFT << RES_MAX) + (visible_left_border << (RES_MAX - currprefs.gfx_resolution));
 	gfxvidinfo.yoffset = thisframe_y_adjust << VRES_MAX;
+
 	center_reset = false;
 }
 

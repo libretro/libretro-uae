@@ -213,6 +213,8 @@ STATIC_INLINE uae_u32 get_long (uaecptr addr)
 }
 STATIC_INLINE uae_u32 get_word (uaecptr addr)
 {
+	if (addr > 0xffffffff)
+	   return 0;
 	return wordget (addr);
 }
 STATIC_INLINE uae_u32 get_byte (uaecptr addr)
@@ -264,6 +266,8 @@ STATIC_INLINE void put_long (uaecptr addr, uae_u32 l)
 }
 STATIC_INLINE void put_word (uaecptr addr, uae_u32 w)
 {
+	if (addr > 0xffffffff)
+	   return;
 	wordput(addr, w);
 }
 STATIC_INLINE void put_byte (uaecptr addr, uae_u32 b)

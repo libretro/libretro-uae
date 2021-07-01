@@ -324,8 +324,10 @@ static uae_s16 getsample (void)
 			if (div) {
 				int vol;
 				vol = currprefs.dfxclickvolume;
+#ifdef __LIBRETRO__
 				if (!drv_has_disk[i] && opt_floppy_sound_empty_mute)
 					vol = 100;
+#endif
 				total_sample += (smp * (100 - vol) / 100) / div;
 				total_div++;
 			}

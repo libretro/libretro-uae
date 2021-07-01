@@ -29,6 +29,7 @@ extern unsigned int libretro_frame_end;
 
 unsigned short int* pixbuf = NULL;
 extern unsigned short int retro_bmp[RETRO_BMP_SIZE];
+extern bool retro_bmp_clear;
 extern char retro_temp_directory[RETRO_PATH_MAX];
 
 int prefs_changed = 0;
@@ -283,6 +284,8 @@ int check_prefs_changed_gfx (void)
    gfxvidinfo.width_allocated          = currprefs.gfx_size_win.width;
    gfxvidinfo.height_allocated         = currprefs.gfx_size_win.height;
    gfxvidinfo.rowbytes                 = gfxvidinfo.width_allocated * gfxvidinfo.pixbytes;
+
+   retro_bmp_clear = true;
 
 #if 0
    printf("check_prefs_changed_gfx: %d:%d, res:%d vres:%d\n", changed_prefs.gfx_size_win.width, changed_prefs.gfx_size_win.height, changed_prefs.gfx_resolution, changed_prefs.gfx_vresolution);
