@@ -3081,7 +3081,7 @@ void compute_vsynctime (void)
 	}
 	if (currprefs.produce_sound > 1) {
 		double clk = svpos * shpos * fake_vblank_hz;
-#if 0
+#if 1
 		write_log (_T("SNDRATE %.1f*%.1f*%.6f=%.6f\n"), svpos, shpos, fake_vblank_hz, clk);
 #endif
 		devices_update_sound(clk, syncadjust);
@@ -3336,9 +3336,6 @@ void compute_framesync (void)
 	request_update_av_info      = true;
 	retro_av_info_change_timing = true;
 
-	if (vblank_hz < 40 || (isntsc && vblank_hz < 59.6))
-		retro_av_info_change_timing = false;
-
 	retro_av_info_is_ntsc       = isntsc;
 	retro_av_info_is_lace       = islace;
 #endif
@@ -3372,7 +3369,11 @@ static void init_hz (bool checkvposw)
 	islace = (interlace_seen) ? 1 : 0;
 	if (!(currprefs.chipset_mask & CSMASK_ECS_AGNUS))
 		isntsc = currprefs.ntscmode ? 1 : 0;
+#ifdef __LIBRETRO__
+	int clk = isntsc ? CHIPSET_CLOCK_NTSC : CHIPSET_CLOCK_PAL;
+#else
 	int clk = currprefs.ntscmode ? CHIPSET_CLOCK_NTSC : CHIPSET_CLOCK_PAL;
+#endif
 	if (!isntsc) {
 		maxvpos = MAXVPOS_PAL;
 		maxhpos = MAXHPOS_PAL;
@@ -3400,15 +3401,16 @@ static void init_hz (bool checkvposw)
 	maxvpos_nom = maxvpos;
 	maxvpos_display = maxvpos;
 #ifdef __LIBRETRO__
-	/* Sound calculation fails if vblank_hzs and maxvpos_nom are allowed to reset ?! */
+	/* Sound rate calculation fails if vblank_hzs and maxvpos_nom are allowed to reset to maxvpos ?!
+	 * Also allow replacing all calculations only when PAL is switching to NTSC */
 	if (vpos_count > 0) {
 		// we come here if vpos_count != maxvpos and beamcon0 didn't change
 		// (someone poked VPOSW)
 		if (vpos_count < 10)
 			vpos_count = 10;
-		vblank_hz = (isntsc ? 15734 : 15625.0) / vpos_count;
-		if (vpos_count < 300)
+		if (vpos_count < 300 && maxvpos == MAXVPOS_PAL)
 		{
+			vblank_hz = (isntsc ? 15734 : 15625.0) / vpos_count;
 			vblank_hz_nom = vblank_hz_shf = vblank_hz_lof = vblank_hz_lace = (float)vblank_hz;
 			maxvpos_nom = vpos_count - (lof_current ? 1 : 0);
 		}
@@ -3774,7 +3776,7 @@ static bool hsyncdelay (void)
 	return false;
 }
 
-#ifdef __LIBRETRO__
+#if 1
 #define CPU_ACCURATE (currprefs.cpu_model < 68020)
 #else
 #define CPU_ACCURATE (currprefs.cpu_model < 68020 || (currprefs.cpu_model == 68020 && currprefs.cpu_cycle_exact))
