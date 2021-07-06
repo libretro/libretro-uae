@@ -26,7 +26,6 @@
 
 unsigned int libretro_runloop_active = 0;
 unsigned short int retro_bmp[RETRO_BMP_SIZE] = {0};
-bool retro_bmp_clear = false;
 int defaultw = EMULATOR_DEF_WIDTH;
 int defaulth = EMULATOR_DEF_HEIGHT;
 int retrow = 0;
@@ -5768,6 +5767,11 @@ void retro_run(void)
    if (request_update_av_info)
       retro_update_av_info();
 
+   /* Single/double line mode changes leave rubbish behind,
+    * therefore clear everything */
+   if (prefs_changed)
+      memset(retro_bmp, 0, sizeof(retro_bmp));
+
    /* Poll inputs */
    retro_poll_event();
 
@@ -5864,14 +5868,6 @@ void retro_run(void)
    }
 
    video_cb(retro_bmp, zoomed_width, zoomed_height, retrow << (pix_bytes / 2));
-
-   /* Single/double line mode changes leave rubbish behing,
-    * therefore clear everything after showing */
-   if (retro_bmp_clear)
-   {
-      retro_bmp_clear = false;
-      memset(retro_bmp, 0, sizeof(retro_bmp));
-   }
 }
 
 bool retro_load_game(const struct retro_game_info *info)
