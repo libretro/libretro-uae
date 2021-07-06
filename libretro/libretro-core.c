@@ -858,6 +858,26 @@ void retro_set_environment(retro_environment_t cb)
          "16bit"
       },
       {
+         "puae_gfx_gamma",
+         "Video > Color Gamma",
+         "",
+         {
+            { "-500", "+0.5" },
+            { "-400", "+0.4" },
+            { "-300", "+0.3" },
+            { "-200", "+0.2" },
+            { "-100", "+0.1" },
+            { "0", "disabled" },
+            { "100", "-0.1" },
+            { "200", "-0.2" },
+            { "300", "-0.3" },
+            { "400", "-0.4" },
+            { "500", "-0.5" },
+            { NULL, NULL },
+         },
+         "0"
+      },
+      {
          "puae_audio_options_display",
          "Show Audio Options",
          "Page refresh by menu toggle required!",
@@ -2203,8 +2223,30 @@ static void update_variables(void)
       /* Only allow screenmode change after restart */
       if (!pix_bytes_initialized)
       {
-         if (!strcmp(var.value, "16bit"))      pix_bytes = 2;
+         if      (!strcmp(var.value, "16bit")) pix_bytes = 2;
          else if (!strcmp(var.value, "24bit")) pix_bytes = 4;
+      }
+   }
+
+   var.key = "puae_gfx_gamma";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      int val = atoi(var.value);
+
+      if (val)
+      {
+         char valbuf[5];
+         snprintf(valbuf, 5, "%d", val);
+         strcat(uae_config, "gfx_gamma=");
+         strcat(uae_config, valbuf);
+         strcat(uae_config, "\n");
+      }
+
+      if (libretro_runloop_active)
+      {
+         if   (!strcmp(var.value, "disabled")) changed_prefs.gfx_gamma = 0;
+         else                                  changed_prefs.gfx_gamma = val;
       }
    }
 
@@ -2735,6 +2777,8 @@ static void update_variables(void)
    option_display.key = "puae_gfx_framerate";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_gfx_colors";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_gfx_gamma";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_statusbar";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
