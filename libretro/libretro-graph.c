@@ -837,33 +837,46 @@ void draw_text_bmp(unsigned short *buffer, unsigned short int x, unsigned short 
       unsigned short int fgcol, unsigned short int bgcol, libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg,
       unsigned short int scalex, unsigned short int scaley, unsigned short int max, unsigned char *string)
 {
-   if (string == NULL)
-      return;
-
 #if 0
    draw_string_bmp(buffer, x, y, text, max, scalex, scaley, fgcol, bgcol, alpha, draw_bg);
 #else
+   unsigned int i = 0;
+   unsigned int xpos = 0;
    unsigned char c;
-   char s[2] = {0};
-   int charwidth = 6;
-   int cmax;
+   unsigned char s[2] = {0};
+   unsigned int charwidth_default = 6;
+   unsigned int charwidth = charwidth_default;
+   unsigned int cmax;
+
+   if (string == NULL)
+      return;
+
    cmax = strlen(string);
    cmax = (cmax > max) ? max : cmax;
-   for (int i = 0; i < cmax; i++)
+
+   for (i = 0; i < cmax; i++)
    {
       c = string[i];
       if (c == 0)
          break;
+
       if (c & 0x80)
       {
          snprintf(s, sizeof(s), "%c", c - 0x80);
-         draw_string_bmp((unsigned short *)buffer, x+(i*charwidth*scalex), y, s, 1, scalex, scaley, bgcol, fgcol, alpha, draw_bg);
+         draw_string_bmp((unsigned short *)buffer, x + xpos, y, s, 1, scalex, scaley, bgcol, fgcol, alpha, draw_bg);
       }
       else
       {
          snprintf(s, sizeof(s), "%c", c);
-         draw_string_bmp((unsigned short *)buffer, x+(i*charwidth*scalex), y, s, 1, scalex, scaley, fgcol, bgcol, alpha, draw_bg);
+         draw_string_bmp((unsigned short *)buffer, x + xpos, y, s, 1, scalex, scaley, fgcol, bgcol, alpha, draw_bg);
       }
+
+      charwidth = charwidth_default;
+      /* Narrower lower case */
+      if (c >= 'a' && c <= 'z' && c != 'm' && c != 'w')
+         charwidth = 4;
+
+      xpos += (charwidth * scalex);
    }
 #endif
 }
@@ -872,33 +885,46 @@ void draw_text_bmp32(uint32_t *buffer, unsigned short int x, unsigned short int 
       uint32_t fgcol, uint32_t bgcol, libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg,
       unsigned short int scalex, unsigned short int scaley, unsigned short int max, unsigned char *string)
 {
-   if (string == NULL)
-      return;
-
 #if 0
    draw_string_bmp32(buffer, x, y, text, max, scalex, scaley, fgcol, bgcol, alpha, draw_bg);
 #else
+   unsigned int i = 0;
+   unsigned int xpos = 0;
    unsigned char c;
-   char s[2] = {0};
-   int charwidth = 6;
-   int cmax;
+   unsigned char s[2] = {0};
+   unsigned int charwidth_default = 6;
+   unsigned int charwidth = charwidth_default;
+   unsigned int cmax;
+
+   if (string == NULL)
+      return;
+
    cmax = strlen(string);
    cmax = (cmax > max) ? max : cmax;
-   for (int i = 0; i < cmax; i++)
+
+   for (i = 0; i < cmax; i++)
    {
       c = string[i];
       if (c == 0)
          break;
+
       if (c & 0x80)
       {
          snprintf(s, sizeof(s), "%c", c - 0x80);
-         draw_string_bmp32(buffer, x+(i*charwidth*scalex), y, s, 1, scalex, scaley, bgcol, fgcol, alpha, draw_bg);
+         draw_string_bmp32(buffer, x + xpos, y, s, 1, scalex, scaley, bgcol, fgcol, alpha, draw_bg);
       }
       else
       {
          snprintf(s, sizeof(s), "%c", c);
-         draw_string_bmp32(buffer, x+(i*charwidth*scalex), y, s, 1, scalex, scaley, fgcol, bgcol, alpha, draw_bg);
+         draw_string_bmp32(buffer, x + xpos, y, s, 1, scalex, scaley, fgcol, bgcol, alpha, draw_bg);
       }
+
+      charwidth = charwidth_default;
+      /* Narrower lower case */
+      if (c >= 'a' && c <= 'z' && c != 'm' && c != 'w')
+         charwidth = 4;
+
+      xpos += (charwidth * scalex);
    }
 #endif
 }

@@ -29,7 +29,6 @@ extern unsigned int libretro_frame_end;
 
 unsigned short int* pixbuf = NULL;
 extern unsigned short int retro_bmp[RETRO_BMP_SIZE];
-extern bool retro_bmp_clear;
 extern char retro_temp_directory[RETRO_PATH_MAX];
 
 int prefs_changed = 0;
@@ -190,11 +189,12 @@ int graphics_init(void)
    gfxvidinfo.flush_line = retro_flush_line;
 
    prefs_changed = 1;
-   inputdevice_release_all_keys ();
+   inputdevice_release_all_keys();
 #if 0
-   reset_hotkeys ();
+   reset_hotkeys();
 #endif
-   reset_drawing ();
+   reset_drawing();
+   graphics_setup();
    return 1;
 }
 
@@ -220,8 +220,7 @@ int debuggable (void)
 
 int graphics_setup(void)
 {
-   /* 32bit mode
-    *                   Rw,Gw,Bw,Rs, Gs,Bs,Aw,As,Avalue,swap */
+   /* Rw,Gw,Bw, Rs,Gs,Bs, Aw,As,Avalue, swap */
    if (pix_bytes == 2)
       alloc_colors64k (5, 6, 5, 11, 5, 0, 0, 0, 0, 0);
    else
@@ -281,11 +280,19 @@ int check_prefs_changed_gfx (void)
    if (currprefs.gfx_scandoubler      != changed_prefs.gfx_scandoubler)
        currprefs.gfx_scandoubler       = changed_prefs.gfx_scandoubler;
 
+   if (currprefs.gfx_luminance        != changed_prefs.gfx_luminance ||
+       currprefs.gfx_contrast         != changed_prefs.gfx_contrast  ||
+       currprefs.gfx_gamma            != changed_prefs.gfx_gamma)
+   {
+       currprefs.gfx_luminance         = changed_prefs.gfx_luminance;
+       currprefs.gfx_contrast          = changed_prefs.gfx_contrast;
+       currprefs.gfx_gamma             = changed_prefs.gfx_gamma;
+       graphics_setup();
+   }
+
    gfxvidinfo.width_allocated          = currprefs.gfx_size_win.width;
    gfxvidinfo.height_allocated         = currprefs.gfx_size_win.height;
    gfxvidinfo.rowbytes                 = gfxvidinfo.width_allocated * gfxvidinfo.pixbytes;
-
-   retro_bmp_clear = true;
 
 #if 0
    printf("check_prefs_changed_gfx: %d:%d, res:%d vres:%d\n", changed_prefs.gfx_size_win.width, changed_prefs.gfx_size_win.height, changed_prefs.gfx_resolution, changed_prefs.gfx_vresolution);

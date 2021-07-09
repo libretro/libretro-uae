@@ -461,7 +461,7 @@ void print_statusbar(void)
 
    int TEXT_X               = 1 * FONT_WIDTH;
    int TEXT_Y               = 0;
-   int TEXT_LENGTH          = (video_config & PUAE_VIDEO_DOUBLELINE) ? 100 : 46;
+   int TEXT_LENGTH          = (video_config & PUAE_VIDEO_DOUBLELINE) ? 128 : 64;
 
    /* Statusbar location */
    /* Top */

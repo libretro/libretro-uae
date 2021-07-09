@@ -1873,6 +1873,10 @@ static int cfgfile_parse_host (struct uae_prefs *p, TCHAR *option, TCHAR *value)
 
 		|| cfgfile_floatval (option, value, _T("rtg_vert_zoom_multf"), &p->rtg_vert_zoom_mult)
 		|| cfgfile_floatval (option, value, _T("rtg_horiz_zoom_multf"), &p->rtg_horiz_zoom_mult)
+#else
+		|| cfgfile_intval (option, value, _T("gfx_luminance"), &p->gfx_luminance, 1)
+		|| cfgfile_intval (option, value, _T("gfx_contrast"), &p->gfx_contrast, 1)
+		|| cfgfile_intval (option, value, _T("gfx_gamma"), &p->gfx_gamma, 1)
 #endif
 #ifdef DRIVESOUND
 		|| cfgfile_intval (option, value, _T("floppy0sound"), &p->floppyslots[0].dfxclick, 1)

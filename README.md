@@ -1,5 +1,3 @@
-[![Build Status](https://api.travis-ci.org/libretro/libretro-uae.svg?branch=master)](https://travis-ci.org/github/libretro/libretro-uae)
-
 # PUAE LIBRETRO
 
 Based on PUAE 2.6.1, git commit `0186c1b16f7181ffa02d73e6920d3180ce457c46`
