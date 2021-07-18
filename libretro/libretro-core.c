@@ -3201,6 +3201,11 @@ void retro_init(void)
    if (retro_save_directory[strlen(retro_save_directory)-1] == DIR_SEP_CHR)
       retro_save_directory[strlen(retro_save_directory)-1] = '\0';
 
+   /* Hack: Remove one-letter subdirectories from save path,
+    * to prevent multiple WHDLoad images */
+   if (retro_save_directory[strlen(retro_save_directory)-2] == DIR_SEP_CHR)
+      retro_save_directory[strlen(retro_save_directory)-2] = '\0';
+
    /* Temp directory for ZIPs */
    snprintf(retro_temp_directory, sizeof(retro_temp_directory), "%s%s%s", retro_save_directory, DIR_SEP_STR, "TEMP");
 
