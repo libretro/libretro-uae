@@ -5282,6 +5282,7 @@ void default_prefs (struct uae_prefs *p, int type)
 
 	zfile_fclose (default_file);
 	default_file = NULL;
+#ifndef __LIBRETRO__
 	f = zfile_fopen_empty (NULL, _T("configstore"), 0);
 	if (f) {
 		uaeconfig++;
@@ -5290,6 +5291,7 @@ void default_prefs (struct uae_prefs *p, int type)
 		cfg_write (&zero, f);
 		default_file = f;
 	}
+#endif
 }
 
 static void buildin_default_prefs_68020 (struct uae_prefs *p)
