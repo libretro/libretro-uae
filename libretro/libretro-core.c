@@ -3197,6 +3197,10 @@ void retro_init(void)
               sizeof(retro_save_directory));
    }
 
+   /* Remove ending slash created by 'savefiles_in_content_dir' */
+   if (retro_save_directory[strlen(retro_save_directory)-1] == DIR_SEP_CHR)
+      retro_save_directory[strlen(retro_save_directory)-1] = '\0';
+
    /* Temp directory for ZIPs */
    snprintf(retro_temp_directory, sizeof(retro_temp_directory), "%s%s%s", retro_save_directory, DIR_SEP_STR, "TEMP");
 
@@ -3695,10 +3699,15 @@ static void retro_config_harddrives(void)
 
    for (i = 0; i < dc->count; i++)
    {
-      tmp_str = string_replace_substring(dc->files[i], "\\", "\\\\");
-      tmp_str = utf8_to_local_string_alloc(tmp_str);
       char tmp_str_name[RETRO_PATH_MAX];
       char tmp_str_path[RETRO_PATH_MAX];
+
+#ifdef WIN32
+      tmp_str = utf8_to_local_string_alloc(string_replace_substring(dc->files[i], "\\", "\\\\"));
+#else
+      tmp_str = utf8_to_local_string_alloc(dc->files[i]);
+#endif
+
       snprintf(tmp_str_name, sizeof(tmp_str_name), "%s", path_basename(tmp_str));
       path_remove_extension(tmp_str_name);
 
