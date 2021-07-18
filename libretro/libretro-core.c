@@ -5230,10 +5230,11 @@ static void update_audiovideo(void)
 #if 0
          printf("frmcnt %d, first:%3d old:%3d start:%3d last:%3d old:%3d start:%3d\n", retro_thisframe_counter, retro_thisframe_first_drawn_line, retro_thisframe_first_drawn_line_old, retro_thisframe_first_drawn_line_start, retro_thisframe_last_drawn_line, retro_thisframe_last_drawn_line_old, retro_thisframe_last_drawn_line_start);
 #endif
-         /* Reset counter if the first drawn line changes while the last line stays the same */
+         /* Reset counter if the first drawn line changes while the last line stays the same.
+          * To prevent Lollypop earthquake effect trigger, and allow Superfrog statusbar startup animation */
          if (retro_thisframe_first_drawn_line != retro_thisframe_first_drawn_line_start
           && retro_thisframe_last_drawn_line  == retro_thisframe_last_drawn_line_start
-          && abs(retro_thisframe_first_drawn_line_start - retro_thisframe_first_drawn_line) < 40)
+          && abs(retro_thisframe_first_drawn_line_start - retro_thisframe_first_drawn_line) < 5)
             retro_thisframe_counter = 0;
 
          /* Prevent geometry change but allow vertical centering if the values return to the starting point during counting */
