@@ -3707,29 +3707,36 @@ static void retro_config_harddrives(void)
       char tmp_str_name[RETRO_PATH_MAX];
       char tmp_str_path[RETRO_PATH_MAX];
 
-#ifdef WIN32
-      tmp_str = utf8_to_local_string_alloc(string_replace_substring(dc->files[i], "\\", "\\\\"));
-#else
       tmp_str = utf8_to_local_string_alloc(dc->files[i]);
-#endif
-
       snprintf(tmp_str_name, sizeof(tmp_str_name), "%s", path_basename(tmp_str));
       path_remove_extension(tmp_str_name);
 
+      /* Deduce mount path for launch extensions */
       if (strendswith(dc->files[i], "slave") || strendswith(dc->files[i], "info"))
       {
          path_parent_dir(tmp_str);
          snprintf(tmp_str_path, sizeof(tmp_str_path), "%s%s", tmp_str, tmp_str_name);
          if (!path_is_directory(tmp_str_path))
-            snprintf(tmp_str_path, sizeof(tmp_str_path), "%s", tmp_str);
+         {
+            path_parent_dir(tmp_str_path);
+            if (tmp_str_path[strlen(tmp_str_path)-1] == DIR_SEP_CHR)
+               tmp_str_path[strlen(tmp_str_path)-1] = '\0';
+         }
+         tmp_str = tmp_str_path;
       }
+
+#ifdef WIN32
+      tmp_str = string_replace_substring(tmp_str, "\\", "\\\\");
+#endif
+
+      /* LHAs read-only */
       if (strendswith(dc->files[i], "lha"))
          retro_config_append("filesystem2=ro,DH%d:%s:\"%s\",0\n", i, tmp_str_name, tmp_str);
-      else if (path_is_directory(dc->files[i]))
+      /* Directories writable */
+      else if (path_is_directory(dc->files[i]) || strendswith(dc->files[i], "slave") || strendswith(dc->files[i], "info"))
          retro_config_append("filesystem2=rw,DH%d:%s:\"%s\",0\n", i, tmp_str_name, tmp_str);
-      else if (strendswith(dc->files[i], "slave") || strendswith(dc->files[i], "info"))
-         retro_config_append("filesystem2=rw,DH%d:%s:\"%s\",0\n", i, tmp_str_name, tmp_str_path);
-      else
+      /* Hardfiles */
+      else if (dc_get_image_type(tmp_str) == DC_IMAGE_TYPE_HD)
       {
          /* Detect RDB */
          bool hdf_rdb = false;
