@@ -799,6 +799,12 @@ void uae_resume (void)
 int sensible_strcmp(char *a, char *b)
 {
    int i;
+
+   /* No-Intro has randomly "Program" and "Data" disks,
+    * which means regular sorting will be wrong */
+   if (strstr(a, "(Program"))
+      return -1;
+
    for (i = 0; a[i] == b[i]; i++)
       if (a[i] == '\0')
          return 0;
