@@ -62,7 +62,11 @@ ELSE
        List #? DIRS QUICK NOHEAD TO ENV:SLAVEDIR
        IF EXISTS $SLAVEDIR >NIL:
           CD $SLAVEDIR >NIL:
-          List #?.slav#? QUICK NOHEAD TO ENV:SLAVE
+          IF EXISTS $SLAVEDIR.slave
+             SETENV SLAVE $SLAVEDIR.slave
+          ELSE
+             List #?.slav#? QUICK NOHEAD TO ENV:SLAVE
+          ENDIF
        ENDIF
    ENDIF
    
@@ -71,7 +75,7 @@ ELSE
       Assign WHDSaves: WHDLoad:WHDSaves
    ENDIF
 
-   JoyPad RED BLUE PORT 1 QUIET
+   JoyPad RED BLUE PORT 1 QUIET >NIL:
    IF WARN
       IF EXISTS ReadMe
          MultiView ReadMe
@@ -81,7 +85,7 @@ ELSE
       ENDIF
    ENDIF
 
-   JoyPad RED PORT 1 QUIET
+   JoyPad RED PORT 1 QUIET >NIL:
    IF WARN
       Execute WBSelect
    ELSE
@@ -95,17 +99,17 @@ ELSE
          ENDIF
       ENDIF
 
-      JoyPad BLUE PORT 1 QUIET
+      JoyPad BLUE PORT 1 QUIET >NIL:
       IF WARN
          Echo "ConfigDelay=-1" >>S:WHDLoad.prefs
       ENDIF
 
-      JoyPad RED PORT 0 QUIET
+      JoyPad RED PORT 0 QUIET >NIL:
       IF WARN
          Echo "SplashDelay=150" >>S:WHDLoad.prefs
       ENDIF
 
-      JoyPad BLUE PORT 0 QUIET
+      JoyPad BLUE PORT 0 QUIET >NIL:
       IF WARN
          Echo "ConfigDelay=-1" >>S:WHDLoad.prefs
          Echo "SplashDelay=-1" >>S:WHDLoad.prefs
