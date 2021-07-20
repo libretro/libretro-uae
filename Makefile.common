@@ -156,16 +156,19 @@ SOURCES_C += \
 	$(DEPS_DIR)/libz/zutil.c
 
 SOURCES_C += \
+	$(DEPS_DIR)/7zip/7zArcIn.c \
 	$(DEPS_DIR)/7zip/7zBuf.c \
 	$(DEPS_DIR)/7zip/7zCrc.c \
 	$(DEPS_DIR)/7zip/7zCrcOpt.c \
 	$(DEPS_DIR)/7zip/7zDec.c \
 	$(DEPS_DIR)/7zip/7zFile.c \
-	$(DEPS_DIR)/7zip/7zIn.c \
 	$(DEPS_DIR)/7zip/7zStream.c \
 	$(DEPS_DIR)/7zip/Bcj2.c \
 	$(DEPS_DIR)/7zip/Bra.c \
 	$(DEPS_DIR)/7zip/Bra86.c \
+	$(DEPS_DIR)/7zip/BraIA64.c \
+	$(DEPS_DIR)/7zip/CpuArch.c \
+	$(DEPS_DIR)/7zip/Delta.c \
 	$(DEPS_DIR)/7zip/Lzma2Dec.c \
 	$(DEPS_DIR)/7zip/LzmaDec.c
 
@@ -201,8 +204,4 @@ ifeq ($(HAVE_CHD), 1)
 		$(DEPS_DIR)/libchdr/src/libchdr_chd.c \
 		$(DEPS_DIR)/libchdr/src/libchdr_flac.c \
 		$(DEPS_DIR)/libchdr/src/libchdr_huffman.c
-
-	ifeq ($(STATIC_LINKING), 1)
-		SOURCES_C += $(DEPS_DIR)/7zip/LzmaDec.c
-	endif
 endif

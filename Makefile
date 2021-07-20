@@ -282,10 +282,8 @@ else
    LDFLAGS += -s
 endif
 
-# Skip 7zip for static builds
-ifneq ($(STATIC_LINKING), 1)
-   CFLAGS += -DHAVE_7ZIP
-endif
+# 7zip
+CFLAGS += -DHAVE_7ZIP -D_7ZIP_ST
 
 # CHD
 HAVE_CHD = 1
