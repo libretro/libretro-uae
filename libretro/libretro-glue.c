@@ -1185,11 +1185,12 @@ void zip_uncompress(char *in, char *out, char *lastfile)
 
 /* 7zip */
 #ifdef HAVE_7ZIP
+#define SEVENZIP_LOOKTOREAD_BUF_SIZE (1 << 14)
 struct sevenzip_context_t
 {
    uint8_t *output;
    CFileInStream archiveStream;
-   CLookToRead lookStream;
+   CLookToRead2 lookStream;
    ISzAlloc allocImp;
    ISzAlloc allocTempImp;
    CSzArEx db;
@@ -1200,14 +1201,14 @@ struct sevenzip_context_t
    uint32_t packIndex;
 };
 
-static void *sevenzip_stream_alloc_impl(void *p, size_t size)
+static void *sevenzip_stream_alloc_impl(ISzAllocPtr p, size_t size)
 {
    if (size == 0)
       return 0;
    return malloc(size);
 }
 
-static void sevenzip_stream_free_impl(void *p, void *address)
+static void sevenzip_stream_free_impl(ISzAllocPtr p, void *address)
 {
    (void)p;
 
@@ -1215,7 +1216,7 @@ static void sevenzip_stream_free_impl(void *p, void *address)
       free(address);
 }
 
-static void *sevenzip_stream_alloc_tmp_impl(void *p, size_t size)
+static void *sevenzip_stream_alloc_tmp_impl(ISzAllocPtr p, size_t size)
 {
    (void)p;
    if (size == 0)
@@ -1226,7 +1227,7 @@ static void *sevenzip_stream_alloc_tmp_impl(void *p, size_t size)
 void sevenzip_uncompress(char *in, char *out, char *lastfile)
 {
    CFileInStream archiveStream;
-   CLookToRead lookStream;
+   CLookToRead2 lookStream;
    ISzAlloc allocImp;
    ISzAlloc allocTempImp;
    CSzArEx db;
@@ -1240,37 +1241,46 @@ void sevenzip_uncompress(char *in, char *out, char *lastfile)
    allocTempImp.Alloc   = sevenzip_stream_alloc_tmp_impl;
    allocTempImp.Free    = sevenzip_stream_free_impl;
 
+   lookStream.bufSize   = SEVENZIP_LOOKTOREAD_BUF_SIZE * sizeof(Byte);
+   lookStream.buf       = (Byte*)malloc(lookStream.bufSize);
+
+   if (!lookStream.buf)
+      lookStream.bufSize = 0;
+
+#if defined(_WIN32) && defined(USE_WINDOWS_FILE) && !defined(LEGACY_WIN32)
+   if (!string_is_empty(in))
+   {
+      wchar_t *pathW = utf8_to_utf16_string_alloc(in);
+
+      if (pathW)
+      {
+         /* Could not open 7zip archive? */
+         if (InFile_OpenW(&archiveStream.file, pathW))
+         {
+            free(pathW);
+            return;
+         }
+
+         free(pathW);
+      }
+   }
+#else
    /* Could not open 7zip archive? */
    if (InFile_Open(&archiveStream.file, in))
       return;
+#endif
 
    FileInStream_CreateVTable(&archiveStream);
-   LookToRead_CreateVTable(&lookStream, false);
-   lookStream.realStream = &archiveStream.s;
-   LookToRead_Init(&lookStream);
+   LookToRead2_CreateVTable(&lookStream, false);
+   lookStream.realStream = &archiveStream.vt;
+   LookToRead2_Init(&lookStream);
    CrcGenerateTable();
 
-   db.db.PackSizes               = NULL;
-   db.db.PackCRCsDefined         = NULL;
-   db.db.PackCRCs                = NULL;
-   db.db.Folders                 = NULL;
-   db.db.Files                   = NULL;
-   db.db.NumPackStreams          = 0;
-   db.db.NumFolders              = 0;
-   db.db.NumFiles                = 0;
-   db.startPosAfterHeader        = 0;
-   db.dataPos                    = 0;
-   db.FolderStartPackStreamIndex = NULL;
-   db.PackStreamStartPositions   = NULL;
-   db.FolderStartFileIndex       = NULL;
-   db.FileIndexToFolderIndexMap  = NULL;
-   db.FileNameOffsets            = NULL;
-   db.FileNames.data             = NULL;
-   db.FileNames.size             = 0;
+   memset(&db, 0, sizeof(db));
 
    SzArEx_Init(&db);
 
-   if (SzArEx_Open(&db, &lookStream.s, &allocImp, &allocTempImp) == SZ_OK)
+   if (SzArEx_Open(&db, &lookStream.vt, &allocImp, &allocTempImp) == SZ_OK)
    {
       uint32_t i;
       uint16_t *temp       = NULL;
@@ -1279,14 +1289,13 @@ void sevenzip_uncompress(char *in, char *out, char *lastfile)
       SRes res             = SZ_OK;
       size_t output_size   = 0;
 
-      for (i = 0; i < db.db.NumFiles; i++)
+      for (i = 0; i < db.NumFiles; i++)
       {
          size_t j;
          size_t len;
          char infile[RETRO_PATH_MAX];
          size_t offset                = 0;
          size_t outSizeProcessed      = 0;
-         const CSzFileItem    *f      = db.db.Files + i;
 
          len = SzArEx_GetFileNameUtf16(&db, i, NULL);
 
@@ -1317,7 +1326,7 @@ void sevenzip_uncompress(char *in, char *out, char *lastfile)
          /* C LZMA SDK does not support chunked extraction - see here:
           * sourceforge.net/p/sevenzip/discussion/45798/thread/6fb59aaf/
           * */
-         res = SzArEx_Extract(&db, &lookStream.s, i, &block_index,
+         res = SzArEx_Extract(&db, &lookStream.vt, i, &block_index,
                &output, &output_size, &offset, &outSizeProcessed,
                &allocImp, &allocTempImp);
 
@@ -1335,9 +1344,9 @@ void sevenzip_uncompress(char *in, char *out, char *lastfile)
          {
             if (full_path[j] == '/')
             {
-                  full_path[j] = 0;
-                  path_mkdir((const char *)full_path);
-                  full_path[j] = DIR_SEP_CHR;
+               full_path[j] = 0;
+               path_mkdir((const char *)full_path);
+               full_path[j] = DIR_SEP_CHR;
             }
          }
 
@@ -1345,7 +1354,7 @@ void sevenzip_uncompress(char *in, char *out, char *lastfile)
 
          if (path_is_valid(full_path))
             continue;
-         else if (f->IsDir)
+         else if (SzArEx_IsDir(&db, i))
          {
             path_mkdir((const char *)temp);
             log_cb(RETRO_LOG_INFO, "Mkdir: %s\n", full_path);
