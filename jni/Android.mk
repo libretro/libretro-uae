@@ -4,9 +4,11 @@ CORE_DIR := $(LOCAL_PATH)/..
 
 SOURCES_C :=
 
+# 7zip
+CFLAGS += -DHAVE_7ZIP -D_7ZIP_ST
+
 # CHD
 HAVE_CHD = 1
-HAVE_SYS_PARAM = 1
 
 include $(CORE_DIR)/Makefile.common
 
