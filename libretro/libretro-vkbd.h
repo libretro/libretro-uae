@@ -2,12 +2,11 @@
 #define LIBRETRO_VKBD_H
 
 extern void print_virtual_kbd(void);
-extern int check_vkey(int x, int y);
 
 typedef struct
 {
-   char normal[9];
-   char shift[9];
+   char normal[10];
+   char shift[10];
    int value;
 } retro_vkeys;
 
@@ -79,7 +78,7 @@ static retro_vkeys vkeys[VKBDX * VKBDY * 2] =
    { ";"   ,":"   ,AK_SEMICOLON },
 
    /* 44 */
-   { "CapsLock","CapsLock",AK_CAPSLOCK },
+   { "Caps\1Lock","Caps\1Lock",AK_CAPSLOCK },
    { "Z"   ,"Z"   ,AK_Z },
    { "X"   ,"X"   ,AK_X },
    { "C"   ,"C"   ,AK_C },
@@ -185,7 +184,7 @@ static retro_vkeys vkeys[VKBDX * VKBDY * 2] =
    { ";"   ,":"   ,AK_SEMICOLON },
 
    /* 44 */
-   { "CapsLock","CapsLock",AK_CAPSLOCK },
+   { "Caps\1Lock","Caps\1Lock",AK_CAPSLOCK },
    { "Z"   ,"Z"   ,AK_Z },
    { "X"   ,"X"   ,AK_X },
    { "C"   ,"C"   ,AK_C },

@@ -860,6 +860,14 @@ void draw_text_bmp(unsigned short *buffer, unsigned short int x, unsigned short 
       if (c == 0)
          break;
 
+      /* Linebreak hack */
+      if (c == '\1')
+      {
+         xpos = 0;
+         y += charwidth_default;
+         continue;
+      }
+
       if (c & 0x80)
       {
          snprintf(s, sizeof(s), "%c", c - 0x80);
@@ -907,6 +915,14 @@ void draw_text_bmp32(uint32_t *buffer, unsigned short int x, unsigned short int 
       c = string[i];
       if (c == 0)
          break;
+
+      /* Linebreak hack */
+      if (c == '\1')
+      {
+         xpos = 0;
+         y += charwidth_default;
+         continue;
+      }
 
       if (c & 0x80)
       {

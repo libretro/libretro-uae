@@ -1877,7 +1877,8 @@ void update_input(unsigned disable_keys)
                          input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_RETURN) ||
                          input_state_cb(0, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_PRESSED)))
       {
-         vkey_pressed = check_vkey(vkey_pos_x, vkey_pos_y);
+         vkey_pressed = vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + ((retro_vkbd_page) ? VKBDX * VKBDY : 0)].value;
+
          vkflag[i] = 1;
 
          if (vkey_pressed == -1)

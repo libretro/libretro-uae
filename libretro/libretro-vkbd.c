@@ -25,6 +25,8 @@ int RGBc(int r, int g, int b)
 
 void print_vkbd(void)
 {
+   libretro_graph_alpha_t ALPHA      = opt_vkbd_alpha;
+   libretro_graph_alpha_t BKG_ALPHA  = ALPHA;
    bool shifted                      = false;
    bool text_outline                 = false;
    int page                          = (retro_vkbd_page) ? VKBDX * VKBDY : 0;
@@ -41,8 +43,7 @@ void print_vkbd(void)
    int YPADDING                      = 0;
    int XKEYSPACING                   = 1;
    int YKEYSPACING                   = 1;
-   libretro_graph_alpha_t ALPHA      = opt_vkbd_alpha;
-   libretro_graph_alpha_t BKG_ALPHA  = ALPHA;
+
    int BKG_PADDING_X                 = 0;
    int BKG_PADDING_Y                 = 0;
    int BKG_COLOR                     = 0;
@@ -51,15 +52,13 @@ void print_vkbd(void)
    int BKG_COLOR_EXTRA               = 0;
    int BKG_COLOR_SEL                 = 0;
    int BKG_COLOR_ACTIVE              = 0;
-   int FONT_MAX                      = 4;
+
+   int FONT_MAX                      = 10;
    int FONT_WIDTH                    = 1;
    int FONT_HEIGHT                   = 1;
    int FONT_COLOR                    = 0;
    int FONT_COLOR_NORMAL             = 0;
    int FONT_COLOR_SEL                = 0;
-
-   unsigned COLOR_BLACK              = (pix_bytes == 4) ? COLOR_BLACK_32 : COLOR_BLACK_16;
-   unsigned COLOR_WHITE              = (pix_bytes == 4) ? COLOR_WHITE_32 : COLOR_WHITE_16;
 
    unsigned theme                    = opt_vkbd_theme;
    if (theme & 0x80)
@@ -88,43 +87,43 @@ void print_vkbd(void)
    {
       default:
       case 1: /* Classic */
-         BKG_COLOR_NORMAL  = RGBc(208, 208, 202);
-         BKG_COLOR_ALT     = RGBc(154, 154, 150);
-         BKG_COLOR_EXTRA   = RGBc(132, 132, 132);
-         BKG_COLOR_SEL     = RGBc( 40,  40,  40);
-         BKG_COLOR_ACTIVE  = RGBc(250, 250, 250);
-         FONT_COLOR_NORMAL = COLOR_BLACK;
-         FONT_COLOR_SEL    = COLOR_WHITE;
+         BKG_COLOR_NORMAL  = (pix_bytes == 4) ? COLOR_BEIGE_32 : COLOR_BEIGE_16;
+         BKG_COLOR_ALT     = (pix_bytes == 4) ? COLOR_BEIGEDARK_32 : COLOR_BEIGEDARK_16;
+         BKG_COLOR_EXTRA   = (pix_bytes == 4) ? COLOR_132_32 : COLOR_132_16;
+         BKG_COLOR_SEL     = (pix_bytes == 4) ? COLOR_40_32 : COLOR_40_16;
+         BKG_COLOR_ACTIVE  = (pix_bytes == 4) ? COLOR_250_32 : COLOR_250_16;
+         FONT_COLOR_NORMAL = (pix_bytes == 4) ? COLOR_BLACK_32 : COLOR_BLACK_16;
+         FONT_COLOR_SEL    = (pix_bytes == 4) ? COLOR_WHITE_32 : COLOR_WHITE_16;
          break;
 
       case 2: /* CD32 */
-         BKG_COLOR_NORMAL  = RGBc( 64,  64,  64);
-         BKG_COLOR_ALT     = RGBc( 32,  32,  32);
-         BKG_COLOR_EXTRA   = RGBc( 16,  16,  16);
-         BKG_COLOR_SEL     = RGBc(140, 140, 140);
-         BKG_COLOR_ACTIVE  = RGBc( 10,  10,  10);
-         FONT_COLOR_NORMAL = COLOR_WHITE;
-         FONT_COLOR_SEL    = COLOR_BLACK;
+         BKG_COLOR_NORMAL  = (pix_bytes == 4) ? COLOR_64_32 : COLOR_64_16;
+         BKG_COLOR_ALT     = (pix_bytes == 4) ? COLOR_32_32 : COLOR_32_16;
+         BKG_COLOR_EXTRA   = (pix_bytes == 4) ? COLOR_16_32 : COLOR_16_16;
+         BKG_COLOR_SEL     = (pix_bytes == 4) ? COLOR_140_32 : COLOR_140_16;
+         BKG_COLOR_ACTIVE  = (pix_bytes == 4) ? COLOR_10_32 : COLOR_10_16;
+         FONT_COLOR_NORMAL = (pix_bytes == 4) ? COLOR_WHITE_32 : COLOR_WHITE_16;
+         FONT_COLOR_SEL    = (pix_bytes == 4) ? COLOR_BLACK_32 : COLOR_BLACK_16;
          break;
 
       case 3: /* Dark */
-         BKG_COLOR_NORMAL  = RGBc( 32,  32,  32);
-         BKG_COLOR_ALT     = RGBc( 70,  70,  70);
-         BKG_COLOR_EXTRA   = RGBc( 14,  14,  14);
-         BKG_COLOR_SEL     = RGBc(140, 140, 140);
-         BKG_COLOR_ACTIVE  = RGBc( 16,  16,  16);
-         FONT_COLOR_NORMAL = COLOR_WHITE;
-         FONT_COLOR_SEL    = COLOR_BLACK;
+         BKG_COLOR_NORMAL  = (pix_bytes == 4) ? COLOR_32_32 : COLOR_32_16;
+         BKG_COLOR_ALT     = (pix_bytes == 4) ? COLOR_64_32 : COLOR_64_16;
+         BKG_COLOR_EXTRA   = (pix_bytes == 4) ? COLOR_10_32 : COLOR_10_16;
+         BKG_COLOR_SEL     = (pix_bytes == 4) ? COLOR_140_32 : COLOR_140_16;
+         BKG_COLOR_ACTIVE  = (pix_bytes == 4) ? COLOR_16_32 : COLOR_16_16;
+         FONT_COLOR_NORMAL = (pix_bytes == 4) ? COLOR_WHITE_32 : COLOR_WHITE_16;
+         FONT_COLOR_SEL    = (pix_bytes == 4) ? COLOR_BLACK_32 : COLOR_BLACK_16;
          break;
 
       case 4: /* Light */
-         BKG_COLOR_NORMAL  = RGBc(200, 204, 206);
-         BKG_COLOR_ALT     = RGBc(160, 160, 160);
-         BKG_COLOR_EXTRA   = RGBc(132, 132, 132);
-         BKG_COLOR_SEL     = RGBc( 40,  40,  40);
-         BKG_COLOR_ACTIVE  = RGBc(250, 250, 250);
-         FONT_COLOR_NORMAL = COLOR_BLACK;
-         FONT_COLOR_SEL    = COLOR_WHITE;
+         BKG_COLOR_NORMAL  = (pix_bytes == 4) ? COLOR_200_32 : COLOR_200_16;
+         BKG_COLOR_ALT     = (pix_bytes == 4) ? COLOR_160_32 : COLOR_160_16;
+         BKG_COLOR_EXTRA   = (pix_bytes == 4) ? COLOR_132_32 : COLOR_132_16;
+         BKG_COLOR_SEL     = (pix_bytes == 4) ? COLOR_40_32 : COLOR_40_16;
+         BKG_COLOR_ACTIVE  = (pix_bytes == 4) ? COLOR_250_32 : COLOR_250_16;
+         FONT_COLOR_NORMAL = (pix_bytes == 4) ? COLOR_BLACK_32 : COLOR_BLACK_16;
+         FONT_COLOR_SEL    = (pix_bytes == 4) ? COLOR_WHITE_32 : COLOR_WHITE_16;
          break;
    }
 
@@ -303,11 +302,4 @@ void print_vkbd(void)
 #ifdef POINTER_DEBUG
    draw_hline(pointer_x, pointer_y, 1, 1, RGBc(255, 0, 255));
 #endif
-}
-
-int check_vkey(int x, int y)
-{
-   /* Check which key is pressed */
-   int page = (retro_vkbd_page) ? VKBDX * VKBDY : 0;
-   return vkeys[(y * VKBDX) + x + page].value;
 }
