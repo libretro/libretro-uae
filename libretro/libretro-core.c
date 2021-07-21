@@ -3722,7 +3722,7 @@ static void retro_config_harddrives(void)
             if (tmp_str_path[strlen(tmp_str_path)-1] == DIR_SEP_CHR)
                tmp_str_path[strlen(tmp_str_path)-1] = '\0';
          }
-         tmp_str = tmp_str_path;
+         tmp_str = strdup(tmp_str_path);
       }
 
 #ifdef WIN32
@@ -3736,7 +3736,7 @@ static void retro_config_harddrives(void)
       else if (path_is_directory(dc->files[i]) || strendswith(dc->files[i], "slave") || strendswith(dc->files[i], "info"))
          retro_config_append("filesystem2=rw,DH%d:%s:\"%s\",0\n", i, tmp_str_name, tmp_str);
       /* Hardfiles */
-      else if (dc_get_image_type(tmp_str) == DC_IMAGE_TYPE_HD)
+      else if (dc_get_image_type(dc->files[i]) == DC_IMAGE_TYPE_HD)
       {
          /* Detect RDB */
          bool hdf_rdb = false;
@@ -3766,7 +3766,8 @@ static void retro_config_harddrives(void)
 
       log_cb(RETRO_LOG_INFO, "HD (%d) inserted in drive DH%d: '%s'\n", i+1, i, dc->files[i]);
 
-      free(tmp_str);
+      if (tmp_str)
+         free(tmp_str);
       tmp_str = NULL;
    }
 }
