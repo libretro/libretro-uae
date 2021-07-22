@@ -15,6 +15,7 @@ void inputdevice_release_all_keys(void);
 extern int mouse_port[NORMAL_JPORTS];
 
 #include "libretro-glue.h"
+#include "libretro-graph.h"
 #include "libretro-core.h"
 #include "libretro-mapper.h"
 #include "encodings/utf.h"
@@ -37,6 +38,494 @@ int retro_thisframe_first_drawn_line;
 int retro_thisframe_last_drawn_line;
 int retro_min_diwstart;
 int retro_max_diwstop;
+
+extern int opt_statusbar;
+extern int opt_statusbar_position;
+
+int imagename_timer = 0;
+unsigned char statusbar_text[RETRO_PATH_MAX] = {0};
+
+static bool flag_empty(int val[16])
+{
+   for (int x = 0; x < 16; x++)
+   {
+      if (val[x])
+         return false;
+   }
+   return true;
+}
+
+static unsigned char* joystick_value_human(int val[16], int uae_device)
+{
+   /*
+    * uae_device:
+    * 0 = Single button joystick (Keyrah + Parallel)
+    * 1 = RetroPad
+    * 2 = CD32 Pad
+    * 3 = Mouse
+    * 4 = Analog joystick
+    */
+
+   unsigned str_len = 4;
+   unsigned char *str = malloc(sizeof(char)*str_len);
+   snprintf(str, sizeof(unsigned char)*str_len, "%3s", "   ");
+
+   if (val[RETRO_DEVICE_ID_JOYPAD_UP] || val[RETRO_DEVICE_ID_JOYPAD_SELECT]) /* Unused SELECT acts as a jump button */
+      str[1] = 30;
+
+   else if (val[RETRO_DEVICE_ID_JOYPAD_DOWN])
+      str[1] = 28;
+
+   if (val[RETRO_DEVICE_ID_JOYPAD_LEFT])
+      str[0] = 27;
+
+   else if (val[RETRO_DEVICE_ID_JOYPAD_RIGHT])
+      str[2] = 29;
+
+   if (val[RETRO_DEVICE_ID_JOYPAD_B])
+   {
+      switch (uae_device)
+      {
+         case 1:
+            if (opt_retropad_options == 1 || opt_retropad_options == 3)
+               str[1] = ('2' | 0x80);
+            else
+               str[1] = ('1' | 0x80);
+            break;
+         case 3:
+            str[1] = ('L' | 0x80);
+            break;
+         case 4:
+            str[1] = ('1' | 0x80);
+            break;
+         default:
+            str[1] = (str[1] | 0x80);
+            break;
+      }
+   }
+
+   if (val[RETRO_DEVICE_ID_JOYPAD_A])
+   {
+      switch (uae_device)
+      {
+         case 1:
+            if (opt_retropad_options == 1 || opt_retropad_options == 3)
+               ; /* no-op */
+            else
+               str[1] = ('2' | 0x80);
+            break;
+         case 3:
+            str[1] = ('R' | 0x80);
+            break;
+         case 4:
+            str[1] = ('2' | 0x80);
+            break;
+         default:
+            str[1] = (str[1] | 0x80);
+            break;
+      }
+   }
+
+   if (val[RETRO_DEVICE_ID_JOYPAD_Y])
+   {
+      switch (uae_device)
+      {
+         case 1:
+            if (opt_retropad_options == 1 || opt_retropad_options == 3)
+               str[1] = ('1' | 0x80);
+            break;
+         case 3:
+            str[1] = ('M' | 0x80);
+            break;
+         case 4:
+            str[1] = ('3' | 0x80);
+            break;
+         default:
+            str[1] = (str[1] | 0x80);
+            break;
+      }
+   }
+
+   if (val[RETRO_DEVICE_ID_JOYPAD_X])
+   {
+      switch (uae_device)
+      {
+         case 4:
+            str[1] = ('4' | 0x80);
+            break;
+         default:
+            str[1] = (str[1] | 0x80);
+            break;
+      }
+   }
+
+   if (val[RETRO_DEVICE_ID_JOYPAD_START])
+   {
+      switch (uae_device)
+      {
+         case 2:
+            str[1] = ('P' | 0x80);
+            break;
+      }
+   }
+
+   if (val[RETRO_DEVICE_ID_JOYPAD_L])
+   {
+      switch (uae_device)
+      {
+         case 2:
+            str[0] = ('R' | 0x80);
+            break;
+      }
+   }
+
+   if (val[RETRO_DEVICE_ID_JOYPAD_R])
+   {
+      switch (uae_device)
+      {
+         case 2:
+            str[2] = ('F' | 0x80);
+            break;
+      }
+   }
+
+   return str;
+}
+
+static unsigned int joystick_color(int val[16])
+{
+   unsigned color = 0;
+
+   if (opt_cd32pad_options == 1 || opt_cd32pad_options == 3)
+   {
+      if (val[RETRO_DEVICE_ID_JOYPAD_Y])
+         color |= (pix_bytes == 4) ? RGB888(248,0,0) : RGB565(255,0,0);
+
+      if (val[RETRO_DEVICE_ID_JOYPAD_B])
+         color |= (pix_bytes == 4) ? RGB888(0,0,248) : RGB565(0,0,255);
+
+      if (val[RETRO_DEVICE_ID_JOYPAD_X])
+         color |= (pix_bytes == 4) ? RGB888(0,248,0) : RGB565(0,255,0);
+
+      if (val[RETRO_DEVICE_ID_JOYPAD_A])
+         color |= (pix_bytes == 4) ? RGB888(248,248,0) : RGB565(255,255,0);
+   }
+   else
+   {
+      if (val[RETRO_DEVICE_ID_JOYPAD_B])
+         color |= (pix_bytes == 4) ? RGB888(248,0,0) : RGB565(255,0,0);
+
+      if (val[RETRO_DEVICE_ID_JOYPAD_A])
+         color |= (pix_bytes == 4) ? RGB888(0,0,248) : RGB565(0,0,255);
+
+      if (val[RETRO_DEVICE_ID_JOYPAD_Y])
+         color |= (pix_bytes == 4) ? RGB888(0,248,0) : RGB565(0,255,0);
+
+      if (val[RETRO_DEVICE_ID_JOYPAD_X])
+         color |= (pix_bytes == 4) ? RGB888(248,248,0) : RGB565(255,255,0);
+   }
+
+   if (val[RETRO_DEVICE_ID_JOYPAD_L])
+      color |= (pix_bytes == 4) ? RGB888(170,170,170) : RGB565(110,110,110);
+
+   if (val[RETRO_DEVICE_ID_JOYPAD_R])
+      color |= (pix_bytes == 4) ? RGB888(170,170,170) : RGB565(110,110,110);
+
+   if (val[RETRO_DEVICE_ID_JOYPAD_START])
+      color |= (pix_bytes == 4) ? RGB888(164,164,164) : RGB565(72,72,72);
+
+   if (color == 0)
+      color = (pix_bytes == 4) ? 0xffffff : 0xffff;
+
+   return color;
+}
+
+void display_current_image(const char *image, bool inserted)
+{
+   static char imagename[RETRO_PATH_MAX] = {0};
+   static char imagename_prev[RETRO_PATH_MAX] = {0};
+
+   imagename_timer = 150;
+   if (strcmp(image, ""))
+   {
+      snprintf(imagename, sizeof(imagename), "%s%.98s", "  ", path_basename(image));
+      snprintf(imagename_prev, sizeof(imagename_prev), "%.100s", imagename);
+   }
+   else
+      snprintf(imagename, sizeof(imagename), "%.100s", imagename_prev);
+
+   snprintf(&statusbar_text[0], sizeof(statusbar_text), "%-100s", imagename);
+
+   if (inserted)
+      statusbar_text[0] = (8 | 0x80);
+   else if (!strcmp(image, ""))
+      statusbar_text[0] = (9 | 0x80);
+}
+
+void print_statusbar(void)
+{
+   if (opt_statusbar & STATUSBAR_BASIC && !imagename_timer)
+      return;
+
+   int BOX_Y                = 0;
+   int BOX_WIDTH            = 0;
+   int BOX_HEIGHT           = 11;
+   int BOX_PADDING          = 2;
+
+   int FONT_WIDTH           = 1;
+   if (video_config & PUAE_VIDEO_HIRES)
+   {
+      if (video_config & PUAE_VIDEO_DOUBLELINE)
+         FONT_WIDTH         = 1;
+      else
+         FONT_WIDTH         = 2;
+   }
+   else if (video_config & PUAE_VIDEO_SUPERHIRES)
+   {
+      if (video_config & PUAE_VIDEO_DOUBLELINE)
+         FONT_WIDTH         = 2;
+      else
+         FONT_WIDTH         = 4;
+   }
+   int FONT_HEIGHT          = 1;
+   int FONT_COLOR           = (pix_bytes == 4) ? 0xffffff : 0xffff;;
+   int FONT_SLOT            = 34 * FONT_WIDTH;
+
+   int TEXT_X               = 1 * FONT_WIDTH;
+   int TEXT_Y               = 0;
+   int TEXT_LENGTH          = (video_config & PUAE_VIDEO_DOUBLELINE) ? 128 : 64;
+
+   /* Statusbar location */
+   /* Top */
+   if (opt_statusbar_position < 0)
+      TEXT_Y = BOX_PADDING;
+   /* Bottom */
+   else
+      TEXT_Y = gfxvidinfo.outheight - opt_statusbar_position - BOX_HEIGHT + BOX_PADDING;
+   BOX_Y = TEXT_Y - BOX_PADDING;
+
+   /* Statusbar size */
+   BOX_WIDTH = zoomed_width;
+   int ZOOMED_WIDTH_OFFSET = retrow - zoomed_width;
+
+   /* Video resolution */
+   int TEXT_X_RESOLUTION = TEXT_X + (FONT_SLOT*4) + (FONT_WIDTH*16) - (ZOOMED_WIDTH_OFFSET/2);
+   unsigned char RESOLUTION[10] = {0};
+   snprintf(RESOLUTION, sizeof(RESOLUTION), "%4dx%3d", zoomed_width, zoomed_height);
+
+   /* Model & memory */
+   int TEXT_X_MODEL  = TEXT_X + (FONT_SLOT*6) + (FONT_WIDTH*32) - ZOOMED_WIDTH_OFFSET;
+   int TEXT_X_MEMORY = TEXT_X + (FONT_SLOT*6) + (FONT_WIDTH*6) - ZOOMED_WIDTH_OFFSET;
+   /* Sacrifice memory slot if there is not enough width */
+   if (!(video_config & PUAE_VIDEO_DOUBLELINE))
+   {
+      if (TEXT_X_MEMORY < (TEXT_X_RESOLUTION + FONT_SLOT + (FONT_WIDTH*20)))
+         TEXT_X_MEMORY = -1;
+   }
+
+   unsigned char MODEL[10] = {0};
+   unsigned char MEMORY[5] = {0};
+   float mem_size = 0;
+   mem_size  = (float)(currprefs.chipmem_size / 0x80000) / 2;
+   mem_size += (float)(currprefs.bogomem_size / 0x40000) / 4;
+   mem_size += (float)(currprefs.fastmem_size / 0x100000);
+   if (TEXT_X_MEMORY > 0)
+      snprintf(MEMORY, sizeof(MEMORY), "%2.0fM", floor(mem_size));
+   switch (currprefs.cs_compatible)
+   {
+      case CP_A500:
+         snprintf(MODEL, sizeof(MODEL), "%s", " A500");
+         break;
+      case CP_A500P:
+         snprintf(MODEL, sizeof(MODEL), "%s", "A500+");
+         break;
+      case CP_A600:
+         snprintf(MODEL, sizeof(MODEL), "%s", " A600");
+         break;
+      case CP_A1200:
+         snprintf(MODEL, sizeof(MODEL), "%s", "A1200");
+         break;
+      case CP_A4000:
+         snprintf(MODEL, sizeof(MODEL), "%s", "A4000");
+         break;
+      case CP_CDTV:
+         snprintf(MODEL, sizeof(MODEL), "%s", " CDTV");
+         break;
+      case CP_CD32:
+         snprintf(MODEL, sizeof(MODEL), "%s", " CD32");
+         break;
+   }
+
+   /* Double line positions */
+   if (video_config & PUAE_VIDEO_DOUBLELINE)
+   {
+      TEXT_X_RESOLUTION = TEXT_X + (FONT_SLOT*15) + (FONT_WIDTH*5) - ZOOMED_WIDTH_OFFSET;
+      TEXT_X_MODEL      = TEXT_X + (FONT_SLOT*17) + (FONT_WIDTH*15) - ZOOMED_WIDTH_OFFSET;
+      TEXT_X_MEMORY     = TEXT_X + (FONT_SLOT*16) + (FONT_WIDTH*25) - ZOOMED_WIDTH_OFFSET;
+   }
+
+   /* Joy port indicators */
+   unsigned char JOYMODE1[5] = {0};
+   unsigned char JOYMODE2[5] = {0};
+   unsigned char JOYMODE3[5] = {0};
+   unsigned char JOYMODE4[5] = {0};
+
+   unsigned char JOYPORT1[5] = {0};
+   unsigned char JOYPORT2[5] = {0};
+   unsigned char JOYPORT3[5] = {0};
+   unsigned char JOYPORT4[5] = {0};
+
+   /* Joy port positions */
+   int TEXT_X_JOYMODE1 = TEXT_X;
+   int TEXT_X_JOYPORT1 = TEXT_X_JOYMODE1 + (FONT_WIDTH*13);
+
+   int TEXT_X_JOYMODE2 = TEXT_X + FONT_SLOT;
+   int TEXT_X_JOYPORT2 = TEXT_X_JOYMODE2 + (FONT_WIDTH*13);
+
+   int TEXT_X_JOYMODE3 = TEXT_X + (FONT_SLOT*2);
+   int TEXT_X_JOYPORT3 = TEXT_X_JOYMODE3 + (FONT_WIDTH*13);
+
+   int TEXT_X_JOYMODE4 = TEXT_X + (FONT_SLOT*3);
+   int TEXT_X_JOYPORT4 = TEXT_X_JOYMODE4 + (FONT_WIDTH*13);
+
+   /* Regular joyflags */
+   if (!retro_mousemode)
+   {
+      switch (retro_devices[0])
+      {
+         case RETRO_DEVICE_PUAE_CD32PAD:
+            snprintf(JOYMODE1, sizeof(JOYMODE1), "%2s", "C1");
+            break;
+         case RETRO_DEVICE_PUAE_ANALOG:
+            snprintf(JOYMODE1, sizeof(JOYMODE1), "%2s", "A1");
+            break;
+         default:
+            snprintf(JOYMODE1, sizeof(JOYMODE1), "%2s", "J1");
+            break;
+      }
+
+      switch (retro_devices[1])
+      {
+         case RETRO_DEVICE_PUAE_CD32PAD:
+            snprintf(JOYMODE2, sizeof(JOYMODE2), "%2s", "C2");
+            break;
+         case RETRO_DEVICE_PUAE_ANALOG:
+            snprintf(JOYMODE1, sizeof(JOYMODE1), "%2s", "A2");
+            break;
+         default:
+            snprintf(JOYMODE2, sizeof(JOYMODE2), "%2s", "J2");
+            break;
+      }
+   }
+   else
+   {
+      snprintf(JOYMODE1, sizeof(JOYMODE1), "%2s", "M1");
+      snprintf(JOYMODE2, sizeof(JOYMODE2), "%2s", "M2");
+   }
+
+   /* Regular ports */
+   switch (retro_devices[0])
+   {
+      case RETRO_DEVICE_PUAE_CD32PAD:
+         snprintf(JOYPORT1, sizeof(JOYPORT1), "%3s", joystick_value_human(jflag[0], 2));
+         break;
+      case RETRO_DEVICE_PUAE_ANALOG:
+         snprintf(JOYPORT1, sizeof(JOYPORT1), "%3s", joystick_value_human(aflag[0], 4));
+         break;
+      default:
+         snprintf(JOYPORT1, sizeof(JOYPORT1), "%3s", joystick_value_human(jflag[0], 1));
+         break;
+   }
+
+   switch (retro_devices[1])
+   {
+      case RETRO_DEVICE_PUAE_CD32PAD:
+         snprintf(JOYPORT2, sizeof(JOYPORT2), "%3s", joystick_value_human(jflag[1], 2));
+         break;
+      case RETRO_DEVICE_PUAE_ANALOG:
+         snprintf(JOYPORT2, sizeof(JOYPORT2), "%3s", joystick_value_human(aflag[1], 4));
+         break;
+      default:
+         snprintf(JOYPORT2, sizeof(JOYPORT2), "%3s", joystick_value_human(jflag[1], 1));
+         break;
+   }
+
+   /* Parallel ports, hidden if not connected */
+   if (retro_devices[2])
+   {
+      snprintf(JOYMODE3, sizeof(JOYMODE3), "%2s", "J3");
+      snprintf(JOYPORT3, sizeof(JOYPORT3), "%3s", joystick_value_human(jflag[2], 0));
+   }
+   if (retro_devices[3])
+   {
+      snprintf(JOYMODE4, sizeof(JOYMODE4), "%2s", "J4");
+      snprintf(JOYPORT4, sizeof(JOYPORT4), "%3s", joystick_value_human(jflag[3], 0));
+   }
+
+   /* Mouse flags */
+   if (!flag_empty(mflag[1]))
+   {
+      snprintf(JOYMODE1, sizeof(JOYMODE1), "%2s", "M1");
+      snprintf(JOYPORT1, sizeof(JOYPORT1), "%3s", joystick_value_human(mflag[1], 3));
+   }
+   if (!flag_empty(mflag[0]))
+   {
+      snprintf(JOYMODE2, sizeof(JOYMODE2), "%2s", "M2");
+      snprintf(JOYPORT2, sizeof(JOYPORT2), "%3s", joystick_value_human(mflag[0], 3));
+   }
+
+   /* Keyrah flags */
+   if (opt_keyrah_keypad)
+   {
+      if (!flag_empty(kjflag[0]))
+      {
+         snprintf(JOYMODE1, sizeof(JOYMODE1), "%2s", "K1");
+         snprintf(JOYPORT1, sizeof(JOYPORT1), "%3s", joystick_value_human(kjflag[0], 0));
+      }
+      if (!flag_empty(kjflag[1]))
+      {
+         snprintf(JOYMODE2, sizeof(JOYMODE2), "%2s", "K2");
+         snprintf(JOYPORT2, sizeof(JOYPORT2), "%3s", joystick_value_human(kjflag[1], 0));
+      }
+   }
+
+   /* Button colorize CD32 Pad */
+   int JOY1_COLOR = FONT_COLOR;
+   int JOY2_COLOR = FONT_COLOR;
+   if (retro_devices[0] == RETRO_DEVICE_PUAE_CD32PAD)
+      JOY1_COLOR = joystick_color(jflag[0]);
+   if (retro_devices[1] == RETRO_DEVICE_PUAE_CD32PAD)
+      JOY2_COLOR = joystick_color(jflag[1]);
+
+   /* Statusbar output */
+   draw_fbox(0, BOX_Y, BOX_WIDTH, BOX_HEIGHT, 0, GRAPH_ALPHA_100);
+
+   if (imagename_timer > 0)
+   {
+      draw_text(TEXT_X, TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, GRAPH_BG_ALL, FONT_WIDTH, FONT_HEIGHT, TEXT_LENGTH, statusbar_text);
+      return;
+   }
+
+   draw_text(TEXT_X_JOYMODE1,   TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, GRAPH_BG_ALL, FONT_WIDTH, FONT_HEIGHT, 10, JOYMODE1);
+   draw_text(TEXT_X_JOYPORT1,   TEXT_Y, JOY1_COLOR, 0, GRAPH_ALPHA_100, GRAPH_BG_ALL, FONT_WIDTH, FONT_HEIGHT, 10, JOYPORT1);
+
+   draw_text(TEXT_X_JOYMODE2,   TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, GRAPH_BG_ALL, FONT_WIDTH, FONT_HEIGHT, 10, JOYMODE2);
+   draw_text(TEXT_X_JOYPORT2,   TEXT_Y, JOY2_COLOR, 0, GRAPH_ALPHA_100, GRAPH_BG_ALL, FONT_WIDTH, FONT_HEIGHT, 10, JOYPORT2);
+
+   draw_text(TEXT_X_JOYMODE3,   TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, GRAPH_BG_ALL, FONT_WIDTH, FONT_HEIGHT, 10, JOYMODE3);
+   draw_text(TEXT_X_JOYPORT3,   TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, GRAPH_BG_ALL, FONT_WIDTH, FONT_HEIGHT, 10, JOYPORT3);
+
+   draw_text(TEXT_X_JOYMODE4,   TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, GRAPH_BG_ALL, FONT_WIDTH, FONT_HEIGHT, 10, JOYMODE4);
+   draw_text(TEXT_X_JOYPORT4,   TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, GRAPH_BG_ALL, FONT_WIDTH, FONT_HEIGHT, 10, JOYPORT4);
+
+   draw_text(TEXT_X_RESOLUTION, TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, GRAPH_BG_ALL, FONT_WIDTH, FONT_HEIGHT, 10, RESOLUTION);
+   draw_text(TEXT_X_MEMORY,     TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, GRAPH_BG_ALL, FONT_WIDTH, FONT_HEIGHT, 10, MEMORY);
+   draw_text(TEXT_X_MODEL,      TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, GRAPH_BG_ALL, FONT_WIDTH, FONT_HEIGHT, 10, MODEL);
+}
+
+
+
+
 
 int gui_init (void)
 {

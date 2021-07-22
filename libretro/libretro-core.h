@@ -47,29 +47,6 @@ extern retro_log_printf_t log_cb;
 extern long retro_ticks(void);
 extern int umain (int argc, TCHAR **argv);
 
-/* VKBD */
-#define VKBDX 11
-#define VKBDY 8
-#if 0
-#define POINTER_DEBUG
-#endif
-#ifdef POINTER_DEBUG
-extern int pointer_x;
-extern int pointer_y;
-#endif
-
-extern int vkey_pos_x;
-extern int vkey_pos_y;
-extern int vkey_pressed;
-extern int vkey_sticky;
-extern int vkey_sticky1;
-extern int vkey_sticky2;
-
-extern int vkbd_x_min;
-extern int vkbd_x_max;
-extern int vkbd_y_min;
-extern int vkbd_y_max;
-
 /* Statusbar */
 #define STATUSBAR_BOTTOM    0x01
 #define STATUSBAR_TOP       0x02
@@ -113,6 +90,21 @@ extern int vkbd_y_max;
 #define COLOR_BEIGE_32     ARGB888(255, 208, 208, 202)
 #define COLOR_BEIGEDARK_16       RGB565(154, 154, 150)
 #define COLOR_BEIGEDARK_32 ARGB888(255, 154, 154, 150)
+
+/* Functions */
+extern void emu_function(int function);
+enum EMU_FUNCTIONS
+{
+   EMU_VKBD = 0,
+   EMU_STATUSBAR,
+   EMU_JOYMOUSE,
+   EMU_RESET,
+   EMU_SAVE_DISK,
+   EMU_ASPECT_RATIO,
+   EMU_ZOOM_MODE,
+   EMU_TURBO_FIRE,
+   EMU_FUNCTION_COUNT
+};
 
 /* Configs */
 enum EMU_CONFIG {
@@ -181,5 +173,7 @@ extern int retrow;
 extern int retroh;
 extern int zoomed_width;
 extern int zoomed_height;
+extern unsigned int video_config;
+extern unsigned int video_config_geometry;
 
 #endif /* LIBRETRO_CORE_H */

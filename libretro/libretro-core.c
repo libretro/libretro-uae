@@ -162,7 +162,7 @@ struct zfile *retro_deserialize_file = NULL;
 static size_t save_state_file_size = 0;
 static unsigned save_state_grace = 2;
 
-unsigned int retro_devices[RETRO_DEVICES];
+unsigned int retro_devices[RETRO_DEVICES] = {0};
 extern int cd32_pad_enabled[NORMAL_JPORTS];
 extern void display_current_image(const char *image, bool inserted);
 
