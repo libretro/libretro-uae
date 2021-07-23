@@ -864,7 +864,7 @@ void draw_text_bmp(unsigned short *buffer, unsigned short int x, unsigned short 
       if (c == '\1')
       {
          xpos = 0;
-         y += charwidth_default;
+         y += charwidth_default * scaley;
          continue;
       }
 
@@ -920,7 +920,7 @@ void draw_text_bmp32(uint32_t *buffer, unsigned short int x, unsigned short int 
       if (c == '\1')
       {
          xpos = 0;
-         y += charwidth_default;
+         y += charwidth_default * scaley;
          continue;
       }
 
