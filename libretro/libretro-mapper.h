@@ -39,9 +39,29 @@
 #define JOYSTICK_FIRE                   -7
 #define JOYSTICK_2ND_FIRE               -8
 
+extern int16_t joypad_bits[RETRO_DEVICES];
 extern int mapper_keys[RETRO_MAPPER_LAST];
 extern void retro_poll_event();
 extern void retro_keyboard_event(bool, unsigned, uint32_t, uint16_t);
+extern bool retro_mousemode;
+
+extern unsigned int opt_cd32pad_options;
+extern unsigned int opt_retropad_options;
+extern bool opt_keyrah_keypad;
+
+extern void retro_key_up(int);
+extern void retro_key_down(int);
+extern void retro_mouse(int, int, int);
+extern void retro_mouse_button(int, int, int);
+extern void retro_joystick(int, int, int);
+extern void retro_joystick_analog(int, int, int);
+extern void retro_joystick_button(int, int, int);
+extern unsigned int retro_devices[RETRO_DEVICES];
+
+extern int jflag[4][16];
+extern int kjflag[2][16];
+extern int mflag[2][16];
+extern int aflag[2][16];
 
 typedef struct
 {

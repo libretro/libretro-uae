@@ -162,7 +162,7 @@ struct zfile *retro_deserialize_file = NULL;
 static size_t save_state_file_size = 0;
 static unsigned save_state_grace = 2;
 
-unsigned int retro_devices[RETRO_DEVICES];
+unsigned int retro_devices[RETRO_DEVICES] = {0};
 extern int cd32_pad_enabled[NORMAL_JPORTS];
 extern void display_current_image(const char *image, bool inserted);
 
@@ -4133,10 +4133,10 @@ static bool retro_create_config(void)
          char *zip_lastfile = {0};
          while ((zip_dirp = readdir(zip_dir)) != NULL)
          {
-            zip_lastfile = strdup(zip_dirp->d_name);
-
-            if (zip_lastfile[0] == '.' || strendswith(zip_lastfile, "m3u") || zip_mode > 1 || browsed_file[0] != '\0')
+            if (zip_dirp->d_name[0] == '.' || strendswith(zip_dirp->d_name, "m3u") || zip_mode > 1 || browsed_file[0] != '\0')
                continue;
+
+            zip_lastfile = strdup(zip_dirp->d_name);
 
             /* Multi file mode, generate playlist */
             if (dc_get_image_type(zip_lastfile) == DC_IMAGE_TYPE_FLOPPY ||
