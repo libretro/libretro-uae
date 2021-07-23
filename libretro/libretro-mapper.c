@@ -48,7 +48,7 @@ int jflag[4][16] = {0};
 int kjflag[2][16] = {0};
 int mflag[2][16] = {0};
 int aflag[2][16] = {0};
-static int mapper_flag[4][16] = {0};
+static int mapper_flag[RETRO_DEVICES][16] = {0};
 static unsigned int mouse_speed[2] = {0};
 
 extern bool request_update_av_info;
