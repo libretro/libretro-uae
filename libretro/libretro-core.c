@@ -4133,10 +4133,10 @@ static bool retro_create_config(void)
          char *zip_lastfile = {0};
          while ((zip_dirp = readdir(zip_dir)) != NULL)
          {
-            zip_lastfile = strdup(zip_dirp->d_name);
-
-            if (zip_lastfile[0] == '.' || strendswith(zip_lastfile, "m3u") || zip_mode > 1 || browsed_file[0] != '\0')
+            if (zip_dirp->d_name[0] == '.' || strendswith(zip_dirp->d_name, "m3u") || zip_mode > 1 || browsed_file[0] != '\0')
                continue;
+
+            zip_lastfile = strdup(zip_dirp->d_name);
 
             /* Multi file mode, generate playlist */
             if (dc_get_image_type(zip_lastfile) == DC_IMAGE_TYPE_FLOPPY ||
