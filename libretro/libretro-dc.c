@@ -37,7 +37,7 @@ extern char full_path[RETRO_PATH_MAX];
 extern void display_current_image(const char *image, bool inserted);
 
 /* Return the directory name of filename 'filename' */
-char* dirname_int(const char* filename)
+static char* dirname_int(const char* filename)
 {
    if (filename == NULL)
       return NULL;
@@ -55,29 +55,6 @@ char* dirname_int(const char* filename)
 #endif
 
    /* Not found */
-   return NULL;
-}
-
-static char* m3u_search_file(const char* basedir, const char* filename)
-{
-   /* Verify if this item is an absolute pathname (or the file is in working dir) */
-   if (path_is_valid(filename))
-      return strdup(filename);
-
-   /* If basedir was provided and path is relative, search relative to M3U file location */
-   if (basedir != NULL && !path_is_absolute(filename))
-   {
-      char* filepath = path_join_dup(basedir, filename);
-      filepath = local_to_utf8_string_alloc(filepath);
-
-      /* Verify if this item is a relative filename */
-      if (path_is_valid(filepath))
-         return strdup(filepath);
-
-      free(filepath);
-   }
-
-   /* File not found */
    return NULL;
 }
 
@@ -137,7 +114,7 @@ dc_storage* dc_create(void)
    return dc;
 }
 
-bool dc_add_file_int(dc_storage* dc, char* filename, char* label)
+bool dc_add_file_int(dc_storage* dc, const char* filename, const char* label)
 {
    /* Verify */
    if (dc == NULL)
@@ -151,8 +128,8 @@ bool dc_add_file_int(dc_storage* dc, char* filename, char* label)
    {
       /* Add the file */
       dc->count++;
-      dc->files[dc->count-1]  = filename;
-      dc->labels[dc->count-1] = label;
+      dc->files[dc->count-1]  = strdup(filename);
+      dc->labels[dc->count-1] = !string_is_empty(label) ? strdup(label) : NULL;
       dc->types[dc->count-1]  = dc_get_image_type(filename);
       return true;
    }
@@ -176,8 +153,7 @@ bool dc_add_file(dc_storage* dc, const char* filename, const char* label)
       if (!strcmp(dc->files[index], filename))
          return true;
 
-   return dc_add_file_int(dc, my_strdup(filename),
-         string_is_empty(label) ? NULL : my_strdup(label));
+   return dc_add_file_int(dc, filename, label);
 }
 
 bool dc_remove_file(dc_storage* dc, int index)
@@ -233,7 +209,7 @@ bool dc_replace_file(dc_storage* dc, int index, const char* filename)
          changed_prefs.floppyslots[i].df[0] = 0;
 
       char full_path_replace[RETRO_PATH_MAX] = {0};
-      strcpy(full_path_replace, (char*)filename);
+      strlcpy(full_path_replace, (char*)filename, sizeof(full_path_replace));
 
       /* Confs & hard drive images will replace full_path and requires restarting */
       if (strendswith(full_path_replace, "uae")
@@ -242,7 +218,7 @@ bool dc_replace_file(dc_storage* dc, int index, const char* filename)
        || strendswith(full_path_replace, "lha"))
       {
          dc_reset(dc);
-         strcpy(full_path, (char*)filename);
+         strlcpy(full_path, (char*)filename, sizeof(full_path));
          display_current_image(full_path, true);
          return false;
       }
@@ -301,7 +277,7 @@ bool dc_replace_file(dc_storage* dc, int index, const char* filename)
          {
             case 0: /* Extracted path */
                dc_reset(dc);
-               strcpy(full_path, (char*)filename);
+               strlcpy(full_path, (char*)filename, sizeof(full_path));
                display_current_image(full_path, true);
                return true;
                break;
@@ -360,7 +336,10 @@ bool dc_replace_file(dc_storage* dc, int index, const char* filename)
                   changed_prefs.floppyslots[i].dfxtype = 0; /* 0 = 3.5" DD */
                }
                else
+               {
                   log_cb(RETRO_LOG_WARN, "Too many disks for MultiDrive!\n");
+                  break;
+               }
             }
          }
       }
@@ -539,7 +518,8 @@ static bool dc_add_m3u_disk(
       const char* disk_file, const char* usr_disk_label,
       bool usr_disk_label_set)
 {
-   char *filename = NULL;
+   char file_path[RETRO_PATH_MAX]  = {0};
+   char file_label[RETRO_PATH_MAX] = {0};
 
    /* Verify */
    if (dc == NULL)
@@ -563,64 +543,58 @@ static bool dc_add_m3u_disk(
       }
    }
 
-   /* Search the file (absolute, relative to m3u) */
-   if ((filename = m3u_search_file(m3u_base_dir, disk_file)) != NULL)
+   /* Absolute or relative */
+   if (path_is_valid(disk_file))
+      snprintf(file_path, sizeof(file_path), "%s", disk_file);
+   else if (!string_is_empty(m3u_base_dir) && !path_is_absolute(disk_file))
+      path_join(file_path, m3u_base_dir, disk_file);
+
+   /* If a label is provided, use it */
+   if (usr_disk_label_set)
    {
-      char file_label[RETRO_PATH_MAX] = {0};
-      char full_path[RETRO_PATH_MAX] = {0};
-      snprintf(full_path, sizeof(full_path), "%s", filename);
-
-      /* If a label is provided, use it */
-      if (usr_disk_label_set)
-      {
-         /* Note that label may intentionally be left blank */
-         if (usr_disk_label && (*usr_disk_label != '\0'))
-            strncpy(file_label, usr_disk_label, sizeof(file_label) - 1);
-      }
-      else
-      {
-         /* Otherwise, use file name without extension as label */
-         const char *file_name = path_basename(filename);
-         if (!string_is_empty(browsed_file))
-         {
-            file_name = strdup(browsed_file);
-            file_name = path_basename(file_name);
-         }
-
-         if (!(!file_name || (*file_name == '\0')))
-            snprintf(file_label, sizeof(file_label),
-                  "%s", path_remove_extension((char*)file_name));
-      }
-
-      /* ZIP */
-      if (strendswith(full_path, "zip") || strendswith(full_path, "7z"))
-      {
-         char lastfile[RETRO_PATH_MAX];
-         char zip_basename[RETRO_PATH_MAX];
-         snprintf(zip_basename, sizeof(zip_basename), "%s", path_basename(full_path));
-         path_remove_extension(zip_basename);
-
-         path_mkdir(retro_temp_directory);
-         if (strendswith(full_path, "zip"))
-            zip_uncompress(full_path, retro_temp_directory, lastfile);
-         else if (strendswith(full_path, "7z"))
-            sevenzip_uncompress(full_path, retro_temp_directory, lastfile);
-
-         if (!string_is_empty(browsed_file))
-            snprintf(lastfile, sizeof(lastfile), "%s", browsed_file);
-         snprintf(full_path, RETRO_PATH_MAX, "%s%s%s", retro_temp_directory, DIR_SEP_STR, lastfile);
-      }
-
-      /* Add the file to the list */
-      if (path_is_valid(full_path))
-         dc_add_file(
-               dc, full_path,
-               (file_label[0] == '\0') ? NULL : file_label);
-
-      free(filename);
-      filename = NULL;
-      return true;
+      /* Note that label may intentionally be left blank */
+      if (usr_disk_label && (*usr_disk_label != '\0'))
+         strncpy(file_label, usr_disk_label, sizeof(file_label) - 1);
    }
+   else
+   {
+      /* Otherwise, use file name without extension as label */
+      char *basename = NULL;
+      if (!string_is_empty(browsed_file))
+         basename = strdup(browsed_file);
+      else
+         basename = strdup(path_basename(file_path));
+
+      if (!string_is_empty(basename))
+         snprintf(file_label, sizeof(file_label),
+               "%s", path_remove_extension((char*)basename));
+
+      free(basename);
+      basename = NULL;
+   }
+
+   /* ZIP */
+   if (strendswith(file_path, "zip") || strendswith(file_path, "7z"))
+   {
+      char lastfile[RETRO_PATH_MAX];
+      char zip_basename[RETRO_PATH_MAX];
+      snprintf(zip_basename, sizeof(zip_basename), "%s", path_basename(file_path));
+      path_remove_extension(zip_basename);
+
+      path_mkdir(retro_temp_directory);
+      if (strendswith(file_path, "zip"))
+         zip_uncompress(file_path, retro_temp_directory, lastfile);
+      else if (strendswith(file_path, "7z"))
+         sevenzip_uncompress(file_path, retro_temp_directory, lastfile);
+
+      if (!string_is_empty(browsed_file))
+         snprintf(lastfile, sizeof(lastfile), "%s", browsed_file);
+      snprintf(file_path, RETRO_PATH_MAX, "%s%s%s", retro_temp_directory, DIR_SEP_STR, lastfile);
+   }
+
+   /* Add the file to the list */
+   if (path_is_valid(file_path))
+      return dc_add_file(dc, file_path, file_label);
 
    return false;
 }
@@ -640,7 +614,10 @@ unsigned dc_inspect_m3u(const char* m3u_file)
       char* string = trimwhitespace(buffer);
       /* Remove label */
       char* token = strtok(string, "|");
-      ret = dc_get_image_type(string);
+      /* Ignore comments/tags */
+      ret = !strstartswith(string, COMMENT) ? dc_get_image_type(string) : 0;
+      if (ret == DC_IMAGE_TYPE_UNKNOWN)
+         ret = 0;
    }
 
    /* Close the file */
@@ -730,12 +707,12 @@ void dc_parse_m3u(dc_storage* dc, const char* m3u_file, const char* save_dir)
             label_set = true;
          }
          else
-            strncpy(file_name, string, sizeof(file_name) - 1);
+            snprintf(file_name, sizeof(file_name), "%s", string);
 
          dc_add_m3u_disk(
                dc, basedir,
                trimwhitespace(file_name),
-               (file_label[0] == '\0') ? NULL : trimwhitespace(file_label),
+               !string_is_empty(file_label) ? trimwhitespace(file_label) : NULL,
                label_set);
       }
    }

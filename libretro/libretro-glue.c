@@ -1445,18 +1445,6 @@ void path_join(char* out, const char* basedir, const char* filename)
    snprintf(out, RETRO_PATH_MAX, "%s%s%s", basedir, DIR_SEP_STR, filename);
 }
 
-char* path_join_dup(const char* basedir, const char* filename)
-{
-    size_t dirlen = strlen(basedir);
-    size_t seplen = strlen(DIR_SEP_STR);
-    size_t filelen = strlen(filename);
-    char* result = (char*)malloc(dirlen + seplen + filelen + 1);
-    strcpy(result, basedir);
-    strcpy(result + dirlen, DIR_SEP_STR);
-    strcpy(result + dirlen + seplen, filename);
-    return result;
-}
-
 /* Note: This function returns a pointer to a substring_left of the original string.
  * If the given string was allocated dynamically, the caller must not overwrite
  * that pointer with the returned value, since the original pointer must be

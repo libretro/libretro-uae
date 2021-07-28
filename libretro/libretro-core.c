@@ -4066,9 +4066,9 @@ static char* emu_config(int config)
 static void retro_config_preset(char *model)
 {
    int model_int = emu_config_int(model);
-   strcpy(uae_model, emu_config(model_int));
-   strcpy(uae_kickstart, emu_config_string("kickstart", model_int));
-   strcpy(uae_kickstart_ext, emu_config_string("kickstart_ext", model_int));
+   strlcpy(uae_model, emu_config(model_int), sizeof(uae_model));
+   strlcpy(uae_kickstart, emu_config_string("kickstart", model_int), sizeof(uae_kickstart));
+   strlcpy(uae_kickstart_ext, emu_config_string("kickstart_ext", model_int), sizeof(uae_kickstart_ext));
 }
 
 static bool retro_create_config(void)
@@ -4704,7 +4704,10 @@ static bool retro_create_config(void)
                         retro_config_append("floppy%dtype=%d\n", i, 0); /* 0 = 3.5" DD */
                      }
                      else
+                     {
                         log_cb(RETRO_LOG_WARN, "Too many disks for MultiDrive!\n");
+                        break;
+                     }
                   }
                }
             }
@@ -4953,7 +4956,7 @@ static bool retro_create_config(void)
 
    char *token;
    char uae_full_config_temp[4096];
-   strcpy(uae_full_config_temp, uae_full_config);
+   strlcpy(uae_full_config_temp, uae_full_config, sizeof(uae_full_config_temp));
    for (token = strtok(uae_full_config_temp, "\n"); token; token = strtok(NULL, "\n"))
    {
       log_cb(RETRO_LOG_DEBUG, "%s\n", token);
@@ -5899,7 +5902,7 @@ bool retro_load_game(const struct retro_game_info *info)
    if (info)
    {
       /* path_is_valid() requires raw path */
-      strcpy(full_path, info->path);
+      strlcpy(full_path, info->path, sizeof(full_path));
    }
 
    /* UAE config */

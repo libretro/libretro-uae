@@ -564,6 +564,7 @@ typedef uint8_t uint8;
 #endif
 
 #ifdef __LIBRETRO__
+#include <retro_endianness.h>
 #include "string/stdstring.h"
 #ifdef WIIU
 #include <features/features_cpu.h>
