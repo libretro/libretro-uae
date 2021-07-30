@@ -4895,6 +4895,24 @@ static bool retro_create_config(void)
 
             while (fgets(filebuf, sizeof(filebuf), configfile_custom))
             {
+               /* Skip Kickstart row if Kickstart is not automatic */
+               if (strcmp(opt_kickstart, "auto"))
+                  if ((strstr(filebuf, "kickstart_rom_file=") && filebuf[0] == 'k'))
+                     continue;
+
+               /* Skip Kickstart & model rows if model is not automatic */
+               if (strcmp(opt_model, "auto"))
+               {
+                  if ((strstr(filebuf, "kickstart_rom_file=") && filebuf[0] == 'k')
+                   || (strstr(filebuf, "cpu_model=") && filebuf[0] == 'c')
+                   || (strstr(filebuf, "chipset=") && filebuf[0] == 'c')
+                   || (strstr(filebuf, "chipset_compatible=") && filebuf[0] == 'c')
+                   || (strstr(filebuf, "chipmem_size=") && filebuf[0] == 'c')
+                   || (strstr(filebuf, "bogomem_size=") && filebuf[0] == 'b')
+                   || (strstr(filebuf, "fastmem_size=") && filebuf[0] == 'f'))
+                     continue;
+               }
+
                retro_config_append(filebuf);
 
                /* Parse diskimage & floppy rows */
