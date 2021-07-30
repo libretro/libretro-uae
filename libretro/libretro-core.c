@@ -48,6 +48,7 @@ char opt_model[10] = {0};
 char opt_model_fd[10] = {0};
 char opt_model_hd[10] = {0};
 char opt_model_cd[10] = {0};
+char opt_kickstart[20] = {0};
 bool opt_region_auto = true;
 bool opt_video_resolution_auto = false;
 bool opt_video_vresolution_auto = false;
@@ -296,17 +297,39 @@ void retro_set_environment(retro_environment_t cb)
          "'Automatic' defaults to 'A500' with floppy disks, 'A1200' with hard drives and 'CD32' with compact discs. 'Automatic' can be overridden with file path tags.\nCore restart required.",
          {
             { "auto", "Automatic" },
-            { "A500OG", "A500 (512KB Chip)" },
-            { "A500", "A500 (512KB Chip + 512KB Slow)" },
-            { "A500PLUS", "A500+ (1MB Chip)" },
-            { "A600", "A600 (2MB Chip + 8MB Fast)" },
-            { "A1200OG", "A1200 (2MB Chip)" },
-            { "A1200", "A1200 (2MB Chip + 8MB Fast)" },
-            { "A4030", "A4000/030 (2MB Chip + 8MB Fast)" },
-            { "A4040", "A4000/040 (2MB Chip + 8MB Fast)" },
-            { "CDTV", "CDTV (1MB Chip)" },
-            { "CD32", "CD32 (2MB Chip)" },
-            { "CD32FR", "CD32 (2MB Chip + 8MB Fast)" },
+            { "A500OG", "A500 (v1.2, 0.5M Chip)" },
+            { "A500", "A500 (v1.3, 0.5M Chip + 0.5M Slow)" },
+            { "A500PLUS", "A500+ (v2.04, 1M Chip)" },
+            { "A600", "A600 (v3.1, 2M Chip + 8M Fast)" },
+            { "A1200OG", "A1200 (v3.1, 2M Chip)" },
+            { "A1200", "A1200 (v3.1, 2M Chip + 8M Fast)" },
+            { "A2000OG", "A2000 (v1.2, 0.5M Chip + 0.5M Slow)" },
+            { "A2000", "A2000 (v3.1, 1M Chip)" },
+            { "A4030", "A4000/030 (v3.1, 2M Chip + 8M Fast)" },
+            { "A4040", "A4000/040 (v3.1, 2M Chip + 8M Fast)" },
+            { "CDTV", "CDTV (1M Chip)" },
+            { "CD32", "CD32 (2M Chip)" },
+            { "CD32FR", "CD32 (2M Chip + 8M Fast)" },
+            { NULL, NULL },
+         },
+         "auto"
+      },
+      {
+         "puae_kickstart",
+         "Model > Kickstart ROM",
+         "'Automatic' defaults to the most compatible version for the model. AROS is a built-in replacement with fair compatibility.\nCore restart required.",
+         {
+            { "auto", "Automatic" },
+            { "aros", "AROS" },
+            { "kick33180.A500", "v1.2 rev 33.180 (A500-A2000)" },
+            { "kick34005.A500", "v1.3 rev 34.005 (A500-A1000-A2000-CDTV)" },
+            { "kick37175.A500", "v2.04 rev 37.175 (A500+)" },
+            { "kick37350.A600", "v2.05 rev 37.350 (A600)" },
+            { "kick40063.A600", "v3.1 rev 40.063 (A500-A600-A2000)" },
+            { "kick39106.A1200", "v3.0 rev 39.106 (A1200)" },
+            { "kick40068.A1200", "v3.1 rev 40.068 (A1200)" },
+            { "kick39106.A4000", "v3.0 rev 39.106 (A4000)" },
+            { "kick40068.A4000", "v3.1 rev 40.068 (A4000)" },
             { NULL, NULL },
          },
          "auto"
@@ -327,14 +350,16 @@ void retro_set_environment(retro_environment_t cb)
          "Model > Automatic Floppy",
          "Default model when floppies are launched with 'Automatic' model.\nCore restart required.",
          {
-            { "A500OG", "A500 (512KB Chip)" },
-            { "A500", "A500 (512KB Chip + 512KB Slow)" },
-            { "A500PLUS", "A500+ (1MB Chip)" },
-            { "A600", "A600 (2MB Chip + 8MB Fast)" },
-            { "A1200OG", "A1200 (2MB Chip)" },
-            { "A1200", "A1200 (2MB Chip + 8MB Fast)" },
-            { "A4030", "A4000/030 (2MB Chip + 8MB Fast)" },
-            { "A4040", "A4000/040 (2MB Chip + 8MB Fast)" },
+            { "A500OG", "A500 (v1.2, 0.5M Chip)" },
+            { "A500", "A500 (v1.3, 0.5M Chip + 0.5M Slow)" },
+            { "A500PLUS", "A500+ (v2.04, 1M Chip)" },
+            { "A600", "A600 (v3.1, 2M Chip + 8M Fast)" },
+            { "A1200OG", "A1200 (v3.1, 2M Chip)" },
+            { "A1200", "A1200 (v3.1, 2M Chip + 8M Fast)" },
+            { "A2000OG", "A2000 (v1.2, 0.5M Chip + 0.5M Slow)" },
+            { "A2000", "A2000 (v3.1, 1M Chip)" },
+            { "A4030", "A4000/030 (v3.1, 2M Chip + 8M Fast)" },
+            { "A4040", "A4000/040 (v3.1, 2M Chip + 8M Fast)" },
             { NULL, NULL },
          },
          "A500"
@@ -344,11 +369,12 @@ void retro_set_environment(retro_environment_t cb)
          "Model > Automatic HD",
          "Default model when HD interface is used with 'Automatic' model. Affects WHDLoad installs and other hard drive images.\nCore restart required.",
          {
-            { "A600", "A600 (2MB Chip + 8MB Fast)" },
-            { "A1200OG", "A1200 (2MB Chip)" },
-            { "A1200", "A1200 (2MB Chip + 8MB Fast)" },
-            { "A4030", "A4000/030 (2MB Chip + 8MB Fast)" },
-            { "A4040", "A4000/040 (2MB Chip + 8MB Fast)" },
+            { "A600", "A600 (v3.1, 2M Chip + 8M Fast)" },
+            { "A1200OG", "A1200 (v3.1, 2M Chip)" },
+            { "A1200", "A1200 (v3.1, 2M Chip + 8M Fast)" },
+            { "A2000", "A2000 (v3.1, 1M Chip)" },
+            { "A4030", "A4000/030 (v3.1, 2M Chip + 8M Fast)" },
+            { "A4040", "A4000/040 (v3.1, 2M Chip + 8M Fast)" },
             { NULL, NULL },
          },
          "A1200"
@@ -358,9 +384,9 @@ void retro_set_environment(retro_environment_t cb)
          "Model > Automatic CD",
          "Default model when compact discs are launched with 'Automatic' model.\nCore restart required.",
          {
-            { "CDTV", "CDTV (1MB Chip)" },
-            { "CD32", "CD32 (2MB Chip)" },
-            { "CD32FR", "CD32 (2MB Chip + 8MB Fast)" },
+            { "CDTV", "CDTV (1M Chip)" },
+            { "CD32", "CD32 (2M Chip)" },
+            { "CD32FR", "CD32 (2M Chip + 8M Fast)" },
             { NULL, NULL },
          },
          "CD32"
@@ -1600,28 +1626,35 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      _tcscpy(opt_model, var.value);
+      strlcpy(opt_model, var.value, sizeof(opt_model));
    }
 
    var.key = "puae_model_fd";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      _tcscpy(opt_model_fd, var.value);
+      strlcpy(opt_model_fd, var.value, sizeof(opt_model_fd));
    }
 
    var.key = "puae_model_hd";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      _tcscpy(opt_model_hd, var.value);
+      strlcpy(opt_model_hd, var.value, sizeof(opt_model_hd));
    }
 
    var.key = "puae_model_cd";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      _tcscpy(opt_model_cd, var.value);
+      strlcpy(opt_model_cd, var.value, sizeof(opt_model_cd));
+   }
+
+   var.key = "puae_kickstart";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      strlcpy(opt_kickstart, var.value, sizeof(opt_kickstart));
    }
 
    var.key = "puae_video_standard";
@@ -2114,7 +2147,7 @@ static void update_variables(void)
             else
             {
                changed_prefs.floppyslots[i].dfxclick = -1;
-               _tcscpy(changed_prefs.floppyslots[i].dfxclickexternal, var.value);
+               strcpy(changed_prefs.floppyslots[i].dfxclickexternal, var.value);
             }
          }
       }
@@ -3630,10 +3663,19 @@ static void retro_config_boot_hd(void)
 static void retro_config_kickstart(void)
 {
    char kickstart[RETRO_PATH_MAX];
+
+   /* Forced Kickstart */
+   if (strcmp(opt_kickstart, "auto"))
+      strlcpy(uae_kickstart, opt_kickstart, sizeof(uae_kickstart));
+
    path_join(kickstart, retro_system_directory, uae_kickstart);
 
    /* Main Kickstart */
-   if (!path_is_valid(kickstart))
+   if (!strcmp(opt_kickstart, "aros"))
+   {
+      log_cb(RETRO_LOG_INFO, "Kickstart: '%s'\n", "AROS");
+   }
+   else if (!path_is_valid(kickstart))
    {
       /* Kickstart ROM not found */
       log_cb(RETRO_LOG_ERROR, "Kickstart ROM '%s' not found!\n", kickstart);
@@ -3642,7 +3684,10 @@ static void retro_config_kickstart(void)
       retro_message = true;
    }
    else
+   {
+      log_cb(RETRO_LOG_INFO, "Kickstart: '%s'\n", uae_kickstart);
       retro_config_append("kickstart_rom_file=%s\n", kickstart);
+   }
 
    /* Extended KS + NVRAM */
    if (!string_is_empty(uae_kickstart_ext))
@@ -3655,7 +3700,7 @@ static void retro_config_kickstart(void)
       stat(kickstart, &kickstart_st);
 
       /* Verify extended ROM if external */
-      if (kickstart_st.st_size <= 524288)
+      if (kickstart_st.st_size <= ROM_SIZE_512)
       {
          if (!path_is_valid(kickstart_ext))
          {
@@ -3666,7 +3711,10 @@ static void retro_config_kickstart(void)
             retro_message = true;
          }
          else
+         {
+            log_cb(RETRO_LOG_INFO, "+Extended: '%s'\n", uae_kickstart_ext);
             retro_config_append("kickstart_ext_rom_file=%s\n", kickstart_ext);
+         }
       }
 
       /* NVRAM */
@@ -3677,7 +3725,7 @@ static void retro_config_kickstart(void)
       {
          snprintf(flash_filename, sizeof(flash_filename), "%s.nvr", LIBRETRO_PUAE_PREFIX);
          /* CDTV suffix */
-         if (kickstart_st.st_size == 262144)
+         if (kickstart_st.st_size == ROM_SIZE_256)
             snprintf(flash_filename, sizeof(flash_filename), "%s_cdtv.nvr", LIBRETRO_PUAE_PREFIX);
       }
       /* Per game */
@@ -3689,7 +3737,7 @@ static void retro_config_kickstart(void)
          snprintf(flash_filename, sizeof(flash_filename), "%s.nvr", flash_filebase);
       }
       path_join(flash_filepath, retro_save_directory, flash_filename);
-      log_cb(RETRO_LOG_INFO, "Using NVRAM: '%s'\n", flash_filepath);
+      log_cb(RETRO_LOG_INFO, "NVRAM: '%s'\n", flash_filepath);
       retro_config_append("flash_file=%s\n", flash_filepath);
    }
 }
@@ -3787,10 +3835,10 @@ static void whdload_kscopy(void)
 
    unsigned int ks_size[4] =
    {
-      262144,
-      262144,
-      524288,
-      524288
+      ROM_SIZE_256,
+      ROM_SIZE_256,
+      ROM_SIZE_512,
+      ROM_SIZE_512
    };
 
    struct stat ks_stat;
@@ -3876,6 +3924,8 @@ static char* emu_config_string(char *mode, int config)
          case EMU_CONFIG_A600:      return "A600";
          case EMU_CONFIG_A1200:     return "A1200";
          case EMU_CONFIG_A1200OG:   return "A1200OG";
+         case EMU_CONFIG_A2000:     return "A2000";
+         case EMU_CONFIG_A2000OG:   return "A2000OG";
          case EMU_CONFIG_A4030:     return "A4030";
          case EMU_CONFIG_A4040:     return "A4040";
          case EMU_CONFIG_CDTV:      return "CDTV";
@@ -3887,15 +3937,17 @@ static char* emu_config_string(char *mode, int config)
    {
       switch (config)
       {
-         case EMU_CONFIG_A500:      return A500_ROM;
-         case EMU_CONFIG_A500OG:    return A500_ROM;
-         case EMU_CONFIG_A500PLUS:  return A500KS2_ROM;
-         case EMU_CONFIG_A600:      return A600_ROM;
-         case EMU_CONFIG_A1200:     return A1200_ROM;
-         case EMU_CONFIG_A1200OG:   return A1200_ROM;
-         case EMU_CONFIG_A4030:     return A4000_ROM;
-         case EMU_CONFIG_A4040:     return A4000_ROM;
-         case EMU_CONFIG_CDTV:      return A500_ROM;
+         case EMU_CONFIG_A500:      return A500_KS13_ROM;
+         case EMU_CONFIG_A500OG:    return A500_KS12_ROM;
+         case EMU_CONFIG_A500PLUS:  return A500_KS204_ROM;
+         case EMU_CONFIG_A600:      return A600_KS31_ROM;
+         case EMU_CONFIG_A1200:     return A1200_KS31_ROM;
+         case EMU_CONFIG_A1200OG:   return A1200_KS31_ROM;
+         case EMU_CONFIG_A2000:     return A600_KS31_ROM;
+         case EMU_CONFIG_A2000OG:   return A500_KS12_ROM;
+         case EMU_CONFIG_A4030:     return A4000_KS31_ROM;
+         case EMU_CONFIG_A4040:     return A4000_KS31_ROM;
+         case EMU_CONFIG_CDTV:      return A500_KS13_ROM;
          case EMU_CONFIG_CD32:      return CD32_ROM;
          case EMU_CONFIG_CD32FR:    return CD32_ROM;
       }
@@ -3904,17 +3956,10 @@ static char* emu_config_string(char *mode, int config)
    {
       switch (config)
       {
-         case EMU_CONFIG_A500:      return "";
-         case EMU_CONFIG_A500OG:    return "";
-         case EMU_CONFIG_A500PLUS:  return "";
-         case EMU_CONFIG_A600:      return "";
-         case EMU_CONFIG_A1200:     return "";
-         case EMU_CONFIG_A1200OG:   return "";
-         case EMU_CONFIG_A4030:     return "";
-         case EMU_CONFIG_A4040:     return "";
          case EMU_CONFIG_CDTV:      return CDTV_ROM;
          case EMU_CONFIG_CD32:      return CD32_ROM_EXT;
          case EMU_CONFIG_CD32FR:    return CD32_ROM_EXT;
+         default:                   return "";
       }
    }
    return "";
@@ -3922,17 +3967,19 @@ static char* emu_config_string(char *mode, int config)
 
 static int emu_config_int(char *model)
 {
-   if      (!strcmp(model, "A500"))     return EMU_CONFIG_A500;
-   else if (!strcmp(model, "A500OG"))   return EMU_CONFIG_A500OG;
-   else if (!strcmp(model, "A500PLUS")) return EMU_CONFIG_A500PLUS;
-   else if (!strcmp(model, "A600"))     return EMU_CONFIG_A600;
-   else if (!strcmp(model, "A1200"))    return EMU_CONFIG_A1200;
-   else if (!strcmp(model, "A1200OG"))  return EMU_CONFIG_A1200OG;
-   else if (!strcmp(model, "A4030"))    return EMU_CONFIG_A4030;
-   else if (!strcmp(model, "A4040"))    return EMU_CONFIG_A4040;
-   else if (!strcmp(model, "CDTV"))     return EMU_CONFIG_CDTV;
-   else if (!strcmp(model, "CD32"))     return EMU_CONFIG_CD32;
-   else if (!strcmp(model, "CD32FR"))   return EMU_CONFIG_CD32FR;
+   if      (!strcmp(model, "A500"))      return EMU_CONFIG_A500;
+   else if (!strcmp(model, "A500OG"))    return EMU_CONFIG_A500OG;
+   else if (!strcmp(model, "A500PLUS"))  return EMU_CONFIG_A500PLUS;
+   else if (!strcmp(model, "A600"))      return EMU_CONFIG_A600;
+   else if (!strcmp(model, "A1200"))     return EMU_CONFIG_A1200;
+   else if (!strcmp(model, "A1200OG"))   return EMU_CONFIG_A1200OG;
+   else if (!strcmp(model, "A2000"))     return EMU_CONFIG_A2000;
+   else if (!strcmp(model, "A2000OG"))   return EMU_CONFIG_A2000OG;
+   else if (!strcmp(model, "A4030"))     return EMU_CONFIG_A4030;
+   else if (!strcmp(model, "A4040"))     return EMU_CONFIG_A4040;
+   else if (!strcmp(model, "CDTV"))      return EMU_CONFIG_CDTV;
+   else if (!strcmp(model, "CD32"))      return EMU_CONFIG_CD32;
+   else if (!strcmp(model, "CD32FR"))    return EMU_CONFIG_CD32FR;
    else return -1;
 }
 
@@ -4012,6 +4059,22 @@ static char* emu_config(int config)
          "chipset_compatible=A1200\n"
          "chipmem_size=4\n"
          "bogomem_size=0\n"
+         "fastmem_size=0\n";
+
+      case EMU_CONFIG_A2000: return
+         "cpu_model=68000\n"
+         "chipset=ecs\n"
+         "chipset_compatible=A2000\n"
+         "chipmem_size=2\n"
+         "bogomem_size=0\n"
+         "fastmem_size=0\n";
+
+      case EMU_CONFIG_A2000OG: return
+         "cpu_model=68000\n"
+         "chipset=ocs\n"
+         "chipset_compatible=A2000\n"
+         "chipmem_size=1\n"
+         "bogomem_size=2\n"
          "fastmem_size=0\n";
 
       case EMU_CONFIG_A4030: return
@@ -4223,49 +4286,41 @@ static bool retro_create_config(void)
             if (strstr(full_path, "(A4030)") || strstr(full_path, "(030)"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(A4030)' or '(030)' in: '%s'\n", full_path);
-               log_cb(RETRO_LOG_INFO, "Booting A4000/030: '%s'\n", A4000_ROM);
                retro_config_preset("A4030");
             }
             else if (strstr(full_path, "(A4040)") || strstr(full_path, "(040)"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(A4040)' or '(040)' in: '%s'\n", full_path);
-               log_cb(RETRO_LOG_INFO, "Booting A4000/040: '%s'\n", A4000_ROM);
                retro_config_preset("A4040");
             }
             else if (strstr(full_path, "(A1200OG)") || strstr(full_path, "(A1200NF)"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(A1200OG)' or '(A1200NF)' in: '%s'\n", full_path);
-               log_cb(RETRO_LOG_INFO, "Booting A1200 NoFast: '%s'\n", A1200_ROM);
                retro_config_preset("A1200OG");
             }
             else if (strstr(full_path, "(A1200)") || strstr(full_path, "AGA") || strstr(full_path, "CD32") || strstr(full_path, "AmigaCD"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(A1200)', 'AGA', 'CD32', or 'AmigaCD' in: '%s'\n", full_path);
-               log_cb(RETRO_LOG_INFO, "Booting A1200: '%s'\n", A1200_ROM);
                retro_config_preset("A1200");
             }
             else if (strstr(full_path, "(A600)") || strstr(full_path, "ECS"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(A600)' or 'ECS' in: '%s'\n", full_path);
-               log_cb(RETRO_LOG_INFO, "Booting A600: '%s'\n", A600_ROM);
                retro_config_preset("A600");
             }
             else if (strstr(full_path, "(A500+)") || strstr(full_path, "(A500PLUS)"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(A500+)' or '(A500PLUS)' in: '%s'\n", full_path);
-               log_cb(RETRO_LOG_INFO, "Booting A500+: '%s'\n", A500KS2_ROM);
                retro_config_preset("A500PLUS");
             }
             else if (strstr(full_path, "(A500OG)") || strstr(full_path, "(512K)"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(A500OG)' or '(512K)' in: '%s'\n", full_path);
-               log_cb(RETRO_LOG_INFO, "Booting A500 512K: '%s'\n", A500_ROM);
                retro_config_preset("A500OG");
             }
             else if (strstr(full_path, "(A500)") || strstr(full_path, "OCS"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(A500)' or 'OCS' in: '%s'\n", full_path);
-               log_cb(RETRO_LOG_INFO, "Booting A500: '%s'\n", A500_ROM);
                retro_config_preset("A500");
             }
             else
@@ -4280,12 +4335,8 @@ static bool retro_create_config(void)
 
                /* No model specified */
                log_cb(RETRO_LOG_INFO, "No model specified in: '%s'\n", full_path);
-               log_cb(RETRO_LOG_INFO, "Booting default model: '%s'\n", uae_kickstart);
             }
          }
-         else
-            /* Core option model */
-            log_cb(RETRO_LOG_INFO, "Booting model: '%s'\n", uae_kickstart);
 
          /* Write model preset */
          retro_config_append(uae_model);
@@ -4734,19 +4785,16 @@ static bool retro_create_config(void)
             if (strstr(full_path, "(CD32FR)") || strstr(full_path, "FastRAM"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(CD32FR)' or 'FastRAM' in: '%s'\n", full_path);
-               log_cb(RETRO_LOG_INFO, "Booting CD32 FastRAM: '%s'\n", CD32_ROM);
                retro_config_preset("CD32FR");
             }
             else if (strstr(full_path, "(CD32)") || strstr(full_path, "(CD32NF)"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(CD32)' or '(CD32NF)' in: '%s'\n", full_path);
-               log_cb(RETRO_LOG_INFO, "Booting CD32: '%s'\n", CD32_ROM);
                retro_config_preset("CD32");
             }
             else if (strstr(full_path, "CDTV"))
             {
                log_cb(RETRO_LOG_INFO, "Found 'CDTV' in: '%s'\n", full_path);
-               log_cb(RETRO_LOG_INFO, "Booting CDTV: '%s'\n", CDTV_ROM);
                retro_config_preset("CDTV");
             }
             else
@@ -4759,12 +4807,8 @@ static bool retro_create_config(void)
 
                /* No model specified */
                log_cb(RETRO_LOG_INFO, "No model specified in: '%s'\n", full_path);
-               log_cb(RETRO_LOG_INFO, "Booting default model: '%s'\n", uae_kickstart);
             }
          }
-         else
-            /* Core option model */
-            log_cb(RETRO_LOG_INFO, "Booting model: '%s'\n", uae_kickstart);
 
          /* Write model preset */
          retro_config_append(uae_model);
@@ -4907,9 +4951,6 @@ static bool retro_create_config(void)
    /* Empty content */
    else
    {
-      /* No model specified */
-      log_cb(RETRO_LOG_INFO, "Booting model: '%s'\n", uae_kickstart);
-
       /* Write model preset */
       retro_config_append(uae_model);
 

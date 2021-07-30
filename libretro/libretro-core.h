@@ -114,6 +114,8 @@ enum EMU_CONFIG {
    EMU_CONFIG_A600,
    EMU_CONFIG_A1200,
    EMU_CONFIG_A1200OG,
+   EMU_CONFIG_A2000,
+   EMU_CONFIG_A2000OG,
    EMU_CONFIG_A4030,
    EMU_CONFIG_A4040,
    EMU_CONFIG_CDTV,
@@ -123,11 +125,15 @@ enum EMU_CONFIG {
 };
 
 /* Kickstarts */
-#define A500_ROM                "kick34005.A500"
-#define A500KS2_ROM             "kick37175.A500"
-#define A600_ROM                "kick40063.A600"
-#define A1200_ROM               "kick40068.A1200"
-#define A4000_ROM               "kick40068.A4000"
+#define A500_KS12_ROM           "kick33180.A500"
+#define A500_KS13_ROM           "kick34005.A500"
+#define A500_KS204_ROM          "kick37175.A500"
+#define A600_KS205_ROM          "kick37350.A600"
+#define A600_KS31_ROM           "kick40063.A600"
+#define A1200_KS30_ROM          "kick39106.A1200"
+#define A1200_KS31_ROM          "kick40068.A1200"
+#define A4000_KS30_ROM          "kick39106.A4000"
+#define A4000_KS31_ROM          "kick40068.A4000"
 #define CDTV_ROM                "kick34005.CDTV"
 #define CD32_ROM                "kick40060.CD32"
 #define CD32_ROM_EXT            "kick40060.CD32.ext"
