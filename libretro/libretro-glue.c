@@ -330,7 +330,7 @@ void print_statusbar(void)
    mem_size += (float)(currprefs.bogomem_size / 0x40000) / 4;
    mem_size += (float)(currprefs.fastmem_size / 0x100000);
    if (TEXT_X_MEMORY > 0)
-      snprintf(MEMORY, sizeof(MEMORY), (mem_size < 1) ? "%0.1fM" : "%1.0fM", mem_size);
+      snprintf(MEMORY, sizeof(MEMORY), (mem_size < 1) ? "%0.1fM" : "%2.0fM", mem_size);
    switch (currprefs.cs_compatible)
    {
       case CP_A500:
