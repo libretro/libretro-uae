@@ -48,6 +48,7 @@ char opt_model[10] = {0};
 char opt_model_fd[10] = {0};
 char opt_model_hd[10] = {0};
 char opt_model_cd[10] = {0};
+char opt_kickstart[20] = {0};
 bool opt_region_auto = true;
 bool opt_video_resolution_auto = false;
 bool opt_video_vresolution_auto = false;
@@ -188,6 +189,7 @@ dc_storage *dc = NULL;
 
 /* Configs */
 static char uae_model[256] = {0};
+static char uae_preset[20] = {0};
 static char uae_kickstart[RETRO_PATH_MAX] = {0};
 static char uae_kickstart_ext[RETRO_PATH_MAX] = {0};
 static char uae_config[2048] = {0};
@@ -296,17 +298,39 @@ void retro_set_environment(retro_environment_t cb)
          "'Automatic' defaults to 'A500' with floppy disks, 'A1200' with hard drives and 'CD32' with compact discs. 'Automatic' can be overridden with file path tags.\nCore restart required.",
          {
             { "auto", "Automatic" },
-            { "A500OG", "A500 (512KB Chip)" },
-            { "A500", "A500 (512KB Chip + 512KB Slow)" },
-            { "A500PLUS", "A500+ (1MB Chip)" },
-            { "A600", "A600 (2MB Chip + 8MB Fast)" },
-            { "A1200OG", "A1200 (2MB Chip)" },
-            { "A1200", "A1200 (2MB Chip + 8MB Fast)" },
-            { "A4030", "A4000/030 (2MB Chip + 8MB Fast)" },
-            { "A4040", "A4000/040 (2MB Chip + 8MB Fast)" },
-            { "CDTV", "CDTV (1MB Chip)" },
-            { "CD32", "CD32 (2MB Chip)" },
-            { "CD32FR", "CD32 (2MB Chip + 8MB Fast)" },
+            { "A500OG", "A500 (v1.2, 0.5M Chip)" },
+            { "A500", "A500 (v1.3, 0.5M Chip + 0.5M Slow)" },
+            { "A500PLUS", "A500+ (v2.04, 1M Chip)" },
+            { "A600", "A600 (v3.1, 2M Chip + 8M Fast)" },
+            { "A1200OG", "A1200 (v3.1, 2M Chip)" },
+            { "A1200", "A1200 (v3.1, 2M Chip + 8M Fast)" },
+            { "A2000OG", "A2000 (v1.2, 0.5M Chip + 0.5M Slow)" },
+            { "A2000", "A2000 (v3.1, 1M Chip)" },
+            { "A4030", "A4000/030 (v3.1, 2M Chip + 8M Fast)" },
+            { "A4040", "A4000/040 (v3.1, 2M Chip + 8M Fast)" },
+            { "CDTV", "CDTV (1M Chip)" },
+            { "CD32", "CD32 (2M Chip)" },
+            { "CD32FR", "CD32 (2M Chip + 8M Fast)" },
+            { NULL, NULL },
+         },
+         "auto"
+      },
+      {
+         "puae_kickstart",
+         "Model > Kickstart ROM",
+         "'Automatic' defaults to the most compatible version for the model. AROS is a built-in replacement with fair compatibility.\nCore restart required.",
+         {
+            { "auto", "Automatic" },
+            { "aros", "AROS" },
+            { "kick33180.A500", "v1.2 rev 33.180 (A500-A2000)" },
+            { "kick34005.A500", "v1.3 rev 34.005 (A500-A1000-A2000-CDTV)" },
+            { "kick37175.A500", "v2.04 rev 37.175 (A500+)" },
+            { "kick37350.A600", "v2.05 rev 37.350 (A600)" },
+            { "kick40063.A600", "v3.1 rev 40.063 (A500-A600-A2000)" },
+            { "kick39106.A1200", "v3.0 rev 39.106 (A1200)" },
+            { "kick40068.A1200", "v3.1 rev 40.068 (A1200)" },
+            { "kick39106.A4000", "v3.0 rev 39.106 (A4000)" },
+            { "kick40068.A4000", "v3.1 rev 40.068 (A4000)" },
             { NULL, NULL },
          },
          "auto"
@@ -327,14 +351,16 @@ void retro_set_environment(retro_environment_t cb)
          "Model > Automatic Floppy",
          "Default model when floppies are launched with 'Automatic' model.\nCore restart required.",
          {
-            { "A500OG", "A500 (512KB Chip)" },
-            { "A500", "A500 (512KB Chip + 512KB Slow)" },
-            { "A500PLUS", "A500+ (1MB Chip)" },
-            { "A600", "A600 (2MB Chip + 8MB Fast)" },
-            { "A1200OG", "A1200 (2MB Chip)" },
-            { "A1200", "A1200 (2MB Chip + 8MB Fast)" },
-            { "A4030", "A4000/030 (2MB Chip + 8MB Fast)" },
-            { "A4040", "A4000/040 (2MB Chip + 8MB Fast)" },
+            { "A500OG", "A500 (v1.2, 0.5M Chip)" },
+            { "A500", "A500 (v1.3, 0.5M Chip + 0.5M Slow)" },
+            { "A500PLUS", "A500+ (v2.04, 1M Chip)" },
+            { "A600", "A600 (v3.1, 2M Chip + 8M Fast)" },
+            { "A1200OG", "A1200 (v3.1, 2M Chip)" },
+            { "A1200", "A1200 (v3.1, 2M Chip + 8M Fast)" },
+            { "A2000OG", "A2000 (v1.2, 0.5M Chip + 0.5M Slow)" },
+            { "A2000", "A2000 (v3.1, 1M Chip)" },
+            { "A4030", "A4000/030 (v3.1, 2M Chip + 8M Fast)" },
+            { "A4040", "A4000/040 (v3.1, 2M Chip + 8M Fast)" },
             { NULL, NULL },
          },
          "A500"
@@ -344,11 +370,12 @@ void retro_set_environment(retro_environment_t cb)
          "Model > Automatic HD",
          "Default model when HD interface is used with 'Automatic' model. Affects WHDLoad installs and other hard drive images.\nCore restart required.",
          {
-            { "A600", "A600 (2MB Chip + 8MB Fast)" },
-            { "A1200OG", "A1200 (2MB Chip)" },
-            { "A1200", "A1200 (2MB Chip + 8MB Fast)" },
-            { "A4030", "A4000/030 (2MB Chip + 8MB Fast)" },
-            { "A4040", "A4000/040 (2MB Chip + 8MB Fast)" },
+            { "A600", "A600 (v3.1, 2M Chip + 8M Fast)" },
+            { "A1200OG", "A1200 (v3.1, 2M Chip)" },
+            { "A1200", "A1200 (v3.1, 2M Chip + 8M Fast)" },
+            { "A2000", "A2000 (v3.1, 1M Chip)" },
+            { "A4030", "A4000/030 (v3.1, 2M Chip + 8M Fast)" },
+            { "A4040", "A4000/040 (v3.1, 2M Chip + 8M Fast)" },
             { NULL, NULL },
          },
          "A1200"
@@ -358,9 +385,9 @@ void retro_set_environment(retro_environment_t cb)
          "Model > Automatic CD",
          "Default model when compact discs are launched with 'Automatic' model.\nCore restart required.",
          {
-            { "CDTV", "CDTV (1MB Chip)" },
-            { "CD32", "CD32 (2MB Chip)" },
-            { "CD32FR", "CD32 (2MB Chip + 8MB Fast)" },
+            { "CDTV", "CDTV (1M Chip)" },
+            { "CD32", "CD32 (2M Chip)" },
+            { "CD32FR", "CD32 (2M Chip + 8M Fast)" },
             { NULL, NULL },
          },
          "CD32"
@@ -1600,28 +1627,35 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      _tcscpy(opt_model, var.value);
+      strlcpy(opt_model, var.value, sizeof(opt_model));
    }
 
    var.key = "puae_model_fd";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      _tcscpy(opt_model_fd, var.value);
+      strlcpy(opt_model_fd, var.value, sizeof(opt_model_fd));
    }
 
    var.key = "puae_model_hd";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      _tcscpy(opt_model_hd, var.value);
+      strlcpy(opt_model_hd, var.value, sizeof(opt_model_hd));
    }
 
    var.key = "puae_model_cd";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      _tcscpy(opt_model_cd, var.value);
+      strlcpy(opt_model_cd, var.value, sizeof(opt_model_cd));
+   }
+
+   var.key = "puae_kickstart";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      strlcpy(opt_kickstart, var.value, sizeof(opt_kickstart));
    }
 
    var.key = "puae_video_standard";
@@ -2114,7 +2148,7 @@ static void update_variables(void)
             else
             {
                changed_prefs.floppyslots[i].dfxclick = -1;
-               _tcscpy(changed_prefs.floppyslots[i].dfxclickexternal, var.value);
+               strcpy(changed_prefs.floppyslots[i].dfxclickexternal, var.value);
             }
          }
       }
@@ -3592,7 +3626,7 @@ static void retro_config_boot_hd(void)
       path_join(boothd_hdf, retro_save_directory, LIBRETRO_PUAE_PREFIX ".hdf");
       if (!path_is_valid(boothd_hdf))
       {
-         log_cb(RETRO_LOG_INFO, "Boot HD image file '%s' not found, attempting to create one\n", boothd_hdf);
+         log_cb(RETRO_LOG_INFO, "Boot HD image file '%s' not found, attempting to create..\n", boothd_hdf);
          if (make_hdf(boothd_hdf, boothd_size, label))
             log_cb(RETRO_LOG_ERROR, "Unable to create Boot HD image: '%s'\n", boothd_hdf);
       }
@@ -3610,7 +3644,7 @@ static void retro_config_boot_hd(void)
 
       if (!path_is_directory(boothd_path))
       {
-         log_cb(RETRO_LOG_INFO, "Boot HD image directory '%s' not found, attempting to create one\n", boothd_path);
+         log_cb(RETRO_LOG_INFO, "Boot HD image directory '%s' not found, attempting to create..\n", boothd_path);
          path_mkdir(boothd_path);
       }
       if (path_is_directory(boothd_path))
@@ -3630,19 +3664,76 @@ static void retro_config_boot_hd(void)
 static void retro_config_kickstart(void)
 {
    char kickstart[RETRO_PATH_MAX];
+   char tmp[RETRO_PATH_MAX];
+   bool valid = false;
+
+   /* Wrong place for logging model but still the best place */
+   log_cb(RETRO_LOG_INFO, "Model: '%s'\n", uae_preset);
+
+   /* Forced Kickstart */
+   if (strcmp(opt_kickstart, "auto"))
+      strlcpy(uae_kickstart, opt_kickstart, sizeof(uae_kickstart));
+
+   /* Ensure relative path if custom parsed */
+   if (strstr(uae_kickstart, DIR_SEP_STR))
+   {
+      snprintf(tmp, sizeof(tmp), "%s", path_basename(uae_kickstart));
+      strlcpy(uae_kickstart, tmp, sizeof(uae_kickstart));
+   }
+
+   /* Final absolute path */
    path_join(kickstart, retro_system_directory, uae_kickstart);
 
-   /* Main Kickstart */
-   if (!path_is_valid(kickstart))
+   /* No path validations for AROS */
+   if (!strcmp(opt_kickstart, "aros"))
+      valid = true;
+   else
+      valid = path_is_valid(kickstart);
+
+   if (!valid)
    {
-      /* Kickstart ROM not found */
-      log_cb(RETRO_LOG_ERROR, "Kickstart ROM '%s' not found!\n", kickstart);
-      snprintf(retro_message_msg, sizeof(retro_message_msg),
-               "Kickstart ROM '%s' not found!", path_basename(kickstart));
-      retro_message = true;
+      /* Search for Amiga Forever + TOSEC naming conventions */
+      unsigned i = 0;
+      for (i = 0; i < sizeof(uae_kickstarts); i++)
+      {
+         if (!strcmp(uae_kickstarts[i].normal, uae_kickstart))
+            break;
+      }
+
+      path_join(kickstart, retro_system_directory, uae_kickstarts[i].aforever);
+      valid = path_is_valid(kickstart);
+      if (!valid)
+      {
+         if (!string_is_empty(uae_kickstarts[i].tosec_mod))
+         {
+            path_join(kickstart, retro_system_directory, uae_kickstarts[i].tosec_mod);
+            valid = path_is_valid(kickstart);
+         }
+         if (!valid)
+         {
+            if (!string_is_empty(uae_kickstarts[i].tosec))
+            {
+               path_join(kickstart, retro_system_directory, uae_kickstarts[i].tosec);
+               valid = path_is_valid(kickstart);
+            }
+         }
+      }
+   }
+
+   /* Final append + logging */
+   if (valid)
+   {
+      log_cb(RETRO_LOG_INFO, "Kickstart: '%s'\n", path_basename(kickstart));
+      if (strcmp(opt_kickstart, "aros"))
+         retro_config_append("kickstart_rom_file=%s\n", kickstart);
    }
    else
-      retro_config_append("kickstart_rom_file=%s\n", kickstart);
+   {
+      log_cb(RETRO_LOG_ERROR, "Kickstart ROM '%s' not found!\n", uae_kickstart);
+      snprintf(retro_message_msg, sizeof(retro_message_msg),
+               "Kickstart ROM '%s' not found!", uae_kickstart);
+      retro_message = true;
+   }
 
    /* Extended KS + NVRAM */
    if (!string_is_empty(uae_kickstart_ext))
@@ -3655,18 +3746,53 @@ static void retro_config_kickstart(void)
       stat(kickstart, &kickstart_st);
 
       /* Verify extended ROM if external */
-      if (kickstart_st.st_size <= 524288)
+      if (kickstart_st.st_size <= ROM_SIZE_512)
       {
-         if (!path_is_valid(kickstart_ext))
+         valid = path_is_valid(kickstart_ext);
+
+         if (!valid)
          {
-            /* Kickstart extended ROM not found */
-            log_cb(RETRO_LOG_ERROR, "Kickstart extended ROM '%s' not found!\n", kickstart_ext);
-            snprintf(retro_message_msg, sizeof(retro_message_msg),
-                     "Kickstart extended ROM '%s' not found!", path_basename(kickstart_ext));
-            retro_message = true;
+            /* Search for Amiga Forever + TOSEC naming conventions */
+            unsigned i = 0;
+            for (i = 0; i < sizeof(uae_kickstarts); i++)
+            {
+               if (!strcmp(uae_kickstarts[i].normal, uae_kickstart_ext))
+                  break;
+            }
+
+            path_join(kickstart_ext, retro_system_directory, uae_kickstarts[i].aforever);
+            valid = path_is_valid(kickstart_ext);
+            if (!valid)
+            {
+               if (!string_is_empty(uae_kickstarts[i].tosec_mod))
+               {
+                  path_join(kickstart_ext, retro_system_directory, uae_kickstarts[i].tosec_mod);
+                  valid = path_is_valid(kickstart_ext);
+               }
+               if (!valid)
+               {
+                  if (!string_is_empty(uae_kickstarts[i].tosec))
+                  {
+                     path_join(kickstart_ext, retro_system_directory, uae_kickstarts[i].tosec);
+                     valid = path_is_valid(kickstart_ext);
+                  }
+               }
+            }
+         }
+
+         /* Final append + logging */
+         if (valid)
+         {
+            log_cb(RETRO_LOG_INFO, "+Extended: '%s'\n", path_basename(kickstart_ext));
+            retro_config_append("kickstart_ext_rom_file=%s\n", kickstart_ext);
          }
          else
-            retro_config_append("kickstart_ext_rom_file=%s\n", kickstart_ext);
+         {
+            log_cb(RETRO_LOG_ERROR, "Kickstart extended ROM '%s' not found!\n", uae_kickstart_ext);
+            snprintf(retro_message_msg, sizeof(retro_message_msg),
+                     "Kickstart extended ROM '%s' not found!", uae_kickstart_ext);
+            retro_message = true;
+         }
       }
 
       /* NVRAM */
@@ -3677,7 +3803,7 @@ static void retro_config_kickstart(void)
       {
          snprintf(flash_filename, sizeof(flash_filename), "%s.nvr", LIBRETRO_PUAE_PREFIX);
          /* CDTV suffix */
-         if (kickstart_st.st_size == 262144)
+         if (kickstart_st.st_size == ROM_SIZE_256)
             snprintf(flash_filename, sizeof(flash_filename), "%s_cdtv.nvr", LIBRETRO_PUAE_PREFIX);
       }
       /* Per game */
@@ -3689,7 +3815,7 @@ static void retro_config_kickstart(void)
          snprintf(flash_filename, sizeof(flash_filename), "%s.nvr", flash_filebase);
       }
       path_join(flash_filepath, retro_save_directory, flash_filename);
-      log_cb(RETRO_LOG_INFO, "Using NVRAM: '%s'\n", flash_filepath);
+      log_cb(RETRO_LOG_INFO, "NVRAM: '%s'\n", flash_filepath);
       retro_config_append("flash_file=%s\n", flash_filepath);
    }
 }
@@ -3772,7 +3898,7 @@ static void retro_config_harddrives(void)
    }
 }
 
-static void whdload_kscopy(void)
+static void whdload_kscopy(bool legacy)
 {
    char ks_src[RETRO_PATH_MAX] = {0};
    char ks_dst[RETRO_PATH_MAX] = {0};
@@ -3787,31 +3913,71 @@ static void whdload_kscopy(void)
 
    unsigned int ks_size[4] =
    {
-      262144,
-      262144,
-      524288,
-      524288
+      ROM_SIZE_256,
+      ROM_SIZE_256,
+      ROM_SIZE_512,
+      ROM_SIZE_512
    };
 
    struct stat ks_stat;
 
    for (unsigned x = 0; x < 4; x++)
    {
+      bool valid = false;
+
       snprintf(ks_src, sizeof(ks_src), "%s%s%s",
             retro_system_directory, DIR_SEP_STR, kickstart[x]);
-      snprintf(ks_dst, sizeof(ks_dst), "%s%sWHDLoad%sDevs%sKickstarts%s%s",
-            retro_save_directory, DIR_SEP_STR, DIR_SEP_STR, DIR_SEP_STR, DIR_SEP_STR, kickstart[x]);
 
-      if (path_is_valid(ks_src) && !path_is_valid(ks_dst))
+      /* Legacy HDF mode makes sure correctly named files
+       * are available for copying in place inside emulation */
+      if (legacy)
+         snprintf(ks_dst, sizeof(ks_dst), "%s%s%s",
+               retro_system_directory, DIR_SEP_STR, kickstart[x]);
+      else
+         snprintf(ks_dst, sizeof(ks_dst), "%s%sWHDLoad%sDevs%sKickstarts%s%s",
+               retro_save_directory, DIR_SEP_STR, DIR_SEP_STR, DIR_SEP_STR, DIR_SEP_STR, kickstart[x]);
+
+      valid = path_is_valid(ks_src);
+      if (!valid)
+      {
+         /* Search for Amiga Forever + TOSEC naming conventions */
+         unsigned i = 0;
+         for (i = 0; i < sizeof(uae_kickstarts); i++)
+         {
+            if (!strcmp(uae_kickstarts[i].normal, kickstart[x]))
+               break;
+         }
+
+         path_join(ks_src, retro_system_directory, uae_kickstarts[i].aforever);
+         valid = path_is_valid(ks_src);
+         if (!valid)
+         {
+            if (!string_is_empty(uae_kickstarts[i].tosec_mod))
+            {
+               path_join(ks_src, retro_system_directory, uae_kickstarts[i].tosec_mod);
+               valid = path_is_valid(ks_src);
+            }
+            if (!valid)
+            {
+               if (!string_is_empty(uae_kickstarts[i].tosec))
+               {
+                  path_join(ks_src, retro_system_directory, uae_kickstarts[i].tosec);
+                  valid = path_is_valid(ks_src);
+               }
+            }
+         }
+      }
+
+      if (valid && !path_is_valid(ks_dst))
       {
          stat(ks_src, &ks_stat);
 
          if (ks_stat.st_size != ks_size[x])
-            log_cb(RETRO_LOG_INFO, "WHDLoad not installing Kickstart '%s' due to incorrect size, %d != %d\n", kickstart[x], ks_stat.st_size, ks_size[x]);
+            log_cb(RETRO_LOG_INFO, "WHDLoad not installing Kickstart '%s' due to incorrect size, %d != %d\n", path_basename(ks_src), ks_stat.st_size, ks_size[x]);
          else if (fcopy(ks_src, ks_dst) < 0)
-            log_cb(RETRO_LOG_INFO, "WHDLoad failed to install '%s' to '%s'\n", kickstart[x], ks_dst);
+            log_cb(RETRO_LOG_INFO, "WHDLoad failed to install '%s' to '%s'\n", path_basename(ks_src), ks_dst);
          else
-            log_cb(RETRO_LOG_INFO, "WHDLoad found and installed '%s' to '%s'\n", kickstart[x], ks_dst);
+            log_cb(RETRO_LOG_INFO, "WHDLoad found and installed '%s' to '%s'\n", path_basename(ks_src), ks_dst);
       }
    }
 }
@@ -3876,6 +4042,8 @@ static char* emu_config_string(char *mode, int config)
          case EMU_CONFIG_A600:      return "A600";
          case EMU_CONFIG_A1200:     return "A1200";
          case EMU_CONFIG_A1200OG:   return "A1200OG";
+         case EMU_CONFIG_A2000:     return "A2000";
+         case EMU_CONFIG_A2000OG:   return "A2000OG";
          case EMU_CONFIG_A4030:     return "A4030";
          case EMU_CONFIG_A4040:     return "A4040";
          case EMU_CONFIG_CDTV:      return "CDTV";
@@ -3887,34 +4055,29 @@ static char* emu_config_string(char *mode, int config)
    {
       switch (config)
       {
-         case EMU_CONFIG_A500:      return A500_ROM;
-         case EMU_CONFIG_A500OG:    return A500_ROM;
-         case EMU_CONFIG_A500PLUS:  return A500KS2_ROM;
-         case EMU_CONFIG_A600:      return A600_ROM;
-         case EMU_CONFIG_A1200:     return A1200_ROM;
-         case EMU_CONFIG_A1200OG:   return A1200_ROM;
-         case EMU_CONFIG_A4030:     return A4000_ROM;
-         case EMU_CONFIG_A4040:     return A4000_ROM;
-         case EMU_CONFIG_CDTV:      return A500_ROM;
-         case EMU_CONFIG_CD32:      return CD32_ROM;
-         case EMU_CONFIG_CD32FR:    return CD32_ROM;
+         case EMU_CONFIG_A500:      return uae_kickstarts[A500_KS13_ROM].normal;
+         case EMU_CONFIG_A500OG:    return uae_kickstarts[A500_KS12_ROM].normal;
+         case EMU_CONFIG_A500PLUS:  return uae_kickstarts[A500_KS204_ROM].normal;
+         case EMU_CONFIG_A600:      return uae_kickstarts[A600_KS31_ROM].normal;
+         case EMU_CONFIG_A1200:     return uae_kickstarts[A1200_KS31_ROM].normal;
+         case EMU_CONFIG_A1200OG:   return uae_kickstarts[A1200_KS31_ROM].normal;
+         case EMU_CONFIG_A2000:     return uae_kickstarts[A600_KS31_ROM].normal;
+         case EMU_CONFIG_A2000OG:   return uae_kickstarts[A500_KS12_ROM].normal;
+         case EMU_CONFIG_A4030:     return uae_kickstarts[A4000_KS31_ROM].normal;
+         case EMU_CONFIG_A4040:     return uae_kickstarts[A4000_KS31_ROM].normal;
+         case EMU_CONFIG_CDTV:      return uae_kickstarts[A500_KS13_ROM].normal;
+         case EMU_CONFIG_CD32:      return uae_kickstarts[CD32_ROM].normal;
+         case EMU_CONFIG_CD32FR:    return uae_kickstarts[CD32_ROM].normal;
       }
    }
    else if (!strcmp(mode, "kickstart_ext"))
    {
       switch (config)
       {
-         case EMU_CONFIG_A500:      return "";
-         case EMU_CONFIG_A500OG:    return "";
-         case EMU_CONFIG_A500PLUS:  return "";
-         case EMU_CONFIG_A600:      return "";
-         case EMU_CONFIG_A1200:     return "";
-         case EMU_CONFIG_A1200OG:   return "";
-         case EMU_CONFIG_A4030:     return "";
-         case EMU_CONFIG_A4040:     return "";
-         case EMU_CONFIG_CDTV:      return CDTV_ROM;
-         case EMU_CONFIG_CD32:      return CD32_ROM_EXT;
-         case EMU_CONFIG_CD32FR:    return CD32_ROM_EXT;
+         case EMU_CONFIG_CDTV:      return uae_kickstarts[CDTV_ROM].normal;
+         case EMU_CONFIG_CD32:      return uae_kickstarts[CD32_ROM_EXT].normal;
+         case EMU_CONFIG_CD32FR:    return uae_kickstarts[CD32_ROM_EXT].normal;
+         default:                   return "";
       }
    }
    return "";
@@ -3922,17 +4085,19 @@ static char* emu_config_string(char *mode, int config)
 
 static int emu_config_int(char *model)
 {
-   if      (!strcmp(model, "A500"))     return EMU_CONFIG_A500;
-   else if (!strcmp(model, "A500OG"))   return EMU_CONFIG_A500OG;
-   else if (!strcmp(model, "A500PLUS")) return EMU_CONFIG_A500PLUS;
-   else if (!strcmp(model, "A600"))     return EMU_CONFIG_A600;
-   else if (!strcmp(model, "A1200"))    return EMU_CONFIG_A1200;
-   else if (!strcmp(model, "A1200OG"))  return EMU_CONFIG_A1200OG;
-   else if (!strcmp(model, "A4030"))    return EMU_CONFIG_A4030;
-   else if (!strcmp(model, "A4040"))    return EMU_CONFIG_A4040;
-   else if (!strcmp(model, "CDTV"))     return EMU_CONFIG_CDTV;
-   else if (!strcmp(model, "CD32"))     return EMU_CONFIG_CD32;
-   else if (!strcmp(model, "CD32FR"))   return EMU_CONFIG_CD32FR;
+   if      (!strcmp(model, "A500"))      return EMU_CONFIG_A500;
+   else if (!strcmp(model, "A500OG"))    return EMU_CONFIG_A500OG;
+   else if (!strcmp(model, "A500PLUS"))  return EMU_CONFIG_A500PLUS;
+   else if (!strcmp(model, "A600"))      return EMU_CONFIG_A600;
+   else if (!strcmp(model, "A1200"))     return EMU_CONFIG_A1200;
+   else if (!strcmp(model, "A1200OG"))   return EMU_CONFIG_A1200OG;
+   else if (!strcmp(model, "A2000"))     return EMU_CONFIG_A2000;
+   else if (!strcmp(model, "A2000OG"))   return EMU_CONFIG_A2000OG;
+   else if (!strcmp(model, "A4030"))     return EMU_CONFIG_A4030;
+   else if (!strcmp(model, "A4040"))     return EMU_CONFIG_A4040;
+   else if (!strcmp(model, "CDTV"))      return EMU_CONFIG_CDTV;
+   else if (!strcmp(model, "CD32"))      return EMU_CONFIG_CD32;
+   else if (!strcmp(model, "CD32FR"))    return EMU_CONFIG_CD32FR;
    else return -1;
 }
 
@@ -4014,6 +4179,22 @@ static char* emu_config(int config)
          "bogomem_size=0\n"
          "fastmem_size=0\n";
 
+      case EMU_CONFIG_A2000: return
+         "cpu_model=68000\n"
+         "chipset=ecs\n"
+         "chipset_compatible=A2000\n"
+         "chipmem_size=2\n"
+         "bogomem_size=0\n"
+         "fastmem_size=0\n";
+
+      case EMU_CONFIG_A2000OG: return
+         "cpu_model=68000\n"
+         "chipset=ocs\n"
+         "chipset_compatible=A2000\n"
+         "chipmem_size=1\n"
+         "bogomem_size=2\n"
+         "fastmem_size=0\n";
+
       case EMU_CONFIG_A4030: return
          "cpu_model=68030\n"
          "fpu_model=68882\n"
@@ -4067,6 +4248,7 @@ static void retro_config_preset(char *model)
 {
    int model_int = emu_config_int(model);
    strlcpy(uae_model, emu_config(model_int), sizeof(uae_model));
+   strlcpy(uae_preset, emu_config_string("model", model_int), sizeof(uae_preset));
    strlcpy(uae_kickstart, emu_config_string("kickstart", model_int), sizeof(uae_kickstart));
    strlcpy(uae_kickstart_ext, emu_config_string("kickstart_ext", model_int), sizeof(uae_kickstart_ext));
 }
@@ -4223,49 +4405,41 @@ static bool retro_create_config(void)
             if (strstr(full_path, "(A4030)") || strstr(full_path, "(030)"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(A4030)' or '(030)' in: '%s'\n", full_path);
-               log_cb(RETRO_LOG_INFO, "Booting A4000/030: '%s'\n", A4000_ROM);
                retro_config_preset("A4030");
             }
             else if (strstr(full_path, "(A4040)") || strstr(full_path, "(040)"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(A4040)' or '(040)' in: '%s'\n", full_path);
-               log_cb(RETRO_LOG_INFO, "Booting A4000/040: '%s'\n", A4000_ROM);
                retro_config_preset("A4040");
             }
             else if (strstr(full_path, "(A1200OG)") || strstr(full_path, "(A1200NF)"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(A1200OG)' or '(A1200NF)' in: '%s'\n", full_path);
-               log_cb(RETRO_LOG_INFO, "Booting A1200 NoFast: '%s'\n", A1200_ROM);
                retro_config_preset("A1200OG");
             }
             else if (strstr(full_path, "(A1200)") || strstr(full_path, "AGA") || strstr(full_path, "CD32") || strstr(full_path, "AmigaCD"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(A1200)', 'AGA', 'CD32', or 'AmigaCD' in: '%s'\n", full_path);
-               log_cb(RETRO_LOG_INFO, "Booting A1200: '%s'\n", A1200_ROM);
                retro_config_preset("A1200");
             }
             else if (strstr(full_path, "(A600)") || strstr(full_path, "ECS"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(A600)' or 'ECS' in: '%s'\n", full_path);
-               log_cb(RETRO_LOG_INFO, "Booting A600: '%s'\n", A600_ROM);
                retro_config_preset("A600");
             }
             else if (strstr(full_path, "(A500+)") || strstr(full_path, "(A500PLUS)"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(A500+)' or '(A500PLUS)' in: '%s'\n", full_path);
-               log_cb(RETRO_LOG_INFO, "Booting A500+: '%s'\n", A500KS2_ROM);
                retro_config_preset("A500PLUS");
             }
             else if (strstr(full_path, "(A500OG)") || strstr(full_path, "(512K)"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(A500OG)' or '(512K)' in: '%s'\n", full_path);
-               log_cb(RETRO_LOG_INFO, "Booting A500 512K: '%s'\n", A500_ROM);
                retro_config_preset("A500OG");
             }
             else if (strstr(full_path, "(A500)") || strstr(full_path, "OCS"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(A500)' or 'OCS' in: '%s'\n", full_path);
-               log_cb(RETRO_LOG_INFO, "Booting A500: '%s'\n", A500_ROM);
                retro_config_preset("A500");
             }
             else
@@ -4280,12 +4454,8 @@ static bool retro_create_config(void)
 
                /* No model specified */
                log_cb(RETRO_LOG_INFO, "No model specified in: '%s'\n", full_path);
-               log_cb(RETRO_LOG_INFO, "Booting default model: '%s'\n", uae_kickstart);
             }
          }
-         else
-            /* Core option model */
-            log_cb(RETRO_LOG_INFO, "Booting model: '%s'\n", uae_kickstart);
 
          /* Write model preset */
          retro_config_append(uae_model);
@@ -4369,7 +4539,7 @@ static bool retro_create_config(void)
 
                if (!path_is_valid(whdload_prefs_path))
                {
-                  log_cb(RETRO_LOG_INFO, "WHDLoad.prefs '%s' not found, attempting to create one\n", whdload_prefs_path);
+                  log_cb(RETRO_LOG_INFO, "WHDLoad.prefs '%s' not found, attempting to create..\n", whdload_prefs_path);
 
                   char whdload_prefs_gz[RETRO_PATH_MAX];
                   path_join(whdload_prefs_gz, retro_system_directory, "WHDLoad.prefs.gz");
@@ -4465,7 +4635,7 @@ static bool retro_create_config(void)
                   /* Verify WHDLoad */
                   if (!path_is_directory(whdload_path) || (path_is_directory(whdload_path) && !path_is_directory(whdload_c_path)))
                   {
-                     log_cb(RETRO_LOG_INFO, "WHDLoad image directory '%s' not found, attempting to create one\n", whdload_path);
+                     log_cb(RETRO_LOG_INFO, "WHDLoad image directory '%s' not found, attempting to create..\n", whdload_path);
                      path_mkdir(whdload_path);
 
                      char whdload_files_zip[RETRO_PATH_MAX];
@@ -4502,7 +4672,7 @@ static bool retro_create_config(void)
                      tmp_str = NULL;
 
                      /* Check and copy Kickstarts */
-                     whdload_kscopy();
+                     whdload_kscopy(false);
 
                      /* Copy required files host-wise with file mode */
                      if (path_is_valid(whdload_prefs_path))
@@ -4541,7 +4711,7 @@ static bool retro_create_config(void)
                   /* Verify WHDLoad.hdf */
                   if (!path_is_valid(whdload_hdf))
                   {
-                     log_cb(RETRO_LOG_INFO, "WHDLoad image file '%s' not found, attempting to create one\n", whdload_hdf);
+                     log_cb(RETRO_LOG_INFO, "WHDLoad image file '%s' not found, attempting to create..\n", whdload_hdf);
 
                      char whdload_hdf_gz[RETRO_PATH_MAX];
                      path_join(whdload_hdf_gz, retro_save_directory, "WHDLoad.hdf.gz");
@@ -4584,7 +4754,7 @@ static bool retro_create_config(void)
                   path_join(whdsaves_hdf, retro_save_directory, "WHDSaves.hdf");
                   if (!path_is_valid(whdsaves_hdf))
                   {
-                     log_cb(RETRO_LOG_INFO, "WHDSaves image file '%s' not found, attempting to create one\n", whdsaves_hdf);
+                     log_cb(RETRO_LOG_INFO, "WHDSaves image file '%s' not found, attempting to create..\n", whdsaves_hdf);
 
                      char whdsaves_hdf_gz[RETRO_PATH_MAX];
                      path_join(whdsaves_hdf_gz, retro_save_directory, "WHDSaves.hdf.gz");
@@ -4634,6 +4804,9 @@ static bool retro_create_config(void)
                   retro_config_append("filesystem2=ro,RASystem:RASystem:\"%s\",-128\n", tmp_str);
                   free(tmp_str);
                   tmp_str = NULL;
+
+                  /* Check for alternative KS namings */
+                  whdload_kscopy(true);
                }
             }
 
@@ -4734,19 +4907,16 @@ static bool retro_create_config(void)
             if (strstr(full_path, "(CD32FR)") || strstr(full_path, "FastRAM"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(CD32FR)' or 'FastRAM' in: '%s'\n", full_path);
-               log_cb(RETRO_LOG_INFO, "Booting CD32 FastRAM: '%s'\n", CD32_ROM);
                retro_config_preset("CD32FR");
             }
             else if (strstr(full_path, "(CD32)") || strstr(full_path, "(CD32NF)"))
             {
                log_cb(RETRO_LOG_INFO, "Found '(CD32)' or '(CD32NF)' in: '%s'\n", full_path);
-               log_cb(RETRO_LOG_INFO, "Booting CD32: '%s'\n", CD32_ROM);
                retro_config_preset("CD32");
             }
             else if (strstr(full_path, "CDTV"))
             {
                log_cb(RETRO_LOG_INFO, "Found 'CDTV' in: '%s'\n", full_path);
-               log_cb(RETRO_LOG_INFO, "Booting CDTV: '%s'\n", CDTV_ROM);
                retro_config_preset("CDTV");
             }
             else
@@ -4759,12 +4929,8 @@ static bool retro_create_config(void)
 
                /* No model specified */
                log_cb(RETRO_LOG_INFO, "No model specified in: '%s'\n", full_path);
-               log_cb(RETRO_LOG_INFO, "Booting default model: '%s'\n", uae_kickstart);
             }
          }
-         else
-            /* Core option model */
-            log_cb(RETRO_LOG_INFO, "Booting model: '%s'\n", uae_kickstart);
 
          /* Write model preset */
          retro_config_append(uae_model);
@@ -4830,9 +4996,6 @@ static bool retro_create_config(void)
          /* Write model preset */
          retro_config_append(uae_model);
 
-         /* Verify and write Kickstart */
-         retro_config_kickstart();
-
          /* Write common config */
          retro_config_append(uae_config);
 
@@ -4851,7 +5014,37 @@ static bool retro_create_config(void)
 
             while (fgets(filebuf, sizeof(filebuf), configfile_custom))
             {
+               /* Skip Kickstart row if Kickstart is not automatic */
+               if (strcmp(opt_kickstart, "auto"))
+                  if ((strstr(filebuf, "kickstart_rom_file=") && filebuf[0] == 'k'))
+                     continue;
+
+               /* Skip Kickstart & model rows if model is not automatic */
+               if (strcmp(opt_model, "auto"))
+               {
+                  if ((strstr(filebuf, "kickstart_rom_file=") && filebuf[0] == 'k')
+                   || (strstr(filebuf, "cpu_model=") && filebuf[0] == 'c')
+                   || (strstr(filebuf, "chipset=") && filebuf[0] == 'c')
+                   || (strstr(filebuf, "chipset_compatible=") && filebuf[0] == 'c')
+                   || (strstr(filebuf, "chipmem_size=") && filebuf[0] == 'c')
+                   || (strstr(filebuf, "bogomem_size=") && filebuf[0] == 'b')
+                   || (strstr(filebuf, "fastmem_size=") && filebuf[0] == 'f'))
+                     continue;
+               }
+
+               /* Append */
                retro_config_append(filebuf);
+
+               /* Parse Kickstart for alternate namings */
+               if ((strstr(filebuf, "kickstart_rom_file=") && filebuf[0] == 'k'))
+               {
+                  char *token = strtok(filebuf, "=");
+                  while (token != NULL)
+                  {
+                     snprintf(uae_kickstart, sizeof(uae_kickstart), "%s", trimwhitespace(token));
+                     token = strtok(NULL, "=");
+                  }
+               }
 
                /* Parse diskimage & floppy rows */
                if ((strstr(filebuf, "diskimage") && filebuf[0] == 'd') ||
@@ -4885,6 +5078,9 @@ static bool retro_create_config(void)
             display_current_image(dc->labels[dc->index], true);
             log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF0: '%s'\n", dc->index+1, dc->files[dc->index]);
          }
+
+         /* Verify and write Kickstart */
+         retro_config_kickstart();
       }
       /* Unknown extensions */
       else
@@ -4907,9 +5103,6 @@ static bool retro_create_config(void)
    /* Empty content */
    else
    {
-      /* No model specified */
-      log_cb(RETRO_LOG_INFO, "Booting model: '%s'\n", uae_kickstart);
-
       /* Write model preset */
       retro_config_append(uae_model);
 

@@ -107,13 +107,16 @@ enum EMU_FUNCTIONS
 };
 
 /* Configs */
-enum EMU_CONFIG {
+enum EMU_CONFIG
+{
    EMU_CONFIG_A500 = 0,
    EMU_CONFIG_A500OG,
    EMU_CONFIG_A500PLUS,
    EMU_CONFIG_A600,
    EMU_CONFIG_A1200,
    EMU_CONFIG_A1200OG,
+   EMU_CONFIG_A2000,
+   EMU_CONFIG_A2000OG,
    EMU_CONFIG_A4030,
    EMU_CONFIG_A4040,
    EMU_CONFIG_CDTV,
@@ -123,14 +126,98 @@ enum EMU_CONFIG {
 };
 
 /* Kickstarts */
-#define A500_ROM                "kick34005.A500"
-#define A500KS2_ROM             "kick37175.A500"
-#define A600_ROM                "kick40063.A600"
-#define A1200_ROM               "kick40068.A1200"
-#define A4000_ROM               "kick40068.A4000"
-#define CDTV_ROM                "kick34005.CDTV"
-#define CD32_ROM                "kick40060.CD32"
-#define CD32_ROM_EXT            "kick40060.CD32.ext"
+enum retro_kickstart_ids
+{
+   A500_KS12_ROM = 0,
+   A500_KS13_ROM,
+   A500_KS204_ROM,
+   A600_KS205_ROM,
+   A600_KS31_ROM,
+   A1200_KS30_ROM,
+   A1200_KS31_ROM,
+   A4000_KS30_ROM,
+   A4000_KS31_ROM,
+   CDTV_ROM,
+   CD32_ROM,
+   CD32_ROM_EXT
+};
+
+typedef struct
+{
+   unsigned id;
+   char normal[20];
+   char aforever[30];
+   char tosec_mod[100];
+   char tosec[100];
+} retro_kickstarts;
+
+static retro_kickstarts uae_kickstarts[15] =
+{
+   {A500_KS12_ROM,
+         "kick33180.A500",
+         "amiga-os-120.rom",
+         "Kickstart v1.2 rev 33.180 (1986)(Commodore)(A500-A2000)[!].rom",
+         "Kickstart v1.2 rev 33.180 (1986)(Commodore)(A500-A1000-A2000).rom"},
+   {A500_KS13_ROM,
+         "kick34005.A500",
+         "amiga-os-130.rom",
+         "Kickstart v1.3 rev 34.5 (1987)(Commodore)(A500-A1000-A2000-CDTV)[!].rom",
+         "Kickstart v1.3 rev 34.5 (1987)(Commodore)(A500-A1000-A2000-CDTV).rom"},
+   {A500_KS204_ROM,
+         "kick37175.A500",
+         "amiga-os-204.rom",
+         "Kickstart v2.04 rev 37.175 (1991)(Commodore)(A500+)[!].rom",
+         "Kickstart v2.04 rev 37.175 (1991)(Commodore)(A500+).rom"},
+
+   {A600_KS205_ROM,
+         "kick37350.A600",
+         "amiga-os-205-a600.rom",
+         "Kickstart v2.05 rev 37.350 (1992)(Commodore)(A600HD)[!].rom",
+         ""},
+   {A600_KS31_ROM,
+         "kick40063.A600",
+         "amiga-os-310-a600.rom",
+         "Kickstart v3.1 rev 40.63 (1993)(Commodore)(A500-A600-A2000)[!].rom",
+         "Kickstart v3.1 rev 40.63 (1993)(Commodore)(A500-A600-A2000).rom"},
+
+   {A1200_KS30_ROM,
+         "kick39106.A1200",
+         "amiga-os-300-a1200.rom",
+         "Kickstart v3.0 rev 39.106 (1992)(Commodore)(A1200)[!].rom",
+         ""},
+   {A1200_KS31_ROM,
+         "kick40068.A1200",
+         "amiga-os-310-a1200.rom",
+         "Kickstart v3.1 rev 40.68 (1993)(Commodore)(A1200)[!].rom",
+         "Kickstart v3.1 rev 40.68 (1993)(Commodore)(A1200).rom"},
+
+   {A4000_KS30_ROM,
+         "kick39106.A4000",
+         "amiga-os-300-a4000.rom",
+         "Kickstart v3.0 rev 39.106 (1992)(Commodore)(A4000)[!].rom",
+         ""},
+   {A4000_KS31_ROM,
+         "kick40068.A4000",
+         "amiga-os-310-a4000.rom",
+         "",
+         "Kickstart v3.1 rev 40.68 (1993)(Commodore)(A4000).rom"},
+
+   {CDTV_ROM,
+         "kick34005.CDTV",
+         "amiga-os-130-cdtv-ext.rom",
+         "CDTV Extended-ROM v1.0 (1991)(Commodore)(CDTV)[!].rom",
+         "CDTV Extended-ROM v1.0 (1992)(Commodore)(CDTV).rom"},
+   {CD32_ROM,
+         "kick40060.CD32",
+         "amiga-os-310-cd32.rom",
+         "",
+         "Kickstart v3.1 rev 40.60 (1993)(Commodore)(CD32).rom"},
+   {CD32_ROM_EXT,
+         "kick40060.CD32.ext",
+         "amiga-os-310-cd32-ext.rom",
+         "",
+         "CD32 Extended-ROM rev 40.60 (1993)(Commodore)(CD32).rom"},
+};
 
 /* Support files */
 #define LIBRETRO_PUAE_PREFIX    "puae_libretro"
