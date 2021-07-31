@@ -189,6 +189,7 @@ dc_storage *dc = NULL;
 
 /* Configs */
 static char uae_model[256] = {0};
+static char uae_preset[20] = {0};
 static char uae_kickstart[RETRO_PATH_MAX] = {0};
 static char uae_kickstart_ext[RETRO_PATH_MAX] = {0};
 static char uae_config[2048] = {0};
@@ -3625,7 +3626,7 @@ static void retro_config_boot_hd(void)
       path_join(boothd_hdf, retro_save_directory, LIBRETRO_PUAE_PREFIX ".hdf");
       if (!path_is_valid(boothd_hdf))
       {
-         log_cb(RETRO_LOG_INFO, "Boot HD image file '%s' not found, attempting to create one\n", boothd_hdf);
+         log_cb(RETRO_LOG_INFO, "Boot HD image file '%s' not found, attempting to create..\n", boothd_hdf);
          if (make_hdf(boothd_hdf, boothd_size, label))
             log_cb(RETRO_LOG_ERROR, "Unable to create Boot HD image: '%s'\n", boothd_hdf);
       }
@@ -3643,7 +3644,7 @@ static void retro_config_boot_hd(void)
 
       if (!path_is_directory(boothd_path))
       {
-         log_cb(RETRO_LOG_INFO, "Boot HD image directory '%s' not found, attempting to create one\n", boothd_path);
+         log_cb(RETRO_LOG_INFO, "Boot HD image directory '%s' not found, attempting to create..\n", boothd_path);
          path_mkdir(boothd_path);
       }
       if (path_is_directory(boothd_path))
@@ -3663,30 +3664,75 @@ static void retro_config_boot_hd(void)
 static void retro_config_kickstart(void)
 {
    char kickstart[RETRO_PATH_MAX];
+   char tmp[RETRO_PATH_MAX];
+   bool valid = false;
+
+   /* Wrong place for logging model but still the best place */
+   log_cb(RETRO_LOG_INFO, "Model: '%s'\n", uae_preset);
 
    /* Forced Kickstart */
    if (strcmp(opt_kickstart, "auto"))
       strlcpy(uae_kickstart, opt_kickstart, sizeof(uae_kickstart));
 
+   /* Ensure relative path if custom parsed */
+   if (strstr(uae_kickstart, DIR_SEP_STR))
+   {
+      snprintf(tmp, sizeof(tmp), "%s", path_basename(uae_kickstart));
+      strlcpy(uae_kickstart, tmp, sizeof(uae_kickstart));
+   }
+
+   /* Final absolute path */
    path_join(kickstart, retro_system_directory, uae_kickstart);
 
-   /* Main Kickstart */
+   /* No path validations for AROS */
    if (!strcmp(opt_kickstart, "aros"))
+      valid = true;
+   else
+      valid = path_is_valid(kickstart);
+
+   if (!valid)
    {
-      log_cb(RETRO_LOG_INFO, "Kickstart: '%s'\n", "AROS");
+      /* Search for Amiga Forever + TOSEC naming conventions */
+      unsigned i = 0;
+      for (i = 0; i < sizeof(uae_kickstarts); i++)
+      {
+         if (!strcmp(uae_kickstarts[i].normal, uae_kickstart))
+            break;
+      }
+
+      path_join(kickstart, retro_system_directory, uae_kickstarts[i].aforever);
+      valid = path_is_valid(kickstart);
+      if (!valid)
+      {
+         if (!string_is_empty(uae_kickstarts[i].tosec_mod))
+         {
+            path_join(kickstart, retro_system_directory, uae_kickstarts[i].tosec_mod);
+            valid = path_is_valid(kickstart);
+         }
+         if (!valid)
+         {
+            if (!string_is_empty(uae_kickstarts[i].tosec))
+            {
+               path_join(kickstart, retro_system_directory, uae_kickstarts[i].tosec);
+               valid = path_is_valid(kickstart);
+            }
+         }
+      }
    }
-   else if (!path_is_valid(kickstart))
+
+   /* Final append + logging */
+   if (valid)
    {
-      /* Kickstart ROM not found */
-      log_cb(RETRO_LOG_ERROR, "Kickstart ROM '%s' not found!\n", kickstart);
-      snprintf(retro_message_msg, sizeof(retro_message_msg),
-               "Kickstart ROM '%s' not found!", path_basename(kickstart));
-      retro_message = true;
+      log_cb(RETRO_LOG_INFO, "Kickstart: '%s'\n", path_basename(kickstart));
+      if (strcmp(opt_kickstart, "aros"))
+         retro_config_append("kickstart_rom_file=%s\n", kickstart);
    }
    else
    {
-      log_cb(RETRO_LOG_INFO, "Kickstart: '%s'\n", uae_kickstart);
-      retro_config_append("kickstart_rom_file=%s\n", kickstart);
+      log_cb(RETRO_LOG_ERROR, "Kickstart ROM '%s' not found!\n", uae_kickstart);
+      snprintf(retro_message_msg, sizeof(retro_message_msg),
+               "Kickstart ROM '%s' not found!", uae_kickstart);
+      retro_message = true;
    }
 
    /* Extended KS + NVRAM */
@@ -3702,18 +3748,50 @@ static void retro_config_kickstart(void)
       /* Verify extended ROM if external */
       if (kickstart_st.st_size <= ROM_SIZE_512)
       {
-         if (!path_is_valid(kickstart_ext))
+         valid = path_is_valid(kickstart_ext);
+
+         if (!valid)
          {
-            /* Kickstart extended ROM not found */
-            log_cb(RETRO_LOG_ERROR, "Kickstart extended ROM '%s' not found!\n", kickstart_ext);
-            snprintf(retro_message_msg, sizeof(retro_message_msg),
-                     "Kickstart extended ROM '%s' not found!", path_basename(kickstart_ext));
-            retro_message = true;
+            /* Search for Amiga Forever + TOSEC naming conventions */
+            unsigned i = 0;
+            for (i = 0; i < sizeof(uae_kickstarts); i++)
+            {
+               if (!strcmp(uae_kickstarts[i].normal, uae_kickstart_ext))
+                  break;
+            }
+
+            path_join(kickstart_ext, retro_system_directory, uae_kickstarts[i].aforever);
+            valid = path_is_valid(kickstart_ext);
+            if (!valid)
+            {
+               if (!string_is_empty(uae_kickstarts[i].tosec_mod))
+               {
+                  path_join(kickstart_ext, retro_system_directory, uae_kickstarts[i].tosec_mod);
+                  valid = path_is_valid(kickstart_ext);
+               }
+               if (!valid)
+               {
+                  if (!string_is_empty(uae_kickstarts[i].tosec))
+                  {
+                     path_join(kickstart_ext, retro_system_directory, uae_kickstarts[i].tosec);
+                     valid = path_is_valid(kickstart_ext);
+                  }
+               }
+            }
+         }
+
+         /* Final append + logging */
+         if (valid)
+         {
+            log_cb(RETRO_LOG_INFO, "+Extended: '%s'\n", path_basename(kickstart_ext));
+            retro_config_append("kickstart_ext_rom_file=%s\n", kickstart_ext);
          }
          else
          {
-            log_cb(RETRO_LOG_INFO, "+Extended: '%s'\n", uae_kickstart_ext);
-            retro_config_append("kickstart_ext_rom_file=%s\n", kickstart_ext);
+            log_cb(RETRO_LOG_ERROR, "Kickstart extended ROM '%s' not found!\n", uae_kickstart_ext);
+            snprintf(retro_message_msg, sizeof(retro_message_msg),
+                     "Kickstart extended ROM '%s' not found!", uae_kickstart_ext);
+            retro_message = true;
          }
       }
 
@@ -3820,7 +3898,7 @@ static void retro_config_harddrives(void)
    }
 }
 
-static void whdload_kscopy(void)
+static void whdload_kscopy(bool legacy)
 {
    char ks_src[RETRO_PATH_MAX] = {0};
    char ks_dst[RETRO_PATH_MAX] = {0};
@@ -3845,21 +3923,61 @@ static void whdload_kscopy(void)
 
    for (unsigned x = 0; x < 4; x++)
    {
+      bool valid = false;
+
       snprintf(ks_src, sizeof(ks_src), "%s%s%s",
             retro_system_directory, DIR_SEP_STR, kickstart[x]);
-      snprintf(ks_dst, sizeof(ks_dst), "%s%sWHDLoad%sDevs%sKickstarts%s%s",
-            retro_save_directory, DIR_SEP_STR, DIR_SEP_STR, DIR_SEP_STR, DIR_SEP_STR, kickstart[x]);
 
-      if (path_is_valid(ks_src) && !path_is_valid(ks_dst))
+      /* Legacy HDF mode makes sure correctly named files
+       * are available for copying in place inside emulation */
+      if (legacy)
+         snprintf(ks_dst, sizeof(ks_dst), "%s%s%s",
+               retro_system_directory, DIR_SEP_STR, kickstart[x]);
+      else
+         snprintf(ks_dst, sizeof(ks_dst), "%s%sWHDLoad%sDevs%sKickstarts%s%s",
+               retro_save_directory, DIR_SEP_STR, DIR_SEP_STR, DIR_SEP_STR, DIR_SEP_STR, kickstart[x]);
+
+      valid = path_is_valid(ks_src);
+      if (!valid)
+      {
+         /* Search for Amiga Forever + TOSEC naming conventions */
+         unsigned i = 0;
+         for (i = 0; i < sizeof(uae_kickstarts); i++)
+         {
+            if (!strcmp(uae_kickstarts[i].normal, kickstart[x]))
+               break;
+         }
+
+         path_join(ks_src, retro_system_directory, uae_kickstarts[i].aforever);
+         valid = path_is_valid(ks_src);
+         if (!valid)
+         {
+            if (!string_is_empty(uae_kickstarts[i].tosec_mod))
+            {
+               path_join(ks_src, retro_system_directory, uae_kickstarts[i].tosec_mod);
+               valid = path_is_valid(ks_src);
+            }
+            if (!valid)
+            {
+               if (!string_is_empty(uae_kickstarts[i].tosec))
+               {
+                  path_join(ks_src, retro_system_directory, uae_kickstarts[i].tosec);
+                  valid = path_is_valid(ks_src);
+               }
+            }
+         }
+      }
+
+      if (valid && !path_is_valid(ks_dst))
       {
          stat(ks_src, &ks_stat);
 
          if (ks_stat.st_size != ks_size[x])
-            log_cb(RETRO_LOG_INFO, "WHDLoad not installing Kickstart '%s' due to incorrect size, %d != %d\n", kickstart[x], ks_stat.st_size, ks_size[x]);
+            log_cb(RETRO_LOG_INFO, "WHDLoad not installing Kickstart '%s' due to incorrect size, %d != %d\n", path_basename(ks_src), ks_stat.st_size, ks_size[x]);
          else if (fcopy(ks_src, ks_dst) < 0)
-            log_cb(RETRO_LOG_INFO, "WHDLoad failed to install '%s' to '%s'\n", kickstart[x], ks_dst);
+            log_cb(RETRO_LOG_INFO, "WHDLoad failed to install '%s' to '%s'\n", path_basename(ks_src), ks_dst);
          else
-            log_cb(RETRO_LOG_INFO, "WHDLoad found and installed '%s' to '%s'\n", kickstart[x], ks_dst);
+            log_cb(RETRO_LOG_INFO, "WHDLoad found and installed '%s' to '%s'\n", path_basename(ks_src), ks_dst);
       }
    }
 }
@@ -3937,28 +4055,28 @@ static char* emu_config_string(char *mode, int config)
    {
       switch (config)
       {
-         case EMU_CONFIG_A500:      return A500_KS13_ROM;
-         case EMU_CONFIG_A500OG:    return A500_KS12_ROM;
-         case EMU_CONFIG_A500PLUS:  return A500_KS204_ROM;
-         case EMU_CONFIG_A600:      return A600_KS31_ROM;
-         case EMU_CONFIG_A1200:     return A1200_KS31_ROM;
-         case EMU_CONFIG_A1200OG:   return A1200_KS31_ROM;
-         case EMU_CONFIG_A2000:     return A600_KS31_ROM;
-         case EMU_CONFIG_A2000OG:   return A500_KS12_ROM;
-         case EMU_CONFIG_A4030:     return A4000_KS31_ROM;
-         case EMU_CONFIG_A4040:     return A4000_KS31_ROM;
-         case EMU_CONFIG_CDTV:      return A500_KS13_ROM;
-         case EMU_CONFIG_CD32:      return CD32_ROM;
-         case EMU_CONFIG_CD32FR:    return CD32_ROM;
+         case EMU_CONFIG_A500:      return uae_kickstarts[A500_KS13_ROM].normal;
+         case EMU_CONFIG_A500OG:    return uae_kickstarts[A500_KS12_ROM].normal;
+         case EMU_CONFIG_A500PLUS:  return uae_kickstarts[A500_KS204_ROM].normal;
+         case EMU_CONFIG_A600:      return uae_kickstarts[A600_KS31_ROM].normal;
+         case EMU_CONFIG_A1200:     return uae_kickstarts[A1200_KS31_ROM].normal;
+         case EMU_CONFIG_A1200OG:   return uae_kickstarts[A1200_KS31_ROM].normal;
+         case EMU_CONFIG_A2000:     return uae_kickstarts[A600_KS31_ROM].normal;
+         case EMU_CONFIG_A2000OG:   return uae_kickstarts[A500_KS12_ROM].normal;
+         case EMU_CONFIG_A4030:     return uae_kickstarts[A4000_KS31_ROM].normal;
+         case EMU_CONFIG_A4040:     return uae_kickstarts[A4000_KS31_ROM].normal;
+         case EMU_CONFIG_CDTV:      return uae_kickstarts[A500_KS13_ROM].normal;
+         case EMU_CONFIG_CD32:      return uae_kickstarts[CD32_ROM].normal;
+         case EMU_CONFIG_CD32FR:    return uae_kickstarts[CD32_ROM].normal;
       }
    }
    else if (!strcmp(mode, "kickstart_ext"))
    {
       switch (config)
       {
-         case EMU_CONFIG_CDTV:      return CDTV_ROM;
-         case EMU_CONFIG_CD32:      return CD32_ROM_EXT;
-         case EMU_CONFIG_CD32FR:    return CD32_ROM_EXT;
+         case EMU_CONFIG_CDTV:      return uae_kickstarts[CDTV_ROM].normal;
+         case EMU_CONFIG_CD32:      return uae_kickstarts[CD32_ROM_EXT].normal;
+         case EMU_CONFIG_CD32FR:    return uae_kickstarts[CD32_ROM_EXT].normal;
          default:                   return "";
       }
    }
@@ -4130,6 +4248,7 @@ static void retro_config_preset(char *model)
 {
    int model_int = emu_config_int(model);
    strlcpy(uae_model, emu_config(model_int), sizeof(uae_model));
+   strlcpy(uae_preset, emu_config_string("model", model_int), sizeof(uae_preset));
    strlcpy(uae_kickstart, emu_config_string("kickstart", model_int), sizeof(uae_kickstart));
    strlcpy(uae_kickstart_ext, emu_config_string("kickstart_ext", model_int), sizeof(uae_kickstart_ext));
 }
@@ -4420,7 +4539,7 @@ static bool retro_create_config(void)
 
                if (!path_is_valid(whdload_prefs_path))
                {
-                  log_cb(RETRO_LOG_INFO, "WHDLoad.prefs '%s' not found, attempting to create one\n", whdload_prefs_path);
+                  log_cb(RETRO_LOG_INFO, "WHDLoad.prefs '%s' not found, attempting to create..\n", whdload_prefs_path);
 
                   char whdload_prefs_gz[RETRO_PATH_MAX];
                   path_join(whdload_prefs_gz, retro_system_directory, "WHDLoad.prefs.gz");
@@ -4516,7 +4635,7 @@ static bool retro_create_config(void)
                   /* Verify WHDLoad */
                   if (!path_is_directory(whdload_path) || (path_is_directory(whdload_path) && !path_is_directory(whdload_c_path)))
                   {
-                     log_cb(RETRO_LOG_INFO, "WHDLoad image directory '%s' not found, attempting to create one\n", whdload_path);
+                     log_cb(RETRO_LOG_INFO, "WHDLoad image directory '%s' not found, attempting to create..\n", whdload_path);
                      path_mkdir(whdload_path);
 
                      char whdload_files_zip[RETRO_PATH_MAX];
@@ -4553,7 +4672,7 @@ static bool retro_create_config(void)
                      tmp_str = NULL;
 
                      /* Check and copy Kickstarts */
-                     whdload_kscopy();
+                     whdload_kscopy(false);
 
                      /* Copy required files host-wise with file mode */
                      if (path_is_valid(whdload_prefs_path))
@@ -4592,7 +4711,7 @@ static bool retro_create_config(void)
                   /* Verify WHDLoad.hdf */
                   if (!path_is_valid(whdload_hdf))
                   {
-                     log_cb(RETRO_LOG_INFO, "WHDLoad image file '%s' not found, attempting to create one\n", whdload_hdf);
+                     log_cb(RETRO_LOG_INFO, "WHDLoad image file '%s' not found, attempting to create..\n", whdload_hdf);
 
                      char whdload_hdf_gz[RETRO_PATH_MAX];
                      path_join(whdload_hdf_gz, retro_save_directory, "WHDLoad.hdf.gz");
@@ -4635,7 +4754,7 @@ static bool retro_create_config(void)
                   path_join(whdsaves_hdf, retro_save_directory, "WHDSaves.hdf");
                   if (!path_is_valid(whdsaves_hdf))
                   {
-                     log_cb(RETRO_LOG_INFO, "WHDSaves image file '%s' not found, attempting to create one\n", whdsaves_hdf);
+                     log_cb(RETRO_LOG_INFO, "WHDSaves image file '%s' not found, attempting to create..\n", whdsaves_hdf);
 
                      char whdsaves_hdf_gz[RETRO_PATH_MAX];
                      path_join(whdsaves_hdf_gz, retro_save_directory, "WHDSaves.hdf.gz");
@@ -4685,6 +4804,9 @@ static bool retro_create_config(void)
                   retro_config_append("filesystem2=ro,RASystem:RASystem:\"%s\",-128\n", tmp_str);
                   free(tmp_str);
                   tmp_str = NULL;
+
+                  /* Check for alternative KS namings */
+                  whdload_kscopy(true);
                }
             }
 
@@ -4874,9 +4996,6 @@ static bool retro_create_config(void)
          /* Write model preset */
          retro_config_append(uae_model);
 
-         /* Verify and write Kickstart */
-         retro_config_kickstart();
-
          /* Write common config */
          retro_config_append(uae_config);
 
@@ -4913,7 +5032,19 @@ static bool retro_create_config(void)
                      continue;
                }
 
+               /* Append */
                retro_config_append(filebuf);
+
+               /* Parse Kickstart for alternate namings */
+               if ((strstr(filebuf, "kickstart_rom_file=") && filebuf[0] == 'k'))
+               {
+                  char *token = strtok(filebuf, "=");
+                  while (token != NULL)
+                  {
+                     snprintf(uae_kickstart, sizeof(uae_kickstart), "%s", trimwhitespace(token));
+                     token = strtok(NULL, "=");
+                  }
+               }
 
                /* Parse diskimage & floppy rows */
                if ((strstr(filebuf, "diskimage") && filebuf[0] == 'd') ||
@@ -4947,6 +5078,9 @@ static bool retro_create_config(void)
             display_current_image(dc->labels[dc->index], true);
             log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF0: '%s'\n", dc->index+1, dc->files[dc->index]);
          }
+
+         /* Verify and write Kickstart */
+         retro_config_kickstart();
       }
       /* Unknown extensions */
       else
