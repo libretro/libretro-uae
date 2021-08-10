@@ -84,7 +84,6 @@ extern uae_u32 natmem_size;
 char full_path[RETRO_PATH_MAX] = {0};
 static char *uae_argv[] = { "puae" };
 static int restart_pending = 0;
-static char *core_options_legacy_strings = NULL;
 
 static long retro_now = 0;
 static float retro_refresh = 0;
@@ -177,6 +176,9 @@ static retro_environment_t environ_cb = NULL;
 static struct retro_perf_callback perf_cb;
 
 bool libretro_supports_bitmasks = false;
+static bool libretro_supports_option_categories = false;
+#define HAVE_NO_LANGEXTRA
+
 static unsigned int retro_led_state[3] = {0};
 
 char retro_save_directory[RETRO_PATH_MAX] = {0};
@@ -250,52 +252,59 @@ static void retro_led_interface(void)
    }
 }
 
-void retro_set_environment(retro_environment_t cb)
+static void retro_set_core_options()
 {
-   static const struct retro_controller_description p1_controllers[] = {
-      { "CD32 Pad", RETRO_DEVICE_PUAE_CD32PAD },
-      { "Analog Joystick", RETRO_DEVICE_PUAE_ANALOG },
-      { "Joystick", RETRO_DEVICE_PUAE_JOYSTICK },
-      { "Keyboard", RETRO_DEVICE_PUAE_KEYBOARD },
-      { "None", RETRO_DEVICE_NONE },
-   };
-   static const struct retro_controller_description p2_controllers[] = {
-      { "CD32 Pad", RETRO_DEVICE_PUAE_CD32PAD },
-      { "Analog Joystick", RETRO_DEVICE_PUAE_ANALOG },
-      { "Joystick", RETRO_DEVICE_PUAE_JOYSTICK },
-      { "Keyboard", RETRO_DEVICE_PUAE_KEYBOARD },
-      { "None", RETRO_DEVICE_NONE },
-   };
-   static const struct retro_controller_description p3_controllers[] = {
-      { "Joystick", RETRO_DEVICE_PUAE_JOYSTICK },
-      { "Keyboard", RETRO_DEVICE_PUAE_KEYBOARD },
-      { "None", RETRO_DEVICE_NONE },
-   };
-   static const struct retro_controller_description p4_controllers[] = {
-      { "Joystick", RETRO_DEVICE_PUAE_JOYSTICK },
-      { "Keyboard", RETRO_DEVICE_PUAE_KEYBOARD },
-      { "None", RETRO_DEVICE_NONE },
-   };
-   static const struct retro_controller_description p5_controllers[] = {
-      { "Keyboard", RETRO_DEVICE_PUAE_KEYBOARD },
-      { "None", RETRO_DEVICE_NONE },
+   /* Core categories */
+   static struct retro_core_option_v2_category option_cats_us[] =
+   {
+      {
+         "audio",
+         "Audio Options",
+         "Configure audio options."
+      },
+      {
+         "video",
+         "Video Options",
+         "Configure video options."
+      },
+      {
+         "media",
+         "Media Options",
+         "Configure media options."
+      },
+      {
+         "model",
+         "Automatic Model Options",
+         "Configure automatic model options."
+      },
+      {
+         "input",
+         "Input Options",
+         "Configure input options."
+      },
+      {
+         "hotkey",
+         "Hotkey Mapping Options",
+         "Configure keyboard hotkey mapping options."
+      },
+      {
+         "retropad",
+         "RetroPad Mapping Options",
+         "Configure RetroPad mapping options."
+      },
+      { NULL, NULL, NULL },
    };
 
-   static const struct retro_controller_info ports[] = {
-      { p1_controllers, 5 }, /* port 1 */
-      { p2_controllers, 5 }, /* port 2 */
-      { p3_controllers, 3 }, /* port 3 */
-      { p4_controllers, 3 }, /* port 4 */
-      { p5_controllers, 2 }, /* port 5 */
-      { NULL, 0 }
-   };
-
-   static struct retro_core_option_definition core_options[] =
+   /* Core options */
+   static struct retro_core_option_v2_definition option_defs_us[] =
    {
       {
          "puae_model",
          "Model",
+         NULL,
          "'Automatic' defaults to 'A500' with floppy disks, 'A1200' with hard drives and 'CD32' with compact discs. 'Automatic' can be overridden with file path tags.\nCore restart required.",
+         NULL,
+         NULL,
          {
             { "auto", "Automatic" },
             { "A500OG", "A500 (v1.2, 0.5M Chip)" },
@@ -316,29 +325,12 @@ void retro_set_environment(retro_environment_t cb)
          "auto"
       },
       {
-         "puae_kickstart",
-         "Model > Kickstart ROM",
-         "'Automatic' defaults to the most compatible version for the model. AROS is a built-in replacement with fair compatibility.\nCore restart required.",
-         {
-            { "auto", "Automatic" },
-            { "aros", "AROS" },
-            { "kick33180.A500", "v1.2 rev 33.180 (A500-A2000)" },
-            { "kick34005.A500", "v1.3 rev 34.005 (A500-A1000-A2000-CDTV)" },
-            { "kick37175.A500", "v2.04 rev 37.175 (A500+)" },
-            { "kick37350.A600", "v2.05 rev 37.350 (A600)" },
-            { "kick40063.A600", "v3.1 rev 40.063 (A500-A600-A2000)" },
-            { "kick39106.A1200", "v3.0 rev 39.106 (A1200)" },
-            { "kick40068.A1200", "v3.1 rev 40.068 (A1200)" },
-            { "kick39106.A4000", "v3.0 rev 39.106 (A4000)" },
-            { "kick40068.A4000", "v3.1 rev 40.068 (A4000)" },
-            { NULL, NULL },
-         },
-         "auto"
-      },
-      {
          "puae_model_options_display",
          "Show Automatic Model Options",
+         NULL,
          "Show/hide default model options (Floppy/HD/CD) for 'Automatic' model.\nPage refresh by menu toggle required!",
+         NULL,
+         NULL,
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -349,7 +341,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_model_fd",
          "Model > Automatic Floppy",
+         "Automatic Floppy",
          "Default model when floppies are launched with 'Automatic' model.\nCore restart required.",
+         NULL,
+         "model",
          {
             { "A500OG", "A500 (v1.2, 0.5M Chip)" },
             { "A500", "A500 (v1.3, 0.5M Chip + 0.5M Slow)" },
@@ -368,7 +363,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_model_hd",
          "Model > Automatic HD",
+         "Automatic HD",
          "Default model when HD interface is used with 'Automatic' model. Affects WHDLoad installs and other hard drive images.\nCore restart required.",
+         NULL,
+         "model",
          {
             { "A600", "A600 (v3.1, 2M Chip + 8M Fast)" },
             { "A1200OG", "A1200 (v3.1, 2M Chip)" },
@@ -383,7 +381,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_model_cd",
          "Model > Automatic CD",
+         "Automatic CD",
          "Default model when compact discs are launched with 'Automatic' model.\nCore restart required.",
+         NULL,
+         "model",
          {
             { "CDTV", "CDTV (1M Chip)" },
             { "CD32", "CD32 (2M Chip)" },
@@ -393,9 +394,35 @@ void retro_set_environment(retro_environment_t cb)
          "CD32"
       },
       {
+         "puae_kickstart",
+         "Kickstart ROM",
+         NULL,
+         "'Automatic' defaults to the most compatible version for the model. AROS is a built-in replacement with fair compatibility.\nCore restart required.",
+         NULL,
+         NULL,
+         {
+            { "auto", "Automatic" },
+            { "aros", "AROS" },
+            { "kick33180.A500", "v1.2 rev 33.180 (A500-A2000)" },
+            { "kick34005.A500", "v1.3 rev 34.005 (A500-A1000-A2000-CDTV)" },
+            { "kick37175.A500", "v2.04 rev 37.175 (A500+)" },
+            { "kick37350.A600", "v2.05 rev 37.350 (A600)" },
+            { "kick40063.A600", "v3.1 rev 40.063 (A500-A600-A2000)" },
+            { "kick39106.A1200", "v3.0 rev 39.106 (A1200)" },
+            { "kick40068.A1200", "v3.1 rev 40.068 (A1200)" },
+            { "kick39106.A4000", "v3.0 rev 39.106 (A4000)" },
+            { "kick40068.A4000", "v3.1 rev 40.068 (A4000)" },
+            { NULL, NULL },
+         },
+         "auto"
+      },
+      {
          "puae_cpu_compatibility",
-         "System > CPU Compatibility",
+         "CPU Compatibility",
+         NULL,
          "Some games have graphic and/or speed issues without 'Cycle-exact'. 'Cycle-exact' can be forced with '(CE)' file path tag.",
+         NULL,
+         NULL,
          {
             { "normal", "Normal" },
             { "compatible", "More compatible" },
@@ -406,8 +433,11 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_cpu_throttle",
-         "System > CPU Speed",
+         "CPU Speed",
+         NULL,
          "Ignored with 'Cycle-exact'.",
+         NULL,
+         NULL,
          {
             { "-900.0", "-90%" },
             { "-800.0", "-80%" },
@@ -435,8 +465,11 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_cpu_multiplier",
-         "System > CPU Cycle-exact Speed",
+         "CPU Cycle-exact Speed",
+         NULL,
          "Applies only with 'Cycle-exact'.",
+         NULL,
+         NULL,
          {
             { "0", "Default" },
             { "1", "3.546895 MHz" },
@@ -453,7 +486,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_floppy_speed",
          "Media > Floppy Speed",
+         "Floppy Speed",
          "Default speed is 300RPM. 'Turbo' removes disk rotation emulation.",
+         NULL,
+         "media",
          {
             { "100", "Default" },
             { "200", "2x" },
@@ -467,7 +503,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_floppy_multidrive",
          "Media > Floppy MultiDrive",
+         "Floppy MultiDrive",
          "Insert each disk in different drives. Can be forced with '(MD)' file path tag. Maximum is 4 disks due to external drive limit! Not all games support external drives!\nCore restart required.",
+         NULL,
+         "media",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -478,7 +517,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_floppy_write_protection",
          "Media > Floppy Write Protection",
+         "Floppy Write Protection",
          "Set all drives read only. Changing this while emulation is running ejects and reinserts all disks. IPF images are always read only!",
+         NULL,
+         "media",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -489,7 +531,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_cd_speed",
          "Media > CD Speed",
+         "CD Speed",
          "Transfer rate in CD32 is 300KB/s (double-speed), CDTV is 150KB/s (single-speed). 'Turbo' removes seek delay emulation.",
+         NULL,
+         "media",
          {
             { "100", "Default" },
             { "0", "Turbo" },
@@ -500,7 +545,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_cd_startup_delayed_insert",
          "Media > CD Startup Delayed Insert",
+         "CD Startup Delayed Insert",
          "Some games fail to load if CD32/CDTV is powered on with CD inserted. 'ON' inserts CD during boot animation.",
+         NULL,
+         "media",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -511,7 +559,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_shared_nvram",
          "Media > CD32/CDTV Shared NVRAM",
+         "CD32/CDTV Shared NVRAM",
          "'OFF' saves separate files per content. Starting without content uses the shared file. CD32 and CDTV use separate shared files.\nCore restart required.",
+         NULL,
+         "media",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -522,7 +573,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_use_boot_hd",
          "Media > Global Boot HD",
+         "Global Boot HD",
          "Attach a hard disk meant for Workbench usage, not for WHDLoad! Enabling forces a model with HD interface. Changing HDF size will not replace or edit the existing HDF.\nCore restart required.",
+         NULL,
+         "media",
          {
             { "disabled", NULL },
             { "files", "Files" },
@@ -539,7 +593,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_use_whdload",
          "Media > WHDLoad Support",
+         "WHDLoad Support",
          "Enable launching pre-installed WHDLoad installs. Creates a helper image for loading content and an empty image for saving. Core restart required.\n- 'Files' creates data in directories\n- 'HDFs' creates data in images",
+         NULL,
+         "media",
          {
             { "disabled", NULL },
             { "files", "Files" },
@@ -551,7 +608,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_use_whdload_prefs",
          "Media > WHDLoad Splash Screen",
+         "WHDLoad Splash Screen",
          "Space/Enter/Fire works as WHDLoad Start-button. Core restart required.\nOverride with buttons while booting:\n- 'Config': Hold 2nd fire / Blue\n- 'Splash': Hold LMB\n- 'Config + Splash': Hold RMB\n- ReadMe + MkCustom: Hold Red+Blue",
+         NULL,
+         "media",
          {
             { "disabled", NULL },
             { "config", "Config (Show only if available)" },
@@ -564,7 +624,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_video_options_display",
          "Show Video Options",
+         NULL,
          "Page refresh by menu toggle required!",
+         NULL,
+         NULL,
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -575,7 +638,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_video_allow_hz_change",
          "Video > Allow Hz Change",
+         "Allow Hz Change",
          "Let Amiga decide the exact refresh rate when interlace mode or PAL/NTSC changes.",
+         NULL,
+         "video",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -586,7 +652,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_video_standard",
          "Video > Standard",
+         "Standard",
          "Output Hz & height:\n- 'PAL': 50Hz - 288px / 576px\n- 'NTSC': 60Hz - 240px / 480px\n- 'Automatic' switches region per file path tags.",
+         NULL,
+         "video",
          {
             { "PAL auto", "Automatic PAL" },
             { "NTSC auto", "Automatic NTSC" },
@@ -599,7 +668,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_video_resolution",
          "Video > Resolution",
+         "Resolution",
          "Output width:\n- 'Automatic' defaults to 'High' and switches to 'Super-High' when needed.",
+         NULL,
+         "video",
          {
             { "auto", "Automatic" },
             { "lores", "Low 360px" },
@@ -612,7 +684,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_video_vresolution",
          "Video > Line Mode",
+         "Line Mode",
          "Output height:\n- 'Automatic' defaults to 'Single Line' and switches to 'Double Line' on interlaced screens.",
+         NULL,
+         "video",
          {
             { "auto", "Automatic" },
             { "single", "Single Line" },
@@ -624,7 +699,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_video_aspect",
          "Video > Pixel Aspect Ratio",
+         "Pixel Aspect Ratio",
          "Hotkey toggling disables this option until core restart.\n- 'PAL': 1/1 = 1.000\n- 'NTSC': 44/52 = 0.846",
+         NULL,
+         "video",
          {
             { "auto", "Automatic" },
             { "PAL", NULL },
@@ -636,7 +714,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_zoom_mode",
          "Video > Zoom Mode",
+         "Zoom Mode",
          "Crop borders to fit various host screens. Requirements in RetroArch settings:\n- Aspect Ratio: Core provided,\n- Integer Scale: Off.",
+         NULL,
+         "video",
          {
             { "disabled", NULL },
             { "minimum", "Minimum" },
@@ -654,7 +735,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_zoom_mode_crop",
          "Video > Zoom Mode Crop",
+         "Zoom Mode Crop",
          "'Horizontal + Vertical' & 'Automatic' removes borders completely.",
+         NULL,
+         "video",
          {
             { "both", "Horizontal + Vertical" },
             { "horizontal", "Horizontal" },
@@ -670,7 +754,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_vertical_pos",
          "Video > Vertical Position",
+         "Vertical Position",
          "'Automatic' keeps only zoomed screens centered. Positive values move upward and negative values move downward.",
+         NULL,
+         "video",
          {
             { "auto", "Automatic" },
             { "0", "Default" },
@@ -726,7 +813,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_horizontal_pos",
          "Video > Horizontal Position",
+         "Horizontal Position",
          "'Automatic' keeps screen centered. Positive values move right and negative values move left.",
+         NULL,
+         "video",
          {
             { "auto", "Automatic" },
             { "0", "Default" },
@@ -777,7 +867,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_gfx_flickerfixer",
          "Video > Remove Interlace Artifacts",
+         "Remove Interlace Artifacts",
          "Best suited for still screens, Workbench etc.",
+         NULL,
+         "video",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -788,7 +881,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_immediate_blits",
          "Video > Immediate/Waiting Blits",
+         "Immediate/Waiting Blits",
          "'Immediate Blitter' is ignored with 'Cycle-exact'.",
+         NULL,
+         "video",
          {
             { "false", "disabled" },
             { "immediate", "Immediate Blitter" },
@@ -800,7 +896,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_collision_level",
          "Video > Collision Level",
+         "Collision Level",
          "'Sprites and Playfields' is recommended.",
+         NULL,
+         "video",
          {
             { "none", "None" },
             { "sprites", "Sprites only" },
@@ -813,7 +912,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_gfx_framerate",
          "Video > Frameskip",
+         "Frameskip",
          "Not compatible with 'Cycle-exact'.",
+         NULL,
+         "video",
          {
             { "disabled", NULL },
             { "1", NULL },
@@ -825,7 +927,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_statusbar",
          "Video > Statusbar Mode",
+         "Statusbar Mode",
          "- 'Full': Joyports + Current image + LEDs\n- 'Basic': Current image + LEDs\n- 'Minimal': Track number + FPS hidden",
+         NULL,
+         "video",
          {
             { "bottom", "Bottom Full" },
             { "bottom_minimal", "Bottom Full Minimal" },
@@ -842,7 +947,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_vkbd_theme",
          "Video > Virtual KBD Theme",
+         "Virtual KBD Theme",
          "By default, the keyboard comes up with RetroPad Select.",
+         NULL,
+         "video",
          {
             { "auto", "Automatic (shadow)" },
             { "auto_outline", "Automatic (outline)" },
@@ -861,7 +969,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_vkbd_transparency",
          "Video > Virtual KBD Transparency",
+         "Virtual KBD Transparency",
          "Keyboard transparency can be toggled with RetroPad A.",
+         NULL,
+         "video",
          {
             { "0%",   NULL },
             { "25%",  NULL },
@@ -875,7 +986,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_gfx_colors",
          "Video > Color Depth",
+         "Color Depth",
          "'24-bit' is slower and not available on all platforms. Full restart required.",
+         NULL,
+         "video",
          {
             { "16bit", "Thousands (16-bit)" },
             { "24bit", "Millions (24-bit)" },
@@ -886,7 +1000,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_gfx_gamma",
          "Video > Color Gamma",
-         "",
+         "Color Gamma",
+         "Adjust color gamma.",
+         NULL,
+         "video",
          {
             { "-500", "+0.5" },
             { "-400", "+0.4" },
@@ -906,7 +1023,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_audio_options_display",
          "Show Audio Options",
+         NULL,
          "Page refresh by menu toggle required!",
+         NULL,
+         NULL,
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -917,7 +1037,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_sound_stereo_separation",
          "Audio > Stereo Separation",
+         "Stereo Separation",
          "Paula sound chip channel panning. Does not affect CD audio.",
+         NULL,
+         "audio",
          {
             { "0%", NULL },
             { "10%", NULL },
@@ -937,7 +1060,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_sound_interpol",
          "Audio > Interpolation",
+         "Interpolation",
          "",
+         NULL,
+         "audio",
          {
             { "none", "None" },
             { "anti", "Anti" },
@@ -951,7 +1077,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_sound_filter",
          "Audio > Filter",
+         "Filter",
          "",
+         NULL,
+         "audio",
          {
             { "emulated", "Emulated" },
             { "off", "Off" },
@@ -963,7 +1092,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_sound_filter_type",
          "Audio > Filter Type",
+         "Filter Type",
          "",
+         NULL,
+         "audio",
          {
             { "auto", "Automatic" },
             { "standard", "A500" },
@@ -975,7 +1107,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_sound_volume_cd",
          "Audio > CD Audio Volume",
+         "CD Audio Volume",
          "",
+         NULL,
+         "audio",
          {
             { "0%", NULL },
             { "5%", NULL },
@@ -1005,7 +1140,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_floppy_sound",
          "Audio > Floppy Sound Emulation",
+         "Floppy Sound Emulation",
          "",
+         NULL,
+         "audio",
          {
             { "100", "disabled" },
             { "95", "5%" },
@@ -1035,7 +1173,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_floppy_sound_empty_mute",
          "Audio > Floppy Sound Mute Ejected",
+         "Floppy Sound Mute Ejected",
          "Mute drive head clicking when floppy is not inserted.",
+         NULL,
+         "audio",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -1046,7 +1187,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_floppy_sound_type",
          "Audio > Floppy Sound Type",
+         "Floppy Sound Type",
          "External files go in 'system/uae_data/' or 'system/uae/'.",
+         NULL,
+         "audio",
          {
             { "internal", "Internal" },
             { "A500", "External: A500" },
@@ -1058,7 +1202,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_analogmouse",
          "Input > Analog Stick Mouse",
+         "Analog Stick Mouse",
          "",
+         NULL,
+         "input",
          {
             { "disabled", NULL },
             { "left", "Left Analog" },
@@ -1071,7 +1218,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_analogmouse_deadzone",
          "Input > Analog Stick Mouse Deadzone",
+         "Analog Stick Mouse Deadzone",
          "",
+         NULL,
+         "input",
          {
             { "0", "0%" },
             { "5", "5%" },
@@ -1091,7 +1241,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_analogmouse_speed",
          "Input > Analog Stick Mouse Speed",
+         "Analog Stick Mouse Speed",
          "",
+         NULL,
+         "input",
          {
             { "0.5", "50%" },
             { "0.6", "60%" },
@@ -1116,7 +1269,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_dpadmouse_speed",
          "Input > D-Pad Mouse Speed",
+         "D-Pad Mouse Speed",
          "",
+         NULL,
+         "input",
          {
             { "3", "50%" },
             { "4", "66%" },
@@ -1135,7 +1291,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mouse_speed",
          "Input > Mouse Speed",
+         "Mouse Speed",
          "Affects mouse speed globally.",
+         NULL,
+         "input",
          {
             { "10", "10%" },
             { "20", "20%" },
@@ -1164,7 +1323,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_physicalmouse",
          "Input > Physical Mouse",
+         "Physical Mouse",
          "'Double' requirements: raw/udev input driver and proper mouse index per port.\nDoes not affect RetroPad emulated mice.",
+         NULL,
+         "input",
          {
             { "disabled", "disabled" },
             { "enabled", "enabled" },
@@ -1174,9 +1336,12 @@ void retro_set_environment(retro_environment_t cb)
          "enabled"
       },
       {
-         "puae_keyrah_keypad_mappings",
-         "Input > Keyrah Keypad Mappings",
-         "Hardcoded keypad to joyport mappings for Keyrah hardware.",
+         "puae_physical_keyboard_pass_through",
+         "Input > Keyboard Pass-through",
+         "Keyboard Pass-through",
+         "'ON' passes all physical keyboard events to the core. 'OFF' prevents RetroPad keys from generating keyboard events.",
+         NULL,
+         "input",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -1185,9 +1350,12 @@ void retro_set_environment(retro_environment_t cb)
          "disabled"
       },
       {
-         "puae_physical_keyboard_pass_through",
-         "Input > Keyboard Pass-through",
-         "'ON' passes all physical keyboard events to the core. 'OFF' prevents RetroPad keys from generating keyboard events.",
+         "puae_keyrah_keypad_mappings",
+         "Input > Keyrah Keypad Mappings",
+         "Keyrah Keypad Mappings",
+         "Hardcoded keypad to joyport mappings for Keyrah hardware.",
+         NULL,
+         "input",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -1198,7 +1366,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapping_options_display",
          "Show Mapping Options",
+         NULL,
          "Page refresh by menu toggle required!",
+         NULL,
+         NULL,
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -1210,42 +1381,60 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapper_vkbd",
          "Hotkey > Toggle Virtual Keyboard",
+         "Toggle Virtual Keyboard",
          "Press the mapped key to toggle the virtual keyboard.",
+         NULL,
+         "hotkey",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_statusbar",
          "Hotkey > Toggle Statusbar",
+         "Toggle Statusbar",
          "Press the mapped key to toggle the statusbar.",
+         NULL,
+         "hotkey",
          {{ NULL, NULL }},
          "RETROK_F12"
       },
       {
          "puae_mapper_mouse_toggle",
          "Hotkey > Switch Joystick/Mouse",
+         "Switch Joystick/Mouse",
          "Press the mapped key to switch between joystick and mouse control.",
+         NULL,
+         "hotkey",
          {{ NULL, NULL }},
          "RETROK_RCTRL"
       },
       {
          "puae_mapper_reset",
          "Hotkey > Reset",
+         "Reset",
          "Press the mapped key to trigger soft reset (Ctrl-Amiga-Amiga).",
+         NULL,
+         "hotkey",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_aspect_ratio_toggle",
          "Hotkey > Toggle Aspect Ratio",
+         "Toggle Aspect Ratio",
          "Press the mapped key to toggle between PAL/NTSC pixel aspect ratio.",
+         NULL,
+         "hotkey",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_zoom_mode_toggle",
          "Hotkey > Toggle Zoom Mode",
+         "Toggle Zoom Mode",
          "Press the mapped key to toggle zoom mode.",
+         NULL,
+         "hotkey",
          {{ NULL, NULL }},
          "---"
       },
@@ -1253,84 +1442,120 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapper_select",
          "RetroPad > Select",
+         "Select",
          "",
+         NULL,
+         "retropad",
          {{ NULL, NULL }},
          "TOGGLE_VKBD"
       },
       {
          "puae_mapper_start",
          "RetroPad > Start",
+         "Start",
          "VKBD: Press 'Return'. Remapping to non-keyboard keys overrides VKBD function!",
+         NULL,
+         "retropad",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_b",
          "RetroPad > B",
+         "B",
          "Unmapped defaults to fire button.\nVKBD: Press selected key.\n",
+         NULL,
+         "retropad",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_a",
          "RetroPad > A",
+         "A",
          "Unmapped defaults to 2nd fire button.\nVKBD: Toggle transparency. Remapping to non-keyboard keys overrides VKBD function!",
+         NULL,
+         "retropad",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_y",
          "RetroPad > Y",
+         "Y",
          "VKBD: Toggle 'CapsLock'. Remapping to non-keyboard keys overrides VKBD function!",
+         NULL,
+         "retropad",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_x",
          "RetroPad > X",
+         "X",
          "VKBD: Press 'Space'. Remapping to non-keyboard keys overrides VKBD function!",
+         NULL,
+         "retropad",
          {{ NULL, NULL }},
          "RETROK_SPACE"
       },
       {
          "puae_mapper_l",
          "RetroPad > L",
+         "L",
          "",
+         NULL,
+         "retropad",
          {{ NULL, NULL }},
          ""
       },
       {
          "puae_mapper_r",
          "RetroPad > R",
+         "R",
          "",
+         NULL,
+         "retropad",
          {{ NULL, NULL }},
          ""
       },
       {
          "puae_mapper_l2",
          "RetroPad > L2",
+         "L2",
          "",
+         NULL,
+         "retropad",
          {{ NULL, NULL }},
          "MOUSE_LEFT_BUTTON"
       },
       {
          "puae_mapper_r2",
          "RetroPad > R2",
+         "R2",
          "",
+         NULL,
+         "retropad",
          {{ NULL, NULL }},
          "MOUSE_RIGHT_BUTTON"
       },
       {
          "puae_mapper_l3",
          "RetroPad > L3",
+         "L3",
          "",
+         NULL,
+         "retropad",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_r3",
          "RetroPad > R3",
+         "R3",
          "",
+         NULL,
+         "retropad",
          {{ NULL, NULL }},
          "---"
       },
@@ -1338,28 +1563,40 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapper_lu",
          "RetroPad > Left Analog > Up",
+         "Left Analog > Up",
          "",
+         NULL,
+         "retropad",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_ld",
          "RetroPad > Left Analog > Down",
+         "Left Analog > Down",
          "",
+         NULL,
+         "retropad",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_ll",
          "RetroPad > Left Analog > Left",
+         "Left Analog > Left",
          "",
+         NULL,
+         "retropad",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_lr",
          "RetroPad > Left Analog > Right",
+         "Left Analog > Right",
          "",
+         NULL,
+         "retropad",
          {{ NULL, NULL }},
          "---"
       },
@@ -1367,35 +1604,50 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_mapper_ru",
          "RetroPad > Right Analog > Up",
+         "Right Analog > Up",
          "",
+         NULL,
+         "retropad",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_rd",
          "RetroPad > Right Analog > Down",
+         "Right Analog > Down",
          "",
+         NULL,
+         "retropad",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_rl",
          "RetroPad > Right Analog > Left",
+         "Right Analog > Left",
          "",
+         NULL,
+         "retropad",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_mapper_rr",
          "RetroPad > Right Analog > Right",
+         "Right Analog > Right",
          "",
+         NULL,
+         "retropad",
          {{ NULL, NULL }},
          "---"
       },
       {
          "puae_turbo_fire",
          "RetroPad > Turbo Fire",
+         "Turbo Fire",
          "Hotkey toggling disables this option until core restart.",
+         NULL,
+         "input",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -1406,7 +1658,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_turbo_fire_button",
          "RetroPad > Turbo Button",
+         "Turbo Button",
          "Replace the mapped button with turbo fire button.",
+         NULL,
+         "input",
          {
             { "B", "RetroPad B" },
             { "A", "RetroPad A" },
@@ -1423,7 +1678,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_turbo_pulse",
          "RetroPad > Turbo Pulse",
+         "Turbo Pulse",
          "Frames in a button cycle.\n- '2' = 1 frame down, 1 frame up\n- '4' = 2 frames down, 2 frames up\n- '6' = 3 frames down, 3 frames up\netc.",
+         NULL,
+         "input",
          {
             { "2", "2 frames" },
             { "4", "4 frames" },
@@ -1438,7 +1696,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_joyport",
          "RetroPad > Joystick/Mouse",
+         "Joystick/Mouse",
          "Change D-Pad control between joyports. Hotkey toggling disables this option until core restart.",
+         NULL,
+         "input",
          {
             { "joystick", "Joystick (Port 1)" },
             { "mouse", "Mouse (Port 2)" },
@@ -1448,8 +1709,11 @@ void retro_set_environment(retro_environment_t cb)
       },
       {
          "puae_joyport_order",
-         "RetroPad > Joyport Order",
+         "RetroPad > Joystick Port Order",
+         "Joystick Port Order",
          "Plug RetroPads in different ports. Useful for Arcadia system and games that use the 4-player adapter.",
+         NULL,
+         "input",
          {
             { "1234", "1-2-3-4" },
             { "2143", "2-1-4-3" },
@@ -1462,7 +1726,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_retropad_options",
          "RetroPad > Face Button Options",
+         "RetroPad Face Button Options",
          "Rotate face buttons clockwise and/or make 2nd fire press up.",
+         NULL,
+         "input",
          {
             { "disabled", "B = Fire, A = 2nd fire" },
             { "jump", "B = Fire, A = Up" },
@@ -1475,7 +1742,10 @@ void retro_set_environment(retro_environment_t cb)
       {
          "puae_cd32pad_options",
          "CD32 Pad > Face Button Options",
+         "CD32 Pad Face Button Options",
          "Rotate face buttons clockwise and/or make blue button press up.",
+         NULL,
+         "input",
          {
             { "disabled", "B = Red, A = Blue" },
             { "jump", "B = Red, A = Up" },
@@ -1485,7 +1755,7 @@ void retro_set_environment(retro_environment_t cb)
          },
          "disabled"
       },
-      { NULL, NULL, NULL, {{0}}, NULL },
+      { NULL, NULL, NULL, NULL, NULL, NULL, {{0}}, NULL },
    };
 
    /* Fill in the values for all the mappers */
@@ -1500,17 +1770,17 @@ void retro_set_environment(retro_environment_t cb)
          hotkeys_skipped++;
       ++j;
    }
-   while (core_options[i].key)
+   while (option_defs_us[i].key)
    {
-      if (strstr(core_options[i].key, "puae_mapper_"))
+      if (strstr(option_defs_us[i].key, "puae_mapper_"))
       {
          /* Show different key list for hotkeys (special negatives removed) */
-         if (  strstr(core_options[i].key, "puae_mapper_vkbd")
-            || strstr(core_options[i].key, "puae_mapper_statusbar")
-            || strstr(core_options[i].key, "puae_mapper_mouse_toggle")
-            || strstr(core_options[i].key, "puae_mapper_reset")
-            || strstr(core_options[i].key, "puae_mapper_aspect_ratio_toggle")
-            || strstr(core_options[i].key, "puae_mapper_zoom_mode_toggle"))
+         if (  strstr(option_defs_us[i].key, "puae_mapper_vkbd")
+            || strstr(option_defs_us[i].key, "puae_mapper_statusbar")
+            || strstr(option_defs_us[i].key, "puae_mapper_mouse_toggle")
+            || strstr(option_defs_us[i].key, "puae_mapper_reset")
+            || strstr(option_defs_us[i].key, "puae_mapper_aspect_ratio_toggle")
+            || strstr(option_defs_us[i].key, "puae_mapper_zoom_mode_toggle"))
             hotkey = 1;
          else
             hotkey = 0;
@@ -1522,13 +1792,13 @@ void retro_set_environment(retro_environment_t cb)
             {
                if (j == 0) /* "---" unmapped */
                {
-                  core_options[i].values[j].value = retro_keys[j].value;
-                  core_options[i].values[j].label = retro_keys[j].label;
+                  option_defs_us[i].values[j].value = retro_keys[j].value;
+                  option_defs_us[i].values[j].label = retro_keys[j].label;
                }
                else
                {
-                  core_options[i].values[j].value = retro_keys[j + hotkeys_skipped + 1].value;
-                  core_options[i].values[j].label = retro_keys[j + hotkeys_skipped + 1].label;
+                  option_defs_us[i].values[j].value = retro_keys[j + hotkeys_skipped + 1].value;
+                  option_defs_us[i].values[j].label = retro_keys[j + hotkeys_skipped + 1].label;
                }
                ++j;
             };
@@ -1537,77 +1807,324 @@ void retro_set_environment(retro_environment_t cb)
          {
             while (retro_keys[j].value[0] && j < RETRO_NUM_CORE_OPTION_VALUES_MAX - 1)
             {
-               core_options[i].values[j].value = retro_keys[j].value;
-               core_options[i].values[j].label = retro_keys[j].label;
+               option_defs_us[i].values[j].value = retro_keys[j].value;
+               option_defs_us[i].values[j].label = retro_keys[j].label;
                ++j;
             };
          }
-         core_options[i].values[j].value = NULL;
-         core_options[i].values[j].label = NULL;
+         option_defs_us[i].values[j].value = NULL;
+         option_defs_us[i].values[j].label = NULL;
       };
       ++i;
    }
 
-   environ_cb = cb;
-   cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, (void*)ports);
+   struct retro_core_options_v2 options_us = {
+      option_cats_us,
+      option_defs_us
+   };
 
    unsigned version = 0;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION, &version) && (version >= 1))
+   if (!environ_cb(RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION, &version))
+      version = 0;
+
+   if (version >= 2)
    {
-      cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS, core_options);
+#ifndef HAVE_NO_LANGEXTRA
+      struct retro_core_options_v2_intl core_options_intl;
+
+      core_options_intl.us    = &options_us;
+      core_options_intl.local = NULL;
+
+      if (environ_cb(RETRO_ENVIRONMENT_GET_LANGUAGE, &language) &&
+          (language < RETRO_LANGUAGE_LAST) && (language != RETRO_LANGUAGE_ENGLISH))
+         core_options_intl.local = options_intl[language];
+
+      libretro_supports_option_categories = environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_V2_INTL,
+            &core_options_intl);
+#else
+      libretro_supports_option_categories = environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_V2,
+            &options_us);
+#endif
    }
    else
    {
-      /* Fallback for older API */
-      /* Use define because C doesn't care about const. */
-#define NUM_CORE_OPTIONS ( sizeof(core_options)/sizeof(core_options[0])-1 )
-      static struct retro_variable variables[NUM_CORE_OPTIONS+1];
+      size_t i, j;
+      size_t option_index              = 0;
+      size_t num_options               = 0;
+      struct retro_core_option_definition
+            *option_v1_defs_us         = NULL;
+#ifndef HAVE_NO_LANGEXTRA
+      size_t num_options_intl          = 0;
+      struct retro_core_option_v2_definition
+            *option_defs_intl          = NULL;
+      struct retro_core_option_definition
+            *option_v1_defs_intl       = NULL;
+      struct retro_core_options_intl
+            core_options_v1_intl;
+#endif
+      struct retro_variable *variables = NULL;
+      char **values_buf                = NULL;
 
-      /* Only generate variables once, it's as static as core_options */
-      if (!core_options_legacy_strings)
+      /* Determine total number of options */
+      while (true)
       {
-         /* First pass: Calculate size of string-buffer required */
-         unsigned buf_len;
-         char *buf;
-         {
-            unsigned alloc_len = 0;
-            struct retro_core_option_definition *o = core_options + NUM_CORE_OPTIONS - 1;
-            struct retro_variable *rv = variables + NUM_CORE_OPTIONS - 1;
-            for (; o >= core_options; --o, --rv)
-            {
-               int l = snprintf(0, 0, "%s; %s", o->desc, o->default_value);
-               for (struct retro_core_option_value *v = o->values; v->value; ++v)
-                  l += snprintf(0, 0, "|%s", v->value);
-               alloc_len += l + 1;
-            }
-            buf = core_options_legacy_strings = (char *)malloc(alloc_len);
-            buf_len = alloc_len;
-         }
-         /* Second pass: Fill string-buffer */
-         struct retro_core_option_definition *o = core_options + NUM_CORE_OPTIONS - 1;
-         struct retro_variable *rv = variables + NUM_CORE_OPTIONS;
-         rv->key = rv->value = 0;
-         --rv;
-         for (; o >= core_options; --o, --rv)
-         {
-            int l = snprintf(buf, buf_len, "%s; %s", o->desc, o->default_value);
-            for (struct retro_core_option_value *v = o->values; v->value; ++v)
-               if (v->value != o->default_value)
-                  l += snprintf(buf+l, buf_len, "|%s", v->value);
-            rv->key = o->key;
-            rv->value = buf;
-            ++l;
-            buf += l;
-            buf_len -= l;
-         }
+         if (option_defs_us[num_options].key)
+            num_options++;
+         else
+            break;
       }
-      cb(RETRO_ENVIRONMENT_SET_VARIABLES, variables);
-#undef NUM_CORE_OPTIONS
-   }
 
-   static bool allowNoGameMode;
-   allowNoGameMode = true;
-   cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &allowNoGameMode);
+      if (version >= 1)
+      {
+         /* Allocate US array */
+         option_v1_defs_us = (struct retro_core_option_definition *)
+               calloc(num_options + 1, sizeof(struct retro_core_option_definition));
+
+         /* Copy parameters from option_defs_us array */
+         for (i = 0; i < num_options; i++)
+         {
+            struct retro_core_option_v2_definition *option_def_us = &option_defs_us[i];
+            struct retro_core_option_value *option_values         = option_def_us->values;
+            struct retro_core_option_definition *option_v1_def_us = &option_v1_defs_us[i];
+            struct retro_core_option_value *option_v1_values      = option_v1_def_us->values;
+
+            option_v1_def_us->key           = option_def_us->key;
+            option_v1_def_us->desc          = option_def_us->desc;
+            option_v1_def_us->info          = option_def_us->info;
+            option_v1_def_us->default_value = option_def_us->default_value;
+
+            /* Values must be copied individually... */
+            while (option_values->value)
+            {
+               option_v1_values->value = option_values->value;
+               option_v1_values->label = option_values->label;
+
+               option_values++;
+               option_v1_values++;
+            }
+         }
+
+#ifndef HAVE_NO_LANGEXTRA
+         if (environ_cb(RETRO_ENVIRONMENT_GET_LANGUAGE, &language) &&
+             (language < RETRO_LANGUAGE_LAST) && (language != RETRO_LANGUAGE_ENGLISH) &&
+             options_intl[language])
+            option_defs_intl = options_intl[language]->definitions;
+
+         if (option_defs_intl)
+         {
+            /* Determine number of intl options */
+            while (true)
+            {
+               if (option_defs_intl[num_options_intl].key)
+                  num_options_intl++;
+               else
+                  break;
+            }
+
+            /* Allocate intl array */
+            option_v1_defs_intl = (struct retro_core_option_definition *)
+                  calloc(num_options_intl + 1, sizeof(struct retro_core_option_definition));
+
+            /* Copy parameters from option_defs_intl array */
+            for (i = 0; i < num_options_intl; i++)
+            {
+               struct retro_core_option_v2_definition *option_def_intl = &option_defs_intl[i];
+               struct retro_core_option_value *option_values           = option_def_intl->values;
+               struct retro_core_option_definition *option_v1_def_intl = &option_v1_defs_intl[i];
+               struct retro_core_option_value *option_v1_values        = option_v1_def_intl->values;
+
+               option_v1_def_intl->key           = option_def_intl->key;
+               option_v1_def_intl->desc          = option_def_intl->desc;
+               option_v1_def_intl->info          = option_def_intl->info;
+               option_v1_def_intl->default_value = option_def_intl->default_value;
+
+               /* Values must be copied individually... */
+               while (option_values->value)
+               {
+                  option_v1_values->value = option_values->value;
+                  option_v1_values->label = option_values->label;
+
+                  option_values++;
+                  option_v1_values++;
+               }
+            }
+         }
+
+         core_options_v1_intl.us    = option_v1_defs_us;
+         core_options_v1_intl.local = option_v1_defs_intl;
+
+         environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_INTL, &core_options_v1_intl);
+#else
+         environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS, option_v1_defs_us);
+#endif
+      }
+      else
+      {
+         /* Allocate arrays */
+         variables  = (struct retro_variable *)calloc(num_options + 1,
+               sizeof(struct retro_variable));
+         values_buf = (char **)calloc(num_options, sizeof(char *));
+
+         if (!variables || !values_buf)
+            goto error;
+
+         /* Copy parameters from option_defs_us array */
+         for (i = 0; i < num_options; i++)
+         {
+            const char *key                        = option_defs_us[i].key;
+            const char *desc                       = option_defs_us[i].desc;
+            const char *default_value              = option_defs_us[i].default_value;
+            struct retro_core_option_value *values = option_defs_us[i].values;
+            size_t buf_len                         = 3;
+            size_t default_index                   = 0;
+
+            values_buf[i] = NULL;
+
+            if (desc)
+            {
+               size_t num_values = 0;
+
+               /* Determine number of values */
+               while (true)
+               {
+                  if (values[num_values].value)
+                  {
+                     /* Check if this is the default value */
+                     if (default_value)
+                        if (strcmp(values[num_values].value, default_value) == 0)
+                           default_index = num_values;
+
+                     buf_len += strlen(values[num_values].value);
+                     num_values++;
+                  }
+                  else
+                     break;
+               }
+
+               /* Build values string */
+               if (num_values > 0)
+               {
+                  buf_len += num_values - 1;
+                  buf_len += strlen(desc);
+
+                  values_buf[i] = (char *)calloc(buf_len, sizeof(char));
+                  if (!values_buf[i])
+                     goto error;
+
+                  strcpy(values_buf[i], desc);
+                  strcat(values_buf[i], "; ");
+
+                  /* Default value goes first */
+                  strcat(values_buf[i], values[default_index].value);
+
+                  /* Add remaining values */
+                  for (j = 0; j < num_values; j++)
+                  {
+                     if (j != default_index)
+                     {
+                        strcat(values_buf[i], "|");
+                        strcat(values_buf[i], values[j].value);
+                     }
+                  }
+               }
+            }
+
+            variables[option_index].key   = key;
+            variables[option_index].value = values_buf[i];
+            option_index++;
+         }
+
+         /* Set variables */
+         environ_cb(RETRO_ENVIRONMENT_SET_VARIABLES, variables);
+      }
+
+error:
+      /* Clean up */
+
+      if (option_v1_defs_us)
+      {
+         free(option_v1_defs_us);
+         option_v1_defs_us = NULL;
+      }
+
+#ifndef HAVE_NO_LANGEXTRA
+      if (option_v1_defs_intl)
+      {
+         free(option_v1_defs_intl);
+         option_v1_defs_intl = NULL;
+      }
+#endif
+
+      if (values_buf)
+      {
+         for (i = 0; i < num_options; i++)
+         {
+            if (values_buf[i])
+            {
+               free(values_buf[i]);
+               values_buf[i] = NULL;
+            }
+         }
+
+         free(values_buf);
+         values_buf = NULL;
+      }
+
+      if (variables)
+      {
+         free(variables);
+         variables = NULL;
+      }
+   }
+}
+
+void retro_set_environment(retro_environment_t cb)
+{
+   environ_cb = cb;
+   retro_set_core_options();
+
+   static const struct retro_controller_description p1_controllers[] = {
+      { "CD32 Pad", RETRO_DEVICE_PUAE_CD32PAD },
+      { "Analog Joystick", RETRO_DEVICE_PUAE_ANALOG },
+      { "Joystick", RETRO_DEVICE_PUAE_JOYSTICK },
+      { "Keyboard", RETRO_DEVICE_PUAE_KEYBOARD },
+      { "None", RETRO_DEVICE_NONE },
+   };
+   static const struct retro_controller_description p2_controllers[] = {
+      { "CD32 Pad", RETRO_DEVICE_PUAE_CD32PAD },
+      { "Analog Joystick", RETRO_DEVICE_PUAE_ANALOG },
+      { "Joystick", RETRO_DEVICE_PUAE_JOYSTICK },
+      { "Keyboard", RETRO_DEVICE_PUAE_KEYBOARD },
+      { "None", RETRO_DEVICE_NONE },
+   };
+   static const struct retro_controller_description p3_controllers[] = {
+      { "Joystick", RETRO_DEVICE_PUAE_JOYSTICK },
+      { "Keyboard", RETRO_DEVICE_PUAE_KEYBOARD },
+      { "None", RETRO_DEVICE_NONE },
+   };
+   static const struct retro_controller_description p4_controllers[] = {
+      { "Joystick", RETRO_DEVICE_PUAE_JOYSTICK },
+      { "Keyboard", RETRO_DEVICE_PUAE_KEYBOARD },
+      { "None", RETRO_DEVICE_NONE },
+   };
+   static const struct retro_controller_description p5_controllers[] = {
+      { "Keyboard", RETRO_DEVICE_PUAE_KEYBOARD },
+      { "None", RETRO_DEVICE_NONE },
+   };
+
+   static const struct retro_controller_info ports[] = {
+      { p1_controllers, 5 }, /* port 1 */
+      { p2_controllers, 5 }, /* port 2 */
+      { p3_controllers, 3 }, /* port 3 */
+      { p4_controllers, 3 }, /* port 4 */
+      { p5_controllers, 2 }, /* port 5 */
+      { NULL, 0 }
+   };
+   
+   cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, (void*)ports);
+
+   bool support_no_game = true;
+   cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &support_no_game);
 
    static struct retro_led_interface led_interface;
    cb(RETRO_ENVIRONMENT_GET_LED_INTERFACE, &led_interface);
@@ -2768,7 +3285,100 @@ static void update_variables(void)
       mapper_keys[RETRO_MAPPER_ZOOM_MODE] = retro_keymap_id(var.value);
    }
 
+   /* Setting resolution */
+   switch (video_config)
+   {
+      case PUAE_VIDEO_PAL_LO:
+         defaultw = PUAE_VIDEO_WIDTH / 2;
+         defaulth = PUAE_VIDEO_HEIGHT_PAL / 2;
+         strcat(uae_config, "gfx_resolution=lores\n");
+         strcat(uae_config, "gfx_linemode=none\n");
+         break;
+      case PUAE_VIDEO_PAL_HI:
+         defaultw = PUAE_VIDEO_WIDTH;
+         defaulth = PUAE_VIDEO_HEIGHT_PAL / 2;
+         strcat(uae_config, "gfx_resolution=hires\n");
+         strcat(uae_config, "gfx_linemode=none\n");
+         break;
+      case PUAE_VIDEO_PAL_HI_DL:
+         defaultw = PUAE_VIDEO_WIDTH;
+         defaulth = PUAE_VIDEO_HEIGHT_PAL;
+         strcat(uae_config, "gfx_resolution=hires\n");
+         strcat(uae_config, "gfx_linemode=double\n");
+         break;
+      case PUAE_VIDEO_PAL_SUHI:
+         defaultw = PUAE_VIDEO_WIDTH * 2;
+         defaulth = PUAE_VIDEO_HEIGHT_PAL / 2;
+         strcat(uae_config, "gfx_resolution=superhires\n");
+         strcat(uae_config, "gfx_linemode=none\n");
+         break;
+      case PUAE_VIDEO_PAL_SUHI_DL:
+         defaultw = PUAE_VIDEO_WIDTH * 2;
+         defaulth = PUAE_VIDEO_HEIGHT_PAL;
+         strcat(uae_config, "gfx_resolution=superhires\n");
+         strcat(uae_config, "gfx_linemode=double\n");
+         break;
+
+      case PUAE_VIDEO_NTSC_LO:
+         defaultw = PUAE_VIDEO_WIDTH / 2;
+         defaulth = PUAE_VIDEO_HEIGHT_NTSC / 2;
+         strcat(uae_config, "gfx_resolution=lores\n");
+         strcat(uae_config, "gfx_linemode=none\n");
+         break;
+      case PUAE_VIDEO_NTSC_HI:
+         defaultw = PUAE_VIDEO_WIDTH;
+         defaulth = PUAE_VIDEO_HEIGHT_NTSC / 2;
+         strcat(uae_config, "gfx_resolution=hires\n");
+         strcat(uae_config, "gfx_linemode=none\n");
+         break;
+      case PUAE_VIDEO_NTSC_HI_DL:
+         defaultw = PUAE_VIDEO_WIDTH;
+         defaulth = PUAE_VIDEO_HEIGHT_NTSC;
+         strcat(uae_config, "gfx_resolution=hires\n");
+         strcat(uae_config, "gfx_linemode=double\n");
+         break;
+      case PUAE_VIDEO_NTSC_SUHI:
+         defaultw = PUAE_VIDEO_WIDTH * 2;
+         defaulth = PUAE_VIDEO_HEIGHT_NTSC / 2;
+         strcat(uae_config, "gfx_resolution=superhires\n");
+         strcat(uae_config, "gfx_linemode=none\n");
+         break;
+      case PUAE_VIDEO_NTSC_SUHI_DL:
+         defaultw = PUAE_VIDEO_WIDTH * 2;
+         defaulth = PUAE_VIDEO_HEIGHT_NTSC;
+         strcat(uae_config, "gfx_resolution=superhires\n");
+         strcat(uae_config, "gfx_linemode=double\n");
+         break;
+   }
+
+   /* Always update av_info geometry */
+   request_update_av_info = true;
+
+   /* Always trigger changed prefs */
+   config_changed = 1;
+   check_prefs_changed_audio();
+   check_prefs_changed_custom();
+   check_prefs_changed_cpu();
+   config_changed = 0;
+
    /*** Options display ***/
+   if (libretro_supports_option_categories)
+   {
+      option_display.visible = false;
+
+      option_display.key = "puae_mapping_options_display";
+      environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+      option_display.key = "puae_video_options_display";
+      environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+      option_display.key = "puae_audio_options_display";
+      environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+      option_display.key = "puae_model_options_display";
+      environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+      return;
+   }
 
    /* Model options */
    option_display.visible = opt_model_options_display;
@@ -2895,82 +3505,6 @@ static void update_variables(void)
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_mapper_zoom_mode_toggle";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-
-   /* Setting resolution */
-   switch (video_config)
-   {
-      case PUAE_VIDEO_PAL_LO:
-         defaultw = PUAE_VIDEO_WIDTH / 2;
-         defaulth = PUAE_VIDEO_HEIGHT_PAL / 2;
-         strcat(uae_config, "gfx_resolution=lores\n");
-         strcat(uae_config, "gfx_linemode=none\n");
-         break;
-      case PUAE_VIDEO_PAL_HI:
-         defaultw = PUAE_VIDEO_WIDTH;
-         defaulth = PUAE_VIDEO_HEIGHT_PAL / 2;
-         strcat(uae_config, "gfx_resolution=hires\n");
-         strcat(uae_config, "gfx_linemode=none\n");
-         break;
-      case PUAE_VIDEO_PAL_HI_DL:
-         defaultw = PUAE_VIDEO_WIDTH;
-         defaulth = PUAE_VIDEO_HEIGHT_PAL;
-         strcat(uae_config, "gfx_resolution=hires\n");
-         strcat(uae_config, "gfx_linemode=double\n");
-         break;
-      case PUAE_VIDEO_PAL_SUHI:
-         defaultw = PUAE_VIDEO_WIDTH * 2;
-         defaulth = PUAE_VIDEO_HEIGHT_PAL / 2;
-         strcat(uae_config, "gfx_resolution=superhires\n");
-         strcat(uae_config, "gfx_linemode=none\n");
-         break;
-      case PUAE_VIDEO_PAL_SUHI_DL:
-         defaultw = PUAE_VIDEO_WIDTH * 2;
-         defaulth = PUAE_VIDEO_HEIGHT_PAL;
-         strcat(uae_config, "gfx_resolution=superhires\n");
-         strcat(uae_config, "gfx_linemode=double\n");
-         break;
-
-      case PUAE_VIDEO_NTSC_LO:
-         defaultw = PUAE_VIDEO_WIDTH / 2;
-         defaulth = PUAE_VIDEO_HEIGHT_NTSC / 2;
-         strcat(uae_config, "gfx_resolution=lores\n");
-         strcat(uae_config, "gfx_linemode=none\n");
-         break;
-      case PUAE_VIDEO_NTSC_HI:
-         defaultw = PUAE_VIDEO_WIDTH;
-         defaulth = PUAE_VIDEO_HEIGHT_NTSC / 2;
-         strcat(uae_config, "gfx_resolution=hires\n");
-         strcat(uae_config, "gfx_linemode=none\n");
-         break;
-      case PUAE_VIDEO_NTSC_HI_DL:
-         defaultw = PUAE_VIDEO_WIDTH;
-         defaulth = PUAE_VIDEO_HEIGHT_NTSC;
-         strcat(uae_config, "gfx_resolution=hires\n");
-         strcat(uae_config, "gfx_linemode=double\n");
-         break;
-      case PUAE_VIDEO_NTSC_SUHI:
-         defaultw = PUAE_VIDEO_WIDTH * 2;
-         defaulth = PUAE_VIDEO_HEIGHT_NTSC / 2;
-         strcat(uae_config, "gfx_resolution=superhires\n");
-         strcat(uae_config, "gfx_linemode=none\n");
-         break;
-      case PUAE_VIDEO_NTSC_SUHI_DL:
-         defaultw = PUAE_VIDEO_WIDTH * 2;
-         defaulth = PUAE_VIDEO_HEIGHT_NTSC;
-         strcat(uae_config, "gfx_resolution=superhires\n");
-         strcat(uae_config, "gfx_linemode=double\n");
-         break;
-   }
-
-   /* Always update av_info geometry */
-   request_update_av_info = true;
-
-   /* Always trigger changed prefs */
-   config_changed = 1;
-   check_prefs_changed_audio();
-   check_prefs_changed_custom();
-   check_prefs_changed_cpu();
-   config_changed = 0;
 }
 
 /*****************************************************************************/
@@ -3340,13 +3874,6 @@ void retro_deinit(void)
    if (dc)
       dc_free(dc);
 
-   /* Clean legacy strings */
-   if (core_options_legacy_strings)
-   {
-      free(core_options_legacy_strings);
-      core_options_legacy_strings = NULL;
-   }
-
    /* Clean ZIP temp */
    if (!string_is_empty(retro_temp_directory) && path_is_directory(retro_temp_directory))
       remove_recurse(retro_temp_directory);
@@ -3364,6 +3891,7 @@ void retro_deinit(void)
    locked_video_horizontal = false;
    opt_aspect_ratio_locked = false;
    libretro_supports_bitmasks = false;
+   libretro_supports_option_categories = false;
 }
 
 unsigned retro_api_version(void)
