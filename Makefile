@@ -320,5 +320,11 @@ endif
 clean:
 	rm -f $(OBJECTS) $(TARGET)
 
+objectclean:
+	rm -f $(OBJECTS)
+
+targetclean:
+	rm -f $(TARGET)
+
 .PHONY: clean
 
