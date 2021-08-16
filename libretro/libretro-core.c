@@ -322,7 +322,8 @@ static void retro_set_core_options()
             { "CD32FR", "CD32 (2M Chip + 8M Fast)" },
             { NULL, NULL },
          },
-         "auto"
+         "auto",
+         NULL
       },
       {
          "puae_model_options_display",
@@ -336,7 +337,8 @@ static void retro_set_core_options()
             { "enabled", NULL },
             { NULL, NULL },
          },
-         "disabled"
+         "disabled",
+         "bool"
       },
       {
          "puae_model_fd",
@@ -358,7 +360,8 @@ static void retro_set_core_options()
             { "A4040", "A4000/040 (v3.1, 2M Chip + 8M Fast)" },
             { NULL, NULL },
          },
-         "A500"
+         "A500",
+         NULL
       },
       {
          "puae_model_hd",
@@ -376,7 +379,8 @@ static void retro_set_core_options()
             { "A4040", "A4000/040 (v3.1, 2M Chip + 8M Fast)" },
             { NULL, NULL },
          },
-         "A1200"
+         "A1200",
+         NULL
       },
       {
          "puae_model_cd",
@@ -391,7 +395,8 @@ static void retro_set_core_options()
             { "CD32FR", "CD32 (2M Chip + 8M Fast)" },
             { NULL, NULL },
          },
-         "CD32"
+         "CD32",
+         NULL
       },
       {
          "puae_kickstart",
@@ -414,7 +419,8 @@ static void retro_set_core_options()
             { "kick40068.A4000", "v3.1 rev 40.068 (A4000)" },
             { NULL, NULL },
          },
-         "auto"
+         "auto",
+         NULL
       },
       {
          "puae_cpu_compatibility",
@@ -429,7 +435,8 @@ static void retro_set_core_options()
             { "exact", "Cycle-exact" },
             { NULL, NULL },
          },
-         "normal"
+         "normal",
+         NULL
       },
       {
          "puae_cpu_throttle",
@@ -461,7 +468,8 @@ static void retro_set_core_options()
             { "10000.0", "+1000%" },
             { NULL, NULL },
          },
-         "0.0"
+         "0.0",
+         "float"
       },
       {
          "puae_cpu_multiplier",
@@ -481,7 +489,8 @@ static void retro_set_core_options()
             { "16", "56.750320 MHz" },
             { NULL, NULL },
          },
-         "0"
+         "0",
+         "int"
       },
       {
          "puae_floppy_speed",
@@ -498,7 +507,8 @@ static void retro_set_core_options()
             { "0", "Turbo" },
             { NULL, NULL },
          },
-         "100"
+         "100",
+         "int"
       },
       {
          "puae_floppy_multidrive",
@@ -512,7 +522,8 @@ static void retro_set_core_options()
             { "enabled", NULL },
             { NULL, NULL },
          },
-         "enabled"
+         "enabled",
+         "bool"
       },
       {
          "puae_floppy_write_protection",
@@ -526,7 +537,8 @@ static void retro_set_core_options()
             { "enabled", NULL },
             { NULL, NULL },
          },
-         "disabled"
+         "disabled",
+         "bool"
       },
       {
          "puae_cd_speed",
@@ -540,7 +552,8 @@ static void retro_set_core_options()
             { "0", "Turbo" },
             { NULL, NULL },
          },
-         "100"
+         "100",
+         "int"
       },
       {
          "puae_cd_startup_delayed_insert",
@@ -554,7 +567,8 @@ static void retro_set_core_options()
             { "enabled", NULL },
             { NULL, NULL },
          },
-         "disabled"
+         "disabled",
+         "bool"
       },
       {
          "puae_shared_nvram",
@@ -568,7 +582,8 @@ static void retro_set_core_options()
             { "enabled", NULL },
             { NULL, NULL },
          },
-         "disabled"
+         "disabled",
+         "bool"
       },
       {
          "puae_use_boot_hd",
@@ -588,7 +603,8 @@ static void retro_set_core_options()
             { "hdf512", "HDF 512MB" },
             { NULL, NULL },
          },
-         "disabled"
+         "disabled",
+         NULL
       },
       {
          "puae_use_whdload",
@@ -603,7 +619,8 @@ static void retro_set_core_options()
             { "hdfs", "HDFs" },
             { NULL, NULL },
          },
-         "files"
+         "files",
+         NULL
       },
       {
          "puae_use_whdload_prefs",
@@ -619,7 +636,8 @@ static void retro_set_core_options()
             { "both", "Config + Splash (Wait for user input)" },
             { NULL, NULL },
          },
-         "disabled"
+         "disabled",
+         NULL
       },
       {
          "puae_video_options_display",
@@ -633,7 +651,8 @@ static void retro_set_core_options()
             { "enabled", NULL },
             { NULL, NULL },
          },
-         "disabled"
+         "disabled",
+         "bool"
       },
       {
          "puae_video_allow_hz_change",
@@ -647,7 +666,8 @@ static void retro_set_core_options()
             { "enabled", NULL },
             { NULL, NULL },
          },
-         "enabled"
+         "enabled",
+         "bool"
       },
       {
          "puae_video_standard",
@@ -663,7 +683,8 @@ static void retro_set_core_options()
             { "NTSC", NULL },
             { NULL, NULL },
          },
-         "PAL auto"
+         "PAL auto",
+         NULL
       },
       {
          "puae_video_resolution",
@@ -679,7 +700,8 @@ static void retro_set_core_options()
             { "superhires", "Super-High 1440px" },
             { NULL, NULL },
          },
-         "auto"
+         "auto",
+         NULL
       },
       {
          "puae_video_vresolution",
@@ -694,7 +716,8 @@ static void retro_set_core_options()
             { "double", "Double Line" },
             { NULL, NULL },
          },
-         "auto"
+         "auto",
+         NULL
       },
       {
          "puae_video_aspect",
@@ -709,7 +732,8 @@ static void retro_set_core_options()
             { "NTSC", NULL },
             { NULL, NULL },
          },
-         "auto"
+         "auto",
+         NULL
       },
       {
          "puae_zoom_mode",
@@ -730,7 +754,8 @@ static void retro_set_core_options()
             { "auto", "Automatic" },
             { NULL, NULL },
          },
-         "disabled"
+         "disabled",
+         NULL
       },
       {
          "puae_zoom_mode_crop",
@@ -749,7 +774,8 @@ static void retro_set_core_options()
             { "5:4", "5:4" },
             { NULL, NULL },
          },
-         "both"
+         "both",
+         NULL
       },
       {
          "puae_vertical_pos",
@@ -808,7 +834,8 @@ static void retro_set_core_options()
             { "-2", NULL },
             { NULL, NULL },
          },
-         "auto"
+         "auto",
+         "int"
       },
       {
          "puae_horizontal_pos",
@@ -862,7 +889,8 @@ static void retro_set_core_options()
             { "-2", NULL },
             { NULL, NULL },
          },
-         "auto"
+         "auto",
+         "int"
       },
       {
          "puae_gfx_flickerfixer",
@@ -876,7 +904,8 @@ static void retro_set_core_options()
             { "enabled", NULL },
             { NULL, NULL },
          },
-         "disabled"
+         "disabled",
+         "bool"
       },
       {
          "puae_immediate_blits",
@@ -891,7 +920,8 @@ static void retro_set_core_options()
             { "waiting", "Wait for Blitter" },
             { NULL, NULL },
          },
-         "waiting"
+         "waiting",
+         NULL
       },
       {
          "puae_collision_level",
@@ -907,7 +937,8 @@ static void retro_set_core_options()
             { "full", "Full" },
             { NULL, NULL },
          },
-         "playfields"
+         "playfields",
+         NULL
       },
       {
          "puae_gfx_framerate",
@@ -922,7 +953,8 @@ static void retro_set_core_options()
             { "2", NULL },
             { NULL, NULL },
          },
-         "disabled"
+         "disabled",
+         NULL
       },
       {
          "puae_statusbar",
@@ -942,7 +974,8 @@ static void retro_set_core_options()
             { "top_basic_minimal", "Top Basic Minimal" },
             { NULL, NULL },
          },
-         "bottom"
+         "bottom",
+         NULL
       },
       {
          "puae_vkbd_theme",
@@ -964,7 +997,8 @@ static void retro_set_core_options()
             { "dark_outline", "Dark (outline)" },
             { NULL, NULL },
          },
-         "auto"
+         "auto",
+         NULL
       },
       {
          "puae_vkbd_transparency",
@@ -981,7 +1015,8 @@ static void retro_set_core_options()
             { "100%", NULL },
             { NULL, NULL },
          },
-         "25%"
+         "25%",
+         NULL
       },
       {
          "puae_gfx_colors",
@@ -995,7 +1030,8 @@ static void retro_set_core_options()
             { "24bit", "Millions (24-bit)" },
             { NULL, NULL },
          },
-         "16bit"
+         "16bit",
+         NULL
       },
       {
          "puae_gfx_gamma",
@@ -1018,7 +1054,8 @@ static void retro_set_core_options()
             { "500", "-0.5" },
             { NULL, NULL },
          },
-         "0"
+         "0",
+         NULL
       },
       {
          "puae_audio_options_display",
@@ -1032,7 +1069,8 @@ static void retro_set_core_options()
             { "enabled", NULL },
             { NULL, NULL },
          },
-         "disabled"
+         "disabled",
+         "bool"
       },
       {
          "puae_sound_stereo_separation",
@@ -1055,7 +1093,8 @@ static void retro_set_core_options()
             { "100%", NULL },
             { NULL, NULL },
          },
-         "100%"
+         "100%",
+         NULL
       },
       {
          "puae_sound_interpol",
@@ -1072,7 +1111,8 @@ static void retro_set_core_options()
             { "crux", "Crux" },
             { NULL, NULL },
          },
-         "anti"
+         "anti",
+         NULL
       },
       {
          "puae_sound_filter",
@@ -1087,7 +1127,8 @@ static void retro_set_core_options()
             { "on", "On" },
             { NULL, NULL },
          },
-         "emulated"
+         "emulated",
+         NULL
       },
       {
          "puae_sound_filter_type",
@@ -1103,6 +1144,7 @@ static void retro_set_core_options()
             { NULL, NULL },
          },
          "auto",
+         NULL
       },
       {
          "puae_sound_volume_cd",
@@ -1135,7 +1177,8 @@ static void retro_set_core_options()
             { "100%", NULL },
             { NULL, NULL },
          },
-         "100%"
+         "100%",
+         NULL
       },
       {
          "puae_floppy_sound",
@@ -1168,7 +1211,8 @@ static void retro_set_core_options()
             { "0", "100%" },
             { NULL, NULL },
          },
-         "80"
+         "80",
+         "int"
       },
       {
          "puae_floppy_sound_empty_mute",
@@ -1182,7 +1226,8 @@ static void retro_set_core_options()
             { "enabled", NULL },
             { NULL, NULL },
          },
-         "disabled"
+         "disabled",
+         "bool"
       },
       {
          "puae_floppy_sound_type",
@@ -1197,7 +1242,8 @@ static void retro_set_core_options()
             { "LOUD", "External: LOUD" },
             { NULL, NULL },
          },
-         "internal"
+         "internal",
+         NULL
       },
       {
          "puae_analogmouse",
@@ -1213,7 +1259,8 @@ static void retro_set_core_options()
             { "both", "Both Analogs" },
             { NULL, NULL },
          },
-         "both"
+         "both",
+         NULL
       },
       {
          "puae_analogmouse_deadzone",
@@ -1236,7 +1283,8 @@ static void retro_set_core_options()
             { "50", "50%" },
             { NULL, NULL },
          },
-         "20"
+         "20",
+         "int"
       },
       {
          "puae_analogmouse_speed",
@@ -1264,7 +1312,8 @@ static void retro_set_core_options()
             { "2.0", "200%" },
             { NULL, NULL },
          },
-         "1.0"
+         "1.0",
+         "float"
       },
       {
          "puae_dpadmouse_speed",
@@ -1286,7 +1335,8 @@ static void retro_set_core_options()
             { "12", "200%" },
             { NULL, NULL },
          },
-         "6"
+         "6",
+         "int"
       },
       {
          "puae_mouse_speed",
@@ -1318,7 +1368,8 @@ static void retro_set_core_options()
             { "200", "200%" },
             { NULL, NULL },
          },
-         "100"
+         "100",
+         "int"
       },
       {
          "puae_physicalmouse",
@@ -1333,7 +1384,8 @@ static void retro_set_core_options()
             { "double", "Double" },
             { NULL, NULL },
          },
-         "enabled"
+         "enabled",
+         NULL
       },
       {
          "puae_physical_keyboard_pass_through",
@@ -1347,7 +1399,8 @@ static void retro_set_core_options()
             { "enabled", NULL },
             { NULL, NULL },
          },
-         "disabled"
+         "disabled",
+         "bool"
       },
       {
          "puae_keyrah_keypad_mappings",
@@ -1361,7 +1414,8 @@ static void retro_set_core_options()
             { "enabled", NULL },
             { NULL, NULL },
          },
-         "disabled"
+         "disabled",
+         "bool"
       },
       {
          "puae_mapping_options_display",
@@ -1375,7 +1429,8 @@ static void retro_set_core_options()
             { "enabled", NULL },
             { NULL, NULL },
          },
-         "enabled"
+         "enabled",
+         "bool"
       },
       /* Hotkeys */
       {
@@ -1386,7 +1441,8 @@ static void retro_set_core_options()
          NULL,
          "hotkey",
          {{ NULL, NULL }},
-         "---"
+         "---",
+         NULL
       },
       {
          "puae_mapper_statusbar",
@@ -1396,7 +1452,8 @@ static void retro_set_core_options()
          NULL,
          "hotkey",
          {{ NULL, NULL }},
-         "RETROK_F12"
+         "RETROK_F12",
+         NULL
       },
       {
          "puae_mapper_mouse_toggle",
@@ -1406,7 +1463,8 @@ static void retro_set_core_options()
          NULL,
          "hotkey",
          {{ NULL, NULL }},
-         "RETROK_RCTRL"
+         "RETROK_RCTRL",
+         NULL
       },
       {
          "puae_mapper_reset",
@@ -1416,7 +1474,8 @@ static void retro_set_core_options()
          NULL,
          "hotkey",
          {{ NULL, NULL }},
-         "---"
+         "---",
+         NULL
       },
       {
          "puae_mapper_aspect_ratio_toggle",
@@ -1426,7 +1485,8 @@ static void retro_set_core_options()
          NULL,
          "hotkey",
          {{ NULL, NULL }},
-         "---"
+         "---",
+         NULL
       },
       {
          "puae_mapper_zoom_mode_toggle",
@@ -1436,7 +1496,8 @@ static void retro_set_core_options()
          NULL,
          "hotkey",
          {{ NULL, NULL }},
-         "---"
+         "---",
+         NULL
       },
       /* Button mappings */
       {
@@ -1447,7 +1508,8 @@ static void retro_set_core_options()
          NULL,
          "retropad",
          {{ NULL, NULL }},
-         "TOGGLE_VKBD"
+         "TOGGLE_VKBD",
+         NULL
       },
       {
          "puae_mapper_start",
@@ -1457,7 +1519,8 @@ static void retro_set_core_options()
          NULL,
          "retropad",
          {{ NULL, NULL }},
-         "---"
+         "---",
+         NULL
       },
       {
          "puae_mapper_b",
@@ -1467,7 +1530,8 @@ static void retro_set_core_options()
          NULL,
          "retropad",
          {{ NULL, NULL }},
-         "---"
+         "---",
+         NULL
       },
       {
          "puae_mapper_a",
@@ -1477,7 +1541,8 @@ static void retro_set_core_options()
          NULL,
          "retropad",
          {{ NULL, NULL }},
-         "---"
+         "---",
+         NULL
       },
       {
          "puae_mapper_y",
@@ -1487,7 +1552,8 @@ static void retro_set_core_options()
          NULL,
          "retropad",
          {{ NULL, NULL }},
-         "---"
+         "---",
+         NULL
       },
       {
          "puae_mapper_x",
@@ -1497,7 +1563,8 @@ static void retro_set_core_options()
          NULL,
          "retropad",
          {{ NULL, NULL }},
-         "RETROK_SPACE"
+         "RETROK_SPACE",
+         NULL
       },
       {
          "puae_mapper_l",
@@ -1507,7 +1574,8 @@ static void retro_set_core_options()
          NULL,
          "retropad",
          {{ NULL, NULL }},
-         ""
+         "",
+         NULL
       },
       {
          "puae_mapper_r",
@@ -1517,7 +1585,8 @@ static void retro_set_core_options()
          NULL,
          "retropad",
          {{ NULL, NULL }},
-         ""
+         "",
+         NULL
       },
       {
          "puae_mapper_l2",
@@ -1527,7 +1596,8 @@ static void retro_set_core_options()
          NULL,
          "retropad",
          {{ NULL, NULL }},
-         "MOUSE_LEFT_BUTTON"
+         "MOUSE_LEFT_BUTTON",
+         NULL
       },
       {
          "puae_mapper_r2",
@@ -1537,7 +1607,8 @@ static void retro_set_core_options()
          NULL,
          "retropad",
          {{ NULL, NULL }},
-         "MOUSE_RIGHT_BUTTON"
+         "MOUSE_RIGHT_BUTTON",
+         NULL
       },
       {
          "puae_mapper_l3",
@@ -1547,7 +1618,8 @@ static void retro_set_core_options()
          NULL,
          "retropad",
          {{ NULL, NULL }},
-         "---"
+         "---",
+         NULL
       },
       {
          "puae_mapper_r3",
@@ -1557,7 +1629,8 @@ static void retro_set_core_options()
          NULL,
          "retropad",
          {{ NULL, NULL }},
-         "---"
+         "---",
+         NULL
       },
       /* Left Stick */
       {
@@ -1568,7 +1641,8 @@ static void retro_set_core_options()
          NULL,
          "retropad",
          {{ NULL, NULL }},
-         "---"
+         "---",
+         NULL
       },
       {
          "puae_mapper_ld",
@@ -1578,7 +1652,8 @@ static void retro_set_core_options()
          NULL,
          "retropad",
          {{ NULL, NULL }},
-         "---"
+         "---",
+         NULL
       },
       {
          "puae_mapper_ll",
@@ -1588,7 +1663,8 @@ static void retro_set_core_options()
          NULL,
          "retropad",
          {{ NULL, NULL }},
-         "---"
+         "---",
+         NULL
       },
       {
          "puae_mapper_lr",
@@ -1598,7 +1674,8 @@ static void retro_set_core_options()
          NULL,
          "retropad",
          {{ NULL, NULL }},
-         "---"
+         "---",
+         NULL
       },
       /* Right Stick */
       {
@@ -1609,7 +1686,8 @@ static void retro_set_core_options()
          NULL,
          "retropad",
          {{ NULL, NULL }},
-         "---"
+         "---",
+         NULL
       },
       {
          "puae_mapper_rd",
@@ -1619,7 +1697,8 @@ static void retro_set_core_options()
          NULL,
          "retropad",
          {{ NULL, NULL }},
-         "---"
+         "---",
+         NULL
       },
       {
          "puae_mapper_rl",
@@ -1629,7 +1708,8 @@ static void retro_set_core_options()
          NULL,
          "retropad",
          {{ NULL, NULL }},
-         "---"
+         "---",
+         NULL
       },
       {
          "puae_mapper_rr",
@@ -1639,7 +1719,8 @@ static void retro_set_core_options()
          NULL,
          "retropad",
          {{ NULL, NULL }},
-         "---"
+         "---",
+         NULL
       },
       {
          "puae_turbo_fire",
@@ -1653,7 +1734,8 @@ static void retro_set_core_options()
             { "enabled", NULL },
             { NULL, NULL },
          },
-         "disabled"
+         "disabled",
+         "bool"
       },
       {
          "puae_turbo_fire_button",
@@ -1673,7 +1755,8 @@ static void retro_set_core_options()
             { "R2", "RetroPad R2" },
             { NULL, NULL },
          },
-         "B"
+         "B",
+         NULL
       },
       {
          "puae_turbo_pulse",
@@ -1691,7 +1774,8 @@ static void retro_set_core_options()
             { "12", "12 frames" },
             { NULL, NULL },
          },
-         "6"
+         "6",
+         "int"
       },
       {
          "puae_joyport",
@@ -1705,7 +1789,8 @@ static void retro_set_core_options()
             { "mouse", "Mouse (Port 2)" },
             { NULL, NULL },
          },
-         "Joystick"
+         "joystick",
+         NULL
       },
       {
          "puae_joyport_order",
@@ -1721,7 +1806,8 @@ static void retro_set_core_options()
             { "4321", "4-3-2-1" },
             { NULL, NULL },
          },
-         "1234"
+         "1234",
+         NULL
       },
       {
          "puae_retropad_options",
@@ -1737,7 +1823,8 @@ static void retro_set_core_options()
             { "rotate_jump", "Y = Fire, B = Up" },
             { NULL, NULL },
          },
-         "disabled"
+         "disabled",
+         NULL
       },
       {
          "puae_cd32pad_options",
@@ -1753,9 +1840,10 @@ static void retro_set_core_options()
             { "rotate_jump", "Y = Red, B = Up" },
             { NULL, NULL },
          },
-         "disabled"
+         "disabled",
+         NULL
       },
-      { NULL, NULL, NULL, NULL, NULL, NULL, {{0}}, NULL },
+      { NULL, NULL, NULL, NULL, NULL, NULL, {{0}}, NULL, NULL },
    };
 
    /* Fill in the values for all the mappers */
