@@ -5,8 +5,7 @@
 
 #include "libretro-core.h"
 #include "libretro-graph.h"
-
-#include "font.i"
+#include "libretro-font.i"
 
 static unsigned short int *linesurf = NULL;
 static int linesurf_w          = 0;
@@ -408,7 +407,7 @@ static void draw_char_1pass(const char *string, unsigned int strlen,
       /* Fill */
       for (col = 0; col < strlen; col++)
       {
-         b = font_array[(string[col] ^ 0x80)*charw + ypixel - 1];
+         b = font_array[(string[col])*charw + ypixel - 1];
          for (bit = 0; bit < charw + 1; bit++, yptr++)
          {
             *yptr = (b & (1 << (charw - 1 - bit) + 1)) ? fg : bg;
@@ -450,7 +449,7 @@ static void draw_char_1pass32(const char *string, unsigned int strlen,
       /* Fill */
       for (col = 0; col < strlen; col++)
       {
-         b = font_array[(string[col] ^ 0x80)*charw + ypixel - 1];
+         b = font_array[(string[col])*charw + ypixel - 1];
          for (bit = 0; bit < charw + 1; bit++, yptr32++)
          {
             *yptr32 = (b & (1 << (charw - 1 - bit) + 1)) ? fg : bg;
