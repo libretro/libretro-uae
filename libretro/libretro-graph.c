@@ -15,6 +15,14 @@ static uint32_t *linesurf32    = NULL;
 static int linesurf32_w        = 0;
 static int linesurf32_h        = 0;
 
+int RGBc(int r, int g, int b)
+{
+   if (pix_bytes == 4)
+      return ARGB888(255, r, g, b);
+   else
+      return RGB565(r, g, b);
+}
+
 #define BLEND_ALPHA25(fg, bg, out)                                   \
 {                                                                    \
    unsigned short color_50 = ((fg + bg + ((fg ^ bg) & 0x821)) >> 1); \

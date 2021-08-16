@@ -40,7 +40,7 @@ void retro_set_input_poll(retro_input_poll_t cb)
 
 /* Core flags */
 int mapper_keys[RETRO_MAPPER_LAST] = {0};
-int retro_capslock = false;
+bool retro_capslock = false;
 bool retro_mousemode = false;
 bool mousemode_locked = false;
 
@@ -54,10 +54,6 @@ static unsigned int mouse_speed[2] = {0};
 extern bool request_update_av_info;
 extern void retro_reset_soft();
 extern bool retro_statusbar;
-extern bool retro_vkbd;
-extern short int retro_vkbd_ready;
-extern void input_vkbd(void);
-extern int vkflag[10];
 
 static unsigned retro_key_state[RETROK_LAST] = {0};
 static unsigned retro_key_event_state[RETROK_LAST] = {0};
@@ -93,6 +89,9 @@ void emu_function(int function)
    switch (function)
    {
       case EMU_VKBD:
+         /* No toggling while key is pressed */
+         if (vkflag[RETRO_DEVICE_ID_JOYPAD_B])
+            return;
          retro_vkbd = !retro_vkbd;
          /* Reset VKBD input readiness */
          retro_vkbd_ready = -2;
@@ -872,7 +871,8 @@ void update_input(unsigned disable_keys)
                   }
                }
 
-               /* Skip the VKBD buttons if VKBD is visible and buttons are mapped to keyboard keys */
+               /* Skip VKBD buttons if VKBD is visible and buttons
+                * are mapped to keyboard keys, but allow release */
                if (retro_vkbd)
                {
                   switch (i)
@@ -882,7 +882,7 @@ void update_input(unsigned disable_keys)
                      case RETRO_DEVICE_ID_JOYPAD_A:
                      case RETRO_DEVICE_ID_JOYPAD_X:
                      case RETRO_DEVICE_ID_JOYPAD_START:
-                        if (mapper_keys[i] >= 0)
+                        if (mapper_keys[i] >= 0 && !jbt[j][i])
                            continue;
                         break;
                   }
