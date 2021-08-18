@@ -832,7 +832,7 @@ void draw_string_bmp32(uint32_t *surf, unsigned short int x, unsigned short int 
 
 void draw_text(unsigned short int x, unsigned short int y,
       uint32_t fgcol, uint32_t bgcol, libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg,
-      unsigned short int scalex, unsigned short int scaley, unsigned short int max, unsigned char *string)
+      unsigned short int scalex, unsigned short int scaley, unsigned short int max, const unsigned char *string)
 {
    if (pix_bytes == 4)
       draw_text_bmp32((uint32_t *)retro_bmp, x, y, fgcol, bgcol, alpha, draw_bg, scalex, scaley, max, string);
@@ -842,7 +842,7 @@ void draw_text(unsigned short int x, unsigned short int y,
 
 void draw_text_bmp(unsigned short *buffer, unsigned short int x, unsigned short int y,
       unsigned short int fgcol, unsigned short int bgcol, libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg,
-      unsigned short int scalex, unsigned short int scaley, unsigned short int max, unsigned char *string)
+      unsigned short int scalex, unsigned short int scaley, unsigned short int max, const unsigned char *string)
 {
 #if 0
    draw_string_bmp(buffer, x, y, text, max, scalex, scaley, fgcol, bgcol, alpha, draw_bg);
@@ -898,7 +898,7 @@ void draw_text_bmp(unsigned short *buffer, unsigned short int x, unsigned short 
 
 void draw_text_bmp32(uint32_t *buffer, unsigned short int x, unsigned short int y,
       uint32_t fgcol, uint32_t bgcol, libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg,
-      unsigned short int scalex, unsigned short int scaley, unsigned short int max, unsigned char *string)
+      unsigned short int scalex, unsigned short int scaley, unsigned short int max, const unsigned char *string)
 {
 #if 0
    draw_string_bmp32(buffer, x, y, text, max, scalex, scaley, fgcol, bgcol, alpha, draw_bg);

@@ -89,14 +89,7 @@ void emu_function(int function)
    switch (function)
    {
       case EMU_VKBD:
-         /* No toggling while key is pressed */
-         if (vkflag[RETRO_DEVICE_ID_JOYPAD_B])
-            return;
-         retro_vkbd = !retro_vkbd;
-         /* Reset VKBD input readiness */
-         retro_vkbd_ready = -2;
-         /* Release VKBD controllable joypads */
-         memset(joypad_bits, 0, 2*sizeof(joypad_bits[0]));
+         toggle_vkbd();
          break;
       case EMU_STATUSBAR:
          retro_statusbar = !retro_statusbar;
