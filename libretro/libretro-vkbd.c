@@ -414,7 +414,7 @@ void input_vkbd(void)
    now = retro_ticks() / 1000;
 
    /* VKBD Mouse acceleration */
-   const int mspeed_default = 3;
+   const int mspeed_default = 2;
    static int mspeed;
    if (!vkflag[RETRO_DEVICE_ID_JOYPAD_B])
       mspeed = mspeed_default;
@@ -662,7 +662,7 @@ void input_vkbd(void)
    {
       if (last_vkey_pressed != -20)
       {
-         if (now - last_vkey_pressed_time > 100)
+         if (now - last_vkey_pressed_time > 200)
          {
             mspeed++;
             last_vkey_pressed_time = now;
