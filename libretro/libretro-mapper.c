@@ -103,6 +103,10 @@ void emu_function(int function)
          break;
       case EMU_RESET:
          retro_reset_soft();
+         /* Statusbar notification */
+         snprintf(statusbar_text, sizeof(statusbar_text), "%c Reset",
+               (' ' | 0x80));
+         imagename_timer = 50;
          break;
       case EMU_ASPECT_RATIO:
          if (video_config_aspect == 0)

@@ -272,6 +272,7 @@ void print_vkbd(void)
 {
    libretro_graph_alpha_t ALPHA      = opt_vkbd_alpha;
    libretro_graph_alpha_t BKG_ALPHA  = ALPHA;
+   long now                          = retro_ticks() / 1000;
    bool shifted                      = false;
    bool text_outline                 = false;
    int page                          = (retro_vkbd_page) ? VKBDX * VKBDY : 0;
@@ -305,6 +306,7 @@ void print_vkbd(void)
    int FONT_COLOR_NORMAL             = 0;
    int FONT_COLOR_SEL                = 0;
 
+   char string[11]                   = {0};
    unsigned theme                    = opt_vkbd_theme;
    if (theme & 0x80)
    {
@@ -534,6 +536,32 @@ void print_vkbd(void)
    else
       FONT_COLOR = FONT_COLOR_SEL;
 
+   if (vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].value == -20) /* Reset */
+   {
+      signed char reset_counter = 0;
+      if (last_vkey_pressed_time < now && last_vkey_pressed != -1)
+         reset_counter = (VKBD_STICKY_HOLDING_TIME - (now - last_vkey_pressed_time)) / 100;
+      if (reset_counter < 0)
+         reset_counter = 0;
+
+      if (last_vkey_pressed != -1 && reset_counter == 0)
+      {
+         FONT_COLOR = (pix_bytes == 4) ? COLOR_WHITE_32 : COLOR_WHITE_16;
+         BKG_COLOR_SEL = RGBc(128, 0, 0);
+      }
+
+      if (reset_counter > 0)
+         snprintf(string, sizeof(string), "%1d", reset_counter);
+      else
+         snprintf(string, sizeof(string), "%s",
+               (!shifted) ? vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].normal
+                          : vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].shift);
+   }
+   else
+      snprintf(string, sizeof(string), "%s",
+            (!shifted) ? vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].normal
+                       : vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].shift);
+
    /* Selected key background */
    draw_fbox(XKEY+XKEYSPACING, YKEY+YKEYSPACING, XSIDE-XKEYSPACING, YSIDE-YKEYSPACING,
              BKG_COLOR_SEL, BKG_ALPHA);
@@ -541,8 +569,7 @@ void print_vkbd(void)
    /* Selected key text */
    draw_text(XTEXT, YTEXT, FONT_COLOR, 0, GRAPH_ALPHA_100,
              GRAPH_BG_NONE, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
-             (!shifted) ? vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].normal
-                        : vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].shift);
+             string);
 
 #ifdef POINTER_DEBUG
    draw_hline(pointer_x, pointer_y, 1, 1, RGBc(255, 0, 255));
@@ -880,7 +907,7 @@ void input_vkbd(void)
       else if (last_vkey_pressed == -20)
       {
          /* Reset on long press */
-         if (now - last_vkey_pressed_time > 500)
+         if (now - last_vkey_pressed_time > VKBD_STICKY_HOLDING_TIME)
             emu_function(EMU_RESET);
       }
    }
