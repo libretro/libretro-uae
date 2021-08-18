@@ -582,7 +582,7 @@ void input_vkbd(void)
          }
          else if (vkey_pressed == -20) /* Reset */
          {
-            emu_function(EMU_RESET);
+            /* Reset on release */
          }
          else if (vkey_pressed == -21) /* Toggle statusbar / save disk */
          {
@@ -647,6 +647,12 @@ void input_vkbd(void)
          else if (vkey_pressed == -14) /* Mouse right */
             mflag[0][RETRO_DEVICE_ID_JOYPAD_RIGHT] = 0;
       }
+      else if (last_vkey_pressed == -20)
+      {
+         /* Reset on long press */
+         if (now - last_vkey_pressed_time > 500)
+            emu_function(EMU_RESET);
+      }
    }
    else
    if (vkflag[i] && ((joypad_bits[0] & (1 << i)) ||
@@ -654,20 +660,23 @@ void input_vkbd(void)
                      input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_RETURN) ||
                      input_state_cb(0, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_PRESSED)))
    {
-      if (now - last_vkey_pressed_time > 100)
+      if (last_vkey_pressed != -20)
       {
-         mspeed++;
-         last_vkey_pressed_time = now;
-      }
+         if (now - last_vkey_pressed_time > 100)
+         {
+            mspeed++;
+            last_vkey_pressed_time = now;
+         }
 
-      if (vkey_pressed == -11) /* Mouse up */
-         retro_mouse(0, 0, -mspeed);
-      else if (vkey_pressed == -12) /* Mouse down */
-         retro_mouse(0, 0, mspeed);
-      else if (vkey_pressed == -13) /* Mouse left */
-         retro_mouse(0, -mspeed, 0);
-      else if (vkey_pressed == -14) /* Mouse right */
-         retro_mouse(0, mspeed, 0);
+         if (vkey_pressed == -11) /* Mouse up */
+            retro_mouse(0, 0, -mspeed);
+         else if (vkey_pressed == -12) /* Mouse down */
+            retro_mouse(0, 0, mspeed);
+         else if (vkey_pressed == -13) /* Mouse left */
+            retro_mouse(0, -mspeed, 0);
+         else if (vkey_pressed == -14) /* Mouse right */
+            retro_mouse(0, mspeed, 0);
+      }
    }
 
    if (vkflag[i] && vkey_pressed > 0)
