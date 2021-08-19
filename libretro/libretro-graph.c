@@ -5,8 +5,7 @@
 
 #include "libretro-core.h"
 #include "libretro-graph.h"
-
-#include "font.i"
+#include "libretro-font.i"
 
 static unsigned short int *linesurf = NULL;
 static int linesurf_w          = 0;
@@ -15,6 +14,14 @@ static int linesurf_h          = 0;
 static uint32_t *linesurf32    = NULL;
 static int linesurf32_w        = 0;
 static int linesurf32_h        = 0;
+
+int RGBc(int r, int g, int b)
+{
+   if (pix_bytes == 4)
+      return ARGB888(255, r, g, b);
+   else
+      return RGB565(r, g, b);
+}
 
 #define BLEND_ALPHA25(fg, bg, out)                                   \
 {                                                                    \
@@ -408,7 +415,7 @@ static void draw_char_1pass(const char *string, unsigned int strlen,
       /* Fill */
       for (col = 0; col < strlen; col++)
       {
-         b = font_array[(string[col] ^ 0x80)*charw + ypixel - 1];
+         b = font_array[(string[col])*charw + ypixel - 1];
          for (bit = 0; bit < charw + 1; bit++, yptr++)
          {
             *yptr = (b & (1 << (charw - 1 - bit) + 1)) ? fg : bg;
@@ -450,7 +457,7 @@ static void draw_char_1pass32(const char *string, unsigned int strlen,
       /* Fill */
       for (col = 0; col < strlen; col++)
       {
-         b = font_array[(string[col] ^ 0x80)*charw + ypixel - 1];
+         b = font_array[(string[col])*charw + ypixel - 1];
          for (bit = 0; bit < charw + 1; bit++, yptr32++)
          {
             *yptr32 = (b & (1 << (charw - 1 - bit) + 1)) ? fg : bg;
@@ -825,7 +832,7 @@ void draw_string_bmp32(uint32_t *surf, unsigned short int x, unsigned short int 
 
 void draw_text(unsigned short int x, unsigned short int y,
       uint32_t fgcol, uint32_t bgcol, libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg,
-      unsigned short int scalex, unsigned short int scaley, unsigned short int max, unsigned char *string)
+      unsigned short int scalex, unsigned short int scaley, unsigned short int max, const unsigned char *string)
 {
    if (pix_bytes == 4)
       draw_text_bmp32((uint32_t *)retro_bmp, x, y, fgcol, bgcol, alpha, draw_bg, scalex, scaley, max, string);
@@ -835,7 +842,7 @@ void draw_text(unsigned short int x, unsigned short int y,
 
 void draw_text_bmp(unsigned short *buffer, unsigned short int x, unsigned short int y,
       unsigned short int fgcol, unsigned short int bgcol, libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg,
-      unsigned short int scalex, unsigned short int scaley, unsigned short int max, unsigned char *string)
+      unsigned short int scalex, unsigned short int scaley, unsigned short int max, const unsigned char *string)
 {
 #if 0
    draw_string_bmp(buffer, x, y, text, max, scalex, scaley, fgcol, bgcol, alpha, draw_bg);
@@ -891,7 +898,7 @@ void draw_text_bmp(unsigned short *buffer, unsigned short int x, unsigned short 
 
 void draw_text_bmp32(uint32_t *buffer, unsigned short int x, unsigned short int y,
       uint32_t fgcol, uint32_t bgcol, libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg,
-      unsigned short int scalex, unsigned short int scaley, unsigned short int max, unsigned char *string)
+      unsigned short int scalex, unsigned short int scaley, unsigned short int max, const unsigned char *string)
 {
 #if 0
    draw_string_bmp32(buffer, x, y, text, max, scalex, scaley, fgcol, bgcol, alpha, draw_bg);

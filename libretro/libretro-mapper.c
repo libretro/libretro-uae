@@ -40,7 +40,7 @@ void retro_set_input_poll(retro_input_poll_t cb)
 
 /* Core flags */
 int mapper_keys[RETRO_MAPPER_LAST] = {0};
-int retro_capslock = false;
+bool retro_capslock = false;
 bool retro_mousemode = false;
 bool mousemode_locked = false;
 
@@ -54,10 +54,6 @@ static unsigned int mouse_speed[2] = {0};
 extern bool request_update_av_info;
 extern void retro_reset_soft();
 extern bool retro_statusbar;
-extern bool retro_vkbd;
-extern short int retro_vkbd_ready;
-extern void input_vkbd(void);
-extern int vkflag[10];
 
 static unsigned retro_key_state[RETROK_LAST] = {0};
 static unsigned retro_key_event_state[RETROK_LAST] = {0};
@@ -93,11 +89,7 @@ void emu_function(int function)
    switch (function)
    {
       case EMU_VKBD:
-         retro_vkbd = !retro_vkbd;
-         /* Reset VKBD input readiness */
-         retro_vkbd_ready = -2;
-         /* Release VKBD controllable joypads */
-         memset(joypad_bits, 0, 2*sizeof(joypad_bits[0]));
+         toggle_vkbd();
          break;
       case EMU_STATUSBAR:
          retro_statusbar = !retro_statusbar;
@@ -111,6 +103,10 @@ void emu_function(int function)
          break;
       case EMU_RESET:
          retro_reset_soft();
+         /* Statusbar notification */
+         snprintf(statusbar_text, sizeof(statusbar_text), "%c Reset",
+               (' ' | 0x80));
+         imagename_timer = 50;
          break;
       case EMU_ASPECT_RATIO:
          if (video_config_aspect == 0)
@@ -872,7 +868,8 @@ void update_input(unsigned disable_keys)
                   }
                }
 
-               /* Skip the VKBD buttons if VKBD is visible and buttons are mapped to keyboard keys */
+               /* Skip VKBD buttons if VKBD is visible and buttons
+                * are mapped to keyboard keys, but allow release */
                if (retro_vkbd)
                {
                   switch (i)
@@ -882,7 +879,7 @@ void update_input(unsigned disable_keys)
                      case RETRO_DEVICE_ID_JOYPAD_A:
                      case RETRO_DEVICE_ID_JOYPAD_X:
                      case RETRO_DEVICE_ID_JOYPAD_START:
-                        if (mapper_keys[i] >= 0)
+                        if (mapper_keys[i] >= 0 && !jbt[j][i])
                            continue;
                         break;
                   }
@@ -1519,7 +1516,7 @@ void retro_poll_event()
          /* Digital mouse speed modifiers */
          if (!dpadmouse_pressed[j])
 #ifdef MOUSE_DPAD_ACCEL
-            dpadmouse_speed[j] = opt_dpadmouse_speed - 2;
+            dpadmouse_speed[j] = opt_dpadmouse_speed - 3;
 #else
             dpadmouse_speed[j] = opt_dpadmouse_speed;
 #endif
@@ -1531,7 +1528,7 @@ void retro_poll_event()
 
 #ifdef MOUSE_DPAD_ACCEL
          /* Digital mouse acceleration */
-         if (dpadmouse_pressed[j] && (now - dpadmouse_pressed[j] > 300))
+         if (dpadmouse_pressed[j] && (now - dpadmouse_pressed[j] > 400))
          {
             dpadmouse_speed[j]++;
             dpadmouse_pressed[j] = now;
@@ -1540,7 +1537,7 @@ void retro_poll_event()
 
          /* Digital mouse speed limits */
          if (dpadmouse_speed[j] < 2) dpadmouse_speed[j] = 2;
-         if (dpadmouse_speed[j] > 14) dpadmouse_speed[j] = 14;
+         if (dpadmouse_speed[j] > 20) dpadmouse_speed[j] = 20;
 
          if (joypad_bits[j] & (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT))
             uae_mouse_x[j] += dpadmouse_speed[j];

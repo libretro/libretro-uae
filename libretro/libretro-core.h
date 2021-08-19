@@ -45,6 +45,7 @@ extern struct zfile *retro_deserialize_file;
 extern dc_storage *retro_dc;
 extern retro_log_printf_t log_cb;
 extern long retro_ticks(void);
+extern int RGBc(int r, int g, int b);
 extern int umain (int argc, TCHAR **argv);
 
 /* Statusbar */
@@ -52,44 +53,6 @@ extern int umain (int argc, TCHAR **argv);
 #define STATUSBAR_TOP       0x02
 #define STATUSBAR_BASIC     0x04
 #define STATUSBAR_MINIMAL   0x08
-
-/* Colors */
-#define RGB565(r, g, b) ((((r>>3)<<11) | ((g>>2)<<5) | (b>>3)))
-#define RGB888(r, g, b) (((r * 255 / 31) << (16)) | ((g * 255 / 31) << 8) | (b * 255 / 31))
-#define ARGB888(a, r, g, b) ((a << 24) | (r << 16) | (g << 8) | b)
-
-#define COLOR_BLACK_16           RGB565( 10,  10,  10)
-#define COLOR_GRAY_16            RGB565( 96,  96,  96)
-#define COLOR_WHITE_16           RGB565(255, 255, 255)
-#define COLOR_BLACK_32     ARGB888(255,  10,  10,  10)
-#define COLOR_GRAY_32      ARGB888(255,  96,  96,  96)
-#define COLOR_WHITE_32     ARGB888(255, 255, 255, 255)
-
-#define COLOR_10_16              RGB565( 10,  10,  10)
-#define COLOR_10_32        ARGB888(255,  10,  10,  10)
-#define COLOR_16_16              RGB565( 16,  16,  16)
-#define COLOR_16_32        ARGB888(255,  16,  16,  16)
-#define COLOR_32_16              RGB565( 32,  32,  32)
-#define COLOR_32_32        ARGB888(255,  32,  32,  32)
-#define COLOR_40_16              RGB565( 40,  40,  40)
-#define COLOR_40_32        ARGB888(255,  40,  40,  40)
-#define COLOR_64_16              RGB565( 64,  64,  64)
-#define COLOR_64_32        ARGB888(255,  64,  64,  64)
-#define COLOR_132_16             RGB565(132, 132, 132)
-#define COLOR_132_32       ARGB888(255, 132, 132, 132)
-#define COLOR_140_16             RGB565(140, 140, 140)
-#define COLOR_140_32       ARGB888(255, 140, 140, 140)
-#define COLOR_160_16             RGB565(160, 160, 160)
-#define COLOR_160_32       ARGB888(255, 160, 160, 160)
-#define COLOR_200_16             RGB565(200, 200, 200)
-#define COLOR_200_32       ARGB888(255, 200, 200, 200)
-#define COLOR_250_16             RGB565(250, 250, 250)
-#define COLOR_250_32       ARGB888(255, 250, 250, 250)
-
-#define COLOR_BEIGE_16           RGB565(208, 208, 202)
-#define COLOR_BEIGE_32     ARGB888(255, 208, 208, 202)
-#define COLOR_BEIGEDARK_16       RGB565(154, 154, 150)
-#define COLOR_BEIGEDARK_32 ARGB888(255, 154, 154, 150)
 
 /* Functions */
 extern void emu_function(int function);

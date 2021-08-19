@@ -1589,10 +1589,14 @@ void zip_uncompress(char *in, char *out, char *lastfile)
       }
       else if (!path_is_valid(filename_withpath))
       {
-         const char* write_filename;
+         char* write_filename;
          int skip = 0;
+         unsigned x = 0;
 
-         write_filename = filename_withpath;
+         write_filename = strdup(filename_withpath);
+         /* Replace non-ascii chars with underscore */
+         for (x = 128; x < 256; x++)
+            string_replace_all_chars(write_filename, x, '_');
 
          err = unzOpenCurrentFilePassword(uf, password);
          if (err != UNZ_OK)
@@ -1631,6 +1635,9 @@ void zip_uncompress(char *in, char *out, char *lastfile)
             if (fout)
                fclose(fout);
          }
+
+         free(write_filename);
+         write_filename = NULL;
 
          if (err == UNZ_OK)
          {
@@ -1776,6 +1783,7 @@ void sevenzip_uncompress(char *in, char *out, char *lastfile)
          char infile[RETRO_PATH_MAX];
          size_t offset                = 0;
          size_t outSizeProcessed      = 0;
+         unsigned x;
 
          len = SzArEx_GetFileNameUtf16(&db, i, NULL);
 
@@ -1815,41 +1823,45 @@ void sevenzip_uncompress(char *in, char *out, char *lastfile)
 
          outsize = (int64_t)outSizeProcessed;
 
-         char full_path[RETRO_PATH_MAX] = {0};
-         snprintf(full_path, RETRO_PATH_MAX, "%s%s%s", out, DIR_SEP_STR, infile);
-         if (dc_get_image_type(full_path) == DC_IMAGE_TYPE_FLOPPY && lastfile != NULL)
-            snprintf(lastfile, RETRO_PATH_MAX, "%s", path_basename(full_path));
+         char output_path[RETRO_PATH_MAX] = {0};
+         snprintf(output_path, RETRO_PATH_MAX, "%s%s%s", out, DIR_SEP_STR, infile);
+         if (dc_get_image_type(output_path) == DC_IMAGE_TYPE_FLOPPY && lastfile != NULL)
+            snprintf(lastfile, RETRO_PATH_MAX, "%s", path_basename(output_path));
 
-         for (j = 0; full_path[j] != 0; j++)
+         /* Replace non-ascii chars with underscore */
+         for (x = 128; x < 256; x++)
+            string_replace_all_chars(output_path, x, '_');
+
+         for (j = 0; output_path[j] != 0; j++)
          {
-            if (full_path[j] == '/')
+            if (output_path[j] == '/')
             {
-               full_path[j] = 0;
-               path_mkdir((const char *)full_path);
-               full_path[j] = DIR_SEP_CHR;
+               output_path[j] = 0;
+               path_mkdir((const char *)output_path);
+               output_path[j] = DIR_SEP_CHR;
             }
          }
 
          const void *ptr = (const void*)(output + offset);
 
-         if (path_is_valid(full_path))
+         if (path_is_valid(output_path))
             continue;
          else if (SzArEx_IsDir(&db, i))
          {
             path_mkdir((const char *)temp);
-            log_cb(RETRO_LOG_INFO, "Mkdir: %s\n", full_path);
+            log_cb(RETRO_LOG_INFO, "Mkdir: %s\n", output_path);
             continue;
          }
 
-         if (filestream_write_file(full_path, ptr, outsize))
+         if (filestream_write_file(output_path, ptr, outsize))
          {
             res = SZ_OK;
-            log_cb(RETRO_LOG_INFO, "Un7ip: %s\n", full_path);
+            log_cb(RETRO_LOG_INFO, "Un7ip: %s\n", output_path);
          }
          else
          {
             res = SZ_ERROR_FAIL;
-            log_cb(RETRO_LOG_ERROR, "Un7ip: Error writing extracted file %s\n", full_path);
+            log_cb(RETRO_LOG_ERROR, "Un7ip: Error writing extracted file %s\n", output_path);
          }
       }
 

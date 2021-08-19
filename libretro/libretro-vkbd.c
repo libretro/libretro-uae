@@ -1,74 +1,278 @@
 #include "keyboard.h"
-#include "libretro-vkbd.h"
 #include "libretro-core.h"
-#include "libretro-mapper.h"
 #include "libretro-graph.h"
+#include "libretro-vkbd.h"
+#include "libretro-mapper.h"
 
 #include "options.h"
 
-extern retro_input_state_t input_state_cb;
-
-extern bool retro_capslock;
-extern unsigned int opt_vkbd_theme;
-extern libretro_graph_alpha_t opt_vkbd_alpha;
-
+bool retro_vkbd = false;
+static bool retro_vkbd_page = false;
+static bool retro_vkbd_transparent = true;
+signed char retro_vkbd_ready = 0;
 int vkflag[10] = {0};
 
-bool retro_vkbd = false;
-bool retro_vkbd_page = false;
-bool retro_vkbd_transparent = true;
-short int retro_vkbd_ready = 0;
-
 #ifdef POINTER_DEBUG
-int pointer_x = 0;
-int pointer_y = 0;
+static int pointer_x = 0;
+static int pointer_y = 0;
 #endif
-int last_pointer_x = 0;
-int last_pointer_y = 0;
+static int last_pointer_x = 0;
+static int last_pointer_y = 0;
 
-int vkey_pos_x = 0;
-int vkey_pos_y = 0;
-int vkbd_x_min = 0;
-int vkbd_x_max = 0;
-int vkbd_y_min = 0;
-int vkbd_y_max = 0;
+static int vkey_pos_x = 0;
+static int vkey_pos_y = 0;
+static int vkbd_x_min = 0;
+static int vkbd_x_max = 0;
+static int vkbd_y_min = 0;
+static int vkbd_y_max = 0;
 
 /* VKBD_MIN_HOLDING_TIME: Hold a direction longer than this and automatic movement sets in */
 /* VKBD_MOVE_DELAY: Delay between automatic movement from button to button */
 #define VKBD_MIN_HOLDING_TIME 200
 #define VKBD_MOVE_DELAY 50
-bool let_go_of_direction = true;
-long last_move_time = 0;
-long last_press_time = 0;
+static bool let_go_of_direction = true;
+static long last_move_time = 0;
+static long last_press_time = 0;
 
 /* VKBD_STICKY_HOLDING_TIME: Button press longer than this triggers sticky key */
 #define VKBD_STICKY_HOLDING_TIME 1000
-bool let_go_of_button = true;
-long last_press_time_button = 0;
-int vkey_pressed = -1;
-int vkey_sticky = -1;
-int vkey_sticky1 = -1;
-int vkey_sticky2 = -1;
+static bool let_go_of_button = true;
+static long last_press_time_button = 0;
+static int vkey_pressed = -1;
+static int vkey_sticky = -1;
+static int vkey_sticky1 = -1;
+static int vkey_sticky2 = -1;
 
-long last_vkey_pressed_time = 0;
-int last_vkey_pressed = -1;
-int vkey_sticky1_release = 0;
-int vkey_sticky2_release = 0;
+static long last_vkey_pressed_time = 0;
+static int last_vkey_pressed = -1;
+static int vkey_sticky1_release = 0;
+static int vkey_sticky2_release = 0;
 
-
-
-int RGBc(int r, int g, int b)
+typedef struct
 {
-   if (pix_bytes == 4)
-      return ARGB888(255, r, g, b);
-   else
-      return RGB565(r, g, b);
-}
+   char normal[10];
+   char shift[10];
+   int value;
+} retro_vkeys;
+
+static retro_vkeys vkeys[VKBDX * VKBDY * 2] =
+{
+   /* -11 */
+   { {10,'L'},{10,'L'},-15 },
+   { {10,'R'},{10,'R'},-16 },
+   { {10,30},{10,30},-11 },
+   { {10,28},{10,28},-12 },
+   { {10,27},{10,27},-13 },
+   { {10,29},{10,29},-14 },
+   { "J/M" ,"J/M" ,-18 },
+   { "TRBF","TRBF",-19 },
+   { "ASPR","ZOOM",-22 },
+   { "STBR","SVDS",-21 },
+   { {17}  ,{17}  ,-20 }, /* Reset */
+
+   /* 0 PG1 */
+   { "Esc" ,"Esc" ,AK_ESC },
+   { "F1"  ,"F1"  ,AK_F1 },
+   { "F2"  ,"F2"  ,AK_F2 },
+   { "F3"  ,"F3"  ,AK_F3 },
+   { "F4"  ,"F4"  ,AK_F4 },
+   { "F5"  ,"F5"  ,AK_F5 },
+   { "F6"  ,"F6"  ,AK_F6 },
+   { "F7"  ,"F7"  ,AK_F7 },
+   { "F8"  ,"F8"  ,AK_F8 },
+   { "F9"  ,"F9"  ,AK_F9 },
+   { "F10" ,"F10" ,AK_F10 },
+
+   /* 11 */
+   { "`"   ,"~"   ,AK_BACKQUOTE },
+   { "1"   ,"!"   ,AK_1 },
+   { "2"   ,"@"   ,AK_2 },
+   { "3"   ,"#"   ,AK_3 },
+   { "4"   ,"$"   ,AK_4 },
+   { "5"   ,"%"   ,AK_5 },
+   { "6"   ,"^"   ,AK_6 },
+   { "7"   ,"&"   ,AK_7 },
+   { "8"   ,"*"   ,AK_8 },
+   { "9"   ,"("   ,AK_9 },
+   { "0"   ,")"   ,AK_0 },
+
+   /* 22 */
+   { {11}  ,{11}  ,AK_TAB },
+   { "Q"   ,"Q"   ,AK_Q },
+   { "W"   ,"W"   ,AK_W },
+   { "E"   ,"E"   ,AK_E },
+   { "R"   ,"R"   ,AK_R },
+   { "T"   ,"T"   ,AK_T },
+   { "Y"   ,"Y"   ,AK_Y },
+   { "U"   ,"U"   ,AK_U },
+   { "I"   ,"I"   ,AK_I },
+   { "O"   ,"O"   ,AK_O },
+   { "P"   ,"P"   ,AK_P },
+
+   /* 33 */
+   { "Ctrl","Ctrl",AK_CTRL },
+   { "A"   ,"A"   ,AK_A },
+   { "S"   ,"S"   ,AK_S },
+   { "D"   ,"D"   ,AK_D },
+   { "F"   ,"F"   ,AK_F },
+   { "G"   ,"G"   ,AK_G },
+   { "H"   ,"H"   ,AK_H },
+   { "J"   ,"J"   ,AK_J },
+   { "K"   ,"K"   ,AK_K },
+   { "L"   ,"L"   ,AK_L },
+   { ";"   ,":"   ,AK_SEMICOLON },
+
+   /* 44 */
+   { "Caps\1Lock","Caps\1Lock",AK_CAPSLOCK },
+   { "Z"   ,"Z"   ,AK_Z },
+   { "X"   ,"X"   ,AK_X },
+   { "C"   ,"C"   ,AK_C },
+   { "V"   ,"V"   ,AK_V },
+   { "B"   ,"B"   ,AK_B },
+   { "N"   ,"N"   ,AK_N },
+   { "M"   ,"M"   ,AK_M },
+   { ","   ,"<"   ,AK_COMMA },
+   { "."   ,">"   ,AK_PERIOD },
+   { "/"   ,"?"   ,AK_SLASH },
+
+   /* 55 */
+   { {12}  ,{12}  ,AK_LSH },
+   { "-"   ,"_"   ,AK_MINUS },
+   { "="   ,"+"   ,AK_EQUAL },
+   { "\\"  ,"|"   ,AK_BACKSLASH },
+   { "["   ,"{"   ,AK_LBRACKET },
+   { "]"   ,"}"   ,AK_RBRACKET },
+   { "'"   ,"\""  ,AK_QUOTE },
+   { {12}  ,{12}  ,AK_RSH },
+   { "Del" ,"Del" ,AK_DEL },
+   { {30}  ,{30}  ,AK_UP },
+   { "Help","Help",AK_HELP },
+
+   /* 66 */
+   { "Alt" ,"Alt" ,AK_LALT },
+   { {14}  ,{14}  ,AK_LAMI },
+   { {18}  ,{18}  ,AK_SPC },
+   { {13}  ,{13}  ,AK_RAMI },
+   { "Alt" ,"Alt" ,AK_RALT },
+   { {15}  ,{15}  ,-2 }, /* Numpad */
+   { {25}  ,{25}  ,AK_BS },
+   { {16}  ,{16}  ,AK_RET },
+   { {27}  ,{27}  ,AK_LF },
+   { {28}  ,{28}  ,AK_DN },
+   { {29}  ,{29}  ,AK_RT },
+
+
+
+   /* -11 */
+   { {10,'L'},{10,'L'},-15 },
+   { {10,'R'},{10,'R'},-16 },
+   { {10,30},{10,30},-11 },
+   { {10,28},{10,28},-12 },
+   { {10,27},{10,27},-13 },
+   { {10,29},{10,29},-14 },
+   { "J/M" ,"J/M" ,-18 },
+   { "TRBF","TRBF",-19 },
+   { "ASPR","ZOOM",-22 },
+   { "STBR","SVDS",-21 },
+   { {17}  ,{17}  ,-20 }, /* Reset */
+
+   /* 0 PG2 */
+   { "Esc" ,"Esc" ,AK_ESC },
+   { "F1"  ,"F1"  ,AK_F1 },
+   { "F2"  ,"F2"  ,AK_F2 },
+   { "F3"  ,"F3"  ,AK_F3 },
+   { "F4"  ,"F4"  ,AK_F4 },
+   { "F5"  ,"F5"  ,AK_F5 },
+   { "F6"  ,"F6"  ,AK_F6 },
+   { "F7"  ,"F7"  ,AK_F7 },
+   { "F8"  ,"F8"  ,AK_F8 },
+   { "F9"  ,"F9"  ,AK_F9 },
+   { "F10" ,"F10" ,AK_F10 },
+
+   /* 11 */
+   { "`"     ,"~"    ,AK_BACKQUOTE },
+   { {15,'1'},"End"  ,AK_NP1 },
+   { {15,'2'},{15,28},AK_NP2 },
+   { {15,'3'},"PgDn" ,AK_NP3 },
+   { {15,'4'},{15,27},AK_NP4 },
+   { {15,'5'}," "    ,AK_NP5 },
+   { {15,'6'},{15,29},AK_NP6 },
+   { {15,'7'},"Home" ,AK_NP7 },
+   { {15,'8'},{15,30},AK_NP8 },
+   { {15,'9'},"PgUp" ,AK_NP9 },
+   { {15,'0'},"Ins"  ,AK_NP0 },
+
+   /* 22 */
+   { {11}  ,{11}  ,AK_TAB },
+   { "Q"   ,"Q"   ,AK_Q },
+   { "W"   ,"W"   ,AK_W },
+   { "E"   ,"E"   ,AK_E },
+   { "R"   ,"R"   ,AK_R },
+   { "T"   ,"T"   ,AK_T },
+   { "Y"   ,"Y"   ,AK_Y },
+   { "U"   ,"U"   ,AK_U },
+   { "I"   ,"I"   ,AK_I },
+   { "O"   ,"O"   ,AK_O },
+   { "P"   ,"P"   ,AK_P },
+
+   /* 33 */
+   { "Ctrl","Ctrl",AK_CTRL },
+   { "A"   ,"A"   ,AK_A },
+   { "S"   ,"S"   ,AK_S },
+   { "D"   ,"D"   ,AK_D },
+   { "F"   ,"F"   ,AK_F },
+   { "G"   ,"G"   ,AK_G },
+   { "H"   ,"H"   ,AK_H },
+   { "J"   ,"J"   ,AK_J },
+   { "K"   ,"K"   ,AK_K },
+   { "L"   ,"L"   ,AK_L },
+   { ";"   ,":"   ,AK_SEMICOLON },
+
+   /* 44 */
+   { "Caps\1Lock","Caps\1Lock",AK_CAPSLOCK },
+   { "Z"   ,"Z"   ,AK_Z },
+   { "X"   ,"X"   ,AK_X },
+   { "C"   ,"C"   ,AK_C },
+   { "V"   ,"V"   ,AK_V },
+   { "B"   ,"B"   ,AK_B },
+   { "N"   ,"N"   ,AK_N },
+   { "M"   ,"M"   ,AK_M },
+   { ","   ,"<"   ,AK_COMMA },
+   { "."   ,">"   ,AK_PERIOD },
+   { "/"   ,"?"   ,AK_SLASH },
+
+   /* 55 */
+   { {12}  ,{12}  ,AK_LSH },
+   { {15,'-'},{15,'-'},AK_NPSUB },
+   { {15,'+'},{15,'+'},AK_NPADD },
+   { {15,'/'},{15,'/'},AK_NPDIV },
+   { {15,'('},{15,'('},AK_NPLPAREN },
+   { {15,')'},{15,')'},AK_NPRPAREN },
+   { {15,'*'},{15,'*'},AK_NPMUL },
+   { {12}  ,{12}  ,AK_RSH },
+   { {15,'.'},{15,'D','e','l'},AK_NPDEL },
+   { {15,30} ,{15,30},AK_NP8 },
+   { "Help","Help",AK_HELP },
+
+   /* 66 */
+   { "Alt" ,"Alt" ,AK_LALT },
+   { {14}  ,{14}  ,AK_LAMI },
+   { {18}  ,{18}  ,AK_SPC },
+   { {13}  ,{13}  ,AK_RAMI },
+   { "Alt" ,"Alt" ,AK_RALT },
+   { {15}  ,{15}  ,-2 }, /* Numpad */
+   { {25}  ,{25}  ,AK_BS },
+   { {15,16},{15,16},AK_ENT },
+   { {15,27},{15,27},AK_NP4 },
+   { {15,28},{15,28},AK_NP2 },
+   { {15,29},{15,29},AK_NP6 },
+};
 
 void print_vkbd(void)
 {
    libretro_graph_alpha_t ALPHA      = opt_vkbd_alpha;
    libretro_graph_alpha_t BKG_ALPHA  = ALPHA;
+   long now                          = retro_ticks() / 1000;
    bool shifted                      = false;
    bool text_outline                 = false;
    int page                          = (retro_vkbd_page) ? VKBDX * VKBDY : 0;
@@ -102,6 +306,7 @@ void print_vkbd(void)
    int FONT_COLOR_NORMAL             = 0;
    int FONT_COLOR_SEL                = 0;
 
+   char string[11]                   = {0};
    unsigned theme                    = opt_vkbd_theme;
    if (theme & 0x80)
    {
@@ -331,6 +536,32 @@ void print_vkbd(void)
    else
       FONT_COLOR = FONT_COLOR_SEL;
 
+   if (vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].value == -20) /* Reset */
+   {
+      signed char reset_counter = 0;
+      if (last_vkey_pressed_time < now && last_vkey_pressed != -1)
+         reset_counter = (VKBD_STICKY_HOLDING_TIME - (now - last_vkey_pressed_time)) / 100;
+      if (reset_counter < 0)
+         reset_counter = 0;
+
+      if (last_vkey_pressed != -1 && reset_counter == 0)
+      {
+         FONT_COLOR = (pix_bytes == 4) ? COLOR_WHITE_32 : COLOR_WHITE_16;
+         BKG_COLOR_SEL = RGBc(128, 0, 0);
+      }
+
+      if (reset_counter > 0)
+         snprintf(string, sizeof(string), "%1d", reset_counter);
+      else
+         snprintf(string, sizeof(string), "%s",
+               (!shifted) ? vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].normal
+                          : vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].shift);
+   }
+   else
+      snprintf(string, sizeof(string), "%s",
+            (!shifted) ? vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].normal
+                       : vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].shift);
+
    /* Selected key background */
    draw_fbox(XKEY+XKEYSPACING, YKEY+YKEYSPACING, XSIDE-XKEYSPACING, YSIDE-YKEYSPACING,
              BKG_COLOR_SEL, BKG_ALPHA);
@@ -338,8 +569,7 @@ void print_vkbd(void)
    /* Selected key text */
    draw_text(XTEXT, YTEXT, FONT_COLOR, 0, GRAPH_ALPHA_100,
              GRAPH_BG_NONE, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
-             (!shifted) ? vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].normal
-                        : vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].shift);
+             string);
 
 #ifdef POINTER_DEBUG
    draw_hline(pointer_x, pointer_y, 1, 1, RGBc(255, 0, 255));
@@ -407,6 +637,18 @@ static void input_vkbd_sticky(void)
    }
 }
 
+void toggle_vkbd(void)
+{
+   /* No toggling while key is pressed */
+   if (vkflag[RETRO_DEVICE_ID_JOYPAD_B])
+      return;
+   retro_vkbd = !retro_vkbd;
+   /* Reset VKBD input readiness */
+   retro_vkbd_ready = -2;
+   /* Release VKBD controllable joypads */
+   memset(joypad_bits, 0, 2*sizeof(joypad_bits[0]));
+}
+
 void input_vkbd(void)
 {
    long now = 0;
@@ -429,99 +671,10 @@ void input_vkbd(void)
    now = retro_ticks() / 1000;
 
    /* VKBD Mouse acceleration */
-   const int mspeed_default = 3;
+   const int mspeed_default = 2;
    static int mspeed;
    if (!vkflag[RETRO_DEVICE_ID_JOYPAD_B])
       mspeed = mspeed_default;
-
-   if (!vkflag[RETRO_DEVICE_ID_JOYPAD_B]) /* Allow directions when key is not pressed */
-   {
-      if (!vkflag[RETRO_DEVICE_ID_JOYPAD_UP] && ((joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_UP)) ||
-                                                 (joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_UP)) ||
-                                                 input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_UP)))
-         vkflag[RETRO_DEVICE_ID_JOYPAD_UP] = 1;
-      else
-      if (vkflag[RETRO_DEVICE_ID_JOYPAD_UP] && (!(joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_UP)) &&
-                                                !(joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_UP)) &&
-                                                !input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_UP)))
-         vkflag[RETRO_DEVICE_ID_JOYPAD_UP] = 0;
-
-      if (!vkflag[RETRO_DEVICE_ID_JOYPAD_DOWN] && ((joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_DOWN)) ||
-                                                   (joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_DOWN)) ||
-                                                   input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_DOWN)))
-         vkflag[RETRO_DEVICE_ID_JOYPAD_DOWN] = 1;
-      else
-      if (vkflag[RETRO_DEVICE_ID_JOYPAD_DOWN] && (!(joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_DOWN)) &&
-                                                  !(joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_DOWN)) &&
-                                                  !input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_DOWN)))
-         vkflag[RETRO_DEVICE_ID_JOYPAD_DOWN] = 0;
-
-      if (!vkflag[RETRO_DEVICE_ID_JOYPAD_LEFT] && ((joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_LEFT)) ||
-                                                   (joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_LEFT)) ||
-                                                   input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_LEFT)))
-         vkflag[RETRO_DEVICE_ID_JOYPAD_LEFT] = 1;
-      else
-      if (vkflag[RETRO_DEVICE_ID_JOYPAD_LEFT] && (!(joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_LEFT)) &&
-                                                  !(joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_LEFT)) &&
-                                                  !input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_LEFT)))
-         vkflag[RETRO_DEVICE_ID_JOYPAD_LEFT] = 0;
-
-      if (!vkflag[RETRO_DEVICE_ID_JOYPAD_RIGHT] && ((joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT)) ||
-                                                    (joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT)) ||
-                                                    input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_RIGHT)))
-         vkflag[RETRO_DEVICE_ID_JOYPAD_RIGHT] = 1;
-      else
-      if (vkflag[RETRO_DEVICE_ID_JOYPAD_RIGHT] && (!(joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT)) &&
-                                                   !(joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT)) &&
-                                                   !input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_RIGHT)))
-         vkflag[RETRO_DEVICE_ID_JOYPAD_RIGHT] = 0;
-   }
-   else /* Release all directions when key is pressed */
-   {
-      vkflag[RETRO_DEVICE_ID_JOYPAD_UP]    = 0;
-      vkflag[RETRO_DEVICE_ID_JOYPAD_DOWN]  = 0;
-      vkflag[RETRO_DEVICE_ID_JOYPAD_LEFT]  = 0;
-      vkflag[RETRO_DEVICE_ID_JOYPAD_RIGHT] = 0;
-   }
-
-   if (vkflag[RETRO_DEVICE_ID_JOYPAD_UP] ||
-       vkflag[RETRO_DEVICE_ID_JOYPAD_DOWN] ||
-       vkflag[RETRO_DEVICE_ID_JOYPAD_LEFT] ||
-       vkflag[RETRO_DEVICE_ID_JOYPAD_RIGHT])
-   {
-      if (let_go_of_direction)
-         /* just pressing down */
-         last_press_time = now;
-
-      if ((now - last_press_time > VKBD_MIN_HOLDING_TIME
-        && now - last_move_time > VKBD_MOVE_DELAY)
-        || let_go_of_direction)
-      {
-         last_move_time = now;
-
-         if (vkflag[RETRO_DEVICE_ID_JOYPAD_UP])
-            vkey_pos_y -= 1;
-         else if (vkflag[RETRO_DEVICE_ID_JOYPAD_DOWN])
-            vkey_pos_y += 1;
-
-         if (vkflag[RETRO_DEVICE_ID_JOYPAD_LEFT])
-            vkey_pos_x -= 1;
-         else if (vkflag[RETRO_DEVICE_ID_JOYPAD_RIGHT])
-            vkey_pos_x += 1;
-      }
-      let_go_of_direction = false;
-   }
-   else
-      let_go_of_direction = true;
-
-   if (vkey_pos_x < 0)
-      vkey_pos_x = VKBDX - 1;
-   else if (vkey_pos_x > VKBDX - 1)
-      vkey_pos_x = 0;
-   if (vkey_pos_y < 0)
-      vkey_pos_y = VKBDY - 1;
-   else if (vkey_pos_y > VKBDY - 1)
-      vkey_pos_y = 0;
 
    /* Absolute pointer */
    int p_x = input_state_cb(0, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_X);
@@ -626,9 +779,8 @@ void input_vkbd(void)
                       input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_RETURN) ||
                       input_state_cb(0, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_PRESSED)))
    {
-      vkey_pressed = vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + ((retro_vkbd_page) ? VKBDX * VKBDY : 0)].value;
-
       vkflag[i] = 1;
+      vkey_pressed = vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + ((retro_vkbd_page) ? VKBDX * VKBDY : 0)].value;
 
       if (vkey_pressed == -1)
          last_vkey_pressed = -1;
@@ -687,7 +839,7 @@ void input_vkbd(void)
          }
          else if (vkey_pressed == -20) /* Reset */
          {
-            emu_function(EMU_RESET);
+            /* Reset on release */
          }
          else if (vkey_pressed == -21) /* Toggle statusbar / save disk */
          {
@@ -752,6 +904,12 @@ void input_vkbd(void)
          else if (vkey_pressed == -14) /* Mouse right */
             mflag[0][RETRO_DEVICE_ID_JOYPAD_RIGHT] = 0;
       }
+      else if (last_vkey_pressed == -20)
+      {
+         /* Reset on long press */
+         if (now - last_vkey_pressed_time > VKBD_STICKY_HOLDING_TIME)
+            emu_function(EMU_RESET);
+      }
    }
    else
    if (vkflag[i] && ((joypad_bits[0] & (1 << i)) ||
@@ -759,20 +917,23 @@ void input_vkbd(void)
                      input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_RETURN) ||
                      input_state_cb(0, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_PRESSED)))
    {
-      if (now - last_vkey_pressed_time > 100)
+      if (last_vkey_pressed != -20)
       {
-         mspeed++;
-         last_vkey_pressed_time = now;
-      }
+         if (now - last_vkey_pressed_time > 200)
+         {
+            mspeed++;
+            last_vkey_pressed_time = now;
+         }
 
-      if (vkey_pressed == -11) /* Mouse up */
-         retro_mouse(0, 0, -mspeed);
-      else if (vkey_pressed == -12) /* Mouse down */
-         retro_mouse(0, 0, mspeed);
-      else if (vkey_pressed == -13) /* Mouse left */
-         retro_mouse(0, -mspeed, 0);
-      else if (vkey_pressed == -14) /* Mouse right */
-         retro_mouse(0, mspeed, 0);
+         if (vkey_pressed == -11) /* Mouse up */
+            retro_mouse(0, 0, -mspeed);
+         else if (vkey_pressed == -12) /* Mouse down */
+            retro_mouse(0, 0, mspeed);
+         else if (vkey_pressed == -13) /* Mouse left */
+            retro_mouse(0, -mspeed, 0);
+         else if (vkey_pressed == -14) /* Mouse right */
+            retro_mouse(0, mspeed, 0);
+      }
    }
 
    if (vkflag[i] && vkey_pressed > 0)
@@ -788,6 +949,96 @@ void input_vkbd(void)
       let_go_of_button = true;
       vkey_sticky = 0;
    }
+
+   /* Allow directions when key is not pressed */
+   if (!vkflag[RETRO_DEVICE_ID_JOYPAD_B])
+   {
+      if (!vkflag[RETRO_DEVICE_ID_JOYPAD_UP] && ((joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_UP)) ||
+                                                 (joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_UP)) ||
+                                                 input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_UP)))
+         vkflag[RETRO_DEVICE_ID_JOYPAD_UP] = 1;
+      else
+      if (vkflag[RETRO_DEVICE_ID_JOYPAD_UP] && (!(joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_UP)) &&
+                                                !(joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_UP)) &&
+                                                !input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_UP)))
+         vkflag[RETRO_DEVICE_ID_JOYPAD_UP] = 0;
+
+      if (!vkflag[RETRO_DEVICE_ID_JOYPAD_DOWN] && ((joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_DOWN)) ||
+                                                   (joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_DOWN)) ||
+                                                   input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_DOWN)))
+         vkflag[RETRO_DEVICE_ID_JOYPAD_DOWN] = 1;
+      else
+      if (vkflag[RETRO_DEVICE_ID_JOYPAD_DOWN] && (!(joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_DOWN)) &&
+                                                  !(joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_DOWN)) &&
+                                                  !input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_DOWN)))
+         vkflag[RETRO_DEVICE_ID_JOYPAD_DOWN] = 0;
+
+      if (!vkflag[RETRO_DEVICE_ID_JOYPAD_LEFT] && ((joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_LEFT)) ||
+                                                   (joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_LEFT)) ||
+                                                   input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_LEFT)))
+         vkflag[RETRO_DEVICE_ID_JOYPAD_LEFT] = 1;
+      else
+      if (vkflag[RETRO_DEVICE_ID_JOYPAD_LEFT] && (!(joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_LEFT)) &&
+                                                  !(joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_LEFT)) &&
+                                                  !input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_LEFT)))
+         vkflag[RETRO_DEVICE_ID_JOYPAD_LEFT] = 0;
+
+      if (!vkflag[RETRO_DEVICE_ID_JOYPAD_RIGHT] && ((joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT)) ||
+                                                    (joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT)) ||
+                                                    input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_RIGHT)))
+         vkflag[RETRO_DEVICE_ID_JOYPAD_RIGHT] = 1;
+      else
+      if (vkflag[RETRO_DEVICE_ID_JOYPAD_RIGHT] && (!(joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT)) &&
+                                                   !(joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT)) &&
+                                                   !input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_RIGHT)))
+         vkflag[RETRO_DEVICE_ID_JOYPAD_RIGHT] = 0;
+   }
+   else /* Release all directions when key is pressed */
+   {
+      vkflag[RETRO_DEVICE_ID_JOYPAD_UP]    = 0;
+      vkflag[RETRO_DEVICE_ID_JOYPAD_DOWN]  = 0;
+      vkflag[RETRO_DEVICE_ID_JOYPAD_LEFT]  = 0;
+      vkflag[RETRO_DEVICE_ID_JOYPAD_RIGHT] = 0;
+   }
+
+   if (vkflag[RETRO_DEVICE_ID_JOYPAD_UP] ||
+       vkflag[RETRO_DEVICE_ID_JOYPAD_DOWN] ||
+       vkflag[RETRO_DEVICE_ID_JOYPAD_LEFT] ||
+       vkflag[RETRO_DEVICE_ID_JOYPAD_RIGHT])
+   {
+      if (let_go_of_direction)
+         /* just pressing down */
+         last_press_time = now;
+
+      if ((now - last_press_time > VKBD_MIN_HOLDING_TIME
+        && now - last_move_time > VKBD_MOVE_DELAY)
+        || let_go_of_direction)
+      {
+         last_move_time = now;
+
+         if (vkflag[RETRO_DEVICE_ID_JOYPAD_UP])
+            vkey_pos_y -= 1;
+         else if (vkflag[RETRO_DEVICE_ID_JOYPAD_DOWN])
+            vkey_pos_y += 1;
+
+         if (vkflag[RETRO_DEVICE_ID_JOYPAD_LEFT])
+            vkey_pos_x -= 1;
+         else if (vkflag[RETRO_DEVICE_ID_JOYPAD_RIGHT])
+            vkey_pos_x += 1;
+      }
+      let_go_of_direction = false;
+   }
+   else
+      let_go_of_direction = true;
+
+   if (vkey_pos_x < 0)
+      vkey_pos_x = VKBDX - 1;
+   else if (vkey_pos_x > VKBDX - 1)
+      vkey_pos_x = 0;
+   if (vkey_pos_y < 0)
+      vkey_pos_y = VKBDY - 1;
+   else if (vkey_pos_y > VKBDY - 1)
+      vkey_pos_y = 0;
 
 #if 0
    printf("vkey:%d sticky:%d sticky1:%d sticky2:%d, now:%d last:%d\n", vkey_pressed, vkey_sticky, vkey_sticky1, vkey_sticky2, now, last_press_time_button);
