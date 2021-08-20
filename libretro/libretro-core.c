@@ -6245,18 +6245,18 @@ static bool retro_update_av_info(void)
       width_multiplier = 1;
 
    /* Restore actual canvas height for aspect ratio toggling in real NTSC, otherwise toggling is broken */
-   if (!change_timing && real_ntsc && video_config_aspect == PUAE_VIDEO_PAL)
+   if (!change_timing && video_config_aspect == PUAE_VIDEO_PAL && (fake_ntsc || real_ntsc))
       retroh = defaulth;
-
-   /* Exception for Dyna Blaster */
-   if (fake_ntsc)
-      retroh = (video_config & PUAE_VIDEO_DOUBLELINE) ? 474 : 236;
 
    /* When the actual dimensions change and not just the view */
    if (change_timing)
    {
       defaultw = retrow;
       defaulth = retroh;
+
+      /* Statusbar location needs to get refreshed in B.C. Kid  */
+      if (fake_ntsc)
+         request_init_custom_timer = 1;
    }
 
    /* Disable Hz change if not allowed */
@@ -6448,6 +6448,10 @@ static bool retro_update_av_info(void)
       if (opt_statusbar_position >= 0 && statusbar_position_offset >= opt_statusbar_position)
       {
          opt_statusbar_position = statusbar_position_offset;
+
+         /* Dyna Blaster special */
+         if (fake_ntsc && zoomed_height == 216)
+            opt_statusbar_position -= 3;
 
          if (opt_statusbar_position < 0)
             opt_statusbar_position = 0;
