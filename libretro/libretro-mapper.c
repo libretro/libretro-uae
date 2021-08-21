@@ -40,6 +40,8 @@ void retro_set_input_poll(retro_input_poll_t cb)
 
 /* Core flags */
 int mapper_keys[RETRO_MAPPER_LAST] = {0};
+static long mapper_keys_pressed_time = 0;
+
 bool retro_capslock = false;
 bool retro_mousemode = false;
 bool mousemode_locked = false;
@@ -59,6 +61,8 @@ static unsigned retro_key_state[RETROK_LAST] = {0};
 static unsigned retro_key_event_state[RETROK_LAST] = {0};
 int16_t joypad_bits[RETRO_DEVICES];
 extern bool libretro_supports_bitmasks;
+extern bool libretro_ff_enabled;
+extern void retro_fastforwarding(bool);
 extern dc_storage *dc;
 extern unsigned char statusbar_text[RETRO_PATH_MAX];
 
@@ -768,6 +772,7 @@ void update_input(unsigned disable_keys)
    unsigned int i = 0, j = 0, mk = 0;
    int LX = 0, LY = 0, RX = 0, RY = 0;
    const int threshold = 20000;
+   long now = retro_ticks() / 1000;
 
    static int jbt[2][RETRO_DEVICE_ID_JOYPAD_LAST] = {0};
    static int kbt[EMU_FUNCTION_COUNT] = {0};
@@ -989,9 +994,9 @@ void update_input(unsigned disable_keys)
                      jflag[j][RETRO_DEVICE_ID_JOYPAD_A] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_A] = 1;
                }
                else if (mapper_keys[i] == TOGGLE_VKBD)
-                  emu_function(EMU_VKBD);
+                  mapper_keys_pressed_time = now; /* Decide on release */
                else if (mapper_keys[i] == TOGGLE_STATUSBAR)
-                  emu_function(EMU_STATUSBAR);
+                  mapper_keys_pressed_time = now; /* Decide on release */
                else if (mapper_keys[i] == SWITCH_JOYMOUSE)
                   emu_function(EMU_JOYMOUSE);
                else
@@ -1051,13 +1056,34 @@ void update_input(unsigned disable_keys)
                      jflag[j][RETRO_DEVICE_ID_JOYPAD_A] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_A] = 0;
                }
                else if (mapper_keys[i] == TOGGLE_VKBD)
-                  ;/* no-op */
+               {
+                  if (now - mapper_keys_pressed_time > 800 && libretro_ff_enabled)
+                     retro_fastforwarding(false);
+                  else if (now - mapper_keys_pressed_time < 400)
+                     emu_function(EMU_VKBD);
+                  else
+                     emu_function(EMU_STATUSBAR);
+                  mapper_keys_pressed_time = 0;
+               }
                else if (mapper_keys[i] == TOGGLE_STATUSBAR)
-                  ;/* no-op */
+               {
+                  if (now - mapper_keys_pressed_time > 800 && libretro_ff_enabled)
+                     retro_fastforwarding(false);
+                  else if (now - mapper_keys_pressed_time < 400)
+                     emu_function(EMU_STATUSBAR);
+                  else
+                     emu_function(EMU_VKBD);
+                  mapper_keys_pressed_time = 0;
+               }
                else if (mapper_keys[i] == SWITCH_JOYMOUSE)
                   ;/* no-op */
                else
                   retro_key_up(keyboard_translation[mapper_keys[i]]);
+            }
+            else if (mapper_keys_pressed_time)
+            {
+               if (now - mapper_keys_pressed_time > 800 && !libretro_ff_enabled)
+                  retro_fastforwarding(true);
             }
          } /* for i */
       } /* if retro_devices[j]==joypad */

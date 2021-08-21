@@ -27,7 +27,9 @@ WinUAE), and many more.
 | X               | Space                         |
 | L2              | Left mouse button             |
 | R2              | Right mouse button            |
-| Select          | Toggle virtual keyboard       |
+| Select (Short)  | Toggle virtual keyboard       |
+| Select (Long)   | Toggle statusbar              |
+| Select (Hold)   | Fast-Forward                  |
 
 | Keyboard key    | Action                        |
 |-----------------|-------------------------------|
