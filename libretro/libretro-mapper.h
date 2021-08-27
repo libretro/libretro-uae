@@ -41,6 +41,7 @@
 
 extern int16_t joypad_bits[RETRO_DEVICES];
 extern int mapper_keys[RETRO_MAPPER_LAST];
+extern long mapper_keys_pressed_time;
 extern void retro_poll_event();
 extern void retro_keyboard_event(bool, unsigned, uint32_t, uint16_t);
 extern bool retro_mousemode;

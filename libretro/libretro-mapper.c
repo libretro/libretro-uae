@@ -38,9 +38,13 @@ void retro_set_input_poll(retro_input_poll_t cb)
 /* Mouse D-Pad acceleration */
 #define MOUSE_DPAD_ACCEL
 
+/* Press durations */
+#define SHORT_PRESS 400
+#define LONG_PRESS 800
+
 /* Core flags */
 int mapper_keys[RETRO_MAPPER_LAST] = {0};
-static long mapper_keys_pressed_time = 0;
+long mapper_keys_pressed_time = 0;
 
 bool retro_capslock = false;
 bool retro_mousemode = false;
@@ -790,10 +794,10 @@ void update_input(unsigned disable_keys)
          switch (mk)
          {
             case RETRO_MAPPER_VKBD:
-               emu_function(EMU_VKBD);
+               mapper_keys_pressed_time = now; /* Decide on release */
                break;
             case RETRO_MAPPER_STATUSBAR:
-               emu_function(EMU_STATUSBAR);
+               mapper_keys_pressed_time = now; /* Decide on release */
                break;
             case RETRO_MAPPER_JOYMOUSE:
                emu_function(EMU_JOYMOUSE);
@@ -813,6 +817,32 @@ void update_input(unsigned disable_keys)
       else if (!input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, mapper_keys[mk]) && kbt[i] && mapper_keys[mk])
       {
          kbt[i] = 0;
+         switch (mk)
+         {
+            case RETRO_MAPPER_VKBD:
+               if (now - mapper_keys_pressed_time > LONG_PRESS && libretro_ff_enabled)
+                  retro_fastforwarding(false);
+               else if (now - mapper_keys_pressed_time < SHORT_PRESS)
+                  emu_function(EMU_VKBD);
+               else
+                  emu_function(EMU_STATUSBAR);
+               mapper_keys_pressed_time = 0;
+               break;
+            case RETRO_MAPPER_STATUSBAR:
+               if (now - mapper_keys_pressed_time > LONG_PRESS && libretro_ff_enabled)
+                  retro_fastforwarding(false);
+               else if (now - mapper_keys_pressed_time < SHORT_PRESS)
+                  emu_function(EMU_STATUSBAR);
+               else
+                  emu_function(EMU_VKBD);
+               mapper_keys_pressed_time = 0;
+               break;
+         }
+      }
+      else if (mapper_keys_pressed_time)
+      {
+         if (now - mapper_keys_pressed_time > LONG_PRESS && !libretro_ff_enabled)
+            retro_fastforwarding(true);
       }
    }
 
@@ -1057,9 +1087,9 @@ void update_input(unsigned disable_keys)
                }
                else if (mapper_keys[i] == TOGGLE_VKBD)
                {
-                  if (now - mapper_keys_pressed_time > 800 && libretro_ff_enabled)
+                  if (now - mapper_keys_pressed_time > LONG_PRESS && libretro_ff_enabled)
                      retro_fastforwarding(false);
-                  else if (now - mapper_keys_pressed_time < 400)
+                  else if (now - mapper_keys_pressed_time < SHORT_PRESS)
                      emu_function(EMU_VKBD);
                   else
                      emu_function(EMU_STATUSBAR);
@@ -1067,9 +1097,9 @@ void update_input(unsigned disable_keys)
                }
                else if (mapper_keys[i] == TOGGLE_STATUSBAR)
                {
-                  if (now - mapper_keys_pressed_time > 800 && libretro_ff_enabled)
+                  if (now - mapper_keys_pressed_time > LONG_PRESS && libretro_ff_enabled)
                      retro_fastforwarding(false);
-                  else if (now - mapper_keys_pressed_time < 400)
+                  else if (now - mapper_keys_pressed_time < SHORT_PRESS)
                      emu_function(EMU_STATUSBAR);
                   else
                      emu_function(EMU_VKBD);
@@ -1082,7 +1112,7 @@ void update_input(unsigned disable_keys)
             }
             else if (mapper_keys_pressed_time)
             {
-               if (now - mapper_keys_pressed_time > 800 && !libretro_ff_enabled)
+               if (now - mapper_keys_pressed_time > LONG_PRESS && !libretro_ff_enabled)
                   retro_fastforwarding(true);
             }
          } /* for i */

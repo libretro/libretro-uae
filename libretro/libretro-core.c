@@ -54,6 +54,7 @@ bool opt_video_resolution_auto = false;
 bool opt_video_vresolution_auto = false;
 bool opt_floppy_sound_empty_mute = false;
 bool opt_floppy_multidrive = false;
+unsigned int opt_autoloadfastforward = 0;
 unsigned int opt_use_whdload = 1;
 unsigned int opt_use_whdload_prefs = 0;
 unsigned int opt_use_boot_hd = 0;
@@ -266,6 +267,119 @@ void retro_fastforwarding(bool enabled)
    libretro_ff_enabled     = enabled;
 
    environ_cb(RETRO_ENVIRONMENT_SET_FASTFORWARDING_OVERRIDE, &ff_override);
+}
+
+static int ff_counter_ledon  = 0;
+static int ff_counter_ledoff = 0;
+static int drive_track_prev  = 0;
+static void retro_autoloadfastforwarding(void)
+{
+   if (!libretro_supports_ff_override)
+      return;
+
+   if (mapper_keys_pressed_time)
+      return;
+
+   if (opt_autoloadfastforward & AUTOLOADFASTFORWARD_FD && (gui_data.df[0][0] || gui_data.df[1][0]))
+   {
+      int ff          = -1;
+      int drive_led   = retro_led_state[1];
+      int drive_track = gui_data.drive_track[0];
+
+      if (gui_data.drive_motor[1])
+         drive_track = gui_data.drive_track[1];
+      if (gui_data.drive_motor[2])
+         drive_track = gui_data.drive_track[2];
+      if (gui_data.drive_motor[3])
+         drive_track = gui_data.drive_track[3];
+
+      if ((drive_track != drive_track_prev && drive_led) && !libretro_ff_enabled)
+      {
+         ff_counter_ledon  = 0;
+         ff_counter_ledoff = 0;
+         ff = 1;
+      }
+      else if ((drive_track == drive_track_prev && drive_led) && libretro_ff_enabled)
+      {
+         ff_counter_ledon++;
+         ff_counter_ledoff = 0;
+         if (ff_counter_ledon > 49)
+            ff = 2;
+      }
+      else if ((drive_track == drive_track_prev && !drive_led) && libretro_ff_enabled)
+      {
+         ff_counter_ledon = 0;
+         ff_counter_ledoff++;
+         if (ff_counter_ledoff > 24)
+            ff = 0;
+      }
+      else
+      {
+         ff_counter_ledon  = 0;
+         ff_counter_ledoff = 0;
+         ff = -2;
+      }
+
+      if (ff > -1)
+         retro_fastforwarding((ff > 1) ? false : (ff) ? true : false);
+#if 0
+      if (ff > -2)
+         printf("FD FF:%2d track:%3d prev:%3d led:%d timer:%3d,%3d\n",
+               ff, drive_track, drive_track_prev, drive_led,
+               ff_counter_ledoff, ff_counter_ledon);
+#endif
+      drive_track_prev = drive_track;
+   }
+
+   if ((opt_autoloadfastforward & AUTOLOADFASTFORWARD_CD && gui_data.cd >= 0) ||
+       (opt_autoloadfastforward & AUTOLOADFASTFORWARD_HD && gui_data.hd >= 0))
+   {
+      int ff        = -1;
+      int drive_led = 0;
+      if (opt_autoloadfastforward & AUTOLOADFASTFORWARD_CD && gui_data.cd >= 0)
+      {
+         drive_led = gui_data.cd;
+         if (drive_led & LED_CD_AUDIO)
+            drive_led = 0;
+         if (!drive_led && gui_data.md >= 0)
+            drive_led = gui_data.md;
+      }
+      if (opt_autoloadfastforward & AUTOLOADFASTFORWARD_HD && gui_data.hd >= 0)
+      {
+         drive_led = gui_data.hd;
+      }
+
+      if (drive_led && !libretro_ff_enabled)
+      {
+         ff_counter_ledon++;
+         ff_counter_ledoff = 0;
+         if (ff_counter_ledon > 3)
+            ff = 1;
+      }
+      else if (!drive_led && libretro_ff_enabled)
+      {
+         ff_counter_ledon = 0;
+         ff_counter_ledoff++;
+         if (ff_counter_ledoff > 19)
+            ff = 0;
+      }
+      else
+      {
+         ff_counter_ledon  = 0;
+         ff_counter_ledoff = 0;
+         ff = -2;
+      }
+
+      if (ff > -1)
+         retro_fastforwarding((ff) ? true : false);
+
+#if 0
+      if (ff > -2)
+         printf("HD/CD FF:%2d led:%d timer:%3d,%3d\n",
+               ff, drive_led,
+               ff_counter_ledoff, ff_counter_ledon);
+#endif
+   }
 }
 
 static void retro_set_core_options()
@@ -498,6 +612,23 @@ static void retro_set_core_options()
             { NULL, NULL },
          },
          "0"
+      },
+      {
+         "puae_autoloadfastforward",
+         "Media > Automatic Load Fast-Forward",
+         "Automatic Load Fast-Forward",
+         "Toggle fast-forward during media access.",
+         NULL,
+         "media",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
+            { "fd", "Floppy disks only" },
+            { "hd", "Hard drives only" },
+            { "cd", "Compact discs only" },
+            { NULL, NULL },
+         },
+         "disabled"
       },
       {
          "puae_floppy_speed",
@@ -2567,6 +2698,19 @@ static void update_variables(void)
 
       if (libretro_runloop_active)
          changed_prefs.sound_volume_cd = val;
+   }
+
+   var.key = "puae_autoloadfastforward";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if      (!strcmp(var.value, "disabled")) opt_autoloadfastforward = 0;
+      else if (!strcmp(var.value, "fd"))       opt_autoloadfastforward = AUTOLOADFASTFORWARD_FD;
+      else if (!strcmp(var.value, "hd"))       opt_autoloadfastforward = AUTOLOADFASTFORWARD_HD;
+      else if (!strcmp(var.value, "cd"))       opt_autoloadfastforward = AUTOLOADFASTFORWARD_CD;
+      else                                     opt_autoloadfastforward = AUTOLOADFASTFORWARD_FD |
+                                                                         AUTOLOADFASTFORWARD_HD |
+                                                                         AUTOLOADFASTFORWARD_CD;
    }
 
    var.key = "puae_cd_speed";
@@ -6631,6 +6775,10 @@ void retro_run(void)
 
    /* LED interface */
    retro_led_interface();
+
+   /* Automatic loading fast-forward */
+   if (opt_autoloadfastforward)
+      retro_autoloadfastforwarding();
 
    /* Virtual keyboard */
    if (retro_vkbd)
