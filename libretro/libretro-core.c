@@ -54,6 +54,7 @@ bool opt_video_resolution_auto = false;
 bool opt_video_vresolution_auto = false;
 bool opt_floppy_sound_empty_mute = false;
 bool opt_floppy_multidrive = false;
+unsigned int opt_autoloadfastforward = 0;
 unsigned int opt_use_whdload = 1;
 unsigned int opt_use_whdload_prefs = 0;
 unsigned int opt_use_boot_hd = 0;
@@ -173,9 +174,17 @@ static retro_audio_sample_t audio_cb = NULL;
 static retro_audio_sample_batch_t audio_batch_cb = NULL;
 static retro_environment_t environ_cb = NULL;
 
+retro_input_state_t input_state_cb = NULL;
+void retro_set_input_state(retro_input_state_t cb) { input_state_cb = cb; }
+
+static retro_input_poll_t input_poll_cb = NULL;
+void retro_set_input_poll(retro_input_poll_t cb) { input_poll_cb = cb; }
+
 static struct retro_perf_callback perf_cb;
 
 bool libretro_supports_bitmasks = false;
+static bool libretro_supports_ff_override = false;
+bool libretro_ff_enabled = false;
 static bool libretro_supports_option_categories = false;
 #define HAVE_NO_LANGEXTRA
 
@@ -249,6 +258,133 @@ static void retro_led_interface(void)
          retro_led_state[l] = led_state[l];
          led_state_cb(l, led_state[l]);
       }
+   }
+}
+
+void retro_fastforwarding(bool enabled)
+{
+   struct retro_fastforwarding_override ff_override;
+
+   if (!libretro_supports_ff_override)
+      return;
+
+   ff_override.ratio       = 10.0f;
+   ff_override.fastforward = enabled;
+   libretro_ff_enabled     = enabled;
+
+   environ_cb(RETRO_ENVIRONMENT_SET_FASTFORWARDING_OVERRIDE, &ff_override);
+}
+
+static int ff_counter_ledon  = 0;
+static int ff_counter_ledoff = 0;
+static int drive_track_prev  = 0;
+static void retro_autoloadfastforwarding(void)
+{
+   if (!libretro_supports_ff_override)
+      return;
+
+   if (mapper_keys_pressed_time)
+      return;
+
+   if (opt_autoloadfastforward & AUTOLOADFASTFORWARD_FD && (gui_data.df[0][0] || gui_data.df[1][0]))
+   {
+      int ff          = -1;
+      int drive_led   = retro_led_state[1];
+      int drive_track = gui_data.drive_track[0];
+
+      if (gui_data.drive_motor[1])
+         drive_track = gui_data.drive_track[1];
+      if (gui_data.drive_motor[2])
+         drive_track = gui_data.drive_track[2];
+      if (gui_data.drive_motor[3])
+         drive_track = gui_data.drive_track[3];
+
+      if ((drive_track != drive_track_prev && drive_led) && !libretro_ff_enabled)
+      {
+         ff_counter_ledon  = 0;
+         ff_counter_ledoff = 0;
+         ff = 1;
+      }
+      else if ((drive_track == drive_track_prev && drive_led) && libretro_ff_enabled)
+      {
+         ff_counter_ledon++;
+         ff_counter_ledoff = 0;
+         if (ff_counter_ledon > 49)
+            ff = 2;
+      }
+      else if ((drive_track == drive_track_prev && !drive_led) && libretro_ff_enabled)
+      {
+         ff_counter_ledon = 0;
+         ff_counter_ledoff++;
+         if (ff_counter_ledoff > 24)
+            ff = 0;
+      }
+      else
+      {
+         ff_counter_ledon  = 0;
+         ff_counter_ledoff = 0;
+         ff = -2;
+      }
+
+      if (ff > -1)
+         retro_fastforwarding((ff > 1) ? false : (ff) ? true : false);
+#if 0
+      if (ff > -2)
+         printf("FD FF:%2d track:%3d prev:%3d led:%d timer:%3d,%3d\n",
+               ff, drive_track, drive_track_prev, drive_led,
+               ff_counter_ledoff, ff_counter_ledon);
+#endif
+      drive_track_prev = drive_track;
+   }
+
+   if ((opt_autoloadfastforward & AUTOLOADFASTFORWARD_CD && gui_data.cd >= 0) ||
+       (opt_autoloadfastforward & AUTOLOADFASTFORWARD_HD && gui_data.hd >= 0))
+   {
+      int ff        = -1;
+      int drive_led = 0;
+      if (opt_autoloadfastforward & AUTOLOADFASTFORWARD_CD && gui_data.cd >= 0)
+      {
+         drive_led = gui_data.cd;
+         if (drive_led & LED_CD_AUDIO)
+            drive_led = 0;
+         if (!drive_led && gui_data.md >= 0)
+            drive_led = gui_data.md;
+      }
+      if (opt_autoloadfastforward & AUTOLOADFASTFORWARD_HD && gui_data.hd >= 0)
+      {
+         drive_led = gui_data.hd;
+      }
+
+      if (drive_led && !libretro_ff_enabled)
+      {
+         ff_counter_ledon++;
+         ff_counter_ledoff = 0;
+         if (ff_counter_ledon > 3)
+            ff = 1;
+      }
+      else if (!drive_led && libretro_ff_enabled)
+      {
+         ff_counter_ledon = 0;
+         ff_counter_ledoff++;
+         if (ff_counter_ledoff > 19)
+            ff = 0;
+      }
+      else
+      {
+         ff_counter_ledon  = 0;
+         ff_counter_ledoff = 0;
+         ff = -2;
+      }
+
+      if (ff > -1)
+         retro_fastforwarding((ff) ? true : false);
+
+#if 0
+      if (ff > -2)
+         printf("HD/CD FF:%2d led:%d timer:%3d,%3d\n",
+               ff, drive_led,
+               ff_counter_ledoff, ff_counter_ledon);
+#endif
    }
 }
 
@@ -482,6 +618,23 @@ static void retro_set_core_options()
             { NULL, NULL },
          },
          "0"
+      },
+      {
+         "puae_autoloadfastforward",
+         "Media > Automatic Load Fast-Forward",
+         "Automatic Load Fast-Forward",
+         "Toggle fast-forward during media access.",
+         NULL,
+         "media",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
+            { "fd", "Floppy disks only" },
+            { "hd", "Hard drives only" },
+            { "cd", "Compact discs only" },
+            { NULL, NULL },
+         },
+         "disabled"
       },
       {
          "puae_floppy_speed",
@@ -2553,6 +2706,19 @@ static void update_variables(void)
          changed_prefs.sound_volume_cd = val;
    }
 
+   var.key = "puae_autoloadfastforward";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if      (!strcmp(var.value, "disabled")) opt_autoloadfastforward = 0;
+      else if (!strcmp(var.value, "fd"))       opt_autoloadfastforward = AUTOLOADFASTFORWARD_FD;
+      else if (!strcmp(var.value, "hd"))       opt_autoloadfastforward = AUTOLOADFASTFORWARD_HD;
+      else if (!strcmp(var.value, "cd"))       opt_autoloadfastforward = AUTOLOADFASTFORWARD_CD;
+      else                                     opt_autoloadfastforward = AUTOLOADFASTFORWARD_FD |
+                                                                         AUTOLOADFASTFORWARD_HD |
+                                                                         AUTOLOADFASTFORWARD_CD;
+   }
+
    var.key = "puae_cd_speed";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -3851,6 +4017,9 @@ void retro_init(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_INPUT_BITMASKS, NULL))
       libretro_supports_bitmasks = true;
 
+   if (environ_cb(RETRO_ENVIRONMENT_SET_FASTFORWARDING_OVERRIDE, NULL))
+      libretro_supports_ff_override = true;
+
    static struct retro_keyboard_callback keyboard_callback = {retro_keyboard_event};
    environ_cb(RETRO_ENVIRONMENT_SET_KEYBOARD_CALLBACK, &keyboard_callback);
 
@@ -3899,6 +4068,7 @@ void retro_deinit(void)
    locked_video_horizontal = false;
    opt_aspect_ratio_locked = false;
    libretro_supports_bitmasks = false;
+   libretro_supports_ff_override = false;
    libretro_supports_option_categories = false;
 }
 
@@ -6245,18 +6415,18 @@ static bool retro_update_av_info(void)
       width_multiplier = 1;
 
    /* Restore actual canvas height for aspect ratio toggling in real NTSC, otherwise toggling is broken */
-   if (!change_timing && real_ntsc && video_config_aspect == PUAE_VIDEO_PAL)
+   if (!change_timing && video_config_aspect == PUAE_VIDEO_PAL && (fake_ntsc || real_ntsc))
       retroh = defaulth;
-
-   /* Exception for Dyna Blaster */
-   if (fake_ntsc)
-      retroh = (video_config & PUAE_VIDEO_DOUBLELINE) ? 474 : 236;
 
    /* When the actual dimensions change and not just the view */
    if (change_timing)
    {
       defaultw = retrow;
       defaulth = retroh;
+
+      /* Statusbar location needs to get refreshed in B.C. Kid  */
+      if (fake_ntsc)
+         request_init_custom_timer = 1;
    }
 
    /* Disable Hz change if not allowed */
@@ -6449,6 +6619,10 @@ static bool retro_update_av_info(void)
       {
          opt_statusbar_position = statusbar_position_offset;
 
+         /* Dyna Blaster special */
+         if (fake_ntsc && zoomed_height == 216)
+            opt_statusbar_position -= 3;
+
          if (opt_statusbar_position < 0)
             opt_statusbar_position = 0;
       }
@@ -6534,6 +6708,7 @@ void retro_run(void)
       memset(retro_bmp, 0, sizeof(retro_bmp));
 
    /* Poll inputs */
+   input_poll_cb();
    retro_poll_event();
 
    /* If any drawing parameters/offsets have been modified,
@@ -6607,6 +6782,10 @@ void retro_run(void)
 
    /* LED interface */
    retro_led_interface();
+
+   /* Automatic loading fast-forward */
+   if (opt_autoloadfastforward)
+      retro_autoloadfastforwarding();
 
    /* Virtual keyboard */
    if (retro_vkbd)

@@ -54,6 +54,11 @@ extern int umain (int argc, TCHAR **argv);
 #define STATUSBAR_BASIC     0x04
 #define STATUSBAR_MINIMAL   0x08
 
+/* Autoloadfastforward */
+#define AUTOLOADFASTFORWARD_FD 0x01
+#define AUTOLOADFASTFORWARD_HD 0x02
+#define AUTOLOADFASTFORWARD_CD 0x04
+
 /* Functions */
 extern void emu_function(int function);
 enum EMU_FUNCTIONS
