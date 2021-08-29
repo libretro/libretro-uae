@@ -23,6 +23,7 @@
 #include "gui.h"
 #include "audio.h"
 #include "memory_uae.h"
+#include "sounddep/sound.h"
 
 unsigned int libretro_runloop_active = 0;
 unsigned short int retro_bmp[RETRO_BMP_SIZE] = {0};
@@ -292,6 +293,10 @@ static void retro_autoloadfastforwarding(void)
       int drive_led   = retro_led_state[1];
       int drive_track = gui_data.drive_track[0];
 
+      /* No FF when audio is playing */
+      if (paula_sndbuffer[0])
+         drive_led = 0;
+
       if (gui_data.drive_motor[1])
          drive_track = gui_data.drive_track[1];
       if (gui_data.drive_motor[2])
@@ -354,6 +359,10 @@ static void retro_autoloadfastforwarding(void)
       {
          drive_led = gui_data.hd;
       }
+
+      /* No FF when audio is playing */
+      if (paula_sndbuffer[0])
+         drive_led = 0;
 
       if (drive_led && !libretro_ff_enabled)
       {
@@ -623,7 +632,7 @@ static void retro_set_core_options()
          "puae_autoloadfastforward",
          "Media > Automatic Load Fast-Forward",
          "Automatic Load Fast-Forward",
-         "Toggle fast-forward during media access.",
+         "Toggle fast-forward during media access if sound is not outputted. Mutes 'Floppy Sound Emulation'.",
          NULL,
          "media",
          {
@@ -2777,15 +2786,22 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
+      char val[4];
+      strlcpy(val, var.value, sizeof(val));
+
+      /* Mute with automatic fast-forwarding */
+      if (opt_autoloadfastforward & AUTOLOADFASTFORWARD_FD)
+         strlcpy(val, "100", sizeof(val));
+
       /* Sound is enabled by default if files are found, so this needs to be set always */
       /* 100 is mute, 0 is max */
       strcat(uae_config, "floppy_volume=");
-      strcat(uae_config, var.value);
+      strcat(uae_config, val);
       strcat(uae_config, "\n");
 
       /* Setting volume in realtime will crash on first pass */
       if (libretro_runloop_active)
-         changed_prefs.dfxclickvolume = atoi(var.value);
+         changed_prefs.dfxclickvolume = atoi(val);
    }
 
    var.key = "puae_floppy_sound_empty_mute";
