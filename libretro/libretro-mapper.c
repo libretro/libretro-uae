@@ -48,7 +48,8 @@ extern bool request_update_av_info;
 extern void retro_reset_soft();
 extern bool retro_statusbar;
 
-static unsigned retro_key_state[RETROK_LAST] = {0};
+unsigned retro_key_state[RETROK_LAST] = {0};
+unsigned retro_key_state_internal[RETROK_LAST] = {0};
 static unsigned retro_key_event_state[RETROK_LAST] = {0};
 int16_t joypad_bits[RETRO_DEVICES];
 extern bool libretro_supports_bitmasks;
@@ -682,8 +683,8 @@ static void process_key(unsigned disable_keys)
       {
          if (retro_key_event_state[i] && !retro_key_state[i])
          {
-            retro_key_down(keyboard_translation[i]);
-            retro_key_up(keyboard_translation[i]);
+            retro_key_down(i);
+            retro_key_up(i);
             retro_capslock = !retro_capslock;
             retro_key_state[i] = 1;
          }
@@ -724,18 +725,18 @@ static void process_key(unsigned disable_keys)
                continue;
 
             if (retro_capslock)
-               retro_key_down(keyboard_translation[RETROK_LSHIFT]);
+               retro_key_down(RETROK_LSHIFT);
 
-            retro_key_down(keyboard_translation[i]);
+            retro_key_down(i);
             retro_key_state[i] = 1;
          }
          else if (!retro_key_event_state[i] && retro_key_state[i])
          {
-            retro_key_up(keyboard_translation[i]);
+            retro_key_up(i);
             retro_key_state[i] = 0;
 
             if (retro_capslock)
-               retro_key_up(keyboard_translation[RETROK_LSHIFT]);
+               retro_key_up(RETROK_LSHIFT);
          }
       }
    }
@@ -1017,7 +1018,7 @@ void update_input(unsigned disable_keys)
                else if (mapper_keys[i] == SWITCH_JOYMOUSE)
                   emu_function(EMU_JOYMOUSE);
                else
-                  retro_key_down(keyboard_translation[mapper_keys[i]]);
+                  retro_key_down(mapper_keys[i]);
             }
             else if (just_released)
             {
@@ -1095,7 +1096,7 @@ void update_input(unsigned disable_keys)
                else if (mapper_keys[i] == SWITCH_JOYMOUSE)
                   ;/* no-op */
                else
-                  retro_key_up(keyboard_translation[mapper_keys[i]]);
+                  retro_key_up(mapper_keys[i]);
             }
             else if (mapper_keys_pressed_time)
             {

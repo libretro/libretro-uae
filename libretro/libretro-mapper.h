@@ -44,6 +44,7 @@ extern int mapper_keys[RETRO_MAPPER_LAST];
 extern long mapper_keys_pressed_time;
 extern void retro_poll_event();
 extern void retro_keyboard_event(bool, unsigned, uint32_t, uint16_t);
+extern unsigned retro_key_state_internal[RETROK_LAST];
 extern bool retro_mousemode;
 
 extern unsigned int opt_cd32pad_options;

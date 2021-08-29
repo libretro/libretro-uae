@@ -602,12 +602,14 @@ void retro_joystick_button(int port, int button, int state)
 /* --- keyboard input --- */
 void retro_key_down(int key)
 {
-   inputdevice_do_keyboard(key, 1);
+   retro_key_state_internal[key] = 1;
+   inputdevice_do_keyboard(keyboard_translation[key], 1);
 }
 
 void retro_key_up(int key)
 {
-   inputdevice_do_keyboard(key, 0);
+   retro_key_state_internal[key] = 0;
+   inputdevice_do_keyboard(keyboard_translation[key], 0);
 }
 
 
