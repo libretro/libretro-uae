@@ -25,8 +25,10 @@
 #define RETRO_MAPPER_RESET              27
 #define RETRO_MAPPER_ASPECT_RATIO       28
 #define RETRO_MAPPER_ZOOM_MODE          29
+#define RETRO_MAPPER_TURBO_FIRE         30
+#define RETRO_MAPPER_SAVE_DISK          31
 
-#define RETRO_MAPPER_LAST               30
+#define RETRO_MAPPER_LAST               32
 
 #define TOGGLE_VKBD                     -11
 #define TOGGLE_STATUSBAR                -12

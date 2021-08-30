@@ -451,7 +451,7 @@ static void process_controller(int retro_port, int i)
       if ((i == RETRO_DEVICE_ID_JOYPAD_UP || i == RETRO_DEVICE_ID_JOYPAD_DOWN)
       && !jflag[retro_port][RETRO_DEVICE_ID_JOYPAD_SELECT])
       {
-         if (i == RETRO_DEVICE_ID_JOYPAD_UP && !retro_vkbd)
+         if (i == RETRO_DEVICE_ID_JOYPAD_UP && !retro_vkbd && !mapper_keys[i])
          {
             if ((joypad_bits[retro_port] & (1 << i))
             && !(joypad_bits[retro_port] & (1 << RETRO_DEVICE_ID_JOYPAD_DOWN))
@@ -462,7 +462,7 @@ static void process_controller(int retro_port, int i)
             }
          }
          else
-         if (i == RETRO_DEVICE_ID_JOYPAD_DOWN && !retro_vkbd)
+         if (i == RETRO_DEVICE_ID_JOYPAD_DOWN && !retro_vkbd && !mapper_keys[i])
          {
             if ((joypad_bits[retro_port] & (1 << i))
             && !(joypad_bits[retro_port] & (1 << RETRO_DEVICE_ID_JOYPAD_UP))
@@ -492,7 +492,7 @@ static void process_controller(int retro_port, int i)
 
       if (i == RETRO_DEVICE_ID_JOYPAD_LEFT || i == RETRO_DEVICE_ID_JOYPAD_RIGHT)
       {
-         if (i == RETRO_DEVICE_ID_JOYPAD_LEFT && !retro_vkbd)
+         if (i == RETRO_DEVICE_ID_JOYPAD_LEFT && !retro_vkbd && !mapper_keys[i])
          {
             if ((joypad_bits[retro_port] & (1 << i))
             && !(joypad_bits[retro_port] & (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT)))
@@ -502,7 +502,7 @@ static void process_controller(int retro_port, int i)
             }
          }
          else
-         if (i == RETRO_DEVICE_ID_JOYPAD_RIGHT && !retro_vkbd)
+         if (i == RETRO_DEVICE_ID_JOYPAD_RIGHT && !retro_vkbd && !mapper_keys[i])
          {
             if ((joypad_bits[retro_port] & (1 << i))
             && !(joypad_bits[retro_port] & (1 << RETRO_DEVICE_ID_JOYPAD_LEFT)))
@@ -799,6 +799,12 @@ void update_input(unsigned disable_keys)
             case RETRO_MAPPER_ZOOM_MODE:
                emu_function(EMU_ZOOM_MODE);
                break;
+            case RETRO_MAPPER_TURBO_FIRE:
+               emu_function(EMU_TURBO_FIRE);
+               break;
+            case RETRO_MAPPER_SAVE_DISK:
+               emu_function(EMU_SAVE_DISK);
+               break;
          }
       }
       /* Key up */
@@ -872,13 +878,17 @@ void update_input(unsigned disable_keys)
          {
             int just_pressed  = 0;
             int just_released = 0;
-            if ((i < 4 || i > 7) && i < 16) /* Remappable RetroPad buttons excluding D-Pad */
+            if (i < 16) /* Remappable RetroPad buttons and directions */
             {
                /* Skip the rest of CD32 pad buttons */
                if (retro_devices[j] == RETRO_DEVICE_PUAE_CD32PAD)
                {
                   switch (i)
                   {
+                     case RETRO_DEVICE_ID_JOYPAD_UP:
+                     case RETRO_DEVICE_ID_JOYPAD_DOWN:
+                     case RETRO_DEVICE_ID_JOYPAD_LEFT:
+                     case RETRO_DEVICE_ID_JOYPAD_RIGHT:
                      case RETRO_DEVICE_ID_JOYPAD_B:
                      case RETRO_DEVICE_ID_JOYPAD_Y:
                      case RETRO_DEVICE_ID_JOYPAD_A:
@@ -897,6 +907,10 @@ void update_input(unsigned disable_keys)
                {
                   switch (i)
                   {
+                     case RETRO_DEVICE_ID_JOYPAD_UP:
+                     case RETRO_DEVICE_ID_JOYPAD_DOWN:
+                     case RETRO_DEVICE_ID_JOYPAD_LEFT:
+                     case RETRO_DEVICE_ID_JOYPAD_RIGHT:
                      case RETRO_DEVICE_ID_JOYPAD_B:
                      case RETRO_DEVICE_ID_JOYPAD_Y:
                      case RETRO_DEVICE_ID_JOYPAD_A:
@@ -976,6 +990,10 @@ void update_input(unsigned disable_keys)
                   emu_function(EMU_ASPECT_RATIO);
                else if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_ZOOM_MODE])
                   emu_function(EMU_ZOOM_MODE);
+               else if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_TURBO_FIRE])
+                  emu_function(EMU_TURBO_FIRE);
+               else if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_SAVE_DISK])
+                  emu_function(EMU_SAVE_DISK);
                else if (mapper_keys[i] == MOUSE_LEFT_BUTTON)
                {
                   retro_mouse_button(j, 0, 1);
@@ -1037,6 +1055,10 @@ void update_input(unsigned disable_keys)
                else if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_ASPECT_RATIO])
                   ;/* no-op */
                else if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_ZOOM_MODE])
+                  ;/* no-op */
+               else if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_TURBO_FIRE])
+                  ;/* no-op */
+               else if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_SAVE_DISK])
                   ;/* no-op */
                else if (mapper_keys[i] == MOUSE_LEFT_BUTTON)
                {
@@ -1649,7 +1671,11 @@ void retro_poll_event()
       for (j = 0; j < 2; j++)
       {
          /* No keymappings and mousing at the same time */
-         if (!uae_mouse_x[j] && !uae_mouse_y[j] && (!mapper_keys[16] && !mapper_keys[17] && !mapper_keys[18] && !mapper_keys[19]))
+         if (!uae_mouse_x[j] && !uae_mouse_y[j] &&
+               (!mapper_keys[RETRO_DEVICE_ID_JOYPAD_LR] &&
+                !mapper_keys[RETRO_DEVICE_ID_JOYPAD_LL] &&
+                !mapper_keys[RETRO_DEVICE_ID_JOYPAD_LD] &&
+                !mapper_keys[RETRO_DEVICE_ID_JOYPAD_LU]))
          {
             analog_left[0] = (input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X));
             analog_left[1] = (input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y));
@@ -1690,7 +1716,11 @@ void retro_poll_event()
       for (j = 0; j < 2; j++)
       {
          /* No keymappings and mousing at the same time */
-         if (!uae_mouse_x[j] && !uae_mouse_y[j] && (!mapper_keys[20] && !mapper_keys[21] && !mapper_keys[22] && !mapper_keys[23]))
+         if (!uae_mouse_x[j] && !uae_mouse_y[j] &&
+               (!mapper_keys[RETRO_DEVICE_ID_JOYPAD_RR] &&
+                !mapper_keys[RETRO_DEVICE_ID_JOYPAD_RL] &&
+                !mapper_keys[RETRO_DEVICE_ID_JOYPAD_RD] &&
+                !mapper_keys[RETRO_DEVICE_ID_JOYPAD_RU]))
          {
             analog_right[0] = (input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X));
             analog_right[1] = (input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y));
