@@ -321,13 +321,13 @@ static void draw_char_1pass16(const char *string, uint16_t strlen,
    short int xrepeat = 0;
    short int yrepeat = 0;
 
-   uint16_t *yptr16;
+   uint16_t *yptr;
 
    if (!linesurf16)
       return;
 
-   surfw  = linesurf16_w;
-   yptr16 = &linesurf16[0];
+   surfw = linesurf16_w;
+   yptr  = &linesurf16[0];
 
    for (ypixel = 0; ypixel < charh + 1; ypixel++)
    {
@@ -335,18 +335,18 @@ static void draw_char_1pass16(const char *string, uint16_t strlen,
       for (col = 0; col < strlen; col++)
       {
          b = font_array[(string[col])*charw + ypixel - 1];
-         for (bit = 0; bit < charw + 1; bit++, yptr16++)
+         for (bit = 0; bit < charw + 1; bit++, yptr++)
          {
-            *yptr16 = (b & (1 << (charw - 1 - bit) + 1)) ? fg : bg;
-            for (xrepeat = 1; xrepeat < xscale; xrepeat++, yptr16++)
-               yptr16[1] = *yptr16;
+            *yptr = (b & (1 << (charw - 1 - bit) + 1)) ? fg : bg;
+            for (xrepeat = 1; xrepeat < xscale; xrepeat++, yptr++)
+               yptr[1] = *yptr;
          }
       }
 
       /* Scale */
       for (yrepeat = 1; yrepeat < yscale; yrepeat++)
-         for (xrepeat = 0; xrepeat < surfw; xrepeat++, yptr16++)
-            *yptr16 = yptr16[-surfw];
+         for (xrepeat = 0; xrepeat < surfw; xrepeat++, yptr++)
+            *yptr = yptr[-surfw];
    }
 }
 
@@ -363,13 +363,13 @@ static void draw_char_1pass32(const char *string, uint16_t strlen,
    short int xrepeat = 0;
    short int yrepeat = 0;
 
-   uint32_t *yptr32;
+   uint32_t *yptr;
 
    if (!linesurf32)
       return;
 
-   surfw  = linesurf32_w;
-   yptr32 = &linesurf32[0];
+   surfw = linesurf32_w;
+   yptr  = &linesurf32[0];
 
    for (ypixel = 0; ypixel < charh + 1; ypixel++)
    {
@@ -377,18 +377,18 @@ static void draw_char_1pass32(const char *string, uint16_t strlen,
       for (col = 0; col < strlen; col++)
       {
          b = font_array[(string[col])*charw + ypixel - 1];
-         for (bit = 0; bit < charw + 1; bit++, yptr32++)
+         for (bit = 0; bit < charw + 1; bit++, yptr++)
          {
-            *yptr32 = (b & (1 << (charw - 1 - bit) + 1)) ? fg : bg;
-            for (xrepeat = 1; xrepeat < xscale; xrepeat++, yptr32++)
-               yptr32[1] = *yptr32;
+            *yptr = (b & (1 << (charw - 1 - bit) + 1)) ? fg : bg;
+            for (xrepeat = 1; xrepeat < xscale; xrepeat++, yptr++)
+               yptr[1] = *yptr;
          }
       }
 
       /* Scale */
       for (yrepeat = 1; yrepeat < yscale; yrepeat++)
-         for (xrepeat = 0; xrepeat < surfw; xrepeat++, yptr32++)
-            *yptr32 = yptr32[-surfw];
+         for (xrepeat = 0; xrepeat < surfw; xrepeat++, yptr++)
+            *yptr = yptr[-surfw];
    }
 }
 
@@ -399,19 +399,20 @@ static void draw_char_2pass16(uint16_t *surf,
 {
    short int xrepeat = 0;
    short int yrepeat = 0;
+   short int pcount  = 0;
    unsigned short int surfw = 0;
    unsigned short int surfh = 0;
    unsigned short int surfhxscale = 0;
 
-   uint16_t *yptr16;
+   uint16_t *yptr;
    uint16_t *surf_ptr;
 
    if (!linesurf16)
       return;
 
-   surfw  = linesurf16_w;
-   surfh  = linesurf16_h;
-   yptr16 = &linesurf16[0];
+   surfw = linesurf16_w;
+   surfh = linesurf16_h;
+   yptr  = &linesurf16[0];
 
    surfhxscale = surfh * xscale;
 
@@ -421,19 +422,19 @@ static void draw_char_2pass16(uint16_t *surf,
          for (yrepeat = y - yscale; yrepeat < surfh + y - yscale; yrepeat++)
          {
             surf_ptr = surf + (yrepeat * retrow) + x - xscale;
-            for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr16++)
+            for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr++)
             {
-               if (*yptr16 == bg)
+               if (*yptr == bg)
                {
                   if (yrepeat > y - yscale && yrepeat < surfh + y - (yscale * 2) &&
                       xrepeat >= x + xscale && xrepeat < surfw + x - xscale)
                      ; /* no-op */
                   else
-                     *yptr16 = 0;
+                     *yptr = 0;
                }
 
-               if (*yptr16 != 0)
-                  *surf_ptr = *yptr16;
+               if (*yptr != 0)
+                  *surf_ptr = *yptr;
                surf_ptr++;
             }
          }
@@ -443,19 +444,20 @@ static void draw_char_2pass16(uint16_t *surf,
          for (yrepeat = y - yscale; yrepeat < surfh + y - yscale; yrepeat++)
          {
             surf_ptr = surf + (yrepeat * retrow) + x - xscale;
-            for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr16++)
+            for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr++, pcount++)
             {
-               if (*yptr16 == bg)
+               if (*yptr == bg)
                {
                   /* Bottom right */
-                  if (yptr16[-surfhxscale-xscale] == fg)
+                  if (pcount >= surfhxscale+xscale &&
+                      yptr[-surfhxscale-xscale] == fg)
                      ; /* no-op */
                   else
-                     *yptr16 = 0;
+                     *yptr = 0;
                }
 
-               if (*yptr16 != 0)
-                  *surf_ptr = *yptr16;
+               if (*yptr != 0)
+                  *surf_ptr = *yptr;
                surf_ptr++;
             }
          }
@@ -465,26 +467,30 @@ static void draw_char_2pass16(uint16_t *surf,
          for (yrepeat = y - yscale; yrepeat < surfh + y - yscale; yrepeat++)
          {
             surf_ptr = surf + (yrepeat * retrow) + x - xscale;
-            for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr16++)
+            for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr++, pcount++)
             {
-               if (*yptr16 == bg)
+               if (*yptr == bg)
                {
                   if (
                       /* Diagonals */
-                      yptr16[-surfhxscale-xscale] == fg || yptr16[+surfhxscale-xscale] == fg ||
-                      yptr16[-surfhxscale+xscale] == fg || yptr16[+surfhxscale+xscale] == fg ||
+                      (pcount >= surfhxscale+xscale && yptr[-surfhxscale-xscale] == fg) ||
+                      (pcount >= xscale             && yptr[+surfhxscale-xscale] == fg) ||
+                      (pcount >= surfhxscale        && yptr[-surfhxscale+xscale] == fg) ||
+                      (pcount >= 0                  && yptr[+surfhxscale+xscale] == fg) ||
                       /* Verticals */
-                      yptr16[-surfhxscale] == fg        || yptr16[+surfhxscale] == fg        ||
+                      (pcount >= surfhxscale        && yptr[-surfhxscale] == fg)        ||
+                      (pcount >= 0                  && yptr[+surfhxscale] == fg)        ||
                       /* Horizontals */
-                      yptr16[-xscale] == fg             || yptr16[+xscale] == fg
+                      (pcount >= xscale             && yptr[-xscale] == fg)             ||
+                      (pcount >= 0                  && yptr[+xscale] == fg)
                   )
                      ; /* no-op */
                   else
-                     *yptr16 = 0;
+                     *yptr = 0;
                }
 
-               if (*yptr16 != 0)
-                  *surf_ptr = *yptr16;
+               if (*yptr != 0)
+                  *surf_ptr = *yptr;
                surf_ptr++;
             }
          }
@@ -495,10 +501,10 @@ static void draw_char_2pass16(uint16_t *surf,
          for (yrepeat = y - yscale; yrepeat < surfh + y - yscale; yrepeat++)
          {
             surf_ptr = surf + (yrepeat * retrow) + x - xscale;
-            for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr16++)
+            for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr++)
             {
-               if (*yptr16 != 0)
-                  *surf_ptr = *yptr16;
+               if (*yptr != 0)
+                  *surf_ptr = *yptr;
                surf_ptr++;
             }
          }
@@ -508,24 +514,25 @@ static void draw_char_2pass16(uint16_t *surf,
 
 static void draw_char_2pass32(uint32_t *surf,
       uint16_t x, uint16_t y,
-      uint16_t xscale, uint16_t yscale,
+      uint8_t xscale, uint8_t yscale,
       uint32_t fg, uint32_t bg, libretro_graph_bg_t draw_bg)
 {
    short int xrepeat = 0;
    short int yrepeat = 0;
+   short int pcount  = 0;
    unsigned short int surfw = 0;
    unsigned short int surfh = 0;
    unsigned short int surfhxscale = 0;
 
-   uint32_t *yptr32;
-   uint32_t *surf_ptr32;
+   uint32_t *yptr;
+   uint32_t *surf_ptr;
 
    if (!linesurf32)
       return;
 
-   surfw  = linesurf32_w;
-   surfh  = linesurf32_h;
-   yptr32 = &linesurf32[0];
+   surfw = linesurf32_w;
+   surfh = linesurf32_h;
+   yptr  = &linesurf32[0];
 
    surfhxscale = surfh * xscale;
 
@@ -534,21 +541,21 @@ static void draw_char_2pass32(uint32_t *surf,
       case GRAPH_BG_ALL:
          for (yrepeat = y - yscale; yrepeat < surfh + y - yscale; yrepeat++)
          {
-            surf_ptr32 = surf + (yrepeat * retrow) + x - xscale;
-            for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr32++)
+            surf_ptr = surf + (yrepeat * retrow) + x - xscale;
+            for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr++)
             {
-               if (*yptr32 == bg)
+               if (*yptr == bg)
                {
                   if (yrepeat > y - yscale && yrepeat < surfh + y - (yscale * 2) &&
                       xrepeat >= x + xscale && xrepeat < surfw + x - xscale)
                      ; /* no-op */
                   else
-                     *yptr32 = 0;
+                     *yptr = 0;
                }
 
-               if (*yptr32 != 0)
-                  *surf_ptr32 = *yptr32;
-               surf_ptr32++;
+               if (*yptr != 0)
+                  *surf_ptr = *yptr;
+               surf_ptr++;
             }
          }
          break;
@@ -556,21 +563,22 @@ static void draw_char_2pass32(uint32_t *surf,
       case GRAPH_BG_SHADOW:
          for (yrepeat = y - yscale; yrepeat < surfh + y - yscale; yrepeat++)
          {
-            surf_ptr32 = surf + (yrepeat * retrow) + x - xscale;
-            for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr32++)
+            surf_ptr = surf + (yrepeat * retrow) + x - xscale;
+            for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr++, pcount++)
             {
-               if (*yptr32 == bg)
+               if (*yptr == bg)
                {
                   /* Bottom right */
-                  if (yptr32[-surfhxscale-xscale] == fg)
+                  if (pcount >= surfhxscale+xscale &&
+                      yptr[-surfhxscale-xscale] == fg)
                      ; /* no-op */
                   else
-                     *yptr32 = 0;
+                     *yptr = 0;
                }
 
-               if (*yptr32 != 0)
-                  *surf_ptr32 = *yptr32;
-               surf_ptr32++;
+               if (*yptr != 0)
+                  *surf_ptr = *yptr;
+               surf_ptr++;
             }
          }
          break;
@@ -578,28 +586,32 @@ static void draw_char_2pass32(uint32_t *surf,
       case GRAPH_BG_OUTLINE:
          for (yrepeat = y - yscale; yrepeat < surfh + y - yscale; yrepeat++)
          {
-            surf_ptr32 = surf + (yrepeat * retrow) + x - xscale;
-            for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr32++)
+            surf_ptr = surf + (yrepeat * retrow) + x - xscale;
+            for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr++, pcount++)
             {
-               if (*yptr32 == bg)
+               if (*yptr == bg)
                {
                   if (
                       /* Diagonals */
-                      yptr32[-surfhxscale-xscale] == fg || yptr32[+surfhxscale-xscale] == fg ||
-                      yptr32[-surfhxscale+xscale] == fg || yptr32[+surfhxscale+xscale] == fg ||
+                      (pcount >= surfhxscale+xscale && yptr[-surfhxscale-xscale] == fg) ||
+                      (pcount >= xscale             && yptr[+surfhxscale-xscale] == fg) ||
+                      (pcount >= surfhxscale        && yptr[-surfhxscale+xscale] == fg) ||
+                      (pcount >= 0                  && yptr[+surfhxscale+xscale] == fg) ||
                       /* Verticals */
-                      yptr32[-surfhxscale] == fg        || yptr32[+surfhxscale] == fg        ||
+                      (pcount >= surfhxscale        && yptr[-surfhxscale] == fg)        ||
+                      (pcount >= 0                  && yptr[+surfhxscale] == fg)        ||
                       /* Horizontals */
-                      yptr32[-xscale] == fg             || yptr32[+xscale] == fg
+                      (pcount >= xscale             && yptr[-xscale] == fg)             ||
+                      (pcount >= 0                  && yptr[+xscale] == fg)
                   )
                      ; /* no-op */
                   else
-                     *yptr32 = 0;
+                     *yptr = 0;
                }
 
-               if (*yptr32 != 0)
-                  *surf_ptr32 = *yptr32;
-               surf_ptr32++;
+               if (*yptr != 0)
+                  *surf_ptr = *yptr;
+               surf_ptr++;
             }
          }
          break;
@@ -608,16 +620,17 @@ static void draw_char_2pass32(uint32_t *surf,
       default:
          for (yrepeat = y - yscale; yrepeat < surfh + y - yscale; yrepeat++)
          {
-            surf_ptr32 = (uint32_t *)surf + (yrepeat * retrow) + x - xscale;
-            for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr32++)
+            surf_ptr = surf + (yrepeat * retrow) + x - xscale;
+            for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr++)
             {
-               if (*yptr32 != 0)
-                  *surf_ptr32 = *yptr32;
-               surf_ptr32++;
+               if (*yptr != 0)
+                  *surf_ptr = *yptr;
+               surf_ptr++;
             }
          }
          break;
    }
+
 }
 
 void draw_string_bmp16(uint16_t *surf, uint16_t x, uint16_t y,
@@ -671,10 +684,11 @@ void draw_string_bmp16(uint16_t *surf, uint16_t x, uint16_t y,
 
    if ((linesurf16_w != surfw) || (linesurf16_h != surfh))
    {
+      unsigned size = (surfw + xscale) * (surfh + yscale);
       if (linesurf16)
          free(linesurf16);
 
-      linesurf16   = (uint16_t *)malloc(sizeof(uint16_t)*(surfw*surfh)+(surfw+surfh));
+      linesurf16   = (uint16_t *)malloc(sizeof(uint16_t)*size);
       linesurf16_w = surfw;
       linesurf16_h = surfh;
    }
@@ -737,10 +751,11 @@ void draw_string_bmp32(uint32_t *surf, uint16_t x, uint16_t y,
 
    if ((linesurf32_w != surfw) || (linesurf32_h != surfh))
    {
+      unsigned size = (surfw + xscale) * (surfh + yscale);
       if (linesurf32)
          free(linesurf32);
 
-      linesurf32   = (uint32_t *)malloc(sizeof(uint32_t)*(surfw*surfh)+(surfw+surfh));
+      linesurf32   = (uint32_t *)malloc(sizeof(uint32_t)*size);
       linesurf32_w = surfw;
       linesurf32_h = surfh;
    }

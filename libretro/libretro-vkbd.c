@@ -71,95 +71,95 @@ static retro_vkeys vkeys[VKBDX * VKBDY * 2] =
    { {17}  ,{17}  ,-20 }, /* Reset */
 
    /* 0 PG1 */
-   { "Esc" ,"Esc" ,AK_ESC },
-   { "F1"  ,"F1"  ,AK_F1 },
-   { "F2"  ,"F2"  ,AK_F2 },
-   { "F3"  ,"F3"  ,AK_F3 },
-   { "F4"  ,"F4"  ,AK_F4 },
-   { "F5"  ,"F5"  ,AK_F5 },
-   { "F6"  ,"F6"  ,AK_F6 },
-   { "F7"  ,"F7"  ,AK_F7 },
-   { "F8"  ,"F8"  ,AK_F8 },
-   { "F9"  ,"F9"  ,AK_F9 },
-   { "F10" ,"F10" ,AK_F10 },
+   { "Esc" ,"Esc" ,RETROK_ESCAPE },
+   { "F1"  ,"F1"  ,RETROK_F1 },
+   { "F2"  ,"F2"  ,RETROK_F2 },
+   { "F3"  ,"F3"  ,RETROK_F3 },
+   { "F4"  ,"F4"  ,RETROK_F4 },
+   { "F5"  ,"F5"  ,RETROK_F5 },
+   { "F6"  ,"F6"  ,RETROK_F6 },
+   { "F7"  ,"F7"  ,RETROK_F7 },
+   { "F8"  ,"F8"  ,RETROK_F8 },
+   { "F9"  ,"F9"  ,RETROK_F9 },
+   { "F10" ,"F10" ,RETROK_F10 },
 
    /* 11 */
-   { "`"   ,"~"   ,AK_BACKQUOTE },
-   { "1"   ,"!"   ,AK_1 },
-   { "2"   ,"@"   ,AK_2 },
-   { "3"   ,"#"   ,AK_3 },
-   { "4"   ,"$"   ,AK_4 },
-   { "5"   ,"%"   ,AK_5 },
-   { "6"   ,"^"   ,AK_6 },
-   { "7"   ,"&"   ,AK_7 },
-   { "8"   ,"*"   ,AK_8 },
-   { "9"   ,"("   ,AK_9 },
-   { "0"   ,")"   ,AK_0 },
+   { "`"   ,"~"   ,RETROK_BACKQUOTE },
+   { "1"   ,"!"   ,RETROK_1 },
+   { "2"   ,"@"   ,RETROK_2 },
+   { "3"   ,"#"   ,RETROK_3 },
+   { "4"   ,"$"   ,RETROK_4 },
+   { "5"   ,"%"   ,RETROK_5 },
+   { "6"   ,"^"   ,RETROK_6 },
+   { "7"   ,"&"   ,RETROK_7 },
+   { "8"   ,"*"   ,RETROK_8 },
+   { "9"   ,"("   ,RETROK_9 },
+   { "0"   ,")"   ,RETROK_0 },
 
    /* 22 */
-   { {11}  ,{11}  ,AK_TAB },
-   { "Q"   ,"Q"   ,AK_Q },
-   { "W"   ,"W"   ,AK_W },
-   { "E"   ,"E"   ,AK_E },
-   { "R"   ,"R"   ,AK_R },
-   { "T"   ,"T"   ,AK_T },
-   { "Y"   ,"Y"   ,AK_Y },
-   { "U"   ,"U"   ,AK_U },
-   { "I"   ,"I"   ,AK_I },
-   { "O"   ,"O"   ,AK_O },
-   { "P"   ,"P"   ,AK_P },
+   { {11}  ,{11}  ,RETROK_TAB },
+   { "Q"   ,"Q"   ,RETROK_q },
+   { "W"   ,"W"   ,RETROK_w },
+   { "E"   ,"E"   ,RETROK_e },
+   { "R"   ,"R"   ,RETROK_r },
+   { "T"   ,"T"   ,RETROK_t },
+   { "Y"   ,"Y"   ,RETROK_y },
+   { "U"   ,"U"   ,RETROK_u },
+   { "I"   ,"I"   ,RETROK_i },
+   { "O"   ,"O"   ,RETROK_o },
+   { "P"   ,"P"   ,RETROK_p },
 
    /* 33 */
-   { "Ctrl","Ctrl",AK_CTRL },
-   { "A"   ,"A"   ,AK_A },
-   { "S"   ,"S"   ,AK_S },
-   { "D"   ,"D"   ,AK_D },
-   { "F"   ,"F"   ,AK_F },
-   { "G"   ,"G"   ,AK_G },
-   { "H"   ,"H"   ,AK_H },
-   { "J"   ,"J"   ,AK_J },
-   { "K"   ,"K"   ,AK_K },
-   { "L"   ,"L"   ,AK_L },
-   { ";"   ,":"   ,AK_SEMICOLON },
+   { "Ctrl","Ctrl",RETROK_LCTRL },
+   { "A"   ,"A"   ,RETROK_a },
+   { "S"   ,"S"   ,RETROK_s },
+   { "D"   ,"D"   ,RETROK_d },
+   { "F"   ,"F"   ,RETROK_f },
+   { "G"   ,"G"   ,RETROK_g },
+   { "H"   ,"H"   ,RETROK_h },
+   { "J"   ,"J"   ,RETROK_j },
+   { "K"   ,"K"   ,RETROK_k },
+   { "L"   ,"L"   ,RETROK_l },
+   { ";"   ,":"   ,RETROK_SEMICOLON },
 
    /* 44 */
-   { "Caps\1Lock","Caps\1Lock",AK_CAPSLOCK },
-   { "Z"   ,"Z"   ,AK_Z },
-   { "X"   ,"X"   ,AK_X },
-   { "C"   ,"C"   ,AK_C },
-   { "V"   ,"V"   ,AK_V },
-   { "B"   ,"B"   ,AK_B },
-   { "N"   ,"N"   ,AK_N },
-   { "M"   ,"M"   ,AK_M },
-   { ","   ,"<"   ,AK_COMMA },
-   { "."   ,">"   ,AK_PERIOD },
-   { "/"   ,"?"   ,AK_SLASH },
+   { "Caps\1Lock","Caps\1Lock",RETROK_CAPSLOCK },
+   { "Z"   ,"Z"   ,RETROK_z },
+   { "X"   ,"X"   ,RETROK_x },
+   { "C"   ,"C"   ,RETROK_c },
+   { "V"   ,"V"   ,RETROK_v },
+   { "B"   ,"B"   ,RETROK_b },
+   { "N"   ,"N"   ,RETROK_n },
+   { "M"   ,"M"   ,RETROK_m },
+   { ","   ,"<"   ,RETROK_COMMA },
+   { "."   ,">"   ,RETROK_PERIOD },
+   { "/"   ,"?"   ,RETROK_SLASH },
 
    /* 55 */
-   { {12}  ,{12}  ,AK_LSH },
-   { "-"   ,"_"   ,AK_MINUS },
-   { "="   ,"+"   ,AK_EQUAL },
-   { "\\"  ,"|"   ,AK_BACKSLASH },
-   { "["   ,"{"   ,AK_LBRACKET },
-   { "]"   ,"}"   ,AK_RBRACKET },
-   { "'"   ,"\""  ,AK_QUOTE },
-   { {12}  ,{12}  ,AK_RSH },
-   { "Del" ,"Del" ,AK_DEL },
-   { {30}  ,{30}  ,AK_UP },
-   { "Help","Help",AK_HELP },
+   { {12}  ,{12}  ,RETROK_LSHIFT },
+   { "-"   ,"_"   ,RETROK_MINUS },
+   { "="   ,"+"   ,RETROK_EQUALS },
+   { "\\"  ,"|"   ,RETROK_BACKSLASH },
+   { "["   ,"{"   ,RETROK_LEFTBRACKET },
+   { "]"   ,"}"   ,RETROK_RIGHTBRACKET },
+   { "'"   ,"\""  ,RETROK_QUOTE },
+   { {12}  ,{12}  ,RETROK_RSHIFT },
+   { "Del" ,"Del" ,RETROK_DELETE },
+   { {30}  ,{30}  ,RETROK_UP },
+   { "Help","Help",RETROK_INSERT },
 
    /* 66 */
-   { "Alt" ,"Alt" ,AK_LALT },
-   { {14}  ,{14}  ,AK_LAMI },
-   { {18}  ,{18}  ,AK_SPC },
-   { {13}  ,{13}  ,AK_RAMI },
-   { "Alt" ,"Alt" ,AK_RALT },
    { {15}  ,{15}  ,-2 }, /* Numpad */
-   { {25}  ,{25}  ,AK_BS },
-   { {16}  ,{16}  ,AK_RET },
-   { {27}  ,{27}  ,AK_LF },
-   { {28}  ,{28}  ,AK_DN },
-   { {29}  ,{29}  ,AK_RT },
+   { "Alt" ,"Alt" ,RETROK_LALT },
+   { {14}  ,{14}  ,RETROK_LSUPER },
+   { {18}  ,{18}  ,RETROK_SPACE },
+   { {13}  ,{13}  ,RETROK_RSUPER },
+   { "Alt" ,"Alt" ,RETROK_RALT },
+   { {25}  ,{25}  ,RETROK_BACKSPACE },
+   { {16}  ,{16}  ,RETROK_RETURN },
+   { {27}  ,{27}  ,RETROK_LEFT },
+   { {28}  ,{28}  ,RETROK_DOWN },
+   { {29}  ,{29}  ,RETROK_RIGHT },
 
 
 
@@ -177,95 +177,95 @@ static retro_vkeys vkeys[VKBDX * VKBDY * 2] =
    { {17}  ,{17}  ,-20 }, /* Reset */
 
    /* 0 PG2 */
-   { "Esc" ,"Esc" ,AK_ESC },
-   { "F1"  ,"F1"  ,AK_F1 },
-   { "F2"  ,"F2"  ,AK_F2 },
-   { "F3"  ,"F3"  ,AK_F3 },
-   { "F4"  ,"F4"  ,AK_F4 },
-   { "F5"  ,"F5"  ,AK_F5 },
-   { "F6"  ,"F6"  ,AK_F6 },
-   { "F7"  ,"F7"  ,AK_F7 },
-   { "F8"  ,"F8"  ,AK_F8 },
-   { "F9"  ,"F9"  ,AK_F9 },
-   { "F10" ,"F10" ,AK_F10 },
+   { "Esc" ,"Esc" ,RETROK_ESCAPE },
+   { "F1"  ,"F1"  ,RETROK_F1 },
+   { "F2"  ,"F2"  ,RETROK_F2 },
+   { "F3"  ,"F3"  ,RETROK_F3 },
+   { "F4"  ,"F4"  ,RETROK_F4 },
+   { "F5"  ,"F5"  ,RETROK_F5 },
+   { "F6"  ,"F6"  ,RETROK_F6 },
+   { "F7"  ,"F7"  ,RETROK_F7 },
+   { "F8"  ,"F8"  ,RETROK_F8 },
+   { "F9"  ,"F9"  ,RETROK_F9 },
+   { "F10" ,"F10" ,RETROK_F10 },
 
    /* 11 */
-   { "`"     ,"~"    ,AK_BACKQUOTE },
-   { {15,'1'},"End"  ,AK_NP1 },
-   { {15,'2'},{15,28},AK_NP2 },
-   { {15,'3'},"PgDn" ,AK_NP3 },
-   { {15,'4'},{15,27},AK_NP4 },
-   { {15,'5'}," "    ,AK_NP5 },
-   { {15,'6'},{15,29},AK_NP6 },
-   { {15,'7'},"Home" ,AK_NP7 },
-   { {15,'8'},{15,30},AK_NP8 },
-   { {15,'9'},"PgUp" ,AK_NP9 },
-   { {15,'0'},"Ins"  ,AK_NP0 },
+   { "`"     ,"~"    ,RETROK_BACKQUOTE },
+   { {15,'1'},"End"  ,RETROK_KP1 },
+   { {15,'2'},{15,28},RETROK_KP2 },
+   { {15,'3'},"PgDn" ,RETROK_KP3 },
+   { {15,'4'},{15,27},RETROK_KP4 },
+   { {15,'5'}," "    ,RETROK_KP5 },
+   { {15,'6'},{15,29},RETROK_KP6 },
+   { {15,'7'},"Home" ,RETROK_KP7 },
+   { {15,'8'},{15,30},RETROK_KP8 },
+   { {15,'9'},"PgUp" ,RETROK_KP9 },
+   { {15,'0'},"Ins"  ,RETROK_KP0 },
 
    /* 22 */
-   { {11}  ,{11}  ,AK_TAB },
-   { "Q"   ,"Q"   ,AK_Q },
-   { "W"   ,"W"   ,AK_W },
-   { "E"   ,"E"   ,AK_E },
-   { "R"   ,"R"   ,AK_R },
-   { "T"   ,"T"   ,AK_T },
-   { "Y"   ,"Y"   ,AK_Y },
-   { "U"   ,"U"   ,AK_U },
-   { "I"   ,"I"   ,AK_I },
-   { "O"   ,"O"   ,AK_O },
-   { "P"   ,"P"   ,AK_P },
+   { {11}  ,{11}  ,RETROK_TAB },
+   { "Q"   ,"Q"   ,RETROK_q },
+   { "W"   ,"W"   ,RETROK_w },
+   { "E"   ,"E"   ,RETROK_e },
+   { "R"   ,"R"   ,RETROK_r },
+   { "T"   ,"T"   ,RETROK_t },
+   { "Y"   ,"Y"   ,RETROK_y },
+   { "U"   ,"U"   ,RETROK_u },
+   { "I"   ,"I"   ,RETROK_i },
+   { "O"   ,"O"   ,RETROK_o },
+   { "P"   ,"P"   ,RETROK_p },
 
    /* 33 */
-   { "Ctrl","Ctrl",AK_CTRL },
-   { "A"   ,"A"   ,AK_A },
-   { "S"   ,"S"   ,AK_S },
-   { "D"   ,"D"   ,AK_D },
-   { "F"   ,"F"   ,AK_F },
-   { "G"   ,"G"   ,AK_G },
-   { "H"   ,"H"   ,AK_H },
-   { "J"   ,"J"   ,AK_J },
-   { "K"   ,"K"   ,AK_K },
-   { "L"   ,"L"   ,AK_L },
-   { ";"   ,":"   ,AK_SEMICOLON },
+   { "Ctrl","Ctrl",RETROK_LCTRL },
+   { "A"   ,"A"   ,RETROK_a },
+   { "S"   ,"S"   ,RETROK_s },
+   { "D"   ,"D"   ,RETROK_d },
+   { "F"   ,"F"   ,RETROK_f },
+   { "G"   ,"G"   ,RETROK_g },
+   { "H"   ,"H"   ,RETROK_h },
+   { "J"   ,"J"   ,RETROK_j },
+   { "K"   ,"K"   ,RETROK_k },
+   { "L"   ,"L"   ,RETROK_l },
+   { ";"   ,":"   ,RETROK_SEMICOLON },
 
    /* 44 */
-   { "Caps\1Lock","Caps\1Lock",AK_CAPSLOCK },
-   { "Z"   ,"Z"   ,AK_Z },
-   { "X"   ,"X"   ,AK_X },
-   { "C"   ,"C"   ,AK_C },
-   { "V"   ,"V"   ,AK_V },
-   { "B"   ,"B"   ,AK_B },
-   { "N"   ,"N"   ,AK_N },
-   { "M"   ,"M"   ,AK_M },
-   { ","   ,"<"   ,AK_COMMA },
-   { "."   ,">"   ,AK_PERIOD },
-   { "/"   ,"?"   ,AK_SLASH },
+   { "Caps\1Lock","Caps\1Lock",RETROK_CAPSLOCK },
+   { "Z"   ,"Z"   ,RETROK_z },
+   { "X"   ,"X"   ,RETROK_x },
+   { "C"   ,"C"   ,RETROK_c },
+   { "V"   ,"V"   ,RETROK_v },
+   { "B"   ,"B"   ,RETROK_b },
+   { "N"   ,"N"   ,RETROK_n },
+   { "M"   ,"M"   ,RETROK_m },
+   { ","   ,"<"   ,RETROK_COMMA },
+   { "."   ,">"   ,RETROK_PERIOD },
+   { "/"   ,"?"   ,RETROK_SLASH },
 
    /* 55 */
-   { {12}  ,{12}  ,AK_LSH },
-   { {15,'-'},{15,'-'},AK_NPSUB },
-   { {15,'+'},{15,'+'},AK_NPADD },
-   { {15,'/'},{15,'/'},AK_NPDIV },
-   { {15,'('},{15,'('},AK_NPLPAREN },
-   { {15,')'},{15,')'},AK_NPRPAREN },
-   { {15,'*'},{15,'*'},AK_NPMUL },
-   { {12}  ,{12}  ,AK_RSH },
-   { {15,'.'},{15,'D','e','l'},AK_NPDEL },
-   { {15,30} ,{15,30},AK_NP8 },
-   { "Help","Help",AK_HELP },
+   { {12}  ,{12}  ,RETROK_LSHIFT },
+   { {15,'-'},{15,'-'},RETROK_KP_MINUS },
+   { {15,'+'},{15,'+'},RETROK_KP_PLUS },
+   { {15,'/'},{15,'/'},RETROK_KP_DIVIDE },
+   { {15,'('},{15,'('},RETROK_HOME },
+   { {15,')'},{15,')'},RETROK_END },
+   { {15,'*'},{15,'*'},RETROK_KP_MULTIPLY },
+   { {12}  ,{12}  ,RETROK_RSHIFT },
+   { {15,'.'},{15,'D','e','l'},RETROK_KP_PERIOD },
+   { {15,30} ,{15,30},RETROK_KP8 },
+   { "Help","Help",RETROK_INSERT },
 
    /* 66 */
-   { "Alt" ,"Alt" ,AK_LALT },
-   { {14}  ,{14}  ,AK_LAMI },
-   { {18}  ,{18}  ,AK_SPC },
-   { {13}  ,{13}  ,AK_RAMI },
-   { "Alt" ,"Alt" ,AK_RALT },
    { {15}  ,{15}  ,-2 }, /* Numpad */
-   { {25}  ,{25}  ,AK_BS },
-   { {15,16},{15,16},AK_ENT },
-   { {15,27},{15,27},AK_NP4 },
-   { {15,28},{15,28},AK_NP2 },
-   { {15,29},{15,29},AK_NP6 },
+   { "Alt" ,"Alt" ,RETROK_LALT },
+   { {14}  ,{14}  ,RETROK_LSUPER },
+   { {18}  ,{18}  ,RETROK_SPACE },
+   { {13}  ,{13}  ,RETROK_RSUPER },
+   { "Alt" ,"Alt" ,RETROK_RALT },
+   { {25}  ,{25}  ,RETROK_BACKSPACE },
+   { {15,16},{15,16},RETROK_KP_ENTER },
+   { {15,27},{15,27},RETROK_KP4 },
+   { {15,28},{15,28},RETROK_KP2 },
+   { {15,29},{15,29},RETROK_KP6 },
 };
 
 void print_vkbd(void)
@@ -336,7 +336,17 @@ void print_vkbd(void)
       case 1: /* Classic */
          BKG_COLOR_NORMAL  = (pix_bytes == 4) ? COLOR_BEIGE_32 : COLOR_BEIGE_16;
          BKG_COLOR_ALT     = (pix_bytes == 4) ? COLOR_BEIGEDARK_32 : COLOR_BEIGEDARK_16;
-         BKG_COLOR_EXTRA   = (pix_bytes == 4) ? COLOR_132_32 : COLOR_132_16;
+         BKG_COLOR_EXTRA   = (pix_bytes == 4) ? COLOR_100_32 : COLOR_100_16;
+         BKG_COLOR_SEL     = (pix_bytes == 4) ? COLOR_40_32 : COLOR_40_16;
+         BKG_COLOR_ACTIVE  = (pix_bytes == 4) ? COLOR_250_32 : COLOR_250_16;
+         FONT_COLOR_NORMAL = (pix_bytes == 4) ? COLOR_BLACK_32 : COLOR_BLACK_16;
+         FONT_COLOR_SEL    = (pix_bytes == 4) ? COLOR_WHITE_32 : COLOR_WHITE_16;
+         break;
+
+      case 4: /* Light */
+         BKG_COLOR_NORMAL  = (pix_bytes == 4) ? COLOR_220_32 : COLOR_220_16;
+         BKG_COLOR_ALT     = (pix_bytes == 4) ? COLOR_180_32 : COLOR_180_16;
+         BKG_COLOR_EXTRA   = (pix_bytes == 4) ? COLOR_100_32 : COLOR_100_16;
          BKG_COLOR_SEL     = (pix_bytes == 4) ? COLOR_40_32 : COLOR_40_16;
          BKG_COLOR_ACTIVE  = (pix_bytes == 4) ? COLOR_250_32 : COLOR_250_16;
          FONT_COLOR_NORMAL = (pix_bytes == 4) ? COLOR_BLACK_32 : COLOR_BLACK_16;
@@ -347,7 +357,7 @@ void print_vkbd(void)
          BKG_COLOR_NORMAL  = (pix_bytes == 4) ? COLOR_64_32 : COLOR_64_16;
          BKG_COLOR_ALT     = (pix_bytes == 4) ? COLOR_32_32 : COLOR_32_16;
          BKG_COLOR_EXTRA   = (pix_bytes == 4) ? COLOR_16_32 : COLOR_16_16;
-         BKG_COLOR_SEL     = (pix_bytes == 4) ? COLOR_140_32 : COLOR_140_16;
+         BKG_COLOR_SEL     = (pix_bytes == 4) ? COLOR_180_32 : COLOR_180_16;
          BKG_COLOR_ACTIVE  = (pix_bytes == 4) ? COLOR_10_32 : COLOR_10_16;
          FONT_COLOR_NORMAL = (pix_bytes == 4) ? COLOR_WHITE_32 : COLOR_WHITE_16;
          FONT_COLOR_SEL    = (pix_bytes == 4) ? COLOR_BLACK_32 : COLOR_BLACK_16;
@@ -356,21 +366,11 @@ void print_vkbd(void)
       case 3: /* Dark */
          BKG_COLOR_NORMAL  = (pix_bytes == 4) ? COLOR_32_32 : COLOR_32_16;
          BKG_COLOR_ALT     = (pix_bytes == 4) ? COLOR_64_32 : COLOR_64_16;
-         BKG_COLOR_EXTRA   = (pix_bytes == 4) ? COLOR_10_32 : COLOR_10_16;
-         BKG_COLOR_SEL     = (pix_bytes == 4) ? COLOR_140_32 : COLOR_140_16;
-         BKG_COLOR_ACTIVE  = (pix_bytes == 4) ? COLOR_16_32 : COLOR_16_16;
+         BKG_COLOR_EXTRA   = (pix_bytes == 4) ? COLOR_16_32 : COLOR_16_16;
+         BKG_COLOR_SEL     = (pix_bytes == 4) ? COLOR_180_32 : COLOR_180_16;
+         BKG_COLOR_ACTIVE  = (pix_bytes == 4) ? COLOR_10_32 : COLOR_10_16;
          FONT_COLOR_NORMAL = (pix_bytes == 4) ? COLOR_WHITE_32 : COLOR_WHITE_16;
          FONT_COLOR_SEL    = (pix_bytes == 4) ? COLOR_BLACK_32 : COLOR_BLACK_16;
-         break;
-
-      case 4: /* Light */
-         BKG_COLOR_NORMAL  = (pix_bytes == 4) ? COLOR_200_32 : COLOR_200_16;
-         BKG_COLOR_ALT     = (pix_bytes == 4) ? COLOR_160_32 : COLOR_160_16;
-         BKG_COLOR_EXTRA   = (pix_bytes == 4) ? COLOR_132_32 : COLOR_132_16;
-         BKG_COLOR_SEL     = (pix_bytes == 4) ? COLOR_40_32 : COLOR_40_16;
-         BKG_COLOR_ACTIVE  = (pix_bytes == 4) ? COLOR_250_32 : COLOR_250_16;
-         FONT_COLOR_NORMAL = (pix_bytes == 4) ? COLOR_BLACK_32 : COLOR_BLACK_16;
-         FONT_COLOR_SEL    = (pix_bytes == 4) ? COLOR_WHITE_32 : COLOR_WHITE_16;
          break;
    }
 
@@ -421,10 +421,11 @@ void print_vkbd(void)
    /* Alternate color keys */
    int alt_keys[] =
    {
-      AK_F1, AK_F2, AK_F3, AK_F4, AK_F5, AK_F6, AK_F7, AK_F8, AK_F9, AK_F10,
-      AK_LSH, AK_RSH, AK_LALT, AK_RALT, AK_LAMI, AK_RAMI, -15 /*LMB*/, -16 /*RMB*/,
-      AK_ESC, AK_BACKQUOTE, AK_TAB, AK_CTRL, AK_CAPSLOCK, AK_RET, AK_ENT, AK_BS, AK_DEL, AK_NPDEL, AK_HELP,
-      AK_NPSUB, AK_NPADD, AK_NPDIV, AK_NPLPAREN, AK_NPRPAREN, AK_NPMUL
+      RETROK_F1, RETROK_F2, RETROK_F3, RETROK_F4, RETROK_F5, RETROK_F6, RETROK_F7, RETROK_F8, RETROK_F9, RETROK_F10,
+      RETROK_LSHIFT, RETROK_RSHIFT, RETROK_LALT, RETROK_RALT, RETROK_LSUPER, RETROK_RSUPER, -15 /*LMB*/, -16 /*RMB*/,
+      RETROK_BACKSPACE, RETROK_DELETE, RETROK_INSERT, RETROK_HOME, RETROK_END,
+      RETROK_ESCAPE, RETROK_BACKQUOTE, RETROK_TAB, RETROK_LCTRL, RETROK_CAPSLOCK, RETROK_RETURN, RETROK_KP_ENTER,
+      RETROK_KP_MINUS, RETROK_KP_PLUS, RETROK_KP_DIVIDE, RETROK_KP_MULTIPLY, RETROK_KP_PERIOD,
    };
    int alt_keys_len = sizeof(alt_keys) / sizeof(alt_keys[0]);
 
@@ -437,9 +438,9 @@ void print_vkbd(void)
 
    /* Key label shifted */
    shifted = false;
-   if (retro_capslock || vkey_sticky1 == AK_LSH || vkey_sticky2 == AK_LSH || vkey_sticky1 == AK_RSH || vkey_sticky2 == AK_RSH)
+   if (retro_capslock || vkey_sticky1 == RETROK_LSHIFT || vkey_sticky2 == RETROK_LSHIFT || vkey_sticky1 == RETROK_RSHIFT || vkey_sticky2 == RETROK_RSHIFT)
       shifted = true;
-   if (vkflag[RETRO_DEVICE_ID_JOYPAD_B] == 1 && (vkey_pressed == AK_LSH || vkey_pressed == AK_RSH))
+   if (vkflag[RETRO_DEVICE_ID_JOYPAD_B] == 1 && (vkey_pressed == RETROK_LSHIFT || vkey_pressed == RETROK_RSHIFT))
       shifted = true;
 
    /* Key layout */
@@ -480,12 +481,17 @@ void print_vkbd(void)
          /* Default font color */
          FONT_COLOR = FONT_COLOR_NORMAL;
 
+         /* Pressed keys via mapper */
+         int current_key = vkeys[(y * VKBDX) + x + page].value;
+         current_key = (current_key > 0) ? current_key : 0;
+
          /* Sticky + CapsLock + pressed colors */
          if ( (vkey_sticky1 == vkeys[(y * VKBDX) + x + page].value
           ||   vkey_sticky2 == vkeys[(y * VKBDX) + x + page].value
-          ||(retro_capslock && vkeys[(y * VKBDX) + x + page].value == AK_CAPSLOCK)
-          ||(vkflag[RETRO_DEVICE_ID_JOYPAD_START] && vkeys[(y * VKBDX) + x + page].value == AK_RET)
-          ||(vkflag[RETRO_DEVICE_ID_JOYPAD_X]     && vkeys[(y * VKBDX) + x + page].value == AK_SPC))
+          ||(retro_capslock && vkeys[(y * VKBDX) + x + page].value == RETROK_CAPSLOCK)
+          ||(retro_key_state_internal[current_key])
+          ||(vkflag[RETRO_DEVICE_ID_JOYPAD_START] && vkeys[(y * VKBDX) + x + page].value == RETROK_RETURN)
+          ||(vkflag[RETRO_DEVICE_ID_JOYPAD_X]     && vkeys[(y * VKBDX) + x + page].value == RETROK_SPACE))
           && BKG_COLOR != BKG_COLOR_EXTRA && vkeys[(y * VKBDX) + x + page].value != -20)
          {
             FONT_COLOR = FONT_COLOR_NORMAL;
@@ -617,7 +623,7 @@ static void input_vkbd_sticky(void)
             retro_key_up(last_vkey_pressed);
 
          if (retro_capslock)
-            retro_key_up(keyboard_translation[RETROK_LSHIFT]);
+            retro_key_up(RETROK_LSHIFT);
       }
 
       last_vkey_pressed = -1;
@@ -716,14 +722,14 @@ void input_vkbd(void)
                                          && !input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_RETURN))
    {
       vkflag[i] = 1;
-      retro_key_down(AK_RET);
+      retro_key_down(RETROK_RETURN);
    }
    else
    if (vkflag[i] && (!(joypad_bits[0] & (1 << i)) &&
                      !(joypad_bits[1] & (1 << i))))
    {
       vkflag[i] = 0;
-      retro_key_up(AK_RET);
+      retro_key_up(RETROK_RETURN);
    }
 
    /* Toggle CapsLock, RetroPad Y */
@@ -747,14 +753,14 @@ void input_vkbd(void)
                                              (joypad_bits[1] & (1 << i))))
    {
       vkflag[i] = 1;
-      retro_key_down(AK_SPC);
+      retro_key_down(RETROK_SPACE);
    }
    else
    if (vkflag[i] && (!(joypad_bits[0] & (1 << i)) &&
                      !(joypad_bits[1] & (1 << i))))
    {
       vkflag[i] = 0;
-      retro_key_up(AK_SPC);
+      retro_key_up(RETROK_SPACE);
    }
 
    /* Toggle transparency, RetroPad A */
@@ -858,7 +864,7 @@ void input_vkbd(void)
       }
       else
       {
-         if (vkey_pressed == AK_CAPSLOCK)
+         if (vkey_pressed == RETROK_CAPSLOCK)
          {
             retro_key_down(vkey_pressed);
             retro_key_up(vkey_pressed);
@@ -869,7 +875,7 @@ void input_vkbd(void)
          {
             last_vkey_pressed = vkey_pressed;
             if (retro_capslock)
-               retro_key_down(keyboard_translation[RETROK_LSHIFT]);
+               retro_key_down(RETROK_LSHIFT);
 
             if (!vkey_sticky)
             {
