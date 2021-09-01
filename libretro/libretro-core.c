@@ -269,16 +269,34 @@ void retro_fastforwarding(bool enabled)
    if (!libretro_supports_ff_override)
       return;
 
-   ff_override.ratio       = 10.0f;
-   ff_override.fastforward = enabled;
-   libretro_ff_enabled     = enabled;
+   ff_override.ratio          = 10.0f;
+   ff_override.fastforward    = enabled;
+   ff_override.inhibit_toggle = enabled;
+   libretro_ff_enabled        = enabled;
 
    environ_cb(RETRO_ENVIRONMENT_SET_FASTFORWARDING_OVERRIDE, &ff_override);
 }
 
-static int ff_counter_ledon  = 0;
-static int ff_counter_ledoff = 0;
-static int drive_track_prev  = 0;
+
+static bool paula_playing(void)
+{
+   if (paula_sndbuffer[0])
+   {
+      for (unsigned i = 2; i < 20; i++)
+      {
+         int target = (i % 2 == 0) ? 0 : 1;
+         if (paula_sndbuffer[i] != paula_sndbuffer[target])
+            return true;
+      }
+   }
+   return false;
+}
+
+static int ff_counter_on    = 0;
+static int ff_counter_off   = 0;
+static int ff_counter_stuck = 0;
+static int ff_counter_audio = 0;
+static int drive_track_prev = 0;
 static void retro_autoloadfastforwarding(void)
 {
    if (!libretro_supports_ff_override)
@@ -289,13 +307,10 @@ static void retro_autoloadfastforwarding(void)
 
    if (opt_autoloadfastforward & AUTOLOADFASTFORWARD_FD && (gui_data.df[0][0] || gui_data.df[1][0]))
    {
-      int ff          = -1;
-      int drive_led   = retro_led_state[1];
-      int drive_track = gui_data.drive_track[0];
-
-      /* No FF when audio is playing */
-      if (paula_sndbuffer[0])
-         drive_led = 0;
+      int ff             = -1;
+      int drive_led      = retro_led_state[1];
+      int drive_track    = gui_data.drive_track[0];
+      bool audio_playing = paula_playing();
 
       if (gui_data.drive_motor[1])
          drive_track = gui_data.drive_track[1];
@@ -304,49 +319,59 @@ static void retro_autoloadfastforwarding(void)
       if (gui_data.drive_motor[3])
          drive_track = gui_data.drive_track[3];
 
-      if ((drive_track != drive_track_prev && drive_led) && !libretro_ff_enabled)
+      /* No FF when audio is playing */
+      if (libretro_ff_enabled && audio_playing)
       {
-         ff_counter_ledon  = 0;
-         ff_counter_ledoff = 0;
-         ff = 1;
+         ff_counter_audio++;
+         if (ff_counter_audio > 1)
+            ff = 3;
       }
-      else if ((drive_track == drive_track_prev && drive_led) && libretro_ff_enabled)
+      else if ((drive_track == drive_track_prev) && drive_led && libretro_ff_enabled)
       {
-         ff_counter_ledon++;
-         ff_counter_ledoff = 0;
-         if (ff_counter_ledon > 49)
+         ff_counter_on = ff_counter_off = ff_counter_audio = 0;
+         ff_counter_stuck++;
+         if (ff_counter_stuck > 59)
             ff = 2;
       }
-      else if ((drive_track == drive_track_prev && !drive_led) && libretro_ff_enabled)
+      else if ((drive_track == drive_track_prev) && !drive_led && libretro_ff_enabled)
       {
-         ff_counter_ledon = 0;
-         ff_counter_ledoff++;
-         if (ff_counter_ledoff > 24)
+         ff_counter_on = ff_counter_stuck = ff_counter_audio = 0;
+         ff_counter_off++;
+         if (ff_counter_off > 29)
             ff = 0;
+      }
+      else if ((drive_track != drive_track_prev || ff_counter_on) && drive_led && !libretro_ff_enabled && !audio_playing)
+      {
+         ff_counter_off = ff_counter_stuck = ff_counter_audio = 0;
+         ff_counter_on++;
+         if (ff_counter_on > 9)
+            ff = 1;
       }
       else
       {
-         ff_counter_ledon  = 0;
-         ff_counter_ledoff = 0;
+         ff_counter_on = ff_counter_off = ff_counter_stuck = ff_counter_audio = 0;
          ff = -2;
       }
 
       if (ff > -1)
          retro_fastforwarding((ff > 1) ? false : (ff) ? true : false);
 #if 0
-      if (ff > -2)
-         printf("FD FF:%2d track:%3d prev:%3d led:%d timer:%3d,%3d\n",
+      if (ff > -1)
+         printf("FD FF:%2d track:%3d prev:%3d led:%d - on:%3d off:%3d stuck:%3d audio:%3d - playing:%d\n",
                ff, drive_track, drive_track_prev, drive_led,
-               ff_counter_ledoff, ff_counter_ledon);
+               ff_counter_on, ff_counter_off, ff_counter_stuck, ff_counter_audio, audio_playing);
 #endif
       drive_track_prev = drive_track;
    }
 
-   if ((opt_autoloadfastforward & AUTOLOADFASTFORWARD_CD && gui_data.cd >= 0) ||
-       (opt_autoloadfastforward & AUTOLOADFASTFORWARD_HD && gui_data.hd >= 0))
+   if (((opt_autoloadfastforward & AUTOLOADFASTFORWARD_CD && gui_data.cd >= 0) ||
+       (opt_autoloadfastforward & AUTOLOADFASTFORWARD_HD && gui_data.hd >= 0)) &&
+       !gui_data.df[0][0] && !gui_data.df[1][0])
    {
-      int ff        = -1;
-      int drive_led = 0;
+      int ff             = -1;
+      int drive_led      = 0;
+      bool audio_playing = paula_playing();
+
       if (opt_autoloadfastforward & AUTOLOADFASTFORWARD_CD && gui_data.cd >= 0)
       {
          drive_led = gui_data.cd;
@@ -361,38 +386,41 @@ static void retro_autoloadfastforwarding(void)
       }
 
       /* No FF when audio is playing */
-      if (paula_sndbuffer[0])
-         drive_led = 0;
-
-      if (drive_led && !libretro_ff_enabled)
+      if (libretro_ff_enabled && audio_playing)
       {
-         ff_counter_ledon++;
-         ff_counter_ledoff = 0;
-         if (ff_counter_ledon > 3)
-            ff = 1;
+         ff_counter_on = ff_counter_off = 0;
+         ff_counter_audio++;
+         if (ff_counter_audio > 1)
+            ff = 3;
       }
       else if (!drive_led && libretro_ff_enabled)
       {
-         ff_counter_ledon = 0;
-         ff_counter_ledoff++;
-         if (ff_counter_ledoff > 19)
+         ff_counter_on = ff_counter_audio = 0;
+         ff_counter_off++;
+         if (ff_counter_off > 19)
             ff = 0;
+      }
+      else if (drive_led && !libretro_ff_enabled && !audio_playing)
+      {
+         ff_counter_off = ff_counter_audio = 0;
+         ff_counter_on++;
+         if (ff_counter_on > 3)
+            ff = 1;
       }
       else
       {
-         ff_counter_ledon  = 0;
-         ff_counter_ledoff = 0;
+         ff_counter_on = ff_counter_off = ff_counter_audio = 0;
          ff = -2;
       }
 
       if (ff > -1)
-         retro_fastforwarding((ff) ? true : false);
+         retro_fastforwarding((ff > 1) ? false : (ff) ? true : false);
 
 #if 0
-      if (ff > -2)
-         printf("HD/CD FF:%2d led:%d timer:%3d,%3d\n",
+      if (ff > -1)
+         printf("HD/CD FF:%2d led:%d - on:%3d off:%3d audio:%3d - playing:%d\n",
                ff, drive_led,
-               ff_counter_ledoff, ff_counter_ledon);
+               ff_counter_on, ff_counter_off, ff_counter_audio, audio_playing);
 #endif
    }
 }
@@ -632,7 +660,7 @@ static void retro_set_core_options()
          "puae_autoloadfastforward",
          "Media > Automatic Load Fast-Forward",
          "Automatic Load Fast-Forward",
-         "Toggle fast-forward during media access if sound is not outputted. Mutes 'Floppy Sound Emulation'.",
+         "Toggle frontend fast-forward during media access if there is no sound output. Mutes 'Floppy Sound Emulation'.",
          NULL,
          "media",
          {
