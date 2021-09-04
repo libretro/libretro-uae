@@ -20,7 +20,7 @@
 #define MOUSE_SPEED_SLOWER 1
 #define MOUSE_SPEED_FASTER 2
 /* Mouse speed multipliers */
-#define MOUSE_SPEED_SLOW 5
+#define MOUSE_SPEED_SLOW 4
 #define MOUSE_SPEED_FAST 2
 /* Mouse D-Pad acceleration */
 #define MOUSE_DPAD_ACCEL
@@ -1579,7 +1579,7 @@ void retro_poll_event()
          /* Digital mouse speed modifiers */
          if (!dpadmouse_pressed[j])
 #ifdef MOUSE_DPAD_ACCEL
-            dpadmouse_speed[j] = opt_dpadmouse_speed - 3;
+            dpadmouse_speed[j] = opt_dpadmouse_speed / 3;
 #else
             dpadmouse_speed[j] = opt_dpadmouse_speed;
 #endif
@@ -1591,7 +1591,7 @@ void retro_poll_event()
 
 #ifdef MOUSE_DPAD_ACCEL
          /* Digital mouse acceleration */
-         if (dpadmouse_pressed[j] && (now - dpadmouse_pressed[j] > 400))
+         if (dpadmouse_pressed[j] && (now - dpadmouse_pressed[j] > 200))
          {
             dpadmouse_speed[j]++;
             dpadmouse_pressed[j] = now;
@@ -1599,8 +1599,12 @@ void retro_poll_event()
 #endif
 
          /* Digital mouse speed limits */
-         if (dpadmouse_speed[j] < 2) dpadmouse_speed[j] = 2;
-         if (dpadmouse_speed[j] > 20) dpadmouse_speed[j] = 20;
+         if (dpadmouse_speed[j] < 2)
+            dpadmouse_speed[j] = 2;
+         if (dpadmouse_speed[j] > opt_dpadmouse_speed)
+            dpadmouse_speed[j] = opt_dpadmouse_speed;
+         if (dpadmouse_speed[j] > 20)
+            dpadmouse_speed[j] = 20;
 
          if (joypad_bits[j] & (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT))
             uae_mouse_x[j] += dpadmouse_speed[j];
@@ -1695,14 +1699,14 @@ void retro_poll_event()
 
             if (abs(analog_left[0]) > 0)
             {
-               uae_mouse_x[j] = analog_left[0] * 10 * (opt_analogmouse_speed * opt_analogmouse_speed * 0.7) / (32768 / mouse_multiplier);
+               uae_mouse_x[j] = analog_left[0] * 10 * opt_analogmouse_speed / (32768 / mouse_multiplier);
                if (!uae_mouse_x[j] && abs(analog_left[0]) > analog_deadzone)
                   uae_mouse_x[j] = (analog_left[0] > 0) ? 1 : -1;
             }
 
             if (abs(analog_left[1]) > 0)
             {
-               uae_mouse_y[j] = analog_left[1] * 10 * (opt_analogmouse_speed * opt_analogmouse_speed * 0.7) / (32768 / mouse_multiplier);
+               uae_mouse_y[j] = analog_left[1] * 10 * opt_analogmouse_speed / (32768 / mouse_multiplier);
                if (!uae_mouse_y[j] && abs(analog_left[1]) > analog_deadzone)
                   uae_mouse_y[j] = (analog_left[1] > 0) ? 1 : -1;
             }
@@ -1740,14 +1744,14 @@ void retro_poll_event()
 
             if (abs(analog_right[0]) > 0)
             {
-               uae_mouse_x[j] = analog_right[0] * 10 * (opt_analogmouse_speed * opt_analogmouse_speed * 0.7) / (32768 / mouse_multiplier);
+               uae_mouse_x[j] = analog_right[0] * 10 * opt_analogmouse_speed / (32768 / mouse_multiplier);
                if (!uae_mouse_x[j] && abs(analog_right[0]) > analog_deadzone)
                   uae_mouse_x[j] = (analog_right[0] > 0) ? 1 : -1;
             }
 
             if (abs(analog_right[1]) > 0)
             {
-               uae_mouse_y[j] = analog_right[1] * 10 * (opt_analogmouse_speed * opt_analogmouse_speed * 0.7) / (32768 / mouse_multiplier);
+               uae_mouse_y[j] = analog_right[1] * 10 * opt_analogmouse_speed / (32768 / mouse_multiplier);
                if (!uae_mouse_y[j] && abs(analog_right[1]) > analog_deadzone)
                   uae_mouse_y[j] = (analog_right[1] > 0) ? 1 : -1;
             }
