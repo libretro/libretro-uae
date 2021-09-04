@@ -110,7 +110,7 @@ static bool cpu_cycle_exact_force = false;
 static bool automatic_sound_filter_type_update = true;
 static bool fake_ntsc = false;
 static bool real_ntsc = false;
-static bool forced_video = false;
+static signed char forced_video = -1;
 static bool locked_video_horizontal = false;
 bool request_update_av_info = false;
 bool retro_av_info_change_timing = false;
@@ -2439,8 +2439,11 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
+      if (strstr(var.value, "auto")) opt_region_auto = true;
+      else                           opt_region_auto = false;
+
       /* video_config change only at start */
-      if (video_config_old == 0 && !forced_video)
+      if (video_config_old == 0 && forced_video < 0)
       {
          if (strstr(var.value, "PAL"))
          {
@@ -2457,14 +2460,13 @@ static void update_variables(void)
             real_ntsc = true;
          }
       }
-      else if (!forced_video)
+      else if (!opt_region_auto)
       {
          if (strstr(var.value, "PAL")) changed_prefs.ntscmode = 0;
          else                          changed_prefs.ntscmode = 1;
       }
-
-      if (strstr(var.value, "auto")) opt_region_auto = true;
-      else                           opt_region_auto = false;
+      else if (forced_video > -1)
+         changed_prefs.ntscmode = !forced_video;
    }
 
    var.key = "puae_video_aspect";
@@ -4224,7 +4226,7 @@ void retro_deinit(void)
    automatic_sound_filter_type_update = true;
    fake_ntsc = false;
    real_ntsc = false;
-   forced_video = false;
+   forced_video = -1;
    locked_video_horizontal = false;
    opt_aspect_ratio_locked = false;
    libretro_supports_bitmasks = false;
@@ -4421,7 +4423,7 @@ static void retro_config_force_region(void)
       log_cb(RETRO_LOG_INFO, "Forcing NTSC mode\n");
       retro_config_append("ntsc=true\n");
       real_ntsc = true;
-      forced_video = true;
+      forced_video = RETRO_REGION_NTSC;
    }
    else if (strstr(full_path, "PAL") || strstr(full_path, "(Europe)")
          || strstr(full_path, "(France)") || strstr(full_path, "(Germany)")
@@ -4432,7 +4434,7 @@ static void retro_config_force_region(void)
       log_cb(RETRO_LOG_INFO, "Forcing PAL mode\n");
       retro_config_append("ntsc=false\n");
       real_ntsc = false;
-      forced_video = true;
+      forced_video = RETRO_REGION_PAL;
    }
 }
 
@@ -6034,9 +6036,11 @@ static bool retro_create_config(void)
          cpu_cycle_exact_force = true;
    }
 
-   if (real_ntsc && video_config & PUAE_VIDEO_PAL ||
-      !real_ntsc && video_config & PUAE_VIDEO_NTSC)
-      forced_video = true;
+   if (real_ntsc && video_config & PUAE_VIDEO_PAL)
+      forced_video = RETRO_REGION_NTSC;
+
+   if (!real_ntsc && video_config & PUAE_VIDEO_NTSC)
+      forced_video = RETRO_REGION_PAL;
 
    if (tmp_str)
       free(tmp_str);
@@ -6047,7 +6051,7 @@ static bool retro_create_config(void)
 
 void retro_reset(void)
 {
-   if (!forced_video)
+   if (forced_video < 0)
       video_config_old = 0;
    fake_ntsc = false;
    update_variables();
@@ -6507,7 +6511,7 @@ static bool retro_update_av_info(void)
          video_config &= ~PUAE_VIDEO_PAL;
          video_config_geometry = video_config;
          fake_ntsc = true;
-         forced_video = true;
+         forced_video = RETRO_REGION_NTSC;
       }
 
       /* If still no change */
