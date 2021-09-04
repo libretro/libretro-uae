@@ -5300,9 +5300,9 @@ static bool retro_create_config(void)
                log_cb(RETRO_LOG_INFO, "Found '(A500+)' or '(A500PLUS)' in: '%s'\n", full_path);
                retro_config_preset("A500PLUS");
             }
-            else if (strstr(full_path, "(A500OG)") || strstr(full_path, "(512K)"))
+            else if (strstr(full_path, "(A500OG)") || strstr(full_path, "(512K)") || strstr(full_path, "(512KB)"))
             {
-               log_cb(RETRO_LOG_INFO, "Found '(A500OG)' or '(512K)' in: '%s'\n", full_path);
+               log_cb(RETRO_LOG_INFO, "Found '(A500OG)' or '(512K)' or '(512KB)' in: '%s'\n", full_path);
                retro_config_preset("A500OG");
             }
             else if (strstr(full_path, "(A500)") || strstr(full_path, "OCS"))
