@@ -24,8 +24,8 @@
 #define COLOR_64_32        ARGB888(255,  64,  64,  64)
 #define COLOR_100_16             RGB565(100, 100, 100)
 #define COLOR_100_32       ARGB888(255, 100, 100, 100)
-#define COLOR_140_16             RGB565(140, 140, 140)
-#define COLOR_140_32       ARGB888(255, 140, 140, 140)
+#define COLOR_160_16             RGB565(160, 160, 160)
+#define COLOR_160_32       ARGB888(255, 160, 160, 160)
 #define COLOR_180_16             RGB565(180, 180, 180)
 #define COLOR_180_32       ARGB888(255, 180, 180, 180)
 #define COLOR_220_16             RGB565(220, 220, 220)
@@ -37,18 +37,6 @@
 #define COLOR_BEIGE_32     ARGB888(255, 208, 208, 202)
 #define COLOR_BEIGEDARK_16       RGB565(154, 154, 150)
 #define COLOR_BEIGEDARK_32 ARGB888(255, 154, 154, 150)
-
-#define COLOR_BROWN_16           RGB565( 68,  59,  58)
-#define COLOR_BROWN_32     ARGB888(255,  68,  59,  58)
-#define COLOR_BROWNGRAY_16       RGB565(123, 127, 130)
-#define COLOR_BROWNGRAY_32 ARGB888(255, 123, 127, 130)
-#define COLOR_BROWNLITE_16       RGB565(143, 140, 129)
-#define COLOR_BROWNLITE_32 ARGB888(255, 143, 140, 129)
-#define COLOR_BROWNDARK_16       RGB565( 48,  44,  45)
-#define COLOR_BROWNDARK_32 ARGB888(255,  48,  44,  45)
-
-#define COLOR_TAPE_16            RGB565( 89,  79,  78)
-#define COLOR_TAPE_32      ARGB888(255,  89,  79,  78)
 
 typedef enum {
    GRAPH_ALPHA_0 = 0,
