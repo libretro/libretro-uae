@@ -80,6 +80,18 @@ unsigned int turbo_pulse = 6;
 unsigned int turbo_state[RETRO_DEVICES] = {0};
 unsigned int turbo_toggle[RETRO_DEVICES] = {0};
 
+static void statusbar_text_show(const char *format, ...)
+{
+   unsigned char statusbar_temp[RETRO_PATH_MAX] = {0};
+   va_list args;
+   va_start(args, format);
+   vsnprintf(statusbar_temp, sizeof(statusbar_temp), format, args);
+   snprintf(statusbar_text, sizeof(statusbar_text), "%c %-98s", (' ' | 0x80), statusbar_temp);
+   va_end(args);
+
+   imagename_timer = 50;
+}
+
 void emu_function(int function)
 {
    switch (function)
@@ -100,9 +112,7 @@ void emu_function(int function)
       case EMU_RESET:
          retro_reset_soft();
          /* Statusbar notification */
-         snprintf(statusbar_text, sizeof(statusbar_text), "%c Reset",
-               (' ' | 0x80));
-         imagename_timer = 50;
+         statusbar_text_show("%s", "Reset");
          break;
       case EMU_ASPECT_RATIO:
          if (video_config_aspect == 0)
@@ -115,9 +125,9 @@ void emu_function(int function)
          /* Lock aspect ratio */
          opt_aspect_ratio_locked = true;
          /* Statusbar notification */
-         snprintf(statusbar_text, sizeof(statusbar_text), "%c Pixel Aspect %-40s",
-               (' ' | 0x80), (video_config_aspect == PUAE_VIDEO_PAL) ? "PAL" : "NTSC");
-         imagename_timer = 50;
+         statusbar_text_show("%s %s",
+               "Pixel Aspect",
+               (video_config_aspect == PUAE_VIDEO_PAL) ? "PAL" : "NTSC");
          break;
       case EMU_ZOOM_MODE:
          if (zoom_mode_id == 0 && opt_zoom_mode_id == 0)
@@ -128,18 +138,18 @@ void emu_function(int function)
             zoom_mode_id = opt_zoom_mode_id;
          request_update_av_info = true;
          /* Statusbar notification */
-         snprintf(statusbar_text, sizeof(statusbar_text), "%c Zoom Mode %-43s",
-               (' ' | 0x80), (zoom_mode_id) ? "ON" : "OFF");
-         imagename_timer = 50;
+         statusbar_text_show("%s %s",
+               "Zoom Mode",
+               (zoom_mode_id) ? "ON" : "OFF");
          break;
       case EMU_TURBO_FIRE:
          retro_turbo_fire = !retro_turbo_fire;
          /* Lock turbo fire */
          turbo_fire_locked = true;
          /* Statusbar notification */
-         snprintf(statusbar_text, sizeof(statusbar_text), "%c Turbo Fire %-42s",
-               (' ' | 0x80), (retro_turbo_fire) ? "ON" : "OFF");
-         imagename_timer = 50;
+         statusbar_text_show("%s %s",
+               "Turbo Fire",
+               (retro_turbo_fire) ? "ON" : "OFF");
          break;
       case EMU_SAVE_DISK:
          dc_save_disk_toggle(dc, false, true);
