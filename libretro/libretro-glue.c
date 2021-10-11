@@ -90,7 +90,7 @@ static unsigned char* joystick_value_human(int val[16], int uae_device)
             if (opt_retropad_options == 1 || opt_retropad_options == 3)
                str[1] = ('2' | 0x80);
             else
-               str[1] = ('1' | 0x80);
+               str[1] = (str[1] | 0x80);
             break;
          case 3:
             str[1] = ('L' | 0x80);
@@ -132,7 +132,7 @@ static unsigned char* joystick_value_human(int val[16], int uae_device)
       {
          case 1:
             if (opt_retropad_options == 1 || opt_retropad_options == 3)
-               str[1] = ('1' | 0x80);
+               str[1] = (str[1] | 0x80);
             break;
          case 3:
             str[1] = ('M' | 0x80);
