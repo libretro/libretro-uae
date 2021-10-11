@@ -784,7 +784,7 @@ static void retro_set_core_options()
          "puae_use_whdload",
          "Media > WHDLoad Support",
          "WHDLoad Support",
-         "Enable launching pre-installed WHDLoad installs. Creates a helper image for loading content and an empty image for saving. Core restart required.\n- 'Files' creates data in directories\n- 'HDFs' creates data in images",
+         "Enable launching pre-installed WHDLoad installs. Creates a helper boot image for loading content and an empty image for saving. Legacy 'HDFs' mode is not recommended!\nCore restart required.\n- 'Files' creates data in directories\n- 'HDFs' creates data in images\n- 'OFF' boots hard drive images directly",
          NULL,
          "media",
          {

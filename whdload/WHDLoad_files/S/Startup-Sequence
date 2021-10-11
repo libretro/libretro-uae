@@ -69,10 +69,21 @@ ELSE
           ENDIF
        ENDIF
    ENDIF
-   
+
+   SETENV WBRUN ""
+   SETENV WBDIR ""
+   IF NOT "$WBSEL" EQ 1
+      SETENV WBSEL ""
+   ENDIF
+
    Assign EXISTS WHDSaves: >NIL:
    IF WARN
       Assign WHDSaves: WHDLoad:WHDSaves
+   ENDIF
+
+   IF "$WBSEL" EQ 1
+      Execute S:WBSelect
+      SKIP End
    ENDIF
 
    JoyPad RED BLUE PORT 1 QUIET >NIL:
@@ -87,7 +98,8 @@ ELSE
 
    JoyPad RED PORT 1 QUIET >NIL:
    IF WARN
-      Execute WBSelect
+      SETENV WBSEL 1
+      Execute S:WBSelect
    ELSE
       IF EXISTS DH0:custom
          SETENV CUSTOM `type DH0:custom`
@@ -133,7 +145,8 @@ ELSE
                   WHDLoad Preload game.slave $CUSTOM
                ENDIF
             ELSE
-               Execute WBSelect
+               SETENV WBSEL 1
+               Execute S:WBSelect
             ENDIF
          ENDIF
       ELSE
@@ -145,17 +158,24 @@ ELSE
       ENDIF
    ENDIF
 
-   IF NOT "$SLAVE" EQ ""
-      IF EXISTS ReadMe
-         IF NOT "$WBRUN" EQ "Readme"
-            MultiView ReadMe
+   LAB End
+   IF NOT "$WBSEL" EQ ""
+      IF NOT "$WBRUN" EQ ""
+         List $WBRUN QUICK NOHEAD LFORMAT %M TO ENV:WBREADME
+         IF "$WBREADME" EQ "Readme"
+            IF NOT "$SLAVE" EQ ""
+               Execute S:MkCustom
+            ENDIF
          ENDIF
       ENDIF
-
-      Execute S:MkCustom
+   ELSE
+      IF EXISTS "ReadMe"
+         MultiView ReadMe
+      ENDIF
+      IF NOT "$SLAVE" EQ ""
+         Execute S:MkCustom
+      ENDIF
    ENDIF
-   
-   UNSETENV WBRUN
 ENDIF
 
 MemClear >NIL:

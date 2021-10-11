@@ -4,9 +4,9 @@ IF EXISTS DH0:custom
 ELSE
 
 IF EXISTS $CUSTOMPATH
-   RequestChoice MkCustom "Current options: `type $CUSTOMPATH`" Cancel Edit Remove >ENV:CustomChoice
+   RequestChoice MkCustom "Current WHDLoad options: `type $CUSTOMPATH`" Cancel Edit Remove >ENV:CustomChoice
 ELSE
-   RequestChoice MkCustom "No options" Cancel Set Remove >ENV:CustomChoice
+   RequestChoice MkCustom "Custom WHDLoad options not set" Cancel Set Remove >ENV:CustomChoice
 ENDIF
 
 IF $CustomChoice EQ 0
