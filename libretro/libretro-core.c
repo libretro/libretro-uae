@@ -4425,7 +4425,7 @@ void retro_audio_render(const int16_t *data, size_t frames)
    if ((frames < 1) || !libretro_runloop_active)
       return;
 #ifdef RETRO_AUDIO_BATCH
-   audio_batch_cb(data, frames/2);
+   audio_batch_cb(data, frames >> 1);
 #else
    for (int x = 0; x < frames; x += 2) audio_cb(data[x], data[x+1]);
 #endif
