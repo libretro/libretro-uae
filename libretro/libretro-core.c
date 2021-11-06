@@ -3890,6 +3890,15 @@ bool retro_disk_set_eject_state(bool ejected)
       if (!dc->files[dc->index])
          return false;
 
+      switch (dc->types[dc->index])
+      {
+         case DC_IMAGE_TYPE_HD:
+         case DC_IMAGE_TYPE_WHDLOAD:
+            return false;
+         default:
+            break;
+      }
+
       if (path_is_valid(dc->files[dc->index]))
           display_current_image(((!dc->eject_state) ? dc->labels[dc->index] : ""), !dc->eject_state);
 
