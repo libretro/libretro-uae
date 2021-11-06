@@ -1598,7 +1598,8 @@ void zip_uncompress(char *in, char *out, char *lastfile)
          int skip = 0;
          unsigned x = 0;
 
-         write_filename = strdup(filename_withpath);
+         write_filename = local_to_utf8_string_alloc(filename_withpath);
+
          /* Replace non-ascii chars with underscore */
          for (x = 128; x < 256; x++)
             string_replace_all_chars(write_filename, x, '_');
@@ -1833,9 +1834,11 @@ void sevenzip_uncompress(char *in, char *out, char *lastfile)
          if (dc_get_image_type(output_path) == DC_IMAGE_TYPE_FLOPPY && lastfile != NULL)
             snprintf(lastfile, RETRO_PATH_MAX, "%s", path_basename(output_path));
 
+#if 0
          /* Replace non-ascii chars with underscore */
          for (x = 128; x < 256; x++)
             string_replace_all_chars(output_path, x, '_');
+#endif
 
          for (j = 0; output_path[j] != 0; j++)
          {
@@ -1972,12 +1975,12 @@ int make_hdf (char *hdf_path, char *hdf_size, char *device_name)
     }
 
     if (size <= 0) {
-        fprintf (stderr, "Invalid size\n");
+        printf ("Invalid size\n");
         exit (EXIT_FAILURE);
     }
 
     if ((size >= (1LL << 31)) && (sizeof (off_t) < sizeof (uae_u64))) {
-        fprintf (stderr, "Specified size too large (2GB file size is maximum).\n");
+        printf ("Specified size too large (2GB file size is maximum).\n");
         exit (EXIT_FAILURE);
     }
 
@@ -1985,7 +1988,7 @@ int make_hdf (char *hdf_path, char *hdf_size, char *device_name)
 
     /* We don't want more than (2^32)-1 blocks */
     if (num_blocks >= (1LL << 32)) {
-        fprintf (stderr, "Specified size too large (too many blocks).\n");
+        printf ("Specified size too large (too many blocks).\n");
         exit (EXIT_FAILURE);
     }
 
@@ -2004,7 +2007,7 @@ int make_hdf (char *hdf_path, char *hdf_size, char *device_name)
     cylinders = num_blocks / (blocks_per_track * surfaces);
 
     if (cylinders == 0) {
-        fprintf (stderr, "Specified size is too small.\n");
+        printf ("Specified size is too small.\n");
         exit (EXIT_FAILURE);
     }
 

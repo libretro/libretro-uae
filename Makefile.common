@@ -186,11 +186,6 @@ SOURCES_C += \
 	$(LIBRETRO_COMM_DIR)/vfs/vfs_implementation.c
 endif
 
-GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
-ifneq ($(GIT_VERSION)," unknown")
-    CFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
-endif
-
 ifeq ($(HAVE_CHD), 1)
 	CFLAGS += -DWITH_CHD
 	INCFLAGS += \
@@ -204,4 +199,9 @@ ifeq ($(HAVE_CHD), 1)
 		$(DEPS_DIR)/libchdr/src/libchdr_chd.c \
 		$(DEPS_DIR)/libchdr/src/libchdr_flac.c \
 		$(DEPS_DIR)/libchdr/src/libchdr_huffman.c
+endif
+
+GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
+ifneq ($(GIT_VERSION)," unknown")
+    CFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
 endif

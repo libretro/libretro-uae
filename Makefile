@@ -290,7 +290,7 @@ CFLAGS += -DHAVE_7ZIP -D_7ZIP_ST
 # CHD
 HAVE_CHD = 1
 
-CFLAGS += -std=gnu99 -DINLINE="inline" -D__LIBRETRO__
+CFLAGS += -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -DUSE_LIBRETRO_VFS
 
 include Makefile.common
 

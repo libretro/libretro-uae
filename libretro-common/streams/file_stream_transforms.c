@@ -69,11 +69,17 @@ RFILE* rfopen(const char *path, const char *mode)
 
 int rfclose(RFILE* stream)
 {
+   if (!stream)
+      return EOF;
+
    return filestream_close(stream);
 }
 
 int64_t rftell(RFILE* stream)
 {
+   if (!stream)
+      return EOF;
+
    return filestream_tell(stream);
 }
 
@@ -92,6 +98,9 @@ int64_t rfseek(RFILE* stream, int64_t offset, int origin)
          seek_position = RETRO_VFS_SEEK_POSITION_END;
          break;
    }
+
+   if (!stream)
+      return EOF;
 
    return filestream_seek(stream, offset, seek_position);
 }
@@ -115,7 +124,7 @@ int rfgetc(RFILE* stream)
 int64_t rfwrite(void const* buffer,
    size_t elem_size, size_t elem_count, RFILE* stream)
 {
-   return filestream_write(stream, buffer, elem_size * elem_count);
+   return (filestream_write(stream, buffer, elem_size * elem_count) / elem_size);
 }
 
 int rfputc(int character, RFILE * stream)

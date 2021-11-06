@@ -545,4 +545,16 @@
    code using `volatile' can become incorrect without. Disable with care. */
 /* #undef volatile */
 
+#ifdef USE_LIBRETRO_VFS
+#include <streams/file_stream_transforms.h>
+#undef stderr
+#define stderr 0
+#undef putc
+#define putc fputc
+#undef fseeko
+#define fseeko rfseek
+#undef ftello
+#define ftello rftell
+#endif
+
 #endif /* UAE_SYSCONFIG_H */

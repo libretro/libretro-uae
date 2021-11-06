@@ -32,4 +32,10 @@ extern char *my_strdup (const char *s);
 # endif
 #endif
 
+#ifdef __LIBRETRO__
+#define _tcscspn strcspn
+#else
+#define _tcscspn(wcs, reject) wcscspn((const wchar_t*)(wcs), (const wchar_t*)(reject))
+#endif
+
 #endif /* UAE_STRING_H */
