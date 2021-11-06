@@ -150,6 +150,9 @@ static unsigned char* joystick_value_human(int val[16], int uae_device)
    {
       switch (uae_device)
       {
+         case 1:
+         case 3:
+            break;
          case 4:
             str[1] = ('4' | 0x80);
             break;
