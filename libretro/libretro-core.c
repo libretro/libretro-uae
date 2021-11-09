@@ -270,8 +270,13 @@ static void retro_led_interface(void)
 void retro_fastforwarding(bool enabled)
 {
    struct retro_fastforwarding_override ff_override;
+   bool frontend_ff_enabled = false;
 
    if (!libretro_supports_ff_override)
+      return;
+
+   environ_cb(RETRO_ENVIRONMENT_GET_FASTFORWARDING, &frontend_ff_enabled);
+   if (enabled && frontend_ff_enabled)
       return;
 
    ff_override.ratio          = 10.0f;
@@ -420,7 +425,6 @@ static void retro_autoloadfastforwarding(void)
 
       if (ff > -1)
          retro_fastforwarding((ff > 1) ? false : (ff) ? true : false);
-
 #if 0
       if (ff > -1)
          printf("HD/CD FF:%2d led:%d - on:%3d off:%3d audio:%3d - playing:%d\n",
