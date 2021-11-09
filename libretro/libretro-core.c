@@ -5231,7 +5231,7 @@ static bool retro_create_config(void)
 
          FILE *zip_m3u;
          char zip_m3u_list[DC_MAX_SIZE][RETRO_PATH_MAX] = {0};
-         char zip_m3u_path[RETRO_PATH_MAX];
+         char zip_m3u_path[RETRO_PATH_MAX] = {0};
          snprintf(zip_m3u_path, sizeof(zip_m3u_path), "%s%s%s.m3u",
                retro_temp_directory, DIR_SEP_STR, utf8_to_local_string_alloc(zip_basename));
          int zip_m3u_num = 0;

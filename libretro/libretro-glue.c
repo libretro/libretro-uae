@@ -247,6 +247,7 @@ void display_current_image(const char *image, bool inserted)
 {
    static char imagename[RETRO_PATH_MAX] = {0};
    static char imagename_prev[RETRO_PATH_MAX] = {0};
+   unsigned char* imagename_local;
 
    imagename_timer = 150;
    if (strcmp(image, ""))
@@ -257,12 +258,16 @@ void display_current_image(const char *image, bool inserted)
    else
       snprintf(imagename, sizeof(imagename), "%.100s", imagename_prev);
 
-   snprintf(&statusbar_text[0], sizeof(statusbar_text), "%-100s", imagename);
+   imagename_local = utf8_to_local_string_alloc(imagename);
+   snprintf(&statusbar_text[0], sizeof(statusbar_text), "%-100s", imagename_local);
 
    if (inserted)
       statusbar_text[0] = (8 | 0x80);
    else if (!strcmp(image, ""))
       statusbar_text[0] = (9 | 0x80);
+
+   free(imagename_local);
+   imagename_local = NULL;
 }
 
 void print_statusbar(void)
