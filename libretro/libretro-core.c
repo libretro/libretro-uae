@@ -25,6 +25,11 @@
 #include "memory_uae.h"
 #include "sounddep/sound.h"
 
+#ifdef USE_LIBRETRO_VFS
+#undef utf8_to_local_string_alloc
+#define utf8_to_local_string_alloc strdup
+#endif
+
 unsigned int libretro_runloop_active = 0;
 unsigned short int retro_bmp[RETRO_BMP_SIZE] = {0};
 int defaultw = EMULATOR_DEF_WIDTH;
@@ -265,8 +270,13 @@ static void retro_led_interface(void)
 void retro_fastforwarding(bool enabled)
 {
    struct retro_fastforwarding_override ff_override;
+   bool frontend_ff_enabled = false;
 
    if (!libretro_supports_ff_override)
+      return;
+
+   environ_cb(RETRO_ENVIRONMENT_GET_FASTFORWARDING, &frontend_ff_enabled);
+   if (enabled && frontend_ff_enabled)
       return;
 
    ff_override.ratio          = 10.0f;
@@ -415,7 +425,6 @@ static void retro_autoloadfastforwarding(void)
 
       if (ff > -1)
          retro_fastforwarding((ff > 1) ? false : (ff) ? true : false);
-
 #if 0
       if (ff > -1)
          printf("HD/CD FF:%2d led:%d - on:%3d off:%3d audio:%3d - playing:%d\n",
@@ -2423,6 +2432,14 @@ void retro_set_environment(retro_environment_t cb)
    environ_cb(RETRO_ENVIRONMENT_GET_LED_INTERFACE, &led_interface);
    if (led_interface.set_led_state)
       led_state_cb = led_interface.set_led_state;
+
+#ifdef USE_LIBRETRO_VFS
+   struct retro_vfs_interface_info vfs_iface_info;
+   vfs_iface_info.required_interface_version = 1;
+   vfs_iface_info.iface                      = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VFS_INTERFACE, &vfs_iface_info))
+      filestream_vfs_init(&vfs_iface_info);
+#endif
 }
 
 static void update_variables(void)
@@ -3890,6 +3907,15 @@ bool retro_disk_set_eject_state(bool ejected)
       if (!dc->files[dc->index])
          return false;
 
+      switch (dc->types[dc->index])
+      {
+         case DC_IMAGE_TYPE_HD:
+         case DC_IMAGE_TYPE_WHDLOAD:
+            return false;
+         default:
+            break;
+      }
+
       if (path_is_valid(dc->files[dc->index]))
           display_current_image(((!dc->eject_state) ? dc->labels[dc->index] : ""), !dc->eject_state);
 
@@ -4425,7 +4451,7 @@ void retro_audio_render(const int16_t *data, size_t frames)
    if ((frames < 1) || !libretro_runloop_active)
       return;
 #ifdef RETRO_AUDIO_BATCH
-   audio_batch_cb(data, frames/2);
+   audio_batch_cb(data, frames >> 1);
 #else
    for (int x = 0; x < frames; x += 2) audio_cb(data[x], data[x+1]);
 #endif
@@ -5205,7 +5231,7 @@ static bool retro_create_config(void)
 
          FILE *zip_m3u;
          char zip_m3u_list[DC_MAX_SIZE][RETRO_PATH_MAX] = {0};
-         char zip_m3u_path[RETRO_PATH_MAX];
+         char zip_m3u_path[RETRO_PATH_MAX] = {0};
          snprintf(zip_m3u_path, sizeof(zip_m3u_path), "%s%s%s.m3u",
                retro_temp_directory, DIR_SEP_STR, utf8_to_local_string_alloc(zip_basename));
          int zip_m3u_num = 0;
@@ -5219,7 +5245,7 @@ static bool retro_create_config(void)
             if (zip_dirp->d_name[0] == '.' || strendswith(zip_dirp->d_name, "m3u") || zip_mode > 1 || browsed_file[0] != '\0')
                continue;
 
-            zip_lastfile = strdup(zip_dirp->d_name);
+            zip_lastfile = local_to_utf8_string_alloc(zip_dirp->d_name);
 
             /* Multi file mode, generate playlist */
             if (dc_get_image_type(zip_lastfile) == DC_IMAGE_TYPE_FLOPPY ||
@@ -6123,7 +6149,7 @@ static void update_video_center_vertical(void)
       thisframe_y_adjust = thisframe_y_adjust_new;
 
 #if 0
-   fprintf(stdout, "FIRSTDRAWN:%6d LASTDRAWN:%6d   yadjust:%3d old:%3d zoomed_h:%d\n", retro_thisframe_first_drawn_line, retro_thisframe_last_drawn_line, thisframe_y_adjust, thisframe_y_adjust_old, zoomed_height);
+   printf("FIRSTDRAWN:%6d LASTDRAWN:%6d   yadjust:%3d old:%3d zoomed_h:%d\n", retro_thisframe_first_drawn_line, retro_thisframe_last_drawn_line, thisframe_y_adjust, thisframe_y_adjust_old, zoomed_height);
 #endif
 
    /* Remember the previous value */
@@ -6168,7 +6194,7 @@ static void update_video_center_horizontal(void)
       visible_left_border = visible_left_border_new;
 
 #if 0
-   fprintf(stdout, "DIWSTART  :%6d DIWSTOP  :%6d   lborder:%3d old:%3d width:%3d\n", retro_min_diwstart, retro_max_diwstop, visible_left_border, visible_left_border_old, (retro_max_diwstop - retro_min_diwstart));
+   printf("DIWSTART  :%6d DIWSTOP  :%6d   lborder:%3d old:%3d width:%3d\n", retro_min_diwstart, retro_max_diwstop, visible_left_border, visible_left_border_old, (retro_max_diwstop - retro_min_diwstart));
 #endif
 
    /* Remember the previous value */
@@ -6463,7 +6489,7 @@ static bool retro_update_av_info(void)
    float    aspect_ratio_old     = aspect_ratio;
 
    if (av_log)
-      fprintf(stdout, "* Trying to update AV timing:%d to: ntsc:%d hz:%0.4f, from video_config:%d, video_aspect:%d, hz:%0.4f\n", change_timing, isntsc, hz, video_config, video_config_aspect, retro_refresh);
+      printf("* Trying to update AV timing:%d to: ntsc:%d hz:%0.4f, from video_config:%d, video_aspect:%d, hz:%0.4f\n", change_timing, isntsc, hz, video_config, video_config_aspect, retro_refresh);
 
    /* Change PAL/NTSC with a twist, thanks to Dyna Blaster
     *
@@ -6551,7 +6577,7 @@ static bool retro_update_av_info(void)
       if (video_config_old == video_config && retro_refresh == hz)
       {
          if (av_log)
-            fprintf(stdout, "  * Already at wanted AV\n");
+            printf("  * Already at wanted AV\n");
          change_timing = false; /* Allow other calculations but don't alter timing */
       }
    }
@@ -6672,7 +6698,7 @@ static bool retro_update_av_info(void)
    }
 
 #if 0
-   fprintf(stdout, "statusbar:%3d old:%3d offset:%3d, defaulth:%d retroh:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, defaulth, retroh);
+   printf("statusbar:%3d old:%3d offset:%3d, defaulth:%d retroh:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, defaulth, retroh);
 #endif
 
    /* Apply zoom mode croppings */
@@ -6824,7 +6850,7 @@ static bool retro_update_av_info(void)
             opt_statusbar_position = 0;
       }
 #if 0
-      fprintf(stdout, "ztatusbar:%3d old:%3d offset:%3d, defaulth:%d retroz:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, defaulth, zoomed_height);
+      printf("ztatusbar:%3d old:%3d offset:%3d, defaulth:%d retroz:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, defaulth, zoomed_height);
 #endif
    }
 
@@ -6863,11 +6889,11 @@ static bool retro_update_av_info(void)
    if (av_log)
    {
       if (change_timing)
-         fprintf(stdout, "  * Update av_info : %dx%d %0.4fHz, zoomed: %dx%d, aspect:%0.3f, video_config:%d\n", retrow, retroh, hz, zoomed_width, zoomed_height, retro_get_aspect_ratio(zoomed_width, zoomed_height, false), video_config_geometry);
+         printf("  * Update av_info : %dx%d %0.4fHz, zoomed: %dx%d, aspect:%0.3f, video_config:%d\n", retrow, retroh, hz, zoomed_width, zoomed_height, retro_get_aspect_ratio(zoomed_width, zoomed_height, false), video_config_geometry);
       else if (change_geometry)
-         fprintf(stdout, "  * Update geometry: %dx%d, zoomed: %dx%d, aspect:%0.3f, video_config:%d\n", retrow, retroh, zoomed_width, zoomed_height, retro_get_aspect_ratio(zoomed_width, zoomed_height, false), video_config_geometry);
+         printf("  * Update geometry: %dx%d, zoomed: %dx%d, aspect:%0.3f, video_config:%d\n", retrow, retroh, zoomed_width, zoomed_height, retro_get_aspect_ratio(zoomed_width, zoomed_height, false), video_config_geometry);
       else
-         fprintf(stdout, "  * Update center  : %dx%d, zoomed: %dx%d, aspect:%0.3f, video_config:%d\n", retrow, retroh, zoomed_width, zoomed_height, retro_get_aspect_ratio(zoomed_width, zoomed_height, false), video_config_geometry);
+         printf("  * Update center  : %dx%d, zoomed: %dx%d, aspect:%0.3f, video_config:%d\n", retrow, retroh, zoomed_width, zoomed_height, retro_get_aspect_ratio(zoomed_width, zoomed_height, false), video_config_geometry);
    }
 
    /* Triggers check_prefs_changed_gfx() in vsync_handle_check() */

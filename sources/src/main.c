@@ -11,7 +11,6 @@
 #include "sysconfig.h"
 #include "sysdeps.h"
 #include <assert.h>
-#include <wchar.h>
 
 #include "cfgfile.h"
 #include "threaddep/thread.h"

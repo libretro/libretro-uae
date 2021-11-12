@@ -20,6 +20,14 @@ typedef int32_t INT32;
 typedef int16_t INT16;
 typedef int8_t INT8;
 
+#ifdef USE_LIBRETRO_VFS
+#define core_file RFILE
+#define core_fopen(file) rfopen(file, "rb")
+#define core_fseek rfseek
+#define core_ftell rftell
+#define core_fread(fc, buff, len) fread(buff, 1, len, fc)
+#define core_fclose rfclose
+#else /* USE_LIBRETRO_VFS */
 #define core_file FILE
 #define core_fopen(file) fopen(file, "rb")
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32) || defined(__WIN64__)
@@ -34,6 +42,7 @@ typedef int8_t INT8;
 #endif
 #define core_fread(fc, buff, len) fread(buff, 1, len, fc)
 #define core_fclose fclose
+#endif /* USE_LIBRETRO_VFS */
 
 static UINT64 core_fsize(core_file *f)
 {

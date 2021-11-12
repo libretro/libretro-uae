@@ -506,7 +506,6 @@ extern int gui_message_multibutton (int flags, const char *format,...);
 #define ULONG unsigned long
 #endif
 #define _strtoui64 strtoul
-#define _tcscspn(wcs, reject) wcscspn((const wchar_t*)(wcs), (const wchar_t*)(reject))
 
 #ifndef _stat64
 #define _stat64 stat64
