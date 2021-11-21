@@ -485,6 +485,7 @@ static void process_controller(int retro_port, int i)
 
          if (!(joypad_bits[retro_port] & (1 << RETRO_DEVICE_ID_JOYPAD_UP))
          && jflag[retro_port_uae][RETRO_DEVICE_ID_JOYPAD_UP]
+         && !mapper_flag[retro_port][RETRO_DEVICE_ID_JOYPAD_UP]
          && !jflag[retro_port_uae][RETRO_DEVICE_ID_JOYPAD_SELECT])
          {
             retro_joystick(retro_port_uae, 1, 0);
@@ -493,6 +494,7 @@ static void process_controller(int retro_port, int i)
          else
          if (!(joypad_bits[retro_port] & (1 << RETRO_DEVICE_ID_JOYPAD_DOWN))
          && jflag[retro_port_uae][RETRO_DEVICE_ID_JOYPAD_DOWN]
+         && !mapper_flag[retro_port][RETRO_DEVICE_ID_JOYPAD_DOWN]
          && !jflag[retro_port_uae][RETRO_DEVICE_ID_JOYPAD_SELECT])
          {
             retro_joystick(retro_port_uae, 1, 0);
@@ -523,14 +525,16 @@ static void process_controller(int retro_port, int i)
          }
 
          if (!(joypad_bits[retro_port] & (1 << RETRO_DEVICE_ID_JOYPAD_LEFT))
-         && jflag[retro_port_uae][RETRO_DEVICE_ID_JOYPAD_LEFT])
+         && jflag[retro_port_uae][RETRO_DEVICE_ID_JOYPAD_LEFT]
+         && !mapper_flag[retro_port][RETRO_DEVICE_ID_JOYPAD_LEFT])
          {
             retro_joystick(retro_port_uae, 0, 0);
             jflag[retro_port_uae][RETRO_DEVICE_ID_JOYPAD_LEFT] = 0;
          }
          else
          if (!(joypad_bits[retro_port] & (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT))
-         && jflag[retro_port_uae][RETRO_DEVICE_ID_JOYPAD_RIGHT])
+         && jflag[retro_port_uae][RETRO_DEVICE_ID_JOYPAD_RIGHT]
+         && !mapper_flag[retro_port][RETRO_DEVICE_ID_JOYPAD_RIGHT])
          {
             retro_joystick(retro_port_uae, 0, 0);
             jflag[retro_port_uae][RETRO_DEVICE_ID_JOYPAD_RIGHT] = 0;
@@ -1039,6 +1043,26 @@ void update_input(unsigned disable_keys)
                   else
                      jflag[j][RETRO_DEVICE_ID_JOYPAD_A] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_A] = 1;
                }
+               else if (mapper_keys[i] == JOYSTICK_UP)
+               {
+                  retro_joystick(j, 1, -1);
+                  jflag[j][RETRO_DEVICE_ID_JOYPAD_UP] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_UP] = 1;
+               }
+               else if (mapper_keys[i] == JOYSTICK_DOWN)
+               {
+                  retro_joystick(j, 1, 1);
+                  jflag[j][RETRO_DEVICE_ID_JOYPAD_DOWN] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_DOWN] = 1;
+               }
+               else if (mapper_keys[i] == JOYSTICK_LEFT)
+               {
+                  retro_joystick(j, 0, -1);
+                  jflag[j][RETRO_DEVICE_ID_JOYPAD_LEFT] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_LEFT] = 1;
+               }
+               else if (mapper_keys[i] == JOYSTICK_RIGHT)
+               {
+                  retro_joystick(j, 0, 1);
+                  jflag[j][RETRO_DEVICE_ID_JOYPAD_RIGHT] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_RIGHT] = 1;
+               }
                else if (mapper_keys[i] == TOGGLE_VKBD)
                   mapper_keys_pressed_time = now; /* Decide on release */
                else if (mapper_keys[i] == TOGGLE_STATUSBAR)
@@ -1104,6 +1128,26 @@ void update_input(unsigned disable_keys)
                      jflag[j][RETRO_DEVICE_ID_JOYPAD_B] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_B] = 0;
                   else
                      jflag[j][RETRO_DEVICE_ID_JOYPAD_A] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_A] = 0;
+               }
+               else if (mapper_keys[i] == JOYSTICK_UP)
+               {
+                  retro_joystick(j, 1, 0);
+                  jflag[j][RETRO_DEVICE_ID_JOYPAD_UP] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_UP] = 0;
+               }
+               else if (mapper_keys[i] == JOYSTICK_DOWN)
+               {
+                  retro_joystick(j, 1, 0);
+                  jflag[j][RETRO_DEVICE_ID_JOYPAD_DOWN] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_DOWN] = 0;
+               }
+               else if (mapper_keys[i] == JOYSTICK_LEFT)
+               {
+                  retro_joystick(j, 0, 0);
+                  jflag[j][RETRO_DEVICE_ID_JOYPAD_LEFT] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_LEFT] = 0;
+               }
+               else if (mapper_keys[i] == JOYSTICK_RIGHT)
+               {
+                  retro_joystick(j, 0, 0);
+                  jflag[j][RETRO_DEVICE_ID_JOYPAD_RIGHT] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_RIGHT] = 0;
                }
                else if (mapper_keys[i] == TOGGLE_VKBD)
                {
