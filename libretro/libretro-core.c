@@ -838,12 +838,13 @@ static void retro_set_core_options()
          "puae_video_allow_hz_change",
          "Video > Allow Hz Change",
          "Allow Hz Change",
-         "Let Amiga decide the exact refresh rate when interlace mode or PAL/NTSC changes.",
+         "Let Amiga decide the exact refresh rate when interlace mode or PAL/NTSC changes. 'Locked' changes only when video standard changes.\nCore restart required.",
          NULL,
          "video",
          {
             { "disabled", NULL },
             { "enabled", NULL },
+            { "locked", "Locked PAL/NTSC" },
             { NULL, NULL },
          },
          "enabled"
@@ -2538,8 +2539,22 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (!strcmp(var.value, "disabled")) video_config_allow_hz_change = 0;
-      else                                video_config_allow_hz_change = 1;
+      if      (!strcmp(var.value, "disabled")) video_config_allow_hz_change = 0;
+      else if (!strcmp(var.value, "enabled"))  video_config_allow_hz_change = 1;
+      else if (!strcmp(var.value, "locked"))   video_config_allow_hz_change = 2;
+
+      switch (video_config_allow_hz_change)
+      {
+         case 0:
+         case 1:
+            strcat(uae_config, "displaydata_pal=-1,pal\n");
+            strcat(uae_config, "displaydata_ntsc=-1,ntsc\n");
+            break;
+         case 2:
+            strcat(uae_config, "displaydata_pal=50.000000,locked,pal\n");
+            strcat(uae_config, "displaydata_ntsc=59.940000,locked,ntsc\n");
+            break;
+      }
    }
 
    var.key = "puae_video_resolution";
