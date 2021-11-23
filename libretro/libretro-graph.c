@@ -78,10 +78,10 @@ void draw_fbox_bmp16(unsigned short *buffer, int x, int y, int dx, int dy, uint1
           * correct colour */
          break;
       case GRAPH_ALPHA_25:
-         for (j=y; j<y+dy; j++)
+         for (j = y; j < y + dy; j++)
          {
             uint16_t *buf_ptr = buffer + (j * retrow) + x;
-            for (i=x; i<x+dx; i++)
+            for (i = x; i < x + dx; i++)
             {
                BLEND_ALPHA25(color, *buf_ptr, buf_ptr);
                buf_ptr++;
@@ -89,10 +89,10 @@ void draw_fbox_bmp16(unsigned short *buffer, int x, int y, int dx, int dy, uint1
          }
          break;
       case GRAPH_ALPHA_50:
-         for (j=y; j<y+dy; j++)
+         for (j = y; j < y + dy; j++)
          {
             uint16_t *buf_ptr = buffer + (j * retrow) + x;
-            for (i=x; i<x+dx; i++)
+            for (i = x; i < x + dx; i++)
             {
                BLEND_ALPHA50(color, *buf_ptr, buf_ptr);
                buf_ptr++;
@@ -100,10 +100,10 @@ void draw_fbox_bmp16(unsigned short *buffer, int x, int y, int dx, int dy, uint1
          }
          break;
       case GRAPH_ALPHA_75:
-         for (j=y; j<y+dy; j++)
+         for (j = y; j < y + dy; j++)
          {
             uint16_t *buf_ptr = buffer + (j * retrow) + x;
-            for (i=x; i<x+dx; i++)
+            for (i = x; i < x + dx; i++)
             {
                BLEND_ALPHA75(color, *buf_ptr, buf_ptr);
                buf_ptr++;
@@ -112,10 +112,10 @@ void draw_fbox_bmp16(unsigned short *buffer, int x, int y, int dx, int dy, uint1
          break;
       case GRAPH_ALPHA_100:
       default:
-         for (j=y; j<y+dy; j++)
+         for (j = y; j < y + dy; j++)
          {
             uint16_t *buf_ptr = buffer + (j * retrow) + x;
-            for (i=x; i<x+dx; i++)
+            for (i = x; i < x + dx; i++)
             {
                *buf_ptr = color;
                buf_ptr++;
@@ -138,10 +138,10 @@ void draw_fbox_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t co
           * correct colour */
          break;
       case GRAPH_ALPHA_25:
-         for (j=y; j<y+dy; j++)
+         for (j = y; j < y + dy; j++)
          {
             uint32_t *buf_ptr = buffer + (j * retrow) + x;
-            for (i=x; i<x+dx; i++)
+            for (i = x; i < x + dx; i++)
             {
                BLEND32_ALPHA25(color, *buf_ptr, buf_ptr);
                buf_ptr++;
@@ -149,10 +149,10 @@ void draw_fbox_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t co
          }
          break;
       case GRAPH_ALPHA_50:
-         for (j=y; j<y+dy; j++)
+         for (j = y; j < y + dy; j++)
          {
             uint32_t *buf_ptr = buffer + (j * retrow) + x;
-            for (i=x; i<x+dx; i++)
+            for (i = x; i < x + dx; i++)
             {
                BLEND32_ALPHA50(color, *buf_ptr, buf_ptr);
                buf_ptr++;
@@ -160,10 +160,10 @@ void draw_fbox_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t co
          }
          break;
       case GRAPH_ALPHA_75:
-         for (j=y; j<y+dy; j++)
+         for (j = y; j < y + dy; j++)
          {
             uint32_t *buf_ptr = buffer + (j * retrow) + x;
-            for (i=x; i<x+dx; i++)
+            for (i = x; i < x + dx; i++)
             {
                BLEND32_ALPHA75(color, *buf_ptr, buf_ptr);
                buf_ptr++;
@@ -172,10 +172,10 @@ void draw_fbox_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t co
          break;
       case GRAPH_ALPHA_100:
       default:
-         for (j=y; j<y+dy; j++)
+         for (j = y; j < y + dy; j++)
          {
             uint32_t *buf_ptr = buffer + (j * retrow) + x;
-            for (i=x; i<x+dx; i++)
+            for (i = x; i < x + dx; i++)
             {
                *buf_ptr = color;
                buf_ptr++;
@@ -198,19 +198,19 @@ void draw_box_bmp16(uint16_t *buffer, int x, int y, int dx, int dy, uint16_t col
 {
    int i, j, idx;
 
-   for (i=x; i<x+dx; i++)
+   for (i = x; i < x + dx; i++)
    {
-      idx = i+y*retrow;
+      idx = i + (y * retrow);
       buffer[idx] = color;
-      idx = i+(y+dy)*retrow;
+      idx = i + ((y + dy) * retrow);
       buffer[idx] = color;
    }
 
-   for (j=y; j<y+dy; j++)
+   for (j = y; j < y + dy; j++)
    {
-      idx = x+j*retrow;
+      idx = x + (j * retrow);
       buffer[idx] = color;
-      idx = (x+dx)+j*retrow;
+      idx = (x + dx) + (j * retrow);
       buffer[idx] = color;
    }
 }
@@ -219,19 +219,19 @@ void draw_box_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t col
 {
    int i, j, idx;
 
-   for (i=x; i<x+dx; i++)
+   for (i = x; i < x + dx; i++)
    {
-      idx = i+y*retrow;
+      idx = i + (y * retrow);
       buffer[idx] = color;
-      idx = i+(y+dy)*retrow;
+      idx = i + ((y + dy) * retrow);
       buffer[idx] = color;
    }
 
-   for (j=y; j<y+dy; j++)
+   for (j = y; j < y + dy; j++)
    {
-      idx = x+j*retrow;
+      idx = x + (j * retrow);
       buffer[idx] = color;
-      idx = (x+dx)+j*retrow;
+      idx = (x + dx) + (j * retrow);
       buffer[idx] = color;
    }
 }
@@ -252,9 +252,11 @@ void draw_hline_bmp16(uint16_t *buffer, int x, int y, int dx, int dy, uint16_t c
 
    (void)j;
 
-   for (i=x; i<x+dx; i++)
+   for (i = x; i < x + dx; i++)
    {
-      idx = i+y*retrow;
+      idx = i + (y * retrow);
+      if (idx < 0)
+         continue;
       buffer[idx] = color;
    }
 }
@@ -265,9 +267,11 @@ void draw_hline_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t c
 
    (void)j;
 
-   for (i=x; i<x+dx; i++)
+   for (i = x; i < x + dx; i++)
    {
-      idx = i+y*retrow;
+      idx = i + (y * retrow);
+      if (idx < 0)
+         continue;
       buffer[idx] = color;
    }
 }
@@ -286,9 +290,11 @@ void draw_vline_bmp16(uint16_t *buffer, int x, int y, int dx, int dy, uint16_t c
 
    (void)i;
 
-   for (j=y; j<y+dy; j++)
+   for (j = y; j < y + dy; j++)
    {
-      idx = x+j*retrow;
+      idx = x + (j * retrow);
+      if (idx < 0)
+         continue;
       buffer[idx] = color;
    }
 }
@@ -299,9 +305,11 @@ void draw_vline_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t c
 
    (void)i;
 
-   for (j=y; j<y+dy; j++)
+   for (j = y; j < y + dy; j++)
    {
-      idx = x+j*retrow;
+      idx = x + (j * retrow);
+      if (idx < 0)
+         continue;
       buffer[idx] = color;
    }
 }
