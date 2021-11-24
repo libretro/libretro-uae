@@ -6591,9 +6591,12 @@ static bool retro_update_av_info(void)
       /* If still no change */
       if (video_config_old == video_config && retro_refresh == hz)
       {
+         /* Allow other calculations but don't alter timing */
+         change_timing   = false;
+         change_geometry = true;
+
          if (av_log)
             printf("  * Already at wanted AV\n");
-         change_timing = false; /* Allow other calculations but don't alter timing */
       }
    }
 
