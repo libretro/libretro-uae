@@ -669,7 +669,7 @@ static void retro_set_core_options()
          "puae_autoloadfastforward",
          "Media > Automatic Load Fast-Forward",
          "Automatic Load Fast-Forward",
-         "Toggle frontend fast-forward during media access if there is no sound output. Mutes 'Floppy Sound Emulation'.",
+         "Toggle frontend fast-forward during media access if there is no audio output. Mutes 'Floppy Sound Emulation'.",
          NULL,
          "media",
          {
@@ -838,12 +838,13 @@ static void retro_set_core_options()
          "puae_video_allow_hz_change",
          "Video > Allow Hz Change",
          "Allow Hz Change",
-         "Let Amiga decide the exact refresh rate when interlace mode or PAL/NTSC changes.",
+         "Let Amiga decide the exact refresh rate when interlace mode or PAL/NTSC changes. 'Locked' changes only when video standard changes.\nCore restart required.",
          NULL,
          "video",
          {
             { "disabled", NULL },
             { "enabled", NULL },
+            { "locked", "Locked PAL/NTSC" },
             { NULL, NULL },
          },
          "enabled"
@@ -1147,7 +1148,7 @@ static void retro_set_core_options()
          "puae_vkbd_theme",
          "Video > Virtual KBD Theme",
          "Virtual KBD Theme",
-         "By default, the keyboard comes up with RetroPad Select.",
+         "The keyboard comes up with RetroPad Select by default.",
          NULL,
          "video",
          {
@@ -1260,7 +1261,7 @@ static void retro_set_core_options()
          "puae_sound_interpol",
          "Audio > Interpolation",
          "Interpolation",
-         "",
+         "Paula sound chip interpolation type.",
          NULL,
          "audio",
          {
@@ -1277,7 +1278,7 @@ static void retro_set_core_options()
          "puae_sound_filter",
          "Audio > Filter",
          "Filter",
-         "",
+         "'Emulated' allows states between ON/OFF.",
          NULL,
          "audio",
          {
@@ -1292,7 +1293,7 @@ static void retro_set_core_options()
          "puae_sound_filter_type",
          "Audio > Filter Type",
          "Filter Type",
-         "",
+         "'Automatic' picks the filter type for the hardware.",
          NULL,
          "audio",
          {
@@ -1307,7 +1308,7 @@ static void retro_set_core_options()
          "puae_sound_volume_cd",
          "Audio > CD Audio Volume",
          "CD Audio Volume",
-         "",
+         "CD volume in percent.",
          NULL,
          "audio",
          {
@@ -1340,7 +1341,7 @@ static void retro_set_core_options()
          "puae_floppy_sound",
          "Audio > Floppy Sound Emulation",
          "Floppy Sound Emulation",
-         "",
+         "Floppy volume in percent.",
          NULL,
          "audio",
          {
@@ -1402,7 +1403,7 @@ static void retro_set_core_options()
          "puae_analogmouse",
          "Input > Analog Stick Mouse",
          "Analog Stick Mouse",
-         "",
+         "Default mouse control stick when remappings are empty.",
          NULL,
          "input",
          {
@@ -1418,7 +1419,7 @@ static void retro_set_core_options()
          "puae_analogmouse_deadzone",
          "Input > Analog Stick Mouse Deadzone",
          "Analog Stick Mouse Deadzone",
-         "",
+         "Required distance from stick center to register input.",
          NULL,
          "input",
          {
@@ -1441,7 +1442,7 @@ static void retro_set_core_options()
          "puae_analogmouse_speed",
          "Input > Analog Stick Mouse Speed",
          "Analog Stick Mouse Speed",
-         "",
+         "Mouse movement speed multiplier for analog stick.",
          NULL,
          "input",
          {
@@ -1483,7 +1484,7 @@ static void retro_set_core_options()
          "puae_dpadmouse_speed",
          "Input > D-Pad Mouse Speed",
          "D-Pad Mouse Speed",
-         "",
+         "Mouse movement speed multiplier for directional pad.",
          NULL,
          "input",
          {
@@ -1513,7 +1514,7 @@ static void retro_set_core_options()
          "puae_mouse_speed",
          "Input > Mouse Speed",
          "Mouse Speed",
-         "Affects mouse speed globally.",
+         "Global mouse speed.",
          NULL,
          "input",
          {
@@ -1774,7 +1775,7 @@ static void retro_set_core_options()
          "puae_mapper_select",
          "RetroPad > Select",
          "Select",
-         "",
+         "VKBD comes up with RetroPad Select by default.",
          NULL,
          "retropad",
          {{ NULL, NULL }},
@@ -2538,8 +2539,22 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (!strcmp(var.value, "disabled")) video_config_allow_hz_change = 0;
-      else                                video_config_allow_hz_change = 1;
+      if      (!strcmp(var.value, "disabled")) video_config_allow_hz_change = 0;
+      else if (!strcmp(var.value, "enabled"))  video_config_allow_hz_change = 1;
+      else if (!strcmp(var.value, "locked"))   video_config_allow_hz_change = 2;
+
+      switch (video_config_allow_hz_change)
+      {
+         case 0:
+         case 1:
+            strcat(uae_config, "displaydata_pal=-1,pal\n");
+            strcat(uae_config, "displaydata_ntsc=-1,ntsc\n");
+            break;
+         case 2:
+            strcat(uae_config, "displaydata_pal=50.000000,locked,pal\n");
+            strcat(uae_config, "displaydata_ntsc=59.940000,locked,ntsc\n");
+            break;
+      }
    }
 
    var.key = "puae_video_resolution";
@@ -6576,9 +6591,12 @@ static bool retro_update_av_info(void)
       /* If still no change */
       if (video_config_old == video_config && retro_refresh == hz)
       {
+         /* Allow other calculations but don't alter timing */
+         change_timing   = false;
+         change_geometry = true;
+
          if (av_log)
             printf("  * Already at wanted AV\n");
-         change_timing = false; /* Allow other calculations but don't alter timing */
       }
    }
 
