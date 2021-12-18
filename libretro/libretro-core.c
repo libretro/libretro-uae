@@ -609,7 +609,7 @@ static void retro_set_core_options()
             { "exact", "Cycle-exact (Full)" },
             { NULL, NULL },
          },
-         "normal"
+         "compatible"
       },
       {
          "puae_cpu_throttle",
@@ -845,7 +845,7 @@ static void retro_set_core_options()
             { "locked", "Locked PAL/NTSC" },
             { NULL, NULL },
          },
-         "enabled"
+         "locked"
       },
       {
          "puae_video_standard",
