@@ -1,8 +1,9 @@
-#pragma once
-#ifndef SRC_UAERESOURCE_H_INCLUDED
-#define SRC_UAERESOURCE_H_INCLUDED 1
+#ifndef UAE_UAERESOURCE_H
+#define UAE_UAERESOURCE_H
 
-uaecptr uaeres_startup (uaecptr resaddr);
-void uaeres_install (void);
+#include "uae/types.h"
 
-#endif // SRC_UAERESOURCE_H_INCLUDED
+uaecptr uaeres_startup(TrapContext *ctx, uaecptr resaddr);
+void uaeres_install(void);
+
+#endif /* UAE_UAERESOURCE_H */

@@ -6,20 +6,20 @@
 #include "zfile.h"
 #include "amax.h"
 #include "custom.h"
-#include "memory_uae.h"
+#include "memory.h"
 #include "newcpu.h"
+#include "rommgr.h"
 
-#ifdef AMAX
-
-static int data_scramble[8] = { 3, 2, 4, 5, 7, 6, 0, 1 };
-static int addr_scramble[16] = { 14, 12, 2, 10, 15, 13, 1, 0, 7, 6, 5, 4, 8, 9, 11, 3 };
+static const int data_scramble[8] = { 3, 2, 4, 5, 7, 6, 0, 1 };
+static const int addr_scramble[16] = { 14, 12, 2, 10, 15, 13, 1, 0, 7, 6, 5, 4, 8, 9, 11, 3 };
 
 static int romptr;
 static uae_u8 *rom;
 static int amax_rom_size, rom_oddeven;
-static uae_u8 data;
+static uae_u8 amax_data;
 static uae_u8 bfd100, bfe001;
 static uae_u8 dselect;
+static bool amax_is_active;
 
 #define AMAX_LOG 0
 
@@ -44,7 +44,7 @@ static void load_byte (void)
 				val |= 1 << i;
 		}
 	}
-	data = val;
+	amax_data = val;
 	if (AMAX_LOG > 0)
 		write_log (_T("AMAX: load byte, rom=%d addr=%06x (%06x) data=%02x (%02x) PC=%08X\n"), rom_oddeven, romptr, addr, v, val, M68K_GETPC);
 }
@@ -56,6 +56,7 @@ static void amax_check (void)
 		if (romptr && AMAX_LOG > 0)
 			write_log (_T("AMAX: counter reset PC=%08X\n"), M68K_GETPC);
 		romptr = 0;
+		amax_is_active = false;
 	}
 }
 
@@ -88,8 +89,8 @@ void amax_bfe001_write (uae_u8 pra, uae_u8 dra)
 	bfe001 = v;
 	/* CHNG low -> high: shift data register */
 	if ((v & 4) && !(bfe001_ov & 4)) {
-		data <<= 1;
-		data |= 1;
+		amax_data <<= 1;
+		amax_data |= 1;
 		if (AMAX_LOG > 0)
 			write_log (_T("AMAX: data shifted\n"));
 	}
@@ -104,22 +105,28 @@ void amax_bfe001_write (uae_u8 pra, uae_u8 dra)
 	amax_check ();
 }
 
-void amax_disk_select (uae_u8 v, uae_u8 ov)
+void amax_disk_select (uae_u8 v, uae_u8 ov, int num)
 {
 	bfd100 = v;
 
-	if (!(bfd100 & dselect) && (ov & dselect))
+	dselect = 1 << (num + 3);
+	if (!(bfd100 & dselect) && (ov & dselect)) {
+		amax_is_active = true;
 		load_byte ();
+	}
 	amax_check ();
 }
 
-uae_u8 amax_disk_status (void)
+uae_u8 amax_disk_status (uae_u8 st)
 {
-	uae_u8 st = 0x3c;
-
-	if (!(data & 0x80))
+	if (!(amax_data & 0x80))
 		st &= ~0x20;
 	return st;
+}
+
+bool amax_active(void)
+{
+	return amax_is_active;
 }
 
 void amax_reset (void)
@@ -128,7 +135,7 @@ void amax_reset (void)
 	rom_oddeven = 0;
 	bfe001_ov = 0;
 	dwlastbit = 0;
-	data = 0xff;
+	amax_data = 0xff;
 	xfree (rom);
 	rom = NULL;
 	dselect = 0;
@@ -136,26 +143,26 @@ void amax_reset (void)
 
 void amax_init (void)
 {
-	struct zfile *z;
+	struct zfile *z = NULL;
 
-	if (!currprefs.amaxromfile[0])
+	if (is_device_rom(&currprefs, ROMTYPE_AMAX, 0) < 0)
 		return;
 	amax_reset ();
-	z = zfile_fopen (currprefs.amaxromfile, _T("rb"), ZFD_NORMAL);
-	if (!z) {
-		write_log (_T("AMAX: failed to load rom '%s'\n"), currprefs.amaxromfile);
-		return;
+	if (is_device_rom(&currprefs, ROMTYPE_AMAX, 0) > 0)
+		z = read_device_rom(&currprefs, ROMTYPE_AMAX, 0, NULL);
+	if (z) {
+		zfile_fseek (z, 0, SEEK_END);
+		amax_rom_size = zfile_ftell (z);
+		zfile_fseek (z, 0, SEEK_SET);
+	} else {
+		write_log (_T("AMAX: failed to load rom\n"));
+		amax_rom_size = 262144;
 	}
-	zfile_fseek (z, 0, SEEK_END);
-	amax_rom_size = zfile_ftell (z);
-	zfile_fseek (z, 0, SEEK_SET);
-	rom = xmalloc (uae_u8, amax_rom_size);
-	zfile_fread (rom, amax_rom_size, 1, z);
-	zfile_fclose (z);
-	write_log (_T("AMAX: '%s' loaded, %d bytes\n"), currprefs.amaxromfile, amax_rom_size);
-	dselect = 0x20;
+	rom = xcalloc (uae_u8, amax_rom_size);
+	if (z) {
+		zfile_fread (rom, amax_rom_size, 1, z);
+		zfile_fclose (z);
+	}
+	write_log (_T("AMAX: loaded, %d bytes\n"), amax_rom_size);
 }
-
-#endif //ifdef amax
-
 

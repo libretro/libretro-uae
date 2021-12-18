@@ -9,7 +9,7 @@
 #ifndef UAE_DRIVECLICK_H
 #define UAE_DRIVECLICK_H
 
-#include "uae_types.h"
+#include "uae/types.h"
 
 #define CLICK_TRACKS 84
 

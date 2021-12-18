@@ -454,7 +454,8 @@ bool dc_add_m3u_save_disk(
 
       /* Create save disk */
       save_disk_exists = disk_creatediskfile(
-            save_disk_path, 0, DRV_35_DD,
+            &currprefs,
+            save_disk_path, 0, DRV_35_DD, 0,
             (volume_name[0] == '\0') ? NULL : volume_name,
             false, false, NULL);
    }

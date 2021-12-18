@@ -6,8 +6,6 @@
 #include "zfile.h"
 #include "zarchive.h"
 #include "audio.h"
-#include "cfgfile.h"
-#include "sounddep/sound.h"
 #include "options.h"
 
 int cda_audio_bufsize;

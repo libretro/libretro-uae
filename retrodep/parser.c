@@ -12,24 +12,33 @@
 
 #include "sysdeps.h"
 #include "options.h"
+#include "parser.h"
+#include "ioport.h"
 #if 0
 #include "gensound.h"
 #include "events.h"
 #include "uae.h"
-#include "include/memory_uae.h"
+#include "memory.h"
 #include "custom.h"
 #include "autoconf.h"
 #include "newcpu.h"
 #include "traps.h"
 #include "threaddep/thread.h"
 #include "serial.h"
+#include "parallel.h"
 #include "savestate.h"
 #include "xwin.h"
 #include "drawing.h"
-#define MIN_PRTBYTES 10
 #else
 #include "threaddep/thread.h"
 #endif
+
+#define MIN_PRTBYTES 10
+
+static uae_char prtbuf[PRTBUFSIZE];
+static int prtbufbytes,wantwrite;
+static int prtopen;
+
 struct uaeserialdata
 {
 	long hCom;
@@ -103,3 +112,30 @@ static int datainoutput;
 static int dataininput, dataininputcnt;
 static int writepending;
 #endif
+
+int isprinter (void)
+{
+	if (!currprefs.prtname[0])
+		return 0;
+	if (!_tcsncmp (currprefs.prtname, _T("LPT"), 3)) {
+		/*paraport_open (currprefs.prtname);*/
+		return -1;
+	}
+	return 1;
+}
+
+int isprinteropen (void)
+{
+	if (prtopen || prtbufbytes > 0)
+		return 1;
+	return 0;
+}
+
+void doprinter (uae_u8 val) {}
+void initparallel (void) {}
+
+int seriallog = 0, log_sercon = 0;
+void serial_rbf_clear (void) {}
+void serial_check_irq (void) {}
+void serial_uartbreak (int v) {}
+void serial_hsynchandler (void) {}

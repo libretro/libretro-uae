@@ -1,12 +1,10 @@
 /*
- * UAE - The Un*x Amiga Emulator
- *
- * Common code needed by all the various graphics systems.
- *
- * (c) 1996 Bernd Schmidt, Ed Hanway, Samuel Devulder
- */
-
-#include <math.h>
+* UAE - The Un*x Amiga Emulator
+*
+* Common code needed by all the various graphics systems.
+*
+* (c) 1996 Bernd Schmidt, Ed Hanway, Samuel Devulder
+*/
 
 #include "sysconfig.h"
 #include "sysdeps.h"
@@ -16,11 +14,12 @@
 #include "xwin.h"
 #include "gfxfilter.h"
 
-#include "uae_endian.h"
+#include <math.h>
 
-double getvsyncrate (double hz, int *mult)
+float getvsyncrate(int monid, float hz, int *mult)
 {
-	struct apmode *ap = picasso_on ? &currprefs.gfx_apmode[1] : &currprefs.gfx_apmode[0];
+	struct amigadisplay *ad = &adisplays[monid];
+	struct apmode *ap = ad->picasso_on ? &currprefs.gfx_apmode[1] : &currprefs.gfx_apmode[0];
 
 	if (hz < 0)
 		return 0;
@@ -42,17 +41,6 @@ double getvsyncrate (double hz, int *mult)
 #define RED	0
 #define GRN	1
 #define BLU	2
-
-/*
- * dither matrix
- */
-static uae_u8 dither[4][4] =
-{
-  { 0, 8, 2, 10 },
-  { 12, 4, 14, 6 },
-  { 3, 11, 1, 9 },
-  { 14 /* 15 */, 7, 13, 5 }
-};
 
 unsigned int doMask (int p, int bits, int shift)
 {
@@ -95,7 +83,7 @@ int mask_shift (unsigned long mask)
 unsigned int doMask256 (int p, int bits, int shift)
 {
 	/* p is a value from 0 to 255 (Amiga color value)
-	 * shift to align msb with mask, and apply mask */
+	* shift to align msb with mask, and apply mask */
 
 	unsigned long val = p * 0x01010101UL;
 	if (bits == 0)
@@ -144,83 +132,98 @@ static float video_gamma (float value, float gamma, float bri, float con)
 	return ret;
 }
 
-/* Update: renamed gamma to gfx_gamma, because math-finite.h
- * already defines the global value "gamma". - Sven
-*/
-static uae_u32 gfx_gamma[256 * 3];
+#if 1
+static uae_u32 gfx_gamma[256 * 3][3];
+#else
+static uae_u32 gamma[256 * 3][3];
+#endif
 static int lf, hf;
 
-static void video_calc_gammatable (void)
+static void video_calc_gammatable(int monid)
 {
-	int i;
-	float bri, con, gam, v;
-	uae_u32 vi;
+	struct amigadisplay *ad = &adisplays[monid];
+	float bri, con, gam, gams[3];
 
 	bri = ((float)(currprefs.gfx_luminance)) * (128.0f / 1000.0f);
 	con = ((float)(currprefs.gfx_contrast + 1000)) / 1000.0f;
-	gam = ((float)(1000 - currprefs.gfx_gamma)) / 1000.0f;
+	gam = ((float)(1000 - currprefs.gfx_gamma)) / 1000.0f - 1.0;
+	gams[0] = gam + ((float)(1000 - currprefs.gfx_gamma_ch[0])) / 1000.0f;
+	gams[1] = gam + ((float)(1000 - currprefs.gfx_gamma_ch[1])) / 1000.0f;
+	gams[2] = gam + ((float)(1000 - currprefs.gfx_gamma_ch[2])) / 1000.0f;
 
-	lf = 64 * currprefs.gfx_filter_blur / 1000;
+	lf = 64 * currprefs.gf[ad->picasso_on].gfx_filter_blur / 1000;
 	hf = 256 - lf * 2;
 
-	for (i = 0; i < (256 * 3); i++) {
-		v = video_gamma((float)(i - 256), gam, bri, con);
+	for (int i = 0; i < (256 * 3); i++) {
+		for (int j = 0; j < 3; j++) {
+			float val = i - 256;
+			float v;
 
-		vi = (uae_u32)v;
-		if (vi > 255)
-			vi = 255;
+			if (currprefs.gfx_threebitcolors == 2) {
+				val *= 2;
+			} else if (currprefs.gfx_threebitcolors == 3) {
+				val = (val * 252.0) / 119.0;
+			} else if (currprefs.gfx_threebitcolors == 1) {
+				val = (val * 252.0) / 238.0;
+			}
 
-		if (currprefs.gfx_luminance == 0 && currprefs.gfx_contrast == 0 && currprefs.gfx_gamma == 0)
-			vi = i & 0xff;
+			if (currprefs.gfx_luminance == 0 && currprefs.gfx_contrast == 0 && currprefs.gfx_gamma == 0 &&
+				currprefs.gfx_gamma_ch[0] == 0 && currprefs.gfx_gamma_ch[1] == 0 && currprefs.gfx_gamma_ch[2] == 0) {
+				v = val;
+			} else {
+				v = video_gamma(val, gams[j], bri, con);
+			}
 
-		gfx_gamma[i] = vi;
+			if (v < 0.0)
+				v = 0.0;
+			if (v > 255.0)
+				v = 255.0;
+
+			gfx_gamma[i][j] = (uae_u32)(v + 0.5);
+		}
 	}
 }
 
-/* UNUSED:
- * useful, but nowhere used
- */
-#if 0
-static uae_u32 limit256 (double v)
+static uae_u32 limit256(int monid, double v)
 {
-	v = v * (double)(currprefs.gfx_filter_contrast + 1000) / 1000.0 + currprefs.gfx_filter_luminance / 10.0;
+	struct amigadisplay *ad = &adisplays[monid];
+	v = v * (double)(currprefs.gf[ad->picasso_on].gfx_filter_contrast + 1000) / 1000.0 + currprefs.gf[ad->picasso_on].gfx_filter_luminance / 10.0;
 	if (v < 0)
 		v = 0;
 	if (v > 255)
 		v = 255;
 	return ((uae_u32)v) & 0xff;
 }
-static uae_u32 limit256rb (double v)
+static uae_u32 limit256rb(int monid, double v)
 {
-	v *= (double)(currprefs.gfx_filter_saturation + 1000) / 1000.0;
+	struct amigadisplay *ad = &adisplays[monid];
+	v *= (double)(currprefs.gf[ad->picasso_on].gfx_filter_saturation + 1000) / 1000.0;
 	if (v < -128)
 		v = -128;
 	if (v > 127)
 		v = 127;
 	return ((uae_u32)v) & 0xff;
 }
-
-static double get_y (int r, int g, int b)
+static double get_y(int r, int g, int b)
 {
 	return 0.2989f * r + 0.5866f * g + 0.1145f * b;
 }
-static uae_u32 get_yh (int r, int g, int b)
+static uae_u32 get_yh(int monid, int r, int g, int b)
 {
-	return limit256 (get_y (r, g, b) * hf / 256);
+	return limit256(monid, get_y (r, g, b) * hf / 256);
 }
-static uae_u32 get_yl (int r, int g, int b)
+static uae_u32 get_yl(int monid, int r, int g, int b)
 {
-	return limit256 (get_y (r, g, b) * lf / 256);
+	return limit256(monid, get_y (r, g, b) * lf / 256);
 }
-static uae_u32 get_cb (int r, int g, int b)
+static uae_u32 get_cb(int monid, int r, int g, int b)
 {
-	return limit256rb (-0.168736f * r - 0.331264f * g + 0.5f * b);
+	return limit256rb(monid, -0.168736f * r - 0.331264f * g + 0.5f * b);
 }
-static uae_u32 get_cr (int r, int g, int b)
+static uae_u32 get_cr(int monid, int r, int g, int b)
 {
-	return limit256rb (0.5f * r - 0.418688f * g - 0.081312f * b);
+	return limit256rb(monid, 0.5f * r - 0.418688f * g - 0.081312f * b);
 }
-#endif
 
 extern uae_s32 tyhrgb[65536];
 extern uae_s32 tylrgb[65536];
@@ -235,7 +238,7 @@ static uae_u32 lowbits (int v, int shift, int lsize)
 	return v;
 }
 
-void alloc_colors_picasso (int rw, int gw, int bw, int rs, int gs, int bs, int rgbfmt)
+void alloc_colors_picasso (int rw, int gw, int bw, int rs, int gs, int bs, int rgbfmt, uae_u32 *rgbx16)
 {
 #ifdef PICASSO96
 	int byte_swap = 0;
@@ -269,6 +272,8 @@ void alloc_colors_picasso (int rw, int gw, int bw, int rs, int gs, int bs, int r
 		blue_shift = 0;
 		byte_swap = 1;
 		break;
+	case RGBFB_Y4U2V2:
+	case RGBFB_Y4U1V1:
 	case RGBFB_R5G5B5:
 		red_bits = green_bits = blue_bits = 5;
 		red_shift = 10;
@@ -300,7 +305,11 @@ void alloc_colors_picasso (int rw, int gw, int bw, int rs, int gs, int bs, int r
 		break;
 	}
 
-	memset (p96_rgbx16, 0, sizeof p96_rgbx16);
+#ifdef WORDS_BIGENDIAN
+	byte_swap = !byte_swap;
+#endif
+
+	memset (rgbx16, 0, 65536 * sizeof(uae_u32));
 
 	if (red_bits) {
 		int lrbits = 8 - red_bits;
@@ -318,7 +327,7 @@ void alloc_colors_picasso (int rw, int gw, int bw, int rs, int gs, int bs, int r
 			c = doMask(r, rw, rs) | doMask(g, gw, gs) | doMask(b, bw, bs);
 			if (bpp <= 16)
 				c *= 0x00010001;
-			p96_rgbx16[i] = c;
+			rgbx16[i] = c;
 		}
 	}
 #endif
@@ -339,9 +348,9 @@ void alloc_colors_rgb (int rw, int gw, int bw, int rs, int gs, int bs, int aw, i
 		}
 		j += 256;
 
-		rc[i] = doColor (gfx_gamma[j], rw, rs) | doAlpha (alpha, aw, as);
-		gc[i] = doColor (gfx_gamma[j], gw, gs) | doAlpha (alpha, aw, as);
-		bc[i] = doColor (gfx_gamma[j], bw, bs) | doAlpha (alpha, aw, as);
+		rc[i] = doColor (gfx_gamma[j][0], rw, rs) | doAlpha (alpha, aw, as);
+		gc[i] = doColor (gfx_gamma[j][1], gw, gs) | doAlpha (alpha, aw, as);
+		bc[i] = doColor (gfx_gamma[j][2], bw, bs) | doAlpha (alpha, aw, as);
 		if (byte_swap) {
 			if (bpp <= 16) {
 				rc[i] = bswap_16 (rc[i]);
@@ -363,30 +372,38 @@ void alloc_colors_rgb (int rw, int gw, int bw, int rs, int gs, int bs, int aw, i
 	}
 }
 
-void alloc_colors64k (int rw, int gw, int bw, int rs, int gs, int bs, int aw, int as, int alpha, int byte_swap)
+void alloc_colors64k(int monid, int rw, int gw, int bw, int rs, int gs, int bs, int aw, int as, int alpha, int byte_swap, bool yuv)
 {
 	int bpp = rw + gw + bw + aw;
 	int i, j;
 
-	video_calc_gammatable();
+	video_calc_gammatable(monid);
 	j = 256;
 	for (i = 0; i < 4096; i++) {
 		int r = ((i >> 8) << 4) | (i >> 8);
 		int g = (((i >> 4) & 0xf) << 4) | ((i >> 4) & 0x0f);
 		int b = ((i & 0xf) << 4) | (i & 0x0f);
-		r = gfx_gamma[r + j];
-		g = gfx_gamma[g + j];
-		b = gfx_gamma[b + j];
-		xcolors[i] = doMask(r, rw, rs) | doMask(g, gw, gs) | doMask(b, bw, bs) | doAlpha (alpha, aw, as);
+
+		if (currprefs.gfx_blackerthanblack) {
+			r = (r * (255 - 8) / 255) + 8;
+			g = (g * (255 - 8) / 255) + 8;
+			b = (b * (255 - 8) / 255) + 8;
+		}
+
+		r = gfx_gamma[r + j][0];
+		g = gfx_gamma[g + j][1];
+		b = gfx_gamma[b + j][2];
+		xcolors[i] = doMask(r, rw, rs) | doMask(g, gw, gs) | doMask(b, bw, bs) | doAlpha(alpha, aw, as);
 		if (byte_swap) {
-			if (bpp <= 16)
-				xcolors[i] = bswap_16 (xcolors[i]);
-			else
-				xcolors[i] = bswap_32 (xcolors[i]);
+			if (bpp <= 16) {
+				xcolors[i] = bswap_16(xcolors[i]);
+			} else {
+				xcolors[i] = bswap_32(xcolors[i]);
+			}
 		}
 		if (bpp <= 16) {
 			/* Fill upper 16 bits of each colour value
-			 * with a copy of the colour. */
+			* with a copy of the colour. */
 			xcolors[i] |= xcolors[i] * 0x00010001;
 		}
 	}
@@ -405,13 +422,13 @@ void alloc_colors64k (int rw, int gw, int bw, int rs, int gs, int bs, int aw, in
 		bluc[2 * 256 + i] = xbluecolors[255];
 	}
 #ifdef GFXFILTER
-	if (usedfilter && usedfilter->yuv) {
+	if (yuv) {
 		/* create internal 5:6:5 color tables */
 		for (i = 0; i < 256; i++) {
 			j = i + 256;
-			xredcolors[i] = doColor (gfx_gamma[j], 5, 11);
-			xgreencolors[i] = doColor (gfx_gamma[j], 6, 5);
-			xbluecolors[i] = doColor (gfx_gamma[j], 5, 0);
+			xredcolors[i] = doColor (gfx_gamma[j][0], 5, 11);
+			xgreencolors[i] = doColor (gfx_gamma[j][1], 6, 5);
+			xbluecolors[i] = doColor (gfx_gamma[j][2], 5, 0);
 			if (bpp <= 16) {
 				/* Fill upper 16 bits of each colour value with
 				* a copy of the colour. */
@@ -424,9 +441,16 @@ void alloc_colors64k (int rw, int gw, int bw, int rs, int gs, int bs, int aw, in
 			int r = ((i >> 8) << 4) | (i >> 8);
 			int g = (((i >> 4) & 0xf) << 4) | ((i >> 4) & 0x0f);
 			int b = ((i & 0xf) << 4) | (i & 0x0f);
-			r = gfx_gamma[r + 256];
-			g = gfx_gamma[g + 256];
-			b = gfx_gamma[b + 256];
+			r = gfx_gamma[r + 256][0];
+			g = gfx_gamma[g + 256][1];
+			b = gfx_gamma[b + 256][2];
+
+			if (currprefs.gfx_blackerthanblack) {
+				r = (r * (255 - 8) / 255) + 8;
+				g = (g * (255 - 8) / 255) + 8;
+				b = (b * (255 - 8) / 255) + 8;
+			}
+
 			xcolors[i] = doMask(r, 5, 11) | doMask(g, 6, 5) | doMask(b, 5, 0);
 			if (byte_swap) {
 				if (bpp <= 16)
@@ -445,15 +469,15 @@ void alloc_colors64k (int rw, int gw, int bw, int rs, int gs, int bs, int aw, in
 		for (i = 0; i < 65536; i++) {
 			uae_u32 r, g, b;
 			r = (((i >> 11) & 31) << 3) | lowbits (i, 11, 3);
-			r = gfx_gamma[r + 256];
+			r = gfx_gamma[r + 256][0];
 			g = (((i >>  5) & 63) << 2) | lowbits (i,  5, 2);
-			g = gfx_gamma[g + 256];
+			g = gfx_gamma[g + 256][1];
 			b = (((i >>  0) & 31) << 3) | lowbits (i,  0, 3);
-			b = gfx_gamma[b + 256];
-			tyhrgb[i] = get_yh (r, g, b) * 256 * 256;
-			tylrgb[i] = get_yl (r, g, b) * 256 * 256;
-			tcbrgb[i] = ((uae_s8)get_cb (r, g, b)) * 256;
-			tcrrgb[i] = ((uae_s8)get_cr (r, g, b)) * 256;
+			b = gfx_gamma[b + 256][2];
+			tyhrgb[i] = get_yh(monid, r, g, b) * 256 * 256;
+			tylrgb[i] = get_yl(monid, r, g, b) * 256 * 256;
+			tcbrgb[i] = ((uae_s8)get_cb(monid, r, g, b)) * 256;
+			tcrrgb[i] = ((uae_s8)get_cr(monid, r, g, b)) * 256;
 		}
 	}
 #endif
@@ -469,413 +493,3 @@ void alloc_colors64k (int rw, int gw, int bw, int rs, int gs, int bs, int aw, in
 	xgreencolor_m = ((1 << gw) - 1) << xgreencolor_s;
 	xbluecolor_m = ((1 << bw) - 1) << xbluecolor_s;
 }
-
-static int color_diff[4096];
-static int newmaxcol = 0;
-
-void setup_maxcol (int max)
-{
-    newmaxcol = max;
-}
-
-void alloc_colors256 (allocfunc_type allocfunc)
-{
-    int nb_cols[3]; /* r,g,b */
-    int maxcol = newmaxcol == 0 ? 256 : newmaxcol;
-    int i,j,k,l;
-
-    xcolnr *map;
-
-    map = (xcolnr *)malloc (sizeof(xcolnr) * maxcol);
-    if (!map) {
-	write_log ("Not enough mem for colormap!\n");
-	abort ();
-    }
-
-    /*
-     * compute #cols per components
-     */
-    for (i = 1; i*i*i <= maxcol; ++i)
-	;
-    --i;
-
-    nb_cols[RED] = i;
-    nb_cols[GRN] = i;
-    nb_cols[BLU] = i;
-
-    /*
-     * set the colormap
-     */
-    l = 0;
-    for (i = 0; i < nb_cols[RED]; ++i) {
-	int r = (i * 15) / (nb_cols[RED] - 1);
-	for (j = 0; j < nb_cols[GRN]; ++j) {
-	    int g = (j * 15) / (nb_cols[GRN] - 1);
-	    for (k = 0; k < nb_cols[BLU]; ++k) {
-		int b = (k * 15) / (nb_cols[BLU] - 1);
-/* REMOVEME:
- * nowhere used
- */
-#if 0
-		int result;
-		result = allocfunc (r, g, b, map + l);
-#else
-		allocfunc (r, g, b, map + l);
-#endif
-		l++;
-	    }
-	}
-    }
-/*    printf("%d color(s) lost\n",maxcol - l);*/
-
-    /*
-     * for each component compute the mapping
-     */
-    {
-	int diffr, diffg, diffb, maxdiff = 0, won = 0, lost;
-	int r, d = 8;
-	for (r = 0; r < 16; ++r) {
-	    int cr, g, q;
-
-	    k = nb_cols[RED]-1;
-	    cr = (r * k) / 15;
-	    q = (r * k) % 15;
-	    if (q > d && cr < k) ++cr;
-	    diffr = abs (cr*k - r);
-	    for (g = 0; g < 16; ++g) {
-		int cg, b;
-
-		k = nb_cols[GRN]-1;
-		cg = (g * k) / 15;
-		q  = (g * k) % 15;
-		if (q > d && cg < k) ++cg;
-		diffg = abs (cg*k - g);
-		for (b = 0; b < 16; ++b) {
-		    int cb, rgb = (r << 8) | (g << 4) | b;
-
-		    k = nb_cols[BLU]-1;
-		    cb = (b * k) / 15;
-		    q = (b * k) % 15;
-		    if (q > d && cb < k) ++cb;
-		    diffb = abs (cb*k - b);
-		    xcolors[rgb] = map[(cr * nb_cols[GRN] + cg) * nb_cols[BLU] + cb];
-		    color_diff[rgb] = diffr + diffg + diffb;
-		    if (color_diff[rgb] > maxdiff)
-			maxdiff = color_diff[rgb];
-		}
-	    }
-	}
-	while (maxdiff > 0 && l < maxcol) {
-	    int newmaxdiff = 0;
-	    lost = 0; won++;
-	    for (r = 15; r >= 0; r--) {
-		int g;
-
-		for (g = 15; g >= 0; g--) {
-		    int b;
-
-		    for (b = 15; b >= 0; b--) {
-			int rgb = (r << 8) | (g << 4) | b;
-
-			if (color_diff[rgb] == maxdiff) {
-/* REMOVEME:
- * nowhere used
- */
-#if 0
-			    int result;
-#endif
-			    if (l >= maxcol)
-				lost++;
-			    else {
-/* REMOVEME:
- * nowhere used
- */
-#if 0
-				result = allocfunc (r, g, b, xcolors + rgb);
-#else
-				allocfunc (r, g, b, xcolors + rgb);
-#endif
-				l++;
-			    }
-			    color_diff[rgb] = 0;
-			} else if (color_diff[rgb] > newmaxdiff)
-				newmaxdiff = color_diff[rgb];
-
-		    }
-		}
-	    }
-	    maxdiff = newmaxdiff;
-	}
-/*	printf("%d color(s) lost, %d stages won\n",lost, won);*/
-    }
-    xfree (map);
-
-    for (i = 0; i < 4096; i++)
-		xcolors[i] = xcolors[i] * 0x01010101;
-}
-
-/*
- * This dithering process works by letting UAE run internaly in 12bit
- * mode and doing the dithering on the fly when rendering to the display.
- * The dithering algorithm is quite fast but uses lot of memory (4*8*2^12 =
- * 128Kb). I don't think that is a trouble right now, but when UAE will
- * emulate AGA and work internaly in 24bit mode, that dithering algorithm
- * will need 4*8*2^24 = 512Mb. Obviously that fast algorithm will not be
- * tractable. However, we could then use an other algorithm, slower, but
- * far more reasonable (I am thinking about the one that is used in DJPEG).
- */
-
-uae_u8 cidx[4][8*4096]; /* fast, but memory hungry =:-( */
-
-/*
- * Compute dithering structures
- */
-void setup_greydither_maxcol (int maxcol, allocfunc_type allocfunc)
-{
-    int i,j,k;
-    xcolnr *map;
-
-    for (i = 0; i < 4096; i++)
-		xcolors[i] = i << 16 | i;
-
-    map = (xcolnr *)malloc (sizeof(xcolnr) * maxcol);
-    if (!map) {
-		write_log ("Not enough mem for colormap!\n");
-		abort();
-    }
-
-    /*
-     * set the colormap
-     */
-    for (i = 0; i < maxcol; ++i) {
-		int c;
-/* REMOVEME:
- * nowhere used
- */
-#if 0
-		int result;
-#endif
-		c = (15 * i + (maxcol-1)/2) / (maxcol - 1);
-/* REMOVEME:
- * nowhere used
- */
-#if 0
-		result = allocfunc(c, c, c, map + i);
-#else
-		allocfunc(c, c, c, map + i);
-#endif
-		/* @@@ check for errors */
-    }
-
-    /*
-     * for each componant compute the mapping
-     */
-    for (i = 0; i < 4; ++i) {
-	for (j = 0; j < 4; ++j) {
-	    int r, d = dither[i][j]*17;
-	    for (r = 0; r<16; ++r) {
-		int g;
-		for (g = 0; g < 16; ++g) {
-	    int  b;
-	    for (b = 0; b < 16; ++b) {
-			int rgb = (r << 8) | (g << 4) | b;
-			int c,p,q;
-	
-			c = (77 * r + 151 * g + 28 * b) / 15; /* c in 0..256 */
-	
-			k = maxcol-1;
-			p = (c * k) / 256;
-			q = (c * k) % 256;
-			if (q /*/ k*/> d /*/ k*/ && p < k) ++p;
-/* sam:                      ^^^^^^^ */
-/*  It seems that produces better output */
-				cidx[i][rgb + (j+4)*4096] = cidx[i][rgb + j*4096] = (uae_u8)map[p];
-	    }
-		}
-	    }
-	}
-    }
-    xfree (map);
-}
-
-void setup_greydither (int bits, allocfunc_type allocfunc)
-{
-    setup_greydither_maxcol(1 << bits, allocfunc);
-}
-
-void setup_dither (int bits, allocfunc_type allocfunc)
-{
-    int nb_cols[3]; /* r,g,b */
-    int maxcol = 1 << bits;
-    int i,j,k,l;
-
-    xcolnr *map;
-    int *redvals, *grnvals, *bluvals;
-
-    map = (xcolnr *)malloc (sizeof(xcolnr) * maxcol);
-    if (!map) {
-		write_log ("Not enough mem for colormap!\n");
-		abort();
-    }
-
-    for (i = 0; i < 4096; i++)
-		xcolors[i] = i << 16 | i;
-
-    /*
-     * compute #cols per components
-     */
-    for (i = 1; i*i*i <= maxcol; ++i)
-	;
-    --i;
-
-    nb_cols[RED] = i;
-    nb_cols[GRN] = i;
-    nb_cols[BLU] = i;
-
-    if (nb_cols[RED]*(++i)*nb_cols[BLU] <= maxcol) {
-		nb_cols[GRN] = i;
-		if ((i)*nb_cols[GRN]*nb_cols[BLU] <= maxcol)
-		    nb_cols[RED] = i;
-	    }
-
-    redvals = (int *)malloc (sizeof(int) * maxcol);
-    grnvals = redvals + nb_cols[RED];
-    bluvals = grnvals + nb_cols[GRN];
-    /*
-     * set the colormap
-     */
-    l = 0;
-    for (i = 0; i < nb_cols[RED]; ++i) {
-	int r = (i * 15) / (nb_cols[RED] - 1);
-	redvals[i] = r;
-	for (j = 0; j < nb_cols[GRN]; ++j) {
-	    int g = (j * 15) / (nb_cols[GRN] - 1);
-	    grnvals[j] = g;
-	    for (k = 0; k < nb_cols[BLU]; ++k) {
-		int b = (k * 15) / (nb_cols[BLU] - 1);
-/* REMOVEME:
- * nowhere used
- */
-#if 0
-		int result;
-#endif
-		bluvals[k] = b;
-/* REMOVEME:
- * nowhere used
- */
-#if 0
-		result = allocfunc(r, g, b, map + l);
-#else
-		allocfunc(r, g, b, map + l);
-#endif
-		l++;
-	    }
-	}
-    }
-/*    write_log ("%d color(s) lost\n",maxcol - l);*/
-
-    /*
-     * for each component compute the mapping
-     */
-    {
-	int r;
-	for (r = 0; r < 16; ++r) {
-	    int g;
-	    for (g = 0; g < 16; ++g) {
-		int b;
-		for (b = 0; b < 16; ++b) {
-		    int rgb = (r << 8) | (g << 4) | b;
-
-		    for (i = 0; i < 4; ++i) for (j = 0; j < 4; ++j) {
-			int d = dither[i][j];
-			int cr, cg, cb, k, q;
-
-			k  = nb_cols[RED]-1;
-			cr = r * k / 15;
-			q  = r * k - 15*cr;
-			if (cr < 0)
-			    cr = 0;
-			else if (q /*/ k*/ > d /*/ k*/)
-			    ++cr;
-			if (cr > k) cr = k;
-
-			k  = nb_cols[GRN]-1;
-			cg = g * k / 15;
-			q  = g * k - 15*cg;
-			if (cg < 0)
-			    cg = 0;
-			else if (q /*/ k*/ > d /*/ k*/)
-			    ++cg;
-			if (cg > k) cg = k;
-
-			k  = nb_cols[BLU]-1;
-			cb = b * k / 15;
-			q  = b * k - 15*cb;
-			if (cb < 0)
-			    cb = 0;
-			else if (q /*/ k*/ > d /*/ k*/)
-			    ++cb;
-			if (cb > k) cb = k;
-
-			cidx[i][rgb + (j+4)*4096] = cidx[i][rgb + j*4096] = (uae_u8)map[(cr*nb_cols[GRN]+cg)*nb_cols[BLU]+cb];
-		    }
-		}
-	    }
-	}
-    }
-    xfree (redvals);
-    xfree (map);
-}
-
-#if !defined X86_ASSEMBLY
-/*
- * Dither the line.
- * Make sure you call this only with (len & 3) == 0, or you'll just make
- * yourself unhappy.
- */
-void DitherLine (uae_u8 *l, uae_u16 *r4g4b4, int x, int y, uae_s16 len, int bits)
-{
-    uae_u8 *dith = cidx[y&3]+(x&3)*4096;
-    uae_u8 d = 0;
-    int bitsleft = 8;
-
-    if (bits == 8) {
-	while (len > 0) {
-	    *l++ = dith[0*4096 + *r4g4b4++];
-	    *l++ = dith[1*4096 + *r4g4b4++];
-	    *l++ = dith[2*4096 + *r4g4b4++];
-	    *l++ = dith[3*4096 + *r4g4b4++];
-	    len -= 4;
-	}
-	return;
-    }
-
-    while (len) {
-	int v;
-	v = dith[0*4096 + *r4g4b4++];
-	bitsleft -= bits;
-	d |= (v << bitsleft);
-	if (!bitsleft)
-	    *l++ = d, bitsleft = 8, d = 0;
-
-	v = dith[1*4096 + *r4g4b4++];
-	bitsleft -= bits;
-	d |= (v << bitsleft);
-	if (!bitsleft)
-	    *l++ = d, bitsleft = 8, d = 0;
-
-	v = dith[2*4096 + *r4g4b4++];
-	bitsleft -= bits;
-	d |= (v << bitsleft);
-	if (!bitsleft)
-	    *l++ = d, bitsleft = 8, d = 0;
-
-	v = dith[3*4096 + *r4g4b4++];
-	bitsleft -= bits;
-	d |= (v << bitsleft);
-	if (!bitsleft)
-	    *l++ = d, bitsleft = 8, d = 0;
-	len -= 4;
-    }
-}
-#endif

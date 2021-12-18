@@ -1,6 +1,8 @@
 #ifndef CDA_PLAY_H
 #define CDA_PLAY_H
 
+#define CDDA_BUFFERS 14
+
 extern volatile bool cd_audio_mode_changed;
 
 #ifdef __cplusplus

@@ -1,18 +1,19 @@
 /*
- * UAE - The Un*x Amiga Emulator
- *
- * Library of functions to make emulated filesystem as independent as
- * possible of the host filesystem's capabilities.
- *
- * Copyright 1999 Bernd Schmidt
- */
+* UAE - The Un*x Amiga Emulator
+*
+* Library of functions to make emulated filesystem as independent as
+* possible of the host filesystem's capabilities.
+*
+* Copyright 1999 Bernd Schmidt
+*/
 
 #include "sysconfig.h"
 #include "sysdeps.h"
 
 #include "options.h"
 #include "uae.h"
-#include "memory_uae.h"
+#include "traps.h"
+#include "memory.h"
 #include "custom.h"
 #include "newcpu.h"
 #include "filesys.h"
@@ -20,17 +21,19 @@
 #include "fsusage.h"
 #include "scsidev.h"
 #include "fsdb.h"
-#include "misc.h"
+#include "uae/io.h"
 
+#ifdef __LIBRETRO__
 #include "fsdb_host.c"
+#endif
 
 /* The on-disk format is as follows:
- * Offset 0, 1 byte, valid
- * Offset 1, 4 bytes, mode
- * Offset 5, 257 bytes, aname
- * Offset 263, 257 bytes, nname
- * Offset 519, 81 bytes, comment
- */
+* Offset 0, 1 byte, valid
+* Offset 1, 4 bytes, mode
+* Offset 5, 257 bytes, aname
+* Offset 263, 257 bytes, nname
+* Offset 519, 81 bytes, comment
+*/
 
 #define TRACING_ENABLED 0
 #if TRACING_ENABLED
@@ -47,11 +50,12 @@ TCHAR *nname_begin (TCHAR *nname)
 	return nname;
 }
 
+/*#ifndef _WIN32*/
 /* Find the name REL in directory DIRNAME.  If we find a file that
- * has exactly the same name, return REL.  If we find a file that
- * has the same name when compared case-insensitively, return a
- * malloced string that contains the name we found.  If no file
- * exists that compares equal to REL, return 0.  */
+* has exactly the same name, return REL.  If we find a file that
+* has the same name when compared case-insensitively, return a
+* malloced string that contains the name we found.  If no file
+* exists that compares equal to REL, return 0.  */
 TCHAR *fsdb_search_dir (const TCHAR *dirname, TCHAR *rel)
 {
 	TCHAR *p = 0;
@@ -59,7 +63,7 @@ TCHAR *fsdb_search_dir (const TCHAR *dirname, TCHAR *rel)
 	struct my_opendir_s *dir;
 	TCHAR fn[MAX_DPATH];
 
-	dir = my_opendir (dirname, 0);
+	dir = my_opendir (dirname);
 	/* This really shouldn't happen...  */
 	if (! dir)
 		return 0;
@@ -73,6 +77,7 @@ TCHAR *fsdb_search_dir (const TCHAR *dirname, TCHAR *rel)
 	my_closedir (dir);
 	return p;
 }
+/*#endif*/
 
 static FILE *get_fsdb (a_inode *dir, const TCHAR *mode)
 {
@@ -82,7 +87,7 @@ static FILE *get_fsdb (a_inode *dir, const TCHAR *mode)
 	if (!dir->nname)
 		return NULL;
 	n = build_nname (dir->nname, FSDB_FILE);
-	f = _tfopen (n, mode);
+	f = uae_tfopen (n, mode);
 	xfree (n);
 	return f;
 }
@@ -128,7 +133,7 @@ void fsdb_clean_dir (a_inode *dir)
 	if (!dir->nname)
 		return;
 	n = build_nname (dir->nname, FSDB_FILE);
-	f = _tfopen (n, _T("r+b"));
+	f = uae_tfopen (n, _T("r+b"));
 	if (f == 0) {
 		xfree (n);
 		return;
@@ -142,11 +147,7 @@ void fsdb_clean_dir (a_inode *dir)
 			continue;
 		if (pos1 != pos2) {
 			fseek (f, pos1, SEEK_SET);
-			size_t isWritten = fwrite (buf, 1, sizeof buf, f);
-			if (isWritten < sizeof(buf))
-				write_log("%s:%d [%s] - Failed to write %l bytes (%l/%d)",
-							 __FILE__, __LINE__, __FUNCTION__,
-							sizeof(buf) - isWritten, isWritten, sizeof(buf));
+			fwrite (buf, 1, sizeof buf, f);
 			fseek (f, pos2 + sizeof buf, SEEK_SET);
 		}
 		pos1 += sizeof buf;
@@ -183,7 +184,6 @@ static a_inode *aino_from_buf (a_inode *base, uae_u8 *buf, long off)
 	return aino;
 }
 
-a_inode *custom_fsdb_lookup_aino_aname(a_inode *base, const TCHAR *aname);
 a_inode *fsdb_lookup_aino_aname (a_inode *base, const TCHAR *aname)
 {
 	FILE *f;
@@ -209,10 +209,9 @@ a_inode *fsdb_lookup_aino_aname (a_inode *base, const TCHAR *aname)
 		xfree (s);
 	}
 	fclose (f);
-    return 0;
+	return 0;
 }
 
-a_inode *custom_fsdb_lookup_aino_nname(a_inode *base, const TCHAR *nname);
 a_inode *fsdb_lookup_aino_nname (a_inode *base, const TCHAR *nname)
 {
 	FILE *f;
@@ -225,23 +224,22 @@ a_inode *fsdb_lookup_aino_nname (a_inode *base, const TCHAR *nname)
 		return 0;
 	}
 	s = ua (nname);
-    for (;;) {
+	for (;;) {
 		uae_u8 buf[1 + 4 + 257 + 257 + 81];
 		if (fread (buf, 1, sizeof buf, f) < sizeof buf)
-		    break;
+			break;
 		if (buf[0] != 0 && strcmp ((char*)buf + 5 + 257, s) == 0) {
-		    long pos = ftell (f) - sizeof buf;
-		    fclose (f);
+			long pos = ftell (f) - sizeof buf;
+			fclose (f);
 			xfree (s);
-		    return aino_from_buf (base, buf, pos);
+			return aino_from_buf (base, buf, pos);
 		}
-    }
+	}
 	xfree (s);
-    fclose (f);
+	fclose (f);
 	return 0;
 }
 
-int custom_fsdb_used_as_nname(a_inode *base, const TCHAR *nname);
 int fsdb_used_as_nname (a_inode *base, const TCHAR *nname)
 {
 	FILE *f;
@@ -298,11 +296,7 @@ static void write_aino (FILE *f, a_inode *aino)
 	ua_copy ((char*)buf + 5 + 2 * 257, 80, aino->comment ? aino->comment : _T(""));
 	buf[5 + 2 * 257 + 80] = '\0';
 	aino->db_offset = ftell (f);
-	size_t isWritten = fwrite (buf, 1, sizeof buf, f);
-	if (isWritten < sizeof(buf))
-		write_log("%s:%d [%s] - Failed to write %l bytes (%l/%d)",
-							 __FILE__, __LINE__, __FUNCTION__,
-					sizeof(buf) - isWritten, isWritten, sizeof(buf));
+	fwrite (buf, 1, sizeof buf, f);
 	aino->has_dbentry = aino->needs_dbentry;
 	TRACE ((_T("%d '%s' '%s' written\n"), aino->db_offset, aino->aname, aino->nname));
 }
@@ -320,7 +314,7 @@ void fsdb_dir_writeback (a_inode *dir)
 
 	TRACE ((_T("fsdb writeback %s\n"), dir->aname));
 	/* First pass: clear dirty bits where unnecessary, and see if any work
-	 * needs to be done.  */
+	* needs to be done.  */
 	for (aino = dir->child; aino; aino = aino->sibling) {
 		/*
 		int old_needs_dbentry = aino->needs_dbentry || aino->has_dbentry;
@@ -372,11 +366,7 @@ void fsdb_dir_writeback (a_inode *dir)
 	tmpbuf = 0;
 	if (size > 0) {
 		tmpbuf = (uae_u8*)malloc (size);
-		size_t isRead = fread (tmpbuf, 1, size, f);
-		if (isRead < (size_t)size)
-			write_log("%s:%d [%s] - Failed to read %l bytes (%l/%d)",
-						__FILE__, __LINE__, __FUNCTION__,
-						(size_t)size - isRead, isRead, size);
+		fread (tmpbuf, 1, size, f);
 	}
 	TRACE ((_T("**** updating '%s' %d\n"), dir->aname, size));
 
@@ -408,4 +398,3 @@ void fsdb_dir_writeback (a_inode *dir)
 	fclose (f);
 	xfree (tmpbuf);
 }
-

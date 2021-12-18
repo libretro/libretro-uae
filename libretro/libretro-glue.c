@@ -1,25 +1,39 @@
+#include "libretro-core.h"
+#include "libretro-glue.h"
+#include "libretro-graph.h"
+#include "libretro-mapper.h"
+#include "encodings/utf.h"
+#include "streams/file_stream.h"
+
 #include "sysconfig.h"
 #include "sysdeps.h"
 
 #include "options.h"
 #include "uae.h"
-#include "memory_uae.h"
+#include "memory.h"
 #include "xwin.h"
 #include "custom.h"
 #include "drawing.h"
 #include "hotkeys.h"
-#include "hrtimer.h"
-
+#include "disk.h"
 #include "inputdevice.h"
-void inputdevice_release_all_keys(void);
 extern int mouse_port[NORMAL_JPORTS];
 
-#include "libretro-glue.h"
-#include "libretro-graph.h"
-#include "libretro-core.h"
-#include "libretro-mapper.h"
-#include "encodings/utf.h"
-#include "streams/file_stream.h"
+int log_scsi;
+int log_net;
+int tablet_log;
+int uaelib_debug;
+bool beamracer_debug;
+float vsync_vblank, vsync_hblank;
+int busywait;
+int vsync_activeheight, vsync_totalheight;
+int max_uae_width = EMULATOR_MAX_WIDTH;
+int max_uae_height = EMULATOR_MAX_HEIGHT;
+int pause_emulation;
+addrbank *gfxmem_banks[MAX_RTG_BOARDS];
+struct AmigaMonitor AMonitors[MAX_AMIGAMONITORS];
+static int display_change_requested;
+struct vidbuf_description *gfxvidinfo = &adisplays[0].gfxvidinfo;
 
 extern unsigned int retro_devices[RETRO_DEVICES];
 bool inputdevice_finalized = false;
@@ -32,12 +46,12 @@ unsigned short int* pixbuf = NULL;
 extern unsigned short int retro_bmp[RETRO_BMP_SIZE];
 extern char retro_temp_directory[RETRO_PATH_MAX];
 
-int prefs_changed = 0;
-
 int retro_thisframe_first_drawn_line;
 int retro_thisframe_last_drawn_line;
 int retro_min_diwstart;
 int retro_max_diwstop;
+extern int min_diwstart;
+extern int max_diwstop;
 
 extern int opt_statusbar;
 extern int opt_statusbar_position;
@@ -309,7 +323,7 @@ void print_statusbar(void)
       TEXT_Y = BOX_PADDING;
    /* Bottom */
    else
-      TEXT_Y = gfxvidinfo.outheight - opt_statusbar_position - BOX_HEIGHT + BOX_PADDING;
+      TEXT_Y = gfxvidinfo->drawbuffer.outheight - opt_statusbar_position - BOX_HEIGHT + BOX_PADDING;
    BOX_Y = TEXT_Y - BOX_PADDING;
 
    /* Statusbar size */
@@ -334,9 +348,9 @@ void print_statusbar(void)
    unsigned char MODEL[10] = {0};
    unsigned char MEMORY[5] = {0};
    float mem_size = 0;
-   mem_size  = (float)(currprefs.chipmem_size / 0x80000) / 2;
-   mem_size += (float)(currprefs.bogomem_size / 0x40000) / 4;
-   mem_size += (float)(currprefs.fastmem_size / 0x100000);
+   mem_size  = (float)(currprefs.chipmem.size / 0x80000) / 2;
+   mem_size += (float)(currprefs.bogomem.size / 0x40000) / 4;
+   mem_size += (float)(currprefs.fastmem[0].size / 0x100000);
    if (TEXT_X_MEMORY > 0)
       snprintf(MEMORY, sizeof(MEMORY), (mem_size < 1) ? "%0.1fM" : "%2.0fM", mem_size);
    switch (currprefs.cs_compatible)
@@ -538,11 +552,6 @@ void print_statusbar(void)
 
 
 
-int gui_init (void)
-{
-   return 0;
-}
-
 /*
  * Handle target-specific cfgfile options
  */
@@ -557,6 +566,24 @@ int target_parse_option (struct uae_prefs *p, const char *option, const char *va
 
 void target_default_options (struct uae_prefs *p, int type)
 {
+   p->start_gui = false;
+   p->use_serial = 1;
+   p->sound_auto = 0;
+   p->sound_cdaudio = true;
+   p->leds_on_screen = 1;
+   p->bogomem.size = 0x00000000;
+   p->floppy_auto_ext2 = 2;
+   p->nr_floppies = 1;
+   p->floppyslots[1].dfxtype = DRV_NONE;
+
+   p->jports[0].id = JSEM_MICE;
+   p->jports[1].id = JSEM_JOYS;
+}
+
+void target_fixup_options (struct uae_prefs *p)
+{
+   p->gfx_iscanlines = 1;
+   p->gfx_pscanlines = 2;
 }
 
 /* --- mouse input --- */
@@ -621,8 +648,14 @@ void retro_key_up(int key)
 }
 
 
-/* retro */
-void retro_flush_screen (struct vidbuf_description *gfxinfo, int ystart, int yend)
+
+/* Graphics */
+int lockscr(struct vidbuffer *vb, bool fullupdate, bool first)
+{
+   return 1;
+}
+
+void unlockscr(struct vidbuffer *vb, int y_start, int y_end)
 {
    /* These values must be cached here, since the
     * source variables will be reset before the frame
@@ -636,36 +669,10 @@ void retro_flush_screen (struct vidbuf_description *gfxinfo, int ystart, int yen
    libretro_frame_end = 1;
 }
 
-void retro_flush_block (struct vidbuf_description *gfxinfo, int ystart, int yend)
-{
-}
-
-void retro_flush_line (struct vidbuf_description *gfxinfo, int y)
-{
-}
-
-void retro_flush_clear_screen(struct vidbuf_description *gfxinfo)
-{
-}
-
-int retro_lockscr(struct vidbuf_description *gfxinfo)
-{
-   return 1;
-}
-
-void retro_unlockscr(struct vidbuf_description *gfxinfo)
-{
-}
-
-
-
-int graphics_init(void)
+int graphics_init(bool mousecapture)
 {
    if (pixbuf != NULL)
       return 1;
-
-   currprefs.gfx_size_win.width = defaultw;
-   currprefs.gfx_size_win.height = defaulth;
 
    pixbuf = (unsigned short int*) &retro_bmp[0];
    if (pixbuf == NULL)
@@ -674,30 +681,32 @@ int graphics_init(void)
       return -1;
    }
 
-   gfxvidinfo.width_allocated = currprefs.gfx_size_win.width;
-   gfxvidinfo.height_allocated = currprefs.gfx_size_win.height;
-   gfxvidinfo.maxblocklines = 1000;
-   gfxvidinfo.pixbytes = pix_bytes;
-   gfxvidinfo.rowbytes = gfxvidinfo.width_allocated * gfxvidinfo.pixbytes;
-   gfxvidinfo.bufmem = (unsigned char*)pixbuf;
-   gfxvidinfo.emergmem = 0;
-   gfxvidinfo.linemem = 0;
+   gfxvidinfo->drawbuffer.width_allocated    = defaultw;
+   gfxvidinfo->drawbuffer.height_allocated   = defaulth;
+   gfxvidinfo->drawbuffer.pixbytes           = pix_bytes;
+   gfxvidinfo->drawbuffer.rowbytes           = gfxvidinfo->drawbuffer.width_allocated * gfxvidinfo->drawbuffer.pixbytes;
+   gfxvidinfo->drawbuffer.bufmem             = (unsigned char*)pixbuf;
+   gfxvidinfo->drawbuffer.linemem            = 0;
+   gfxvidinfo->drawbuffer.emergmem           = 0;
 
-   gfxvidinfo.lockscr = retro_lockscr;
-   gfxvidinfo.unlockscr = retro_unlockscr;
-   gfxvidinfo.flush_block = retro_flush_block;
-   gfxvidinfo.flush_clear_screen = retro_flush_clear_screen;
-   gfxvidinfo.flush_screen = retro_flush_screen;
-   gfxvidinfo.flush_line = retro_flush_line;
-
-   prefs_changed = 1;
-   inputdevice_release_all_keys();
 #if 0
    reset_hotkeys();
 #endif
    reset_drawing();
    graphics_setup();
+
+#if 0
+   printf("%s: %dx%dx%d bufmem_alloc=%d\n", __func__,
+         gfxvidinfo->drawbuffer.width_allocated,
+         gfxvidinfo->drawbuffer.height_allocated,
+         gfxvidinfo->drawbuffer.pixbytes,
+         gfxvidinfo->drawbuffer.bufmem_allocated);
+#endif
    return 1;
+}
+
+void graphics_reset(bool forced)
+{
 }
 
 int is_fullscreen (void)
@@ -710,23 +719,14 @@ int is_vsync (void)
    return 0;
 }
 
-int mousehack_allowed (void)
-{
-   return 0;
-}
-
-int debuggable (void)
-{
-   return 0;
-}
 
 int graphics_setup(void)
 {
-   /* Rw,Gw,Bw, Rs,Gs,Bs, Aw,As,Avalue, swap */
+   /* monid, Rw,Gw,Bw, Rs,Gs,Bs, Aw,As,Alpha, swap, yuv */
    if (pix_bytes == 2)
-      alloc_colors64k (5, 6, 5, 11, 5, 0, 0, 0, 0, 0);
+      alloc_colors64k (0, 5, 6, 5, 11, 5, 0, 0, 0, 0, 0, false);
    else
-      alloc_colors64k (8, 8, 8, 16, 8, 0, 0, 0, 0, 0);
+      alloc_colors64k (0, 8, 8, 8, 16, 8, 0, 0, 0, 0, 0, false);
 
    return 1;
 }
@@ -752,28 +752,37 @@ void gfx_default_options(struct uae_prefs *p)
 {
 }
 
-void screenshot (int type, int f)
+int mousehack_allowed (void)
+{
+   return 0;
+}
+
+int debuggable (void)
+{
+   return 0;
+}
+
+void screenshot (int monid, int type, int f)
 {
 }
 
-void toggle_fullscreen(int mode)
+void toggle_fullscreen(int monid, int mode)
 {
 }
 
 int check_prefs_changed_gfx (void)
 {
-   if (prefs_changed)
-      prefs_changed = 0;
-   else
+   if (!config_changed && !display_change_requested)
       return 0;
 
-   changed_prefs.gfx_size_win.width    = defaultw;
-   changed_prefs.gfx_size_win.height   = defaulth;
+   changed_prefs.gfx_monitor[0].gfx_size_win.width    = defaultw;
+   changed_prefs.gfx_monitor[0].gfx_size_win.height   = defaulth;
 
-   if (currprefs.gfx_size_win.width   != changed_prefs.gfx_size_win.width)
-       currprefs.gfx_size_win.width    = changed_prefs.gfx_size_win.width;
-   if (currprefs.gfx_size_win.height  != changed_prefs.gfx_size_win.height)
-       currprefs.gfx_size_win.height   = changed_prefs.gfx_size_win.height;
+   if (currprefs.gfx_monitor[0].gfx_size_win.width   != changed_prefs.gfx_monitor[0].gfx_size_win.width)
+       currprefs.gfx_monitor[0].gfx_size_win.width    = changed_prefs.gfx_monitor[0].gfx_size_win.width;
+   if (currprefs.gfx_monitor[0].gfx_size_win.height  != changed_prefs.gfx_monitor[0].gfx_size_win.height)
+       currprefs.gfx_monitor[0].gfx_size_win.height   = changed_prefs.gfx_monitor[0].gfx_size_win.height;
+
    if (currprefs.gfx_resolution       != changed_prefs.gfx_resolution)
        currprefs.gfx_resolution        = changed_prefs.gfx_resolution;
    if (currprefs.gfx_vresolution      != changed_prefs.gfx_vresolution)
@@ -792,16 +801,132 @@ int check_prefs_changed_gfx (void)
        graphics_setup();
    }
 
-   gfxvidinfo.width_allocated          = currprefs.gfx_size_win.width;
-   gfxvidinfo.height_allocated         = currprefs.gfx_size_win.height;
-   gfxvidinfo.rowbytes                 = gfxvidinfo.width_allocated * gfxvidinfo.pixbytes;
+   gfxvidinfo->drawbuffer.width_allocated  = defaultw;
+   gfxvidinfo->drawbuffer.height_allocated = defaulth;
+   gfxvidinfo->drawbuffer.rowbytes         = gfxvidinfo->drawbuffer.width_allocated * gfxvidinfo->drawbuffer.pixbytes;
 
 #if 0
-   printf("check_prefs_changed_gfx: %d:%d, res:%d vres:%d\n", changed_prefs.gfx_size_win.width, changed_prefs.gfx_size_win.height, changed_prefs.gfx_resolution, changed_prefs.gfx_vresolution);
+   printf("%s: %dx%d, res=%d vres=%d\n", __func__,
+         changed_prefs.gfx_monitor[0].gfx_size_win.width,
+         changed_prefs.gfx_monitor[0].gfx_size_win.height,
+         changed_prefs.gfx_resolution,
+         changed_prefs.gfx_vresolution);
 #endif
    return 1;
 }
 
+static int target_get_display_scanline2(int displayindex)
+{
+#if 0
+	if (pD3DKMTGetScanLine) {
+		D3DKMT_GETSCANLINE sl = { 0 };
+		struct MultiDisplay *md = displayindex < 0 ? getdisplay(&currprefs, 0) : &Displays[displayindex];
+		if (!md->HasAdapterData)
+			return -11;
+		sl.VidPnSourceId = md->VidPnSourceId;
+		sl.hAdapter = md->AdapterHandle;
+		NTSTATUS status = pD3DKMTGetScanLine(&sl);
+		if (status == STATUS_SUCCESS) {
+			if (sl.InVerticalBlank)
+				return -1;
+			return sl.ScanLine;
+		} else {
+			if ((int)status > 0)
+				return -(int)status;
+			return status;
+		}
+		return -12;
+	} else if (D3D_getscanline) {
+		int scanline;
+		bool invblank;
+		if (D3D_getscanline(&scanline, &invblank)) {
+			if (invblank)
+				return -1;
+			return scanline;
+		}
+		return -14;
+	}
+	return -13;
+#endif
+}
+
+extern uae_u64 spincount;
+bool calculated_scanline = 1;
+
+int target_get_display_scanline(int displayindex)
+{
+#if 0
+	if (!scanlinecalibrating && calculated_scanline) {
+		static int lastline;
+		float diff = read_processor_time() - wait_vblank_timestamp;
+		if (diff < 0)
+			return -1;
+		int sl = (int)(diff * (vsync_activeheight + (vsync_totalheight - vsync_activeheight) / 10) * vsync_vblank / syncbase);
+		if (sl < 0)
+			sl = -1;
+		return sl;
+	} else {
+		static uae_u64 lastrdtsc;
+		static int lastvpos;
+		if (spincount == 0 || currprefs.m68k_speed >= 0) {
+			lastrdtsc = 0;
+			lastvpos = target_get_display_scanline2(displayindex);
+			return lastvpos;
+		}
+		uae_u64 v = __rdtsc();
+		if (lastrdtsc > v)
+			return lastvpos;
+		lastvpos = target_get_display_scanline2(displayindex);
+		lastrdtsc = __rdtsc() + spincount * 4;
+		return lastvpos;
+	}
+#endif
+}
+
+void vsync_clear(void)
+{
+#if 0
+	vsync_active = false;
+	if (waitvblankevent)
+		ResetEvent(waitvblankevent);
+#endif
+}
+
+int vsync_isdone(frame_time_t *dt)
+{
+#if 0
+	if (isvsync() == 0)
+		return -1;
+	if (waitvblankthread_mode <= 0)
+		return -2;
+	if (dt)
+		*dt = wait_vblank_timestamp;
+	return vsync_active ? 1 : 0;
+#endif
+}
+
+bool target_graphics_buffer_update(int monid)
+{
+    return true;
+}
+
+float target_getcurrentvblankrate(int monid)
+{
+    return 0;
+}
+
+void target_reset (void)
+{
+	clipboard_reset ();
+}
+
+void target_paste_to_keyboard (void) {}
+bool target_can_autoswitchdevice(void) { return false; }
+
+struct netdriverdata **target_ethernet_enumerate (void)
+{
+   return NULL;
+}
 
 /***************************************************************
   Joystick functions
@@ -842,10 +967,10 @@ static TCHAR *get_joystick_friendlyname (int joy)
 {
    switch (joy)
    {
+      default:
       case 0:
          return "RetroPad0";
          break;
-      default:
       case 1:
          return "RetroPad1";
          break;
@@ -862,10 +987,10 @@ static char *get_joystick_uniquename (int joy)
 {
    switch (joy)
    {
+      default:
       case 0:
          return "RetroPad0";
          break;
-      default:
       case 1:
          return "RetroPad1";
          break;
@@ -908,7 +1033,7 @@ struct inputdevice_functions inputdevicefunc_joystick = {
    get_joystick_flags
 };
 
-int input_get_default_joystick (struct uae_input_device *uid, int num, int port, int af, int mode, bool gp)
+int input_get_default_joystick (struct uae_input_device *uid, int num, int port, int af, int mode, bool gp, bool joymouseswap)
 {
    if (retro_devices[0] == RETRO_DEVICE_PUAE_CD32PAD)
    {
@@ -992,7 +1117,7 @@ int input_get_default_joystick (struct uae_input_device *uid, int num, int port,
    return 1;
 }
 
-int input_get_default_joystick_analog (struct uae_input_device *uid, int num, int port, int af, bool gp)
+int input_get_default_joystick_analog (struct uae_input_device *uid, int num, int port, int af, bool gp, bool joymouseswap)
 {
    uid[num].eventid[ID_AXIS_OFFSET + 0][0] = port ? INPUTEVENT_JOY2_HORIZ_POT : INPUTEVENT_JOY1_HORIZ_POT;
    uid[num].eventid[ID_AXIS_OFFSET + 1][0] = port ? INPUTEVENT_JOY2_VERT_POT : INPUTEVENT_JOY1_VERT_POT;
@@ -1003,7 +1128,8 @@ int input_get_default_joystick_analog (struct uae_input_device *uid, int num, in
    return 0;
 }
 
-
+void target_inputdevice_unacquire(void) {}
+void target_inputdevice_acquire(void) {}
 
 /***************************************************************
   Mouse functions
@@ -1115,7 +1241,7 @@ struct inputdevice_functions inputdevicefunc_mouse = {
    get_mouse_flags
 };
 
-int input_get_default_mouse (struct uae_input_device *uid, int num, int port, int af, bool gp, bool wheel)
+int input_get_default_mouse (struct uae_input_device *uid, int num, int port, int af, bool gp, bool wheel, bool joymouseswap)
 {
    uid[0].eventid[ID_AXIS_OFFSET + 0][0]   = INPUTEVENT_MOUSE1_HORIZ;
    uid[0].eventid[ID_AXIS_OFFSET + 1][0]   = INPUTEVENT_MOUSE1_VERT;
@@ -1135,7 +1261,7 @@ int input_get_default_mouse (struct uae_input_device *uid, int num, int port, in
    return 0;
 }
 
-int input_get_default_lightpen (struct uae_input_device *uid, int num, int port, int af, bool gp)
+int input_get_default_lightpen (struct uae_input_device *uid, int num, int port, int af, bool gp, bool joymouseswap, int submode)
 {
    uid[num].eventid[ID_AXIS_OFFSET + 0][0] = INPUTEVENT_LIGHTPEN_HORIZ;
    uid[num].eventid[ID_AXIS_OFFSET + 1][0] = INPUTEVENT_LIGHTPEN_VERT;
@@ -1293,6 +1419,11 @@ void uae_pause (void)
 
 void uae_resume (void)
 {
+}
+
+bool isguiactive(void)
+{
+   return 0;
 }
 
 

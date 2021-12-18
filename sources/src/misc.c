@@ -12,8 +12,8 @@
 #include "sysdeps.h"
 
 #include "misc.h"
-#include "cfgfile.h"
-#include "memory_uae.h"
+#include "options.h"
+#include "memory.h"
 #include "custom.h"
 #include "newcpu.h"
 #include "events.h"
@@ -26,17 +26,59 @@
 #include "inputdevice.h"
 #include "keymap/keymap.h"
 #include "keyboard.h"
-#include <stdarg.h>
 #include "clipboard.h"
 #include "fsdb.h"
 #include "debug.h"
-#include "hrtimer.h"
 #include "sleep.h"
 #include "zfile.h"
+#include "xwin.h"
+#include "gfxboard.h"
+#include "statusline.h"
+#include "devices.h"
+
+struct uae_prefs workprefs;
+struct uae_mman_data;
+#include "uae/mman.h"
+#include <wctype.h>
 
 #ifdef __LIBRETRO__
 #include "libretro-core.h"
 #endif
+
+#ifdef __LIBRETRO__
+void to_upper (TCHAR *s, int len)
+{
+   s = string_to_upper(s);
+}
+void to_lower (TCHAR *s, int len)
+{
+   s = string_to_lower(s);
+}
+int same_aname (const TCHAR *an1, const TCHAR *an2)
+{
+   return string_is_equal(an1, an2);
+}
+
+void png_set_expand (void) {}
+void png_destroy_read_struct (void) {}
+void png_set_strip_16 (void) {}
+void png_set_packing (void) {}
+void png_read_end (void) {}
+void png_read_image (void) {}
+void png_get_rowbytes (void) {}
+void png_set_add_alpha (void) {}
+void png_get_IHDR (void) {}
+void png_read_info (void) {}
+void png_set_read_fn (void) {}
+void png_create_info_struct (void) {}
+void png_create_read_struct (void) {}
+void png_sig_cmp (void) {}
+
+struct zfile* png_get_io_ptr = NULL;
+#endif
+
+static struct uae_shmid_ds shmids[MAX_SHMID];
+uae_u8 *natmem_reserved, *natmem_offset;
 
 // this is handled by the graphics drivers and set up in picasso96.c
 #if defined(PICASSO96)
@@ -58,21 +100,8 @@ uae_u32 redc[3 * 256], grec[3 * 256], bluc[3 * 256];
 
 static volatile frame_time_t vblank_prev_time;
 
-#ifndef __LIBRETRO__
-struct winuae_currentmode {
-	unsigned int flags;
-	int native_width, native_height, native_depth, pitch;
-	int current_width, current_height, current_depth;
-	int amiga_width, amiga_height;
-	int frequency;
-	int initdone;
-	int fullfill;
-	int vsync;
-};
-
 static struct winuae_currentmode currentmodestruct;
 static struct winuae_currentmode *currentmode = &currentmodestruct;
-#endif
 
 #ifndef _WIN32
 typedef struct {
@@ -88,7 +117,6 @@ typedef struct {
 #endif
 
 /* internal prototypes */
-void setmouseactivexy (int x, int y, int dir);
 int get_guid_target (uae_u8 *out);
 uae_u8 *save_log (int bootlog, int *len);
 void refreshtitle (void);
@@ -99,15 +127,29 @@ void fetch_path (TCHAR *name, TCHAR *out, int size);
 void fetch_screenshotpath (TCHAR *out, int size);
 struct MultiDisplay *getdisplay (struct uae_prefs *p);
 void addmode (struct MultiDisplay *md, DEVMODE *dm, int rawmode);
-void updatedisplayarea (void);
 
 /* external prototypes */
 extern void setmaintitle(void);
 extern int isvsync_chipset (void);
 extern int isvsync_rtg (void);
 
+TCHAR config_filename[256] = _T("");
+TCHAR start_path_data[MAX_DPATH];
+int saveimageoriginalpath = 0;
 
-void getgfxoffset (int *dxp, int *dyp, int *mxp, int *myp)
+int pissoff_value = 15000 * CYCLE_UNIT;
+
+uae_u8 *save_log (int bootlog, int *len)
+{
+   return NULL;
+}
+
+int scan_roms (int show)
+{
+	return 0;
+}
+
+void getgfxoffset (int monid, float *dxp, float *dyp, float *mxp, float *myp)
 {
 	*dxp = 0;
 	*dyp = 0;
@@ -115,7 +157,7 @@ void getgfxoffset (int *dxp, int *dyp, int *mxp, int *myp)
 	*myp = 0;
 }
 
-int vsync_switchmode (int hz)
+bool vsync_switchmode (int monid, int hz)
 {
 #ifndef __LIBRETRO__
     static struct PicassoResolution *oldmode;
@@ -176,10 +218,21 @@ int vsync_switchmode (int hz)
 }
 
 int extraframewait = 0;
+int relativepaths = 1;
 
 void sleep_millis_main (int ms)
 {
-	uae_msleep (ms);
+   uae_msleep(ms);
+}
+
+void sleep_millis(int ms)
+{
+   uae_msleep(ms);
+}
+
+int target_sleep_nanos(int nanos)
+{
+   return 0;
 }
 
 void target_restart (void)
@@ -197,11 +250,17 @@ uae_u32 emulib_target_getcpurate (uae_u32 v, uae_u32 *low)
 	return 0;
 }
 
-void setmouseactivexy (int x, int y, int dir)
+int mouseactive;
+bool ismouseactive (void)
+{
+	return mouseactive > 0;
+}
+
+void setmouseactivexy (int monid, int x, int y, int dir)
 {
 }
 
-void setmouseactive (int active)
+void setmouseactive (int monid, int active)
 {
 }
 
@@ -209,34 +268,34 @@ void setmouseactive (int active)
 static uaecptr clipboard_data;
 static int signaling, initialized;
 
-void amiga_clipboard_die (void)
+void amiga_clipboard_die (TrapContext *ctx)
 {
 	signaling = 0;
 	write_log ("clipboard not initialized\n");
 }
 
-void amiga_clipboard_init (void)
+void amiga_clipboard_init (TrapContext *ctx)
 {
 	signaling = 0;
 	write_log ("clipboard initialized\n");
 	initialized = 1;
 }
 
-void amiga_clipboard_task_start (uaecptr data)
+void amiga_clipboard_task_start (TrapContext *ctx, uaecptr data)
 {
 	clipboard_data = data;
 	signaling = 1;
 	write_log ("clipboard task init: %08x\n", clipboard_data);
 }
 
-uaecptr amiga_clipboard_proc_start (void)
+uaecptr amiga_clipboard_proc_start (TrapContext *ctx)
 {
 	write_log ("clipboard process init: %08x\n", clipboard_data);
 	signaling = 1;
 	return clipboard_data;
 }
 
-void amiga_clipboard_got_data (uaecptr data, uae_u32 size, uae_u32 actual)
+void amiga_clipboard_got_data (TrapContext *ctx, uaecptr data, uae_u32 size, uae_u32 actual)
 {
 	if (!initialized) {
 		write_log ("clipboard: got_data() before initialized!?\n");
@@ -287,14 +346,26 @@ int input_get_default_keyboard (int i)
 // win32gui
 static int qs_override;
 
+void target_multipath_modified(struct uae_prefs *p)
+{
+	if (p != &workprefs)
+		return;
+	memcpy(&currprefs.path_hardfile, &p->path_hardfile, sizeof(struct multipath));
+	memcpy(&currprefs.path_floppy, &p->path_floppy, sizeof(struct multipath));
+	memcpy(&currprefs.path_cd, &p->path_cd, sizeof(struct multipath));
+	memcpy(&currprefs.path_rom, &p->path_rom, sizeof(struct multipath));
+}
+
 int target_cfgfile_load (struct uae_prefs *p, const TCHAR *filename, int type, int isdefault)
 {
 	int v, i, type2;
-	int ct, ct2 = 0;
+	int ct, ct2, size;
 	char tmp1[MAX_DPATH], tmp2[MAX_DPATH];
-	char fname[MAX_DPATH];
+	TCHAR fname[MAX_DPATH], cname[MAX_DPATH];
 #ifndef __LIBRETRO__
+	error_log(NULL);
 	_tcscpy (fname, filename);
+	cname[0] = 0;
 	if (!zfile_exists (fname)) {
 		fetch_configurationpath (fname, sizeof (fname) / sizeof (TCHAR));
 		if (_tcsncmp (fname, filename, _tcslen (fname)))
@@ -303,30 +374,43 @@ int target_cfgfile_load (struct uae_prefs *p, const TCHAR *filename, int type, i
 			_tcscpy (fname, filename);
 	}
 #endif
-
 	if (!isdefault)
 		qs_override = 1;
 	if (type < 0) {
 		type = 0;
-		cfgfile_get_description (fname, NULL, NULL, NULL, &type);
+		cfgfile_get_description (NULL, fname, NULL, NULL, NULL, NULL, NULL, &type);
+		if (!isdefault) {
+			const TCHAR *p = _tcsrchr(fname, '\\');
+			if (!p)
+				p = _tcsrchr(fname, '/');
+			if (p)
+				_tcscpy(cname, p + 1);
+		}
 	}
 	if (type == 0 || type == 1) {
 		discard_prefs (p, 0);
 	}
 	type2 = type;
-	if (type == 0) {
-		default_prefs (p, type);
+	if (type == 0 || type == 3) {
+		default_prefs (p, true, type);
+#ifndef __LIBRETRO__
+		write_log(_T("config reset\n"));
+#endif
 	}
-		
+	ct2 = 0;
 	v = cfgfile_load (p, fname, &type2, ct2, isdefault ? 0 : 1);
 	if (!v)
 		return v;
 	if (type > 0)
 		return v;
+	if (cname[0])
+		_tcscpy(config_filename, cname);
 	for (i = 1; i <= 2; i++) {
 		if (type != i) {
+			size = sizeof (ct);
 			ct = 0;
 			if (ct && ((i == 1 && p->config_hardware_path[0] == 0) || (i == 2 && p->config_host_path[0] == 0) || ct2)) {
+				size = sizeof (tmp1) / sizeof (TCHAR);
 				fetch_path ("ConfigurationPath", tmp2, sizeof (tmp2) / sizeof (TCHAR));
 				_tcscat (tmp2, tmp1);
 				v = i;
@@ -343,7 +427,6 @@ void stripslashes (TCHAR *p)
 	while (_tcslen (p) > 0 && (p[_tcslen (p) - 1] == '\\' || p[_tcslen (p) - 1] == '/'))
 		p[_tcslen (p) - 1] = 0;
 }
-
 void fixtrailing (TCHAR *p)
 {
 	if (_tcslen(p) == 0)
@@ -351,6 +434,13 @@ void fixtrailing (TCHAR *p)
 	if (p[_tcslen(p) - 1] == '/' || p[_tcslen(p) - 1] == '\\')
 		return;
 	_tcscat(p, "\\");
+}
+static void fixdriveletter(TCHAR *path)
+{
+	if (_istalpha(path[0]) && path[1] == ':' && path[2] == '\\' && path[3] == '.' && path[4] == 0)
+		path[3] = 0;
+	if (_istalpha(path[0]) && path[1] == ':' && path[2] == '\\' && path[3] == '.' && path[4] == '.' && path[5] == 0)
+		path[3] = 0;
 }
 
 void getpathpart (TCHAR *outpath, int size, const TCHAR *inpath)
@@ -372,16 +462,64 @@ void getfilepart (TCHAR *out, int size, const TCHAR *path)
 		_tcscpy (out, path);
 }
 
+uae_u8 *target_load_keyfile (struct uae_prefs *p, const TCHAR *path, int *sizep, TCHAR *name)
+{
+#if 0
+	uae_u8 *keybuf = NULL;
+	HMODULE h;
+	PFN_GetKey pfnGetKey;
+	int size;
+	const TCHAR *libname = _T("amigaforever.dll");
+
+	h = WIN32_LoadLibrary(libname);
+	if (!h) {
+		TCHAR path[MAX_DPATH];
+		_stprintf (path, _T("%s..\\Player\\%s"), start_path_exe, libname);
+		h = WIN32_LoadLibrary(path);
+		if (!h) {
+			TCHAR *afr = _wgetenv (_T("AMIGAFOREVERROOT"));
+			if (afr) {
+				TCHAR tmp[MAX_DPATH];
+				_tcscpy (tmp, afr);
+				fixtrailing (tmp);
+				_stprintf (path, _T("%sPlayer\\%s"), tmp, libname);
+				h = WIN32_LoadLibrary(path);
+			}
+		}
+	}
+	if (!h)
+		return NULL;
+	GetModuleFileName (h, name, MAX_DPATH);
+	//write_log (_T("keydll: %s'\n"), name);
+	pfnGetKey = (PFN_GetKey)GetProcAddress (h, "GetKey");
+	//write_log (_T("addr: %08x\n"), pfnGetKey);
+	if (pfnGetKey) {
+		size = pfnGetKey (NULL, 0);
+		*sizep = size;
+		//write_log (_T("size: %d\n"), size);
+		if (size > 0) {
+			int gotsize;
+			keybuf = xmalloc (uae_u8, size);
+			gotsize = pfnGetKey (keybuf, size);
+			//write_log (_T("gotsize: %d\n"), gotsize);
+			if (gotsize != size) {
+				xfree (keybuf);
+				keybuf = NULL;
+			}
+		}
+	}
+	FreeLibrary (h);
+	//write_log (_T("keybuf=%08x\n"), keybuf);
+	return keybuf;
+#endif
+}
+
 void refreshtitle (void)
 {
 	if (isfullscreen () == 0)
 		setmaintitle ();
 }
 
-int scan_roms (int show)
-{
-	return 0;
-}
 
 // writelog
 TCHAR* buf_out (TCHAR *buffer, int *bufsize, const TCHAR *format, ...)
@@ -426,8 +564,13 @@ void target_quit (void)
 {
 }
 
-void target_fixup_options (struct uae_prefs *p)
+void target_addtorecent (const TCHAR *name, int t)
 {
+}
+
+bool get_plugin_path (TCHAR *out, int len, const TCHAR *path)
+{
+   return false;
 }
 
 void fetch_path (TCHAR *name, TCHAR *out, int size)
@@ -459,44 +602,77 @@ void fetch_saveimagepath (TCHAR *out, int size, int dir)
 {
 	fetch_path ("SaveimagePath", out, size);
 }
-
 void fetch_configurationpath (TCHAR *out, int size)
 {
 	fetch_path ("ConfigurationPath", out, size);
 }
-
+void fetch_luapath (TCHAR *out, int size)
+{
+	fetch_path (_T("LuaPath"), out, size);
+}
 void fetch_screenshotpath (TCHAR *out, int size)
 {
 	fetch_path ("ScreenshotPath", out, size);
 }
-
 void fetch_ripperpath (TCHAR *out, int size)
 {
 	fetch_path ("RipperPath", out, size);
 }
-
 void fetch_statefilepath (TCHAR *out, int size)
 {
 	fetch_path ("StatefilePath", out, size);
 }
-
 void fetch_inputfilepath (TCHAR *out, int size)
 {
 	fetch_path ("InputPath", out, size);
 }
-
 void fetch_datapath (TCHAR *out, int size)
 {
 	fetch_path (NULL, out, size);
 }
+void fetch_rompath (TCHAR *out, int size)
+{
+	fetch_path (_T("KickstartPath"), out, size);
+}
 
 // convert path to absolute or relative
-void fullpath (TCHAR *path, int size)
+void fullpath_3 (TCHAR *path, int size, bool userelative)
 {
 	if (path[0] == 0 || (path[0] == '\\' && path[1] == '\\') || path[0] == ':')
 		return;
-        /* <drive letter>: is supposed to mean same as <drive letter>:\ */
+	// has one or more environment variables? do nothing.
+	if (_tcschr(path, '%'))
+		return;
+	if (_tcslen(path) >= 2 && path[_tcslen(path) - 1] == '.')
+		return;
+	/* <drive letter>: is supposed to mean same as <drive letter>:\ */
 }
+
+void fullpath(TCHAR *path, int size)
+{
+    fullpath_3(path, size, relativepaths);
+}
+
+bool samepath(const TCHAR *p1, const TCHAR *p2)
+{
+	if (!_tcsicmp(p1, p2))
+		return true;
+	TCHAR path1[MAX_DPATH], path2[MAX_DPATH];
+	_tcscpy(path1, p1);
+	_tcscpy(path2, p2);
+	fixdriveletter(path1);
+	fixdriveletter(path2);
+	if (!_tcsicmp(path1, path2))
+		return true;
+	return false;
+}
+
+bool target_isrelativemode(void)
+{
+	return relativepaths != 0;
+}
+
+
 
 char *ua (const TCHAR *s)
 {
@@ -527,6 +703,11 @@ TCHAR *au (const char *s)
 	return strdup(s);
 }
 
+TCHAR *au_fs (const char *s)
+{
+	return strdup(s);
+}
+
 TCHAR *au_copy (TCHAR *dst, int maxlen, const char *src)
 {
 	dst[0] = 0;
@@ -549,6 +730,12 @@ int consoleopen = 0;
 static int realconsole = 1;
 
 static int debugger_type = -1;
+
+void activate_console (void)
+{
+	if (!consoleopen)
+		return;
+}
 
 static void openconsole (void)
 {
@@ -607,6 +794,13 @@ char *utf8u (const char *s)
 void update_debug_info(void)
 {
 }
+
+void logging_init(void)
+{
+}
+
+
+#define error_log
 
 #ifdef __LIBRETRO__
 const TCHAR *target_get_display_name (int num, bool friendlyname){return NULL;}
@@ -952,16 +1146,16 @@ void enumeratedisplays (void) {
 	md->primary = true;
 }
 #endif
-void updatedisplayarea (void)
-{
-}
 
-static bool render_ok;
+void updatedisplayarea (int monid) {}
 
+#ifndef __LIBRETRO__
 int vsync_busy_wait_mode;
+#endif
 
 static void vsync_sleep (bool preferbusy)
 {
+#ifndef __LIBRETRO__
 	struct apmode *ap = picasso_on ? &currprefs.gfx_apmode[1] : &currprefs.gfx_apmode[0];
 	bool dowait;
 
@@ -975,28 +1169,49 @@ static void vsync_sleep (bool preferbusy)
 	}
 	if (dowait && (currprefs.m68k_speed >= 0 || currprefs.m68k_speed_throttle < 0))
 		sleep_millis_main (1);
+#endif
 }
 
-bool show_screen_maybe (bool show)
+bool show_screen_maybe (int monid, bool show)
 {
-	struct apmode *ap = picasso_on ? &currprefs.gfx_apmode[1] : &currprefs.gfx_apmode[0];
-	if (!ap->gfx_vflip || ap->gfx_vsyncmode == 0 || !ap->gfx_vsync) {
+#ifdef __LIBRETRO__
+	show_screen (monid, 0);
+#else
+	struct AmigaMonitor *mon = &AMonitors[monid];
+	struct amigadisplay *ad = &adisplays[monid];
+	struct apmode *ap = ad->picasso_on ? &currprefs.gfx_apmode[1] : &currprefs.gfx_apmode[0];
+	if (!ap->gfx_vflip || ap->gfx_vsyncmode == 0 || ap->gfx_vsync <= 0) {
 		if (show)
-			show_screen (0);
+			show_screen (monid, 0);
 		return false;
 	}
+#endif
 	return false;
 }
 
-bool render_screen (bool immediate)
+bool render_screen (int monid, int mode, bool immediate)
 {
-	render_ok = false;
-	return render_ok;
+#ifdef __LIBRETRO__
+	return false;
+#else
+	struct AmigaMonitor *mon = &AMonitors[monid];
+	struct amigadisplay *ad = &adisplays[monid];
+
+	mon->render_ok = false;
+	return mon->render_ok;
+#endif
 }
 
-void show_screen (int mode)
+void show_screen (int monid, int mode)
 {
-	render_ok = false;
+#ifdef __LIBRETRO__
+	return;
+#else
+	struct AmigaMonitor *mon = &AMonitors[monid];
+	struct amigadisplay *ad = &adisplays[monid];
+
+	mon->render_ok = false;
+#endif
 }
 
 static int maxscanline, minscanline, prevvblankpos;
@@ -1077,6 +1292,7 @@ static bool isthreadedvsync (void)
 
 bool vsync_busywait_do (int *freetime, bool lace, bool oddeven)
 {
+#ifndef __LIBRETRO__
 	bool v;
 	static bool framelost;
 	int ti;
@@ -1140,9 +1356,34 @@ bool vsync_busywait_do (int *freetime, bool lace, bool oddeven)
 	}
 
 	return v;
+#else
+	return false;
+#endif
 }
 
-unsigned int flashscreen;   
+static int deskhz;
+float target_adjust_vblank_hz(int monid, float hz)
+{
+#ifdef __LIBRETRO__
+	return hz;
+#else
+	struct AmigaMonitor *mon = &AMonitors[monid];
+	int maxrate;
+	if (!currprefs.lightboost_strobo)
+		return hz;
+	if (isfullscreen() > 0) {
+		maxrate = mon->currentmode.freq;
+	} else {
+		maxrate = deskhz;
+	}
+	double nhz = hz * 2.0;
+	if (nhz >= maxrate - 1 && nhz < maxrate + 1)
+		hz -= 0.5;
+	return hz;
+#endif
+}
+
+int flashscreen;   
 
 void doflashscreen (void)
 {
@@ -1152,3 +1393,326 @@ uae_u32 getlocaltime (void)
 {
 	return 0;
 }
+
+void target_spin(int total)
+{
+}
+
+int handle_msgpump (void)
+{
+}
+
+void pausevideograb(int pause)
+{
+}
+
+uae_s64 getsetpositionvideograb(uae_s64 framepos)
+{
+   return 0;
+}
+
+
+
+
+
+
+int rtg_index = -1;
+
+// -2 = default
+// -1 = prev
+// 0 = chipset
+// 1..4 = rtg
+// 5 = next
+bool toggle_rtg (int monid, int mode)
+{
+	struct amigadisplay *ad = &adisplays[monid];
+
+	int old_index = rtg_index;
+#ifdef PICASSO96
+	if (monid > 0) {
+		return true;
+	}
+
+	if (mode < -1 && rtg_index >= 0)
+		return true;
+
+	for (;;) {
+		if (mode == -1) {
+			rtg_index--;
+		} else if (mode >= 0 && mode <= MAX_RTG_BOARDS) {
+			rtg_index = mode - 1;
+		} else {
+			rtg_index++;
+		}
+		if (rtg_index >= MAX_RTG_BOARDS) {
+			rtg_index = -1;
+		} else if (rtg_index < -1) {
+			rtg_index = MAX_RTG_BOARDS - 1;
+		}
+		if (rtg_index < 0) {
+			if (ad->picasso_on) {
+				gfxboard_rtg_disable(monid, old_index);
+				ad->picasso_requested_on = false;
+				statusline_add_message(STATUSTYPE_DISPLAY, _T("Chipset display"));
+				set_config_changed();
+				return false;
+			}
+			return false;
+		}
+		struct rtgboardconfig *r = &currprefs.rtgboards[rtg_index];
+		if (r->rtgmem_size > 0 && r->monitor_id == monid) {
+			if (r->rtgmem_type >= GFXBOARD_HARDWARE) {
+				int idx = gfxboard_toggle(r->monitor_id, rtg_index, mode >= -1);
+				if (idx >= 0) {
+					rtg_index = idx;
+					return true;
+				}
+				if (idx < -1) {
+					rtg_index = -1;
+					return false;
+				}
+			} else {
+				gfxboard_toggle(r->monitor_id, -1, -1);
+				if (mode < -1)
+					return true;
+				devices_unsafeperiod();
+				gfxboard_rtg_disable(monid, old_index);
+				// can always switch from RTG to custom
+				if (ad->picasso_requested_on && ad->picasso_on) {
+					ad->picasso_requested_on = false;
+					rtg_index = -1;
+					set_config_changed();
+					return true;
+				}
+				if (ad->picasso_on)
+					return false;
+				// can only switch from custom to RTG if there is some mode active
+				if (picasso_is_active(r->monitor_id)) {
+					picasso_enablescreen(r->monitor_id, 1);
+					ad->picasso_requested_on = true;
+					statusline_add_message(STATUSTYPE_DISPLAY, _T("RTG %d: %s"), rtg_index + 1, _T("UAEGFX"));
+					set_config_changed();
+					return true;
+				}
+			}
+		}
+		if (mode >= 0 && mode <= MAX_RTG_BOARDS) {
+			rtg_index = old_index;
+			return false;
+		}
+	}
+#endif
+	return false;
+}
+
+void close_windows(struct AmigaMonitor *mon)
+{
+#if 0
+	struct vidbuf_description *avidinfo = &adisplays[mon->monitor_id].gfxvidinfo;
+
+	setDwmEnableMMCSS (FALSE);
+	reset_sound ();
+#if defined (GFXFILTER)
+	S2X_free(mon->monitor_id);
+#endif
+	freevidbuffer(mon->monitor_id, &avidinfo->drawbuffer);
+	freevidbuffer(mon->monitor_id, &avidinfo->tempbuffer);
+	/*DirectDraw_Release();*/
+	close_hwnds(mon);
+#endif
+}
+
+void close_rtg(int monid)
+{
+#if 0
+	close_windows(&AMonitors[monid]);
+#endif
+}
+
+uae_atomic atomic_and(volatile uae_atomic *p, uae_u32 v)
+{
+#if 0
+    return _InterlockedAnd(p, v);
+#else
+    uae_atomic p_orig = *p;
+    *p &= v;
+	return p_orig;
+#endif
+}
+uae_atomic atomic_or(volatile uae_atomic *p, uae_u32 v)
+{
+#if 0
+    return _InterlockedOr(p, v);
+#else
+    uae_atomic p_orig = *p;
+    *p |= v;
+	return p_orig;
+#endif
+}
+void atomic_set(volatile uae_atomic *p, uae_u32 v)
+{
+}
+uae_atomic atomic_inc(volatile uae_atomic *p)
+{
+	return *p++;
+}
+uae_atomic atomic_dec(volatile uae_atomic *p)
+{
+	return *p--;
+}
+uae_u32 atomic_bit_test_and_reset(volatile uae_atomic *p, uae_u32 v)
+{
+	*p = v = 0;
+	return v;
+}
+
+#ifndef NATMEM_OFFSET
+void unprotect_maprom (void)
+{
+#if 0
+	bool protect = false;
+	for (int i = 0; i < MAX_SHMID; i++) {
+		struct uae_shmid_ds *shm = &shmids[i];
+		if (shm->mode != PAGE_READONLY)
+			continue;
+		if (!shm->attached || !shm->rosize)
+			continue;
+		if (shm->maprom <= 0)
+			continue;
+		shm->maprom = -1;
+		DWORD old;
+		if (!VirtualProtect (shm->attached, shm->rosize, protect ? PAGE_READONLY : PAGE_READWRITE, &old)) {
+			write_log (_T("unprotect_maprom VP %08lX - %08lX %x (%dk) failed %d\n"),
+				(uae_u8*)shm->attached - natmem_offset, (uae_u8*)shm->attached - natmem_offset + shm->size,
+				shm->size, shm->size >> 10, GetLastError ());
+		}
+	}
+#endif
+}
+
+void protect_roms (bool protect)
+{
+#if 0
+	if (protect) {
+		// protect only if JIT enabled, always allow unprotect
+		if (!currprefs.cachesize || currprefs.comptrustbyte || currprefs.comptrustword || currprefs.comptrustlong)
+			return;
+	}
+	for (int i = 0; i < MAX_SHMID; i++) {
+		struct uae_shmid_ds *shm = &shmids[i];
+		if (shm->mode != PAGE_READONLY)
+			continue;
+		if (!shm->attached || !shm->rosize)
+			continue;
+		if (shm->maprom < 0 && protect)
+			continue;
+		DWORD old;
+		if (!VirtualProtect (shm->attached, shm->rosize, protect ? PAGE_READONLY : PAGE_READWRITE, &old)) {
+			write_log (_T("protect_roms VP %08lX - %08lX %x (%dk) failed %d\n"),
+				(uae_u8*)shm->attached - natmem_offset, (uae_u8*)shm->attached - natmem_offset + shm->rosize,
+				shm->rosize, shm->rosize >> 10, GetLastError ());
+		} else {
+			write_log(_T("ROM VP %08lX - %08lX %x (%dk) %s\n"),
+				(uae_u8*)shm->attached - natmem_offset, (uae_u8*)shm->attached - natmem_offset + shm->rosize,
+				shm->rosize, shm->rosize >> 10, protect ? _T("WPROT") : _T("UNPROT"));
+		}
+	}
+#endif
+}
+#endif
+
+uae_u8 *save_screenshot(int monid, int *len)
+{
+	return NULL;
+}
+
+bool is_mainthread(void)
+{
+#if 0
+	return GetCurrentThreadId() == mainthreadid;
+#else
+    return true;
+#endif
+}
+
+void target_cpu_speed(void)
+{
+#if 0
+	display_vblank_thread(&AMonitors[0]);
+#endif
+}
+
+#ifndef WITH_X86
+void x86_rt1000_bios(struct zfile *z, struct romconfig *rc) {}
+void x86_update_sound(double clk) {}
+void x86_bridge_sync_change(void) {}
+#endif
+
+#ifndef PARALLEL_DIRECT
+void paraport_free (void) { }
+int paraport_init (void) { return 0; }
+int paraport_open (TCHAR *port) { return 0; }
+int parallel_direct_write_status (uae_u8 v, uae_u8 dir) { return 0; }
+int parallel_direct_read_status (uae_u8 *vp) { return 0; }
+int parallel_direct_write_data (uae_u8 v, uae_u8 dir) { return 0; }
+int parallel_direct_read_data (uae_u8 *v) { return 0; }
+#else
+#include <paraport/ParaPort.h>
+#endif
+
+void clipboard_vsync (void) {}
+void clipboard_reset (void) {}
+void clipboard_unsafeperiod (void) {}
+
+int amiga_clipboard_want_data(TrapContext *ctx) { return 0; }
+
+void statusline_updated(int monid) {}
+void statusline_render(int monid, uae_u8 *buf, int bpp, int pitch, int width, int height, uae_u32 *rc, uae_u32 *gc, uae_u32 *bc, uae_u32 *alpha) {}
+
+bool softstatusline(void)
+{
+	if (currprefs.gfx_api > 0)
+		return false;
+	return (currprefs.leds_on_screen & STATUSLINE_TARGET) == 0;
+}
+
+bool isvideograb(void) { return false; }
+bool initvideograb(const TCHAR *filename) { return false; }
+bool getvideograb(long **buffer, int *width, int *height) { return false; }
+void uninitvideograb(void) {}
+bool getpausevideograb(void) { return false; }
+void isvideograb_status(void) {}
+void setvolumevideograb(int volume) {}
+
+void uaeexe_install (void) {}
+void uaenative_install (void) {}
+
+int consolehook_activate (void) { return 0; }
+void consolehook_ret(TrapContext *ctx, uaecptr condev, uaecptr oldbeginio) {}
+uaecptr consolehook_beginio(TrapContext *ctx, uaecptr request) {}
+
+void filesys_addexternals (void) {}
+int target_get_volume_name (struct uaedev_mount_info *mtinf, struct uaedev_config_info *ci, bool inserted, bool fullcheck, int cnt) { return 2; }
+void target_getdate(int *y, int *m, int *d) {}
+
+unsigned char def_drawer[] = {};
+unsigned int def_drawer_len = 0;
+unsigned char def_tool[] = {};
+unsigned int def_tool_len = 0;
+unsigned char def_project[] = {};
+unsigned int def_project_len = 0;
+
+/*void fp_init_softfloat(int fpu_model) {}*/
+/*void fp_init_native(void) {}*/
+void fpux_restore (int *v) {}
+
+int is_tablet (void) { return 0; }
+int is_touch_lightpen (void) { return 0; }
+
+bool inprec_realtime (bool stopstart) { return false; }
+void desktop_coords(int monid, int *dw, int *dh, int *ax, int *ay, int *aw, int *ah) {}
+void update_disassembly(uae_u32 addr) {}
+void update_memdump(uae_u32 addr) {}
+int console_get (TCHAR *out, int maxlen) { return 0; }
+void console_flush (void) {}
+

@@ -12,10 +12,9 @@
 
 #include "options.h"
 #include "blkdev.h"
-#include "fsdb.h"
 #include "isofs_api.h"
+#include "uae/string.h"
 #include "zfile.h"
-#include "misc.h"
 
 #include "isofs.h"
 
@@ -602,6 +601,8 @@ static int isofs_read_inode(struct inode *inode)
 		ret = isofs_read_level3_size(inode);
 		if (ret < 0)
 			goto fail;
+		// FIXME: this value is never used (?), because it is overwritten
+		// with ret = 0 further down.
 		ret = -EIO;
 	} else {
 		ei->i_next_section_block = 0;
@@ -1721,6 +1722,12 @@ static int isofs_fill_super(struct super_block *s, void *data, int silent, uae_u
 	sbi->s_high_sierra = 0; /* default is iso9660 */
 
 	vol_desc_start = 0;
+#if 0
+	struct device_info di;
+	if (sys_command_info (s->unitnum, &di, true)) {
+		vol_desc_start = di.toc.firstaddress;
+	}
+#endif
 
 	for (iso_blknum = vol_desc_start+16; iso_blknum < vol_desc_start+100; iso_blknum++) {
 		struct hs_volume_descriptor *hdp;
@@ -2099,7 +2106,7 @@ static int isofs_cmp(const char *name, char *compare, int dlen)
 	}
 	char tmp = compare[dlen];
 	compare[dlen] = 0;
-	int c = strcasecmp(name, compare);
+	int c = stricmp(name, compare);
 	compare[dlen] = tmp;
 	return c;
 }
@@ -2395,7 +2402,7 @@ static int do_isofs_readdir(struct inode *inode, struct file *filp, char *tmpnam
 					p[len] = t;
 				}
 			} else {
-				_tcscpy (outname, jname);
+				uae_tcslcpy (outname, jname, MAX_DPATH);
 				xfree (jname);
 			}
 			dinode = isofs_iget(inode->i_sb, bh_block, offset_saved, outname);
@@ -2469,14 +2476,14 @@ bool isofs_mediainfo(void *sbp, struct isofs_info *ii)
 		_stprintf (ii->devname, _T("CD%d"), sb->unitnum);
 		if (sys_command_info (sb->unitnum, &di, true)) {
 			totalblocks = di.cylinders * di.sectorspertrack * di.trackspercylinder;
-			_tcscpy (ii->devname, di.label);
+			uae_tcslcpy (ii->devname, di.label, sizeof (ii->devname));
 		}
 		ii->unknown_media = sb->unknown_media;
 		if (sb->root) {
 			if (_tcslen(sb->root->name) == 0) {
-				_tcscpy(ii->volumename, _T("NO_LABEL"));
+				uae_tcslcpy(ii->volumename, _T("NO_LABEL"), sizeof(ii->volumename));
 			} else {
-				_tcscpy (ii->volumename, sb->root->name);
+				uae_tcslcpy (ii->volumename, sb->root->name, sizeof(ii->volumename));
 			}
 			ii->blocks = sbi->s_max_size;
 			ii->totalblocks = totalblocks ? totalblocks : ii->blocks;
@@ -2544,7 +2551,7 @@ bool isofs_stat(void *sbp, uae_u64 uniq, struct mystat *statbuf)
 
 	if (!inode)
 		return false;
-
+	
 	statbuf->mtime.tv_sec = inode->i_mtime.tv_sec;
 	statbuf->mtime.tv_usec = 0;
 	if (!XS_ISDIR(inode->i_mode)) {

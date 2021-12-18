@@ -11,8 +11,8 @@
 #include "sysconfig.h"
 #include "sysdeps.h"
 
+#include "uae.h"
 #include "fsdb.h"
-#include "misc.h"
 
 /* these are deadly (but I think allowed on the Amiga): */
 #define NUM_EVILCHARS 9
@@ -51,7 +51,7 @@ typedef struct fsdb_file_info {
 
 #define TRACING_ENABLED 0
 #if TRACING_ENABLED
-#define TRACE(x)	do { write_log x; } while(0)
+#define TRACE(x) do { write_log x; } while(0)
 #else
 #define TRACE(x)
 #endif
@@ -67,13 +67,13 @@ int dos_errno (void)
 	case ENOENT:	return ERROR_OBJECT_NOT_AROUND;
 	case ENOTDIR:	return ERROR_OBJECT_WRONG_TYPE;
 	case ENOSPC:	return ERROR_DISK_IS_FULL;
-	case EBUSY:       	return ERROR_OBJECT_IN_USE;
+	case EBUSY:     return ERROR_OBJECT_IN_USE;
 	case EISDIR:	return ERROR_OBJECT_WRONG_TYPE;
 #if defined(ETXTBSY)
 	case ETXTBSY:	return ERROR_OBJECT_IN_USE;
 #endif
 #if defined(EROFS)
-	case EROFS:       	return ERROR_DISK_WRITE_PROTECTED;
+	case EROFS:     return ERROR_DISK_WRITE_PROTECTED;
 #endif
 #if defined(ENOTEMPTY)
 #if ENOTEMPTY != EEXIST
@@ -86,7 +86,9 @@ int dos_errno (void)
     }
 }
 
-static int fsdb_name_invalid_2 (const TCHAR *n, int dir)
+#ifdef __LIBRETRO__
+/* Return nonzero for any name we can't create on the native filesystem.  */
+static int fsdb_name_invalid_2x (const TCHAR *n, int dir)
 {
     int i;
     static char s1[MAX_DPATH];
@@ -101,16 +103,12 @@ static int fsdb_name_invalid_2 (const TCHAR *n, int dir)
     if (_tcscmp (n, FSDB_FILE) == 0)
         return -1;
 
-#ifndef __LIBRETRO__
     if (dir) {
-#endif
         if (n[0] == '.' && l == 1)
             return -1;
         if (n[0] == '.' && n[1] == '.' && l == 2)
             return -1;
-#ifndef __LIBRETRO__
     }
-#endif
 
     if (a >= 'a' && a <= 'z')
         a -= 32;
@@ -154,18 +152,26 @@ static int fsdb_name_invalid_2 (const TCHAR *n, int dir)
     return 0; /* the filename passed all checks, now it should be ok */
 }
 
-int fsdb_name_invalid (const TCHAR *n)
+static int fsdb_name_invalid_2 (a_inode *aino, const TCHAR *n, int dir)
 {
-    int v = fsdb_name_invalid_2 (n, 0);
+	int v = fsdb_name_invalid_2x(n, dir);
+	if (v <= 1 || !aino)
+		return v;
+	return 0;
+}
+
+int fsdb_name_invalid (a_inode *aino, const TCHAR *n)
+{
+    int v = fsdb_name_invalid_2 (aino, n, 0);
     if (v <= 0)
         return v;
     write_log (_T("FILESYS: '%s' illegal filename\n"), n);
     return v;
 }
 
-int fsdb_name_invalid_dir (const TCHAR *n)
+int fsdb_name_invalid_dir (a_inode *aino, const TCHAR *n)
 {
-    int v = fsdb_name_invalid_2 (n, 1);
+    int v = fsdb_name_invalid_2 (aino, n, 1);
     if (v <= 0)
         return v;
     write_log (_T("FILESYS: '%s' illegal filename\n"), n);
@@ -182,26 +188,42 @@ int fsdb_exists (const char *nname)
     struct stat statbuf;
     return (stat (nname, &statbuf) != -1);
 }
+#else
+/* Return nonzero for any name we can't create on the native filesystem.  */
+int fsdb_name_invalid (const char *n)
+{
+    if (strcmp (n, FSDB_FILE) == 0)
+	return 1;
+    if (n[0] != '.')
+	return 0;
+    if (n[1] == '\0')
+	return 1;
+    return n[1] == '.' && n[2] == '\0';
+}
+#endif
 
 /* For an a_inode we have newly created based on a filename we found on the
  * native fs, fill in information about this file/directory.  */
 int fsdb_fill_file_attrs (a_inode *base, a_inode *aino)
 {
-    struct stat statbuf;
-    /* This really shouldn't happen...  */
-    if (stat (aino->nname, &statbuf) == -1)
-	return 0;
-    aino->dir = S_ISDIR (statbuf.st_mode) ? 1 : 0;
-    aino->amigaos_mode = ((S_IXUSR & statbuf.st_mode ? 0 : A_FIBF_EXECUTE)
+	struct stat statbuf;
+	/* This really shouldn't happen...  */
+	if (stat (aino->nname, &statbuf) == -1)
+		return 0;
+	aino->dir = S_ISDIR (statbuf.st_mode) ? 1 : 0;
+	aino->amigaos_mode = ((S_IXUSR & statbuf.st_mode ? 0 : A_FIBF_EXECUTE)
 			  | (S_IWUSR & statbuf.st_mode ? 0 : A_FIBF_WRITE)
 			  | (S_IRUSR & statbuf.st_mode ? 0 : A_FIBF_READ));
-#if defined (ANDROID) || defined (__LIBRETRO__)
-    // Always give execute & read permission
-    aino->amigaos_mode &= ~A_FIBF_EXECUTE;
-    aino->amigaos_mode &= ~A_FIBF_READ;
-    // Force files under S as scripts
-    if (strstr(aino->nname, "/S/") && !strstr(aino->nname, ".doc") && !strstr(aino->nname, ".config") && !strstr(aino->nname, ".prefs"))
-        aino->amigaos_mode |= A_FIBF_SCRIPT;
+#ifdef __LIBRETRO__
+	/* Always give execute & read permission */
+	aino->amigaos_mode &= ~A_FIBF_EXECUTE;
+	aino->amigaos_mode &= ~A_FIBF_READ;
+	/* Force files under S as scripts */
+	if ((strstr(aino->nname, "/S/") || strstr(aino->nname, "\\S\\"))
+			&& !strstr(aino->nname, ".doc")
+			&& !strstr(aino->nname, ".config")
+			&& !strstr(aino->nname, ".prefs"))
+		aino->amigaos_mode |= A_FIBF_SCRIPT;
 #endif
     return 1;
 }
@@ -209,7 +231,7 @@ int fsdb_fill_file_attrs (a_inode *base, a_inode *aino)
 int fsdb_set_file_attrs (a_inode *aino)
 {
     struct stat statbuf;
-    int tmpmask = aino->amigaos_mode;
+    int mask = aino->amigaos_mode;
     int mode;
 
     if (stat (aino->nname, &statbuf) == -1)
@@ -218,17 +240,17 @@ int fsdb_set_file_attrs (a_inode *aino)
     mode = statbuf.st_mode;
     /* Unix dirs behave differently than AmigaOS ones.  */
     if (! aino->dir) {
-	if (tmpmask & A_FIBF_READ)
+	if (mask & A_FIBF_READ)
 	    mode &= ~S_IRUSR;
 	else
 	    mode |= S_IRUSR;
 
-	if (tmpmask & A_FIBF_WRITE)
+	if (mask & A_FIBF_WRITE)
 	    mode &= ~S_IWUSR;
 	else
 	    mode |= S_IWUSR;
 
-	if (tmpmask & A_FIBF_EXECUTE)
+	if (mask & A_FIBF_EXECUTE)
 	    mode &= ~S_IXUSR;
 	else
 	    mode |= S_IXUSR;
@@ -236,51 +258,44 @@ int fsdb_set_file_attrs (a_inode *aino)
 	chmod (aino->nname, mode);
     }
 
+    aino->amigaos_mode = mask;
     aino->dirty = 1;
     return 0;
 }
 
-/* return supported combination */
-int fsdb_mode_supported (const a_inode *aino)
-{
-        int mask = aino->amigaos_mode;
-        if (0 && aino->dir)
-                return 0;
-        if (fsdb_mode_representable_p (aino, mask))
-                return mask;
-        mask &= ~(A_FIBF_SCRIPT | A_FIBF_READ | A_FIBF_EXECUTE);
-        if (fsdb_mode_representable_p (aino, mask))
-                return mask;
-        mask &= ~A_FIBF_WRITE;
-        if (fsdb_mode_representable_p (aino, mask))
-                return mask;
-        mask &= ~A_FIBF_DELETE;
-        if (fsdb_mode_representable_p (aino, mask))
-                return mask;
-        return 0;
-}
-
 /* Return nonzero if we can represent the amigaos_mode of AINO within the
  * native FS.  Return zero if that is not possible.  */
+#if 1
 int fsdb_mode_representable_p (const a_inode *aino, int amigaos_mode)
 {
-        int mask = amigaos_mode ^ 15;
+	int mask = amigaos_mode ^ 15;
 
-        if (0 && aino->dir)
-                return amigaos_mode == 0;
+	if (0 && aino->dir)
+		return amigaos_mode == 0;
 
-        if (mask & A_FIBF_SCRIPT) /* script */
-                return 0;
-        if ((mask & 15) == 15) /* xxxxRWED == OK */
-                return 1;
-        if (!(mask & A_FIBF_EXECUTE)) /* not executable */
-                return 0;
-        if (!(mask & A_FIBF_READ)) /* not readable */
-                return 0;
-        if ((mask & 15) == (A_FIBF_READ | A_FIBF_EXECUTE)) /* ----RxEx == ReadOnly */
-                return 1;
-        return 0;
+	if (aino->vfso)
+		return 1;
+	if (mask & A_FIBF_SCRIPT) /* script */
+		return 0;
+	if ((mask & 15) == 15) /* xxxxRWED == OK */
+		return 1;
+	if (!(mask & A_FIBF_EXECUTE)) /* not executable */
+		return 0;
+	if (!(mask & A_FIBF_READ)) /* not readable */
+		return 0;
+	if ((mask & 15) == (A_FIBF_READ | A_FIBF_EXECUTE)) /* ----RxEx == ReadOnly */
+		return 1;
+	return 0;
 }
+#else
+int fsdb_mode_representable_p (const a_inode *aino)
+{
+    if (aino->dir)
+	return aino->amigaos_mode == 0;
+    return (aino->amigaos_mode & (A_FIBF_DELETE | A_FIBF_SCRIPT | A_FIBF_PURE)) == 0;
+}
+#endif
+
 
 static char *aname_to_nname(const char *aname, int ascii)
 {
@@ -356,9 +371,6 @@ static char *aname_to_nname(const char *aname, int ascii)
             }
         }
         if (repl) {
-            //*p++ = '%';
-            //*p++ = hex_chars[(x & 0xf0) >> 4];
-            //*p++ = hex_chars[x & 0xf];
             *p++ = is_evil ? '_' : x;
             ll = 1;
         }
@@ -382,7 +394,7 @@ static char *aname_to_nname(const char *aname, int ascii)
 
     free(buf);
 
-    //write_log("aname_to_nname %s => %s\n", aname, result);
+    /*write_log("aname_to_nname %s => %s\n", aname, result);*/
     return result;
 }
 
@@ -426,10 +438,11 @@ static char *nname_to_aname(const char *nname, int noconvert)
     free(cresult);
 
     result = string_replace_substring(result, UAEFSDB_BEGINS, "");
-    //write_log("nname_to_aname %s => %s\n", nname, result);
+    /*write_log("nname_to_aname %s => %s\n", nname, result);*/
     return result;
 }
 
+#if 1
 TCHAR *fsdb_create_unique_nname(a_inode *base, const TCHAR *suggestion)
 {
     char *nname = aname_to_nname(suggestion, 0);
@@ -437,6 +450,50 @@ TCHAR *fsdb_create_unique_nname(a_inode *base, const TCHAR *suggestion)
     free(nname);
     return p;
 }
+#else
+char *fsdb_create_unique_nname (a_inode *base, const char *suggestion)
+{
+    char tmp[256] = "__uae___";
+    strncat (tmp, suggestion, 240);
+    for (;;) {
+	int i;
+	char *p = build_nname (base->nname, tmp);
+	if (access (p, R_OK) < 0 && errno == ENOENT) {
+	    printf ("unique name: %s\n", p);
+	    return p;
+	}
+	free (p);
+
+	/* tmpnam isn't reentrant and I don't really want to hack configure
+	 * right now to see whether tmpnam_r is available...  */
+	for (i = 0; i < 8; i++) {
+	    tmp[i] = "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[uaerand () % 63];
+	}
+    }
+}
+#endif
+
+/* return supported combination */
+int fsdb_mode_supported (const a_inode *aino)
+{
+	int mask = aino->amigaos_mode;
+	if (0 && aino->dir)
+		return 0;
+	if (fsdb_mode_representable_p (aino, mask))
+		return mask;
+	mask &= ~(A_FIBF_SCRIPT | A_FIBF_READ | A_FIBF_EXECUTE);
+	if (fsdb_mode_representable_p (aino, mask))
+		return mask;
+	mask &= ~A_FIBF_WRITE;
+	if (fsdb_mode_representable_p (aino, mask))
+		return mask;
+	mask &= ~A_FIBF_DELETE;
+	if (fsdb_mode_representable_p (aino, mask))
+		return mask;
+	return 0;
+}
+
+
 
 /* Return 1 if the nname is a special host-only name which must be translated
  * to aname using fsdb.
@@ -463,9 +520,9 @@ static int fsdb_get_file_info(const char *nname, fsdb_file_info *info)
 a_inode *custom_fsdb_lookup_aino_aname(a_inode *base, const TCHAR *aname)
 {
     char *nname = aname_to_nname(aname, 0);
-    //find_nname_case(base->nname, &nname);
+    /*find_nname_case(base->nname, &nname);*/
     char *full_nname = build_nname(base->nname, nname);
-    if (!fsdb_name_invalid(aname))
+    if (!fsdb_name_invalid(base, aname))
     {
         free(full_nname);
         free(nname);
