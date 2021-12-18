@@ -438,37 +438,37 @@ static void retro_set_core_options()
    {
       {
          "audio",
-         "Audio Options",
+         "Audio",
          "Configure audio options."
       },
       {
          "video",
-         "Video Options",
+         "Video",
          "Configure video options."
       },
       {
          "media",
-         "Media Options",
+         "Media",
          "Configure media options."
       },
       {
          "model",
-         "Automatic Model Options",
+         "Automatic Models",
          "Configure automatic model options."
       },
       {
          "input",
-         "Input Options",
+         "Input",
          "Configure input options."
       },
       {
          "hotkey",
-         "Hotkey Mapping Options",
+         "Hotkey Mapping",
          "Configure keyboard hotkey mapping options."
       },
       {
          "retropad",
-         "RetroPad Mapping Options",
+         "RetroPad Mapping",
          "Configure RetroPad mapping options."
       },
       { NULL, NULL, NULL },
