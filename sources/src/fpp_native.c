@@ -12,20 +12,19 @@
 
 #include <math.h>
 #include <float.h>
+#ifndef __LIBRETRO__
 #include <fenv.h>
+#endif
 
 #include "sysconfig.h"
 #include "sysdeps.h"
 
-#define USE_HOST_ROUNDING 1
-#define SOFTFLOAT_CONVERSIONS 1
-
 #ifdef __LIBRETRO__
-#ifdef NO_HOST_ROUNDING
-#undef USE_HOST_ROUNDING
 #define USE_HOST_ROUNDING 0
+#else
+#define USE_HOST_ROUNDING 1
 #endif
-#endif
+#define SOFTFLOAT_CONVERSIONS 1
 
 #include "options.h"
 #include "memory.h"

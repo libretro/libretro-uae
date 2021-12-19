@@ -568,10 +568,6 @@
    code using `volatile' can become incorrect without. Disable with care. */
 /* #undef volatile */
 
-#if defined(__SWITCH__) || defined(VITA) || defined(__PS3__) || defined(WIIU)
-#define NO_HOST_ROUNDING
-#endif
-
 #ifdef MSB_FIRST
 #  define bswap_16(x) (x)
 #  define bswap_32(x) (x)
