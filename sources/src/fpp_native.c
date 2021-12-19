@@ -20,6 +20,13 @@
 #define USE_HOST_ROUNDING 1
 #define SOFTFLOAT_CONVERSIONS 1
 
+#ifdef __LIBRETRO__
+#ifdef NO_HOST_ROUNDING
+#undef USE_HOST_ROUNDING
+#define USE_HOST_ROUNDING 0
+#endif
+#endif
+
 #include "options.h"
 #include "memory.h"
 #include "newcpu.h"
