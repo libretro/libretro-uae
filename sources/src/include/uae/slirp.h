@@ -4,11 +4,13 @@
 struct in_addr;
 #include "uae/types.h"
 
+#ifndef __LIBRETRO__
 #ifdef _WIN32
 #else
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#endif
 #endif
 
 int uae_slirp_init(void);
