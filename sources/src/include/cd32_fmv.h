@@ -1,2 +1,16 @@
+#ifndef UAE_CD32_FMV_H
+#define UAE_CD32_FMV_H
 
-extern void cd32_fmv_init (uaecptr);
+#include "uae/types.h"
+
+extern addrbank *cd32_fmv_init (struct autoconfig_info *aci);
+
+extern void cd32_fmv_state(int state);
+extern void cd32_fmv_new_image(int, int, int, uae_u8*);
+extern void cd32_fmv_genlock(struct vidbuffer*, struct vidbuffer*);
+extern void cd32_fmv_new_border_color(uae_u32);
+extern void cd32_fmv_set_sync(double svpos, double adjust);
+
+extern int cd32_fmv_active;
+
+#endif /* UAE_CD32_FMV_H */

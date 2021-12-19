@@ -10,19 +10,17 @@
 
 #include "sysdeps.h"
 #include "uae.h"
-#include "uae_types.h"
+#include "uae/types.h"
 #include "options.h"
+#include "devices.h"
 #include "inputdevice.h"
 #include "savestate.h"
 #include "custom.h"
 #include "xwin.h"
-#include "drawing.h"
-#include "akiko.h"
-#include "blkdev.h"
 #include "disk.h"
 #include "gui.h"
 #include "audio.h"
-#include "memory_uae.h"
+#include "memory.h"
 #include "sounddep/sound.h"
 
 #ifdef USE_LIBRETRO_VFS
@@ -44,7 +42,6 @@ extern int bplcon0;
 extern int diwlastword_total;
 extern int diwfirstword_total;
 extern int m68k_go(int may_quit, int resume);
-extern int prefs_changed;
 
 unsigned int opt_model_options_display = 0;
 unsigned int opt_audio_options_display = 0;
@@ -246,8 +243,8 @@ static void retro_led_interface(void)
 
    for (int i = 0; i < 4; i++)
    {
-      if (!led_state[1] && gui_data.df[i][0])
-         led_state[1] = gui_data.drive_motor[i];
+      if (!led_state[1] && gui_data.drives[i].df[0])
+         led_state[1] = gui_data.drives[i].drive_motor;
    }
 
    if (!led_state[2] && gui_data.hd >= 0)
@@ -315,19 +312,19 @@ static void retro_autoloadfastforwarding(void)
    if (mapper_keys_pressed_time)
       return;
 
-   if (opt_autoloadfastforward & AUTOLOADFASTFORWARD_FD && (gui_data.df[0][0] || gui_data.df[1][0]))
+   if (opt_autoloadfastforward & AUTOLOADFASTFORWARD_FD && (gui_data.drives[0].df[0] || gui_data.drives[1].df[0]))
    {
       int ff             = -1;
       int drive_led      = retro_led_state[1];
-      int drive_track    = gui_data.drive_track[0];
+      int drive_track    = gui_data.drives[0].drive_track;
       bool audio_playing = paula_playing();
 
-      if (gui_data.drive_motor[1])
-         drive_track = gui_data.drive_track[1];
-      if (gui_data.drive_motor[2])
-         drive_track = gui_data.drive_track[2];
-      if (gui_data.drive_motor[3])
-         drive_track = gui_data.drive_track[3];
+      if (gui_data.drives[1].drive_motor)
+         drive_track = gui_data.drives[1].drive_track;
+      if (gui_data.drives[2].drive_motor)
+         drive_track = gui_data.drives[2].drive_track;
+      if (gui_data.drives[3].drive_motor)
+         drive_track = gui_data.drives[3].drive_track;
 
       /* No FF when audio is playing */
       if (libretro_ff_enabled && audio_playing)
@@ -376,7 +373,7 @@ static void retro_autoloadfastforwarding(void)
 
    if (((opt_autoloadfastforward & AUTOLOADFASTFORWARD_CD && gui_data.cd >= 0) ||
        (opt_autoloadfastforward & AUTOLOADFASTFORWARD_HD && gui_data.hd >= 0)) &&
-       !gui_data.df[0][0] && !gui_data.df[1][0])
+       !gui_data.drives[0].df[0] && !gui_data.drives[1].df[0])
    {
       int ff             = -1;
       int drive_led      = 0;
@@ -441,37 +438,37 @@ static void retro_set_core_options()
    {
       {
          "audio",
-         "Audio Options",
+         "Audio",
          "Configure audio options."
       },
       {
          "video",
-         "Video Options",
+         "Video",
          "Configure video options."
       },
       {
          "media",
-         "Media Options",
+         "Media",
          "Configure media options."
       },
       {
          "model",
-         "Automatic Model Options",
+         "Automatic Models",
          "Configure automatic model options."
       },
       {
          "input",
-         "Input Options",
+         "Input",
          "Configure input options."
       },
       {
          "hotkey",
-         "Hotkey Mapping Options",
+         "Hotkey Mapping",
          "Configure keyboard hotkey mapping options."
       },
       {
          "retropad",
-         "RetroPad Mapping Options",
+         "RetroPad Mapping",
          "Configure RetroPad mapping options."
       },
       { NULL, NULL, NULL },
@@ -608,10 +605,11 @@ static void retro_set_core_options()
          {
             { "normal", "Normal" },
             { "compatible", "More compatible" },
-            { "exact", "Cycle-exact" },
+            { "memory", "Cycle-exact (DMA/Memory)" },
+            { "exact", "Cycle-exact (Full)" },
             { NULL, NULL },
          },
-         "normal"
+         "compatible"
       },
       {
          "puae_cpu_throttle",
@@ -847,7 +845,7 @@ static void retro_set_core_options()
             { "locked", "Locked PAL/NTSC" },
             { NULL, NULL },
          },
-         "enabled"
+         "locked"
       },
       {
          "puae_video_standard",
@@ -2725,17 +2723,30 @@ static void update_variables(void)
       if (!strcmp(var.value, "normal"))
       {
          strcat(uae_config, "cpu_compatible=false\n");
-         strcat(uae_config, "cycle_exact=false\n");
+         strcat(uae_config, "cpu_cycle_exact=false\n");
+         strcat(uae_config, "cpu_memory_cycle_exact=false\n");
+         strcat(uae_config, "blitter_cycle_exact=false\n");
       }
       else if (!strcmp(var.value, "compatible"))
       {
          strcat(uae_config, "cpu_compatible=true\n");
-         strcat(uae_config, "cycle_exact=false\n");
+         strcat(uae_config, "cpu_cycle_exact=false\n");
+         strcat(uae_config, "cpu_memory_cycle_exact=false\n");
+         strcat(uae_config, "blitter_cycle_exact=false\n");
+      }
+      else if (!strcmp(var.value, "memory"))
+      {
+         strcat(uae_config, "cpu_compatible=true\n");
+         strcat(uae_config, "cpu_cycle_exact=false\n");
+         strcat(uae_config, "cpu_memory_cycle_exact=true\n");
+         strcat(uae_config, "blitter_cycle_exact=true\n");
       }
       else if (!strcmp(var.value, "exact"))
       {
          strcat(uae_config, "cpu_compatible=true\n");
-         strcat(uae_config, "cycle_exact=true\n");
+         strcat(uae_config, "cpu_cycle_exact=true\n");
+         strcat(uae_config, "cpu_memory_cycle_exact=true\n");
+         strcat(uae_config, "blitter_cycle_exact=true\n");
       }
 
       if (libretro_runloop_active && !cpu_cycle_exact_force)
@@ -2744,18 +2755,28 @@ static void update_variables(void)
          {
             changed_prefs.cpu_compatible = 0;
             changed_prefs.cpu_cycle_exact = 0;
+            changed_prefs.cpu_memory_cycle_exact = 0;
             changed_prefs.blitter_cycle_exact = 0;
          }
          else if (!strcmp(var.value, "compatible"))
          {
             changed_prefs.cpu_compatible = 1;
             changed_prefs.cpu_cycle_exact = 0;
+            changed_prefs.cpu_memory_cycle_exact = 0;
             changed_prefs.blitter_cycle_exact = 0;
+         }
+         else if (!strcmp(var.value, "memory"))
+         {
+            changed_prefs.cpu_compatible = 1;
+            changed_prefs.cpu_cycle_exact = 0;
+            changed_prefs.cpu_memory_cycle_exact = 1;
+            changed_prefs.blitter_cycle_exact = 1;
          }
          else if (!strcmp(var.value, "exact"))
          {
             changed_prefs.cpu_compatible = 1;
             changed_prefs.cpu_cycle_exact = 1;
+            changed_prefs.cpu_memory_cycle_exact = 1;
             changed_prefs.blitter_cycle_exact = 1;
          }
       }
@@ -2958,7 +2979,8 @@ static void update_variables(void)
 
       /* Setting volume in realtime will crash on first pass */
       if (libretro_runloop_active)
-         changed_prefs.dfxclickvolume = atoi(val);
+         for (unsigned i = 0; i < 4; i++)
+            changed_prefs.dfxclickvolume_disk[i] = atoi(val);
    }
 
    var.key = "puae_floppy_sound_empty_mute";
@@ -3744,11 +3766,8 @@ static void update_variables(void)
    request_update_av_info = true;
 
    /* Always trigger changed prefs */
-   config_changed = 1;
-   check_prefs_changed_audio();
-   check_prefs_changed_custom();
-   check_prefs_changed_cpu();
-   config_changed = 0;
+   set_config_changed();
+   device_check_config();
 
    /*** Options display ***/
    if (libretro_supports_option_categories)
@@ -6267,7 +6286,7 @@ static void update_audiovideo(void)
    if (automatic_sound_filter_type_update)
    {
       automatic_sound_filter_type_update = false;
-      config_changed = 1;
+      set_config_changed();
       if (currprefs.cpu_model >= 68020)
          changed_prefs.sound_filter_type = FILTER_SOUND_TYPE_A1200;
       else
@@ -6279,7 +6298,7 @@ static void update_audiovideo(void)
    {
       int current_resolution = GET_RES_DENISE (bplcon0);
 #if 0
-      printf("BPLCON0: %d, %d, %d %d\n", bplcon0, current_resolution, diwfirstword_total, diwlastword_total);
+      printf("BPLCON0: %x, %d, %d %d\n", bplcon0, current_resolution, diwfirstword_total, diwlastword_total);
 #endif
 
       /* Super Skidmarks force to SuperHires */
@@ -6293,6 +6312,10 @@ static void update_audiovideo(void)
       /* Lores force to Hires */
       else if (current_resolution == 0)
          current_resolution = 1;
+
+      /* Skip bogus switches in Super Skidmarks SuperHires */
+      if (!diwlastword_total)
+         current_resolution = 0;
 
       switch (current_resolution)
       {
@@ -6317,6 +6340,8 @@ static void update_audiovideo(void)
                retro_max_diwlastword = retro_max_diwlastword_hires * 2;
                request_init_custom_timer = 2;
             }
+            break;
+         default:
             break;
       }
 
@@ -6552,7 +6577,7 @@ static bool retro_update_av_info(void)
       if (update_vresolution(true))
       {
          request_init_custom_timer = 1;
-         prefs_changed = 1;
+         set_config_changed();
          return false;
       }
    }
@@ -6915,7 +6940,7 @@ static bool retro_update_av_info(void)
    }
 
    /* Triggers check_prefs_changed_gfx() in vsync_handle_check() */
-   prefs_changed = 1;
+   set_config_changed();
 
    /* Changing any drawing/offset parameters requires
     * a drawing reset - it is safest to just do this
@@ -6943,11 +6968,6 @@ void retro_run(void)
    if (request_update_av_info)
       retro_update_av_info();
 
-   /* Single/double line mode changes leave rubbish behind,
-    * therefore clear everything */
-   if (prefs_changed)
-      memset(retro_bmp, 0, sizeof(retro_bmp));
-
    /* Poll inputs */
    input_poll_cb();
    retro_poll_event();
@@ -6974,7 +6994,11 @@ void retro_run(void)
          request_reset_drawing = true;
       request_init_custom_timer--;
       if (request_init_custom_timer == 0)
+      {
+         /* Clear video buffer */
+         memset(retro_bmp, 0, sizeof(retro_bmp));
          init_custom();
+      }
    }
 
    /* Refresh CPU prefs */
@@ -6984,11 +7008,8 @@ void retro_run(void)
       if (request_check_prefs_timer == 0)
       {
          update_variables();
-         config_changed = 1;
-         check_prefs_changed_audio();
-         check_prefs_changed_custom();
-         check_prefs_changed_cpu();
-         config_changed = 0;
+         set_config_changed();
+         device_check_config();
       }
    }
 
@@ -7107,7 +7128,7 @@ bool retro_load_game(const struct retro_game_info *info)
    }
 
    struct retro_memory_descriptor memdesc[] = {
-      {RETRO_MEMDESC_SYSTEM_RAM, chipmemory, 0, 0, 0, 0, allocated_chipmem, NULL}
+      {RETRO_MEMDESC_SYSTEM_RAM, chipmem_bank.baseaddr, 0, 0, 0, 0, chipmem_bank.allocated_size, NULL}
    };
 
    struct retro_memory_map mmap = {

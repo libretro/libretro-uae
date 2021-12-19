@@ -1,7 +1,3 @@
-#pragma once
-#ifndef SRC_INCLUDE_SANA2_H_INCLUDED
-#define SRC_INCLUDE_SANA2_H_INCLUDED 1
-
  /*
   * UAE - The Un*x Amiga Emulator
   *
@@ -10,9 +6,16 @@
   * (c) 2007 Toni Wilen
   */
 
-uaecptr netdev_startup (uaecptr resaddr);
-void netdev_install (void);
-void netdev_reset (void);
-void netdev_start_threads (void);
+#ifndef UAE_SANA2_H
+#define UAE_SANA2_H
 
-#endif // SRC_INCLUDE_SANA2_H_INCLUDED
+#include "uae/types.h"
+
+#define MAX_TOTAL_NET_DEVICES 10
+
+uaecptr netdev_startup(TrapContext*, uaecptr resaddr);
+void netdev_install(void);
+
+extern int log_net;
+
+#endif /* UAE_SANA2_H */

@@ -290,7 +290,8 @@ CFLAGS += -DHAVE_7ZIP -D_7ZIP_ST
 # CHD
 HAVE_CHD = 1
 
-CFLAGS += -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -DUSE_LIBRETRO_VFS
+CFLAGS   += -DUAE -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -DUSE_LIBRETRO_VFS
+CXXFLAGS += -DUAE
 
 include Makefile.common
 
@@ -313,6 +314,9 @@ endif
 
 %.o: %.c
 	$(CC) $(fpic) $(CFLAGS) $(PLATFLAGS) $(INCDIRS) -c -o $@ $<
+
+%.o: %.cpp
+	$(CXX) $(fpic) $(CXXFLAGS) $(PLATFLAGS) $(INCDIRS) -c -o $@ $<
 
 %.o: %.S
 	$(CC_AS) $(CFLAGS) -c $^ -o $@

@@ -1,8 +1,87 @@
 #ifndef UAE_SYSCONFIG_H
 #define UAE_SYSCONFIG_H
 
+#define DRIVESOUND
+#define SUPPORT_THREADS
+//#define OPTIMIZED_FLAGS
+
+#define DEBUGGER
+#define FILESYS /* filesys emulation */
+//#define UAE_FILESYS_THREADS
+#define AUTOCONFIG /* autoconfig support, fast ram, harddrives etc.. */
+//#define JIT /* JIT compiler support */
+//#define USE_JIT_FPU
+//#define NOFLAGS_SUPPORT_GENCPU
+//#define NOFLAGS_SUPPORT_GENCOMP
+//#define HAVE_GET_WORD_UNSWAPPED
+#define NATMEM_OFFSET natmem_offset
+#define USE_NORMAL_CALLING_CONVENTION 0
+#define USE_X86_FPUCW 1
+//#define CATWEASEL /* Catweasel MK2/3 support */
+//#define AHI /* AHI sound emulation */
+//#define ENFORCER /* UAE Enforcer */
+#define ECS_DENISE /* ECS DENISE new features */
+#define AGA /* AGA chipset emulation (ECS_DENISE must be enabled) */
+#define CD32 /* CD32 emulation */
+#define CDTV /* CDTV emulation */
+#define PARALLEL_PORT /* parallel port emulation */
+//#define PARALLEL_DIRECT /* direct parallel port emulation */
+#define SERIAL_PORT /* serial port emulation */
+//#define SERIAL_ENET /* serial port UDP transport */
+#define SCSIEMU /* uaescsi.device emulation */
+#define UAESERIAL /* uaeserial.device emulation */
+#define FPUEMU /* FPU emulation */
+#define MMUEMU /* Aranym 68040 MMU */
+#define FULLMMU /* Aranym 68040 MMU */
+#define CPUEMU_0 /* generic 680x0 emulation */
+#define CPUEMU_11 /* 68000/68010 prefetch emulation */
+#define CPUEMU_13 /* 68000/68010 cycle-exact cpu&blitter */
+#define CPUEMU_20 /* 68020 prefetch */
+#define CPUEMU_21 /* 68020 "cycle-exact" + blitter */
+#define CPUEMU_22 /* 68030 prefetch */
+#define CPUEMU_23 /* 68030 "cycle-exact" + blitter */
+#define CPUEMU_24 /* 68060 "cycle-exact" + blitter */
+#define CPUEMU_25 /* 68040 "cycle-exact" + blitter */
+#define CPUEMU_31 /* Aranym 68040 MMU */
+#define CPUEMU_32 /* Previous 68030 MMU */
+#define CPUEMU_33 /* 68060 MMU */
+#define CPUEMU_34 /* 68030 MMU + cache */
+#define CPUEMU_35 /* 68030 MMU + cache + CE */
+#define CPUEMU_40 /* generic 680x0 with JIT direct memory access */
+#define CPUEMU_50 /* generic 680x0 with indirect memory access */
+//#define ACTION_REPLAY /* Action Replay 1/2/3 support */
+//#define PICASSO96 /* Picasso96 display card emulation */
+//#define UAEGFX_INTERNAL /* built-in libs:picasso96/uaegfx.card */
+//#define BSDSOCKET /* bsdsocket.library emulation */
 #define CAPS /* CAPS-image support */
+//#define SCP /* SuperCardPro */
 #define FDI2RAW /* FDI 1.0 and 2.x image support */
+//#define PROWIZARD /* Pro-Wizard module ripper */
+#define ARCADIA /* Arcadia arcade system */
+//#define ARCHIVEACCESS /* ArchiveAccess decompression library */
+//#define LOGITECHLCD /* Logitech G15 LCD */
+#define SAVESTATE /* State file support */
+#define A2091 /* A590/A2091 SCSI */
+//#define A2065 /* A2065 Ethernet card */
+#define GFXBOARD /* Hardware graphics board */
+#define NCR /* A4000T/A4091, 53C710/53C770 SCSI */
+//#define NCR9X /* 53C9X SCSI */
+//#define SANA2 /* SANA2 network driver */
+//#define AMAX /* A-Max ROM adapter emulation */
+//#define RETROPLATFORM /* Cloanto RetroPlayer support */
+//#define WITH_LUA /* lua scripting */
+//#define WITH_UAENATIVE
+//#define WITH_SLIRP
+//#define WITH_BUILTIN_SLIRP
+//#define WITH_TABLETLIBRARY
+//#define WITH_UAENET_PCAP
+//#define WITH_PPC
+//#define WITH_QEMU_CPU
+//#define WITH_TOCCATA
+//#define WITH_PCI
+//#define WITH_X86
+#define WITH_THREADED_CPU
+
 //#define WITH_CHD
 #define A_ZIP
 //#define A_RAR
@@ -11,56 +90,10 @@
 //#define A_LZX
 #define A_DMS
 
-#define CPUEMU_0 /* generic 680x0 emulation */
-#define CPUEMU_11 /* 68000/68010 prefetch emulation */
-#define CPUEMU_12 /* 68000/68010 cycle-exact cpu&blitter */
-#define CPUEMU_20 /* 68020 prefetch */
-#define CPUEMU_21 /* 68020 "cycle-exact" + blitter */
-#define CPUEMU_22 /* 68030 prefetch */
-//#define CPUEMU_23 /* 68030 "cycle-exact" + blitter */
-//#define CPUEMU_24 /* 68060 "cycle-exact" + blitter */
-//#define CPUEMU_25 /* 68040 "cycle-exact" + blitter */
-#define CPUEMU_31 /* Aranym 68040 MMU */
-#define CPUEMU_32 /* Previous 68030 MMU */
-//#define CPUEMU_33 /* 68060 MMU */
-//#define CPUEMU_34 /* 68030 MMU + cache */
-//#define CPUEMU_35 /* 68030 MMU + cache + CE */
-#define MMUEMU /* Aranym 68040 MMU */
-#define FULLMMU /* Aranym 68040 MMU */
-#define FPUEMU /* FPU emulation */
 
-#define GAYLE /* Gayle emulation */
-#define ECS_DENISE /* ECS DENISE new features */
-#define AGA /* AGA chipset emulation (ECS_DENISE must be enabled) */
-#define FILESYS /* filesys emulation */
-//#define UAE_FILESYS_THREADS
-//#define JIT /* JIT compiler support */
-//#define USE_JIT_FPU
-#define AUTOCONFIG /* autoconfig support, fast ram, harddrives etc.. */
-#define SAVESTATE /* State file support */
-//#define ACTION_REPLAY /* Action Replay 1/2/3 support */
-#define NCR /* A4000T/A4091, 53C710/53C770 SCSI */
-#define A2091 /* A590/A2091 SCSI */
-#define SCSI
-#define SCSIEMU /* uaescsi.device emulation */
-#define CDTV /* CDTV emulation */
-#define CD32 /* CD32 emulation */
-#define SERIAL_PORT /* serial port emulation */
-//#define PARALLEL_PORT /* parallel port emulation */
-//#define AMAX /* A-Max ROM adapter emulation */
-#define ARCADIA /* Arcadia arcade system */
-//#define ARCHIVEACCESS /* ArchiveAccess decompression library */
-#define DRIVESOUND
-#define DEBUGGER
-#define SUPPORT_THREADS
-//#define OPTIMIZED_FLAGS
-//#define UNALIGNED_PROFITABLE
 
 /* Define if building universal (internal helper macro) */
 /* #undef AC_APPLE_UNIVERSAL_BUILD */
-
-/* we want ecs_denise */
-/* #undef ECS_DENISE */
 
 /* CPU supports 3DNOW */
 /* #undef HAVE_3DNOW */
@@ -242,16 +275,6 @@
 /* Define to 1 if you have the `strstr' function. */
 #define HAVE_STRSTR 1
 
-/* Define to 1 if `st_blocks' is a member of `struct stat'. */
-//#define HAVE_STRUCT_STAT_ST_BLOCKS 1
-
-/* Define to 1 if your `struct stat' has `st_blocks'. Deprecated, use
-   `HAVE_STRUCT_STAT_ST_BLOCKS' instead. */
-//#define HAVE_ST_BLOCKS 1
-
-/* Define to 1 if you have the <sun/audioio.h> header file. */
-/* #undef HAVE_SUN_AUDIOIO_H */
-
 /* Define to 1 if you have the `sync' function. */
 #if !defined(__SWITCH__) && !defined(VITA) && !defined(__PS3__)
 #define HAVE_SYNC 1
@@ -372,13 +395,13 @@
 #define PACKAGE_BUGREPORT ""
 
 /* cloned git commit version */
-#define PACKAGE_COMMIT "0186c1b16f7181ffa02d73e6920d3180ce457c46"
+#define PACKAGE_COMMIT ""
 
 /* Define to the full name of this package. */
 #define PACKAGE_NAME "PUAE"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "PUAE 2.6.1"
+#define PACKAGE_STRING "PUAE 4.5.0"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "puae"
@@ -387,7 +410,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-/* #define PACKAGE_VERSION "2.6.1" */
+#define PACKAGE_VERSION "4.5.0"
 
 /* Define to the necessary symbol if this constant uses a non-standard name on
    your system. */
@@ -483,7 +506,7 @@
 #endif
 
 /* Version number of package */
-#define VERSION "2.6.1"
+#define VERSION "4.5.0"
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */
@@ -545,16 +568,64 @@
    code using `volatile' can become incorrect without. Disable with care. */
 /* #undef volatile */
 
+#ifdef MSB_FIRST
+#  define bswap_16(x) (x)
+#  define bswap_32(x) (x)
+#elif defined(SWAP16) && defined(SWAP32)
+#  define bswap_16(x) SWAP16(x)
+#  define bswap_32(x) SWAP32(x)
+#else
+/* Otherwise, we'll roll our own. */
+#  define bswap_16(x) (((x) >> 8) | (((x) & 0xFF) << 8))
+#  define bswap_32(x) (((x) << 24) | (((x) << 8) & 0x00FF0000) | (((x) >> 8) & 0x0000FF00) | ((x) >> 24))
+#endif
+
 #ifdef USE_LIBRETRO_VFS
 #include <streams/file_stream_transforms.h>
 #undef stderr
 #define stderr 0
+#ifndef WIN32
+#undef HANDLE
+#define HANDLE RFILE*
+#endif
 #undef putc
 #define putc fputc
 #undef fseeko
 #define fseeko rfseek
+#undef _fseeki64
+#define _fseeki64 rfseek
 #undef ftello
 #define ftello rftell
+#undef _ftelli64
+#define _ftelli64 rftell
+#endif
+//#undef fgetws
+//#define fgetws fgets
+//#undef fputws
+//#define fputws(string, stream) rfprintf(stream, "%s", string)
+
+#ifndef PATH_MAX
+#define PATH_MAX    256
+#endif
+#ifndef MAX_PATH
+#define MAX_PATH	512
+#endif
+#ifndef MAX_DPATH
+#define MAX_DPATH	512
+#endif
+
+/* next */
+#ifndef JIT
+#define MIN_JIT_CACHE 128
+#define MAX_JIT_CACHE 16384
+#endif
+
+#ifdef WIN32
+#define FSDB_DIR_SEPARATOR '\\'
+#define FSDB_DIR_SEPARATOR_S _T("\\")
+#else
+#define FSDB_DIR_SEPARATOR '/'
+#define FSDB_DIR_SEPARATOR_S _T("/")
 #endif
 
 #endif /* UAE_SYSCONFIG_H */

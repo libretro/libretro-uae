@@ -9,13 +9,17 @@
 #ifndef UAE_ZFILE_H
 #define UAE_ZFILE_H
 
+#include "uae/types.h"
+
+struct zfile;
 struct zvolume;
 struct zdirectory;
-#include "fsdb.h"
-#include "zarchive.h"
-#include "fsusage.h"
 
-#define FSDB_DIR_SEPARATOR_S "/"
+struct znode;
+struct fs_usage;
+struct mystat;
+
+struct z_stream;
 
 #define FS_DIRECTORY 0
 #define FS_ARCHIVE 1
@@ -30,7 +34,6 @@ struct fs_dirhandle
 		struct cd_opendir_s *isod;
 	};
 };
-
 struct fs_filehandle
 {
 	int fstype;
@@ -41,15 +44,20 @@ struct fs_filehandle
 	};
 };
 
+typedef int (*zfile_callback)(struct zfile*, void*);
+
 extern struct zfile *zfile_fopen (const TCHAR *, const TCHAR *, int mask);
-extern struct zfile *zfile_fopen2 (const TCHAR *, const TCHAR *);
-extern struct zfile *zfile_fopen4 (const TCHAR *, const TCHAR *, int mask, int index);
+extern struct zfile *zfile_fopen_2x (const TCHAR *, const TCHAR *);
+extern struct zfile *zfile_fopen_3x (const TCHAR *, const TCHAR *, int mask);
+extern struct zfile *zfile_fopen_4x (const TCHAR *, const TCHAR *, int mask, int index);
 extern struct zfile *zfile_fopen_empty (struct zfile*, const TCHAR *name, uae_u64 size);
-extern struct zfile *zfile_fopen_empty2 (struct zfile*, const TCHAR *name);
+extern struct zfile *zfile_fopen_empty_2 (struct zfile*, const TCHAR *name);
 extern struct zfile *zfile_fopen_data (const TCHAR *name, uae_u64 size, const uae_u8 *data);
 extern struct zfile *zfile_fopen_load_zfile (struct zfile *f);
 extern uae_u8 *zfile_load_data (const TCHAR *name, const uae_u8 *data,int datalen, int *outlen);
+extern uae_u8 *zfile_load_file(const TCHAR *name, int *outlen);
 extern struct zfile *zfile_fopen_parent (struct zfile*, const TCHAR*, uae_u64 offset, uae_u64 size);
+extern uae_u8 *zfile_get_data_pointer(struct zfile *z, int *len);
 
 extern int zfile_exists (const TCHAR *name);
 extern void zfile_fclose (struct zfile *);
@@ -64,7 +72,7 @@ extern size_t zfile_fputs (struct zfile *z, const TCHAR *s);
 extern int zfile_getc (struct zfile *z);
 extern int zfile_putc (int c, struct zfile *z);
 extern int zfile_ferror (struct zfile *z);
-extern uae_u8 *zfile_getdata (struct zfile *z, uae_s64 offset, int len);
+extern uae_u8 *zfile_getdata (struct zfile *z, uae_s64 offset, int len, int *outlen);
 extern void zfile_exit (void);
 extern int execute_command (TCHAR *);
 extern int zfile_iscompressed (struct zfile *z);
@@ -73,14 +81,16 @@ extern int zfile_zuncompress (void *dst, int dstsize, struct zfile *src, int src
 extern int zfile_gettype (struct zfile *z);
 extern int zfile_zopen (const TCHAR *name, zfile_callback zc, void *user);
 extern TCHAR *zfile_getname (struct zfile *f);
+extern TCHAR *zfile_getoriginalname (struct zfile *f);
 extern TCHAR *zfile_getfilename (struct zfile *f);
 extern uae_u32 zfile_crc32 (struct zfile *f);
 extern struct zfile *zfile_dup (struct zfile *f);
-extern struct zfile *zfile_gunzip (struct zfile *z, int *retcode);
+extern struct zfile *zfile_gunzip (struct zfile *z);
+extern struct zfile *zfile_gunzip_2 (struct zfile *z, int *retcode);
 extern int zfile_is_diskimage (const TCHAR *name);
 extern int iszip (struct zfile *z);
 extern int zfile_convertimage (const TCHAR *src, const TCHAR *dst);
-extern struct zfile *zuncompress (struct znode *parent, struct zfile *z, int dodefault, int mask, int *retcode, int index);
+extern struct zfile *zuncompress (struct znode*, struct zfile *z, int dodefault, int mask, int *retcode, int index);
 extern void zfile_seterror (const TCHAR *format, ...);
 extern TCHAR *zfile_geterror (void);
 extern int zfile_truncate (struct zfile *z, uae_s64 size);
@@ -124,9 +134,11 @@ extern void zfile_fclose_archive (struct zvolume *zv);
 extern int zfile_fs_usage_archive (const TCHAR *path, const TCHAR *disk, struct fs_usage *fsp);
 extern int zfile_stat_archive (const TCHAR *path, struct mystat *statbuf);
 extern struct zdirectory *zfile_opendir_archive (const TCHAR *path);
-extern struct zdirectory *zfile_opendir_archive2 (const TCHAR *path, int flags);
+extern struct zdirectory *zfile_opendir_archive_flags (const TCHAR *path, int flags);
 extern void zfile_closedir_archive (struct zdirectory *);
 extern int zfile_readdir_archive (struct zdirectory *, TCHAR*);
+extern int zfile_readdir_archive_fullpath (struct zdirectory *, TCHAR*, bool fullpath);
+extern struct zfile *zfile_readdir_archive_open (struct zdirectory *zd, const TCHAR *mode);
 extern void zfile_resetdir_archive (struct zdirectory *);
 extern int zfile_fill_file_attrs_archive (const TCHAR *path, int *isdir, int *flags, TCHAR **comment);
 extern uae_s64 zfile_lseek_archive (struct zfile *d, uae_s64 offset, int whence);
@@ -136,9 +148,20 @@ extern void zfile_close_archive (struct zfile *d);
 extern struct zfile *zfile_open_archive (const TCHAR *path, int flags);
 extern int zfile_exists_archive (const TCHAR *path, const TCHAR *rel);
 extern bool zfile_needwrite (struct zfile*);
-extern struct zfile *zfile_fopen_data (const TCHAR *name, uae_u64 size, const uae_u8 *data);
 
-extern void timeval_to_amiga (struct mytimeval *tv, int* days, int* mins, int* ticks);
-extern void amiga_to_timeval (struct mytimeval *tv, int days, int mins, int ticks);
+struct mytimeval
+{
+	uae_s64 tv_sec;
+	uae_s32 tv_usec;
+};
+
+struct mystat
+{
+	uae_s64 size;
+	uae_u32 mode;
+	struct mytimeval mtime;
+};
+extern void timeval_to_amiga (struct mytimeval *tv, int* days, int* mins, int* ticks, int tickcount);
+extern void amiga_to_timeval (struct mytimeval *tv, int days, int mins, int ticks, int tickcount);
 
 #endif /* UAE_ZFILE_H */

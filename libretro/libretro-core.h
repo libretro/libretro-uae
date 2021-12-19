@@ -46,7 +46,7 @@ extern int retro_max_diwstop;
 extern char retro_system_directory[RETRO_PATH_MAX];
 extern char retro_save_directory[RETRO_PATH_MAX];
 extern struct zfile *retro_deserialize_file;
-extern dc_storage *retro_dc;
+extern dc_storage *dc;
 extern retro_log_printf_t log_cb;
 extern long retro_ticks(void);
 extern int RGBc(int r, int g, int b);
@@ -220,8 +220,8 @@ static retro_kickstarts uae_kickstarts[15] =
 #define PUAE_VIDEO_HEIGHT_NTSC  480
 
 /* Libretro video */
-#define EMULATOR_DEF_WIDTH      720
-#define EMULATOR_DEF_HEIGHT     576
+#define EMULATOR_DEF_WIDTH      PUAE_VIDEO_WIDTH
+#define EMULATOR_DEF_HEIGHT     PUAE_VIDEO_HEIGHT_PAL
 #define EMULATOR_MAX_WIDTH      (EMULATOR_DEF_WIDTH * 2)
 #define EMULATOR_MAX_HEIGHT     EMULATOR_DEF_HEIGHT
 #define RETRO_BMP_SIZE          (EMULATOR_DEF_WIDTH * EMULATOR_DEF_HEIGHT * 4) /* 4x is big enough for 24-bit SuperHires double line */

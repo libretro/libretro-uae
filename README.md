@@ -1,19 +1,6 @@
 # PUAE LIBRETRO
 
-Based on PUAE 2.6.1, git commit `0186c1b16f7181ffa02d73e6920d3180ce457c46`
-
-Credits to:
-
-- Mustafa 'GnoStiC' TUFAN
-- Richard Drummond, [http://www.rcdrummond.net/uae/](http://www.rcdrummond.net/uae/)
-
-This port was based at start on PS3 version E-UAE 0.8.29-WIP4 release 8
-(so also credits to Ole.)
-
-E-UAE is based on the work of dozens of contributors including Bernd
-Schmidt (the original author and maintainer of UAE), Bernie Meyer (the
-author of the x86 JIT compiler), Toni Wilen (the current maintainer of
-WinUAE), and many more.
+Based on WinUAE 4500b17, git commit `fa7577b8e3c084e966f977b89d202882b405a44d`
 
 ## Default controls
 

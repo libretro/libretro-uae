@@ -41,9 +41,19 @@ void uae_sem_post (uae_sem_t * event)
    SetEvent (*event);
 }
 
+int uae_sem_trywait_delay(uae_sem_t * event, int millis)
+{
+   int v = WaitForSingleObject(*event, millis);
+   if (v == WAIT_OBJECT_0)
+      return 0;
+   if (v == WAIT_ABANDONED)
+      return -2;
+   return -1;
+}
+
 int uae_sem_trywait (uae_sem_t * event)
 {
-   return WaitForSingleObject (*event, 0) == WAIT_OBJECT_0 ? 0 : -1;
+   return uae_sem_trywait_delay(event, 0);
 }
 
 void uae_sem_destroy (uae_sem_t * event)
@@ -54,18 +64,23 @@ void uae_sem_destroy (uae_sem_t * event)
    }
 }
 
+uae_thread_id uae_thread_get_id(void)
+{
+   return (uae_thread_id)UlongToHandle(GetCurrentThreadId());
+}
+
 typedef unsigned (__stdcall *BEGINTHREADEX_FUNCPTR)(void *);
 
 struct thparms
 {
-   void *(*f)(void*);
+   void (*f)(void*);
    void *arg;
 };
 
 static unsigned __stdcall thread_init (void *f)
 {
    struct thparms *thp = (struct thparms*)f;
-   void *(*fp)(void*) = thp->f;
+   void (*fp)(void*) = thp->f;
    void *arg = thp->arg;
 
    xfree (f);
@@ -81,7 +96,7 @@ void uae_end_thread (uae_thread_id *tid)
    }
 }
 
-int uae_start_thread (const TCHAR *name, void *(*f)(void *), void *arg, uae_thread_id *tid)
+int uae_start_thread (const TCHAR *name, void (*f)(void *), void *arg, uae_thread_id *tid)
 {
    HANDLE hThread;
    int result = 1;
@@ -108,7 +123,7 @@ int uae_start_thread (const TCHAR *name, void *(*f)(void *), void *arg, uae_thre
    return result;
 }
 
-int uae_start_thread_fast (void *(*f)(void *), void *arg, uae_thread_id *tid)
+int uae_start_thread_fast (void (*f)(void *), void *arg, uae_thread_id *tid)
 {
    int v = uae_start_thread (NULL, f, arg, tid);
    if (*tid) {
@@ -119,12 +134,10 @@ int uae_start_thread_fast (void *(*f)(void *), void *arg, uae_thread_id *tid)
 
 DWORD_PTR cpu_affinity = 1, cpu_paffinity = 1;
 
-void uae_set_thread_priority (int pri)
+void uae_set_thread_priority (uae_thread_id *thread, int pri)
 {
-#ifndef __LIBRETRO__
    if (!SetThreadPriority (GetCurrentThread(), THREAD_PRIORITY_HIGHEST))
       SetThreadPriority (GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
-#endif
 }
 
 #else /* _WIN32 */
@@ -149,20 +162,20 @@ int uae_sem_init (uae_sem_t *sem, int pshared, unsigned int value)
     sprintf (name, "/uaesem-%d-%d", getpid (), semno++);
 
     if ((sem->sem = sem_open (name, O_CREAT, 0600, value)) != (sem_t *)SEM_FAILED)
-		sem_unlink (name);
+       sem_unlink (name);
     else {
-		sem->sem = 0;
-		result = -1;
+       sem->sem = 0;
+       result = -1;
     }
     return result;
 }
 #else
 int uae_sem_init (uae_sem_t *sem, int pshared, unsigned int value)
 {
-	if (!sem || (sem && sem->sem))
-		return -1;
-	sem->sem = (sem_t*)calloc(1, sizeof(sem_t));
-	return sem_init (sem->sem, pshared, value);
+    if (!sem || (sem && sem->sem))
+        return -1;
+    sem->sem = (sem_t*)calloc(1, sizeof(sem_t));
+    return sem_init (sem->sem, pshared, value);
 }
 #endif /* USE_NAMED_SEMAPHORES */
 

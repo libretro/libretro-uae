@@ -1,508 +1,1233 @@
 /*
- * UAE - The Un*x Amiga Emulator
- *
- * A4000T NCR 53C710 SCSI (nothing done yet)
- *
- * (c) 2007 Toni Wilen
- */
+* UAE - The Un*x Amiga Emulator
+*
+* A4000T / A4091 NCR 53C710 SCSI
+*
+* (c) 2007-2014 Toni Wilen
+*/
 
 #include "sysconfig.h"
 #include "sysdeps.h"
 
-#include "options.h"
-
 #ifdef NCR
-#define NCR_LOG 1
-#define NCR_DEBUG 1
 
+#define NCR_DEBUG 0
+
+#include "options.h"
 #include "uae.h"
-#include "memory_uae.h"
+#include "memory.h"
 #include "rommgr.h"
 #include "custom.h"
 #include "newcpu.h"
 #include "ncr_scsi.h"
+#include "scsi.h"
+#include "filesys.h"
 #include "zfile.h"
+#include "blkdev.h"
+#include "cpuboard.h"
+#include "qemuvga/qemuuaeglue.h"
+#include "qemuvga/queue.h"
+#include "qemuvga/scsi/scsi.h"
+#include "autoconf.h"
+#include "gui.h"
+#include "devices.h"
 
-#define NCRNAME _T("NCR53C710")
-#define NCR_REGS 0x40
-
-#define ROM_VECTOR 0x0200
-#define ROM_OFFSET 0x0000
-#define ROM_SIZE 32768
-#define ROM_MASK (ROM_SIZE - 1)
 #define BOARD_SIZE 16777216
+#define IO_MASK 0x7f
 
-static uae_u8 *rom;
-static int board_mask;
-static int configured;
-static uae_u8 acmemory[100];
+#define A4091_ROM_VECTOR 0x0200
+#define A4091_ROM_OFFSET 0x0000
+#define A4091_ROM_SIZE 32768
+#define A4091_ROM_MASK (A4091_ROM_SIZE - 1)
 
-static uae_u8 ncrregs[NCR_REGS];
+#define A4091_IO_OFFSET 0x00800000
+#define A4091_IO_ALT 0x00840000
+#define A4091_IO_END 0x00880000
 
-struct ncrscsi {
-	TCHAR *name;
-	int be, le;
+#define A4091_DIP_OFFSET 0x008c0003
+
+#define WARP_ENGINE_IO_OFFSET 0x40000
+#define WARP_ENGINE_IO_END 0x80000
+
+#define CYBERSTORM_SCSI_RAM_OFFSET 0x1000
+#define CYBERSTORM_SCSI_RAM_SIZE 0x2000
+#define CYBERSTORM_SCSI_RAM_MASK 0x1fff
+
+struct ncr_state
+{
+	int id;
+	bool newncr;
+	DeviceState devobject;
+	SCSIDevice *scsid[8];
+	SCSIBus scsibus;
+	uae_u32 board_mask;
+	uae_u8 *rom;
+	int ramsize;
+	uae_u8 acmemory[128];
+	uae_u32 expamem_hi;
+	uae_u32 expamem_lo;
+	uaecptr baseaddress;
+	int configured;
+	bool enabled;
+	int rom_start, rom_end, rom_offset;
+	int io_start, io_end;
+	uae_u8 state[8];
+	addrbank *bank;
+	bool irq;
+	bool irqlevel;
+	bool z2;
+	void (*irq_func)(int, int);
+	struct romconfig *rc;
+	struct ncr_state **self_ptr;
 };
 
-static struct ncrscsi regsinfo[] =
-{
-	_T("SCNTL0"),	 0,  3,
-	_T("SCNTL1"),	 1,  2,
-	_T("SDID"),	 2,  1,
-	_T("SIEN"),	 3,  0,
-	_T("SCID"),	 4,  7,
-	_T("SXFER"),	 5,  6,
-	_T("SODL"),	 6,  5,
-	_T("SOCL"),	 7,  4,
-	_T("SFBR"),	 8, 11,
-	_T("SIDL"),	 9, 10,
-	_T("SBDL"),	10, -1,
-	_T("SBCL"),	11,  8,
-	_T("DSTAT"),	12, 15,
-	_T("SSTAT0"),	13, 14,
-	_T("SSTAT1"),	14, 13,
-	_T("SSTAT2"),	15, 12,
-	_T("DSA0"),	16, 19,
-	_T("DSA1"),	17, 18,
-	_T("DSA2"),	18, 17,
-	_T("DSA3"),	19, 16,
-	_T("CTEST0"),	20, 23,
-	_T("CTEST1"),	21, 22,
-	_T("CTEST2"),	22, 21,
-	_T("CTEST3"),	23, 20,
-	_T("CTEST4"),	24, 27,
-	_T("CTEST5"),	25, 26,
-	_T("CTEST6"),	26, 25,
-	_T("CTEST7"),	27, 24,
-	_T("TEMP0"),	28, 31,
-	_T("TEMP1"),	29, 30,
-	_T("TEMP2"),	30, 29,
-	_T("TEMP3"),	31, 28,
-	_T("DFIFO"),	32, 35,
-	_T("ISTAT"),	33, 34,
-	_T("CTEST8"),	34, 33,
-	_T("LCRC"),	35, 32,
-	_T("DBC0"),	36, 39,
-	_T("DBC1"),	37, 38,
-	_T("DBC2"),	38, 37,
-	_T("DCMD"),	39, 36,
-	_T("DNAD0"),	40, 43,
-	_T("DNAD1"),	41, 42,
-	_T("DNAD2"),	42, 41,
-	_T("DNAD3"),	43, 40,
-	_T("DSP0"),	44, 47,
-	_T("DSP1"),	45, 46,
-	_T("DSP2"),	46, 45,
-	_T("DSP3"),	47, 44,
-	_T("DSPS0"),	48, 51,
-	_T("DSPS1"),	49, 50,
-	_T("DSPS2"),	50, 49,
-	_T("DSPS3"),	51, 48,
-	_T("SCRATCH0"),	52, 55,
-	_T("SCRATCH1"),	53, 54,
-	_T("SCRATCH2"),	54, 53,
-	_T("SCRATCH3"),	55, 52,
-	_T("DMODE"),	56, 59,
-	_T("DIEN"),	57, 58,
-	_T("DWT"),	58, 57,
-	_T("DCNTL"),	59, 56,
-	_T("ADDER0"),	60, 63,
-	_T("ADDER1"),	61, 62,
-	_T("ADDER2"),	62, 61,
-	_T("ADDER3"),	63, 60,
-	NULL
-};
+#define MAX_NCR_UNITS 10
+static struct ncr_state *ncr_units[MAX_NCR_UNITS + 1];
 
-static TCHAR *regname (uaecptr addr)
+static void freescsi (SCSIDevice *scsi)
 {
-	int i;
-
-	for (i = 0; regsinfo[i].name; i++) {
-		if (regsinfo[i].le == addr)
-			return regsinfo[i].name;
+	if (scsi) {
+		free_scsi((struct scsi_data*)scsi->handle);
+		xfree (scsi);
 	}
-	return _T("?");
 }
 
-#define SCNTL0_REG                      0x03
-#define         FULL_ARBITRATION        0xc0
-#define         PARITY                  0x08
-#define         ENABLE_PARITY           0x04
-#define         AUTO_ATN                0x02
-#define SCNTL1_REG                      0x02
-#define         SLOW_BUS                0x80
-#define         ENABLE_SELECT           0x20
-#define         ASSERT_RST              0x08
-#define         ASSERT_EVEN_PARITY      0x04
-#define SDID_REG                        0x01
-#define SIEN_REG                        0x00
-#define         PHASE_MM_INT            0x80
-#define         FUNC_COMP_INT           0x40
-#define         SEL_TIMEOUT_INT         0x20
-#define         SELECT_INT              0x10
-#define         GROSS_ERR_INT           0x08
-#define         UX_DISC_INT             0x04
-#define         RST_INT                 0x02
-#define         PAR_ERR_INT             0x01
-#define SCID_REG                        0x07
-#define SXFER_REG                       0x06
-#define         ASYNC_OPERATION         0x00
-#define SODL_REG                        0x05
-#define SOCL_REG                        0x04
-#define SFBR_REG                        0x0b
-#define SIDL_REG                        0x0a
-#define SBDL_REG                        0x0a
-#define SBCL_REG                        0x08
-#define         SBCL_IO                 0x01
-#define         SYNC_DIV_AS_ASYNC       0x00
-#define         SYNC_DIV_1_0            0x01
-#define         SYNC_DIV_1_5            0x02
-#define         SYNC_DIV_2_0            0x03
-#define DSTAT_REG                       0x0e
-#define         ILGL_INST_DETECTED      0x01
-#define         WATCH_DOG_INTERRUPT     0x02
-#define         SCRIPT_INT_RECEIVED     0x04
-#define         ABORTED                 0x10
-#define SSTAT0_REG                      0x0e
-#define         PARITY_ERROR            0x01
-#define         SCSI_RESET_DETECTED     0x02
-#define         UNEXPECTED_DISCONNECT   0x04
-#define         SCSI_GROSS_ERROR        0x08
-#define         SELECTED                0x10
-#define         SELECTION_TIMEOUT       0x20
-#define         FUNCTION_COMPLETE       0x40
-#define         PHASE_MISMATCH          0x80
-#define SSTAT1_REG                      0x0d
-#define         SIDL_REG_FULL           0x80
-#define         SODR_REG_FULL           0x40
-#define         SODL_REG_FULL           0x20
-#define SSTAT2_REG                      0x0c
-#define CTEST0_REG                      0x17
-#define         BTB_TIMER_DISABLE       0x40
-#define CTEST1_REG                      0x16
-#define CTEST2_REG                      0x15
-#define CTEST3_REG                      0x14
-#define CTEST4_REG                      0x1b
-#define         DISABLE_FIFO            0x00
-#define         SLBE                    0x10
-#define         SFWR                    0x08
-#define         BYTE_LANE0              0x04
-#define         BYTE_LANE1              0x05
-#define         BYTE_LANE2              0x06
-#define         BYTE_LANE3              0x07
-#define         SCSI_ZMODE              0x20
-#define         ZMODE                   0x40
-#define CTEST5_REG                      0x1a
-#define         MASTER_CONTROL          0x10
-#define         DMA_DIRECTION           0x08
-#define CTEST7_REG                      0x18
-#define         BURST_DISABLE           0x80 /* 710 only */
-#define         SEL_TIMEOUT_DISABLE     0x10 /* 710 only */
-#define         DFP                     0x08
-#define         EVP                     0x04
-#define         DIFF                    0x01
-#define CTEST6_REG                      0x19
-#define TEMP_REG                        0x1C
-#define DFIFO_REG                       0x20
-#define         FLUSH_DMA_FIFO          0x80
-#define         CLR_FIFO                0x40
-#define ISTAT_REG                       0x22
-#define         ABORT_OPERATION         0x80
-#define         SOFTWARE_RESET_710      0x40
-#define         DMA_INT_PENDING         0x01
-#define         SCSI_INT_PENDING        0x02
-#define         CONNECTED               0x08
-#define CTEST8_REG                      0x21
-#define         LAST_DIS_ENBL           0x01
-#define         SHORTEN_FILTERING       0x04
-#define         ENABLE_ACTIVE_NEGATION  0x10
-#define         GENERATE_RECEIVE_PARITY 0x20
-#define         CLR_FIFO_710            0x04
-#define         FLUSH_DMA_FIFO_710      0x08
-#define LCRC_REG                        0x20
-#define DBC_REG                         0x25
-#define DCMD_REG                        0x24
-#define DNAD_REG                        0x28
-#define DIEN_REG                        0x3a
-#define         BUS_FAULT               0x20
-#define         ABORT_INT               0x10
-#define         INT_INST_INT            0x04
-#define         WD_INT                  0x02
-#define         ILGL_INST_INT           0x01
-#define DCNTL_REG                       0x38
-#define         SOFTWARE_RESET          0x01
-#define         COMPAT_700_MODE         0x01
-#define         SCRPTS_16BITS           0x20
-#define         ASYNC_DIV_2_0           0x00
-#define         ASYNC_DIV_1_5           0x40
-#define         ASYNC_DIV_1_0           0x80
-#define         ASYNC_DIV_3_0           0xc0
-#define DMODE_710_REG                   0x3b
-#define DMODE_700_REG                   0x34
-#define         BURST_LENGTH_1          0x00
-#define         BURST_LENGTH_2          0x40
-#define         BURST_LENGTH_4          0x80
-#define         BURST_LENGTH_8          0xC0
-#define         DMODE_FC1               0x10
-#define         DMODE_FC2               0x20
-#define         BW16                    32
-#define         MODE_286                16
-#define         IO_XFER                 8
-#define         FIXED_ADDR              4
-
-static void INT2(void)
+static void freencrunit(struct ncr_state *ncr)
 {
-	if (ncrregs[SIEN_REG] == 0)
+	if (!ncr)
 		return;
-	INTREQ (0x8000 | 0x0008);
-	write_log (_T("IRQ\n"));
+	for (int i = 0; i < MAX_NCR_UNITS; i++) {
+		if (ncr_units[i] == ncr) {
+			ncr_units[i] = NULL;
+		}
+	}
+	for (int ch = 0; ch < 8; ch++) {
+		freescsi (ncr->scsid[ch]);
+		ncr->scsid[ch] = NULL;
+	}
+	xfree(ncr->rom);
+	if (ncr->self_ptr)
+		*ncr->self_ptr = NULL;
+	xfree(ncr);
 }
 
-
-static uae_u8 read_rombyte (uaecptr addr)
+static struct ncr_state *allocscsi(struct ncr_state **ncr, struct romconfig *rc, int ch)
 {
-	uae_u8 v = rom[addr];
+	struct ncr_state *scsi;
+
+	if (ch < 0) {
+		freencrunit(*ncr);
+		*ncr = NULL;
+	}
+	if ((*ncr) == NULL) {
+		scsi = xcalloc(struct ncr_state, 1);
+		for (int i = 0; i < MAX_NCR_UNITS; i++) {
+			if (ncr_units[i] == NULL) {
+				ncr_units[i] = scsi;
+				if (rc)
+					rc->unitdata = scsi;
+				scsi->rc = rc;
+				scsi->self_ptr = ncr;
+				*ncr = scsi;
+				return scsi;
+			}
+		}
+	}
+	return *ncr;
+}
+
+static struct ncr_state *getscsi(struct romconfig *rc)
+{
+	for (int i = 0; i < MAX_NCR_UNITS; i++) {
+		if (ncr_units[i]) {
+			struct ncr_state *ncr = ncr_units[i];
+			if (ncr->rc == rc)
+				return ncr;
+		}
+	}
+	return NULL;
+}
+
+static struct ncr_state *getscsiboard(uaecptr addr)
+{
+	for (int i = 0; ncr_units[i]; i++) {
+		if (!ncr_units[i]->baseaddress && !ncr_units[i]->configured)
+			return ncr_units[i];
+		if ((addr & ~ncr_units[i]->board_mask) == ncr_units[i]->baseaddress)
+			return ncr_units[i];
+	}
+	return NULL;
+}
+
+static struct ncr_state *ncr_cs;
+static struct ncr_state *ncr_bppc;
+static struct ncr_state *ncr_cpuboard;
+static struct ncr_state *ncr_we;
+static struct ncr_state *ncr_a4000t;
+static struct ncr_state *ncra4091[MAX_DUPLICATE_EXPANSION_BOARDS];
+static struct ncr_state *ncr_wildfire;
+static struct ncr_state *ncr_zeus040;
+static struct ncr_state *ncr_magnum40;
+
+static void set_irq2(int id, int level)
+{
+	if (level)
+		safe_interrupt_set(IRQ_SOURCE_NCR, 0, false);
+}
+static void set_irq6(int id, int level)
+{
+	if (level)
+		safe_interrupt_set(IRQ_SOURCE_NCR, 0, true);
+}
+
+static void ncr_rethink(void)
+{
+	for (int i = 0; ncr_units[i]; i++) {
+		if (ncr_units[i] != ncr_cs && ncr_units[i]->irq)
+			safe_interrupt_set(IRQ_SOURCE_NCR, i + 1, ncr_units[i]->irqlevel);
+	}
+	if (ncr_cs && ncr_cs->irq)
+		cyberstorm_mk3_ppc_irq_setonly(0, 1);
+}
+
+/* 720+ */
+
+void pci_set_irq(PCIDevice *pci_dev, int level)
+{
+	struct ncr_state *ncr = (struct ncr_state*)pci_dev;
+	if (!ncr)
+		return;
+	ncr->irq = level != 0;
+	ncr->irq_func(ncr->id, ncr->irq);
+}
+
+void scsi_req_continue(SCSIRequest *req)
+{
+	struct scsi_data *sd = (struct scsi_data*)req->dev->handle;
+#ifdef HAVE_LSI
+	if (sd->data_len < 0) {
+		lsi_command_complete(req, sd->status, 0);
+	} else if (sd->data_len) {
+		lsi_transfer_data(req, sd->data_len);
+	} else {
+		if (sd->direction > 0)
+			scsi_emulate_cmd(sd);
+		lsi_command_complete(req, sd->status, 0);
+	}
+#endif
+}
+SCSIRequest *scsi_req_new(SCSIDevice *d, uint32_t tag, uint32_t lun, uint8_t *buf, int len, void *hba_private)
+{
+	SCSIRequest *req = xcalloc(SCSIRequest, 1);
+	struct scsi_data *sd = (struct scsi_data*)d->handle;
+	struct ncr_state *ncr = (struct ncr_state*)sd->privdata;
+
+	req->dev = d;
+	req->hba_private = hba_private;
+	req->bus = &ncr->scsibus;
+	req->bus->qbus.parent = &ncr->devobject;
+
+	memcpy(sd->cmd, buf, len);
+	sd->cmd_len = len;
+	return req;
+}
+int32_t scsi_req_enqueue(SCSIRequest *req)
+{
+	struct scsi_data *sd = (struct scsi_data*)req->dev->handle;
+
+	sd->data_len = 0;
+	scsi_start_transfer(sd);
+	scsi_emulate_analyze(sd);
+	//write_log (_T("%02x.%02x.%02x.%02x.%02x.%02x\n"), sd->cmd[0], sd->cmd[1], sd->cmd[2], sd->cmd[3], sd->cmd[4], sd->cmd[5]);
+
+	if (sd->direction <= 0)
+		scsi_emulate_cmd(sd);
+	if (sd->direction == 0)
+		return 1;
+	return -sd->direction;
+}
+void scsi_req_unref(SCSIRequest *req)
+{
+	xfree(req);
+}
+uint8_t *scsi_req_get_buf(SCSIRequest *req)
+{
+	struct scsi_data *sd = (struct scsi_data*)req->dev->handle;
+	sd->data_len = 0;
+	return sd->buffer;
+}
+SCSIDevice *scsi_device_find(SCSIBus *bus, int channel, int target, int lun)
+{
+	struct ncr_state *ncr = (struct ncr_state*)bus->privdata;
+	if (lun != 0 || target < 0 || target >= 8)
+		return NULL;
+	return ncr->scsid[target];
+}
+void scsi_req_cancel(SCSIRequest *req)
+{
+	write_log(_T("scsi_req_cancel\n"));
+}
+
+int pci_dma_rw(PCIDevice *dev, dma_addr_t addr, void *buf, dma_addr_t len, DMADirection dir)
+{
+	int i = 0;
+	uae_u8 *p = (uae_u8*)buf;
+	while (len > 0) {
+		if (!dir) {
+			*p = dma_get_byte(addr);
+		}
+		else {
+			dma_put_byte(addr, *p);
+		}
+		p++;
+		len--;
+		addr++;
+	}
+	return 0;
+}
+/* 710 */
+
+void pci710_set_irq(PCIDevice *pci_dev, int level)
+{
+	struct ncr_state *ncr = (struct ncr_state*)pci_dev;
+	if (!ncr)
+		return;
+	ncr->irq = level != 0;
+	ncr->irq_func(ncr->id, ncr->irq);
+}
+
+void scsi710_req_continue(SCSIRequest *req)
+{
+	struct scsi_data *sd = (struct scsi_data*)req->dev->handle;
+#ifdef HAVE_LSI
+	if (sd->data_len < 0) {
+		lsi710_command_complete(req, sd->status, 0);
+	} else if (sd->data_len) {
+		lsi710_transfer_data(req, sd->data_len);
+	} else {
+		if (sd->direction > 0)
+			scsi_emulate_cmd(sd);
+		lsi710_command_complete(req, sd->status, 0);
+	}
+#endif
+}
+SCSIRequest *scsi710_req_new(SCSIDevice *d, uint32_t tag, uint32_t lun, uint8_t *buf, int len, void *hba_private)
+{
+	SCSIRequest *req = xcalloc(SCSIRequest, 1);
+	struct scsi_data *sd = (struct scsi_data*)d->handle;
+	struct ncr_state *ncr = (struct ncr_state*)sd->privdata;
+
+	req->dev = d;
+	req->hba_private = hba_private;
+	req->bus = &ncr->scsibus;
+	req->bus->qbus.parent = &ncr->devobject;
+	
+	memcpy (sd->cmd, buf, len);
+	sd->cmd_len = len;
+	return req;
+}
+int32_t scsi710_req_enqueue(SCSIRequest *req)
+{
+	struct scsi_data *sd = (struct scsi_data*)req->dev->handle;
+
+	sd->data_len = 0;
+	scsi_start_transfer (sd);
+	scsi_emulate_analyze (sd);
+	//write_log (_T("%02x.%02x.%02x.%02x.%02x.%02x\n"), sd->cmd[0], sd->cmd[1], sd->cmd[2], sd->cmd[3], sd->cmd[4], sd->cmd[5]);
+	
+	if (sd->direction <= 0)
+		scsi_emulate_cmd(sd);
+	if (sd->direction == 0)
+		return 1;
+	return -sd->direction;
+}
+void scsi710_req_unref(SCSIRequest *req)
+{
+	xfree (req);
+}
+uint8_t *scsi710_req_get_buf(SCSIRequest *req)
+{
+	struct scsi_data *sd = (struct scsi_data*)req->dev->handle;
+	sd->data_len = 0;
+	return sd->buffer;
+}
+SCSIDevice *scsi710_device_find(SCSIBus *bus, int channel, int target, int lun)
+{
+	struct ncr_state *ncr = (struct ncr_state*)bus->privdata;
+	if (lun != 0 || target < 0 || target >= 8)
+		return NULL;
+	return ncr->scsid[target];
+}
+void scsi710_req_cancel(SCSIRequest *req)
+{
+	write_log (_T("scsi_req_cancel\n"));
+}
+
+int pci710_dma_rw(PCIDevice *dev, dma_addr_t addr, void *buf, dma_addr_t len, DMADirection dir)
+{
+	int i = 0;
+	uae_u8 *p = (uae_u8*)buf;
+	while (len > 0) {
+		if (!dir) {
+			*p = dma_get_byte(addr);
+		} else {
+			dma_put_byte(addr, *p);
+		}
+		p++;
+		len--;
+		addr++;
+	}
+	return 0;
+}
+
+static void check_timer(struct ncr_state *ncr)
+{
+	if (ncr->state[1] & 1) {
+		int v = (ncr->state[5] << 16) | (ncr->state[6] << 8) | (ncr->state[7]);
+		if (v > 0) {
+			v -= 2304;
+			ncr->state[5] = (v >> 16) & 0xff;
+			ncr->state[6] = (v >> 8) & 0xff;
+			ncr->state[7] = (v >> 0) & 0xff;
+		}
+		if (v <= 0) {
+			ncr->state[0] |= 1;
+			ncr->state[5] = ncr->state[2];
+			ncr->state[6] = ncr->state[3];
+			ncr->state[7] = ncr->state[4];
+		}
+	}
+	if (ncr->state[0] & 1) {
+		set_irq2(ncr->id, 1);
+	}
+}
+
+static void ncr_vsync(void)
+{
+	for (int i = 0; ncr_units[i]; i++) {
+		if (ncr_units[i] == ncr_magnum40) {
+			check_timer(ncr_magnum40);
+		}
+	}
+
+}
+
+static uae_u8 read_rombyte(struct ncr_state *ncr, uaecptr addr)
+{
+	uae_u8 v = ncr->rom[addr];
 	//write_log (_T("%08X = %02X PC=%08X\n"), addr, v, M68K_GETPC);
 	return v;
 }
 
-void ncr_bput2 (uaecptr addr, uae_u32 val)
+static uaecptr beswap(uaecptr addr)
+{
+	return (addr & ~3) | (3 - (addr & 3));
+}
+
+static void ncr_io_bput(struct ncr_state *ncr, uaecptr addr, uae_u32 val)
+{
+	if (addr >= CYBERSTORM_SCSI_RAM_OFFSET && ncr->ramsize) {
+		cyberstorm_scsi_ram_put(addr, val);
+		return;
+	}
+	addr &= IO_MASK;
+#ifdef HAVE_LSI
+	lsi_mmio_write(ncr->devobject.lsistate, beswap(addr), val, 1);
+#endif
+}
+
+static void ncr710_io_bput(struct ncr_state *ncr, uaecptr addr, uae_u32 val)
+{
+	addr &= IO_MASK;
+#ifdef HAVE_LSI
+	lsi710_mmio_write(ncr->devobject.lsistate, beswap(addr), val, 1);
+#endif
+}
+
+void cpuboard_ncr710_io_bput(uaecptr addr, uae_u32 v)
+{
+	ncr710_io_bput(ncr_cpuboard, addr, v);
+}
+
+void cpuboard_ncr720_io_bput(uaecptr addr, uae_u32 v)
+{
+	struct ncr_state *ncr = ncr_cpuboard;
+	addr &= IO_MASK;
+#ifdef HAVE_LSI
+	lsi_mmio_write(ncr->devobject.lsistate, beswap(addr), v, 1);
+#endif
+}
+
+static void ncr_bput2 (struct ncr_state *ncr, uaecptr addr, uae_u32 val)
 {
 	uae_u32 v = val;
-	addr &= board_mask;
-	if (addr >= NCR_REGS)
+	addr &= ncr->board_mask;
+
+	if (ncr == ncr_magnum40 && addr >= 0xa000 && addr <= 0xa200) {
+		int reg = (addr >> 4) & 31;
+		switch (reg)
+		{
+			case 0x10: // timer control
+			ncr->state[1] = (uae_u8)v;
+			if (ncr->state[1] & 1) {
+				ncr->state[5] = ncr->state[2];
+				ncr->state[6] = ncr->state[3];
+				ncr->state[7] = ncr->state[4];
+			}
+			break;
+			case 0x13: // timer hi
+			ncr->state[2] = (uae_u8)v;
+			break;
+			case 0x14: // timer med
+			ncr->state[3] = (uae_u8)v;
+			break;
+			case 0x15: // timer lo
+			ncr->state[4] = (uae_u8)v;
+			break;
+			case 0x1a: // timer ZDS
+			if (ncr->state[0] & 1)
+				set_irq2(ncr->id, 0);
+			ncr->state[0] &= ~1;
+			break;
+		}
 		return;
-	switch (addr)
-	{
-	case ISTAT_REG:
-		if (val & 0x80)
-			val |= 1;
-		val &= ~0x80;
-		INT2();
-		break;
 	}
-	write_log (_T("%s write %04X (%s) = %02X PC=%08X\n"), NCRNAME, addr, regname(addr), v & 0xff, M68K_GETPC);
-	ncrregs[addr] = val;
+
+
+	if (ncr->io_end && (addr < ncr->io_start || addr >= ncr->io_end)) {
+#if NCR_DEBUG > 1
+		write_log(_T("ncr_bput none %08x %02x %08x\n"), addr, v & 0xff, M68K_GETPC);
+#endif
+		return;
+	}
+#if NCR_DEBUG > 1
+	write_log(_T("ncr_bput %08x %02x %08x\n"), addr, v & 0xff, M68K_GETPC);
+#endif
+	if (ncr->newncr)
+		ncr_io_bput(ncr, addr, val);
+	else
+		ncr710_io_bput(ncr, addr, val);
 }
 
-uae_u32 ncr_bget2 (uaecptr addr)
+static uae_u32 ncr_io_bget(struct ncr_state *ncr, uaecptr addr)
 {
-	uae_u32 v = 0, v2;
+	if (addr >= CYBERSTORM_SCSI_RAM_OFFSET && ncr->ramsize)
+		return cyberstorm_scsi_ram_get(addr);
+	addr &= IO_MASK;
+#ifdef HAVE_LSI
+	return lsi_mmio_read(ncr->devobject.lsistate, beswap(addr), 1);
+#endif
+}
 
-	addr &= board_mask;
-	if (rom && addr >= ROM_VECTOR && addr >= ROM_OFFSET)
-		return read_rombyte (addr);
-	if (addr >= NCR_REGS)
+static uae_u32 ncr710_io_bget(struct ncr_state *ncr, uaecptr addr)
+{
+	addr &= IO_MASK;
+#ifdef HAVE_LSI
+	return lsi710_mmio_read(ncr->devobject.lsistate, beswap(addr), 1);
+#endif
+}
+
+uae_u32 cpuboard_ncr710_io_bget(uaecptr addr)
+{
+	return ncr710_io_bget(ncr_cpuboard, addr);
+}
+
+uae_u32 cpuboard_ncr720_io_bget(uaecptr addr)
+{
+	struct ncr_state *ncr = ncr_cpuboard;
+	addr &= IO_MASK;
+#ifdef HAVE_LSI
+	return lsi_mmio_read(ncr->devobject.lsistate, beswap(addr), 1);
+#endif
+}
+
+static bool isncrboard(struct ncr_state *ncr, struct ncr_state **ncrb)
+{
+	return ncr == ncrb[0] || ncr == ncrb[1] || ncr == ncrb[2] || ncr == ncrb[3];
+}
+
+static uae_u32 ncr_bget2 (struct ncr_state *ncr, uaecptr addr)
+{
+	uae_u32 v = 0;
+
+	addr &= ncr->board_mask;
+	if (ncr->rom && addr >= ncr->rom_start && addr < ncr->rom_end)
+		return read_rombyte (ncr, addr - ncr->rom_offset);
+
+	if (isncrboard(ncr, ncra4091)) {
+		if (addr == A4091_DIP_OFFSET) {
+			uae_u8 v2 = 0;
+			v2 |= ncr->rc->device_id;
+			v2 |= ncr->rc->device_settings << 3;
+			v2 ^= 0xff & ~7;
+			return v2;
+		}
+	}
+
+	if (ncr == ncr_magnum40 && addr >= 0xa000 && addr <= 0xa200) {
+		int reg = (addr >> 4) & 31;
+		switch(reg)
+		{
+			case 0x0c: // jumpers (68230 port C)
+			if (currprefs.cpuboard_settings & 1)
+				v |= 0x80;
+			return v;
+			case 0x1a: // timer ZDS
+			return ncr->state[0] & 1;
+		}
+	}
+
+	if (ncr->io_end && (addr < ncr->io_start || addr >= ncr->io_end)) {
+#if NCR_DEBUG > 1
+		write_log(_T("ncr_bget none %08x %02x %08x\n"), addr, v, M68K_GETPC);
+#endif
 		return v;
-	v2 = v = ncrregs[addr];
-	switch (addr)
-	{
-	case ISTAT_REG:
-		v2 &= ~3;
-		break;
-	case SSTAT2_REG:
-		v &= ~7;
-		v |= ncrregs[SBCL_REG] & 7;
-		break;
-	case CTEST8_REG:
-		v &= 0x0f; // revision 0
-		break;
 	}
-	write_log (_T("%s read  %04X (%s) = %02X PC=%08X\n"), NCRNAME, addr, regname(addr), v, M68K_GETPC);
-	if (v2 != v)
-		ncrregs[addr] = v2;
-	return v;
-}
-
-extern addrbank ncr_bank;
-
-static uae_u32 REGPARAM2 ncr_lget (uaecptr addr)
-{
-	uae_u32 v;
-#ifdef JIT
-	special_mem |= S_READ;
-#endif
-	addr &= 65535;
-	v = (ncr_bget2 (addr) << 24) | (ncr_bget2 (addr + 1) << 16) |
-		(ncr_bget2 (addr + 2) << 8) | (ncr_bget2 (addr + 3));
-#if NCR_DEBUG > 0
-	if (addr < ROM_VECTOR)
-		write_log (_T("ncr_lget %08X=%08X PC=%08X\n"), addr, v, M68K_GETPC);
+	if (ncr->newncr)
+		v = ncr_io_bget(ncr, addr);
+	else
+		v = ncr710_io_bget(ncr, addr);
+#if NCR_DEBUG > 1
+	write_log(_T("ncr_bget %08x %02x %08x\n"), addr, v, M68K_GETPC);
 #endif
 	return v;
 }
 
-static uae_u32 REGPARAM2 ncr_wget (uaecptr addr)
+static uae_u32 REGPARAM2 ncr_lget (struct ncr_state *ncr, uaecptr addr)
 {
-	uae_u32 v;
-#ifdef JIT
-	special_mem |= S_READ;
-#endif
-	addr &= board_mask;
-	v = (ncr_bget2 (addr) << 8) | ncr_bget2 (addr + 1);
-#if NCR_DEBUG > 0
-	if (addr < ROM_VECTOR)
-		write_log (_T("ncr_wget %08X=%04X PC=%08X\n"), addr, v, M68K_GETPC);
-#endif
-	return v;
-}
-
-static uae_u32 REGPARAM2 ncr_bget (uaecptr addr)
-{
-	uae_u32 v;
-#ifdef JIT
-	special_mem |= S_READ;
-#endif
-	addr &= board_mask;
-	if (!configured) {
-		if (addr >= sizeof acmemory)
-			return 0;
-		return acmemory[addr];
+	uae_u32 v = 0;
+	if (ncr) {
+		addr &= ncr->board_mask;
+		v = (ncr_bget2 (ncr, addr + 3) << 0) | (ncr_bget2 (ncr, addr + 2) << 8) |
+			(ncr_bget2 (ncr, addr + 1) << 16) | (ncr_bget2 (ncr, addr + 0) << 24);
 	}
-	v = ncr_bget2 (addr);
 	return v;
 }
 
-static void REGPARAM2 ncr_lput (uaecptr addr, uae_u32 l)
+static uae_u32 REGPARAM2 ncr_wget (struct ncr_state *ncr, uaecptr addr)
 {
-#ifdef JIT
-	special_mem |= S_WRITE;
-#endif
-	addr &= board_mask;
-#if NCR_DEBUG > 0
-	if (addr < ROM_VECTOR)
-		write_log (_T("ncr_lput %08X=%08X PC=%08X\n"), addr, l, M68K_GETPC);
-#endif
-	ncr_bput2 (addr, l >> 24);
-	ncr_bput2 (addr + 1, l >> 16);
-	ncr_bput2 (addr + 2, l >> 8);
-	ncr_bput2 (addr + 3, l);
+	uae_u32 v = 0;
+	if (ncr) {
+		v = (ncr_bget2 (ncr, addr) << 8) | ncr_bget2 (ncr, addr + 1);
+	}
+	return v;
 }
 
-static void REGPARAM2 ncr_wput (uaecptr addr, uae_u32 w)
+static uae_u32 REGPARAM2 ncr_bget (struct ncr_state *ncr, uaecptr addr)
 {
-#ifdef JIT
-	special_mem |= S_WRITE;
-#endif
+	uae_u32 v = 0;
+	if (ncr) {
+		addr &= ncr->board_mask;
+		if (!ncr->configured) {
+			addr &= 65535;
+			if (addr >= sizeof ncr->acmemory)
+				return 0;
+			return ncr->acmemory[addr];
+		}
+		v = ncr_bget2 (ncr, addr);
+	}
+	return v;
+}
+
+static void REGPARAM2 ncr_lput (struct ncr_state *ncr, uaecptr addr, uae_u32 l)
+{
+	if (!ncr)
+		return;
+	addr &= ncr->board_mask;
+	ncr_bput2 (ncr, addr + 3, l >> 0);
+	ncr_bput2 (ncr, addr + 2, l >> 8);
+	ncr_bput2 (ncr, addr + 1, l >> 16);
+	ncr_bput2 (ncr, addr + 0, l >> 24);
+}
+
+static void REGPARAM2 ncr_wput (struct ncr_state *ncr, uaecptr addr, uae_u32 w)
+{
+	if (!ncr)
+		return;
 	w &= 0xffff;
-	addr &= board_mask;
-#if NCR_DEBUG > 0
-	if (addr < ROM_VECTOR)
-		write_log (_T("ncr_wput %04X=%04X PC=%08X\n"), addr, w & 65535, M68K_GETPC);
-#endif
-	if (addr == 0x44 && !configured) {
-		uae_u32 value = (p96ram_start + ((currprefs.rtgmem_size + 0xffffff) & ~0xffffff)) >> 16;
-		chipmem_wput (regs.regs[11] + 0x20, value);
-		chipmem_wput (regs.regs[11] + 0x28, value);
-		map_banks (&ncr_bank, value, BOARD_SIZE >> 16, 0);
-		write_log (_T("A4091 Z3 autoconfigured at %04X0000\n"), value);
-		configured = 1;
-		expamem_next();
+	addr &= ncr->board_mask;
+	if (!ncr->configured) {
+		addr &= 65535;
+		switch (addr)
+		{
+			case 0x44:
+			map_banks_z3(ncr->bank, expamem_board_pointer >> 16, BOARD_SIZE >> 16);
+			ncr->board_mask = 0x00ffffff;
+			ncr->baseaddress = expamem_board_pointer;
+			ncr->configured = 1;
+			expamem_next (ncr->bank, NULL);
+			break;
+		}
 		return;
 	}
-	ncr_bput2 (addr, w >> 8);
-	ncr_bput2 (addr + 1, w);
+	ncr_bput2(ncr, addr, w >> 8);
+	ncr_bput2 (ncr, addr + 1, w);
 }
 
-static void REGPARAM2 ncr_bput (uaecptr addr, uae_u32 b)
+static void REGPARAM2 ncr_bput (struct ncr_state *ncr, uaecptr addr, uae_u32 b)
 {
-#ifdef JIT
-	special_mem |= S_WRITE;
-#endif
+	if (!ncr)
+		return;
 	b &= 0xff;
-	addr &= board_mask;
-	if (addr == 0x4c && !configured) {
-		write_log (_T("A4091 AUTOCONFIG SHUT-UP!\n"));
-		configured = 1;
-		expamem_next();
+	addr &= ncr->board_mask;
+	if (!ncr->configured) {
+		addr &= 65535;
+		if (ncr->z2) {
+			switch (addr)
+			{
+				case 0x48:
+				ncr->expamem_hi = b & 0xff;
+				map_banks_z2(ncr->bank, expamem_board_pointer >> 16, expamem_board_size >> 16);
+				ncr->baseaddress = expamem_board_pointer;
+				ncr->configured = 1;
+				expamem_next(ncr->bank, NULL);
+				break;
+				case 0x4c:
+				ncr->configured = 1;
+				expamem_shutup(ncr->bank);
+				break;
+				case 0x4a:
+				ncr->expamem_lo = b & 0xff;
+				break;
+			}
+		} else {
+			switch (addr)
+			{
+				case 0x4c:
+				ncr->configured = 1;
+				expamem_shutup(ncr->bank);
+				break;
+				case 0x48:
+				ncr->expamem_lo = b & 0xff;
+				break;
+			}
+		}
 		return;
 	}
-	if (!configured)
-		return;
-	ncr_bput2 (addr, b);
+	ncr_bput2 (ncr, addr, b);
 }
 
-addrbank ncr_bank = {
-	ncr_lget, ncr_wget, ncr_bget,
-	ncr_lput, ncr_wput, ncr_bput,
-	default_xlate, default_check, NULL, _T("A4091"),
-	dummy_lgeti, dummy_wgeti, ABFLAG_IO
+void ncr710_io_bput_a4000t(uaecptr addr, uae_u32 v)
+{
+	ncr710_io_bput(ncr_a4000t, addr, v);
+}
+uae_u32 ncr710_io_bget_a4000t(uaecptr addr)
+{
+	return ncr710_io_bget(ncr_a4000t, addr);
+}
+
+void ncr815_io_bput_wildfire(uaecptr addr, uae_u32 v)
+{
+	ncr_io_bput(ncr_wildfire, addr, v);
+}
+uae_u32 ncr815_io_bget_wildfire(uaecptr addr)
+{
+	return ncr_io_bget(ncr_wildfire, addr);
+}
+
+static void REGPARAM2 ncr_generic_bput (uaecptr addr, uae_u32 b)
+{
+	struct ncr_state *ncr = getscsiboard(addr);
+	if (ncr)
+		ncr_bput(ncr, addr, b);
+}
+static void REGPARAM2 ncr_generic_wput (uaecptr addr, uae_u32 b)
+{
+	struct ncr_state *ncr = getscsiboard(addr);
+	if (ncr)
+		ncr_wput(ncr, addr, b);
+}
+static void REGPARAM2 ncr_generic_lput (uaecptr addr, uae_u32 b)
+{
+	struct ncr_state *ncr = getscsiboard(addr);
+	if (ncr)
+		ncr_lput(ncr, addr, b);
+}
+static uae_u32 REGPARAM2 ncr_generic_bget (uaecptr addr)
+{
+	struct ncr_state *ncr = getscsiboard(addr);
+	if (ncr)
+		return ncr_bget(ncr, addr);
+	return 0;
+}
+static uae_u32 REGPARAM2 ncr_generic_wget (uaecptr addr)
+{
+	struct ncr_state *ncr = getscsiboard(addr);
+	if (ncr)
+		return ncr_wget(ncr, addr);
+	return 0;
+}
+static uae_u32 REGPARAM2 ncr_generic_lget (uaecptr addr)
+{
+	struct ncr_state *ncr = getscsiboard(addr);
+	if (ncr)
+		return ncr_lget(ncr, addr);
+	return 0;
+}
+
+static void REGPARAM2 cs_bput(uaecptr addr, uae_u32 b)
+{
+	ncr_bput(ncr_cs, addr, b);
+}
+static void REGPARAM2 cs_wput(uaecptr addr, uae_u32 b)
+{
+	ncr_wput(ncr_cs, addr, b);
+}
+static void REGPARAM2 cs_lput(uaecptr addr, uae_u32 b)
+{
+	ncr_lput(ncr_cs, addr, b);
+}
+static uae_u32 REGPARAM2 cs_bget(uaecptr addr)
+{
+	return ncr_bget(ncr_cs, addr);
+}
+static uae_u32 REGPARAM2 cs_wget(uaecptr addr)
+{
+	return ncr_wget(ncr_cs, addr);
+}
+static uae_u32 REGPARAM2 cs_lget(uaecptr addr)
+{
+	return ncr_lget(ncr_cs, addr);
+}
+
+static addrbank ncr_bank_cs_scsi_ram = {
+	cs_lget, cs_wget, cs_bget,
+	cs_lput, cs_wput, cs_bput,
+	cyberstorm_scsi_ram_xlate, cyberstorm_scsi_ram_check, NULL, NULL, _T("CyberStorm SCSI RAM"),
+	cs_lget, cs_wget,
+	ABFLAG_IO | ABFLAG_THREADSAFE, S_READ, S_WRITE
+};
+static addrbank ncr_bank_cs_scsi_io = {
+	cs_lget, cs_wget, cs_bget,
+	cs_lput, cs_wput, cs_bput,
+	default_xlate, default_check, NULL, NULL, _T("CyberStorm SCSI IO"),
+	dummy_lgeti, dummy_wgeti,
+	ABFLAG_IO | ABFLAG_THREADSAFE, S_READ, S_WRITE
 };
 
-static void ew (int addr, uae_u32 value)
+static struct addrbank_sub ncr_sub_bank_cs[] = {
+	{ &ncr_bank_cs_scsi_io,  0x0000, 0x0000 },
+	{ &ncr_bank_cs_scsi_ram, 0x1000, 0x0000 },
+	{ &ncr_bank_cs_scsi_ram, 0x3000, 0x2000 },
+	{ &ncr_bank_cs_scsi_ram, 0x5000, 0x4000 },
+	{ &ncr_bank_cs_scsi_ram, 0x7000, 0x6000 },
+	{ &ncr_bank_cs_scsi_ram, 0x9000, 0x8000 },
+	{ &ncr_bank_cs_scsi_ram, 0xb000, 0xa000 },
+	{ &ncr_bank_cs_scsi_ram, 0xd000, 0xc000 },
+	{ &ncr_bank_cs_scsi_ram, 0xf000, 0xe000 },
+	{ NULL }
+};
+
+addrbank ncr_bank_cyberstorm = {
+	sub_bank_lget, sub_bank_wget, sub_bank_bget,
+	sub_bank_lput, sub_bank_wput, sub_bank_bput,
+	sub_bank_xlate, sub_bank_check, NULL, NULL, _T("CyberStorm SCSI"),
+	sub_bank_lgeti, sub_bank_wgeti,
+	ABFLAG_IO | ABFLAG_THREADSAFE, S_READ, S_WRITE, ncr_sub_bank_cs
+};
+
+addrbank ncr_bank_generic = {
+	ncr_generic_lget, ncr_generic_wget, ncr_generic_bget,
+	ncr_generic_lput, ncr_generic_wput, ncr_generic_bput,
+	default_xlate, default_check, NULL, NULL, _T("NCR53C700/800"),
+	dummy_lgeti, dummy_wgeti,
+	ABFLAG_IO | ABFLAG_THREADSAFE | ABFLAG_SAFE, S_READ, S_WRITE
+};
+
+static void ew (struct ncr_state *ncr, int addr, uae_u8 value)
 {
 	if (addr == 00 || addr == 02 || addr == 0x40 || addr == 0x42) {
-		acmemory[addr] = (value & 0xf0);
-		acmemory[addr + 2] = (value & 0x0f) << 4;
+		ncr->acmemory[addr] = (value & 0xf0);
+		ncr->acmemory[addr + 2] = (value & 0x0f) << 4;
 	} else {
-		acmemory[addr] = ~(value & 0xf0);
-		acmemory[addr + 2] = ~((value & 0x0f) << 4);
+		ncr->acmemory[addr] = ~(value & 0xf0);
+		ncr->acmemory[addr + 2] = ~((value & 0x0f) << 4);
 	}
 }
 
-void ncr_free (void)
+static void ncr_init_board(struct ncr_state *ncr)
 {
+	if (!ncr)
+		return;
+#ifdef HAVE_LSI
+	if (!ncr->devobject.lsistate) {
+		if (ncr->newncr)
+			lsi_scsi_init(&ncr->devobject);
+		else
+			lsi710_scsi_init (&ncr->devobject);
+	}
+	if (ncr->newncr)
+		lsi_scsi_reset(&ncr->devobject, ncr);
+	else
+		lsi710_scsi_reset (&ncr->devobject, ncr);
+#endif
+	ncr->board_mask = 0xffff;
+	ncr->irq_func = set_irq2;
+	ncr->bank = &ncr_bank_generic;
+	ncr->configured = 0;
 }
 
-void ncr_reset (void)
+static void ncr_free(void)
 {
-	board_mask = 131072 - 1;
-	configured = 0;
-	if (currprefs.cs_mbdmac == 2) {
-		board_mask = 65535 - 1;
-		configured = -1;
+	for (int i = 0; i < MAX_NCR_UNITS; i++) {
+		freencrunit(ncr_units[i]);
 	}
 }
 
-void ncr_init (void)
+static void ncr_reset_board(struct ncr_state *ncr);
+void ncr_reset(int hardreset)
 {
-	struct zfile *z;
-	int roms[3];
-	struct romlist *rl;
-	int i;
+	for (int i = 0; i < MAX_NCR_UNITS; i++) {
+		ncr_reset_board(ncr_units[i]);
+	}
+}
 
-	configured = 0;
-	memset (acmemory, 0xff, 100);
-	ew (0x00, 0x80 | 0x10 | 0x00);
-	ew (0x08, 0x80 | 0x20 | 0x10);
+static void ncr_reset_board (struct ncr_state *ncr)
+{
+	if (!ncr)
+		return;
+	ncr->irq = false;
 
-	/* A4091 hardware id */
-	ew (0x04, 0x54);
-	/* commodore's manufacturer id */
-	ew (0x10, 0x02);
-	ew (0x14, 0x02);
-	/* rom vector */
-	ew (0x28, ROM_VECTOR >> 8);
-	ew (0x2c, ROM_VECTOR);
+	device_add_rethink(ncr_rethink);
+	device_add_exit(ncr_free);
+	device_add_vsync_pre(ncr_vsync);
+	device_add_reset(ncr_reset);
+}
 
-	ew (0x18, 0x00); /* ser.no. Byte 0 */
-	ew (0x1c, 0x00); /* ser.no. Byte 1 */
-	ew (0x20, 0x00); /* ser.no. Byte 2 */
-	ew (0x24, 0x00); /* ser.no. Byte 3 */
+// 01010040
+// 01020040 = H
+// 01040040 = J
+// 01080040 = K
 
-	roms[0] = 58;
-	roms[1] = 57;
-	roms[2] = -1;
+static const uae_u8 warpengine_a4000_autoconfig[16] = {
+	0x90, 0x13, 0x75, 0x00, 0x08, 0x9b, 0x00, 0x19, 0x01, 0x0e, 0x00, 0x40, 0x00, 0x00, 0x00, 0x00
+};
+#define WARP_ENGINE_ROM_SIZE 32768
 
-	rl = getromlistbyids(roms);
-	if (rl) {
-		struct romdata *rd = rl->rd;
-		z = read_rom (&rd);
-		if (z) {
-			write_log (_T("A4091 BOOT ROM %d.%d\n"), rd->ver, rd->rev);
-			rom = xmalloc (uae_u8, ROM_SIZE * 4);
-			for (i = 0; i < ROM_SIZE; i++) {
-				uae_u8 b;
-				zfile_fread (&b, 1, 1, z);
-				rom[i * 4 + 0] = b;
-				rom[i * 4 + 2] = b << 4;
-			}
-			zfile_fclose(z);
+bool ncr710_warpengine_autoconfig_init(struct autoconfig_info *aci)
+{
+	aci->autoconfigp = warpengine_a4000_autoconfig;
+	device_add_reset(ncr_reset);
+	if (!aci->doinit)
+		return true;
+
+	struct ncr_state *ncr = getscsi(aci->rc);
+	if (!ncr)
+		return false;
+
+	xfree(ncr->rom);
+	ncr->rom = NULL;
+
+	ncr->enabled = true;
+	memset (ncr->acmemory, 0xff, sizeof ncr->acmemory);
+	ncr->rom_start = 0x10;
+	ncr->rom_offset = 0;
+	ncr->rom_end = WARP_ENGINE_ROM_SIZE * 4;
+	ncr->io_start = WARP_ENGINE_IO_OFFSET;
+	ncr->io_end = WARP_ENGINE_IO_END;
+
+	for (int i = 0; i < 16; i++) {
+		uae_u8 b = warpengine_a4000_autoconfig[i];
+		if (i == 9) {
+			b = currprefs.cpuboard_settings & 7;
+			if (!b)
+				b = 1;
+			else
+				b <<= 1;
 		}
-	} else {
-		romwarning (roms);
+		ew(ncr, i * 4, b);
 	}
-	map_banks (&ncr_bank, 0xe80000 >> 16, 65536 >> 16, 0);
+	ncr->rom = xcalloc (uae_u8, WARP_ENGINE_ROM_SIZE * 4);
+	struct zfile *z = read_device_from_romconfig(aci->rc, ROMTYPE_CB_WENGINE);
+	if (z) {
+		for (int i = 0; i < WARP_ENGINE_ROM_SIZE; i++) {
+			uae_u8 b = 0xff;
+			zfile_fread(&b, 1, 1, z);
+			ncr->rom[i * 4 + 0] = b | 0x0f;
+			ncr->rom[i * 4 + 1] = 0xff;
+			ncr->rom[i * 4 + 2] = (b << 4) | 0x0f;
+			ncr->rom[i * 4 + 3] = 0xff;
+		}
+		zfile_fclose(z);
+	}
+
+	ncr_reset_board(ncr);
+
+	aci->addrbank = &ncr_bank_generic;
+	return true;
 }
 
-#endif //ncr
+bool ncr710_a4091_autoconfig_init (struct autoconfig_info *aci)
+{
+	uae_u8 *rom = NULL;
+	struct zfile *z = read_device_from_romconfig(aci->rc, ROMTYPE_A4091);
+	if (z) {
+		rom = xcalloc(uae_u8, A4091_ROM_SIZE * 4);
+		for (int i = 0; i < A4091_ROM_SIZE; i++) {
+			uae_u8 b;
+			zfile_fread(&b, 1, 1, z);
+			rom[i * 4 + 0] = b | 0x0f;
+			rom[i * 4 + 1] = 0xff;
+			rom[i * 4 + 2] = (b << 4) | 0x0f;
+			rom[i * 4 + 3] = 0xff;
+			if (i < 0x20) {
+				aci->autoconfig_raw[i * 4 + 0] = b;
+			} else if (i >= 0x40 && i < 0x60) {
+				aci->autoconfig_raw[(i - 0x40) * 4 + 2] = b;
+			}
+		}
+		zfile_fclose(z);
+	}
+
+	device_add_reset(ncr_reset);
+	if (!aci->doinit) {
+		xfree(rom);
+		return true;
+	}
+
+	struct ncr_state *ncr = getscsi(aci->rc);
+	if (!ncr)
+		return false;
+
+	xfree(ncr->rom);
+	ncr->rom = rom;
+
+	ncr->enabled = true;
+	memcpy(ncr->acmemory, aci->autoconfig_raw, sizeof ncr->acmemory);
+	ncr->rom_start = 0;
+	ncr->rom_offset = A4091_ROM_OFFSET;
+	ncr->rom_end = A4091_IO_OFFSET;
+	ncr->io_start = A4091_IO_OFFSET;
+	ncr->io_end = A4091_IO_END;
+
+	ncr_reset_board(ncr);
+
+	aci->addrbank = &ncr_bank_generic;
+	return true;
+}
+
+static const uae_u8 zeus040_autoconfig[16] = {
+	0xd1, 0x96, 0x40, 0x00, 0x07, 0xea, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00
+};
+
+bool ncr710_zeus040_autoconfig_init(struct autoconfig_info *aci)
+{
+	aci->autoconfigp = zeus040_autoconfig;
+	device_add_reset(ncr_reset);
+	if (!aci->doinit)
+		return true;
+
+	struct ncr_state *ncr = getscsi(aci->rc);
+	if (!ncr)
+		return false;
+
+	xfree(ncr->rom);
+	ncr->rom = NULL;
+
+	ncr->enabled = true;
+	memset(ncr->acmemory, 0xff, sizeof ncr->acmemory);
+	ncr->rom_start = 0x8000;
+	ncr->rom_offset = 0x8000;
+	ncr->rom_end = 0x10000;
+	ncr->io_start = 0x4000;
+	ncr->io_end = 0x8000;
+
+	for (int i = 0; i < 16; i++) {
+		uae_u8 b = zeus040_autoconfig[i];
+		if (i == 0 && (currprefs.cpuboard_settings & 1))
+			b &= ~0x10;
+		ew(ncr, i * 4, b);
+	}
+	ncr->rom = xcalloc(uae_u8, 32768);
+	load_rom_rc(aci->rc, ROMTYPE_CB_ZEUS040, 16384, 0, ncr->rom, 32768, 0);
+
+	ncr_reset_board(ncr);
+
+	aci->addrbank = &ncr_bank_generic;
+	return true;
+}
+
+bool ncr710_magnum40_autoconfig_init(struct autoconfig_info *aci)
+{
+	device_add_reset(ncr_reset);
+	if (!aci->doinit) {
+		load_rom_rc(aci->rc, ROMTYPE_CB_MAGNUM40, 65536, 0, aci->autoconfig_raw, 128, 0);
+		return true;
+	}
+
+	struct ncr_state *ncr = getscsi(aci->rc);
+	if (!ncr)
+		return false;
+
+	xfree(ncr->rom);
+	ncr->rom = NULL;
+
+	ncr->enabled = true;
+	memset(ncr->acmemory, 0xff, sizeof ncr->acmemory);
+	ncr->rom_start = 0;
+	ncr->rom_offset = 0;
+	ncr->rom_end = 0x8000;
+	ncr->io_start = 0x8000;
+	ncr->io_end = 0x9000;
+
+
+	ncr->rom = xcalloc(uae_u8, 32768);
+	load_rom_rc(aci->rc, ROMTYPE_CB_MAGNUM40, 65536, 0, ncr->rom, 32768, 0);
+	memcpy(ncr->acmemory, ncr->rom, sizeof ncr->acmemory);
+
+	ncr_reset_board(ncr);
+
+	aci->addrbank = &ncr_bank_generic;
+	return true;
+}
+
+static void allocscsidevice(struct ncr_state *ncr, int ch, struct scsi_data *handle, int uae_unitnum)
+{
+	handle->privdata = ncr;
+	ncr->scsid[ch] = xcalloc (SCSIDevice, 1);
+	ncr->scsid[ch]->id = ch;
+	ncr->scsid[ch]->handle = handle;
+	handle->uae_unitnum = uae_unitnum;
+}
+
+static void add_ncr_scsi_hd (struct ncr_state *ncr, int ch, struct hd_hardfiledata *hfd, struct uaedev_config_info *ci, int uae_unitnum)
+{
+	struct scsi_data *handle = NULL;
+
+	freescsi (ncr->scsid[ch]);
+	ncr->scsid[ch] = NULL;
+	if (!add_scsi_hd(&handle, ch, hfd, ci))
+		return;
+	allocscsidevice(ncr, ch, handle, uae_unitnum);
+	ncr->enabled = true;
+}
+
+static void add_ncr_scsi_cd (struct ncr_state *ncr, int ch, int unitnum, int uae_unitnum)
+{
+	struct scsi_data *handle = NULL;
+
+	freescsi (ncr->scsid[ch]);
+	ncr->scsid[ch] = NULL;
+	if (!add_scsi_cd(&handle, ch, unitnum))
+		return;
+	allocscsidevice(ncr, ch, handle, uae_unitnum);
+	ncr->enabled = true;
+}
+
+static void add_ncr_scsi_tape (struct ncr_state *ncr, int ch, const TCHAR *tape_directory, bool readonly, int uae_unitnum)
+{
+	struct scsi_data *handle = NULL;
+
+	freescsi (ncr->scsid[ch]);
+	ncr->scsid[ch] = NULL;
+	if (!add_scsi_tape(&handle, ch, tape_directory, readonly))
+		return;
+	allocscsidevice(ncr, ch, handle, uae_unitnum);
+	ncr->enabled = true;
+}
+
+static void ncr_add_scsi_unit(struct ncr_state **ncrp, int ch, struct uaedev_config_info *ci, struct romconfig *rc, bool newncr)
+{
+	struct ncr_state *ncr = allocscsi(ncrp, rc, ch);
+	if (!ncr)
+		return;
+	ncr->newncr = newncr;
+	ncr_init_board(ncr);
+	if (ch >= 0 && ncr) {
+		if (ci->type == UAEDEV_CD)
+			add_ncr_scsi_cd (ncr, ch, ci->device_emu_unit, ci->uae_unitnum);
+		else if (ci->type == UAEDEV_TAPE)
+			add_ncr_scsi_tape (ncr, ch, ci->rootdir, ci->readonly, ci->uae_unitnum);
+		else if (ci->type == UAEDEV_HDF)
+			add_ncr_scsi_hd (ncr, ch, NULL, ci, ci->uae_unitnum);
+	}
+}
+
+bool a4000t_scsi_init(struct autoconfig_info *aci)
+{
+	aci->start = 0xdd0000;
+	aci->size = 0x10000;
+	aci->zorro = 0;
+	return true;
+}
+
+bool is_a4000t_scsi(void)
+{
+	return ncr_a4000t && ncr_a4000t->enabled;
+}
+
+void a4000t_add_scsi_unit (int ch, struct uaedev_config_info *ci, struct romconfig *rc)
+{
+	ncr_add_scsi_unit(&ncr_a4000t, ch, ci, rc, false);
+	ncr_a4000t->configured = -1;
+	ncr_a4000t->enabled = true;
+}
+
+void warpengine_add_scsi_unit (int ch, struct uaedev_config_info *ci, struct romconfig *rc)
+{
+	ncr_add_scsi_unit(&ncr_we, ch, ci, rc, false);
+}
+
+void tekmagic_add_scsi_unit (int ch, struct uaedev_config_info *ci, struct romconfig *rc)
+{
+	ncr_add_scsi_unit(&ncr_cpuboard, ch, ci, rc, false);
+}
+
+void quikpak_add_scsi_unit(int ch, struct uaedev_config_info *ci, struct romconfig *rc)
+{
+	ncr_add_scsi_unit(&ncr_cpuboard, ch, ci, rc, true);
+}
+
+
+void a4091_add_scsi_unit (int ch, struct uaedev_config_info *ci, struct romconfig *rc)
+{
+	ncr_add_scsi_unit(&ncra4091[ci->controller_type_unit], ch, ci, rc, false);
+}
+
+void cyberstorm_add_scsi_unit(int ch, struct uaedev_config_info *ci, struct romconfig *rc)
+{
+	ncr_add_scsi_unit(&ncr_cs, ch, ci, rc, true);
+	ncr_cs->configured = -1;
+	ncr_cs->enabled = true;
+	ncr_cs->ramsize = CYBERSTORM_SCSI_RAM_SIZE;
+	ncr_cs->irq_func = cyberstorm_mk3_ppc_irq;
+	ncr_cs->bank = &ncr_bank_cyberstorm;
+	ncr_cs->baseaddress = 0xf40000;
+}
+
+void blizzardppc_add_scsi_unit(int ch, struct uaedev_config_info *ci, struct romconfig *rc)
+{
+	ncr_add_scsi_unit(&ncr_bppc, ch, ci, rc, false);
+	ncr_bppc->configured = -1;
+	ncr_bppc->enabled = true;
+	ncr_bppc->irq_func = blizzardppc_irq;
+	ncr_bppc->bank = &ncr_bank_cyberstorm;
+	ncr_bppc->baseaddress = 0xf40000;
+}
+
+void wildfire_add_scsi_unit(int ch, struct uaedev_config_info *ci, struct romconfig *rc)
+{
+	ncr_add_scsi_unit(&ncr_wildfire, ch, ci, rc, true);
+	ncr_wildfire->configured = -1;
+	ncr_wildfire->enabled = true;
+	ncr_wildfire->irq_func = wildfire_ncr815_irq;
+	ncr_wildfire->bank = &ncr_bank_generic;
+}
+
+void zeus040_add_scsi_unit(int ch, struct uaedev_config_info *ci, struct romconfig *rc)
+{
+	ncr_add_scsi_unit(&ncr_zeus040, ch, ci, rc, false);
+	ncr_zeus040->irq_func = set_irq6;
+	ncr_zeus040->irqlevel = true;
+	ncr_zeus040->z2 = true;
+}
+
+void magnum40_add_scsi_unit(int ch, struct uaedev_config_info *ci, struct romconfig *rc)
+{
+	ncr_add_scsi_unit(&ncr_magnum40, ch, ci, rc, false);
+	ncr_magnum40->irq_func = set_irq6;
+	ncr_magnum40->irqlevel = true;
+	ncr_magnum40->z2 = true;
+}
+
+#endif

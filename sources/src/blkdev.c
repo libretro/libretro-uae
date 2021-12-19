@@ -1,17 +1,18 @@
 /*
- * UAE - The Un*x Amiga Emulator
- *
- * lowlevel cd device glue, scsi emulator
- *
+* UAE - The Un*x Amiga Emulator
+*
+* lowlevel cd device glue, scsi emulator
+*
 * Copyright 2009-2013 Toni Wilen
- *
- */
+*
+*/
 
 #include "sysconfig.h"
 #include "sysdeps.h"
 #include "options.h"
-#include "memory_uae.h"
+#include "memory.h"
 
+#include "traps.h"
 #include "blkdev.h"
 #include "scsidev.h"
 #include "savestate.h"
@@ -19,8 +20,9 @@
 #include "threaddep/thread.h"
 #include "execio.h"
 #include "zfile.h"
-#include "misc.h"
 #include "scsi.h"
+#include "statusline.h"
+#include "fsdb.h"
 #ifdef RETROPLATFORM
 #include "rp.h"
 #endif
@@ -31,7 +33,7 @@ int log_scsiemu = 0;
 
 struct blkdevstate
 {
-	int scsiemu;
+	bool scsiemu;
 	int type;
 	struct device_functions *device_func;
 	int isopen;
@@ -47,11 +49,11 @@ struct blkdevstate
 	bool cdimagefileinuse;
 	int wasopen;
 	bool mediawaschanged;
-    struct scsi_data_tape *tape;
-    bool showstatusline;
+	struct scsi_data_tape *tape;
+	bool showstatusline;
 };
 
-static struct blkdevstate state[MAX_TOTAL_SCSI_DEVICES];
+struct blkdevstate state[MAX_TOTAL_SCSI_DEVICES];
 
 static bool dev_init;
 
@@ -93,8 +95,14 @@ void tolongbcd (uae_u8 *p, int v)
 	p[2] = tobcd ((v >> 0) & 0xff);
 }
 
-static struct cd_toc *gettoc (struct cd_toc_head *th, int block)
+static struct cd_toc *gettoc (int unitnum, struct cd_toc_head *th, int block)
 {
+	if (th->lastaddress == 0) {
+		if (unitnum < 0)
+			return NULL;
+		if (!sys_command_cd_toc(unitnum, th))
+			return NULL;
+	}
 	for (int i = th->first_track_offset + 1; i <= th->last_track_offset; i++) {
 		struct cd_toc *t = &th->toc[i];
 		if (block < t->paddress)
@@ -103,14 +111,20 @@ static struct cd_toc *gettoc (struct cd_toc_head *th, int block)
 	return &th->toc[th->last_track_offset];
 }
 
+int cdtracknumber(struct cd_toc_head *th, int block)
+{
+	struct cd_toc *t = gettoc(-1, th, block);
+	if (!t)
+		return -1;
+	return t->track;
+}
 int isaudiotrack (struct cd_toc_head *th, int block)
 {
-	struct cd_toc *t = gettoc (th, block);
+	struct cd_toc *t = gettoc (-1, th, block);
 	if (!t)
 		return 0;
 	return (t->control & 0x0c) != 4;
 }
-
 int isdatatrack (struct cd_toc_head *th, int block)
 {
 	return !isaudiotrack (th, block);
@@ -118,20 +132,29 @@ int isdatatrack (struct cd_toc_head *th, int block)
 
 static int cdscsidevicetype[MAX_TOTAL_SCSI_DEVICES];
 
-extern struct device_functions devicefunc_cdimage;
-
 static struct device_functions *devicetable[] = {
 	NULL,
 	&devicefunc_cdimage,
-	NULL
+#ifdef WITH_SCSI_IOCTL
+	&devicefunc_scsi_ioctl,
+#else
+        NULL,
+#endif
+#ifdef WITH_SCSI_SPTI
+	&devicefunc_scsi_spti,
+#else
+        NULL,
+#endif
 };
-static int driver_installed[6];
+#define NUM_DEVICE_TABLE_ENTRIES 4
+static int driver_installed[NUM_DEVICE_TABLE_ENTRIES];
 
 static void install_driver (int flags)
 {
 	for (int i = 0; i < MAX_TOTAL_SCSI_DEVICES; i++) {
 		struct blkdevstate *st = &state[i];
 		st->scsiemu = false;
+		st->type = -1;
 		st->device_func = NULL;
 	}
 	if (flags > 0) {
@@ -153,13 +176,31 @@ static void install_driver (int flags)
 				st->scsiemu = true;
 				break;
 				case SCSI_UNIT_SPTI:
-				st->device_func = devicetable[SCSI_UNIT_SPTI];
+				if (currprefs.win32_uaescsimode == UAESCSI_CDEMU) {
+					st->device_func = devicetable[SCSI_UNIT_IOCTL];
+					st->scsiemu = true;
+				} else {
+					st->device_func = devicetable[SCSI_UNIT_SPTI];
+				}
 				break;
+			}
+			// do not default to image mode if unit 1+ and automount
+			if (i == 0 || !currprefs.win32_automount_cddrives) {
+				// use image mode if driver disabled
+				for (int j = 1; j < NUM_DEVICE_TABLE_ENTRIES; j++) {
+					if (devicetable[j] == st->device_func && driver_installed[j] < 0) {
+						st->device_func = devicetable[SCSI_UNIT_IMAGE];
+						st->scsiemu = true;
+					}
+				}
 			}
 		}
 	}
 
-	for (int j = 1; devicetable[j]; j++) {
+	for (int j = 1; j < NUM_DEVICE_TABLE_ENTRIES; j++) {
+		if (devicetable[j] == NULL) {
+		    continue;
+		}
 		if (!driver_installed[j]) {
 			for (int i = 0; i < MAX_TOTAL_SCSI_DEVICES; i++) {
 				struct blkdevstate *st = &state[i];
@@ -173,27 +214,14 @@ static void install_driver (int flags)
 					} else {
 						driver_installed[j] = 1;
 					}
-					//write_log (_T("%s driver installed, ok=%d\n"), st->device_func->name, ok);
+					write_log (_T("%s driver installed, ok=%d\n"), st->device_func->name, ok);
 					break;
 				}
 			}
 		}
 	}
+
 }
-/*#else 
-	#ifdef TARGET_AMIGAOS
-extern struct device_functions devicefunc_scsi_amiga;
-static void install_driver (int flags){}
-	#else
-		#ifdef SCSIEMU_LINUX_IOCTL
-extern struct device_functions devicefunc_scsi_linux_ioctl;
-static void install_driver (int flags){}
-		#else
-extern struct device_functions devicefunc_scsi_libscg;
-static void install_driver (int flags){}
-		#endif
-	#endif
-#endif*/
 
 void blkdev_default_prefs (struct uae_prefs *p)
 {
@@ -201,6 +229,7 @@ void blkdev_default_prefs (struct uae_prefs *p)
 		p->cdslots[i].name[0] = 0;
 		p->cdslots[i].inuse = false;
 		p->cdslots[i].type = SCSI_UNIT_DEFAULT;
+		p->cdslots[i].temporary = false;
 		cdscsidevicetype[i] = SCSI_UNIT_DEFAULT;
 	}
 }
@@ -214,7 +243,7 @@ void blkdev_fix_prefs (struct uae_prefs *p)
 	}
 
 	for (int i = 0; i < MAX_TOTAL_SCSI_DEVICES; i++) {
-		if (cdscsidevicetype[i] != SCSI_UNIT_DEFAULT)
+		if (cdscsidevicetype[i] != SCSI_UNIT_DEFAULT && (currprefs.scsi == 0 || currprefs.win32_uaescsimode < UAESCSI_SPTI))
 			continue;
 #ifdef __LIBRETRO__
 		cdscsidevicetype[i] = SCSI_UNIT_IMAGE;
@@ -223,25 +252,26 @@ void blkdev_fix_prefs (struct uae_prefs *p)
 		if (p->cdslots[i].inuse || p->cdslots[i].name[0]) {
 			TCHAR *name = p->cdslots[i].name;
 			if (_tcslen (name) == 3 && name[1] == ':' && name[2] == '\\') {
-//SPTI				if (currprefs.scsi && (currprefs.win32_uaescsimode == UAESCSI_SPTI || currprefs.win32_uaescsimode == UAESCSI_SPTISCAN))
-//					cdscsidevicetype[i] = SCSI_UNIT_SPTI;
-//				else
+				if (currprefs.scsi && (currprefs.win32_uaescsimode == UAESCSI_SPTI || currprefs.win32_uaescsimode == UAESCSI_SPTISCAN))
+					cdscsidevicetype[i] = SCSI_UNIT_SPTI;
+				else
 					cdscsidevicetype[i] = SCSI_UNIT_IOCTL;
 			} else {
 				cdscsidevicetype[i] = SCSI_UNIT_IMAGE;
 			}
 		} else if (currprefs.scsi) {
-//EMU			if (currprefs.win32_uaescsimode == UAESCSI_CDEMU)
-//				cdscsidevicetype[i] = SCSI_UNIT_IOCTL;
-//			else
+			if (currprefs.win32_uaescsimode == UAESCSI_CDEMU)
+				cdscsidevicetype[i] = SCSI_UNIT_IOCTL;
+			else
 				cdscsidevicetype[i] = SCSI_UNIT_SPTI;
 		} else {
 			cdscsidevicetype[i] = SCSI_UNIT_IOCTL;
 		}
 	}
+
 }
 
-static bool getsem2 (int unitnum, bool dowait)
+static bool getsem_2 (int unitnum, bool dowait)
 {
 	struct blkdevstate *st = &state[unitnum];
 #ifdef _WIN32
@@ -265,7 +295,7 @@ static bool getsem2 (int unitnum, bool dowait)
 }
 static bool getsem (int unitnum)
 {
-	return getsem2 (unitnum, false);
+	return getsem_2 (unitnum, false);
 }
 static void freesem (int unitnum)
 {
@@ -278,7 +308,7 @@ static void freesem (int unitnum)
 static void sys_command_close_internal (int unitnum)
 {
 	struct blkdevstate *st = &state[unitnum];
-	getsem2 (unitnum, true);
+	getsem_2 (unitnum, true);
 	st->waspaused = 0;
 	if (st->isopen <= 0)
 		write_log (_T("BUG unit %d close: opencnt=%d!\n"), unitnum, st->isopen);
@@ -298,7 +328,7 @@ static void sys_command_close_internal (int unitnum)
 	}
 }
 
-static int sys_command_open_internal (int unitnum, const TCHAR *ident, unsigned int csu)
+static int sys_command_open_internal (int unitnum, const TCHAR *ident, enum cd_standard_unit csu)
 {
 	struct blkdevstate *st = &state[unitnum];
 	int ret = 0;
@@ -308,7 +338,7 @@ static int sys_command_open_internal (int unitnum, const TCHAR *ident, unsigned 
 	if (st->sema.sem == NULL)
 #endif
 		uae_sem_init (&st->sema, 0, 1);
-	getsem2 (unitnum, true);
+	getsem_2 (unitnum, true);
 	if (st->isopen)
 		write_log (_T("BUG unit %d open: opencnt=%d!\n"), unitnum, st->isopen);
 	if (st->device_func) {
@@ -320,7 +350,7 @@ static int sys_command_open_internal (int unitnum, const TCHAR *ident, unsigned 
 	return ret;
 }
 
-static int getunitinfo (int unitnum, int drive, unsigned int csu, int *isaudio)
+static int getunitinfo (int unitnum, int drive, enum cd_standard_unit csu, int *isaudio)
 {
 	struct device_info di;
 	if (sys_command_info (unitnum, &di, 0)) {
@@ -360,11 +390,10 @@ static int getunitinfo (int unitnum, int drive, unsigned int csu, int *isaudio)
 	return 0;
 }
 
-static int get_standard_cd_unit2 (struct uae_prefs *p, unsigned int csu)
+static int get_standard_cd_unit2 (struct uae_prefs *p, enum cd_standard_unit csu)
 {
 	int unitnum = 0;
 	int isaudio = 0;
-
 #ifdef __LIBRETRO__
 	if (p->cdslots[unitnum].name[0] || p->cdslots[unitnum].inuse) {
 		if (p->cdslots[unitnum].name[0]) {
@@ -394,7 +423,6 @@ static int get_standard_cd_unit2 (struct uae_prefs *p, unsigned int csu)
 		return unitnum;
 	}
 	device_func_init (SCSI_UNIT_IOCTL);
-
 	for (int drive = 'C'; drive <= 'Z'; ++drive) {
 		TCHAR vol[100];
 		_stprintf (vol, _T("%c:\\"), drive);
@@ -407,7 +435,6 @@ static int get_standard_cd_unit2 (struct uae_prefs *p, unsigned int csu)
 			}
 		}
 	}
-
 	if (isaudio) {
 		TCHAR vol[100];
 		_stprintf (vol, _T("%c:\\"), isaudio);
@@ -415,7 +442,6 @@ static int get_standard_cd_unit2 (struct uae_prefs *p, unsigned int csu)
 			return unitnum;
 	}
 #endif
-
 fallback:
 	device_func_init (SCSI_UNIT_IMAGE);
 	if (!sys_command_open_internal (unitnum, _T(""), csu)) {
@@ -425,7 +451,22 @@ fallback:
 	return unitnum;
 }
 
-int get_standard_cd_unit (unsigned int csu)
+static void cd_statusline_label(int unitnum)
+{
+	TCHAR *p = currprefs.cdslots[unitnum].name;
+	if (p[0]) {
+		TCHAR name[MAX_DPATH];
+		struct device_info di;
+		cfgfile_resolve_path_out_load(p, name, sizeof(name) / sizeof(TCHAR), PATH_CD);
+		const TCHAR *fname = my_getfilepart(name);
+		if (sys_command_info(unitnum, &di, 0) && di.volume_id[0])
+			statusline_add_message(STATUSTYPE_CD, _T("CD%d: [%s] %s"), unitnum, di.volume_id, fname);
+		else
+			statusline_add_message(STATUSTYPE_CD, _T("CD%d: %s"), unitnum, fname);
+	}
+}
+
+int get_standard_cd_unit (enum cd_standard_unit csu)
 {
 	int unitnum = get_standard_cd_unit2 (&currprefs, csu);
 	if (unitnum < 0)
@@ -438,6 +479,7 @@ int get_standard_cd_unit (unsigned int csu)
 	if (currprefs.cdslots[unitnum].delayed) {
 		st->delayed = PRE_INSERT_DELAY;
 	}
+	st->showstatusline = true;
 	return unitnum;
 }
 
@@ -452,13 +494,25 @@ int sys_command_isopen (int unitnum)
 	return st->isopen;
 }
 
+int sys_command_open_tape (int unitnum, const TCHAR *tape_directory, bool readonly)
+{
+	struct blkdevstate *st = &state[unitnum];
+	if (st->isopen == 0) {
+		struct scsi_data_tape *tape = tape_alloc (unitnum, tape_directory, readonly);
+		if (!tape)
+			return 0;
+		st->tape = tape;
+	}
+	st->isopen++;
+	return 1;
+}
+
 int sys_command_open (int unitnum)
 {
 	struct blkdevstate *st = &state[unitnum];
 	blkdev_fix_prefs (&currprefs);
 	if (!dev_init) {
 		device_func_init (0);
-		dev_init = true;
 	}
 
 	if (st->isopen) {
@@ -482,6 +536,10 @@ void sys_command_close (int unitnum)
 		st->isopen--;
 		return;
 	}
+	if (st->tape) {
+		tape_free (st->tape);
+		st->tape = NULL;
+	}
 	sys_command_close_internal (unitnum);
 }
 
@@ -494,7 +552,7 @@ void blkdev_cd_change (int unitnum, const TCHAR *name)
 #endif
 }
 
-void device_func_reset (void)
+void device_func_reset(void)
 {
 	// if reset during delayed CD change, re-insert the CD immediately
 	for (int i = 0; i < MAX_TOTAL_SCSI_DEVICES; i++) {
@@ -502,7 +560,7 @@ void device_func_reset (void)
 		if (st->imagechangetime > 0 && st->newimagefile[0] && !currprefs.cdslots[i].name[0]) {
 			_tcscpy(changed_prefs.cdslots[i].name, st->newimagefile);
 			_tcscpy(currprefs.cdslots[i].name, st->newimagefile);
-			//cd_statusline_label(i);
+			cd_statusline_label(i);
 		}
 		st->imagechangetime = 0;
 		st->newimagefile[0] = 0;
@@ -513,20 +571,20 @@ void device_func_reset (void)
 
 void device_func_free(void)
 {
-    for (int i = 0; i < MAX_TOTAL_SCSI_DEVICES; i++) {
-        struct blkdevstate *st = &state[i];
+	for (int i = 0; i < MAX_TOTAL_SCSI_DEVICES; i++) {
+		struct blkdevstate *st = &state[i];
 #ifdef __LIBRETRO__
-        if (currprefs.scsi && i == 0)
-           sys_command_cd_stop(i);
+		if (currprefs.scsi && i == 0)
+			sys_command_cd_stop(i);
 #endif
-        st->wasopen = 0;
-        st->waspaused = false;
-        st->mediawaschanged = false;
-        st->imagechangetime = 0;
-        st->cdimagefileinuse = false;
-        st->newimagefile[0] = 0;
-    }
-    dev_init = false;
+		st->wasopen = 0;
+		st->waspaused = false;
+		st->mediawaschanged = false;
+		st->imagechangetime = 0;
+		st->cdimagefileinuse = false;
+		st->newimagefile[0] = 0;
+	}
+	dev_init = false;
 }
 
 int device_func_init (int flags)
@@ -552,7 +610,6 @@ bool blkdev_get_info (struct uae_prefs *p, int unitnum, struct device_info *di)
 	}
 	if (open && opened)
 		sys_command_close_internal (unitnum);
-
 	return ok;
 }
 
@@ -586,7 +643,6 @@ void check_prefs_changed_cd (void)
 {
 	if (!config_changed)
 		return;
-	currprefs.sound_volume_cd = changed_prefs.sound_volume_cd;
 }
 
 static void check_changes (int unitnum)
@@ -597,6 +653,11 @@ static void check_changes (int unitnum)
 
 	if (st->device_func == NULL)
 		return;
+
+	if (st->showstatusline) {
+		cd_statusline_label(unitnum);
+		st->showstatusline = 0;
+	}
 
 	if (st->delayed) {
 		st->delayed--;
@@ -617,7 +678,7 @@ static void check_changes (int unitnum)
 #else
 		if (st->sema.sem)
 #endif
-			gotsem = getsem2 (unitnum, true);
+			gotsem = getsem_2 (unitnum, true);
 		st->cdimagefileinuse = changed_prefs.cdslots[unitnum].inuse;
 		_tcscpy (st->newimagefile, changed_prefs.cdslots[unitnum].name);
 		changed_prefs.cdslots[unitnum].name[0] = currprefs.cdslots[unitnum].name[0] = 0;
@@ -642,6 +703,9 @@ static void check_changes (int unitnum)
 			}
 		}
 		write_log (_T("CD: eject (%s) open=%d\n"), pollmode ? _T("slow") : _T("fast"), st->wasopen ? 1 : 0);
+		if (wasimage)
+			statusline_add_message(STATUSTYPE_CD, _T("CD%d: -"), unitnum);
+
 #ifdef RETROPLATFORM
 		rp_cd_image_change (unitnum, NULL); 
 #endif
@@ -660,7 +724,7 @@ static void check_changes (int unitnum)
 #else
 	if (st->sema.sem)
 #endif
-		gotsem = getsem2 (unitnum, true);
+		gotsem = getsem_2 (unitnum, true);
 	_tcscpy (currprefs.cdslots[unitnum].name, st->newimagefile);
 	_tcscpy (changed_prefs.cdslots[unitnum].name, st->newimagefile);
 	currprefs.cdslots[unitnum].inuse = changed_prefs.cdslots[unitnum].inuse = st->cdimagefileinuse;
@@ -688,15 +752,16 @@ static void check_changes (int unitnum)
 		filesys_do_disk_change (unitnum, 1);
 	}
 	st->mediawaschanged = true;
-#ifdef RETROPLATFORM
-	rp_cd_image_change (unitnum, currprefs.cdslots[unitnum].name);
-#endif
+	st->showstatusline = true;
 	if (gotsem) {
 		freesem (unitnum);
 		gotsem = false;
 	}
+#ifdef RETROPLATFORM
+	rp_cd_image_change (unitnum, currprefs.cdslots[unitnum].name);
+#endif
 
-	config_changed = 1;
+	set_config_changed ();
 
 }
 
@@ -706,12 +771,12 @@ void blkdev_vsync (void)
 		check_changes (i);
 }
 
-static int do_scsi (int unitnum, uae_u8 *cmd, int cmdlen)
+static int do_scsi_3 (int unitnum, uae_u8 *cmd, int cmdlen)
 {
 	uae_u8 *p = state[unitnum].device_func->exec_out (unitnum, cmd, cmdlen);
 	return p != NULL;
 }
-static int do_scsi2 (int unitnum, uae_u8 *cmd, int cmdlen, uae_u8 *out, int outsize)
+static int do_scsi (int unitnum, uae_u8 *cmd, int cmdlen, uae_u8 *out, int outsize)
 {
 	uae_u8 *p = state[unitnum].device_func->exec_in (unitnum, cmd, cmdlen, &outsize);
 	if (p)
@@ -750,8 +815,8 @@ int sys_command_cd_pause (int unitnum, int paused)
 	int v;
 	if (state[unitnum].device_func->pause == NULL) {
 		int as = audiostatus (unitnum);
-		uae_u8 cmd[10] = {0x4b,0,0,0,0,0,0,0,paused?0:1,0};
-		do_scsi (unitnum, cmd, sizeof cmd);
+		uae_u8 cmd[10] = {0x4b,0,0,0,0,0,0,0,(uae_u8)(paused?0:1),0};
+		do_scsi_3 (unitnum, cmd, sizeof cmd);
 		v = as == AUDIO_STATUS_PAUSED;
 	} else {
 		v = state[unitnum].device_func->pause (unitnum, paused);
@@ -770,7 +835,7 @@ void sys_command_cd_stop (int unitnum)
 	if (state[unitnum].device_func->stop == NULL) {
 		int as = audiostatus (unitnum);
 		uae_u8 cmd[6] = {0x4e,0,0,0,0,0};
-		do_scsi (unitnum, cmd, sizeof cmd);
+		do_scsi_3 (unitnum, cmd, sizeof cmd);
 	} else {
 		state[unitnum].device_func->stop (unitnum);
 	}
@@ -797,7 +862,7 @@ int sys_command_cd_play (int unitnum, int startlsn, int endlsn, int scan)
 		cmd[6] = (uae_u8)(endmsf >> 16);
 		cmd[7] = (uae_u8)(endmsf >> 8);
 		cmd[8] = (uae_u8)(endmsf >> 0);
-		v = do_scsi (unitnum, cmd, sizeof cmd) ? 0 : 1;
+		v = do_scsi_3 (unitnum, cmd, sizeof cmd) ? 0 : 1;
 	} else {
 		v = state[unitnum].device_func->play (unitnum, startlsn, endlsn, scan, NULL, NULL);
 	}
@@ -806,13 +871,14 @@ int sys_command_cd_play (int unitnum, int startlsn, int endlsn, int scan)
 }
 
 /* play CD audio with subchannels */
-int sys_command_cd_play2 (int unitnum, int startlsn, int endlsn, int scan, play_status_callback statusfunc, play_subchannel_callback subfunc)
+int sys_command_cd_play_callback (int unitnum, int startlsn, int endlsn, int scan, play_status_callback statusfunc, play_subchannel_callback subfunc)
 {
 	int v;
 	if (failunit (unitnum))
 		return 0;
 	if (!getsem (unitnum))
 		return 0;
+	state[unitnum].play_end_pos = endlsn;
 	if (state[unitnum].device_func->play == NULL)
 		v = sys_command_cd_play (unitnum, startlsn, endlsn, scan);
 	else
@@ -850,7 +916,7 @@ int sys_command_cd_qcode (int unitnum, uae_u8 *buf, int sector, bool all)
 			v = 0;
 		} else {
 			uae_u8 cmd[10] = {0x42,2,0x40,1,0,0,0,(uae_u8)(SUBQ_SIZE>>8),(uae_u8)(SUBQ_SIZE&0xff),0};
-			v = do_scsi2 (unitnum, cmd, sizeof cmd, buf, SUBQ_SIZE);
+			v = do_scsi (unitnum, cmd, sizeof cmd, buf, SUBQ_SIZE);
 		}
 	} else {
 		v = state[unitnum].device_func->qcode (unitnum, buf, sector, all);
@@ -860,7 +926,7 @@ int sys_command_cd_qcode (int unitnum, uae_u8 *buf, int sector, bool all)
 };
 
 /* read table of contents */
-int sys_command_cd_toc (int unitnum, struct cd_toc_head *toc)
+int sys_command_cd_toc (int unitnum, struct cd_toc_head *th)
 {
 	int v;
 	if (failunit (unitnum))
@@ -870,14 +936,37 @@ int sys_command_cd_toc (int unitnum, struct cd_toc_head *toc)
 	if (state[unitnum].device_func->toc == NULL) {
 		uae_u8 buf[4 + 8 * 103];
 		int size = sizeof buf;
-		uae_u8 cmd [10] = { 0x43,0,2,0,0,0,0,(uae_u8)(size>>8),(uae_u8)(size&0xff),0};
-		if (do_scsi2 (unitnum, cmd, sizeof cmd, buf, size)) {
-			// toc parse to do
-			v = 0;
+		uae_u8 cmd [10] = { 0x43,0,0,0,0,0,0,(uae_u8)(size>>8),(uae_u8)(size&0xff),0};
+		v = do_scsi(unitnum, cmd, sizeof cmd, buf, size);
+		if (v > 0) {
+			th->first_track = buf[2];
+			th->last_track = buf[3];
+			th->tracks = th->last_track - th->first_track + 1;
+			th->firstaddress = 0;
+			th->points = th->tracks + 1;
+			int len = (buf[0] << 8) | buf[1];
+			uae_u8 *p = buf + 4;
+			if ((th->tracks + 1) * 8 > len) {
+				freesem(unitnum);
+				return 0;
+			}
+			struct cd_toc *t = &th->toc[th->first_track];
+			for (int i = th->first_track; i <= th->last_track; i++) {
+				t->adr = p[1] >> 4;
+				t->control = p[1] & 15;
+				t->point = t->track = p[2];
+				t->paddress = (p[5] << 16) | (p[6] << 8) | (p[7] << 0);
+				p += 8;
+				t++;
+			}
+			th->lastaddress = (p[5] << 16) | (p[6] << 8) | (p[7] << 0);
+			t->track = t->point = 0xaa;
+			th->first_track_offset = 0;
+			th->last_track_offset = th->last_track;
+			v = 1;
 		}
-		v = 0;
 	} else {
-		v = state[unitnum].device_func->toc (unitnum, toc);
+		v = state[unitnum].device_func->toc (unitnum, th);
 	}
 	freesem (unitnum);
 	return v;
@@ -892,12 +981,12 @@ int sys_command_cd_read (int unitnum, uae_u8 *data, int block, int size)
 	if (!getsem (unitnum))
 		return 0;
 	if (state[unitnum].device_func->read == NULL) {
-		uae_u8 cmd1[12] = { 0x28, 0, block >> 24, block >> 16, block >> 8, block >> 0, 0, size >> 8, size >> 0, 0, 0, 0 };
-		v = do_scsi2 (unitnum, cmd1, sizeof cmd1, data, size * 2048);
+		uae_u8 cmd1[12] = { 0x28, 0, (uae_u8)(block >> 24), (uae_u8)(block >> 16), (uae_u8)(block >> 8), (uae_u8)(block >> 0), 0, (uae_u8)(size >> 8), (uae_u8)(size >> 0), 0, 0, 0 };
+		v = do_scsi (unitnum, cmd1, sizeof cmd1, data, size * 2048);
 #if 0
 		if (!v) {
 			uae_u8 cmd2[12] = { 0xbe, 0, block >> 24, block >> 16, block >> 8, block >> 0, size >> 16, size >> 8, size >> 0, 0x10, 0, 0 };
-			v = do_scsi2 (unitnum, cmd2, sizeof cmd2, data, size * 2048);
+			v = do_scsi (unitnum, cmd2, sizeof cmd2, data, size * 2048);
 		}
 #endif
 	} else {
@@ -914,15 +1003,15 @@ int sys_command_cd_rawread (int unitnum, uae_u8 *data, int block, int size, int 
 	if (!getsem (unitnum))
 		return 0;
 	if (state[unitnum].device_func->rawread == NULL) {
-		uae_u8 cmd[12] = { 0xbe, 0, block >> 24, block >> 16, block >> 8, block >> 0, size >> 16, size >> 8, size >> 0, 0x10, 0, 0 };
-		v = do_scsi2 (unitnum, cmd, sizeof cmd, data, size * sectorsize);
+		uae_u8 cmd[12] = { 0xbe, 0, (uae_u8)(block >> 24), (uae_u8)(block >> 16), (uae_u8)(block >> 8), (uae_u8)(block >> 0), (uae_u8)(size >> 16), (uae_u8)(size >> 8), (uae_u8)(size >> 0), 0x10, 0, 0 };
+		v = do_scsi (unitnum, cmd, sizeof cmd, data, size * sectorsize);
 	} else {
 		v = state[unitnum].device_func->rawread (unitnum, data, block, size, sectorsize, 0xffffffff);
 	}
 	freesem (unitnum);
 	return v;
 }
-int sys_command_cd_rawread2 (int unitnum, uae_u8 *data, int block, int size, int sectorsize, uae_u8 sectortype, uae_u8 scsicmd9, uae_u8 subs)
+int sys_command_cd_rawread_2 (int unitnum, uae_u8 *data, int block, int size, int sectorsize, uae_u8 sectortype, uae_u8 scsicmd9, uae_u8 subs)
 {
 	int v;
 	if (failunit (unitnum))
@@ -930,8 +1019,8 @@ int sys_command_cd_rawread2 (int unitnum, uae_u8 *data, int block, int size, int
 	if (!getsem (unitnum))
 		return 0;
 	if (state[unitnum].device_func->rawread == NULL) {
-		uae_u8 cmd[12] = { 0xbe, 0, block >> 24, block >> 16, block >> 8, block >> 0, size >> 16, size >> 8, size >> 0, 0x10, 0, 0 };
-		v = do_scsi2 (unitnum, cmd, sizeof cmd, data, size * sectorsize);
+		uae_u8 cmd[12] = { 0xbe, 0, (uae_u8)(block >> 24), (uae_u8)(block >> 16), (uae_u8)(block >> 8), (uae_u8)(block >> 0), (uae_u8)(size >> 16), (uae_u8)(size >> 8), (uae_u8)(size >> 0), 0x10, 0, 0 };
+		v = do_scsi (unitnum, cmd, sizeof cmd, data, size * sectorsize);
 	} else {
 		v = state[unitnum].device_func->rawread (unitnum, data, block, size, sectorsize, (sectortype << 16) | (scsicmd9 << 8) | subs);
 	}
@@ -948,12 +1037,12 @@ int sys_command_read (int unitnum, uae_u8 *data, int block, int size)
 	if (!getsem (unitnum))
 		return 0;
 	if (state[unitnum].device_func->read == NULL) {
-		uae_u8 cmd[12] = { 0xa8, 0, 0, 0, 0, 0, size >> 24, size >> 16, size >> 8, size >> 0, 0, 0 };
+		uae_u8 cmd[12] = { 0xa8, 0, 0, 0, 0, 0, (uae_u8)(size >> 24), (uae_u8)(size >> 16), (uae_u8)(size >> 8), (uae_u8)(size >> 0), 0, 0 };
 		cmd[2] = (uae_u8)(block >> 24);
 		cmd[3] = (uae_u8)(block >> 16);
 		cmd[4] = (uae_u8)(block >> 8);
 		cmd[5] = (uae_u8)(block >> 0);
-		v = do_scsi2 (unitnum, cmd, sizeof cmd, data, size * 2048);
+		v = do_scsi (unitnum, cmd, sizeof cmd, data, size * 2048);
 	} else {
 		v = state[unitnum].device_func->read (unitnum, data, block, size);
 	}
@@ -990,7 +1079,7 @@ int sys_command_ismedia (int unitnum, int quick)
 		return 0;
 	if (state[unitnum].device_func->ismedia == NULL) {
 		uae_u8 cmd[6] = { 0, 0, 0, 0, 0, 0 };
-		v = do_scsi (unitnum, cmd, sizeof cmd);
+		v = do_scsi_3 (unitnum, cmd, sizeof cmd);
 	} else {
 		v = state[unitnum].device_func->ismedia (unitnum, quick);
 	}
@@ -1008,8 +1097,8 @@ struct device_info *sys_command_info_session (int unitnum, struct device_info *d
 	if (st->device_func->info == NULL)
 		return 0;
 	struct device_info *di2 = st->device_func->info (unitnum, di, quick, -1);
-    if (di2)
-        st->type = di2->type;
+	if (di2)
+		st->type = di2->type;
 	if (di2 && st->delayed)
 		di2->media_inserted = 0;
 	freesem (unitnum);
@@ -1017,7 +1106,27 @@ struct device_info *sys_command_info_session (int unitnum, struct device_info *d
 }
 struct device_info *sys_command_info (int unitnum, struct device_info *di, int quick)
 {
-	return sys_command_info_session (unitnum, di, quick, -1);
+	struct device_info *dix;
+
+	dix = sys_command_info_session (unitnum, di, quick, -1);
+	if (dix && dix->media_inserted && !quick && !dix->audio_playing) {
+		TCHAR *name = NULL;
+		uae_u8 buf[2048];
+		if (sys_command_cd_read(unitnum, buf, 16, 1)) {
+			if ((buf[0] == 1 || buf[0] == 2) && !memcmp(buf + 1, "CD001", 5)) {
+				TCHAR *p;
+				au_copy(dix->volume_id, 32, (uae_char*)buf + 40);
+				au_copy(dix->system_id, 32, (uae_char*)buf + 8);
+				p = dix->volume_id + _tcslen(dix->volume_id) - 1;
+				while (p > dix->volume_id && *p == ' ')
+					*p-- = 0;
+				p = dix->system_id + _tcslen(dix->system_id) - 1;
+				while (p > dix->system_id && *p == ' ')
+					*p-- = 0;
+			}
+		}
+	}
+	return dix; 
 }
 
 #define MODE_SELECT_6 0x15
@@ -1146,7 +1255,7 @@ static bool nodisk (struct device_info *di)
 {
 	return di->media_inserted == 0;
 }
-static uae_u64 cmd_readx (int unitnum, uae_u8 *dataptr, int offset, int len)
+static int cmd_readx (int unitnum, uae_u8 *dataptr, int offset, int len)
 {
 	if (!getsem (unitnum))
 		return 0;
@@ -1231,8 +1340,48 @@ static int scsiemudrv (int unitnum, uae_u8 *cmd)
 	return v;
 }
 
-static int scsi_read_cd (int unitnum, uae_u8 *cmd, uae_u8 *data, struct device_info *di)
+static int scsi_read_cd_da(int unitnum, uae_u8 *cmd, uae_u8 *data, struct device_info *di)
 {
+	struct blkdevstate *st = &state[unitnum];
+	int msf = cmd[0] == 0xd9;
+	int start = msf ? msf2lsn(rl(cmd + 2) & 0x00ffffff) : rl(cmd + 2);
+	int len = rl(cmd + 6) & 0x00ffffff;
+	int sectorsize;
+	uae_u8 subcode = cmd[10];
+	switch (subcode)
+	{
+	case 0:
+		sectorsize = 2352;
+		break;
+	case 1:
+		sectorsize = 2368;
+		break;
+	case 2:
+		sectorsize = 2448;
+		break;
+	case 3:
+		sectorsize = 96;
+		break;
+	default:
+		return -1;
+	}
+	if (msf) {
+		int end = msf2lsn(len);
+		len = end - start;
+		if (len < 0)
+			return -1;
+	}
+	if (len == 0)
+		return 0;
+	int v = sys_command_cd_rawread(unitnum, data, start, len, sectorsize);
+	if (v > 0)
+		st->current_pos = start + len;
+	return v;
+}
+
+static int scsi_read_cd(int unitnum, uae_u8 *cmd, uae_u8 *data, struct device_info *di)
+{
+	struct blkdevstate *st = &state[unitnum];
 	int msf = cmd[0] == 0xb9;
 	int start = msf ? msf2lsn (rl (cmd + 2) & 0x00ffffff) : rl (cmd + 2);
 	int len = rl (cmd + 5) & 0x00ffffff;
@@ -1245,21 +1394,28 @@ static int scsi_read_cd (int unitnum, uae_u8 *cmd, uae_u8 *data, struct device_i
 	int subs = cmd[10] & 7;
 	if (len == 0)
 		return 0;
-	return sys_command_cd_rawread2 (unitnum, data, start, len, 0, (cmd[1] >> 2) & 7, cmd[9], subs);
+	int v = sys_command_cd_rawread_2 (unitnum, data, start, len, 0, (cmd[1] >> 2) & 7, cmd[9], subs);
+	if (v > 0)
+		st->current_pos = start + len;
+	return v;
 }
 
-static int scsi_read_cd_data (int unitnum, uae_u8 *scsi_data, uae_u32 offset, uae_u32 len, struct device_info *di, int *scsi_len)
+static int scsi_read_cd_data (int unitnum, uae_u8 *scsi_data, uae_u32 offset, uae_u32 len, struct device_info *di, int *scsi_len, struct cd_toc *t)
 {
+	struct blkdevstate *st = &state[unitnum];
+	int end = t[1].paddress;
+
 	if (len == 0) {
+		if (offset >= end)
+			return -1;
 		*scsi_len = 0;
 		return 0;
 	} else {
-		if (len * di->bytespersector > SCSI_DATA_BUFFER_SIZE)
-			return -3;
-		if (offset >= di->sectorspertrack)
+		if (offset >= end)
 			return -1;
 		int v = cmd_readx (unitnum, scsi_data, offset, len) * di->bytespersector;
 		if (v > 0) {
+			st->current_pos = offset + len;
 			*scsi_len = v;
 			return 0;
 		}
@@ -1277,41 +1433,45 @@ int scsi_cd_emulate (int unitnum, uae_u8 *cmdbuf, int scsi_cmd_len,
 	int v;
 	int status = 0;
 	struct device_info di;
-	uae_u8 cmd = cmdbuf[0];
-	int dlen;
+	uae_u8 cmd;
+	int dlen, lun;
 	
-	if (cmd == 0x03) { /* REQUEST SENSE */
-		st->mediawaschanged = false;
+	if (cmdbuf == NULL) {
+		if (st->mediawaschanged) {
+			st->mediawaschanged = false;
+			return (0x28 << 8) | (0x00);
+		}
 		return 0;
 	}
 
+	cmd = cmdbuf[0];
+
+	if (cmd == 0x03) {
+		return 0;
+	}
+	
 	dlen = *data_len;
 	*reply_len = *sense_len = 0;
-	memset (r, 0, 256);
-	memset (s, 0, 256);
-
-	sys_command_info (unitnum, &di, 1);
 
 	if (log_scsiemu) {
-		write_log (_T("SCSIEMU %d: %02X.%02X.%02X.%02X.%02X.%02X.%02X.%02X.%02X.%02X.%02X.%02X CMDLEN=%d DATA=%08X LEN=%d\n"), unitnum,
+		write_log (_T("CD SCSIEMU %d: %02X.%02X.%02X.%02X.%02X.%02X.%02X.%02X.%02X.%02X.%02X.%02X CMDLEN=%d DATA=%p LEN=%d\n"), unitnum,
 			cmdbuf[0], cmdbuf[1], cmdbuf[2], cmdbuf[3], cmdbuf[4], cmdbuf[5], cmdbuf[6], 
 			cmdbuf[7], cmdbuf[8], cmdbuf[9], cmdbuf[10], cmdbuf[11],
 			scsi_cmd_len, scsi_data, dlen);
 	}
 
-	// media changed and not inquiry
-	if (st->mediawaschanged && cmd != 0x12) {
-		if (log_scsiemu) {
-			write_log (_T("SCSIEMU %d: MEDIUM MAY HAVE CHANGED STATE\n"), unitnum);
-		}
-		lr = -1;
+	lun = cmdbuf[1] >> 5;
+	if (cmdbuf[0] != 0x03 && cmdbuf[0] != 0x12 && lun) {
 		status = 2; /* CHECK CONDITION */
 		s[0] = 0x70;
-		s[2] = 6; /* UNIT ATTENTION */
-		s[12] = 0x28; /* MEDIUM MAY HAVE CHANGED */
+		s[2] = 5; /* ILLEGAL REQUEST */
+		s[12] = 0x25; /* INVALID LUN */
 		ls = 0x12;
+		write_log (_T("CD SCSIEMU %d: CMD=%02X LUN=%d ignored\n"), unitnum, cmdbuf[0], lun);
 		goto end;
 	}
+
+	sys_command_info (unitnum, &di, 1);
 
 	switch (cmdbuf[0])
 	{
@@ -1322,6 +1482,15 @@ int scsi_cd_emulate (int unitnum, uae_u8 *cmdbuf, int scsi_cmd_len,
 		break;
 	case 0x1e: /* PREVENT/ALLOW MEDIUM REMOVAL */
 		scsi_len = 0;
+		break;
+	case 0xbd: /* MECHANISM STATUS */
+		len = (cmdbuf[8] << 8) | cmdbuf[9];
+		if (len > 8)
+			len = 8;
+		scsi_len = len;
+		r[2] = st->current_pos >> 16;
+		r[3] = st->current_pos >>  8;
+		r[4] = st->current_pos >>  0;
 		break;
 	case 0x12: /* INQUIRY */
 	{
@@ -1340,7 +1509,7 @@ int scsi_cd_emulate (int unitnum, uae_u8 *cmdbuf, int scsi_cmd_len,
 			r[3] |= 3 << 5; // atapi transport version
 		r[4] = 32; /* additional length */
 		r[7] = 0;
-		scsi_len = lr = len < 36 ? (uae_u32)len : 36;
+		scsi_len = lr = len < 36 ? len : 36;
 		r[2] = 2;
 		r[3] = 2;
 		char *s = ua (di.vendorid);
@@ -1358,13 +1527,23 @@ int scsi_cd_emulate (int unitnum, uae_u8 *cmdbuf, int scsi_cmd_len,
 		}
 	}
 	break;
+	case 0xd8: // READ CD-DA
+	case 0xd9: // READ CD-DA MSF
+		if (nodisk(&di))
+			goto nodisk;
+		scsi_len = scsi_read_cd_da(unitnum, cmdbuf, scsi_data, &di);
+		if (scsi_len == -2)
+			goto wrongtracktype;
+		if (scsi_len == -1)
+			goto errreq;
+		break;
 	case 0xbe: // READ CD
 	case 0xb9: // READ CD MSF
 		if (nodisk (&di))
 			goto nodisk;
-		scsi_len = scsi_read_cd (unitnum, cmdbuf, scsi_data, &di);
+		scsi_len = scsi_read_cd(unitnum, cmdbuf, scsi_data, &di);
 		if (scsi_len == -2)
-			goto notdatatrack;
+			goto wrongtracktype;
 		if (scsi_len == -1)
 			goto errreq;
 		break;
@@ -1384,7 +1563,7 @@ int scsi_cd_emulate (int unitnum, uae_u8 *cmdbuf, int scsi_cmd_len,
 			scsi_len = 0;
 		} else {
 			if (log_scsiemu)
-				write_log (_T("MODE SELECT PC=%d not supported\n"), pcode);
+				write_log (_T("CD SCSIEMU MODE SELECT PC=%d not supported\n"), pcode);
 			goto errreq;
 		}
 	}
@@ -1400,10 +1579,14 @@ int scsi_cd_emulate (int unitnum, uae_u8 *cmdbuf, int scsi_cmd_len,
 		int pc = cmdbuf[2] >> 6;
 		int pcode = cmdbuf[2] & 0x3f;
 		int dbd = cmdbuf[1] & 8;
-		if (cmdbuf[0] == 0x5a)
+
+		if (atapi) {
+			if (!sense10)
+				goto err;
 			dbd = 1;
+		}
 		if (log_scsiemu)
-			write_log (_T("MODE SENSE PC=%d CODE=%d DBD=%d\n"), pc, pcode, dbd);
+			write_log (_T("CD SCSIEMU MODE SENSE PC=%d CODE=%d DBD=%d\n"), pc, pcode, dbd);
 		p = r;
 		if (sense10) {
 			totalsize = 8 - 2;
@@ -1499,14 +1682,15 @@ int scsi_cd_emulate (int unitnum, uae_u8 *cmdbuf, int scsi_cmd_len,
 			r[3] = bdsize & 0xff;
 			r[0] = totalsize & 0xff;
 		}
-		scsi_len = lr = totalsize + 1;
+		scsi_len = totalsize + 1;
 		if (scsi_len > maxlen)
 			scsi_len = maxlen;
+		lr = scsi_len;
 	}
 	break;
 	case 0x01: /* REZERO UNIT */
 		scsi_len = 0;
-	break;
+		break;
 	case 0x1d: /* SEND DIAGNOSTICS */
 		scsi_len = 0;
 		break;
@@ -1536,49 +1720,77 @@ int scsi_cd_emulate (int unitnum, uae_u8 *cmdbuf, int scsi_cmd_len,
 			scsi_len = lr = 8;
 		}
 		break;
+	case 0x0b: /* SEEK (6) */
+		{
+			if (nodisk (&di))
+				goto nodisk;
+			stopplay (unitnum);
+			offset = ((cmdbuf[1] & 31) << 16) | (cmdbuf[2] << 8) | cmdbuf[3];
+			struct cd_toc *t = gettoc (unitnum, &di.toc, offset);
+			if (!t)
+				goto readerr;
+			v = scsi_read_cd_data (unitnum, scsi_data, offset, 0, &di, &scsi_len, t);
+			if (v == -1)
+				goto outofbounds;
+		}
+	break;
 	case 0x08: /* READ (6) */
 	{
 		if (nodisk (&di))
 			goto nodisk;
 		stopplay (unitnum);
 		offset = ((cmdbuf[1] & 31) << 16) | (cmdbuf[2] << 8) | cmdbuf[3];
-		struct cd_toc *t = gettoc (&di.toc, offset);
+		struct cd_toc *t = gettoc (unitnum, &di.toc, offset);
+		if (!t)
+			goto readerr;
 		if ((t->control & 0x0c) == 0x04) {
 			len = cmdbuf[4];
 			if (!len)
 				len = 256;
-			v = scsi_read_cd_data (unitnum, scsi_data, offset, len, &di, &scsi_len);
+			v = scsi_read_cd_data (unitnum, scsi_data, offset, len, &di, &scsi_len, t);
 			if (v == -1)
 				goto outofbounds;
 			if (v == -2)
 				goto readerr;
-			if (v == -3)
-				goto toolarge;
 		} else {
-			goto notdatatrack;
+			goto wrongtracktype;
 		}
 	}
 	break;
 	case 0x0a: /* WRITE (6) */
 		goto readprot;
+	case 0x2b: /* SEEK (10) */
+		{
+			if (nodisk (&di))
+				goto nodisk;
+			stopplay (unitnum);
+			offset = rl (cmdbuf + 2);
+			struct cd_toc *t = gettoc (unitnum, &di.toc, offset);
+			if (!t)
+				goto readerr;
+			v = scsi_read_cd_data (unitnum, scsi_data, offset, 0, &di, &scsi_len, t);
+			if (v == -1)
+				goto outofbounds;
+		}
+	break;
 	case 0x28: /* READ (10) */
 	{
 		if (nodisk (&di))
 			goto nodisk;
 		stopplay (unitnum);
 		offset = rl (cmdbuf + 2);
-		struct cd_toc *t = gettoc (&di.toc, offset);
+		struct cd_toc *t = gettoc (unitnum, &di.toc, offset);
+		if (!t)
+			goto readerr;
 		if ((t->control & 0x0c) == 0x04) {
 			len = rl (cmdbuf + 7 - 2) & 0xffff;
-			v = scsi_read_cd_data (unitnum, scsi_data, offset, len, &di, &scsi_len);
+			v = scsi_read_cd_data (unitnum, scsi_data, offset, len, &di, &scsi_len, t);
 			if (v == -1)
 				goto outofbounds;
 			if (v == -2)
 				goto readerr;
-			if (v == -3)
-				goto toolarge;
 		} else {
-			goto notdatatrack;
+			goto wrongtracktype;
 		}
 	}
 	break;
@@ -1590,18 +1802,18 @@ int scsi_cd_emulate (int unitnum, uae_u8 *cmdbuf, int scsi_cmd_len,
 			goto nodisk;
 		stopplay (unitnum);
 		offset = rl (cmdbuf + 2);
-		struct cd_toc *t = gettoc (&di.toc, offset);
+		struct cd_toc *t = gettoc (unitnum, &di.toc, offset);
+		if (!t)
+			goto readerr;
 		if ((t->control & 0x0c) == 0x04) {
 			len = rl (cmdbuf + 6);
-			v = scsi_read_cd_data (unitnum, scsi_data, offset, len, &di, &scsi_len);
+			v = scsi_read_cd_data (unitnum, scsi_data, offset, len, &di, &scsi_len, t);
 			if (v == -1)
 				goto outofbounds;
 			if (v == -2)
 				goto readerr;
-			if (v == -3)
-				goto toolarge;
 		} else {
-			goto notdatatrack;
+			goto wrongtracktype;
 		}
 	}
 	break;
@@ -1648,7 +1860,9 @@ int scsi_cd_emulate (int unitnum, uae_u8 *cmdbuf, int scsi_cmd_len,
 			} else {
 				lsn = rl (p + 2);
 			}
-			struct cd_toc *t = gettoc (toc, lsn);
+			struct cd_toc *t = gettoc (unitnum, toc, lsn);
+			if (!t)
+				goto readerr;
 			p[0] = 0;
 			p[1] = 28 - 2;
 			p[2] = t->track;
@@ -1678,8 +1892,6 @@ int scsi_cd_emulate (int unitnum, uae_u8 *cmdbuf, int scsi_cmd_len,
 			if (!sys_command_cd_toc (unitnum, &ttoc))
 				goto readerr;
 			struct cd_toc_head *toc = &ttoc;
-			if (maxlen < 4)
-				goto errreq;
 			if (format == 1) {
 				p[0] = 0;
 				p[1] = 2 + 8;
@@ -1723,31 +1935,27 @@ int scsi_cd_emulate (int unitnum, uae_u8 *cmdbuf, int scsi_cmd_len,
 				p[0] = tlen >> 8;
 				p[1] = tlen >> 0;
 				scsi_len = tlen + 2;
-				if (scsi_len > maxlen2)
-					scsi_len = maxlen2;
 			}
-		}
-		break;
-		case 0x42: // READ SUB-CHANNEL
+			if (scsi_len > maxlen2)
+				scsi_len = maxlen2;
+	}
+	break;
+	case 0x42: // READ SUB-CHANNEL
 		{
 			int msf = cmdbuf[1] & 2;
 			int subq = cmdbuf[2] & 0x40;
 			int format = cmdbuf[3];
 			int track = cmdbuf[6];
-			int len = rw (cmdbuf + 7);
+			int maxlen = rw(cmdbuf + 7);
 			uae_u8 buf[SUBQ_SIZE] = { 0 };
 
 			if (nodisk (&di))
 				goto nodisk;
 			sys_command_cd_qcode (unitnum, buf, -1, false);
-			if (len < 4)
-				goto errreq;
 			scsi_len = 4;
 			scsi_data[0] = 0;
 			scsi_data[1] = buf[1];
 			if (subq && format == 1) {
-				if (len < 4 + 12)
-					goto errreq;
 				scsi_data[2] = 0;
 				scsi_data[3] = 12;
 				scsi_len += 12;
@@ -1767,227 +1975,221 @@ int scsi_cd_emulate (int unitnum, uae_u8 *cmdbuf, int scsi_cmd_len,
 				scsi_data[2] = 0;
 				scsi_data[3] = 0;
 			}
+			if (scsi_len > maxlen)
+				scsi_len = maxlen;
 		}
-		break;
-		case 0x1b: // START/STOP
-			sys_command_cd_stop (unitnum);
-			scsiemudrv (unitnum, cmdbuf);
-			scsi_len = 0;
-		break;
-		case 0x4e: // STOP PLAY/SCAN
-			if (nodisk (&di))
-				goto nodisk;
-			sys_command_cd_stop (unitnum);
-			scsi_len = 0;
-		break;
-		case 0xba: // SCAN
-		{
-			if (nodisk (&di))
-				goto nodisk;
-			struct cd_toc_head ttoc;
-			if (!sys_command_cd_toc (unitnum, &ttoc))
-				goto readerr;
-			struct cd_toc_head *toc = &ttoc;
-			int scan = (cmdbuf[1] & 0x10) ? -1 : 1;
-			int start = rl (cmdbuf + 1) & 0x00ffffff;
-			int end = scan > 0 ? toc->lastaddress : toc->toc[toc->first_track_offset].paddress;
-			int type = cmdbuf[9] >> 6;
-			if (type == 1)
-				start = lsn2msf (start);
-			if (type == 3)
+	break;
+	case 0x1b: // START/STOP
+		sys_command_cd_stop (unitnum);
+		scsiemudrv (unitnum, cmdbuf);
+		scsi_len = 0;
+	break;
+	case 0x4e: // STOP PLAY/SCAN
+		if (nodisk (&di))
+			goto nodisk;
+		sys_command_cd_stop (unitnum);
+		scsi_len = 0;
+	break;
+	case 0xba: // SCAN
+	{
+		if (nodisk (&di))
+			goto nodisk;
+		struct cd_toc_head ttoc;
+		if (!sys_command_cd_toc (unitnum, &ttoc))
+			goto readerr;
+		struct cd_toc_head *toc = &ttoc;
+		int scan = (cmdbuf[1] & 0x10) ? -1 : 1;
+		int start = rl (cmdbuf + 1) & 0x00ffffff;
+		int end = scan > 0 ? toc->lastaddress : toc->toc[toc->first_track_offset].paddress;
+		int type = cmdbuf[9] >> 6;
+		if (type == 1)
+			start = lsn2msf (start);
+		if (type == 3)
+			goto errreq;
+		if (type == 2) {
+			if (toc->first_track_offset + start >= toc->last_track_offset)
 				goto errreq;
-			if (type == 2) {
-				if (toc->first_track_offset + start >= toc->last_track_offset)
-					goto errreq;
-				start = toc->toc[toc->first_track_offset + start].paddress;
-			}
+			start = toc->toc[toc->first_track_offset + start].paddress;
+		}
+		sys_command_cd_pause (unitnum, 0);
+		sys_command_cd_play (unitnum, start, end, scan);
+		scsi_len = 0;
+	}
+	break;
+	case 0x48: // PLAY AUDIO TRACK/INDEX
+	{
+		if (nodisk (&di))
+			goto nodisk;
+		int strack = cmdbuf[4];
+		int etrack = cmdbuf[7];
+		struct cd_toc_head ttoc;
+		if (!sys_command_cd_toc (unitnum, &ttoc))
+			goto readerr;
+		struct cd_toc_head *toc = &ttoc;
+		if (strack < toc->first_track || strack > toc->last_track ||
+			etrack < toc->first_track || etrack > toc->last_track ||
+			strack > etrack)
+			goto errreq;
+		int start = toc->toc[toc->first_track_offset + strack - 1].paddress;
+		int end = etrack == toc->last_track ? toc->lastaddress : toc->toc[toc->first_track_offset + etrack - 1 + 1].paddress;
+		sys_command_cd_pause (unitnum, 0);
+		if (!sys_command_cd_play (unitnum, start, end, 0))
+			goto wrongtracktype;
+		scsi_len = 0;
+	}
+	break;
+	case 0x49: // PLAY AUDIO TRACK RELATIVE (10)
+	case 0xa9: // PLAY AUDIO TRACK RELATIVE (12)
+	{
+		if (nodisk (&di))
+			goto nodisk;
+		int len = cmd == 0xa9 ? rl (cmdbuf + 6) : rw (cmdbuf + 7);
+		int track = cmd == 0xa9 ? cmdbuf[10] : cmdbuf[6];
+		if (track < di.toc.first_track || track > di.toc.last_track)
+			goto errreq;
+		int start = di.toc.toc[di.toc.first_track_offset + track - 1].paddress;
+		int rel = rl (cmdbuf + 2);
+		start += rel;
+		int end = start + len;
+		if (end > di.toc.lastaddress)
+			end = di.toc.lastaddress;
+		if (len > 0) {
 			sys_command_cd_pause (unitnum, 0);
-			sys_command_cd_play (unitnum, start, end, scan);
-			scsi_len = 0;
+			if (!sys_command_cd_play (unitnum, start, start + len, 0))
+				goto wrongtracktype;
 		}
-		break;
-		case 0x48: // PLAY AUDIO TRACK/INDEX
-		{
-			if (nodisk (&di))
-				goto nodisk;
-			int strack = cmdbuf[4];
-			int etrack = cmdbuf[7];
-			struct cd_toc_head ttoc;
-			if (!sys_command_cd_toc (unitnum, &ttoc))
-				goto readerr;
-			struct cd_toc_head *toc = &ttoc;
-			if (strack < toc->first_track || strack > toc->last_track ||
-				etrack < toc->first_track || etrack > toc->last_track ||
-				strack > etrack)
-				goto errreq;
-			int start = toc->toc[toc->first_track_offset + strack - 1].paddress;
-			int end = etrack == toc->last_track ? toc->lastaddress : toc->toc[toc->first_track_offset + etrack - 1 + 1].paddress;
+		scsi_len = 0;
+	}
+	break;
+	case 0x47: // PLAY AUDIO MSF
+	{
+		if (nodisk (&di))
+			goto nodisk;
+		int start = rl (cmdbuf + 2) & 0x00ffffff;
+		if (start == 0x00ffffff) {
+			uae_u8 buf[SUBQ_SIZE] = { 0 };
+			sys_command_cd_qcode (unitnum, buf, -1, false);
+			start = fromlongbcd (buf + 4 + 7);
+		}
+		int end = msf2lsn (rl (cmdbuf + 5) & 0x00ffffff);
+		if (end > di.toc.lastaddress)
+			end = di.toc.lastaddress;
+		start = msf2lsn (start);
+		if (start > end)
+			goto errreq;
+		if (start < end)
 			sys_command_cd_pause (unitnum, 0);
 			if (!sys_command_cd_play (unitnum, start, end, 0))
-				goto notdatatrack;
-			scsi_len = 0;
-		}
-		break;
-		case 0x49: // PLAY AUDIO TRACK RELATIVE (10)
-		case 0xa9: // PLAY AUDIO TRACK RELATIVE (12)
-		{
-			if (nodisk (&di))
-				goto nodisk;
-			int len = cmd == 0xa9 ? rl (cmdbuf + 6) : rw (cmdbuf + 7);
-			int track = cmd == 0xa9 ? cmdbuf[10] : cmdbuf[6];
-			if (track < di.toc.first_track || track > di.toc.last_track)
-				goto errreq;
-			int start = di.toc.toc[di.toc.first_track_offset + track - 1].paddress;
-			int rel = rl (cmdbuf + 2);
-			start += rel;
+				goto wrongtracktype;
+		scsi_len = 0;
+	}
+	break;
+	case 0x45: // PLAY AUDIO (10)
+	case 0xa5: // PLAY AUDIO (12)
+	{
+		if (nodisk (&di))
+			goto nodisk;
+		int start = rl (cmdbuf + 2);
+		int len;
+		if (cmd == 0xa5)
+			len = rl (cmdbuf + 6);
+		else
+			len = rw (cmdbuf + 7);
+		if (len > 0) {
+			if (start == -1) {
+				uae_u8 buf[SUBQ_SIZE] = { 0 };
+				sys_command_cd_qcode (unitnum, buf, -1, false);
+				start = msf2lsn (fromlongbcd (buf + 4 + 7));
+			}
 			int end = start + len;
 			if (end > di.toc.lastaddress)
 				end = di.toc.lastaddress;
-			if (len > 0) {
-				sys_command_cd_pause (unitnum, 0);
-				if (!sys_command_cd_play (unitnum, start, start + len, 0))
-					goto notdatatrack;
-			}
-			scsi_len = 0;
+			sys_command_cd_pause (unitnum, 0);
+			if (!sys_command_cd_play (unitnum, start, end, 0))
+				goto wrongtracktype;
 		}
-		break;
-		case 0x47: // PLAY AUDIO MSF
-		{
-			if (nodisk (&di))
-				goto nodisk;
-			int start = rl (cmdbuf + 2) & 0x00ffffff;
-			if (start == 0x00ffffff) {
-				uae_u8 buf[SUBQ_SIZE] = { 0 };
-				sys_command_cd_qcode (unitnum, buf, -1, false);
-				start = fromlongbcd (buf + 4 + 7);
-			}
-			int end = msf2lsn (rl (cmdbuf + 5) & 0x00ffffff);
-			if (end > di.toc.lastaddress)
-				end = di.toc.lastaddress;
-			start = msf2lsn (start);
-			if (start > end)
-				goto errreq;
-			if (start < end)
-				sys_command_cd_pause (unitnum, 0);
-				if (!sys_command_cd_play (unitnum, start, end, 0))
-					goto notdatatrack;
-			scsi_len = 0;
+		scsi_len = 0;
+	}
+	break;
+	case 0xbc: // PLAY CD
+	{
+		if (nodisk (&di))
+			goto nodisk;
+		int start = -1;
+		int end = -1;
+		if (cmdbuf[1] & 2) {
+			start = msf2lsn (rl (cmdbuf + 2) & 0x00ffffff);
+			end = msf2lsn (rl (cmdbuf + 5) & 0x00ffffff);
+		} else {
+			start = rl (cmdbuf + 2);
+			end = start + rl (cmdbuf + 6);
 		}
-		break;
-		case 0x45: // PLAY AUDIO (10)
-		case 0xa5: // PLAY AUDIO (12)
-		{
-			if (nodisk (&di))
-				goto nodisk;
-			int start = rl (cmdbuf + 2);
-			int len;
-			if (cmd == 0xa5)
-				len = rl (cmdbuf + 6);
-			else
-				len = rw (cmdbuf + 7);
-			if (len > 0) {
-				if (start == -1) {
-					uae_u8 buf[SUBQ_SIZE] = { 0 };
-					sys_command_cd_qcode (unitnum, buf, -1, false);
-					start = msf2lsn (fromlongbcd (buf + 4 + 7));
-				}
-				int end = start + len;
-				if (end > di.toc.lastaddress)
-					end = di.toc.lastaddress;
-				sys_command_cd_pause (unitnum, 0);
-				if (!sys_command_cd_play (unitnum, start, end, 0))
-					goto notdatatrack;
-			}
-			scsi_len = 0;
+		if (end > di.toc.lastaddress)
+			end = di.toc.lastaddress;
+		if (start > end)
+			goto errreq;
+		if (start < end) {
+			sys_command_cd_pause (unitnum, 0);
+			if (!sys_command_cd_play (unitnum, start, end, 0))
+				goto wrongtracktype;
 		}
-		break;
-		case 0xbc: // PLAY CD
-		{
-			if (nodisk (&di))
-				goto nodisk;
-			int start = -1;
-			int end = -1;
-			if (cmdbuf[1] & 2) {
-				start = msf2lsn (rl (cmdbuf + 2) & 0x00ffffff);
-				end = msf2lsn (rl (cmdbuf + 5) & 0x00ffffff);
-			} else {
-				start = rl (cmdbuf + 2);
-				end = start + rl (cmdbuf + 6);
-			}
-			if (end > di.toc.lastaddress)
-				end = di.toc.lastaddress;
-			if (start > end)
-				goto errreq;
-			if (start < end) {
-				sys_command_cd_pause (unitnum, 0);
-				if (!sys_command_cd_play (unitnum, start, end, 0))
-					goto notdatatrack;
-			}
-		}
-		break;
-		case 0x4b: // PAUSE/RESUME
-		{
-			if (nodisk (&di))
-				goto nodisk;
-			uae_u8 buf[SUBQ_SIZE] = { 0 };
-			int resume = cmdbuf[8] & 1;
-			sys_command_cd_qcode (unitnum, buf, -1, false);
-			if (buf[1] != AUDIO_STATUS_IN_PROGRESS && buf[1] != AUDIO_STATUS_PAUSED)
-				goto errreq;
-			sys_command_cd_pause (unitnum, resume ? 0 : 1);
-			scsi_len = 0;
-		}
-		break;
-		case 0x35: /* SYNCRONIZE CACHE (10) */
-			scsi_len = 0;
-		break;
+	}
+	break;
+	case 0x4b: // PAUSE/RESUME
+	{
+		if (nodisk (&di))
+			goto nodisk;
+		uae_u8 buf[SUBQ_SIZE] = { 0 };
+		int resume = cmdbuf[8] & 1;
+		sys_command_cd_qcode (unitnum, buf, -1, false);
+		if (buf[1] != AUDIO_STATUS_IN_PROGRESS && buf[1] != AUDIO_STATUS_PAUSED)
+			goto errreq;
+		sys_command_cd_pause (unitnum, resume ? 0 : 1);
+		scsi_len = 0;
+	}
+	break;
+	case 0x35: /* SYNCRONIZE CACHE (10) */
+		scsi_len = 0;
+	break;
 
-		default:
+	default:
 err:
-		write_log (_T("CDEMU: unsupported scsi command 0x%02X\n"), cmdbuf[0]);
+		write_log (_T("CD SCSIEMU: unsupported scsi command 0x%02X\n"), cmdbuf[0]);
 readprot:
 		status = 2; /* CHECK CONDITION */
 		s[0] = 0x70;
 		s[2] = 5;
 		s[12] = 0x20; /* INVALID COMMAND */
 		ls = 0x12;
-		break;
+	break;
 nodisk:
 		status = 2; /* CHECK CONDITION */
 		s[0] = 0x70;
 		s[2] = 2; /* NOT READY */
 		s[12] = 0x3A; /* MEDIUM NOT PRESENT */
 		ls = 0x12;
-		break;
+	break;
 readerr:
 		status = 2; /* CHECK CONDITION */
 		s[0] = 0x70;
 		s[2] = 2; /* NOT READY */
 		s[12] = 0x11; /* UNRECOVERED READ ERROR */
 		ls = 0x12;
-		break;
-notdatatrack:
+	break;
+wrongtracktype:
 		status = 2;
 		s[0] = 0x70;
 		s[2] = 5;
 		s[12] = 0x64; /* ILLEGAL MODE FOR THIS TRACK */
 		ls = 0x12;
-		break;
+	break;
 outofbounds:
 		status = 2; /* CHECK CONDITION */
 		s[0] = 0x70;
 		s[2] = 5; /* ILLEGAL REQUEST */
 		s[12] = 0x21; /* LOGICAL BLOCK OUT OF RANGE */
 		ls = 0x12;
-		break;
-toolarge:
-		write_log (_T("CDEMU: too large scsi data tranfer %d > %d\n"), len, dlen);
-		status = 2; /* CHECK CONDITION */
-		s[0] = 0x70;
-		s[2] = 2; /* NOT READY */
-		s[12] = 0x11; /* UNRECOVERED READ ERROR */
-		ls = 0x12;
-		break;
+	break;
 errreq:
 		lr = -1;
 		status = 2; /* CHECK CONDITION */
@@ -1995,28 +2197,100 @@ errreq:
 		s[2] = 5; /* ILLEGAL REQUEST */
 		s[12] = 0x24; /* ILLEGAL FIELD IN CDB */
 		ls = 0x12;
-		break;
+	break;
 	}
 end:
 	*data_len = scsi_len;
 	*reply_len = lr;
 	*sense_len = ls;
+	if (log_scsiemu) {
+		if (lr > 0) {
+			write_log (_T("CD SCSIEMU REPLY: "));
+			for (int i = 0; i < lr && i < 100; i++)
+				write_log (_T("%02X."), r[i]);
+			write_log (_T("\n"));
+		} else if (scsi_len > 0) {
+			write_log(_T("CD SCSIEMU DATA: "));
+			for (int i = 0; i < scsi_len && i < 100; i++)
+				write_log(_T("%02X."), scsi_data[i]);
+			write_log(_T("\n"));
+		}
+	}
 	if (ls) {
 		//s[0] |= 0x80;
-		s[7] = ls - 7; // additional sense length
+		if (ls > 7)
+			s[7] = ls - 8; // additional sense length
+		if (log_scsiemu) {
+			write_log (_T("-> SENSE STATUS: KEY=%d ASC=%02X ASCQ=%02X\n"), s[2], s[12], s[13]);
+		}
 	}
 	if (cmdbuf[0] && log_scsiemu)
 		write_log (_T("-> DATAOUT=%d ST=%d SENSELEN=%d\n"), scsi_len, status, ls);
 	return status;
 }
 
-static int execscsicmd_direct (int unitnum, struct amigascsi *as)
+static int emulate_cd_audio = 1;
+
+int blkdev_is_audio_command(uae_u8 cmd)
+{
+	if (!emulate_cd_audio)
+		return false;
+	// audio cd command?
+	switch (cmd)
+	{
+	case 0x42:
+	case 0x45:
+	case 0x47:
+	case 0x48:
+	case 0x49:
+	case 0x4b:
+	case 0x4e:
+	case 0xa5:
+	case 0xa9:
+	case 0xba:
+	case 0xbc:
+	case 0xcd:
+		return 1;
+	}
+
+	// commands that won't stop cd audio
+	switch (cmd)
+	{
+	case 0x00:
+	case 0x03:
+	case 0x12:
+	case 0x15:
+	case 0x1a:
+	case 0x1e:
+	case 0x25:
+	case 0x35:
+	case 0x55:
+	case 0x5a:
+		return 0;
+	}
+
+	// all other commands stop cd audio
+	return -1;
+}
+
+int blkdev_execute_audio_command(int unitnum, uae_u8 *cdb, int cdblen, uae_u8 *inbuf, int inlen, uae_u8 *sense, int *senselen)
+{
+	int len = inlen;
+	uae_u8 reply[256];
+	int replylen = sizeof(reply);
+	int status = scsi_cd_emulate(unitnum, cdb, cdblen, inbuf, &len, reply, &replylen, sense, senselen, true);
+	if (status)
+		return -1;
+	return len;
+}
+
+static int execscsicmd_direct (int unitnum, int type, struct amigascsi *as)
 {
 	int io_error = 0;
 	uae_u8 *scsi_datap, *scsi_datap_org;
 	uae_u32 scsi_cmd_len_orig = as->cmd_len;
 	uae_u8 cmd[16] = { 0 };
-	uae_u8 replydata[256];
+	uae_u8 replydata[256] = { 0 };
 	int datalen = as->len;
 	int senselen = as->sense_len;
 	int replylen = 0;
@@ -2029,7 +2303,18 @@ static int execscsicmd_direct (int unitnum, struct amigascsi *as)
 	/* never report media change state if uaescsi.device */
 	state[unitnum].mediawaschanged = false;
 
-	as->status = scsi_cd_emulate (unitnum, cmd, as->cmd_len, scsi_datap, &datalen, replydata, &replylen, as->sensedata, &senselen, false);
+	switch (type)
+	{
+		case INQ_ROMD:
+		as->status = scsi_cd_emulate (unitnum, cmd, as->cmd_len, scsi_datap, &datalen, replydata, &replylen, as->sensedata, &senselen, false);
+		break;
+		case INQ_SEQD:
+		as->status = scsi_tape_emulate (state[unitnum].tape, cmd, as->cmd_len, scsi_datap, &datalen, replydata, &replylen, as->sensedata, &senselen);
+		break;
+		default:
+		as->status = 2;
+		break;
+	}
 
 	as->cmdactual = as->status != 0 ? 0 : as->cmd_len; /* fake scsi_CmdActual */
 	if (as->status) {
@@ -2039,8 +2324,9 @@ static int execscsicmd_direct (int unitnum, struct amigascsi *as)
 	} else {
 		int i;
 		if (replylen > 0) {
-			for (i = 0; i < replylen; i++)
+			for (int i = 0; i < replylen; i++) {
 				scsi_datap[i] = replydata[i];
+			}
 			datalen = replylen;
 		}
 		for (i = 0; i < as->sense_len; i++)
@@ -2058,11 +2344,11 @@ static int execscsicmd_direct (int unitnum, struct amigascsi *as)
 	return io_error;
 }
 
-int sys_command_scsi_direct_native (int unitnum, struct amigascsi *as)
+int sys_command_scsi_direct_native(int unitnum, int type, struct amigascsi *as)
 {
 	struct blkdevstate *st = &state[unitnum];
-	if (st->scsiemu) {
-		return execscsicmd_direct (unitnum, as);
+	if (st->scsiemu || (type >= 0 && st->type != type)) {
+		return execscsicmd_direct (unitnum, type, as);
 	} else {
 		if (!st->device_func->exec_direct)
 			return -1;
@@ -2073,48 +2359,100 @@ int sys_command_scsi_direct_native (int unitnum, struct amigascsi *as)
 	return ret;
 }
 
-int sys_command_scsi_direct (int unitnum, uaecptr acmd)
+int sys_command_scsi_direct(TrapContext *ctx, int unitnum, int type, uaecptr acmd)
 {
-	int ret, i;
+	int ret;
 	struct amigascsi as = { 0 };
 	uaecptr ap;
-	addrbank *bank;
+	struct addrbank *bank;
+	uae_u8 scsicmd[30];
 
-	ap = get_long (acmd + 0);
-	as.len = get_long (acmd + 4);
+	trap_get_bytes(ctx, scsicmd, acmd, sizeof scsicmd);
 
-	bank = &get_mem_bank (ap);
-	if (!bank || !bank->check(ap, as.len))
-		return IOERR_BADADDRESS;
-	as.data = bank->xlateaddr (ap);
-
-	ap = get_long (acmd + 12);
-	as.cmd_len = get_word (acmd + 16);
+	as.cmd_len = get_word_host(scsicmd + 16);
 	if (as.cmd_len > sizeof as.cmd)
 		return IOERR_BADLENGTH;
-	for (i = 0; i < as.cmd_len; i++)
-		as.cmd[i] = get_byte (ap++);
-	while (i < sizeof as.cmd)
-		as.cmd[i++] = 0;
-	as.flags = get_byte (acmd + 20);
-	as.sense_len = get_word (acmd + 26);
+	as.flags = get_byte_host(scsicmd + 20);
+	ap = get_long_host(scsicmd + 0);
+	as.len = get_long_host(scsicmd + 4);
 
-	ret = sys_command_scsi_direct_native (unitnum, &as);
+	if (trap_is_indirect()) {
+		if (!(as.flags & 1)) { // write?
+			as.data = xmalloc(uae_u8, as.len);
+			trap_get_bytes(ctx, as.data, ap, as.len);
+		} else {
+			as.data = xcalloc(uae_u8, as.len);
+		}
+	} else {
+		bank = &get_mem_bank (ap);
+		if (!bank || !bank->check(ap, as.len))
+			return IOERR_BADADDRESS;
+		as.data = bank->xlateaddr (ap);
+	}
 
-	put_long (acmd + 8, as.actual);
-	put_word (acmd + 18, as.cmdactual);
-	put_byte (acmd + 21, as.status);
-	put_word (acmd + 28, as.sactual);
+	ap = get_long_host(scsicmd + 12);
+	trap_get_bytes(ctx, as.cmd, ap, as.cmd_len);
+	as.sense_len = get_word_host(scsicmd + 26);
+
+	if (log_scsiemu) {
+		write_log(_T("HD_SCSICMD0: DATA=%08x LEN=%d CMD=%08x LEN=%d FLAGS=%02x SENSE=%08x LEN=%d\n"),
+			get_long_host(scsicmd + 0), as.len,
+			get_long_host(scsicmd + 12), as.cmd_len,
+			as.flags,
+			get_long_host(scsicmd + 22), as.sense_len);
+		for (int i = 0; i < as.cmd_len; i++) {
+			if (i > 0)
+				write_log(_T("."));
+			write_log(_T("%02x"), as.cmd[i]);
+		}
+		write_log(_T("\n"));
+	}
+
+	ret = sys_command_scsi_direct_native (unitnum, type, &as);
+
+	if (log_scsiemu) {
+		write_log(_T("HD_SCSICMD1: ACTUAL=%d CMDACTUAL=%d STATUS=%d SACTUAL=%d\n"),
+			as.actual, as.cmdactual, as.status, as.sactual);
+	}
+
+	put_long_host(scsicmd + 8, as.actual);
+	put_word_host(scsicmd + 18, as.cmdactual);
+	put_byte_host(scsicmd + 21, as.status);
+	put_word_host(scsicmd + 28, as.sactual);
 
 	if (as.flags & (2 | 4)) { // autosense
-	ap = get_long (acmd + 22);
-		for (i = 0; i < as.sactual && i < as.sense_len; i++)
-			put_byte (ap + i, as.sensedata[i]);
+		ap = get_long_host(scsicmd + 22);
+		if (as.sactual)
+			trap_put_bytes(ctx, as.sensedata, ap, as.sactual > as.sense_len ? as.sense_len : as.sactual);
+		if (as.sense_len > as.sactual)
+			trap_set_bytes(ctx, ap + as.sactual, 0, as.sense_len - as.sactual);
 	}
+
+	trap_put_bytes(ctx, scsicmd, acmd, sizeof scsicmd);
+
+	if (trap_is_indirect()) {
+		if (as.flags & 1) { // read?
+			int len = as.actual > as.len ? as.len : as.actual;
+			trap_put_bytes(ctx, as.data, get_long_host(scsicmd + 0), len);
+		}
+		xfree(as.data);
+	}
+
 	return ret;
 }
 
 #ifdef SAVESTATE
+
+void restore_blkdev_start(void)
+{
+	for (int i = 0; i < MAX_TOTAL_SCSI_DEVICES; i++) {
+		struct cdslot *cd = &currprefs.cdslots[i];
+		if (cd->temporary) {
+			memset(cd, 0, sizeof(struct cdslot));
+			memset(&changed_prefs.cdslots[i], 0, sizeof(struct cdslot));
+		}
+	}
+}
 
 uae_u8 *save_cd (int num, int *len)
 {
@@ -2124,12 +2462,10 @@ uae_u8 *save_cd (int num, int *len)
 	memset(st->play_qcode, 0, SUBQ_SIZE);
 	if (!currprefs.cdslots[num].inuse || num >= MAX_TOTAL_SCSI_DEVICES)
 		return NULL;
-#ifdef CD32
 	if (!currprefs.cs_cd32cd && !currprefs.cs_cdtvcd && !currprefs.scsi)
 		return NULL;
-#endif
-	dstbak = dst = xmalloc (uae_u8, 4 + 256 + 4 + 4);
-	save_u32 (4 | 8);
+	dstbak = dst = xmalloc (uae_u8, 4 + MAX_DPATH + 4 + 4 + 4 + 2 * MAX_DPATH);
+	save_u32 (4 | 8 | 16);
 	save_path (currprefs.cdslots[num].name, SAVESTATE_PATH_CD);
 	save_u32 (currprefs.cdslots[num].type);
 	save_u32 (0);
@@ -2138,6 +2474,7 @@ uae_u8 *save_cd (int num, int *len)
 	for (int i = 0; i < SUBQ_SIZE; i++)
 		save_u8 (st->play_qcode[i]);
 	save_u32 (st->play_end_pos);
+	save_path_full(currprefs.cdslots[num].name, SAVESTATE_PATH_CD);
 	*len = dst - dstbak;
 	return dstbak;
 }
@@ -2154,19 +2491,25 @@ uae_u8 *restore_cd (int num, uae_u8 *src)
 	s = restore_path (SAVESTATE_PATH_CD);
 	int type = restore_u32 ();
 	restore_u32 ();
-	if (flags & 4) {
-		if (currprefs.cdslots[num].name[0] == 0 || zfile_exists (s)) {
-			_tcscpy (changed_prefs.cdslots[num].name, s);
-			_tcscpy (currprefs.cdslots[num].name, s);
-		}
-		changed_prefs.cdslots[num].type = currprefs.cdslots[num].type = type;
-	}
 	if (flags & 8) {
 		restore_u32 ();
 		for (int i = 0; i < SUBQ_SIZE; i++)
 			st->play_qcode[i] = restore_u8 ();
 		st->play_end_pos = restore_u32 ();
 	}
+	if (flags & 16) {
+		xfree(s);
+		s = restore_path_full();
+	}
+	if (flags & 4) {
+		if (currprefs.cdslots[num].name[0] == 0 || zfile_exists(s)) {
+			_tcscpy(changed_prefs.cdslots[num].name, s);
+			_tcscpy(currprefs.cdslots[num].name, s);
+		}
+		changed_prefs.cdslots[num].type = currprefs.cdslots[num].type = type;
+		changed_prefs.cdslots[num].temporary = currprefs.cdslots[num].temporary = true;
+	}
+	xfree(s);
 	return src;
 }
 

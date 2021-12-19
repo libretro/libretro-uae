@@ -15,6 +15,8 @@
 #include "filesys.h"
 #include "zfile.h"
 
+#include "uae/types.h"
+
 #define hfd_log write_log
 
 //#define HDF_DEBUG
@@ -24,32 +26,45 @@
 #define DEBUG_LOG(...) { }
 #endif
 
+#define MAX_LOCKED_VOLUMES 8
+
 struct hardfilehandle
 {
 	int zfile;
 	struct zfile *zf;
-	FILE *h;
+	HANDLE h;
+	BOOL firstwrite;
+	HANDLE locked_volumes[MAX_LOCKED_VOLUMES];
+	bool dismounted;
 };
 
 struct uae_driveinfo {
-	char vendor_id[128];
-	char product_id[128];
-	char product_rev[128];
-	char product_serial[128];
-	char device_name[2048];
-	char device_path[2048];
+	TCHAR vendor_id[128];
+	TCHAR product_id[128];
+	TCHAR product_rev[128];
+	TCHAR product_serial[128];
+	TCHAR device_name[1024];
+	TCHAR device_path[1024];
+	TCHAR device_full_path[2048];
+	uae_u8 identity[512];
 	uae_u64 size;
 	uae_u64 offset;
 	int bytespersector;
 	int removablemedia;
 	int nomedia;
 	int dangerous;
-	int readonly;
 	bool partitiondrive;
+	int readonly;
 	int cylinders, sectors, heads;
+	int BusType;
+	uae_u16 usb_vid, usb_pid;
+	int devicetype;
+	bool scsi_direct_fail;
+	bool chsdetected;
+
 };
 
-//#define HDF_HANDLE_WIN32 1
+#define HDF_HANDLE_WIN32 1
 #define HDF_HANDLE_ZFILE 2
 #define HDF_HANDLE_LINUX 3
 #ifndef INVALID_HANDLE_VALUE
@@ -556,9 +571,10 @@ static int hdf_write_2 (struct hardfiledata *hfd, void *buffer, uae_u64 offset, 
 	poscheck (hfd, len);
 	memcpy (hfd->cache, buffer, len);
 	if (hfd->handle_valid == HDF_HANDLE_LINUX) {
+	    const TCHAR *name = hfd->emptyname == NULL ? _T("<unknown>") : hfd->emptyname;
 	    outlen = fwrite (hfd->cache, 1, len, hfd->handle->h);
 		if (outlen != len)
-			gui_message ("Harddrive\n%s\ncache write failed!", hfd->device_name);
+			gui_message ("Harddrive\n%s\ncache write failed!", name);
 		else if (offset == 0) {
 			long outlen2;
 			uae_u8 *tmp;
@@ -569,7 +585,7 @@ static int hdf_write_2 (struct hardfiledata *hfd, void *buffer, uae_u64 offset, 
 				hdf_seek (hfd, offset);
 				outlen2 = fread (tmp, 1, tmplen, hfd->handle->h);
 				if (memcmp (hfd->cache, tmp, tmplen) != 0 || outlen2 != len)
-					gui_message ("Harddrive\n%s\nblock zero write failed!", hfd->device_name);
+					gui_message ("Harddrive\n%s\nblock zero write failed!", name);
 				xfree (tmp);
 			}
 		}
@@ -644,19 +660,31 @@ int hdf_getnumharddrives (void)
 	return num_drives;
 }
 
-TCHAR *hdf_getnameharddrive (int index, int flags, int *sectorsize, int *dangerousdrive)
+TCHAR *hdf_getnameharddrive (int index, int flags, int *sectorsize, int *dangerousdrive, uae_u32 *outflags)
 {
+	struct uae_driveinfo *udi = &uae_drives[index];
 	static char name[512];
 	char tmp[32];
-	uae_u64 size = uae_drives[index].size;
-	int nomedia = uae_drives[index].nomedia;
-	char *dang = "?";
-	char *rw = "RW";
+	uae_u64 size = udi->size;
+	int nomedia = udi->nomedia;
+	const TCHAR *dang = _T("?");
+	const TCHAR *rw = _T("RW");
+	bool noaccess = false;
+
+	if (outflags) {
+		*outflags = 0;
+		if (udi->identity[0] || udi->identity[1])
+			*outflags = 1;
+	}
 
 	if (dangerousdrive)
 		*dangerousdrive = 0;
-	switch (uae_drives[index].dangerous)
+	switch (udi->dangerous)
 	{
+	case -10:
+		dang = _T("[???]");
+		noaccess = true;
+		break;
 	case -5:
 		dang = "[PART]";
 		break;
@@ -687,34 +715,47 @@ TCHAR *hdf_getnameharddrive (int index, int flags, int *sectorsize, int *dangero
 			*dangerousdrive |= 1;
 		break;
 	}
-	if (nomedia) {
-		dang = "[NO MEDIA]";
-		if (dangerousdrive)
-			*dangerousdrive &= ~1;
-	}
-	if (uae_drives[index].readonly) {
-		rw = "RO";
-		if (dangerousdrive && !nomedia)
-			*dangerousdrive |= 2;
-	}
 
-	if (sectorsize)
-		*sectorsize = uae_drives[index].bytespersector;
-	if (flags & 1) {
-		if (nomedia) {
-			_tcscpy (tmp, "N/A");
-		} else {
-			if (size >= 1024 * 1024 * 1024)
-				_stprintf (tmp, "%.1fG", ((double)(uae_u32)(size / (1024 * 1024))) / 1024.0);
-			else if (size < 10 * 1024 * 1024)
-				_stprintf (tmp, "%dK", size / 1024);
-			else
-				_stprintf (tmp, "%.1fM", ((double)(uae_u32)(size / (1024))) / 1024.0);
+	if (noaccess) {
+		if (dangerousdrive)
+			*dangerousdrive = -1;
+		if (flags & 1) {
+			_stprintf (name, _T("[ACCESS DENIED] %s"), udi->device_name + 1);
+			return name;
 		}
-		_stprintf (name, "%10s [%s,%s] %s", dang, tmp, rw, uae_drives[index].device_name + 3);
-		return name;
+	} else {
+		if (nomedia) {
+			dang = _T("[NO MEDIA]");
+			if (dangerousdrive)
+				*dangerousdrive &= ~1;
+		}
+
+		if (udi->readonly) {
+			rw = _T("RO");
+			if (dangerousdrive && !nomedia)
+				*dangerousdrive |= 2;
+		}
+
+		if (sectorsize)
+			*sectorsize = udi->bytespersector;
+		if (flags & 1) {
+			if (nomedia) {
+				_tcscpy (tmp, _T("N/A"));
+			} else {
+				if (size >= 1024 * 1024 * 1024)
+					_stprintf (tmp, _T("%.1fG"), ((double)(uae_u32)(size / (1024 * 1024))) / 1024.0);
+				else if (size < 10 * 1024 * 1024)
+					_stprintf (tmp, _T("%lldK"), size / 1024);
+				else
+					_stprintf (tmp, _T("%.1fM"), ((double)(uae_u32)(size / (1024))) / 1024.0);
+			}
+			_stprintf (name, _T("%10s [%s,%s] %s"), dang, tmp, rw, udi->device_name + 1);
+			return name;
+		}
 	}
+	if (flags & 4)
+		return udi->device_full_path;
 	if (flags & 2)
-		return uae_drives[index].device_path;
-	return uae_drives[index].device_name;
+		return udi->device_path;
+	return udi->device_name;
 }
