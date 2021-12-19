@@ -7078,7 +7078,7 @@ static int filesys_iteration(UnitInfo *ui)
 
 	int isvolume = 0;
 #if TRAPMD
-	trapmd md[] = {
+	struct trapmd md[] = {
 		{ TRAPCMD_GET_LONG, { morelocks }, 2, 0 },
 		{ TRAPCMD_GET_LONG, { ui->self->locklist }, 2, 1 },
 		{ TRAPCMD_PUT_LONG },
@@ -7105,7 +7105,7 @@ static int filesys_iteration(UnitInfo *ui)
 	}
 	writedpacket(ctx, &packet);
 
-	trapmd md2[] = {
+	struct trapmd md2[] = {
 		{ TRAPCMD_PUT_LONG, { msg + 4, 0xffffffff } },
 		{ TRAPCMD_GET_LONG, { ui->self->locklist } },
 		{ TRAPCMD_PUT_LONG, { ui->self->locklist, 0 } }
