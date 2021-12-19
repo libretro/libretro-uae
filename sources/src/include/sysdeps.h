@@ -749,4 +749,11 @@ typedef uint8_t uint8;
 #define _daylight 0
 #endif
 
+#ifndef log2
+#define log2 logb
+#endif
+#ifndef log2l
+#define log2l logbl
+#endif
+
 #endif /* UAE_SYSDEPS_H */

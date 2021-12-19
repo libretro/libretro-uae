@@ -250,6 +250,7 @@ STATIC_INLINE int uae_start_thread (char *name, void (*f)(void *), void *arg, ua
 STATIC_INLINE int uae_start_thread_fast (void (*f)(void *), void *arg, uae_thread_id *tid)
 {
     int v = uae_start_thread (NULL, f, arg, tid);
+#if 0
     if (*tid)
     {
         int policy;
@@ -258,6 +259,7 @@ STATIC_INLINE int uae_start_thread_fast (void (*f)(void *), void *arg, uae_threa
         param.sched_priority = sched_get_priority_max(policy);
         pthread_setschedparam(pthread_self(), policy, &param);
     }
+#endif
     return v;
 }
 
@@ -278,14 +280,18 @@ STATIC_INLINE uae_thread_id uae_thread_get_id(void)
 
 STATIC_INLINE void uae_end_thread (uae_thread_id *tid)
 {
+#if 0
     if (*tid)
         pthread_cancel(*tid);
+#endif
 }
 
 STATIC_INLINE void uae_set_thread_priority (uae_thread_id *tid, int pri)
 {
+#if 0
     if (*tid)
         pthread_setschedprio(*tid, pri);
+#endif
 }
 
 #endif

@@ -12,12 +12,36 @@
 
 #include <math.h>
 #include <float.h>
+#ifndef __LIBRETRO__
 #include <fenv.h>
+#else
+
+#ifndef remainderl
+#define remainderl remainder
+#endif
+#ifndef atanhl
+#define atanhl atanh
+#endif
+#ifndef expm1l
+#define expm1l expm1
+#endif
+#ifndef logbl
+#define logbl logb
+#endif
+#ifndef log1pl
+#define log1pl log1p
+#endif
+
+#endif
 
 #include "sysconfig.h"
 #include "sysdeps.h"
 
+#ifdef __LIBRETRO__
+#define USE_HOST_ROUNDING 0
+#else
 #define USE_HOST_ROUNDING 1
+#endif
 #define SOFTFLOAT_CONVERSIONS 1
 
 #include "options.h"

@@ -7378,6 +7378,9 @@ static bool cfgfile_parse_uaelib_option (struct uae_prefs *p, TCHAR *option, TCH
 
 int cfgfile_searchconfig(const TCHAR *in, int index, TCHAR *out, int outsize)
 {
+#ifdef __LIBRETRO__
+	return 0;
+#else
 	TCHAR tmp[CONFIG_BLEN];
 	int j = 0;
 	int inlen = _tcslen (in);
@@ -7456,6 +7459,7 @@ int cfgfile_searchconfig(const TCHAR *in, int index, TCHAR *out, int outsize)
 	}
 end:
 	return err;
+#endif
 }
 
 static int execcmdline(struct uae_prefs *prefs, int argv, TCHAR **argc, TCHAR *out, int outsize, bool confonly)
@@ -7498,6 +7502,9 @@ static int execcmdline(struct uae_prefs *prefs, int argv, TCHAR **argc, TCHAR *o
 
 uae_u32 cfgfile_modify (uae_u32 index, const TCHAR *parms, uae_u32 size, TCHAR *out, uae_u32 outsize)
 {
+#ifdef __LIBRETRO__
+	return 0;
+#else
 	TCHAR *p;
 	TCHAR *argc[UAELIB_MAX_PARSE];
 	int argv, i;
@@ -7560,6 +7567,7 @@ end:
 		xfree (argc[i]);
 	xfree (p);
 	return err;
+#endif
 }
 
 uae_u32 cfgfile_uaelib_modify(TrapContext *ctx, uae_u32 index, uae_u32 parms, uae_u32 size, uae_u32 out, uae_u32 outsize)

@@ -599,10 +599,6 @@
 #undef _ftelli64
 #define _ftelli64 rftell
 #endif
-//#undef fgetws
-//#define fgetws fgets
-//#undef fputws
-//#define fputws(string, stream) rfprintf(stream, "%s", string)
 
 #ifndef PATH_MAX
 #define PATH_MAX    256
