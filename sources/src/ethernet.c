@@ -17,10 +17,8 @@
 #include "rommgr.h"
 
 #ifdef __LIBRETRO__
-uint32_t inet_addr(const char *cp)
-{
-   return 0;
-}
+#undef inet_addr
+uint32_t inet_addr(const char *cp) { return 0; }
 #endif
 
 #ifdef WITH_SLIRP
