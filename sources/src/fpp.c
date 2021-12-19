@@ -15,7 +15,9 @@
 
 #include <math.h>
 #include <float.h>
+#ifndef __LIBRETRO__
 #include <fenv.h>
+#endif
 
 #include "sysconfig.h"
 #include "sysdeps.h"

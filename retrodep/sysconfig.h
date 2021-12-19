@@ -568,6 +568,10 @@
    code using `volatile' can become incorrect without. Disable with care. */
 /* #undef volatile */
 
+#if defined(__SWITCH__) || defined(VITA) || defined(__PS3__) || defined(WIIU)
+#define NO_HOST_ROUNDING
+#endif
+
 #ifdef MSB_FIRST
 #  define bswap_16(x) (x)
 #  define bswap_32(x) (x)
@@ -599,10 +603,6 @@
 #undef _ftelli64
 #define _ftelli64 rftell
 #endif
-//#undef fgetws
-//#define fgetws fgets
-//#undef fputws
-//#define fputws(string, stream) rfprintf(stream, "%s", string)
 
 #ifndef PATH_MAX
 #define PATH_MAX    256

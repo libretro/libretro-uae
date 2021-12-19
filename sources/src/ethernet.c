@@ -16,11 +16,6 @@
 #include "gui.h"
 #include "rommgr.h"
 
-#ifdef __LIBRETRO__
-#undef inet_addr
-uint32_t inet_addr(const char *cp) { return 0; }
-#endif
-
 #ifdef WITH_SLIRP
 
 #ifndef HAVE_INET_ATON
