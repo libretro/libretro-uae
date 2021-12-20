@@ -161,8 +161,8 @@ else ifneq (,$(filter $(platform), ngc wii wiiu))
 else ifeq ($(platform), libnx)
    include $(DEVKITPRO)/libnx/switch_rules
    TARGET := $(TARGET_NAME)_libretro_$(platform).a
-   CFLAGS += -D__SWITCH__ -DHAVE_LIBNX -I$(DEVKITPRO)/libnx/include/ -specs=$(DEVKITPRO)/libnx/switch.specs -D_LDBL_EQ_DBL
-   CFLAGS += -march=armv8-a -mtune=cortex-a57 -mtp=soft -mcpu=cortex-a57+crc+fp+simd -ffast-math -fPIE -ffunction-sections -static -lm
+   CFLAGS += -D__SWITCH__ -DHAVE_LIBNX -I$(DEVKITPRO)/libnx/include/ -specs=$(DEVKITPRO)/libnx/switch.specs
+   CFLAGS += -march=armv8-a -mtune=cortex-a57 -mtp=soft -mcpu=cortex-a57+crc+fp+simd -ffast-math -fPIE -ffunction-sections
    STATIC_LINKING=1
    STATIC_LINKING_LINK=1
 

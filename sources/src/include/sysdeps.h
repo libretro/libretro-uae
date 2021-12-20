@@ -748,6 +748,7 @@ typedef uint8_t uint8;
 #ifndef _daylight
 #define _daylight 0
 #endif
+
 #ifndef log2
 #define log2 logb
 #endif
