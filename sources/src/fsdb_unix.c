@@ -155,9 +155,13 @@ static int fsdb_name_invalid_2x (const TCHAR *n, int dir)
 static int fsdb_name_invalid_2 (a_inode *aino, const TCHAR *n, int dir)
 {
 	int v = fsdb_name_invalid_2x(n, dir);
+#if 1
+	return v;
+#else
 	if (v <= 1 || !aino)
 		return v;
 	return 0;
+#endif
 }
 
 int fsdb_name_invalid (a_inode *aino, const TCHAR *n)
@@ -174,7 +178,7 @@ int fsdb_name_invalid_dir (a_inode *aino, const TCHAR *n)
     int v = fsdb_name_invalid_2 (aino, n, 1);
     if (v <= 0)
         return v;
-    write_log (_T("FILESYS: '%s' illegal filename\n"), n);
+    write_log (_T("FILESYS: '%s' illegal directory name\n"), n);
     return v;
 }
 
@@ -394,7 +398,9 @@ static char *aname_to_nname(const char *aname, int ascii)
 
     free(buf);
 
-    /*write_log("aname_to_nname %s => %s\n", aname, result);*/
+#if 0
+    write_log("aname_to_nname %s => %s\n", aname, result);
+#endif
     return result;
 }
 
@@ -438,7 +444,9 @@ static char *nname_to_aname(const char *nname, int noconvert)
     free(cresult);
 
     result = string_replace_substring(result, UAEFSDB_BEGINS, "");
-    /*write_log("nname_to_aname %s => %s\n", nname, result);*/
+#if 0
+    write_log("nname_to_aname %s => %s\n", nname, result);
+#endif
     return result;
 }
 
