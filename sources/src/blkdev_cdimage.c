@@ -1561,8 +1561,11 @@ static int parsechd (struct cdunit *cdu, struct zfile *zcue, const TCHAR *img, c
 #endif
 		dtrack->track = i + 1;
 		dtrack[1].address = dtrack->address + strack->frames;
-#ifndef __LIBRETRO__
+#ifdef __LIBRETRO__
+		if (chd_hunk_info(cf, dtrack->offset * CD_FRAME_SIZE / hunksize, &compr, &cbytes) == CHDERR_NONE) {
+#else
 		if (cf->hunk_info(dtrack->offset * CD_FRAME_SIZE / hunksize, compr, cbytes) == CHDERR_NONE) {
+#endif
 			TCHAR tmp[100];
 			uae_u32 c = (uae_u32)compr;
 			for (int j = 0; j < 4; j++) {
@@ -1577,7 +1580,6 @@ static int parsechd (struct cdunit *cdu, struct zfile *zcue, const TCHAR *img, c
 			tmp[4] = 0;
 			dtrack->extrainfo = my_strdup (tmp);
 		}
-#endif
 	}
 	return cdu->tracks;
 }
