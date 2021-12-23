@@ -33,21 +33,23 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <stdlib.h>
 #include <string.h>
 
-/* IF UAE */
 #include "sysconfig.h"
 #include "sysdeps.h"
 #include "zfile.h"
-#include "uae.h"
-/* ELSE */
-//#include "types.h"
-
-#include "fdi2raw.h"
 #include "crc32.h"
+#include "fdi2raw.h"
+
+#ifdef FDI2RAW
 
 #undef DEBUG
 #define VERBOSE
+#undef VERBOSE
 
 #include <assert.h>
+
+/* external prototypes */
+extern uae_u32 uaerand (void);
+
 
 #ifdef DEBUG
 static TCHAR *datalog (uae_u8 *src, int len)
@@ -59,7 +61,7 @@ static TCHAR *datalog (uae_u8 *src, int len)
 	offset2 = offset;
 	buf[offset++]='\'';
 	while (len--) {
-		_stprintf (buf + offset, "%02X", src[i]);
+		sprintf	(buf + offset, "%02.2X", src[i]);
 		offset += 2;
 		i++;
 		if (i > 10) break;
@@ -70,18 +72,18 @@ static TCHAR *datalog (uae_u8 *src, int len)
 	return buf + offset2;
 }
 #else
-static const TCHAR *datalog (uae_u8 *src, int len) { return _T(""); }
+static TCHAR *datalog (uae_u8 *src, int len) { return _T(""); }
 #endif
 
 #ifdef DEBUG
 #define debuglog write_log
 #else
-#define debuglog(fmt, ...)
+#define debuglog(...) { }
 #endif
 #ifdef VERBOSE
 #define outlog write_log
 #else
-#define outlog(fmt, ...)
+#define outlog(...) { }
 #endif
 
 static int fdi_allocated;
@@ -94,7 +96,7 @@ static void fdi_free (void *p)
 	size = ((int*)p)[-1];
 	fdi_allocated -= size;
 	write_log (_T("%d freed (%d)\n"), size, fdi_allocated);
-	free ((int*)p - 1);
+	xfree ((int*)p - 1);
 }
 static void *fdi_malloc (int size)
 {
@@ -175,7 +177,7 @@ typedef struct node NODE;
 
 static uae_u8 temp, temp2;
 
-static uae_u8 *expand_tree (uae_u8 *stream, NODE *node)
+static const uae_u8 *expand_tree (const uae_u8 *stream, NODE *node)
 {
 	if (temp & temp2) {
 		fdi_free (node->left);
@@ -197,7 +199,7 @@ static uae_u8 *expand_tree (uae_u8 *stream, NODE *node)
 		}
 		node->left = fdi_malloc (NODE, 1);
 		memset (node->left, 0, sizeof (NODE));
-		stream_temp = expand_tree (stream, node->left);
+		stream_temp = (uae_u8*)expand_tree (stream, node->left);
 		node->right = fdi_malloc (NODE ,1);
 		memset (node->right, 0, sizeof (NODE));
 		return expand_tree (stream_temp, node->right);
@@ -270,7 +272,7 @@ static void fdi_decode (uae_u8 *stream, int size, uae_u8 *out)
 		//huffman tree architecture decode
 		temp = *stream++;
 		temp2 = 0x80;
-		stream = expand_tree (stream, &root);
+		stream = (uae_u8*)expand_tree (stream, &root);
 		if (temp2 == 0x80)
 			stream--;
 
@@ -966,7 +968,7 @@ static void ibm_data (FDI *fdi, uae_u8 *data, uae_u8 *crc, int len)
 {
 	int i;
 	uae_u8 crcbuf[2];
-	uae_u16 crcv;
+	uae_u16 crcv = 0;
 
 	word_add (fdi, 0x4489);
 	word_add (fdi, 0x4489);
@@ -1000,8 +1002,8 @@ static void ibm_sector_header (FDI *fdi, uae_u8 *data, uae_u8 *crc, int secnum, 
 	word_add (fdi, 0x4489);
 	secbuf[0] = 0xfe;
 	if (secnum >= 0) {
-		secbuf[1] = (uae_u8)(fdi->current_track/2);
-		secbuf[2] = (uae_u8)(fdi->current_track%2);
+		secbuf[1] = (uae_u8)(fdi->current_track / 2);
+		secbuf[2] = (uae_u8)(fdi->current_track % 2);
 		secbuf[3] = (uae_u8)secnum;
 		secbuf[4] = 2;
 	} else {
@@ -1178,7 +1180,7 @@ static void track_amiga (struct fdi *fdi, int first_sector, int max_sector)
 }
 static void track_atari_st (struct fdi *fdi, int max_sector)
 {
-	int i, gap3;
+	int i, gap3 = 0;
 	uae_u8 *p = fdi->track_src;
 
 	switch (max_sector) {
@@ -1320,13 +1322,13 @@ static int handle_sectors_described_track (FDI *fdi)
 
 	do {
 		fdi->track_type = *fdi->track_src++;
-		outlog (_T("%06X %06X %02X:"), (int) (fdi->track_src - start_src + 0x200), fdi->out/8, fdi->track_type);
+		outlog (_T("%06X %06X %02X:"),fdi->track_src - start_src + 0x200, fdi->out/8, fdi->track_type);
 		oldout = fdi->out;
 		decode_sectors_described_track[fdi->track_type](fdi);
 		outlog (_T(" %d\n"), fdi->out - oldout);
 		oldout = fdi->out;
 		if (fdi->out < 0 || fdi->err) {
-			outlog (_T("\nin %d bytes, out %d bits\n"), (int) (fdi->track_src - fdi->track_src_buffer), fdi->out);
+			outlog (_T("\nin %d bytes, out %d bits\n"), fdi->track_src - fdi->track_src_buffer, fdi->out);
 			return -1;
 		}
 		if (fdi->track_src - fdi->track_src_buffer >= fdi->track_src_len) {
@@ -1352,7 +1354,7 @@ static uae_u8 *fdi_decompress (int pulses, uae_u8 *sizep, uae_u8 *src, int *dofr
 		mode = 1;
 	if (mode == 0) {
 		dst2 = (uae_u32*)src;
-		dst = src;
+		dst = (uae_u8*)src;
 		for (i = 0; i < pulses; i++) {
 			*dst2++ = get_u32 (src);
 			src += 4;
@@ -1373,7 +1375,7 @@ static void dumpstream(int track, uae_u8 *stream, int len)
 	TCHAR name[100];
 	FILE *f;
 
-	_stprintf (name, "track_%d.raw", track);
+	sprintf (name, "track_%d.raw", track);
 	f = fopen(name, "wb");
 	fwrite (stream, 1, len * 4, f);
 	fclose (f);
@@ -1546,18 +1548,18 @@ static void fdi2_decode (FDI *fdi, unsigned long totalavg, uae_u32 *avgp, uae_u3
 
 #else
 
-static void fdi2_decode (FDI *fdi, unsigned long totalavg, uae_u32 *avgp, uae_u32 *minp, uae_u32 *maxp, uae_u8 *idx, int maxidx, int *indexoffsetp, int pulses, int mfm)
+static void fdi2_decode (FDI *fdi, unsigned long totalavg, uae_u32 *avgp, uae_u32 *minp, uae_u32 *maxp, uae_u8 *idx, unsigned int maxidx, unsigned int *indexoffsetp, unsigned int pulses, int mfm)
 {
 	unsigned long adjust;
 	unsigned long adjusted_pulse;
 	unsigned long standard_MFM_2_bit_cell_size = totalavg / 50000;
 	unsigned long standard_MFM_8_bit_cell_size = totalavg / 12500;
-	int real_size, i, j, nexti, eodat, outstep, randval;
-	int indexoffset = *indexoffsetp;
+	uae_u32 real_size, i, j, nexti, eodat, outstep, randval;
+	uae_u32 indexoffset = *indexoffsetp;
 	uae_u8 *d = fdi->track_dst_buffer;
 	uae_u16 *pt = fdi->track_dst_buffer_timing;
 	uae_u32 ref_pulse, pulse;
-	int jitter;
+	uae_s64 jitter;
 
 	/* detects a long-enough stable pulse coming just after another stable pulse */
 	i = 1;
@@ -1626,7 +1628,7 @@ static void fdi2_decode (FDI *fdi, unsigned long totalavg, uae_u32 *avgp, uae_u3
 				randval = uaerand();
 				if (randval < (UAE_RAND_MAX / 2)) {
 					if (randval > (UAE_RAND_MAX / 4)) {
-						if (randval <= (3 * (UAE_RAND_MAX / 8)))
+						if (randval <= (uae_u32)((uae_u64)3 * UAE_RAND_MAX / 8) )
 							randval = (2 * randval) - (UAE_RAND_MAX  /4);
 						else
 							randval = (4 * randval) - UAE_RAND_MAX;
@@ -1635,7 +1637,7 @@ static void fdi2_decode (FDI *fdi, unsigned long totalavg, uae_u32 *avgp, uae_u3
 				} else {
 					randval -= UAE_RAND_MAX / 2;
 					if (randval > (UAE_RAND_MAX / 4)) {
-						if (randval <= (3 * (UAE_RAND_MAX / 8)))
+						if (randval <= (uae_u32)((uae_u64)3 * UAE_RAND_MAX / 8) )
 							randval = (2 * randval) - (UAE_RAND_MAX /4);
 						else
 							randval = (4 * randval) - UAE_RAND_MAX;
@@ -1654,14 +1656,14 @@ static void fdi2_decode (FDI *fdi, unsigned long totalavg, uae_u32 *avgp, uae_u3
 				ref_pulse = 0;
 				if (i == eodat)
 					outstep++;
-			} else if (uaerand() <= ((idx[i] * UAE_RAND_MAX) / maxidx)) {
+			} else if (uaerand() <= (uae_u32)(((uae_u64)idx[i] * UAE_RAND_MAX) / maxidx)) {
 				avg_pulse = avgp[i];
 				min_pulse = minp[i];
 				max_pulse = maxp[i];
 				randval = uaerand();
 				if (randval < (UAE_RAND_MAX / 2)) {
 					if (randval > (UAE_RAND_MAX / 4)) {
-						if (randval <= (3 * (UAE_RAND_MAX / 8)))
+						if (randval <= (uae_u32)((uae_u64)3 * UAE_RAND_MAX / 8) )
 							randval = (2 * randval) - (UAE_RAND_MAX /4);
 						else
 							randval = (4 * randval) - UAE_RAND_MAX;
@@ -1670,7 +1672,7 @@ static void fdi2_decode (FDI *fdi, unsigned long totalavg, uae_u32 *avgp, uae_u3
 				} else {
 					randval -= UAE_RAND_MAX / 2;
 					if (randval > (UAE_RAND_MAX / 4)) {
-						if (randval <= (3 * (UAE_RAND_MAX / 8)))
+						if (randval <= (uae_u32)((uae_u64)3 * UAE_RAND_MAX / 8))
 							randval = (2 * randval) - (UAE_RAND_MAX /4);
 						else
 							randval = (4 * randval) - UAE_RAND_MAX;
@@ -1820,7 +1822,7 @@ static int decode_lowlevel_track (FDI *fdi, int track, struct fdi_cache *cache)
 	uae_u32 maxidx, totalavg, weakbits;
 	int i, j, len, pulses, indexoffset;
 	int avg_free, min_free = 0, max_free = 0, idx_free;
-	int idx_off1, idx_off2, idx_off3;
+	int idx_off1 = 0, idx_off2 = 0, idx_off3 = 0;
 
 	d = fdi->track_dst;
 	p1 = fdi->track_src;
@@ -1914,7 +1916,7 @@ static int decode_lowlevel_track (FDI *fdi, int track, struct fdi_cache *cache)
 	totalavg = 0;
 	weakbits = 0;
 	for (i = 0; i < pulses; i++) {
-		int sum = p1[idx_off1] + p1[idx_off2];
+		uae_u32 sum = p1[idx_off1] + p1[idx_off2];
 		if (sum >= maxidx) {
 			totalavg += *p2;
 		} else {
@@ -2090,7 +2092,8 @@ FDI *fdi2raw_header(struct zfile *f)
 static int fdi2raw_loadrevolution_2 (FDI *fdi, uae_u16 *mfmbuf, uae_u16 *tracktiming, int track, int *tracklength, int *indexoffsetp, int *multirev, int mfm)
 {
 	struct fdi_cache *cache = &fdi->cache[track];
-	int len, i, idx;
+	int len, i;
+	uae_u32 idx;
 
 	memset (fdi->track_dst_buffer, 0, MAX_DST_BUFFER);
 	idx = cache->indexoffset;
@@ -2203,3 +2206,4 @@ int fdi2raw_loadtrack (FDI *fdi, uae_u16 *mfmbuf, uae_u16 *tracktiming, int trac
 	return outlen;
 }
 
+#endif

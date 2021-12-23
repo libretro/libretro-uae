@@ -10,11 +10,8 @@
   * and some of it needs thread support.
   */
 
-#ifndef UAE_NATIVE2AMIGA_H
-#define UAE_NATIVE2AMIGA_H
-
-#include "uae/types.h"
 #include "native2amiga_api.h"
+
 #include "traps.h"
 
 /*
@@ -52,7 +49,6 @@ extern smp_comm_pipe native2amiga_pending;
 
 STATIC_INLINE void do_uae_int_requested (void)
 {
-	atomic_or(&uae_int_requested, 1);
+    uae_int_requested |= 1;
+    set_uae_int_flag ();
 }
-
-#endif /* UAE_NATIVE2AMIGA_H */

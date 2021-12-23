@@ -13,8 +13,8 @@
 #include <stdarg.h>
 #include <stddef.h>
 
-#include "uae/string.h"
-#include "uae/types.h"
+#include "uae_string.h"
+#include "uae_types.h"
 #include "writelog.h"
 
 #ifdef __LIBRETRO__

@@ -7,9 +7,6 @@
   * (c) 1996 Bernd Schmidt
   */
 
-#ifndef UAE_KEYBUF_H
-#define UAE_KEYBUF_H
-
 extern int get_next_key (void);
 extern int keys_available (void);
 extern int record_key (int);
@@ -17,7 +14,3 @@ extern int record_key_direct (int);
 extern void keybuf_init (void);
 extern int getcapslockstate (void);
 extern void setcapslockstate (int);
-extern void keybuf_inject(const uae_char*);
-extern void keybuf_ignore_next_release(void);
-
-#endif /* UAE_KEYBUF_H */

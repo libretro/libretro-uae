@@ -6,13 +6,9 @@
   * (c) 1999-2001 Toni Wilen
   */
 
-#ifndef UAE_SAVESTATE_H
-#define UAE_SAVESTATE_H
-
-#include "uae/types.h"
 
 /* functions to save byte,word or long word
- * independent of CPU's endianness */
+ * independent of CPU's endianess */
 
 extern void save_store_pos_func (uae_u8 **);
 extern void save_store_size_func (uae_u8 **);
@@ -45,9 +41,7 @@ extern TCHAR *restore_string_func (uae_u8 **);
 #define SAVESTATE_PATH_CD 5
 
 extern void save_path_func (uae_u8 **, const TCHAR*, int type);
-extern void save_path_full_func(uae_u8 **, const TCHAR*, int type);
-extern TCHAR *restore_path_func(uae_u8 **, int type);
-extern TCHAR *restore_path_full_func(uae_u8 **);
+extern TCHAR *restore_path_func (uae_u8 **, int type);
 
 #define save_u64(x) save_u64_func (&dst, (x))
 #define save_u32(x) save_u32_func (&dst, (x))
@@ -62,10 +56,9 @@ extern TCHAR *restore_path_full_func(uae_u8 **);
 #define save_string(x) save_string_func (&dst, (x))
 #define restore_string() restore_string_func (&src)
 
+#ifdef SAVESTATE
 #define save_path(x, p) save_path_func (&dst, (x), p)
-#define save_path_full(x, p) save_path_full_func (&dst, (x), p)
 #define restore_path(p) restore_path_func (&src, p)
-#define restore_path_full() restore_path_full_func (&src)
 
 
 /* save, restore and initialize routines for Amiga's subsystems */
@@ -135,37 +128,32 @@ extern uae_u8 *save_keyboard (int *,uae_u8*);
 
 extern uae_u8 *restore_akiko (uae_u8 *src);
 extern uae_u8 *save_akiko (int *len, uae_u8*);
-extern void restore_akiko_finish(void);
-extern void restore_akiko_final(void);
+extern void restore_akiko_finish (void);
+extern void restore_akiko_final (void);
 
 extern uae_u8 *restore_cdtv (uae_u8 *src);
 extern uae_u8 *save_cdtv (int *len, uae_u8*);
-extern void restore_cdtv_finish(void);
-extern void restore_cdtv_final(void);
+extern void restore_cdtv_finish (void);
+extern void restore_cdtv_final (void);
 
 extern uae_u8 *restore_cdtv_dmac (uae_u8 *src);
 extern uae_u8 *save_cdtv_dmac (int *len, uae_u8*);
-extern uae_u8 *restore_scsi_dmac (int wdtype, uae_u8 *src);
-extern uae_u8 *save_scsi_dmac (int wdtype, int *len, uae_u8*);
+extern uae_u8 *restore_scsi_dmac (uae_u8 *src);
+extern uae_u8 *save_scsi_dmac (int *len, uae_u8*);
 
-extern uae_u8 *save_scsi_device (int wdtype, int num, int *len, uae_u8 *dstptr);
-extern uae_u8 *restore_scsi_device (int wdtype, uae_u8 *src);
-
-extern uae_u8 *save_scsidev (int num, int *len, uae_u8 *dstptr);
-extern uae_u8 *restore_scsidev (uae_u8 *src);
+extern uae_u8 *save_scsi_hd (int num, int *len, uae_u8 *dstptr);
+extern uae_u8 *restore_scsi_hd (uae_u8 *src);
 
 extern uae_u8 *restore_filesys (uae_u8 *src);
 extern uae_u8 *save_filesys (int num, int *len);
 extern uae_u8 *restore_filesys_common (uae_u8 *src);
 extern uae_u8 *save_filesys_common (int *len);
-extern uae_u8 *restore_filesys_paths(uae_u8 *src);
-extern uae_u8 *save_filesys_paths(int num, int *len);
 extern int save_filesys_cando(void);
 
 extern uae_u8 *restore_gayle(uae_u8 *src);
 extern uae_u8 *save_gayle (int *len, uae_u8*);
-extern uae_u8 *restore_gayle_ide (uae_u8 *src);
-extern uae_u8 *save_gayle_ide (int num, int *len, uae_u8*);
+extern uae_u8 *restore_ide (uae_u8 *src);
+extern uae_u8 *save_ide (int num, int *len, uae_u8*);
 
 extern uae_u8 *save_cd (int num, int *len);
 extern uae_u8 *restore_cd (int, uae_u8 *src);
@@ -191,14 +179,12 @@ extern uae_u8 *restore_debug_memwatch (uae_u8 *src);
 extern uae_u8 *save_debug_memwatch (int *len, uae_u8 *dstptr);
 extern void restore_debug_memwatch_finish (void);
 
-extern uae_u8 *save_screenshot(int monid, int *len);
-
 extern uae_u8 *save_cycles (int *len, uae_u8 *dstptr);
 extern uae_u8 *restore_cycles (uae_u8 *src);
 
 extern void restore_cram (int, size_t);
 extern void restore_bram (int, size_t);
-extern void restore_fram (int, size_t, int);
+extern void restore_fram (int, size_t);
 extern void restore_zram (int, size_t, int);
 extern void restore_bootrom (int, size_t);
 extern void restore_pram (int, size_t);
@@ -209,7 +195,7 @@ extern void restore_ram (size_t, uae_u8*);
 
 extern uae_u8 *save_cram (int *);
 extern uae_u8 *save_bram (int *);
-extern uae_u8 *save_fram (int *, int);
+extern uae_u8 *save_fram (int *);
 extern uae_u8 *save_zram (int *, int);
 extern uae_u8 *save_bootrom (int *);
 extern uae_u8 *save_pram (int *);
@@ -219,30 +205,21 @@ extern uae_u8 *save_a3000hram (int *);
 extern uae_u8 *restore_rom (uae_u8 *);
 extern uae_u8 *save_rom (int, int *, uae_u8 *);
 
-extern uae_u8 *save_expansion_boards(int*, uae_u8*, int);
-extern uae_u8 *restore_expansion_boards(uae_u8*);
-#if 0
-extern uae_u8 *save_expansion_info_old(int*, uae_u8*);
-extern uae_u8 *restore_expansion_info_old(uae_u8*);
-#endif
-extern void restore_expansion_finish(void);
-
 extern uae_u8 *restore_action_replay (uae_u8 *);
 extern uae_u8 *save_action_replay (int *, uae_u8 *);
 extern uae_u8 *restore_hrtmon (uae_u8 *);
 extern uae_u8 *save_hrtmon (int *, uae_u8 *);
-extern void restore_ar_finish (void);
 
 extern void savestate_initsave (const TCHAR *filename, int docompress, int nodialogs, bool save);
 #ifdef __LIBRETRO__
 extern struct zfile *save_state (const TCHAR *description, uae_u64 size);
-extern void restore_state (void);
+void restore_state (void);
 #else
 extern int save_state (const TCHAR *filename, const TCHAR *description);
 extern void restore_state (const TCHAR *filename);
 #endif
-extern bool savestate_restore_finish(void);
-extern void savestate_restore_final(void);
+extern bool savestate_restore_finish (void);
+extern void savestate_restore_final (void);
 extern void savestate_memorysave (void);
 
 
@@ -280,4 +257,8 @@ extern void savestate_listrewind (void);
 extern void statefile_save_recording (const TCHAR*);
 extern void savestate_capture_request (void);
 
-#endif /* UAE_SAVESTATE_H */
+#else
+
+#define savestate_state 0
+
+#endif

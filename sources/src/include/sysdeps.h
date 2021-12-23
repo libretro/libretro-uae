@@ -1,3 +1,6 @@
+#ifndef UAE_SYSDEPS_H
+#define UAE_SYSDEPS_H
+
 /*
   * UAE - The Un*x Amiga Emulator
   *
@@ -11,37 +14,6 @@
   *
   * Copyright 1996, 1997 Bernd Schmidt
   */
-#ifndef UAE_SYSDEPS_H
-#define UAE_SYSDEPS_H
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-#include "sysconfig.h"
-
-#ifndef UAE
-#define UAE
-#endif
-
-#ifdef _WIN32
-/* Parameters are passed in ECX, EDX for both x86 and x86-64 (RCX, RDX).
- * For x86-64, __fastcall is the default, so it isn't really required. */
-#define JITCALL __fastcall
-#elif defined(CPU_x86_64)
-/* Parameters are passed in RDI, RSI by default (System V AMD64 ABI). */
-#define JITCALL
-#elif defined(HAVE_FUNC_ATTRIBUTE_REGPARM)
-/* Parameters are passed in EAX, EDX on x86 with regparm(2). */
-#define JITCALL __attribute__((regparm(2)))
-/* This was originally regparm(3), but as far as I can see only two register
- * params are supported by the JIT code. It probably just worked anyway
- * if all functions used max two arguments. */
-#elif !defined(JIT)
-#define JITCALL
-#endif
-#define REGPARAM
-#define REGPARAM2 JITCALL
-#define REGPARAM3 JITCALL
 
 #if defined(__cplusplus)
 #include <cstddef>
@@ -66,6 +38,7 @@
 #endif // __cplusplus
 
 #define UAE_RAND_MAX RAND_MAX
+#define ECS_DENISE
 
 #ifdef JIT
 #define NATMEM_OFFSET natmem_offset
@@ -166,6 +139,8 @@
 #include <values.h>
 #endif
 
+#include "uae_string.h"
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -238,7 +213,8 @@ struct utimbuf
 };
 #endif
 
-#include "uae/types.h"
+#include "uae_types.h"
+#include "uae_malloc.h"
 #include "writelog.h"
 
 // Support macros for working with pointers of variable size -> 32bit.
@@ -288,75 +264,6 @@ static uae_u32 jit_debug_to_uae_u32(uaecptr ptr, const char* macro, const char* 
 #define abort() exit(0)
 #endif
 #endif
-
-
-/* If char has more then 8 bits, good night. */
-typedef unsigned char uae_u8;
-typedef signed char uae_s8;
-typedef char uae_char;
-
-typedef struct { uae_u8 RGB[3]; } RGB;
-
-#if SIZEOF_SHORT == 2
-typedef unsigned short uae_u16;
-typedef short uae_s16;
-#elif SIZEOF_INT == 2
-typedef unsigned int uae_u16;
-typedef int uae_s16;
-#else
-#error No 2 byte type, you lose.
-#endif
-
-#if SIZEOF_INT == 4
-typedef unsigned int uae_u32;
-typedef int uae_s32;
-#elif SIZEOF_LONG == 4
-typedef unsigned long uae_u32;
-typedef long uae_s32;
-#else
-#error No 4 byte type, you lose.
-#endif
-
-typedef uae_u32 uaecptr;
-
-#undef uae_s64
-#undef uae_u64
-
-#if SIZEOF_LONG_LONG == 8
-#define uae_s64 long long
-#define uae_u64 unsigned long long
-#define VAL64(a) (a ## LL)
-#define UVAL64(a) (a ## uLL)
-#elif SIZEOF___INT64 == 8
-#define uae_s64 __int64
-#define uae_u64 unsigned __int64
-#define VAL64(a) (a)
-#define UVAL64(a) (a)
-#elif SIZEOF_LONG == 8
-#define uae_s64 long;
-#define uae_u64 unsigned long;
-#define VAL64(a) (a ## l)
-#define UVAL64(a) (a ## ul)
-#endif
-
-#ifndef BOOL
-typedef int BOOL;
-#endif
-
-typedef long uae_atomic;
-uae_atomic atomic_and(volatile uae_atomic *p, uae_u32 v);
-uae_atomic atomic_or(volatile uae_atomic *p, uae_u32 v);
-uae_atomic atomic_inc(volatile uae_atomic *p);
-uae_atomic atomic_dec(volatile uae_atomic *p);
-uae_u32 atomic_bit_test_and_reset(volatile uae_atomic *p, uae_u32 v);
-
-extern void my_trim (TCHAR*);
-extern TCHAR *my_strdup_trim (const TCHAR*);
-extern void to_lower (TCHAR *s, int len);
-extern void to_upper (TCHAR *s, int len);
-
-#define ENUMDECL typedef enum
-#define ENUMNAME(name) name
 
 /*
  * Porters to weird systems, look! This is the preferred way to get
@@ -468,28 +375,16 @@ extern void mallocemu_free (void *ptr);
 
 #if !defined(RECUR) && !defined(NO_MACHDEP)
 #include "machdep/machdep.h"
+#include "gfxdep/gfx.h"
 #endif
 
-#define write_log_err write_log
-#define console_out   write_log
-#define console_out_f 
-#define f_out         
-
 extern void console_out (const char *, ...);
-/*extern void console_out_f (const TCHAR *, ...);*/
 extern void console_flush (void);
 extern int  console_get (char *, int);
-/*extern void f_out (void *, const char *, ...);*/
+extern void f_out (void *, const char *, ...);
 extern void gui_message (const char *,...);
 extern int gui_message_multibutton (int flags, const char *format,...);
-extern void logging_init (void);
-extern FILE *log_open (const TCHAR *name, int append, int bootlog, TCHAR*);
-extern void log_close (FILE *f);
-extern TCHAR *write_log_get_ts(void);
-extern bool is_console_open(void);
-extern void activate_console (void);
-
-extern bool use_long_double;
+#define write_log_err write_log
 
 #if defined(__cplusplus)
 }
@@ -526,41 +421,23 @@ extern bool use_long_double;
 #endif
 #endif
 
-/* Every Amiga hardware clock cycle takes this many "virtual" cycles.  This
-   used to be hardcoded as 1, but using higher values allows us to time some
-   stuff more precisely.
-   512 is the official value from now on - it can't change, unless we want
-   _another_ config option "finegrain2_m68k_speed".
-
-   We define this value here rather than in events.h so that gencpu.c sees
-   it.  */
-#define CYCLE_UNIT 512
-
-/* This one is used by cfgfile.c.  We could reduce the CYCLE_UNIT back to 1,
-   I'm not 100% sure this code is bug free yet.  */
-#define OFFICIAL_CYCLE_UNIT 512
-
-/*
- * You can specify numbers from 0 to 5 here. It is possible that higher
- * numbers will make the CPU emulation slightly faster, but if the setting
- * is too high, you will run out of memory while compiling.
- * Best to leave this as it is.
- */
-#define CPU_EMU_SIZE 0
+#ifndef MAX_PATH
+#define MAX_PATH	512
+#endif
+#ifndef MAX_DPATH
+#define MAX_DPATH	512
+#endif
 
 #ifndef __cplusplus
 #define xmalloc(type, num) ((type*)malloc(sizeof (type) * (num)))
 #define xcalloc(type, num) ((type*)calloc(sizeof (type), num))
 #define xrealloc(type, buffer, num) ((type*)realloc(buffer, sizeof (type) * (num)))
-#define xfree(type) free(type)
 #else
 #define xmalloc(type, num) static_cast<type*>(malloc (sizeof (type) * (num)))
 #define xcalloc(type, num) static_cast<type*>(calloc (sizeof (type), num))
 #define xrealloc(type, buffer, num) static_cast<type*>(realloc (buffer, sizeof (type) * (num)))
-#define xfree(type) free(type)
 #endif /* ! __cplusplus */
 
-#if 0
 #define XFREE_DEBUG 0
 
 // Please do NOT use identifiers with two leading underscores.
@@ -579,19 +456,13 @@ extern bool use_long_double;
 #else
 # define xfree(buffer) { if (buffer) { xfree_d (buffer) } }
 #endif //xfree_debug
-#endif
 
 #define DBLEQU(f, i) (abs ((f) - (i)) < 0.000001)
-
-#ifdef HAVE_VAR_ATTRIBUTE_UNUSED
-#define NOWARN_UNUSED(x) __attribute__((unused)) x
-#else
-#define NOWARN_UNUSED(x) x
-#endif
 
 #ifndef _WIN32
 #define TCHAR char
 #endif
+#define REGPARAM3
 #define uae_char char
 #define _tcslen strlen
 #define _tcscpy strcpy
@@ -602,15 +473,8 @@ extern bool use_long_double;
 #define _totupper toupper
 #define _stprintf sprintf
 #define _tcscat strcat
-#ifndef _tcsicmp
 #define _tcsicmp strcasecmp
-#endif
-#ifndef _tcsnicmp
 #define _tcsnicmp strncasecmp
-#endif
-#ifndef _tcscspn
-#define _tcscspn strcspn
-#endif
 #define _tcsstr strstr
 #define _tcsrchr strrchr
 #define _tcsncpy strncpy
@@ -620,47 +484,28 @@ extern bool use_long_double;
 #define _istspace isspace
 #define _tstoi atoi
 #define _tcstol strtol
-#define _tcstoul strtoul
 #define _wunlink unlink
 #define _tcsftime strftime
+#define vsntprintf vsnprint
 #define _tcsspn strspn
 #define _istupper isupper
 #define _totlower tolower
 #define _tcstok strtok
 #define _wunlink unlink
 #define _tfopen fopen
-#ifndef vsntprintf
-#define vsntprintf vsnprint
-#endif
-#ifndef _vsntprintf
 #define _vsntprintf vsnprintf
-#endif
 #ifndef max
 #define max(a,b) ((a) > (b) ? (a) : (b))
 #endif
 #define _tcstod strtod
-#ifndef _istalnum
-#define _istalnum iswalnum
-#endif
-#ifndef _istalpha
-#define _istalpha iswalpha
-#endif
+#define _T
+#define sleep_millis uae_msleep
 
+#define _istalnum iswalnum
 #ifndef _WIN32
 #define ULONG unsigned long
 #endif
-
-#ifndef strnicmp
-#define strnicmp _tcsnicmp
-#endif
-
-#ifndef stricmp
-#define stricmp strcasecmp
-#endif
-
-#ifndef _strtoui64
 #define _strtoui64 strtoul
-#endif
 
 #ifndef _stat64
 #define _stat64 stat64
@@ -669,14 +514,11 @@ extern bool use_long_double;
 #ifndef offsetof
 #  define offsetof(type, member)  __builtin_offsetof (type, member)
 #endif /* offsetof */
-
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #else
-#ifndef HANDLE
 typedef int HANDLE;
-#endif
 typedef unsigned long DWORD;
 typedef unsigned short WORD;
 typedef long long LONGLONG;
@@ -696,7 +538,9 @@ typedef int64_t off64_t;
 typedef uint32_t uint32;
 typedef uint8_t uint8;
 
-#include "misc.h"
+#ifndef _WIN32
+#define TCHAR char
+#endif
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -709,7 +553,6 @@ typedef uint8_t uint8;
 #include <psp2/kernel/threadmgr.h>
 #define mkdir(name, mode) sceIoMkdir(name, mode)
 #define rmdir(name) sceIoRmdir(name)
-#define chdir(name) 0
 #define chmod(a, b)
 #define timezone()
 #endif
@@ -733,27 +576,11 @@ typedef uint8_t uint8;
 #ifndef tzset
 #define tzset()
 #endif
-#ifndef _tzset
-#define _tzset()
-#endif
 #ifndef timezone
 #define timezone 0
 #endif
-#ifndef _timezone
-#define _timezone 0
-#endif
 #ifndef daylight
 #define daylight 0
-#endif
-#ifndef _daylight
-#define _daylight 0
-#endif
-
-#ifndef log2
-#define log2 logb
-#endif
-#ifndef log2l
-#define log2l logbl
 #endif
 
 #endif /* UAE_SYSDEPS_H */

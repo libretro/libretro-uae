@@ -1,20 +1,21 @@
 /*
-*  uaeexe.c - UAE remote cli
-*
-*  (c) 1997 by Samuel Devulder
-*/
+ *  uaeexe.c - UAE remote cli
+ *
+ *  (c) 1997 by Samuel Devulder
+ */
 
 #include "sysconfig.h"
 #include "sysdeps.h"
 
 #include "options.h"
 #include "uae.h"
-#include "memory.h"
+#include "memory_uae.h"
 #include "custom.h"
 #include "newcpu.h"
 #include "autoconf.h"
 #include "traps.h"
 #include "uaeexe.h"
+#include "misc.h"
 
 static struct uae_xcmd *first = NULL;
 static struct uae_xcmd *last  = NULL;
@@ -22,13 +23,13 @@ static TCHAR running = 0;
 static uae_u32 REGPARAM3 uaeexe_server (TrapContext *context) REGPARAM;
 
 /*
-* Install the server
-*/
+ * Install the server
+ */
 void uaeexe_install (void)
 {
 	uaecptr loop;
 
-	if (!uae_boot_rom_type && !currprefs.uaeboard)
+	if (!uae_boot_rom)
 		return;
 	loop = here ();
 	org (UAEEXE_ORG);
@@ -38,14 +39,14 @@ void uaeexe_install (void)
 }
 
 /*
-* Send command to the remote cli.
-*
-* To use this, just call uaeexe("command") and the command will be
-* executed by the remote cli (provided you've started it in the
-* s:user-startup for example). Be sure to add "run" if you want
-* to launch the command asynchronously. Please note also that the
-* remote cli works better if you've got the fifo-handler installed.
-*/
+ * Send command to the remote cli.
+ *
+ * To use this, just call uaeexe("command") and the command will be
+ * executed by the remote cli (provided you've started it in the
+ * s:user-startup for example). Be sure to add "run" if you want
+ * to launch the command asynchronously. Please note also that the
+ * remote cli works better if you've got the fifo-handler installed.
+ */
 int uaeexe (const TCHAR *cmd)
 {
 	struct uae_xcmd *nw;
@@ -83,8 +84,8 @@ NORUN:
 }
 
 /*
-* returns next command to be executed
-*/
+ * returns next command to be executed
+ */
 static TCHAR *get_cmd (void)
 {
 	struct uae_xcmd *cmd;
@@ -97,15 +98,15 @@ static TCHAR *get_cmd (void)
 	first = first->next;
 	if (!first)
 		last = NULL;
-	free (cmd);
+	xfree (cmd);
 	return s;
 }
 
 /*
-* helper function
-*/
-#define ARG(x) (trap_get_long(ctx, trap_get_areg(ctx, 7) + 4 * (x + 1)))
-static uae_u32 REGPARAM2 uaeexe_server (TrapContext *ctx)
+ * helper function
+ */
+#define ARG(x) (get_long (m68k_areg (regs, 7) + 4 * (x + 1)))
+static uae_u32 REGPARAM2 uaeexe_server (TrapContext *context)
 {
 	int len;
 	TCHAR *cmd;

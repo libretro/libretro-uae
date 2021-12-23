@@ -1,3 +1,13 @@
+/*
+ * PUAE Catweasel support
+ *
+ * Copyright
+ * Copyright 2011 Mustafa TUFAN
+ *
+ * some parts inspired or taken from cwfloppy
+ * Copyright (C) 1998-2009 Michael Krause
+ *
+ */
 
 #include <stdio.h>
 
@@ -7,7 +17,7 @@
 #ifdef CATWEASEL
 
 #include "options.h"
-#include "memory.h"
+#include "memory_uae.h"
 #include "ioport.h"
 #include "catweasel.h"
 #include "uae.h"
@@ -284,29 +294,36 @@ uae_u32	catweasel_do_bget (uaecptr addr)
 	if (addr >= 0x100)
 		return 0;
 	buf1[0] = (uae_u8)addr;
+#if 0
 	if (handle != INVALID_HANDLE_VALUE) {
 		if (!DeviceIoControl (handle, CW_PEEKREG_FULL, buf1, 1, buf2, 1, &did_read, 0))
 			write_log (_T("catweasel_do_bget %02x fail err=%d\n"), buf1[0], GetLastError ());
 	} else {
+#endif
 		buf2[0] = ioport_read (cwc.iobase + addr);
+#if 0
 	}
 	//write_log (_T("G %02X %02X %d\n"), buf1[0], buf2[0], did_read);
+#endif
 	return buf2[0];
 }
 
 void catweasel_do_bput (uaecptr	addr, uae_u32 b)
 {
+	if (addr >= 0x100)
+		return;
+
 	uae_u8 buf[2];
 	DWORD did_read = 0;
 
-	if (addr >= 0x100)
-		return;
 	buf[0] = (uae_u8)addr;
 	buf[1] = b;
+#if 0
 	if (handle != INVALID_HANDLE_VALUE) {
 		if (!DeviceIoControl (handle, CW_POKEREG_FULL, buf, 2, 0, 0, &did_read, 0))
 			write_log (_T("catweasel_do_bput %02x=%02x fail err=%d\n"), buf[0], buf[1], GetLastError ());
 	} else {
+#endif
 		ioport_write (cwc.iobase + addr, b);
 	}
 	//write_log (_T("P %02X %02X %d\n"), (uae_u8)addr, (uae_u8)b, did_read);
@@ -370,7 +387,7 @@ static int catweasel4_configure (void)
 	f = zfile_fopen(_T("core.cw4"), _T("rb"), ZFD_NORMAL);
 	if (!f) {
 		f = zfile_fopen_data (_T("core.cw4.gz"), core_len, core);
-		f = zfile_gunzip (f);
+		f = zfile_gunzip (f, NULL);
 	}
 	write_log (_T("CW: starting core upload, this will take few seconds\n"));
 	t = time(NULL) + 10; // give up if upload takes more than 10s
@@ -398,320 +415,85 @@ static int catweasel4_configure (void)
 	return 1;
 }
 
-#include <setupapi.h>
-#include <cfgmgr32.h>
-
-#define PCI_CW_MK3 _T("PCI\\VEN_E159&DEV_0001&SUBSYS_00021212")
-#define PCI_CW_MK4 _T("PCI\\VEN_E159&DEV_0001&SUBSYS_00035213")
-#define PCI_CW_MK4_BUG _T("PCI\\VEN_E159&DEV_0001&SUBSYS_00025213")
-
-int force_direct_catweasel;
-static int direct_detect(void)
-{
-	HDEVINFO devs;
-	SP_DEVINFO_LIST_DETAIL_DATA devInfoListDetail;
-	SP_DEVINFO_DATA devInfo;
-	int devIndex;
-	int cw = 0;
-
-	devs = SetupDiGetClassDevsEx(NULL, NULL, NULL, DIGCF_ALLCLASSES | DIGCF_PRESENT, NULL, NULL, NULL);
-	if (devs == INVALID_HANDLE_VALUE)
-		return 0;
-	devInfoListDetail.cbSize = sizeof(devInfoListDetail);
-	if(SetupDiGetDeviceInfoListDetail(devs,&devInfoListDetail)) {
-		devInfo.cbSize = sizeof(devInfo);
-		for(devIndex=0;SetupDiEnumDeviceInfo(devs,devIndex,&devInfo);devIndex++) {
-			TCHAR devID[MAX_DEVICE_ID_LEN];
-			if(CM_Get_Device_ID_Ex(devInfo.DevInst,devID,MAX_DEVICE_ID_LEN,0,devInfoListDetail.RemoteMachineHandle)!=CR_SUCCESS)
-				devID[0] = TEXT('\0');
-			if (!_tcsncmp (devID, PCI_CW_MK3, _tcslen (PCI_CW_MK3))) {
-				if (cw > 3)
-					break;
-				cw = 3;
-			}
-			if (!_tcsncmp (devID, PCI_CW_MK4, _tcslen (PCI_CW_MK4)) ||
-				!_tcsncmp (devID, PCI_CW_MK4_BUG, _tcslen (PCI_CW_MK4_BUG)))
-				cw = 4;
-			if (cw) {
-				SP_DEVINFO_LIST_DETAIL_DATA devInfoListDetail;
-				ULONG status = 0;
-				ULONG problem = 0;
-				LOG_CONF config = 0;
-				BOOL haveConfig = FALSE;
-				ULONG dataSize;
-				PBYTE resDesData;
-				RES_DES prevResDes, resDes;
-				RESOURCEID resId = ResType_IO;
-
-				devInfoListDetail.cbSize = sizeof(devInfoListDetail);
-				if((!SetupDiGetDeviceInfoListDetail(devs,&devInfoListDetail)) ||
-					(CM_Get_DevNode_Status_Ex(&status,&problem,devInfo.DevInst,0,devInfoListDetail.RemoteMachineHandle)!=CR_SUCCESS))
-					break;
-				if(!(status & DN_HAS_PROBLEM)) {
-					if (CM_Get_First_Log_Conf_Ex(&config,
-						devInfo.DevInst,
-						ALLOC_LOG_CONF,
-						devInfoListDetail.RemoteMachineHandle) == CR_SUCCESS) {
-							haveConfig = TRUE;
-					}
-				}
-				if(!haveConfig) {
-					if (CM_Get_First_Log_Conf_Ex(&config,
-						devInfo.DevInst,
-						FORCED_LOG_CONF,
-						devInfoListDetail.RemoteMachineHandle) == CR_SUCCESS) {
-							haveConfig = TRUE;
-					}
-				}
-				if(!haveConfig) {
-					if(!(status & DN_HAS_PROBLEM) || (problem != CM_PROB_HARDWARE_DISABLED)) {
-						if (CM_Get_First_Log_Conf_Ex(&config,
-							devInfo.DevInst,
-							BOOT_LOG_CONF,
-							devInfoListDetail.RemoteMachineHandle) == CR_SUCCESS) {
-								haveConfig = TRUE;
-						}
-					}
-				}
-				if(!haveConfig)
-					break;
-				prevResDes = (RES_DES)config;
-				resDes = 0;
-				while(CM_Get_Next_Res_Des_Ex(&resDes,prevResDes,ResType_IO,&resId,0,NULL)==CR_SUCCESS) {
-					if(prevResDes != config)
-						CM_Free_Res_Des_Handle(prevResDes);
-					prevResDes = resDes;
-					if(CM_Get_Res_Des_Data_Size_Ex(&dataSize,resDes,0,NULL)!=CR_SUCCESS)
-						continue;
-					resDesData = (PBYTE)malloc (dataSize);
-					if(!resDesData)
-						continue;
-					if(CM_Get_Res_Des_Data_Ex(resDes,resDesData,dataSize,0,NULL)!=CR_SUCCESS) {
-						free (resDesData);
-						continue;
-					}
-					if (resId == ResType_IO) {
-						PIO_RESOURCE pIoData = (PIO_RESOURCE)resDesData;
-						if(pIoData->IO_Header.IOD_Alloc_End-pIoData->IO_Header.IOD_Alloc_Base+1) {
-							write_log (_T("CW: PCI SCAN: CWMK%d @%I64X - %I64X\n"), cw,
-								pIoData->IO_Header.IOD_Alloc_Base,pIoData->IO_Header.IOD_Alloc_End);
-							cwc.iobase = (int)pIoData->IO_Header.IOD_Alloc_Base;
-							cwc.direct_type = cw;
-						}
-					}
-					free (resDesData);
-				}
-				if(prevResDes != config)
-					CM_Free_Res_Des_Handle(prevResDes);
-				CM_Free_Log_Conf_Handle(config);
-			}
-		}
-	}
-	SetupDiDestroyDeviceInfoList(devs);
-	if (cw) {
-		if (!ioport_init ())
-			cw = 0;
-	}
-	return cw;
-}
-
 static int detected;
-
-int catweasel_init(void)
-{
-	TCHAR name[32], tmp[1000], *s;
-	int i;
-	DWORD len;
-	uae_u8 buffer[10000];
-	uae_u32 model, base;
-	int detect = 0;
-
-	if (cwc.type)
-		return 1;
-
-	if (force_direct_catweasel >= 100) {
-
-		cwc.iobase = force_direct_catweasel & 0xffff;
-		if (force_direct_catweasel > 0xffff) {
-			cwc.direct_type = force_direct_catweasel >> 16;
-		} else {
-			cwc.direct_type = force_direct_catweasel >= 0x400 ? 3 : 1;
-		}
-		cwc.direct_access = 1;
-
-	} else {
-
-		for (i = 0; i < 4; i++) {
-			int j = i;
-			if (currprefs.catweasel > 0)
-				j = currprefs.catweasel + i;
-			if (currprefs.catweasel < 0)
-				j = -currprefs.catweasel + 1 + i;
-			_stprintf (name, _T("\\\\.\\CAT%d_F0"), j);
-			handle = CreateFile (name, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_WRITE|FILE_SHARE_READ, 0,
-				OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
-			if (handle != INVALID_HANDLE_VALUE || currprefs.catweasel)
-				break;
-		}
-		if (handle == INVALID_HANDLE_VALUE)
-			catweasel_detect();
-		cwc.direct_access = 0;
-		if (currprefs.catweasel < 0)
-			cwc.direct_access = 1;
-	}
-
-	if (handle == INVALID_HANDLE_VALUE) {
-		_tcscpy (name, _T("[DIRECT]"));
-		if (cwc.direct_type && ioport_init()) {
-			cwc.direct_access = 1;
-			if (cwc.direct_type == 4 && catweasel4_configure()) {
-				cwc.type = 4;
-				cwc.can_joy = 2;
-				cwc.can_sid = 2;
-				cwc.can_kb = 1;
-				cwc.can_mouse = 2;
-			} else if (cwc.direct_type == 3 && catweasel3_configure()) {
-				cwc.type = 3;
-				cwc.can_joy = 1;
-				cwc.can_sid = 1;
-				cwc.can_kb = 1;
-				cwc.can_mouse = 0;
-			}
-		}
-		if (cwc.type == 0) {
-			write_log (_T("CW: No Catweasel detected\n"));
-			goto fail;
-		}
-	}
-
-	if (!cwc.direct_type) {
-		if (!DeviceIoControl (handle, CW_GET_VERSION, 0, 0, buffer, sizeof (buffer), &len, 0)) {
-			write_log (_T("CW: CW_GET_VERSION failed %d\n"), GetLastError ());
-			goto fail;
-		}
-		s = au ((char*)buffer);
-		write_log (_T("CW driver version string '%s'\n"), s);
-		xfree (s);
-		if (!DeviceIoControl (handle, CW_GET_HWVERSION, 0, 0, buffer, sizeof (buffer), &len, 0)) {
-			write_log (_T("CW: CW_GET_HWVERSION failed %d\n"), GetLastError ());
-			goto fail;
-		}
-		write_log (_T("CW: v=%d 14=%d 28=%d 56=%d joy=%d dpm=%d sid=%d kb=%d sidfifo=%d\n"),
-			buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5],
-			buffer[6], buffer[7], ((uae_u32*)(buffer + 8))[0]);
-		cwc.can_joy = (buffer[4] & 1) ? 2 : 0;
-		cwc.can_sid = buffer[6] ? 1 : 0;
-		cwc.can_kb = buffer[7] & 1;
-		cwc.can_mouse = (buffer[4] & 2) ? 2 : 0;
-		if (!DeviceIoControl (handle, CW_LOCK_EXCLUSIVE, 0, 0, buffer, sizeof (buffer), &len, 0)) {
-			write_log (_T("CW: CW_LOCK_EXCLUSIVE failed %d\n"), GetLastError ());
-			goto fail;
-		}
-		model = *((uae_u32*)(buffer + 4));
-		base = *((uae_u32*)(buffer + 0));
-		cwc.type = model == 0 ? 1 : model == 2 ? 4 : 3;
-		cwc.iobase = base;
-		if (!cwc.direct_access) {
-			if (!DeviceIoControl (handle, CW_UNLOCK_EXCLUSIVE, 0, 0, 0, 0, &len, 0)) {
-				write_log (_T("CW: CW_UNLOCK_EXCLUSIVE failed %d\n"), GetLastError ());
-			}
-		}
-		if (cwc.type == CATWEASEL_TYPE_MK4 && cwc.can_sid)
-			cwc.can_sid = 2;
-	}
-
-	if (cwc.direct_access) {
-		if (cwc.type == CATWEASEL_TYPE_MK4) {
-			if (cwc.can_mouse) {
-				int i;
-				catweasel_do_bput (3, 0x81);
-				catweasel_do_bput (0xd0, 4|8); // amiga mouse + pullups
-				// clear mouse counters
-				for (i = 0; i < 2; i++) {
-					catweasel_do_bput (0xc4 + i * 8, 0);
-					catweasel_do_bput (0xc0 + i * 8, 0);
-				}
-			}
-			catweasel_do_bput (3, 0x41); /* enable MK3-mode */
-		}
-		if (cwc.can_joy)
-			catweasel_do_bput (0xcc, 0); // joystick buttons = input
-	}
-
-	//catweasel_init_controller(&cwc);
-	_stprintf (tmp, _T("CW: Catweasel MK%d @%08x (%s) enabled. %s."),
-		cwc.type, (int)cwc.iobase, name, cwc.direct_access ? _T("DIRECTIO"): _T("API"));
-	if (cwc.direct_access) {
-		if (cwc.can_sid) {
-			TCHAR *p = tmp + _tcslen (tmp);
-			catweasel_detect_sid ();
-			_stprintf (p, _T(" SID0=%d"), cwc.sid[0]);
-			if (cwc.can_sid > 1) {
-				p += _tcslen (p);
-				_stprintf (p, _T(" SID1=%d"), cwc.sid[1]);
-			}
-		}
-	}
-	write_log (_T("%s\n"), tmp);
-	detected = 1;
-
-	return 1;
-fail:
-	catweasel_free ();
-	return 0;
-
-}
 
 void catweasel_free (void)
 {
-	if (cwc.direct_access) {
-		if (cwc.type == CATWEASEL_TYPE_MK4)
-			catweasel_do_bput(3, 0x61); // enable floppy passthrough
-	}
-	if (handle != INVALID_HANDLE_VALUE)
-		CloseHandle (handle);
-	handle = INVALID_HANDLE_VALUE;
-	ioport_free ();
-	memset (&cwc, 0, sizeof cwc);
-	mouse_x[0] = mouse_x[1] = mouse_y[0] = mouse_y[1] = 0;
-	mouse_px[0] = mouse_px[1] = mouse_py[0] = mouse_py[1] = 0;
-	cwmk3port = cwmk3port1 = cwmk3port2 = 0;
-	cwhsync = cwmk3buttonsync = 0;
+}
+
+int catweasel_init(void)
+{
+fail:
+	catweasel_free ();
+	return 0;
 }
 
 int catweasel_detect (void)
 {
-	TCHAR name[32];
-	int i;
-	HANDLE h;
+//	static struct cw_controller_struct controllers[2];
+	int err;
+
+	err = pci_register_driver (&cwfloppy_pci_mk3);
+	if (err && err != -ENODEV)
+		return err;
+	err = pci_register_driver (&cwfloppy_pci_mk4);
+	if (err && err != -ENODEV)
+		return err;
+//	if (controllers[0].c.type == CATWEASEL_TYPE_NONE) {
+//		write_log("No PCI Catweasels found.\n");
+//	}
+
+	pci_unregister_driver(&cwfloppy_pci_mk4);
+	pci_unregister_driver(&cwfloppy_pci_mk3);
 
 	if (detected)
 		return detected < 0 ? 0 : 1;
-
-	detected = -1;
-	for (i = 0; i < 4; i++) {
-		_stprintf (name, _T("\\\\.\\CAT%u_F0"), i);
-		h = CreateFile (name, GENERIC_READ, FILE_SHARE_WRITE|FILE_SHARE_READ, 0,
-			OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
-		if (h != INVALID_HANDLE_VALUE) {
-			CloseHandle (h);
-			write_log (_T("CW: Windows driver device detected '%s'\n"), name);
-			detected = 1;
-			return TRUE;
-		}
-	}
-	if (h == INVALID_HANDLE_VALUE) {
-		if (force_direct_catweasel >= 100) {
-			if (ioport_init ())
-				return TRUE;
-			return FALSE;
-		}
-		if (direct_detect ()) {
-			detected = 1;
-			return TRUE;
-		}
-	}
-	return FALSE;
 }
+
+static int cwfloppy_probe_mk3(struct pci_dev *pcidev, const struct pci_device_id *pciid)
+{
+	return 0;
+}
+
+static int cwfloppy_probe_mk4(struct pci_dev *pcidev, const struct pci_device_id *pciid)
+{
+	return 0;
+}
+
+#define CATWEASEL_TYPE_NONE  -1
+#define CATWEASEL_TYPE_MK1    1
+#define CATWEASEL_TYPE_MK3    3
+#define CATWEASEL_TYPE_MK4    4
+
+/* pci ids */
+#define CW_MK4_VENDOR           0xe159
+#define CW_MK4_DEVICE           0x0001
+
+static struct pci_device_id id_table_mk3[] = {
+	{ CW_MK4_VENDOR, CW_MK4_DEVICE, 0x1212, 0x0002, },
+	{ 0, }
+};
+MODULE_DEVICE_TABLE(pci, id_table_mk3);
+static struct pci_driver cwfloppy_pci_mk3 = {
+	name: "cwfloppy_mk3",
+	id_table: id_table_mk3,
+	probe: cwfloppy_probe_mk3
+};
+
+static struct pci_device_id id_table_mk4[] = {
+	/* The MK4 PCI bridge has a bug where the reported subvendor and
+	 * subdevice IDs may randomly change between various values. */
+	{ CW_MK4_VENDOR, CW_MK4_DEVICE, 0x5213, 0x0002, },
+	{ CW_MK4_VENDOR, CW_MK4_DEVICE, 0x5213, 0x0003, },
+	{ CW_MK4_VENDOR, CW_MK4_DEVICE, 0x5200, 0x0002, },
+	{ CW_MK4_VENDOR, CW_MK4_DEVICE, 0x5200, 0x0003, },
+	{ 0, }
+};
+MODULE_DEVICE_TABLE(pci, id_table_mk4);
+static struct pci_driver cwfloppy_pci_mk4 = {
+	.name = "cwfloppy_mk4",
+	.id_table = id_table_mk4,
+	.probe = cwfloppy_probe_mk4,
+};
 
 #endif

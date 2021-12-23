@@ -1,3 +1,6 @@
+#ifndef EVENTS_H
+#define EVENTS_H
+
  /*
   * UAE - The Un*x Amiga Emulator
   *
@@ -9,33 +12,41 @@
   * Copyright 1995-1998 Bernd Schmidt
   */
 
-#ifndef UAE_EVENTS_H
-#define UAE_EVENTS_H
-
-#include "uae/types.h"
-
 #undef EVENT_DEBUG
 
 #include "machdep/rpt.h"
+#include "hrtimer.h"
 
-extern frame_time_t vsyncmintime, vsyncmintimepre;
-extern frame_time_t vsyncmaxtime, vsyncwaittime;
+/* Every Amiga hardware clock cycle takes this many "virtual" cycles.  This
+ * used to be hardcoded as 1, but using higher values allows us to time some
+ * stuff more precisely.
+ * 512 is the official value from now on - it can't change, unless we want
+ * _another_ config option "finegrain2_m68k_speed".
+ *
+ * We define this value here rather than in events.h so that gencpu.c sees
+ * it.
+ */
+#define CYCLE_UNIT 512
+
+/* This one is used by cfgfile.c.  We could reduce the CYCLE_UNIT back to 1,
+ * I'm not 100% sure this code is bug free yet.
+ */
+#define OFFICIAL_CYCLE_UNIT 512
+
+extern frame_time_t vsyncmintime, vsyncmaxtime, vsyncwaittime;
 extern int vsynctimebase, syncbase;
 extern void reset_frame_rate_hack (void);
 extern unsigned long int vsync_cycles;
 extern unsigned long start_cycles;
-extern int event2_count;
-extern bool event_wait;
 
 extern void compute_vsynctime (void);
 extern void init_eventtab (void);
 extern void do_cycles_ce (unsigned long cycles);
-extern void do_cycles_ce020 (unsigned long cycles);
 extern void events_schedule (void);
 extern void do_cycles_slow (unsigned long cycles_to_add);
-extern void events_reset_syncline(void);
+extern void do_cycles_fast (unsigned long cycles_to_add);
 
-extern bool is_cycle_ce(uaecptr);
+extern int is_cycle_ce (void);
 
 extern unsigned long currcycle, nextevent;
 extern int is_syncline, is_syncline_end;
@@ -70,16 +81,13 @@ enum {
 };
 
 extern int pissoff_value;
-extern uae_s32 pissoff;
+extern signed long pissoff;
 
 #define countdown pissoff
 #define do_cycles do_cycles_slow
 
 extern struct ev eventtab[ev_max];
 extern struct ev2 eventtab2[ev2_max];
-
-extern int hpos_offset;
-extern int maxhpos;
 
 STATIC_INLINE void cycles_do_special (void)
 {
@@ -114,13 +122,10 @@ STATIC_INLINE void set_cycles (unsigned long int x)
 #endif
 }
 
-STATIC_INLINE int current_hpos_safe (void)
+STATIC_INLINE int current_hpos (void)
 {
-    int hp = (get_cycles () - eventtab[ev_hsync].oldcycles) / CYCLE_UNIT;
-	return hp;
+    return (get_cycles () - eventtab[ev_hsync].oldcycles) / CYCLE_UNIT;
 }
-
-extern int current_hpos(void);
 
 STATIC_INLINE bool cycles_in_range (unsigned long endcycles)
 {
@@ -130,7 +135,6 @@ STATIC_INLINE bool cycles_in_range (unsigned long endcycles)
 
 extern void MISC_handler (void);
 extern void event2_newevent_xx (int no, evt t, uae_u32 data, evfunc2 func);
-extern void event2_newevent_x_replace(evt t, uae_u32 data, evfunc2 func);
 
 STATIC_INLINE void event2_newevent_x (int no, evt t, uae_u32 data, evfunc2 func)
 {
@@ -155,4 +159,5 @@ STATIC_INLINE void event2_remevent (int no)
 	eventtab2[no].active = 0;
 }
 
-#endif /* UAE_EVENTS_H */
+
+#endif

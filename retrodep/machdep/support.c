@@ -10,7 +10,7 @@
 #include "sysconfig.h"
 #include "sysdeps.h"
 
-#include "options.h"
+#include "cfgfile.h"
 #include "sleep.h"
 #include "machdep/rpt.h"
 #include "machdep/m68k.h"
@@ -42,10 +42,12 @@ int machdep_init (void)
  */
 void machdep_save_options (struct zfile *f, const struct uae_prefs *p)
 {
+//    cfgfile_write (f, MACHDEP_NAME ".use_tsc=%s\n", p->use_processor_clock ? "yes" : "no");
 }
 
 int machdep_parse_option (struct uae_prefs *p, const char *option, const char *value)
 {
+//    return cfgfile_yesno (option, value, "use_tsc", &p->use_processor_clock);
 	return 0;
 }
 
@@ -218,6 +220,7 @@ static RETSIGTYPE illhandler (...)
 static RETSIGTYPE illhandler (int foo)
 #endif
 {
+//    rpt_available = 0;
     longjmp (catch_test, 1);
 }
 
@@ -226,6 +229,8 @@ int machdep_inithrtimer (void)
     static int done = 0;
 
     if (!done) {
+//		rpt_available = 1;
+
 		write_log ("Testing the RDTSC instruction ... ");
 		signal (SIGILL, illhandler);
 		if (setjmp (catch_test) == 0)
@@ -307,10 +312,12 @@ int machdep_init (void)
  */
 void machdep_save_options (struct zfile *f, const struct uae_prefs *p)
 {
+//    cfgfile_write (f, MACHDEP_NAME ".use_tsc=%s\n", p->use_processor_clock ? "yes" : "no");
 }
 
 int machdep_parse_option (struct uae_prefs *p, const char *option, const char *value)
 {
+//    return cfgfile_yesno (option, value, "use_tsc", &p->use_processor_clock);
 	return 0;
 }
 

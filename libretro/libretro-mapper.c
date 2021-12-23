@@ -5,7 +5,7 @@
 #include "libretro-vkbd.h"
 #include "libretro-dc.h"
 
-#include "uae/types.h"
+#include "uae_types.h"
 #include "sysconfig.h"
 #include "sysdeps.h"
 #include "options.h"
@@ -14,6 +14,7 @@
 #include "gui.h"
 #include "xwin.h"
 #include "disk.h"
+#include "hrtimer.h"
 
 /* Mouse speed flags */
 #define MOUSE_SPEED_SLOWER 1

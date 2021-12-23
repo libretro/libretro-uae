@@ -6,11 +6,6 @@
   * Copyright 2010 Toni Wilen
   */
 
-#ifndef UAE_INPUTRECORD_H
-#define UAE_INPUTRECORD_H
-
-#include "uae/types.h"
-
 extern int inputrecord_debug;
 
 //#define INPREC_JOYPORT 1
@@ -37,7 +32,7 @@ extern int inputrecord_debug;
 
 extern int input_record, input_play;
 extern void inprec_close (bool);
-extern void inprec_save (const TCHAR*, const TCHAR*);
+//extern void inprec_save (const TCHAR*, const TCHAR*);
 extern int inprec_open (const TCHAR*, const TCHAR*);
 extern bool inprec_prepare_record (const TCHAR*);
 extern void inprec_playtorecord (void);
@@ -57,7 +52,9 @@ extern void inprec_playdebug_cia (uae_u32, uae_u32, uae_u32);
 
 extern int inprec_getposition (void);
 extern void inprec_setposition (int offset, int replaycounter);
-extern bool inprec_realtime (void);
+extern bool inprec_realtimev (void);
 extern void inprec_getstatus (TCHAR*);
 
-#endif /* UAE_INPUTRECORD_H */
+extern void inprec_ru8 (uae_u8 v);
+extern void inprec_ru16 (uae_u16 v);
+extern void inprec_ru32 (uae_u32 v);

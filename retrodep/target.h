@@ -18,3 +18,4 @@
 #undef OPTIONSFILENAME
 #define OPTIONSFILENAME "sd:/retroarch/saves/default.uae"
 #endif
+

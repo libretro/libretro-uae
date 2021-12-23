@@ -1,19 +1,18 @@
- /*
-  * UAE - The Un*x Amiga Emulator
-  *
-  * a SCSI device
-  *
-  * Copyright 1995 Bernd Schmidt
-  * Copyright 1999 Patrick Ohly
-  */
+/*
+ * UAE - The Un*x Amiga Emulator
+ *
+ * a SCSI device
+ *
+ * Copyright 1995 Bernd Schmidt
+ * Copyright 1999 Patrick Ohly
+ */
 
 #include "sysconfig.h"
 #include "sysdeps.h"
 
-#include "config.h"
 #include "threaddep/thread.h"
 #include "options.h"
-#include "memory.h"
+#include "memory_uae.h"
 #include "custom.h"
 #include "newcpu.h"
 #include "disk.h"
@@ -36,7 +35,7 @@ typedef int BOOL;
 #include "scg/scsitransp.h"
 #include "scg/scsireg.h"
 
-/* our configure does not have a separate UAE_SCSIDEV_THREADS */
+/* our configure does not have a seperate UAE_SCSIDEV_THREADS */
 #if defined(UAE_FILESYS_THREADS) && !defined(SCSI_IS_NOT_THREAD_SAFE)
 #define UAE_SCSIDEV_THREADS
 #endif
@@ -73,7 +72,7 @@ static int inquiry (SCSI *scgp, void *bp, int cnt)
     scgp->cmdname = "inquiry";
 
     if (scsicmd(scgp) < 0)
-	return (-1);
+		return (-1);
     return (0);
 }
 
@@ -83,7 +82,7 @@ static void print_product(struct scsi_inquiry *ip)
     write_log ("'%.16s' ", ip->ident);
     write_log ("'%.4s' ", ip->revision);
     if (ip->add_len < 31) {
-	write_log ("NON CCS ");
+		write_log ("NON CCS ");
     }
 }
 
@@ -99,22 +98,22 @@ static SCSI *openscsi (int scsibus, int target, int lun)
 {
     SCSI *scgp = scsi_smalloc ();
     if (!scgp) {
-	return NULL;
+		return NULL;
     }
 
     scgp->debug = getenvint ("UAE_SCSI_DEBUG", 0);
     scgp->kdebug = getenvint ("UAE_SCSI_KDEBUG", 0);
     scgp->silent = getenvint ("UAE_SCSI_SILENT", 1);
-	 scgp->verbose = getenvint ("UAE_SCSI_VERBOSE", 0);
+	scgp->verbose = getenvint ("UAE_SCSI_VERBOSE", 0);
     scgp->scsibus = scsibus;
     scgp->target = target;
     scgp->lun = lun;
 
     if (!scsi_open(scgp, NULL, scsibus, target, lun)) {
-	scsi_sfree (scgp);
-	return NULL;
+		scsi_sfree (scgp);
+		return NULL;
     } else {
-	return scgp;
+		return scgp;
     }
 }
 
@@ -160,9 +159,9 @@ static struct scsidevdata *get_scsidev_data (int unit)
     int i;
 
     for (i = 0; i < num_drives; i++) {
-	if (unit == drives[i].aunit) {
-	    return &drives[i];
-	}
+		if (unit == drives[i].aunit) {
+		    return &drives[i];
+		}
     }
     return NULL;
 }
@@ -170,21 +169,21 @@ static struct scsidevdata *get_scsidev_data (int unit)
 static struct scsidevdata *add_scsidev_data (int bus, int target, int lun, int aunit)
 {
     if (num_drives + 1 < MAX_DRIVES) {
-	memset(&drives[num_drives], 0, sizeof(drives[num_drives]));
-	drives[num_drives].bus = bus;
-	drives[num_drives].target = target;
-	drives[num_drives].lun = lun;
-	drives[num_drives].aunit = aunit;
+		memset(&drives[num_drives], 0, sizeof(drives[num_drives]));
+		drives[num_drives].bus = bus;
+		drives[num_drives].target = target;
+		drives[num_drives].lun = lun;
+		drives[num_drives].aunit = aunit;
 #if !defined(UAE_SCSIDEV_THREADS)
-	drives[num_drives].scgp = scgp;
-	drives[num_drives].max_dma = scsi_bufsize (scgp, 512 * 1024);
+		drives[num_drives].scgp = scgp;
+		drives[num_drives].max_dma = scsi_bufsize (scgp, 512 * 1024);
 #endif
-	/* check if this drive is an ATAPI drive */
-	scgp->scsibus = bus;
-	scgp->target = target;
-	scgp->lun = lun;
-	drives[num_drives].isatapi = scsi_isatapi (scgp);
-	return &drives[num_drives++];
+		/* check if this drive is an ATAPI drive */
+		scgp->scsibus = bus;
+		scgp->target = target;
+		scgp->lun = lun;
+		drives[num_drives].isatapi = scsi_isatapi (scgp);
+		return &drives[num_drives++];
     }
 
     return NULL;
@@ -195,7 +194,7 @@ static int start_thread (struct scsidevdata *sdd)
 {
 #ifdef UAE_SCSIDEV_THREADS
     if (sdd->thread_running)
-	return 1;
+		return 1;
     init_comm_pipe (&sdd->requests, 10, 1);
     uae_sem_init (&sdd->sync_sem, 0, 0);
     uae_start_thread (scsidev_thread, sdd, &sdd->tid);
@@ -222,12 +221,12 @@ static uae_u32 scsidev_open (void)
     /* Check unit number */
     if ((sdd = get_scsidev_data (unit)) &&
 	start_thread (sdd)) {
-	opencount++;
-	put_word (m68k_areg (regs, 6)+32, get_word (m68k_areg (regs, 6)+32) + 1);
-	put_long (tmp1 + 24, unit); /* io_Unit */
-	put_byte (tmp1 + 31, 0); /* io_Error */
-	put_byte (tmp1 + 8, 7); /* ln_type = NT_REPLYMSG */
-	return 0;
+		opencount++;
+		put_word (m68k_areg (regs, 6)+32, get_word (m68k_areg (regs, 6)+32) + 1);
+		put_long (tmp1 + 24, unit); /* io_Unit */
+		put_byte (tmp1 + 31, 0); /* io_Error */
+		put_byte (tmp1 + 8, 7); /* ln_type = NT_REPLYMSG */
+		return 0;
     }
 
     put_long (tmp1 + 20, (uae_u32)-1);
@@ -281,8 +280,8 @@ static LONG TestNegativeTime(LONG block)
        -150 == 100:00:00 = 00:00:00 */
     if (block > (97 * 60 * 75))
     {
-	/* must be a negative block */
-	block -= 100 * 60 * 75;
+		/* must be a negative block */
+		block -= 100 * 60 * 75;
     }
     return block;
 }
@@ -323,15 +322,15 @@ static void scsidev_do_scsi (struct scsidevdata *sdd, uaecptr request)
     /* do transfer directly to and from Amiga memory */
     if (!bank_data || !bank_data->check (scsi_data, scsi_len) ||
 	!bank_cmd  || !bank_cmd->check (scsi_cmd, scsi_cmd_len)) {
-	put_byte (request + 31, (uae_u8)-5); /* IOERR_BADADDRESS */
-	return;
+		put_byte (request + 31, (uae_u8)-5); /* IOERR_BADADDRESS */
+		return;
     }
 
 #ifdef SCSI_IS_NOT_THREAD_SAFE
     uae_sem_wait (&scgp_sem);
 #endif
 
-	 scmd->timeout = 80 * 60; /* the Amiga does not tell us how long the timeout shall be, so make it _very_ long (specified in seconds) */
+	scmd->timeout = 80 * 60; /* the Amiga does not tell us how long the timeout shall be, so make it _very_ long (specified in seconds) */
     scmd->addr = bank_data->xlateaddr (scsi_data);
     scmd->size = scsi_len;
     scmd->flags = ((scsi_flags & 1) ? SCG_RECV_DATA : 0) | SCG_DISRE_ENA;
@@ -407,29 +406,29 @@ static void scsidev_do_scsi (struct scsidevdata *sdd, uaecptr request)
 	    buffer[len++] = *tmp++;      /* medium type */
 	    buffer[len++] = 0; *tmp++;   /* ignore host application code */
 	    for (i = 0; i < 4; i++) {
-		buffer[len++] = 0;
+			buffer[len++] = 0;
 	    }
 	    if (*tmp) {
-		/* skip block descriptor */
-		tmp += 8;
+			/* skip block descriptor */
+			tmp += 8;
 	    }
 	    tmp++;
 	    page_len = scsi_len - (tmp - data);
 	    if (page_len > 0) {
-		memcpy (&buffer[len], tmp, page_len);
-		len += page_len;
+			memcpy (&buffer[len], tmp, page_len);
+			len += page_len;
 
-		scmd->cdb.g1_cdb.cmd = MODE_SELECT_10;
-		scmd->cdb.g1_cdb.lun = sdd->lun;
-		scmd->cdb.g1_cdb.res = 1 << 3; /* PF bit */
-		scmd->cdb.g1_cdb.reladr = sp;
-		scmd->cdb.g1_cdb.count[0] = len >> 8;
-		scmd->cdb.g1_cdb.count[1] = len;
+			scmd->cdb.g1_cdb.cmd = MODE_SELECT_10;
+			scmd->cdb.g1_cdb.lun = sdd->lun;
+			scmd->cdb.g1_cdb.res = 1 << 3; /* PF bit */
+			scmd->cdb.g1_cdb.reladr = sp;
+			scmd->cdb.g1_cdb.count[0] = len >> 8;
+			scmd->cdb.g1_cdb.count[1] = len;
 	    } else {
-		do_it = 0;
-		scmd->error = 0;
-		*(uae_u8 *)&scmd->scb = 0;
-		scmd->ux_errno = 0;
+			do_it = 0;
+			scmd->error = 0;
+			*(uae_u8 *)&scmd->scb = 0;
+			scmd->ux_errno = 0;
 	    }
 	} else {
 	    /* MODE_SENSE_6 */
@@ -473,44 +472,44 @@ static void scsidev_do_scsi (struct scsidevdata *sdd, uaecptr request)
 	    }
 	}
     } else {
-	scsicmd (scgp);
+		scsicmd (scgp);
     }
 
     put_word (acmd + 18, scmd->error == SCG_FATAL ? 0 : scsi_cmd_len); /* fake scsi_CmdActual */
     put_byte (acmd + 21, *(uae_u8 *)&scmd->scb); /* scsi_Status */
     if (*(uae_u8 *)&scmd->scb) {
-	put_byte (request + 31, 45); /* HFERR_BadStatus */
+		put_byte (request + 31, 45); /* HFERR_BadStatus */
 
-	/* copy sense? */
-	for (sactual = 0;
-	     scsi_sense && sactual < scsi_sense_len && sactual < scmd->sense_count;
-	     sactual++) {
-	    put_byte (scsi_sense + sactual, scmd->u_sense.cmd_sense[sactual]);
-	}
-	put_long (acmd + 8, 0); /* scsi_Actual */
-    } else {
-	int i;
-
-	for (i = 0; i < scsi_sense_len; i++) {
-	    put_byte (scsi_sense + i, 0);
-	}
-	sactual = 0;
-
-	if (scmd->error != SCG_NO_ERROR ||
-	    scmd->ux_errno != 0) {
-	    /* we might have been limited by the hosts DMA limits,
-	       which is usually indicated by ENOMEM */
-	    if (scsi_len > (unsigned int)sdd->max_dma &&
-		scmd->ux_errno == ENOMEM) {
-		put_byte (request + 31, (uae_u8)-4); /* IOERR_BADLENGTH */
-	    } else {
-		put_byte (request + 31, 20); /* io_Error, but not specified */
+		/* copy sense? */
+		for (sactual = 0;
+		     scsi_sense && sactual < scsi_sense_len && sactual < scmd->sense_count;
+		     sactual++) {
+		    put_byte (scsi_sense + sactual, scmd->u_sense.cmd_sense[sactual]);
+		}
 		put_long (acmd + 8, 0); /* scsi_Actual */
-	    }
-	} else {
-	    put_byte (request + 31, 0);
-	    put_long (acmd + 8, scsi_len - scmd->resid); /* scsi_Actual */
-	}
+    } else {
+		int i;
+
+		for (i = 0; i < scsi_sense_len; i++) {
+		    put_byte (scsi_sense + i, 0);
+		}
+		sactual = 0;
+
+		if (scmd->error != SCG_NO_ERROR ||
+		    scmd->ux_errno != 0) {
+		    /* we might have been limited by the hosts DMA limits,
+		       which is usually indicated by ENOMEM */
+		    if (scsi_len > (unsigned int)sdd->max_dma &&
+				scmd->ux_errno == ENOMEM) {
+				put_byte (request + 31, (uae_u8)-4); /* IOERR_BADLENGTH */
+		    } else {
+				put_byte (request + 31, 20); /* io_Error, but not specified */
+				put_long (acmd + 8, 0); /* scsi_Actual */
+		    }
+		} else {
+		    put_byte (request + 31, 0);
+		    put_long (acmd + 8, scsi_len - scmd->resid); /* scsi_Actual */
+		}
     }
     put_word (acmd + 28, sactual);
 
@@ -525,14 +524,14 @@ static void scsidev_do_io (struct scsidevdata *sdd, uaecptr request)
 
     tmp2 = get_word (request+28); /* io_Command */
     switch (tmp2) {
-     case 28:
-	/* HD_SCSICMD */
-	scsidev_do_scsi (sdd, request);
-	break;
-     default:
-	/* Command not understood. */
-	put_byte (request+31, (uae_u8)-3); /* io_Error */
-	break;
+	case 28:
+		/* HD_SCSICMD */
+		scsidev_do_scsi (sdd, request);
+		break;
+	default:
+		/* Command not understood. */
+		put_byte (request+31, (uae_u8)-3); /* io_Error */
+		break;
     }
 #ifdef DEBUGME
     printf ("scsidev: did io: sdd     = 0x%x\n", sdd);
@@ -585,21 +584,21 @@ static void *scsidev_thread (void *sddv)
     /* init SCSI */
     if (!(sdd->scgp = openscsi (sdd->bus, sdd->target, sdd->lun)) ||
 	(sdd->max_dma = scsi_bufsize (sdd->scgp, 512 * 1024)) <= 0) {
-	sdd->thread_running = 0;
-	uae_sem_post (&sdd->sync_sem);
-	return 0;
+		sdd->thread_running = 0;
+		uae_sem_post (&sdd->sync_sem);
+		return 0;
     }
     sdd->thread_running = 1;
     uae_sem_post (&sdd->sync_sem);
 
     for (;;) {
-	uaecptr request;
+		uaecptr request;
 
-	request = (uaecptr)read_comm_pipe_u32_blocking (&sdd->requests);
+		request = (uaecptr)read_comm_pipe_u32_blocking (&sdd->requests);
 #ifdef DEBUGME
-	printf ("scsidev_penguin: sdd  = 0x%x\n", sdd);
-	printf ("scsidev_penguin: req  = %08lx\n", (unsigned long)request);
-	printf ("scsidev_penguin: cmd  = %d\n", (int)get_word (request+28));
+		printf ("scsidev_penguin: sdd  = 0x%x\n", sdd);
+		printf ("scsidev_penguin: req  = %08lx\n", (unsigned long)request);
+		printf ("scsidev_penguin: cmd  = %d\n", (int)get_word (request+28));
 #endif
 	if (!request) {
 	    printf ("scsidev_penguin: going down with 0x%x\n", sdd->sync_sem);
@@ -630,41 +629,41 @@ static uae_u32 scsidev_init (void)
 #endif
 
     if (scgp) {
-	/* we still have everything in place */
-	return m68k_dreg (regs, 0); /* device base */
+		/* we still have everything in place */
+		return m68k_dreg (regs, 0); /* device base */
     }
 
     /* init global SCSI */
     if (!(scgp = openscsi (-1, -1, -1))) {
-	return 0;
+		return 0;
     }
 
     uae_sem_init (&scgp_sem, 0, 1);
 
     /* add all units we find */
     for (scgp->scsibus=0; scgp->scsibus < 8; scgp->scsibus++) {
-	if (!scsi_havebus(scgp, scgp->scsibus))
-	    continue;
-	printf("scsibus%d:\n", scgp->scsibus);
-	for (scgp->target=0; scgp->target < 16; scgp->target++) {
-	    struct scsi_inquiry inq;
-	    scgp->lun = 0;
-	    if (inquiry (scgp, &inq, sizeof(inq))) {
-		continue;
-	    }
-	    for (scgp->lun=0; scgp->lun < 8; scgp->lun++) {
-		if (!inquiry (scgp, &inq, sizeof(inq))) {
-		    int aunit = BTL2UNIT(scgp->scsibus, scgp->target, scgp->lun);
-		    struct scsidevdata *sdd;
+		if (!scsi_havebus(scgp, scgp->scsibus))
+		    continue;
+		printf("scsibus%d:\n", scgp->scsibus);
+		for (scgp->target=0; scgp->target < 16; scgp->target++) {
+		    struct scsi_inquiry inq;
+		    scgp->lun = 0;
+		    if (inquiry (scgp, &inq, sizeof(inq))) {
+				continue;
+		    }
+		    for (scgp->lun=0; scgp->lun < 8; scgp->lun++) {
+				if (!inquiry (scgp, &inq, sizeof(inq))) {
+				    int aunit = BTL2UNIT(scgp->scsibus, scgp->target, scgp->lun);
+				    struct scsidevdata *sdd;
 
-		    write_log ("   %2.01d,%d (= %3.d): ", scgp->target, scgp->lun, aunit);
-		    print_product (&inq);
-		    sdd = add_scsidev_data (scgp->scsibus, scgp->target, scgp->lun, aunit);
-		    write_log (!sdd ? " - init failed ???" : sdd->isatapi ? " - ATAPI" : " - SCSI");
-		    write_log ("\n");
+				    write_log ("   %2.01d,%d (= %3.d): ", scgp->target, scgp->lun, aunit);
+				    print_product (&inq);
+				    sdd = add_scsidev_data (scgp->scsibus, scgp->target, scgp->lun, aunit);
+				    write_log (!sdd ? " - init failed ???" : sdd->isatapi ? " - ATAPI" : " - SCSI");
+				    write_log ("\n");
+				}
+		    }
 		}
-	    }
-	}
     }
     return m68k_dreg (regs, 0); /* device base */
 }
@@ -792,7 +791,7 @@ void scsidev_reset (void)
 
 	for (i = 0; i < num_drives; i++) {
 	    if (!drives[i].thread_running) {
-		continue;
+			continue;
 	    }
 	    write_comm_pipe_int (&drives[i].requests, 0, 1);
 	    uae_sem_wait (&drives[i].sync_sem);
@@ -802,8 +801,8 @@ void scsidev_reset (void)
 #endif
 
     if (scgp) {
-	closescsi (scgp);
-	scgp = NULL;
+		closescsi (scgp);
+		scgp = NULL;
     }
 #endif
 

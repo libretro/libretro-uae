@@ -32,20 +32,6 @@ bool my_stat (const TCHAR *name, struct mystat *ms) {
 	return true;
 }
 
-bool my_chmod (const TCHAR *name, uae_u32 mode)
-{
-#if 0
-	DWORD attr = FILE_ATTRIBUTE_NORMAL;
-	if (!(mode & FILEFLAG_WRITE))
-		attr |= FILE_ATTRIBUTE_READONLY;
-	if (mode & FILEFLAG_ARCHIVE)
-		attr |= FILE_ATTRIBUTE_ARCHIVE;
-	if (chmod (name, attr))
-		return true;
-#endif
-	return false;
-}
-
 static int setfiletime (const TCHAR *name, int days, int minute, int tick, int tolocal)
 {
 	return 0;
@@ -68,7 +54,7 @@ bool my_utime (const TCHAR *name, struct mytimeval *tv)
 		tv2.tv_usec = 1000;
 		tolocal = 0;
 	}
-	timeval_to_amiga (&tv2, &days, &mins, &ticks, 50);
+	timeval_to_amiga (&tv2, &days, &mins, &ticks);
 	if (setfiletime (name, days, mins, ticks, tolocal))
 		return true;
 
@@ -152,7 +138,7 @@ FILE *my_opentext(const TCHAR *name)
 	return fopen(name, "r");
 }
 
-struct my_opendir_s *my_opendir(const TCHAR *name)
+struct my_opendir_s *my_opendir(const TCHAR *name, const TCHAR *mask)
 {
 	struct my_opendir_s *mod;
 	mod = xmalloc (struct my_opendir_s, 1);
@@ -208,7 +194,7 @@ int my_rmdir(const TCHAR *name)
 	memset(tname, 0, sizeof(TCHAR) * MAX_DPATH);
 
 	/* SHFileOperation() ignores FOF_NORECURSION when deleting directories.. */
-	od = my_opendir(name);
+	od = my_opendir(name, 0);
 	if (!od)
 		return -1;
 	cnt = 0;
@@ -225,7 +211,7 @@ int my_rmdir(const TCHAR *name)
 	return rmdir(name);
 }
 
-int my_unlink(const TCHAR *name, bool dontrecycle)
+int my_unlink(const TCHAR *name)
 {
 	return unlink(name);
 }
@@ -431,16 +417,6 @@ int my_issamevolume(const TCHAR *path1, const TCHAR *path2, TCHAR *path)
 	return cnt;
 }
 
-bool my_issamepath(const TCHAR *path1, const TCHAR *path2)
-{
-	TCHAR path1o[MAX_DPATH], path2o[MAX_DPATH];
-	my_canonicalize_path(path1, path1o, sizeof path1o / sizeof(TCHAR));
-	my_canonicalize_path(path2, path2o, sizeof path2o / sizeof(TCHAR));
-	if (!_tcsicmp(path1o, path2o))
-		return true;
-	return false;
-}
-
 int my_setcurrentdir(const TCHAR *curdir, TCHAR *oldcur)
 {
 #ifdef VITA
@@ -462,27 +438,9 @@ int my_setcurrentdir(const TCHAR *curdir, TCHAR *oldcur)
 #endif
 }
 
-bool my_createshortcut(const TCHAR *source, const TCHAR *target, const TCHAR *description) 
-{
-    return false;
-}
-
-bool my_resolvesoftlink(TCHAR *linkfile, int size, bool linkonly)
+bool my_resolvesoftlink(TCHAR *linkfile, int size)
 {
 	return false;
-}
-
-const TCHAR *my_getfilepart(const TCHAR *filename)
-{
-	const TCHAR *p;
-
-	p = _tcsrchr(filename, '\\');
-	if (p)
-		return p + 1;
-	p = _tcsrchr(filename, '/');
-	if (p)
-		return p + 1;
-	return filename;
 }
 
 bool my_isfilehidden(const TCHAR *path)
@@ -498,10 +456,5 @@ TCHAR *target_expand_environment(const TCHAR *path, TCHAR *out, int maxlen)
 {
 	if (!path)
 		return NULL;
-	if (out == NULL) {
-		return my_strdup (path);
-	} else {
-		_tcscpy(out, path);
 		return out;
-	}
 }

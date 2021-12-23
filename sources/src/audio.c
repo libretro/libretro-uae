@@ -16,7 +16,7 @@
 #include "sysdeps.h"
 
 #include "options.h"
-#include "memory.h"
+#include "memory_uae.h"
 #include "custom.h"
 #include "newcpu.h"
 #include "autoconf.h"
@@ -32,7 +32,7 @@
 #include "gui.h"
 #include "xwin.h"
 #include "debug.h"
-#include "sndboard.h"
+#include "misc.h"
 #ifdef AVIOUTPUT
 #include "avioutput.h"
 #endif
@@ -2005,7 +2005,9 @@ void set_audio (void)
 
 	sound_cd_volume[0] = sound_cd_volume[1] = (100 - (currprefs.sound_volume_cd < 0 ? 0 : currprefs.sound_volume_cd)) * 32768 / 100;
 	sound_paula_volume[0] = sound_paula_volume[1] = (100 - currprefs.sound_volume_paula) * 32768 / 100;
+#ifndef __LIBRETRO__
 	sndboard_ext_volume();
+#endif
 
 	if (ch >= 0) {
 		if (currprefs.produce_sound >= 2) {
@@ -2789,4 +2791,41 @@ void audio_cda_new_buffer(struct cd_audio_state *cas, uae_s16 *buffer, int lengt
 	cas->cb_data = cb_data;
 	if (cas->cda_streamid > 0)
 		audio_activate();
+}
+
+
+
+/*
+ * TODO: This function has been moved here from the audio back-end layer
+ * since it was common to all.
+ * Needs further cleaning up and a better name - or replacing entirely.
+ */
+
+unsigned int obtainedfreq;
+float scaled_sample_evtime_orig;
+float sound_sync_multiplier = 1.0;
+extern unsigned int have_sound;
+#ifdef SAMPLER
+extern float sampler_evtime;
+#endif
+
+void update_sound (double clk)
+{
+	if (!have_sound)
+		return;
+	scaled_sample_evtime_orig = clk * CYCLE_UNIT * sound_sync_multiplier / (double)obtainedfreq;
+	scaled_sample_evtime = scaled_sample_evtime_orig;
+#ifdef SAMPLER
+	sampler_evtime = clk * CYCLE_UNIT * sound_sync_multiplier;
+#endif
+}
+
+void devices_update_sound(double clk, double syncadjust)
+{
+	update_sound (clk);
+	update_cda_sound(clk / syncadjust);
+#if 0
+	update_sndboard_sound (clk / syncadjust);
+	x86_update_sound(clk / syncadjust);
+#endif
 }

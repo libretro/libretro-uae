@@ -30,9 +30,8 @@ uae_u32 get_crc32_val (uae_u8 v, uae_u32 crc)
 	crc = crc_table32[(crc ^ v) & 0xff] ^ (crc >> 8);
 	return crc ^ 0xffffffff;
 }
-uae_u32 get_crc32 (void *vbuf, int len)
+uae_u32 get_crc32 (uae_u8 *buf, int len)
 {
-	uae_u8 *buf = (uae_u8*)vbuf;
 	uae_u32 crc;
 	if (!crc_table32[1])
 		make_crc_table();
@@ -41,9 +40,8 @@ uae_u32 get_crc32 (void *vbuf, int len)
 		crc = crc_table32[(crc ^ (*buf++)) & 0xff] ^ (crc >> 8);
 	return crc ^ 0xffffffff;
 }
-uae_u16 get_crc16 (void *vbuf, int len)
+uae_u16 get_crc16 (uae_u8 *buf, int len)
 {
-	uae_u8 *buf = (uae_u8*)vbuf;
 	uae_u16 crc;
 	if (!crc_table32[1])
 		make_crc_table();
@@ -329,19 +327,16 @@ static void sha1_finish( sha1_context *ctx, unsigned char output[20] )
 	PUT_UINT32_BE( ctx->state[4], output, 16 );
 }
 
-void get_sha1 (void *vinput, int len, void *vout)
+void get_sha1 (uae_u8 *input, int len, uae_u8 *out)
 {
-	uae_u8 *input = (uae_u8*)vinput;
-	uae_u8 *out = (uae_u8*)vout;
 	sha1_context ctx;
 
 	sha1_starts( &ctx );
 	sha1_update( &ctx, input, len );
 	sha1_finish( &ctx, out );
 }
-const TCHAR *get_sha1_txt (void *vinput, int len)
+const TCHAR *get_sha1_txt (uae_u8 *input, int len)
 {
-	uae_u8 *input = (uae_u8*)vinput;
 	static TCHAR outtxt[SHA1_SIZE * 2 + 1];
 	uae_u8 out[SHA1_SIZE];
 	int i;

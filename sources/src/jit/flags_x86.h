@@ -3,10 +3,10 @@
  *
  *  Original 68040 JIT compiler for UAE, copyright 2000-2002 Bernd Meyer
  *
- *  Adaptation for Basilisk II and improvements, copyright 2000-2002
+ *  Adaptation for Basilisk II and improvements, copyright 2000-2005
  *    Gwenole Beauchesne
  *
- *  Basilisk II (C) 1997-2002 Christian Bauer
+ *  Basilisk II (C) 1997-2005 Christian Bauer
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -34,8 +34,8 @@ enum {
 	NATIVE_CC_CS = 2,
 	NATIVE_CC_NE = 5,
 	NATIVE_CC_EQ = 4,
-	NATIVE_CC_VC = 1,
-	NATIVE_CC_VS = 0,
+	NATIVE_CC_VC = 11,
+	NATIVE_CC_VS = 10,
 	NATIVE_CC_PL = 9,
 	NATIVE_CC_MI = 8,
 	NATIVE_CC_GE = 13,
@@ -43,10 +43,5 @@ enum {
 	NATIVE_CC_GT = 15,
 	NATIVE_CC_LE = 14
 };
-
-/* FIXME: include/flags_x86.h in UAE had the following values:
-	NATIVE_CC_VC = 11,
-	NATIVE_CC_VS = 10,
-*/
 
 #endif /* NATIVE_FLAGS_X86_H */

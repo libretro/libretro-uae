@@ -9,10 +9,16 @@
 #ifndef UAE_AUDIO_H
 #define UAE_AUDIO_H
 
-#include "uae/types.h"
-
 #define PERIOD_MAX ULONG_MAX
 #define MAX_EV ~0u
+
+extern void pause_sound (void);
+extern void resume_sound (void);
+
+extern void aud0_handler (void);
+extern void aud1_handler (void);
+extern void aud2_handler (void);
+extern void aud3_handler (void);
 
 extern void AUDxDAT (int nr, uae_u16 value);
 extern void AUDxDAT_addr (int nr, uae_u16 value, uaecptr addr);
@@ -25,33 +31,33 @@ extern void AUDxLEN (int nr, uae_u16 value);
 extern uae_u16 audio_dmal (void);
 extern void audio_state_machine (void);
 extern uaecptr audio_getpt (int nr, bool reset);
+
 extern int init_audio (void);
+extern void ahi_install (void);
 extern void audio_reset (void);
 extern void update_audio (void);
 extern void audio_evhandler (void);
 extern void audio_hsync (void);
 extern void audio_update_adkmasks (void);
-#ifndef __LIBRETRO__
-extern void update_sound (double freq, int longframe, int linetoggle);
-#else
 extern void update_sound (double clk);
-#endif
 extern void update_cda_sound (double clk);
 extern void led_filter_audio (void);
 extern void set_audio (void);
 extern int audio_activate (void);
 extern void audio_deactivate (void);
 extern void audio_vsync (void);
+
+void switch_audio_interpol (void);
+extern int sound_available;
+
 extern void audio_sampleripper(int);
+extern int sampleripper_enabled;
 extern void write_wavheader (struct zfile *wavfile, uae_u32 size, uae_u32 freq);
 
-int audio_is_pull(void);
-int audio_pull_buffer(void);
-bool audio_finish_pull(void);
-bool audio_is_pull_event(void);
-bool audio_is_event_frame_possible(int);
-
-extern int sampleripper_enabled;
+extern void audio_update_sndboard(unsigned int);
+extern void audio_enable_sndboard(bool);
+extern void audio_state_sndboard(int);
+extern void audio_state_sndboard_state(int, int, unsigned int);
 
 typedef void (*CDA_CALLBACK)(int, void*);
 typedef bool(*SOUND_STREAM_CALLBACK)(int, void*);
@@ -66,7 +72,7 @@ struct cd_audio_state
 	CDA_CALLBACK cda_next_cd_audio_buffer_callback;
 	void *cb_data;
 	int cda_volume[2];
-	int cda_streamid;/* = -1;*/
+	int cda_streamid;// = -1;
 };
 
 extern void audio_cda_new_buffer(struct cd_audio_state *cas, uae_s16 *buffer, int length, int userdata, CDA_CALLBACK next_cd_audio_buffer_callback, void *cb_data);
@@ -124,5 +130,7 @@ STATIC_INLINE int get_audio_ismono (int stereomode)
 #define SOUND_MAX_LOG_DELAY 10
 #define MIXED_STEREO_MAX 16
 #define MIXED_STEREO_SCALE 32
+
+void devices_update_sound(double clk, double syncadjust);
 
 #endif /* UAE_AUDIO_H */

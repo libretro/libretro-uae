@@ -24,11 +24,11 @@
 #include "events.h"
 #include "uae.h"
 #include "disk.h"
+#include "misc.h"
 #include "fsdb.h"
-#include "xwin.h"
 
 #if INPUTRECORD_DEBUG > 0
-#include "memory.h"
+#include "memory_uae.h"
 #include "newcpu.h"
 #endif
 
@@ -57,9 +57,16 @@ static uae_u32 pcs2[16];
 extern void activate_debugger (void);
 static int warned;
 
+/* external prototypes */
+extern void refreshtitle (void);
+extern uae_u32 uaesrand (uae_u32 seed);
+extern uae_u32 uaerandgetseed (void);
+
+
+
 static void setlasthsync (void)
 {
-	if (lasthsync / current_maxvpos () != hsync_counter / current_maxvpos ()) {
+	if (lasthsync / current_maxvpos () != (int)(hsync_counter / current_maxvpos ()) ) {
 		lasthsync = hsync_counter;
 		refreshtitle ();
 	}
@@ -73,19 +80,21 @@ static void flush (void)
 	}
 }
 
-static void inprec_ru8 (uae_u8 v)
+void inprec_ru8 (uae_u8 v)
 {
 	if (!input_record || !inprec_zf)
 		return;
 	*inprec_p++= v;
 }
-static void inprec_ru16 (uae_u16 v)
+
+void inprec_ru16 (uae_u16 v)
 {
 	if (!input_record || !inprec_zf)
 		return;
 	inprec_ru8 ((uae_u8)(v >> 8));
 	inprec_ru8 ((uae_u8)v);
 }
+
 void inprec_ru32 (uae_u32 v)
 {
 	if (!input_record || !inprec_zf)
@@ -93,6 +102,7 @@ void inprec_ru32 (uae_u32 v)
 	inprec_ru16 ((uae_u16)(v >> 16));
 	inprec_ru16 ((uae_u16)v);
 }
+
 static void inprec_rstr (const TCHAR *src)
 {
 	if (!input_record || !inprec_zf)
@@ -342,7 +352,7 @@ int inprec_open (const TCHAR *fname, const TCHAR *statefilename)
 
 	inprec_close (false);
 	if (fname == NULL)
-		inprec_zf = zfile_fopen_empty (NULL, _T("inp"));
+		inprec_zf = zfile_fopen_empty (NULL, _T("inp"), 0);
 	else
 		inprec_zf = zfile_fopen (fname, input_record ? _T("wb") : _T("rb"), ZFD_NORMAL);
 	if (inprec_zf == NULL)
@@ -369,7 +379,7 @@ int inprec_open (const TCHAR *fname, const TCHAR *statefilename)
 		zfile_fread (inprec_buffer, inprec_size, 1, inprec_zf);
 		inprec_plastptr = inprec_buffer;
 		id = inprec_pu32();
-		if (id != 'UAE\0') {
+		if (id != 0x55414500 /* 'UAE\0' */ ) {
 			inprec_close (true);
 			return 0;
 		}
@@ -437,7 +447,7 @@ int inprec_open (const TCHAR *fname, const TCHAR *statefilename)
 	} else if (input_record) {
 		seed = uaesrand (seed);
 		inprec_buffer = inprec_p = xmalloc (uae_u8, inprec_size);
-		inprec_ru32 ('UAE\0');
+		inprec_ru32 (0x55414500 /* 'UAE\0' */);
 		inprec_ru8 (2);
 		inprec_ru8 (UAEMAJOR);
 		inprec_ru8 (UAEMINOR);
@@ -484,8 +494,10 @@ bool inprec_prepare_record (const TCHAR *statefilename)
 			_tcscpy (state, changed_prefs.inprecfile);
 		}
 		_tcscat (state, _T(".uss"));
+#ifndef __LIBRETRO__
 		savestate_initsave (state, 1, 1, true); 
 		save_state (state, _T("input recording test"));
+#endif
 		mode = 2;
 	}
 	input_record = INPREC_RECORD_NORMAL;
@@ -525,7 +537,7 @@ static void setwriteprotect (const TCHAR *fname, bool readonly)
 	if (!readonly)
 		mode |= FILEFLAG_WRITE;
 	if (mode != oldmode)
-		my_chmod (fname, mode);
+		chmod (fname, mode);
 }
 
 void inprec_playdiskchange (void)
@@ -757,7 +769,7 @@ void inprec_playtorecord (void)
 	input_play = INPREC_PLAY_RERECORD;
 	input_record = INPREC_RECORD_PLAYING;
 	zfile_fclose (inprec_zf);
-	inprec_zf = zfile_fopen_empty (NULL, _T("inp"));
+	inprec_zf = zfile_fopen_empty (NULL, _T("inp"), 0);
 	zfile_fwrite (inprec_buffer, header_end2, 1, inprec_zf);
 	uae_u8 *p = inprec_buffer + header_end2;
 	uae_u8 *end = inprec_buffer + inprec_size;
@@ -801,20 +813,12 @@ static void savelog (const TCHAR *path, const TCHAR *file)
 	_tcscpy (tmp, path);
 	_tcscat (tmp, file);
 	_tcscat (tmp, _T(".log.txt"));
-	struct zfile *zfd = zfile_fopen (tmp, _T("wb"));
+	struct zfile *zfd = zfile_fopen (tmp, _T("wb"), 0);
 	if (zfd) {
 		int loglen;
 		uae_u8 *log;
 		loglen = 0;
-		log = save_log (TRUE, &loglen);
-		if (log)
-			zfile_fwrite (log, loglen, 1, zfd);
-		xfree (log);
-		loglen = 0;
-		log = save_log (FALSE, &loglen);
-		if (log)
-			zfile_fwrite (log, loglen, 1, zfd);
-		xfree (log);
+
 		zfile_fclose (zfd);
 		write_log (_T("log '%s' saved\n"), tmp);
 	}
@@ -842,10 +846,10 @@ static int savedisk (const TCHAR *path, const TCHAR *file, uae_u8 *data, uae_u8 
 			_tcscat (filename, _T("."));
 			getfilepart (filename + _tcslen (filename), MAX_DPATH, zfile_getname (zf));
 			_tcscat (tmp, filename);
-			struct zfile *zfd = zfile_fopen (tmp, _T("wb"));
+			struct zfile *zfd = zfile_fopen (tmp, _T("wb"), 0);
 			if (zfd) {
 				int size = zfile_size (zf);
-				uae_u8 *data = zfile_getdata (zf, 0, size, NULL);
+				uae_u8 *data = zfile_getdata (zf, 0, size);
 				zfile_fwrite (data, size, 1, zfd);
 				zfile_fclose (zfd);
 				xfree (data);
@@ -876,14 +880,14 @@ void inprec_save (const TCHAR *filename, const TCHAR *statefilename)
 	if (zf) {
 		TCHAR fn[MAX_DPATH];
 		uae_u8 *data;
-		data = zfile_getdata (inprec_zf, 0, header_end, NULL);
+		data = zfile_getdata (inprec_zf, 0, header_end);
 		zfile_fwrite (data, header_end, 1, zf);
 		xfree (data);
 		getfilepart (fn, MAX_DPATH, statefilename);
 		char *s = uutf8 (fn);
 		zfile_fwrite (s, strlen (s) + 1, 1, zf);
 		int len = zfile_size (inprec_zf) -  header_end2;
-		data = zfile_getdata (inprec_zf, header_end2, len, NULL);
+		data = zfile_getdata (inprec_zf, header_end2, len);
 		uae_u8 *p = data;
 		uae_u8 *end = data + len;
 		while (p < end) {
@@ -914,7 +918,7 @@ void inprec_save (const TCHAR *filename, const TCHAR *statefilename)
 	}
 }
 
-bool inprec_realtime (void)
+bool inprec_realtimev (void)
 {
 	if (input_record != INPREC_RECORD_PLAYING || input_play != INPREC_PLAY_RERECORD)
 		return false;
@@ -940,8 +944,8 @@ void inprec_getstatus (TCHAR *title)
 	p = title + _tcslen (title);
 	int mvp = current_maxvpos ();
 	_stprintf (p, _T("%03d %02d:%02d:%02d/%02d:%02d:%02d"), replaypos,
-		(int)(lasthsync / (vblank_hz * mvp * 60)), ((int)(lasthsync / (vblank_hz * mvp)) % 60), (lasthsync / mvp) % (int)vblank_hz,
-		(int)(endhsync / (vblank_hz * mvp * 60)), ((int)(endhsync / (vblank_hz * mvp)) % 60), (endhsync / mvp) % (int)vblank_hz);
+		lasthsync / (vblank_hz * mvp * 60), ((int)(lasthsync / (vblank_hz * mvp)) % 60), (lasthsync / mvp) % (int)vblank_hz,
+		endhsync / (vblank_hz * mvp * 60), ((int)(endhsync / (vblank_hz * mvp)) % 60), (endhsync / mvp) % (int)vblank_hz);
 	p += _tcslen (p);
 	_tcscat (p, _T("] "));
 

@@ -12,11 +12,6 @@
 
 #include "uae.h"
 
-void write_log (const char *s,...)
-{
-    fprintf (stderr, "%s", s);
-}
-
 unsigned char filemem[901120];
 
 typedef struct afile {
@@ -35,6 +30,39 @@ typedef struct directory {
 
 static int secdatasize, secdataoffset;
 
+#ifdef VITA
+// FIXME: Find a way around the missing current working dir functionality
+#define chdir(name) 0
+#endif
+/* We can't use writelog.c, as this would pull in a plethora
+ * of unnecessary dependencies, but want write_log to act
+ * as known in other uae parts.
+*/
+void write_log (const char *fmt, ...)
+{
+    va_list ap;
+    va_start (ap, fmt);
+#ifdef HAVE_VFPRINTF
+    vfprintf (stderr, fmt, ap);
+#else
+    /* Technique stolen from GCC.  */
+    {
+	int x1, x2, x3, x4, x5, x6, x7, x8;
+	x1 = va_arg (ap, int);
+	x2 = va_arg (ap, int);
+	x3 = va_arg (ap, int);
+	x4 = va_arg (ap, int);
+	x5 = va_arg (ap, int);
+	x6 = va_arg (ap, int);
+	x7 = va_arg (ap, int);
+	x8 = va_arg (ap, int);
+	fprintf (stderr, fmt, x1, x2, x3, x4, x5, x6, x7, x8);
+    }
+#endif
+}
+
+
+
 static uae_u32 readlong (unsigned char *buffer, int pos)
 {
     return ((*(buffer + pos) << 24) + (*(buffer + pos + 1) << 16)
@@ -43,7 +71,7 @@ static uae_u32 readlong (unsigned char *buffer, int pos)
 
 static afile *read_file (unsigned char *filebuf)
 {
-    afile *a = (afile *) xmalloc (sizeof (afile));
+    afile *a = (afile *) xmalloc (char, sizeof (afile));
     int sizeleft;
     unsigned char *datapos;
     uae_u32 numblocks, blockpos;
@@ -52,7 +80,7 @@ static afile *read_file (unsigned char *filebuf)
     memset (a->name, 0, 32);
     strncpy (a->name, (const char *) filebuf + 0x1B1, *(filebuf + 0x1B0));
     sizeleft = a->size = readlong (filebuf, 0x144);
-    a->data = (unsigned char *) xmalloc (a->size);
+    a->data = (unsigned char *) xmalloc (char, a->size);
 
     numblocks = readlong (filebuf, 0x8);
     blockpos = 0x134;
@@ -84,7 +112,7 @@ static afile *read_file (unsigned char *filebuf)
 
 static directory *read_dir (unsigned char *dirbuf)
 {
-    directory *d = (directory *) xmalloc (sizeof (directory));
+    directory *d = (directory *) xmalloc (char, sizeof (directory));
     uae_u32 hashsize;
     uae_u32 i;
 
@@ -95,33 +123,33 @@ static directory *read_dir (unsigned char *dirbuf)
     d->files = 0;
     hashsize = readlong (dirbuf, 0xc);
     if (!hashsize)
-	hashsize = 72;
+		hashsize = 72;
     if (hashsize != 72)
-	write_log ("Warning: Hash table with != 72 entries.\n");
+		write_log ("Warning: Hash table with != 72 entries.\n");
     for (i = 0; i < hashsize; i++) {
-	uae_u32 subblock = readlong (dirbuf, 0x18 + 4 * i);
+		uae_u32 subblock = readlong (dirbuf, 0x18 + 4 * i);
 
-	while (subblock) {
-	    directory *subdir;
-	    afile *subfile;
-	    unsigned char *subbuf = filemem + 512 * subblock;
-	    long dirtype;
+		while (subblock) {
+		    directory *subdir;
+		    afile *subfile;
+		    unsigned char *subbuf = filemem + 512 * subblock;
+		    long dirtype;
 
-	    dirtype = (uae_s32) readlong (subbuf, 0x1FC);
-	    if (dirtype > 0) {
-		subdir = read_dir (subbuf);
-		subdir->sibling = d->subdirs;
-		d->subdirs = subdir;
-	    } else if (dirtype < 0) {
-		subfile = read_file (subbuf);
-		subfile->sibling = d->files;
-		d->files = subfile;
-	    } else {
-		write_log ("Disk structure corrupted. Use DISKDOCTOR to correct it.\n");
-		abort ();
-	    }
-	    subblock = readlong (subbuf, 0x1F0);
-	}
+		    dirtype = (uae_s32) readlong (subbuf, 0x1FC);
+		    if (dirtype > 0) {
+				subdir = read_dir (subbuf);
+				subdir->sibling = d->subdirs;
+				d->subdirs = subdir;
+		    } else if (dirtype < 0) {
+				subfile = read_file (subbuf);
+				subfile->sibling = d->files;
+				d->files = subfile;
+		    } else {
+				write_log ("Disk structure corrupted. Use DISKDOCTOR to correct it.\n");
+				abort ();
+		    }
+		    subblock = readlong (subbuf, 0x1F0);
+		}
     }
     return d;
 }
@@ -130,56 +158,64 @@ static void writedir (directory * dir)
 {
     directory *subdir;
     afile *f;
+    int ret;
 
     if (mkdir (dir->name, 0777) < 0 && errno != EEXIST) {
-	write_log ("Could not create directory \"%s\". Giving up.\n", dir->name);
-	exit (20);
+		write_log ("Could not create directory \"%s\". Giving up.\n", dir->name);
+		exit (20);
     }
     if (chdir (dir->name) < 0) {
-	write_log ("Could not enter directory \"%s\". Giving up.\n", dir->name);
-	exit (20);
+		write_log ("Could not enter directory \"%s\". Giving up.\n", dir->name);
+		exit (20);
     }
     for (subdir = dir->subdirs; subdir; subdir = subdir->sibling)
-	writedir (subdir);
+		writedir (subdir);
     for (f = dir->files; f; f = f->sibling) {
 	int fd = creat (f->name, 0666);
 	if (fd < 0) {
 	    write_log ("Could not create file. Giving up.\n");
 	    exit (20);
 	}
-	write (fd, f->data, f->size);
+	ret = write (fd, f->data, f->size);
+	if (ret == -1)
+		write_log ("Couldn't write, no permission?");
 	close (fd);
     }
-    chdir ("..");
+    ret = chdir ("..");
+    if (ret == -1)
+	write_log ("Couldn't change directory, no permission?\n");
 }
 
 int main (int argc, char **argv)
 {
     directory *root;
     FILE *inf;
+    int ret;
 
     if (argc < 2 || argc > 3) {
-	write_log ("Usage: readdisk <file> [<destdir>]\n");
-	exit (20);
+		write_log ("Usage: readdisk <file> [<destdir>]\n");
+		exit (20);
     }
     inf = fopen (argv[1], "rb");
     if (inf == NULL) {
-	write_log ("can't open file\n");
-	exit (20);
+		write_log ("can't open file\n");
+		exit (20);
     }
-    fread (filemem, 1, 901120, inf);
+    ret = fread (filemem, 1, 901120, inf);
+    if (ret == 0)
+	write_log ("Couldn't read enough");
 
     if (strncmp ((const char *) filemem, "DOS\0", 4) == 0
-	|| strncmp ((const char *) filemem, "DOS\2", 4) == 0) {
-	secdatasize = 488;
-	secdataoffset = 24;
+			|| strncmp ((const char *) filemem, "DOS\2", 4) == 0) {
+		secdatasize = 488;
+		secdataoffset = 24;
     } else if (strncmp ((const char *) filemem, "DOS\1", 4) == 0
 	       || strncmp ((const char *) filemem, "DOS\3", 4) == 0) {
-	secdatasize = 512;
-	secdataoffset = 0;
+		secdatasize = 512;
+		secdataoffset = 0;
     } else {
-	write_log ("Not a DOS disk.\n");
-	exit (20);
+		write_log ("Not a DOS disk.\n");
+		exit (20);
     }
     root = read_dir (filemem + 880 * 512);
 

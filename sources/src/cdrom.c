@@ -1,7 +1,7 @@
 #include "sysconfig.h"
 #include "sysdeps.h"
 
-#include "uae/cdrom.h"
+#include "cdrom.h"
 
 /* CDROM MODE 1 EDC/ECC code (from Reed-Solomon library by Heiko Eissfeldt) */
 
@@ -118,119 +118,119 @@ static uae_u8 rs_l12_alog[255] = {
 #define L2_P   (43*2*2)
 #define RS_L12_BITS 8
 
-		static uae_u32 build_edc (const uae_u8 *inout, int from, int upto)
-		{
-			const uae_u8 *p = inout + from;
-			uae_u32 result = 0;
-			for (; from <= upto; from++)
-				result = EDC_crctable[(result ^ *p++) & 0xff] ^ (result >> 8);
-			return result;
+static uae_u32 build_edc (const uae_u8 *inout, int from, int upto)
+{
+	const uae_u8 *p = inout + from;
+	uae_u32 result = 0;
+	for (; from <= upto; from++)
+		result = EDC_crctable[(result ^ *p++) & 0xff] ^ (result >> 8);
+	return result;
+}
+
+static void encode_L2_Q(uae_u8 *inout)
+{
+	uae_u8 *Q;
+	int i,j;
+
+	Q = inout + 4 + L2_RAW + 4 + 8 + L2_P;
+	memset(Q, 0, L2_Q);
+	for (j = 0; j < 26; j++) {
+	for (i = 0; i < 43; i++) {
+		uae_u8 data;
+		/* LSB */
+		data = inout[(j*43*2+i*2*44) % (4 + L2_RAW + 4 + 8 + L2_P)];
+		if (data != 0) {
+			uae_u32 base = rs_l12_log[data];
+			uae_u32 sum = base + DQ[0][i];
+			if (sum >= ((1 << RS_L12_BITS)-1))
+				sum -= (1 << RS_L12_BITS)-1;
+			Q[0]    ^= rs_l12_alog[sum];
+			sum = base + DQ[1][i];
+			if (sum >= ((1 << RS_L12_BITS)-1))
+				sum -= (1 << RS_L12_BITS)-1;
+			Q[26*2] ^= rs_l12_alog[sum];
 		}
-
-		static void encode_L2_Q(uae_u8 *inout)
-		{
-			uae_u8 *Q;
-			int i,j;
-
-			Q = inout + 4 + L2_RAW + 4 + 8 + L2_P;
-			memset(Q, 0, L2_Q);
-			for (j = 0; j < 26; j++) {
-				for (i = 0; i < 43; i++) {
-					uae_u8 data;
-					/* LSB */
-					data = inout[(j*43*2+i*2*44) % (4 + L2_RAW + 4 + 8 + L2_P)];
-					if (data != 0) {
-						uae_u32 base = rs_l12_log[data];
-						uae_u32 sum = base + DQ[0][i];
-						if (sum >= ((1 << RS_L12_BITS)-1))
-							sum -= (1 << RS_L12_BITS)-1;
-						Q[0]    ^= rs_l12_alog[sum];
-						sum = base + DQ[1][i];
-						if (sum >= ((1 << RS_L12_BITS)-1))
-							sum -= (1 << RS_L12_BITS)-1;
-						Q[26*2] ^= rs_l12_alog[sum];
-					}
-					/* MSB */
-					data = inout[(j*43*2+i*2*44+1) % (4 + L2_RAW + 4 + 8 + L2_P)];
-					if (data != 0) {
-						uae_u32 base = rs_l12_log[data];
-						uae_u32 sum = base+DQ[0][i];
-						if (sum >= ((1 << RS_L12_BITS)-1))
-							sum -= (1 << RS_L12_BITS)-1;
-						Q[1]      ^= rs_l12_alog[sum];
-						sum = base + DQ[1][i];
-						if (sum >= ((1 << RS_L12_BITS)-1))
-							sum -= (1 << RS_L12_BITS)-1;
-						Q[26*2+1] ^= rs_l12_alog[sum];
-					}
-				}
-				Q += 2;
-			}
+		/* MSB */
+		data = inout[(j*43*2+i*2*44+1) % (4 + L2_RAW + 4 + 8 + L2_P)];
+		if (data != 0) {
+			uae_u32 base = rs_l12_log[data];
+			uae_u32 sum = base+DQ[0][i];
+			if (sum >= ((1 << RS_L12_BITS)-1))
+				sum -= (1 << RS_L12_BITS)-1;
+			Q[1]      ^= rs_l12_alog[sum];
+			sum = base + DQ[1][i];
+			if (sum >= ((1 << RS_L12_BITS)-1))
+				sum -= (1 << RS_L12_BITS)-1;
+			Q[26*2+1] ^= rs_l12_alog[sum];
 		}
+	}
+	Q += 2;
+    }
+}
 
-		static void encode_L2_P(uae_u8 inout[4 + L2_RAW + 4 + 8 + L2_P])
-		{
-			uae_u8 *P;
-			int i,j;
+static void encode_L2_P(uae_u8 inout[4 + L2_RAW + 4 + 8 + L2_P])
+{
+	uae_u8 *P;
+	int i,j;
 
-			P = inout + 4 + L2_RAW + 4 + 8;
-			memset(P, 0, L2_P);
-			for (j = 0; j < 43; j++) {
-				for (i = 0; i < 24; i++) {
-					uae_u8 data;
-					/* LSB */
-					data = inout[i*2*43];
-					if (data != 0) {
-						uae_u32 base = rs_l12_log[data];
-						uae_u32 sum = base + DP[0][i];
-						if (sum >= ((1 << RS_L12_BITS)-1))
-							sum -= (1 << RS_L12_BITS)-1;
-						P[0]    ^= rs_l12_alog[sum];
-						sum = base + DP[1][i];
-						if (sum >= ((1 << RS_L12_BITS)-1))
-							sum -= (1 << RS_L12_BITS)-1;
-						P[43*2] ^= rs_l12_alog[sum];
-					}
-					/* MSB */
-					data = inout[i*2*43+1];
-					if (data != 0) {
-						uae_u32 base = rs_l12_log[data];
-						uae_u32 sum = base + DP[0][i];
-						if (sum >= ((1 << RS_L12_BITS)-1))
-							sum -= (1 << RS_L12_BITS)-1;
-						P[1]      ^= rs_l12_alog[sum];
-						sum = base + DP[1][i];
-						if (sum >= ((1 << RS_L12_BITS)-1))
-							sum -= (1 << RS_L12_BITS)-1;
-						P[43*2+1] ^= rs_l12_alog[sum];
-					}
-				}
-				P += 2;
-				inout += 2;
-			}
+	P = inout + 4 + L2_RAW + 4 + 8;
+	memset(P, 0, L2_P);
+	for (j = 0; j < 43; j++) {
+	for (i = 0; i < 24; i++) {
+		uae_u8 data;
+		/* LSB */
+		data = inout[i*2*43];
+		if (data != 0) {
+			uae_u32 base = rs_l12_log[data];
+			uae_u32 sum = base + DP[0][i];
+			if (sum >= ((1 << RS_L12_BITS)-1))
+				sum -= (1 << RS_L12_BITS)-1;
+			P[0]    ^= rs_l12_alog[sum];
+			sum = base + DP[1][i];
+			if (sum >= ((1 << RS_L12_BITS)-1))
+				sum -= (1 << RS_L12_BITS)-1;
+			P[43*2] ^= rs_l12_alog[sum];
 		}
-
-		static uae_u8 tobcd (uae_u8 v)
-		{
-			return ((v / 10) << 4) | (v % 10);
+		/* MSB */
+		data = inout[i*2*43+1];
+		if (data != 0) {
+			uae_u32 base = rs_l12_log[data];
+			uae_u32 sum = base + DP[0][i];
+			if (sum >= ((1 << RS_L12_BITS)-1))
+				sum -= (1 << RS_L12_BITS)-1;
+			P[1]      ^= rs_l12_alog[sum];
+			sum = base + DP[1][i];
+			if (sum >= ((1 << RS_L12_BITS)-1))
+				sum -= (1 << RS_L12_BITS)-1;
+			P[43*2+1] ^= rs_l12_alog[sum];
 		}
+	}
+	P += 2;
+	inout += 2;
+	}
+}
 
-		void encode_l2 (uae_u8 *p, int address)
-		{
-			uae_u32 v;
+static uae_u8 tobcd (uae_u8 v)
+{
+	return ((v / 10) << 4) | (v % 10);
+}
 
-			p[0] = 0x00;
-			memset (p + 1, 0xff, 11);
-			p[12] = tobcd ((uae_u8)(address / (60 * 75)));
-			p[13] = tobcd ((uae_u8)((address / 75) % 60));
-			p[14] = tobcd ((uae_u8)(address % 75));
-			p[15] = 1; /* MODE1 */
-			v = build_edc (p, 0, 16 + 2048 - 1);
-			p[2064 + 0] = (uae_u8) (v >> 0);
-			p[2064 + 1] = (uae_u8) (v >> 8);
-			p[2064 + 2] = (uae_u8) (v >> 16);
-			p[2064 + 3] = (uae_u8) (v >> 24);
-			memset (p + 2064 + 4, 0, 8);
-			encode_L2_P (p + 12);
-			encode_L2_Q (p + 12);
-		}
+void encode_l2 (uae_u8 *p, int address)
+{
+	uae_u32 v;
+
+	p[0] = 0x00;
+	memset (p + 1, 0xff, 11);
+	p[12] = tobcd ((uae_u8)(address / (60 * 75)));
+	p[13] = tobcd ((uae_u8)((address / 75) % 60));
+	p[14] = tobcd ((uae_u8)(address % 75));
+	p[15] = 1; /* MODE1 */
+	v = build_edc (p, 0, 16 + 2048 - 1);
+	p[2064 + 0] = (uae_u8) (v >> 0);
+	p[2064 + 1] = (uae_u8) (v >> 8);
+	p[2064 + 2] = (uae_u8) (v >> 16);
+	p[2064 + 3] = (uae_u8) (v >> 24);
+	memset (p + 2064 + 4, 0, 8);
+	encode_L2_P (p + 12);
+	encode_L2_Q (p + 12);
+}

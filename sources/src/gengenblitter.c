@@ -12,18 +12,9 @@
 #include "sysconfig.h"
 #include "sysdeps.h"
 
-#include "config.h"
 #include "options.h"
 
 static void nop(int);
-
-#undef xmalloc
-#undef xfree
-#undef xrealloc
-
-#define xmalloc malloc
-#define xfree free
-#define xrealloc realloc
 
 typedef struct tree_n {
     enum tree_op { op_and, op_or, op_xor, op_not, op_a, op_b, op_c, op_d, op_e, op_f } op;

@@ -1,26 +1,22 @@
-#ifndef UAE_GAYLE_H
-#define UAE_GAYLE_H
+#pragma once
+#ifndef SRC_INCLUDE_GAYLE_H_INCLUDED
+#define SRC_INCLUDE_GAYLE_H_INCLUDED 1
 
-#include "uae/types.h"
-
-void gayle_add_ide_unit (int ch, struct uaedev_config_info *ci, struct romconfig *rc);
-bool gayle_ide_init(struct autoconfig_info*);
+#ifdef GAYLE
+void gayle_reset (int);
+void gayle_hsync (void);
+void gayle_free (void);
+int gayle_add_ide_unit (int ch, struct uaedev_config_info *ci);
+int gayle_modify_pcmcia_sram_unit (const TCHAR *path, int readonly, int insert);
+int gayle_modify_pcmcia_ide_unit (const TCHAR *path, int readonly, int insert);
+int gayle_add_pcmcia_sram_unit (const TCHAR *path, int readonly);
+int gayle_add_pcmcia_ide_unit (const TCHAR *path, int readonly);
 void gayle_free_units (void);
-bool gayle_init_pcmcia(struct autoconfig_info *aci);
-bool gayle_init_board_io_pcmcia(struct autoconfig_info *aci);
-bool gayle_init_board_common_pcmcia(struct autoconfig_info *aci);
-void pcmcia_eject(struct uae_prefs *p);
-void pcmcia_reinsert(struct uae_prefs*);
-bool pcmcia_disk_reinsert(struct uae_prefs *p, struct uaedev_config_info *uci, bool ejectonly);
-
-extern int gary_toenb; // non-existing memory access = bus error.
-extern int gary_timeout; // non-existing memory access = delay
+void rethink_gayle (void);
+void gayle_map_pcmcia (void);
+#endif // GAYLE
 
 #define PCMCIA_COMMON_START 0x600000
 #define PCMCIA_COMMON_SIZE 0x400000
-#define PCMCIA_ATTRIBUTE_START 0xa00000
-#define PCMCIA_ATTRIBUTE_SIZE 0x80000
 
-void gayle_dataflyer_enable(bool);
-
-#endif /* UAE_GAYLE_H */
+#endif // SRC_INCLUDE_GAYLE_H_INCLUDED

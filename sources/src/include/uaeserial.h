@@ -1,3 +1,7 @@
+#pragma once
+#ifndef SRC_INCLUDE_UAESERIAL_H_INCLUDED
+#define SRC_INCLUDE_UAESERIAL_H_INCLUDED 1
+
  /*
   * UAE - The Un*x Amiga Emulator
   *
@@ -6,24 +10,11 @@
   * (c) 2006 Toni Wilen
   */
 
-#ifndef UAE_UAESERIAL_H
-#define UAE_UAESERIAL_H
-
-#include "uae/types.h"
-
-uaecptr uaeserialdev_startup(TrapContext*, uaecptr resaddr);
-void uaeserialdev_install(void);
-void uaeserialdev_reset(void);
-void uaeserialdev_start_threads(void);
+uaecptr uaeserialdev_startup (uaecptr resaddr);
+void uaeserialdev_install (void);
+void uaeserialdev_reset (void);
+void uaeserialdev_start_threads (void);
 
 extern int log_uaeserial;
 
-struct uaeserialdata
-{
-#ifdef _WIN32
-    void *handle;
-    void *writeevent;
-#endif
-};
-
-#endif /* UAE_UAESERIAL_H */
+#endif // SRC_INCLUDE_UAESERIAL_H_INCLUDED

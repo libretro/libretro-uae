@@ -11,15 +11,16 @@
 #include "sysconfig.h"
 #include "sysdeps.h"
 
+#if 0
+
 #include <ctype.h>
 #ifdef HAVE_SIGNAL
 #include <signal.h>
 #endif
 
 #include "options.h"
-#if 0
 #include "uae.h"
-#include "memory.h"
+#include "sources/src/include/memory_uae.h"
 #include "custom.h"
 #include "newcpu.h"
 #include "cpu_prefetch.h"
@@ -43,27 +44,28 @@
 #include "cpummu030.h"
 #include "misc.h"
 #else
-#include "memory.h"
 #include "debug.h"
 #include "xwin.h"
 #endif
 
 /* internal members */
+int debugger_active;
 #if 0
 static uaecptr skipaddr_start, skipaddr_end;
 static int skipaddr_doskip;
 static uae_u32 skipins;
 static int do_skip;
+#ifdef SAVESTATE
 static int debug_rewind;
 #endif
-int debugger_active;
-int memwatch_access_validator;
-int memwatch_enabled;
+static int memwatch_enabled, memwatch_triggered;
+static uae_u16 sr_bpmask, sr_bpvalue;
+#endif
 int debugging;
 int exception_debugging;
 int no_trace_exceptions;
 int debug_copper = 0;
-int debug_dma = 0, debug_heatmap = 0;
+int debug_dma = 0;
 int debug_sprite_mask = 0xff;
 int debug_illegal = 0;
 uae_u64 debug_illegal_mask;
@@ -79,30 +81,20 @@ extern int audio_channel_mask;
 extern int inputdevice_logging;
 extern void my_trim (TCHAR *s);
 
-struct peekdma peekdma_data;
-
 #ifdef MMUEMU
 int safe_addr (uaecptr addr, int size);
 #endif
 
-/*#define console_out               printf*/
+#define console_out               printf
 #define console_flush()           fflush( stdout )
 #define console_get( input, len ) fgets( input, len, stdin )
-/*#define console_out_f printf*/
+#define console_out_f printf
 
 void deactivate_debugger (void)
 {
 }
 
 void activate_debugger (void)
-{
-}
-
-void activate_debugger_new(void)
-{
-}
-
-void activate_debugger_new_pc(uaecptr pc, int len)
 {
 }
 
@@ -158,11 +150,6 @@ int safe_addr (uaecptr addr, int size)
 	return 0;
 }
 #endif
-
-int debug_safe_addr (uaecptr addr, int size)
-{
-	return 0;
-}
 
 #if 0
 static bool iscancel (int counter)
@@ -359,17 +346,6 @@ void record_dma_event (int evt, int hpos, int vpos)
 {
 }
 
-void record_dma_write(uae_u16 reg, uae_u32 dat, uae_u32 addr, int hpos, int vpos, int type, int extra)
-{
-}
-
-void record_dma_read_value(uae_u32 v)
-{
-}
-void record_dma_read(uae_u16 reg, uae_u32 addr, int hpos, int vpos, int type, int extra)
-{
-}
-
 struct dma_rec *record_dma (uae_u16 reg, uae_u16 dat, uae_u32 addr, int hpos, int vpos, int type)
 {
 	struct dma_rec *dr = NULL;
@@ -384,11 +360,7 @@ void log_dma_record (void)
 {
 }
 
-void record_copper_blitwait (uaecptr addr, int hpos, int vpos)
-{
-}
-
-void record_copper (uaecptr addr, uae_u16 word1, uae_u16 word2, int hpos, int vpos)
+void record_copper (uaecptr addr, int hpos, int vpos)
 {
 }
 #if 0
@@ -441,7 +413,6 @@ static void cheatsearch (TCHAR **c)
 {
 }
 #endif
-
 #if 0
 struct breakpoint_node bpnodes[BREAKPOINT_TOTAL];
 static addrbank **debug_mem_banks;
@@ -511,10 +482,6 @@ uae_u8 *restore_debug_memwatch (uae_u8 *src)
 }
 
 void restore_debug_memwatch_finish (void)
-{
-}
-
-void debug_check_reg(uae_u32 addr, int write, uae_u16 v)
 {
 }
 
@@ -605,25 +572,6 @@ uae_u16 debug_wgetpeekdma (uaecptr addr, uae_u32 v)
 	return 0;
 }
 
-void debug_getpeekdma_chipram(uaecptr addr, uae_u32 mask, int reg, int ptrreg)
-{
-}
-
-uae_u32 debug_getpeekdma_value(uae_u32 v)
-{
-	return 0;
-}
-
-uae_u32 debug_putpeekdma_chipset(uaecptr addr, uae_u32 v, uae_u32 mask, int reg)
-{
-	return 0;
-}
-
-uae_u32 debug_putpeekdma_chipram(uaecptr addr, uae_u32 v, uae_u32 mask, int reg, int ptrreg)
-{
-	return 0;
-}
-
 #if 0
 void debug_putlpeek (uaecptr addr, uae_u32 v)
 {
@@ -662,6 +610,11 @@ static void initialize_memwatch (int mode)
 {
 }
 
+int debug_bankchange (int mode)
+{
+	return -1;
+}
+
 static TCHAR *getsizechar (int size)
 {
 	return "";
@@ -692,18 +645,7 @@ static void memory_map_dump_2 (int log)
 {
 }
 #endif
-
-int debug_bankchange (int mode)
-{
-	return -1;
-}
-
 void memory_map_dump (void)
-{
-}
-
-
-void debug_invalid_reg(int reg, int size, uae_u16 v)
 {
 }
 
@@ -899,48 +841,4 @@ int mmu_init(int mode, uaecptr parm, uaecptr parm2)
 
 void debug_parser (const TCHAR *cmd, TCHAR *out, uae_u32 outsize)
 {
-}
-
-bool debug_opcode_watch;
-
-bool debug_sprintf(uaecptr addr, uae_u32 val, int size)
-{
-	return false;
-}
-
-void debug_draw(uae_u8 *buf, int bpp, int line, int width, int height, uae_u32 *xredcolors, uae_u32 *xgreencolors, uae_u32 *xbluescolors)
-{
-}
-
-void debug_trainer_match(void)
-{
-}
-
-void debug_init_trainer(const TCHAR *file)
-{
-}
-
-bool debug_trainer_event(int evt, int state)
-{
-   return false;
-}
-
-bool debug_get_prefetch(int idx, uae_u16 *opword)
-{
-   return false;
-}
-
-
-
-struct addrbank *get_mem_bank_real(uaecptr addr)
-{
-	struct addrbank *ab = &get_mem_bank(addr);
-	if (!memwatch_enabled)
-		return ab;
-#if 0
-	struct addrbank *ab2 = debug_mem_banks[addr >> 16];
-	if (ab2)
-		return ab2;
-#endif
-	return ab;
 }

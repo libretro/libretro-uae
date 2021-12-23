@@ -1,13 +1,6 @@
 #ifndef LIBRETRO_GLUE_H
 #define LIBRETRO_GLUE_H
 
-#include "sysconfig.h"
-#include "sysdeps.h"
-#include "options.h"
-#include "xwin.h"
-
-extern struct vidbuf_description *gfxvidinfo;
-
 #include <stdio.h>
 #include "libretro-core.h"
 

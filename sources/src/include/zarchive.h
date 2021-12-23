@@ -1,25 +1,27 @@
-#ifndef UAE_ZARCHIVE_H
-#define UAE_ZARCHIVE_H
+#pragma once
+#ifndef SRC_INCLUDE_ZARCHIVE_H_INCLUDED
+#define SRC_INCLUDE_ZARCHIVE_H_INCLUDED 1
 
-#include "uae/types.h"
+struct zfile;
 
 typedef uae_s64 (*ZFILEREAD)(void*, uae_u64, uae_u64, struct zfile*);
 typedef uae_s64 (*ZFILEWRITE)(const void*, uae_u64, uae_u64, struct zfile*);
 typedef uae_s64 (*ZFILESEEK)(struct zfile*, uae_s64, int);
+typedef int (*zfile_callback)(struct zfile*, void*);
 
 struct zfile {
     TCHAR *name;
     TCHAR *zipname;
     TCHAR *mode;
-	TCHAR *originalname;
+    TCHAR *originalname;
     FILE *f; // real file handle if physical file
     uae_u8 *data; // unpacked data
     int dataseek; // use seek position even if real file
-	struct zfile *archiveparent; // set if parent is archive and this has not yet been unpacked (datasize < size)
-	int archiveid;
+    struct zfile *archiveparent; // set if parent is archive and this has not yet been unpacked (datasize < size)
+    int archiveid;
     uae_s64 size; // real size
-	uae_s64 datasize; // available size (not yet unpacked completely?)
-	uae_s64 allocsize; // memory allocated before realloc() needed again
+    uae_s64 datasize; // available size (not yet unpacked completely?)
+    uae_s64 allocsize; // memory allocated before realloc() needed again
     uae_s64 seek; // seek position
     int deleteafterclose;
     int textmode;
@@ -65,7 +67,6 @@ struct znode {
 struct zvolume
 {
     struct zfile *archive;
-    bool autofree;
     void *handle;
     struct znode root;
     struct zvolume *next;
@@ -86,24 +87,27 @@ struct zarchive_info
     uae_s64 size;
     int flags;
     TCHAR *comment;
-	struct mytimeval tv;
+    struct mytimeval tv;
 };
 
-#define MCC(a,b,c,d) (((a)<<24) | ((b)<<16) | ((c)<<8) | (d))
-
-#define ArchiveFormat7Zip  MCC('7', 'z', ' ', ' ')
-#define ArchiveFormatRAR   MCC('r', 'a', 'r', ' ')
-#define ArchiveFormatZIP   MCC('z', 'i', 'p', ' ')
-#define ArchiveFormatLHA   MCC('l', 'h', 'a', ' ')
-#define ArchiveFormatLZX   MCC('l', 'z', 'x', ' ')
-#define ArchiveFormatPLAIN MCC('-', '-', '-', '-')
-#define ArchiveFormatDIR   MCC('D', 'I', 'R', ' ')
-#define ArchiveFormatAA    MCC('a', 'a', ' ', ' ') // method only
-#define ArchiveFormatADF   MCC('D', 'O', 'S', ' ')
-#define ArchiveFormatRDB   MCC('R', 'D', 'S', 'K')
-#define ArchiveFormatMBR   MCC('M', 'B', 'R', ' ')
-#define ArchiveFormatFAT   MCC('F', 'A', 'T', ' ')
-#define ArchiveFormatTAR   MCC('t', 'a', 'r', ' ')
+/* Update: Use real integer constants, not multi-char constants.
+ * The latter are a _perfect_ way to break any means of portability.
+ * (And it produces a load of very annoying compiler warnings...)
+ * - Sven
+*/
+#define ArchiveFormat7Zip  0x377a2020 // '7z  '
+#define ArchiveFormatRAR   0x72617220 // 'rar '
+#define ArchiveFormatZIP   0x7a697020 // 'zip '
+#define ArchiveFormatLHA   0x6c686120 // 'lha '
+#define ArchiveFormatLZX   0x6c7a7820 // 'lzx '
+#define ArchiveFormatPLAIN 0x2d2d2d2d // '----'
+#define ArchiveFormatDIR   0x44495220 // 'DIR '
+#define ArchiveFormatAA    0x61612020 // 'aa  ' // method only
+#define ArchiveFormatADF   0x444f5320 // 'DOS '
+#define ArchiveFormatRDB   0x5244534b // 'RDSK'
+#define ArchiveFormatMBR   0x4d425220 // 'MBR '
+#define ArchiveFormatFAT   0x46415420 // 'FAT '
+#define ArchiveFormatTAR   0x74617220 // 'tar '
 
 #define PEEK_BYTES 1024
 #define FILE_PEEK 1
@@ -149,4 +153,4 @@ extern struct zfile *archive_unpackzfile (struct zfile *zf);
 
 extern struct zfile *decompress_zfd (struct zfile*);
 
-#endif /* UAE_ZARCHIVE_H */
+#endif /* SRC_INCLUDE_ZARCHIVE_H_INCLUDED */

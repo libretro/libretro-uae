@@ -221,11 +221,11 @@ int filestream_getc(RFILE *stream)
    return EOF;
 }
 
-int filestream_vscanf(RFILE *stream, const char* format, va_list *args)
+int filestream_scanf(RFILE *stream, const char* format, ...)
 {
    char buf[4096];
    char subfmt[64];
-   va_list args_copy;
+   va_list args;
    const char * bufiter = buf;
    int        ret       = 0;
    int64_t startpos     = filestream_tell(stream);
@@ -236,16 +236,7 @@ int filestream_vscanf(RFILE *stream, const char* format, va_list *args)
 
    buf[maxlen] = '\0';
 
-   /* Have to copy the input va_list here
-    * > Calling va_arg() on 'args' directly would
-    *   cause the va_list to have an indeterminate value
-    *   in the function calling filestream_vscanf(),
-    *   leading to unexpected behaviour */
-#ifdef __va_copy
-   __va_copy(args_copy, *args);
-#else
-   va_copy(args_copy, *args);
-#endif
+   va_start(args, format);
 
    while (*format)
    {
@@ -311,7 +302,7 @@ int filestream_vscanf(RFILE *stream, const char* format, va_list *args)
          }
          else
          {
-            int v = sscanf(bufiter, subfmt, va_arg(args_copy, void*), &sublen);
+            int v = sscanf(bufiter, subfmt, va_arg(args, void*), &sublen);
             if (v == EOF)
                return EOF;
             if (v != 1)
@@ -336,21 +327,11 @@ int filestream_vscanf(RFILE *stream, const char* format, va_list *args)
       }
    }
 
-   va_end(args_copy);
+   va_end(args);
    filestream_seek(stream, startpos+(bufiter-buf),
          RETRO_VFS_SEEK_POSITION_START);
 
    return ret;
-}
-
-int filestream_scanf(RFILE *stream, const char* format, ...)
-{
-   int result;
-   va_list vl;
-   va_start(vl, format);
-   result = filestream_vscanf(stream, format, &vl);
-   va_end(vl);
-   return result;
 }
 
 int64_t filestream_seek(RFILE *stream, int64_t offset, int seek_position)

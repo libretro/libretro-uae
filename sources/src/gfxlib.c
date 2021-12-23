@@ -31,7 +31,7 @@
 
 #include "options.h"
 #include "threaddep/thread.h"
-#include "memory.h"
+#include "memory_uae.h"
 #include "custom.h"
 #include "newcpu.h"
 #include "xwin.h"
@@ -427,13 +427,13 @@ STATIC_INLINE void rem_rect(struct RectList *rl, int num)
 
 static void free_rectlist(struct RectList *rl)
 {
-    free(rl->rects);
+    xfree(rl->rects);
 }
 
 static void free_bandlist(struct BandList *bl)
 {
-    free(bl->miny);
-    free(bl->maxy);
+    xfree(bl->miny);
+    xfree(bl->maxy);
 }
 
 static int regionrect_cmpfn(const void *a, const void *b)
@@ -1242,8 +1242,7 @@ static void LY_ThinLayerInfo(uaecptr li)
     put_byte (li + 89, fatten_count);
     if (fatten_count == 0) {
 	struct MyLayerInfo *mli = (struct MyLayerInfo *)find_and_rem_uniq(&MyLayerInfo_list, get_long (li+84));
-	if (mli)
-	    free(mli);
+	xfree(mli);
     }
 }
 
@@ -1398,7 +1397,7 @@ static void LY_DeleteLayer(uaecptr layer)
 	amiga_free(cr, CLIPRECT_SIZE);
     }
     amiga_free (l->amigaos_layer, LAYER_SIZE);
-    free(l);
+    xfree(l);
 }
 
 static uaecptr find_behindlayer_position(uaecptr li, uae_u16 flags)
@@ -1644,8 +1643,8 @@ void gfxlib_install(void)
     if (! currprefs.use_gfxlib)
 	return;
 
-    write_log (_T("Warning: you enabled the graphics.library replacement with -g\n")
-	     "This may be buggy right now, and will not speed things up much.\n");
+    write_log (_T("Warning: you enabled the graphics.library replacement with -g\n"));
+    write_log (_T("This may be buggy right now, and will not speed things up much.\n");
 
     resname = ds ("UAEgfxlib.resource");
     resid = ds ("UAE gfxlib 0.1");

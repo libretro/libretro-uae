@@ -1,3 +1,6 @@
+#ifndef UAE_GUI_H
+#define UAE_GUI_H
+
  /*
   * UAE - The Un*x Amiga Emulator
   *
@@ -6,15 +9,10 @@
   * Copyright 1996 Bernd Schmidt
   */
 
-#ifndef UAE_GUI_H
-#define UAE_GUI_H
-
-#include "uae/types.h"
-
 extern int gui_init (void);
 extern int gui_update (void);
 extern void gui_exit (void);
-extern void gui_led (int, int, int);
+extern void gui_led (int, int);
 extern void gui_handle_events (void);
 extern void gui_filename (int, const TCHAR *);
 extern void gui_fps (int fps, int idle, int color);
@@ -49,31 +47,26 @@ extern bool no_gui, quit_to_gui;
 #define LED_NET 11
 #define LED_MAX 12
 
-struct gui_info_drive {
-	bool drive_motor;		/* motor on off */
-	uae_u8 drive_track;		/* rw-head track */
-	bool drive_writing;		/* drive is writing */
-	bool drive_disabled;	/* drive is disabled */
-	TCHAR df[256];			/* inserted image */
-	uae_u32 crc32;			/* crc32 of image */
-	bool floppy_protected;	/* image is write protected */
-};
-
 struct gui_info
 {
-    bool powerled;				/* state of power led */
-    uae_u8 powerled_brightness;	/* 0 to 255 */
-    uae_s8 drive_side;			/* floppy side */
-    uae_s8 hd;					/* harddrive */
-    uae_s8 cd;					/* CD */
-	uae_s8 md;					/* CD32 or CDTV internal storage */
-	uae_s8 net;					/* network */
-    int cpu_halted;
+	bool drive_motor[4];		/* motor on off */
+	uae_u8 drive_track[4];		/* rw-head track */
+	bool drive_writing[4];		/* drive is writing */
+	bool drive_disabled[4];		/* drive is disabled */
+	bool powerled;			    /* state of power led */
+	uae_u8 powerled_brightness;	/* 0 to 255 */
+	uae_s8 drive_side;		    /* floppy side */
+	uae_s8 hd;			        /* harddrive */
+	uae_s8 cd;			        /* CD */
+	uae_s8 md;			        /* CD32 or CDTV internal storage */
+	uae_s8 net;                 /* network */
+	int cpu_halted;
 	int fps, idle;
 	int fps_color;
-    int sndbuf, sndbuf_status;
+	int sndbuf, sndbuf_status;
 	bool sndbuf_avail;
-	struct gui_info_drive drives[4];
+	TCHAR df[4][256];		/* inserted image */
+	uae_u32 crc32[4];		/* crc32 of image */
 };
 #define NUM_LEDS (LED_MAX)
 #define VISIBLE_LEDS (LED_MAX - 1)
@@ -83,36 +76,26 @@ extern struct gui_info gui_data;
 /* Functions to be called when prefs are changed by non-gui code.  */
 extern void gui_update_gfx (void);
 
-void notify_user (int msg);
-void notify_user_parms (int msg, const TCHAR *parms, ...);
-int translate_message (int msg, TCHAR *out);
+#define notify_user gui_message
+#define NUMSG_NEEDEXT2      "The software uses a non-standard floppy disk format. You may need to use a custom floppy disk image file instead of a standard one. This message will not appear again."
+#define NUMSG_NOROMKEY      "Could not find system ROM key file."
+#define NUMSG_KSROMCRCERROR "System ROM checksum incorrect. The system ROM image file may be corrupt."
+#define NUMSG_KSROMREADERROR "Error while reading system ROM."
+#define NUMSG_NOEXTROM      "No extended ROM found."
+#define NUMSG_MODRIP_NOTFOUND "No music modules or packed data found."
+#define NUMSG_MODRIP_FINISHED "Scan finished.\n"
+#define NUMSG_MODRIP_SAVE   "Module/packed data found\n%s\nStart address %08.8X, Size %d bytes\nWould you like to save it?"
+#define NUMSG_KS68020       "The selected system ROM requires a 68020 with 32-bit addressing or 68030 or higher CPU."
+#define NUMSG_ROMNEED       "One of the following system ROMs is required:\n\n%s\n\nCheck the System ROM path in the Paths panel and click Rescan ROMs."
+#define NUMSG_STATEHD       "WARNING: Current configuration is not fully compatible with state saves.\nThis message will not appear again."
+#define NUMSG_NOCAPS        "Selected disk image needs the SPS plugin\nwhich is available from\nhttp//www.softpres.org/"
+#define NUMSG_OLDCAPS       "You need an updated SPS plugin\nwhich is available from\nhttp//www.softpres.org/"
+#define NUMSG_KS68EC020     "The selected system ROM requires a 68020 with 24-bit addressing or higher CPU."
+#define NUMSG_KICKREP       "You need to have a floppy disk (image file) in DF0: to use the system ROM replacement."
+#define NUMSG_KICKREPNO     "The floppy disk (image file) in DF0: is not compatible with the system ROM replacement functionality."
+#define NUMSG_NOROM         "Could not load system ROM, trying system ROM replacement.\n"
+#define NUMSG_EXPROMNEED    "One of the following expansion boot ROMs is required:\n\n%s\n\nCheck the System ROM path in the Paths panel and click Rescan ROMs."
+#define NUMSG_KS68030       "The selected system ROM requires a 68030 CPU."
+#define NUMSG_KS68030PLUS   "The selected system ROM requires a 68030 or higher CPU."
 
-typedef enum {
-	NUMSG_NEEDEXT2, // 0
-	NUMSG_NOROM,
-	NUMSG_NOROMKEY,
-	NUMSG_KSROMCRCERROR,
-	NUMSG_KSROMREADERROR,
-	NUMSG_NOEXTROM, // 5
-	NUMSG_MODRIP_NOTFOUND,
-	NUMSG_MODRIP_FINISHED,
-	NUMSG_MODRIP_SAVE,
-	NUMSG_KS68EC020,
-	NUMSG_KS68020, // 10
-	NUMSG_KS68030,
-	NUMSG_ROMNEED,
-	NUMSG_EXPROMNEED,
-	NUMSG_NOZLIB,
-	NUMSG_STATEHD, // 15
-	NUMSG_NOCAPS,
-	NUMSG_OLDCAPS,
-	NUMSG_KICKREP,
-	NUMSG_KICKREPNO,
-	NUMSG_KS68030PLUS, // 20
-	NUMSG_NO_PPC,
-	NUMSG_UAEBOOTROM_PPC,
-	NUMSG_NOMEMORY,
-	NUMSG_LAST
-} notify_user_msg;
-
-#endif /* UAE_GUI_H */
+#endif // UAE_GUI_H

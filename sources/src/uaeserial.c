@@ -1,18 +1,18 @@
 /*
-* UAE - The Un*x Amiga Emulator
-*
-* uaeserial.device
-*
-* Copyright 2004/2006 Toni Wilen
-*
-*/
+ * UAE - The Un*x Amiga Emulator
+ *
+ * uaeserial.device
+ *
+ * Copyright 2004/2006 Toni Wilen
+ *
+ */
 
 #include "sysconfig.h"
 #include "sysdeps.h"
 
 #include "threaddep/thread.h"
 #include "options.h"
-#include "memory.h"
+#include "memory_uae.h"
 #include "custom.h"
 #include "newcpu.h"
 #include "traps.h"
@@ -83,8 +83,6 @@ int log_uaeserial = 0;
 #define io_SerFlags	0x4f	/* UBYTE see SerFlags bit definitions below  */
 #define io_Status	0x50	/* UWORD */
 
-#define IOExtSerSize 82
-
 /* status of serial port, as follows:
 *		   BIT	ACTIVE	FUNCTION
 *		    0	 ---	reserved
@@ -109,8 +107,7 @@ int log_uaeserial = 0;
 
 struct asyncreq {
 	struct asyncreq *next;
-	uaecptr arequest;
-	uae_u8 *request;
+	uaecptr request;
 	int ready;
 };
 
@@ -132,20 +129,20 @@ struct devstruct {
 static int uniq;
 static uae_u32 nscmd_cmd;
 static struct devstruct devst[MAX_TOTAL_DEVICES];
-static uae_sem_t change_sem, async_sem, pipe_sem;
+static uae_sem_t change_sem, async_sem;
 
-static const TCHAR *getdevname (void)
+static TCHAR *getdevname (void)
 {
 	return _T("uaeserial.device");
 }
 
-static void io_log (const TCHAR *msg, uae_u8 *request, uaecptr arequest)
+static void io_log (TCHAR *msg, uaecptr request)
 {
 	if (log_uaeserial)
 		write_log (_T("%s: %08X %d %08X %d %d io_actual=%d io_error=%d\n"),
-		msg, request, get_word_host(request + 28), get_long_host(request + 40),
-			get_long_host(request + 36), get_long_host(request + 44),
-			get_long_host(request + 32), get_byte_host(request + 31));
+		msg, request, get_word (request + 28), get_long (request + 40),
+		get_long (request + 36), get_long (request + 44),
+		get_long (request + 32), get_byte (request + 31));
 }
 
 static struct devstruct *getdevstruct (int uniq)
@@ -158,7 +155,7 @@ static struct devstruct *getdevstruct (int uniq)
 	return 0;
 }
 
-static void dev_thread (void *devs);
+static void *dev_thread (void *devs);
 static int start_thread (struct devstruct *dev)
 {
 	init_comm_pipe (&dev->requests, 100, 1);
@@ -173,73 +170,69 @@ static void dev_close_3 (struct devstruct *dev)
 	uaeser_close (dev->sysdata);
 	dev->open = 0;
 	xfree (dev->sysdata);
-	uae_sem_wait(&pipe_sem);
-	write_comm_pipe_pvoid(&dev->requests, NULL, 0);
-	write_comm_pipe_pvoid(&dev->requests, NULL, 0);
 	write_comm_pipe_u32 (&dev->requests, 0, 1);
-	uae_sem_post(&pipe_sem);
 }
 
-static uae_u32 REGPARAM2 dev_close (TrapContext *ctx)
+static uae_u32 REGPARAM2 dev_close (TrapContext *context)
 {
-	uae_u32 request = trap_get_areg(ctx, 1);
+	uae_u32 request = m68k_areg (regs, 1);
 	struct devstruct *dev;
 
-	dev = getdevstruct (trap_get_long(ctx, request + 24));
+	dev = getdevstruct (get_long (request + 24));
 	if (!dev)
 		return 0;
 	if (log_uaeserial)
 		write_log (_T("%s:%d close, req=%x\n"), getdevname(), dev->unit, request);
 	dev_close_3 (dev);
-	trap_put_long(ctx, request + 24, 0);
-	trap_put_word(ctx, trap_get_areg(ctx, 6) + 32, trap_get_word(ctx, trap_get_areg(ctx, 6) + 32) - 1);
+	put_long (request + 24, 0);
+	put_word (m68k_areg (regs, 6) + 32, get_word (m68k_areg (regs, 6) + 32) - 1);
 	return 0;
 }
 
-static void resetparams(TrapContext *ctx, struct devstruct *dev, uae_u8 *req)
+static void resetparams (struct devstruct *dev, uaecptr req)
 {
-	put_long_host(req + io_CtlChar, 0x00001311);
-	put_long_host(req + io_RBufLen, 1024);
-	put_long_host(req + io_ExtFlags, 0);
-	put_long_host(req + io_Baud, 9600);
-	put_long_host(req + io_BrkTime, 250000);
-	put_long_host(req + io_TermArray0, 0);
-	put_long_host(req + io_TermArray1, 0);
-	put_byte_host(req + io_ReadLen, 8);
-	put_byte_host(req + io_WriteLen, 8);
-	put_byte_host(req + io_StopBits, 1);
-	put_byte_host(req + io_SerFlags, get_byte_host(req + io_SerFlags) & (SERF_XDISABLED | SERF_SHARED | SERF_7WIRE));
-	put_word_host(req + io_Status, 0);
+	put_long (req + io_CtlChar, 0x00001311);
+	put_long (req + io_RBufLen, 1024);
+	put_long (req + io_ExtFlags, 0);
+	put_long (req + io_Baud, 9600);
+	put_long (req + io_BrkTime, 250000);
+	put_long (req + io_TermArray0, 0);
+	put_long (req + io_TermArray1, 0);
+	put_byte (req + io_ReadLen, 8);
+	put_byte (req + io_WriteLen, 8);
+	put_byte (req + io_StopBits, 1);
+	put_byte (req + io_SerFlags, get_byte (req + io_SerFlags) & (SERF_XDISABLED | SERF_SHARED | SERF_7WIRE));
+	put_word (req + io_Status, 0);
 }
 
-static int setparams(TrapContext *ctx, struct devstruct *dev, uae_u8 *req)
+static int setparams (struct devstruct *dev, uaecptr req)
 {
 	int v;
 	int rbuffer, baud, rbits, wbits, sbits, rtscts, parity, xonxoff;
 
-	rbuffer = get_long_host(req + io_RBufLen);
-	v = get_long_host(req + io_ExtFlags);
+	rbuffer = get_long (req + io_RBufLen);
+	v = get_long (req + io_ExtFlags);
 	if (v) {
 		write_log (_T("UAESER: io_ExtFlags=%08x, not supported\n"), v);
 		return 5;
 	}
-	baud = get_long_host(req + io_Baud);
-	v = get_byte_host(req + io_SerFlags);
+	baud = get_long (req + io_Baud);
+	v = get_byte (req + io_SerFlags);
 	if (v & SERF_EOFMODE) {
 		write_log (_T("UAESER: SERF_EOFMODE not supported\n"));
 		return 5;
 	}
 	xonxoff = (v & SERF_XDISABLED) ? 0 : 1;
 	if (xonxoff) {
-		xonxoff |= (get_long_host(req + io_CtlChar) << 8) & 0x00ffff00;
+		xonxoff |= (get_long (req + io_CtlChar) << 8) & 0x00ffff00;
 	}
 	rtscts = (v & SERF_7WIRE) ? 1 : 0;
 	parity = 0;
 	if (v & SERF_PARTY_ON)
 		parity = (v & SERF_PARTY_ODD) ? 1 : 2;
-	rbits = get_byte_host(req + io_ReadLen);
-	wbits = get_byte_host(req + io_WriteLen);
-	sbits = get_byte_host(req + io_StopBits);
+	rbits = get_byte (req + io_ReadLen);
+	wbits = get_byte (req + io_WriteLen);
+	sbits = get_byte (req + io_StopBits);
 	if ((rbits != 7 && rbits != 8) || (wbits != 7 && wbits != 8) || (sbits != 1 && sbits != 2) || rbits != wbits) {
 		write_log (_T("UAESER: Read=%d, Write=%d, Stop=%d, not supported\n"), rbits, wbits, sbits);
 		return 5;
@@ -256,63 +249,59 @@ static int setparams(TrapContext *ctx, struct devstruct *dev, uae_u8 *req)
 	return 0;
 }
 
-static int openfail(TrapContext *ctx, uaecptr ioreq, int error)
+static int openfail (uaecptr ioreq, int error)
 {
-	trap_put_long(ctx, ioreq + 20, -1);
-	trap_put_byte(ctx, ioreq + 31, error);
+	put_long (ioreq + 20, -1);
+	put_byte (ioreq + 31, error);
 	return (uae_u32)-1;
 }
 
-static uae_u32 REGPARAM2 dev_open (TrapContext *ctx)
+static uae_u32 REGPARAM2 dev_open (TrapContext *context)
 {
-	uaecptr ioreq = trap_get_areg(ctx, 1);
-	uae_u32 unit = trap_get_dreg(ctx, 0);
-	uae_u32 flags = trap_get_dreg(ctx, 1);
+	uaecptr ioreq = m68k_areg (regs, 1);
+	uae_u32 unit = m68k_dreg (regs, 0);
+	uae_u32 flags = m68k_dreg (regs, 1);
 	struct devstruct *dev;
 	int i, err;
-	uae_u8 request[IOExtSerSize];
 
-	trap_get_bytes(ctx, request, ioreq, IOExtSerSize);
-
-	if (trap_get_word(ctx, ioreq + 0x12) < IOSTDREQ_SIZE)
-		return openfail(ctx, ioreq, IOERR_BADLENGTH);
+	if (get_word (ioreq + 0x12) < IOSTDREQ_SIZE)
+		return openfail (ioreq, IOERR_BADLENGTH);
 	for (i = 0; i < MAX_TOTAL_DEVICES; i++) {
-		if (devst[i].open && devst[i].unit == unit && devst[i].exclusive)
-			return openfail(ctx, ioreq, IOERR_UNITBUSY);
+		if (devst[i].open && devst[i].unit == (int)unit && devst[i].exclusive)
+			return openfail (ioreq, IOERR_UNITBUSY);
 	}
 	for (i = 0; i < MAX_TOTAL_DEVICES; i++) {
 		if (!devst[i].open)
 			break;
 	}
 	if (i == MAX_TOTAL_DEVICES)
-		return openfail(ctx, ioreq, IOERR_OPENFAIL);
+		return openfail (ioreq, IOERR_OPENFAIL);
 	dev = &devst[i];
 	dev->sysdata = xcalloc (uae_u8, uaeser_getdatalength ());
 	if (!uaeser_open (dev->sysdata, dev, unit)) {
 		xfree (dev->sysdata);
-		return openfail(ctx, ioreq, IOERR_OPENFAIL);
+		return openfail (ioreq, IOERR_OPENFAIL);
 	}
 	dev->unit = unit;
 	dev->open = 1;
 	dev->uniq = ++uniq;
-	dev->exclusive = (trap_get_word(ctx, ioreq + io_SerFlags) & SERF_SHARED) ? 0 : 1;
-	put_long_host(request + 24, dev->uniq);
-	resetparams (ctx, dev, request);
-	err = setparams (ctx, dev, request);
+	dev->exclusive = (get_word (ioreq + io_SerFlags) & SERF_SHARED) ? 0 : 1;
+	put_long (ioreq + 24, dev->uniq);
+	resetparams (dev, ioreq);
+	err = setparams (dev, ioreq);
 	if (err) {
 		uaeser_close (dev->sysdata);
 		dev->open = 0;
 		xfree (dev->sysdata);
-		return openfail(ctx, ioreq, err);
+		return openfail (ioreq, err);
 	}
 	if (log_uaeserial)
 		write_log (_T("%s:%d open ioreq=%08X\n"), getdevname(), unit, ioreq);
 	start_thread (dev);
 
-	trap_put_word(ctx, trap_get_areg(ctx, 6) + 32, trap_get_word(ctx, trap_get_areg(ctx, 6) + 32) + 1);
-	put_byte_host(request + 31, 0);
-	put_byte_host(request + 8, 7);
-	trap_put_bytes(ctx, request + 8, ioreq + 8, IOExtSerSize - 8);
+	put_word (m68k_areg (regs, 6) + 32, get_word (m68k_areg (regs, 6) + 32) + 1);
+	put_byte (ioreq + 31, 0);
+	put_byte (ioreq + 8, 7);
 	return 0;
 }
 
@@ -321,14 +310,15 @@ static uae_u32 REGPARAM2 dev_expunge (TrapContext *context)
 	return 0;
 }
 
-static struct asyncreq *get_async_request (struct devstruct *dev, uaecptr arequest, int ready)
+static struct asyncreq *get_async_request (struct devstruct *dev, uaecptr request, int ready)
 {
 	struct asyncreq *ar;
+	int ret = 0;
 
 	uae_sem_wait (&async_sem);
 	ar = dev->ar;
 	while (ar) {
-		if (ar->arequest == arequest) {
+		if (ar->request == request) {
 			if (ready)
 				ar->ready = 1;
 			break;
@@ -339,16 +329,15 @@ static struct asyncreq *get_async_request (struct devstruct *dev, uaecptr areque
 	return ar;
 }
 
-static int add_async_request (struct devstruct *dev, uae_u8 *request, uaecptr arequest)
+static int add_async_request (struct devstruct *dev, uaecptr request)
 {
 	struct asyncreq *ar, *ar2;
 
 	if (log_uaeserial)
-		write_log (_T("%s:%d async request %x added\n"), getdevname(), dev->unit, arequest);
+		write_log (_T("%s:%d async request %x added\n"), getdevname(), dev->unit, request);
 
 	uae_sem_wait (&async_sem);
 	ar = xcalloc (struct asyncreq, 1);
-	ar->arequest = arequest;
 	ar->request = request;
 	if (!dev->ar) {
 		dev->ar = ar;
@@ -362,7 +351,7 @@ static int add_async_request (struct devstruct *dev, uae_u8 *request, uaecptr ar
 	return 1;
 }
 
-static int release_async_request (struct devstruct *dev, uaecptr arequest)
+static int release_async_request (struct devstruct *dev, uaecptr request)
 {
 	struct asyncreq *ar, *prevar;
 
@@ -370,106 +359,95 @@ static int release_async_request (struct devstruct *dev, uaecptr arequest)
 	ar = dev->ar;
 	prevar = NULL;
 	while (ar) {
-		if (ar->arequest == arequest) {
+		if (ar->request == request) {
 			if (prevar == NULL)
 				dev->ar = ar->next;
 			else
 				prevar->next = ar->next;
 			uae_sem_post (&async_sem);
-			xfree(ar->request);
-			xfree(ar);
+			xfree (ar);
 			if (log_uaeserial)
-				write_log (_T("%s:%d async request %x removed\n"), getdevname(), dev->unit, arequest);
+				write_log (_T("%s:%d async request %x removed\n"), getdevname(), dev->unit, request);
 			return 1;
 		}
 		prevar = ar;
 		ar = ar->next;
 	}
 	uae_sem_post (&async_sem);
-	write_log (_T("%s:%d async request %x not found for removal!\n"), getdevname(), dev->unit, arequest);
+	write_log (_T("%s:%d async request %x not found for removal!\n"), getdevname(), dev->unit, request);
 	return 0;
 }
 
-static void abort_async(TrapContext *ctx, struct devstruct *dev, uaecptr arequest)
+static void abort_async (struct devstruct *dev, uaecptr request)
 {
-	struct asyncreq *ar = get_async_request (dev, arequest, 1);
+	struct asyncreq *ar = get_async_request (dev, request, 1);
 	if (!ar) {
-		write_log (_T("%s:%d: abort async but no request %x found!\n"), getdevname(), dev->unit, arequest);
+		write_log (_T("%s:%d: abort async but no request %x found!\n"), getdevname(), dev->unit, request);
 		return;
 	}
-	uae_u8 *request = ar->request;
 	if (log_uaeserial)
-		write_log (_T("%s:%d asyncronous request=%08X aborted\n"), getdevname(), dev->unit, arequest);
-	put_byte_host(request + 31, IOERR_ABORTED);
-	put_byte_host(request + 30, get_byte_host(request + 30) | 0x20);
-	uae_sem_wait(&pipe_sem);
-	write_comm_pipe_pvoid(&dev->requests, ctx, 0);
-	write_comm_pipe_pvoid(&dev->requests, request, 0);
-	write_comm_pipe_u32(&dev->requests, arequest, 1);
-	uae_sem_post(&pipe_sem);
+		write_log (_T("%s:%d asyncronous request=%08X aborted\n"), getdevname(), dev->unit, request);
+	put_byte (request + 31, IOERR_ABORTED);
+	put_byte (request + 30, get_byte (request + 30) | 0x20);
+	write_comm_pipe_u32 (&dev->requests, request, 1);
+}
+
+static uae_u8 *memmap(uae_u32 addr, uae_u32 len)
+{
+	addrbank *bank_data = &get_mem_bank (addr);
+	if (!bank_data->check (addr, len))
+		return NULL;
+	return bank_data->xlateaddr (addr);
 }
 
 void uaeser_signal (void *vdev, int sigmask)
 {
-	TrapContext *ctx = NULL;
 	struct devstruct *dev = (struct devstruct*)vdev;
 	struct asyncreq *ar;
+	int i = 0;
 
 	uae_sem_wait (&async_sem);
 	ar = dev->ar;
 	while (ar) {
 		if (!ar->ready) {
-			uaecptr arequest = ar->arequest;
-			uae_u8 *request = ar->request;
-			uae_u32 io_data = get_long_host(request + 40); // 0x28
-			uae_u32 io_length = get_long_host(request + 36); // 0x24
-			int command = get_word_host(request + 28);
+			uaecptr request = ar->request;
+			uae_u32 io_data = get_long (request + 40); // 0x28
+			uae_u32 io_length = get_long (request + 36); // 0x24
+			int command = get_word (request + 28);
 			uae_u32 io_error = 0, io_actual = 0;
+			uae_u8 *addr;
 			int io_done = 0;
 
 			switch (command)
 			{
 			case SDCMD_BREAK:
 				if (ar == dev->ar) {
-					uaeser_break (dev->sysdata,  get_long_host(request + io_BrkTime));
+					uaeser_break (dev->sysdata,  get_long (request + io_BrkTime));
 					io_done = 1;
 				}
 				break;
 			case CMD_READ:
 				if (sigmask & 1) {
-					uae_u8 tmp[RTAREA_TRAP_DATA_EXTRA_SIZE];
-					io_done = 1;
-					while (io_length > 0) {
-						int size = io_length > sizeof(tmp) ? sizeof(tmp) : io_length;
-						int status = uaeser_read(dev->sysdata, tmp, size);
-						if (status > 0) {
-							trap_put_bytes(ctx, tmp, io_data, size);
-							io_actual += size;
-							io_data += size;
-							io_length -= size;
-						} else if (status == 0) {
-							if (io_actual == 0)
-								io_done = 0;
-							break;
+					addr = memmap(io_data, io_length);
+					if (addr) {
+						if (uaeser_read (dev->sysdata, addr, io_length)) {
+							io_error = 0;
+							io_actual = io_length;
+							io_done = 1;
 						}
+					} else {
+						io_error = IOERR_BADADDRESS;
+						io_done = 1;
 					}
-				} else if (sigmask & 4) {
-					io_done = 1;
-					io_error = SerErr_DetectedBreak;
 				}
 				break;
 			case CMD_WRITE:
 				if (sigmask & 2) {
-					uae_u8 tmp[RTAREA_TRAP_DATA_EXTRA_SIZE];
-					while (io_length > 0) {
-						int size = io_length > sizeof(tmp) ? sizeof(tmp) : io_length;
-						trap_get_bytes(ctx, tmp, io_data, size);
-						if (!uaeser_write(dev->sysdata, tmp, size))
-							break;
-						io_actual += size;
-						io_data += size;
-						io_length -= size;
-					}
+					io_error = IOERR_BADADDRESS;
+					addr = memmap(io_data, io_length);
+					if (addr && uaeser_write (dev->sysdata, addr, io_length))
+						io_error = 0;
+					io_actual = io_length;
 					io_done = 1;
 				}
 				break;
@@ -481,15 +459,10 @@ void uaeser_signal (void *vdev, int sigmask)
 			if (io_done) {
 				if (log_uaeserial)
 					write_log (_T("%s:%d async request %x completed\n"), getdevname(), dev->unit, request);
-				put_long_host(request + 32, io_actual);
-				put_byte_host(request + 31, io_error);
+				put_long (request + 32, io_actual);
+				put_byte (request + 31, io_error);
 				ar->ready = 1;
-				uae_sem_wait(&pipe_sem);
-				write_comm_pipe_pvoid(&dev->requests, ctx, 0);
-				write_comm_pipe_pvoid(&dev->requests, request, 0);
-				write_comm_pipe_u32 (&dev->requests, arequest, 1);
-				uae_sem_post(&pipe_sem);
-				break;
+				write_comm_pipe_u32 (&dev->requests, request, 1);
 			}
 
 		}
@@ -498,49 +471,49 @@ void uaeser_signal (void *vdev, int sigmask)
 	uae_sem_post (&async_sem);
 }
 
-static void cmd_reset(TrapContext *ctx, struct devstruct *dev, uae_u8 *req)
+static void cmd_reset(struct devstruct *dev, uaecptr req)
 {
 	while (dev->ar)
-		abort_async(ctx, dev, dev->ar->arequest);
-	put_long_host(req + io_RBufLen, 8192);
-	put_long_host(req + io_ExtFlags, 0);
-	put_long_host(req + io_Baud, 57600);
-	put_long_host(req + io_BrkTime, 250000);
-	put_long_host(req + io_TermArray0, 0);
-	put_long_host(req + io_TermArray1, 0);
-	put_long_host(req + io_ReadLen, 8);
-	put_long_host(req + io_WriteLen, 8);
-	put_long_host(req + io_StopBits, 1);
-	put_long_host(req + io_SerFlags, SERF_XDISABLED);
-	put_word_host(req + io_Status, 0);
+		abort_async (dev, dev->ar->request);
+	put_long (req + io_RBufLen, 8192);
+	put_long (req + io_ExtFlags, 0);
+	put_long (req + io_Baud, 57600);
+	put_long (req + io_BrkTime, 250000);
+	put_long (req + io_TermArray0, 0);
+	put_long (req + io_TermArray1, 0);
+	put_long (req + io_ReadLen, 8);
+	put_long (req + io_WriteLen, 8);
+	put_long (req + io_StopBits, 1);
+	put_long (req + io_SerFlags, SERF_XDISABLED);
+	put_word (req + io_Status, 0);
 }
 
-static int dev_do_io(TrapContext *ctx, struct devstruct *dev, uae_u8 *request, uaecptr arequest, int quick)
+static int dev_do_io (struct devstruct *dev, uaecptr request, int quick)
 {
 	uae_u32 command;
-	uae_u32 io_data = get_long_host(request + 40); // 0x28
-	uae_u32 io_length = get_long_host(request + 36); // 0x24
-	uae_u32 io_actual = get_long_host(request + 32); // 0x20
-	uae_u32 io_offset = get_long_host(request + 44); // 0x2c
+	uae_u32 io_data = get_long (request + 40); // 0x28
+	uae_u32 io_length = get_long (request + 36); // 0x24
+	uae_u32 io_actual = get_long (request + 32); // 0x20
+	uae_u32 io_offset = get_long (request + 44); // 0x2c
 	uae_u32 io_error = 0;
 	uae_u16 io_status;
 	int async = 0;
 
 	if (!dev)
 		return 0;
-	command = get_word_host(request + 28);
-	io_log (_T("dev_io_START"), request, arequest);
+	command = get_word (request + 28);
+	io_log (_T("dev_io_START"),request);
 
 	switch (command)
 	{
 	case SDCMD_QUERY:
 		if (uaeser_query (dev->sysdata, &io_status, &io_actual))
-			put_byte_host(request + io_Status, (uae_u8)io_status);
+			put_byte (request + io_Status, io_status);
 		else
 			io_error = IOERR_BADADDRESS;
 		break;
 	case SDCMD_SETPARAMS:
-		io_error = setparams(ctx, dev, request);
+		io_error = setparams(dev, request);
 		break;
 	case CMD_WRITE:
 		async = 1;
@@ -549,134 +522,116 @@ static int dev_do_io(TrapContext *ctx, struct devstruct *dev, uae_u8 *request, u
 		async = 1;
 		break;
 	case SDCMD_BREAK:
-		if (get_byte_host(request + io_SerFlags) & SERF_QUEUEDBRK) {
+		if (get_byte (request + io_SerFlags) & SERF_QUEUEDBRK) {
 			async = 1;
 		} else {
-			uaeser_break(dev->sysdata,  get_long_host(request + io_BrkTime));
+			uaeser_break (dev->sysdata,  get_long (request + io_BrkTime));
 		}
 		break;
 	case CMD_CLEAR:
 		uaeser_clearbuffers(dev->sysdata);
 		break;
 	case CMD_RESET:
-		cmd_reset(ctx, dev, request);
+		cmd_reset(dev, request);
 		break;
 	case CMD_FLUSH:
 	case CMD_START:
 	case CMD_STOP:
 		break;
 	case NSCMD_DEVICEQUERY:
-		trap_put_long(ctx, io_data + 0, 0);
-		trap_put_long(ctx, io_data + 4, 16); /* size */
-		trap_put_word(ctx, io_data + 8, NSDEVTYPE_SERIAL);
-		trap_put_word(ctx, io_data + 10, 0);
-		trap_put_long(ctx, io_data + 12, nscmd_cmd);
+		put_long (io_data + 0, 0);
+		put_long (io_data + 4, 16); /* size */
+		put_word (io_data + 8, NSDEVTYPE_SERIAL);
+		put_word (io_data + 10, 0);
+		put_long (io_data + 12, nscmd_cmd);
 		io_actual = 16;
 		break;
 	default:
 		io_error = IOERR_NOCMD;
 		break;
 	}
-	put_long_host(request + 32, io_actual);
-	put_byte_host(request + 31, io_error);
-	io_log (_T("dev_io_END"), request, arequest);
+	put_long (request + 32, io_actual);
+	put_byte (request + 31, io_error);
+	io_log (_T("dev_io_END"),request);
 	return async;
 }
 
-static int dev_canquick (struct devstruct *dev, uae_u8 *request)
+static int dev_canquick (struct devstruct *dev, uaecptr request)
 {
 	return 0;
 }
 
-static uae_u32 REGPARAM2 dev_beginio (TrapContext *ctx)
+static uae_u32 REGPARAM2 dev_beginio (TrapContext *context)
 {
-	uae_u8 err = 0;
-	uae_u32 arequest = trap_get_areg(ctx, 1);
-	uae_u8 *request = xmalloc(uae_u8, IOExtSerSize);
+	uae_u32 request = m68k_areg (regs, 1);
+	uae_u8 flags = get_byte (request + 30);
+	int command = get_word (request + 28);
+	struct devstruct *dev = getdevstruct (get_long (request + 24));
 
-	trap_get_bytes(ctx, request, arequest, IOExtSerSize);
-
-	uae_u8 flags = get_byte_host(request + 30);
-	int command = get_word_host(request + 28);
-	struct devstruct *dev = getdevstruct (get_long_host(request + 24));
-
-	put_byte_host(request + 8, NT_MESSAGE);
+	put_byte (request + 8, NT_MESSAGE);
 	if (!dev) {
-		err = 32;
-		goto end;
+		put_byte (request + 31, 32);
+		return get_byte (request + 31);
 	}
-	put_byte_host(request + 31, 0);
-	if ((flags & 1) && dev_canquick(dev, request)) {
-		if (dev_do_io(ctx, dev, request, arequest, 1))
+	put_byte (request + 31, 0);
+	if ((flags & 1) && dev_canquick (dev, request)) {
+		if (dev_do_io (dev, request, 1))
 			write_log (_T("device %s:%d command %d bug with IO_QUICK\n"), getdevname(), dev->unit, command);
-		err = get_byte_host(request + 31);
+		return get_byte (request + 31);
 	} else {
-		put_byte_host(request + 30, get_byte_host(request + 30) & ~1);
-		trap_put_bytes(ctx, request + 8, arequest + 8, IOExtSerSize - 8);
-		uae_sem_wait(&pipe_sem);
-		trap_set_background(ctx);
-		write_comm_pipe_pvoid(&dev->requests, ctx, 0);
-		write_comm_pipe_pvoid(&dev->requests, request, 0);
-		write_comm_pipe_u32(&dev->requests, arequest, 1);
-		uae_sem_post(&pipe_sem);
+		put_byte (request + 30, get_byte (request + 30) & ~1);
+		write_comm_pipe_u32 (&dev->requests, request, 1);
 		return 0;
 	}
-end:
-	put_byte_host(request + 31, 32);
-	trap_put_bytes(ctx, request + 8, arequest + 8, IOExtSerSize - 8);
-	xfree(request);
-	return err;
 }
 
-static void dev_thread (void *devs)
+static void *dev_thread (void *devs)
 {
 	struct devstruct *dev = (struct devstruct*)devs;
 
-	uae_set_thread_priority (NULL, 1);
+	uae_set_thread_priority (2);
 	dev->thread_running = 1;
 	uae_sem_post (&dev->sync_sem);
 	for (;;) {
-		TrapContext *ctx = (TrapContext*)read_comm_pipe_pvoid_blocking(&dev->requests);
-		uae_u8 *iobuf = (uae_u8*)read_comm_pipe_pvoid_blocking(&dev->requests);
 		uaecptr request = (uaecptr)read_comm_pipe_u32_blocking (&dev->requests);
 		uae_sem_wait (&change_sem);
 		if (!request) {
 			dev->thread_running = 0;
 			uae_sem_post (&dev->sync_sem);
 			uae_sem_post (&change_sem);
-			return;
+			return 0;
 		} else if (get_async_request (dev, request, 1)) {
 			uae_ReplyMsg (request);
 			release_async_request (dev, request);
-		} else if (dev_do_io(ctx, dev, iobuf, request, 0) == 0) {
+		} else if (dev_do_io (dev, request, 0) == 0) {
 			uae_ReplyMsg (request);
 		} else {
-			add_async_request (dev, iobuf, request);
+			add_async_request (dev, request);
 			uaeser_trigger (dev->sysdata);
 		}
-		trap_background_set_complete(ctx);
 		uae_sem_post (&change_sem);
 	}
+	return 0;
 }
 
 static uae_u32 REGPARAM2 dev_init (TrapContext *context)
 {
-	uae_u32 base = trap_get_dreg (context, 0);
+	uae_u32 base = m68k_dreg (regs, 0);
 	if (log_uaeserial)
 		write_log (_T("%s init\n"), getdevname ());
 	return base;
 }
 
-static uae_u32 REGPARAM2 dev_abortio(TrapContext *ctx)
+static uae_u32 REGPARAM2 dev_abortio (TrapContext *context)
 {
-	uae_u32 request = trap_get_areg(ctx, 1);
-	struct devstruct *dev = getdevstruct(trap_get_long(ctx, request + 24));
+	uae_u32 request = m68k_areg (regs, 1);
+	struct devstruct *dev = getdevstruct (get_long (request + 24));
 
 	if (!dev) {
-		trap_put_byte(ctx, request + 31, 32);
-		return trap_get_byte(ctx, request + 31);
+		put_byte (request + 31, 32);
+		return get_byte (request + 31);
 	}
-	abort_async(ctx, dev, request);
+	abort_async (dev, request);
 	return 0;
 }
 
@@ -689,7 +644,7 @@ static void dev_reset (void)
 		dev = &devst[i];
 		if (dev->open) {
 			while (dev->ar)
-				abort_async(NULL, dev, dev->ar->arequest);
+				abort_async (dev, dev->ar->request);
 			dev_close_3 (dev);
 			uae_sem_wait (&dev->sync_sem);
 		}
@@ -701,7 +656,7 @@ static uaecptr ROM_uaeserialdev_resname = 0,
 	ROM_uaeserialdev_resid = 0,
 	ROM_uaeserialdev_init = 0;
 
-uaecptr uaeserialdev_startup(TrapContext *ctx, uaecptr resaddr)
+uaecptr uaeserialdev_startup (uaecptr resaddr)
 {
 	if (!currprefs.uaeserial)
 		return resaddr;
@@ -709,17 +664,14 @@ uaecptr uaeserialdev_startup(TrapContext *ctx, uaecptr resaddr)
 		write_log (_T("uaeserialdev_startup(0x%x)\n"), resaddr);
 	/* Build a struct Resident. This will set up and initialize
 	* the serial.device */
-	trap_put_word(ctx, resaddr + 0x0, 0x4AFC);
-	trap_put_long(ctx, resaddr + 0x2, resaddr);
-	trap_put_long(ctx, resaddr + 0x6, resaddr + 0x1A); /* Continue scan here */
-	if (kickstart_version >= 37) {
-		trap_put_long(ctx, resaddr + 0xA, 0x84010300 | AFTERDOS_PRI); /* RTF_AUTOINIT, RT_VERSION NT_LIBRARY, RT_PRI */
-	} else {
-		trap_put_long(ctx, resaddr + 0xA, 0x81010305); /* RTF_AUTOINIT, RT_VERSION NT_LIBRARY, RT_PRI */
-	}
-	trap_put_long(ctx, resaddr + 0xE, ROM_uaeserialdev_resname);
-	trap_put_long(ctx, resaddr + 0x12, ROM_uaeserialdev_resid);
-	trap_put_long(ctx, resaddr + 0x16, ROM_uaeserialdev_init);
+	put_word (resaddr + 0x0, 0x4AFC);
+	put_long (resaddr + 0x2, resaddr);
+	put_long (resaddr + 0x6, resaddr + 0x1A); /* Continue scan here */
+	put_word (resaddr + 0xA, 0x8101); /* RTF_AUTOINIT|RTF_COLDSTART; Version 1 */
+	put_word (resaddr + 0xC, 0x0305); /* NT_DEVICE; pri 05 */
+	put_long (resaddr + 0xE, ROM_uaeserialdev_resname);
+	put_long (resaddr + 0x12, ROM_uaeserialdev_resid);
+	put_long (resaddr + 0x16, ROM_uaeserialdev_init);
 	resaddr += 0x1A;
 	return resaddr;
 }
@@ -735,7 +687,7 @@ void uaeserialdev_install (void)
 		return;
 
 	ROM_uaeserialdev_resname = ds (_T("uaeserial.device"));
-	ROM_uaeserialdev_resid = ds (_T("UAE serial.device 0.3"));
+	ROM_uaeserialdev_resid = ds (_T("UAE serial.device 0.1"));
 
 	/* initcode */
 	initcode = here ();
@@ -816,9 +768,8 @@ void uaeserialdev_install (void)
 
 void uaeserialdev_start_threads (void)
 {
-	uae_sem_init(&change_sem, 0, 1);
-	uae_sem_init(&async_sem, 0, 1);
-	uae_sem_init(&pipe_sem, 0, 1);
+	uae_sem_init (&change_sem, 0, 1);
+	uae_sem_init (&async_sem, 0, 1);
 }
 
 void uaeserialdev_reset (void)

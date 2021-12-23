@@ -4,8 +4,13 @@ static void NOINLINE BLT_NAME (unsigned int w, unsigned int h, uae_u8 *src, uae_
 {
 	uae_u8 *src2 = src;
 	uae_u8 *dst2 = dst;
+/* REMOVEME:
+ * r is nowhere used, and this is only a forwarder for uaelib_demux2.
+ */
+#if 0
 	uae_u32 *src2_32 = (uae_u32*)src;
 	uae_u32 *dst2_32 = (uae_u32*)dst;
+#endif
 	unsigned int y, x, ww, xxd;
 #ifdef BLT_TEMP
 	uae_u32 tmp;
@@ -38,8 +43,13 @@ static void NOINLINE BLT_NAME (unsigned int w, unsigned int h, uae_u8 *src, uae_
 {
 	uae_u8 *src2 = src;
 	uae_u8 *dst2 = dst;
+/* REMOVEME:
+ * r is nowhere used, and this is only a forwarder for uaelib_demux2.
+ */
+#if 0
 	uae_u32 *src2_32 = (uae_u32*)src;
 	uae_u32 *dst2_32 = (uae_u32*)dst;
+#endif
 	unsigned int y, x, ww, xxd;
 #ifdef BLT_TEMP
 #if BLT_SIZE == 4
@@ -62,9 +72,15 @@ static void NOINLINE BLT_NAME (unsigned int w, unsigned int h, uae_u8 *src, uae_
 			}
 #if BLT_SIZE == 2
 			if (w & 1) {
+#ifdef BLT_NEED_SOURCE
 				uae_u16 *src_16 = (uae_u16*)src_32;
+#endif
 				uae_u16 *dst_16 = (uae_u16*)dst_32;
+#ifdef BLT_NEED_SOURCE
 				BLT_FUNC (src_16, dst_16);
+#else
+				BLT_FUNC (NULL, dst_16);
+#endif // BLT_NEED_SOURCE
 			}
 #elif BLT_SIZE == 1
 			{
@@ -113,9 +129,16 @@ static void NOINLINE BLT_NAME (unsigned int w, unsigned int h, uae_u8 *src, uae_
 		}
 #if BLT_SIZE == 2
 		if (w & 1) {
+#ifdef BLT_NEED_SOURCE
 			uae_u16 *src_16 = (uae_u16*)src_32;
+#endif // BLT_NEED_SOURCE
 			uae_u16 *dst_16 = (uae_u16*)dst_32;
+#ifdef BLT_NEED_SOURCE
 			BLT_FUNC (src_16, dst_16);
+#else
+			BLT_FUNC (NULL, dst_16);
+#endif // BLT_NEED_SOURCE
+
 		}
 #elif BLT_SIZE == 1
 		{
@@ -139,3 +162,4 @@ static void NOINLINE BLT_NAME (unsigned int w, unsigned int h, uae_u8 *src, uae_
 #ifdef BLT_TEMP
 #undef BLT_TEMP
 #endif
+#define BLT_NEED_SOURCE

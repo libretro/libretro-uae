@@ -24,7 +24,7 @@
 
 #ifdef __LIBRETRO__
 #include "retro_timers.h"
-#define uae_msleep retro_sleep
+#define uae_msleep(msecs) retro_sleep(msecs)
 #endif
 
 #define ONE_THOUSAND	1000

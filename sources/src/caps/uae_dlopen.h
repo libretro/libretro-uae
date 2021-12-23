@@ -9,7 +9,7 @@
 #ifndef UAE_DLOPEN_H
 #define UAE_DLOPEN_H
 
-#include "uae/types.h"
+#include "uae_types.h"
 
 #ifdef _WIN32
 #define UAE_DLHANDLE HINSTANCE

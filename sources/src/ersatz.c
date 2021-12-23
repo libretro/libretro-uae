@@ -1,18 +1,18 @@
 /*
-* UAE - The Un*x Amiga Emulator
-*
-* A "replacement" for a missing Kickstart
-* Warning! Q&D
-*
-* (c) 1995 Bernd Schmidt
-*/
+ * UAE - The Un*x Amiga Emulator
+ *
+ * A "replacement" for a missing Kickstart
+ * Warning! Q&D
+ *
+ * (c) 1995 Bernd Schmidt
+ */
 
 #include "sysconfig.h"
 #include "sysdeps.h"
 
 #include "options.h"
 #include "uae.h"
-#include "memory.h"
+#include "memory_uae.h"
 #include "custom.h"
 #include "newcpu.h"
 #include "cpu_prefetch.h"
@@ -133,7 +133,8 @@ static void ersatz_init (void)
 	if (disk_empty (0)) {
 		already_failed = 1;
 		notify_user (NUMSG_KICKREP);
-		uae_restart (-1, NULL);
+		uae_quit ();
+		//uae_restart (-1, NULL);
 		return;
 	}
 

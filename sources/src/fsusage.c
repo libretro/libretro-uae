@@ -17,6 +17,18 @@ Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include "sysconfig.h"
 #include "sysdeps.h"
+#include "target.h"
+
+#ifdef ANDROID
+#include "targets/t-android.h"
+#else
+#include "target.h"
+#endif
+
+#if defined TARGET_AMIGAOS
+#include <devices/timer.h>
+#endif
+
 
 #include <stdlib.h>
 #include <sys/types.h>
@@ -28,8 +40,8 @@ Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "fsusage.h"
 
 /* Return the number of TOSIZE-byte blocks used by
-BLOCKS FROMSIZE-byte blocks, rounding away from zero.
-TOSIZE must be positive.  Return -1 if FROMSIZE is not positive.  */
+   BLOCKS FROMSIZE-byte blocks, rounding away from zero.
+   TOSIZE must be positive.  Return -1 if FROMSIZE is not positive.  */
 
 static long adjust_blocks (long blocks, int fromsize, int tosize)
 {
@@ -60,47 +72,71 @@ int get_fs_usage (const TCHAR *path, const TCHAR *disk, struct fs_usage *fsp)
 }
 #else
 
-#ifdef WINDOWS
-#include "od-win32/posixemu.h"
-#include <windows.h>
+#if defined TARGET_AMIGAOS
+
+#include <dos/dos.h>
+#include <exec/memory_uae.h>
+#include <proto/exec.h>
+#include <proto/dos.h>
+
 int get_fs_usage (const TCHAR *path, const TCHAR *disk, struct fs_usage *fsp)
 {
-	TCHAR buf2[MAX_DPATH];
-	ULARGE_INTEGER FreeBytesAvailable, TotalNumberOfBytes, TotalNumberOfFreeBytes;
+//	TCHAR buf2[MAX_DPATH];
+//	ULARGE_INTEGER FreeBytesAvailable, TotalNumberOfBytes, TotalNumberOfFreeBytes;
 
-	if (!GetFullPathName (path, sizeof buf2 / sizeof (TCHAR), buf2, NULL)) {
-		write_log (_T("GetFullPathName('%s') failed err=%d\n"), path, GetLastError ());
-		return -1;
+    struct InfoData *info = (struct InfoData *)AllocVec(sizeof *info, MEMF_ANY);
+    int result = -1;
+
+    if (info) {
+	BPTR lock = Lock (path, SHARED_LOCK);
+	if (lock) {
+	    if (Info (lock, info)) {
+		fsp->fsu_blocks = adjust_blocks (info->id_NumBlocks,
+						 info->id_BytesPerBlock,
+						 512);
+		fsp->fsu_bfree = fsp->fsu_bavail =
+				  adjust_blocks (info->id_NumBlocks - info->id_NumBlocksUsed,
+						 info->id_BytesPerBlock,
+						 512);
+		fsp->fsu_files = fsp->fsu_ffree = -1;
+
+		result = 0;
+	    }
+	    UnLock (lock);
 	}
-
-	if (!_tcsncmp (buf2, _T("\\\\"), 2)) {
-		TCHAR *p;
-		_tcscat (buf2, _T("\\"));
-		p = _tcschr (buf2 + 2, '\\');
-		if (!p)
-			return -1;
-		p = _tcschr (p + 1, '\\');
-		if (!p)
-			return -1;
-		p[1] = 0;
-	} else {
-		buf2[3] = 0;
-	}
-
-	if (!GetDiskFreeSpaceEx (buf2, &FreeBytesAvailable, &TotalNumberOfBytes, &TotalNumberOfFreeBytes)) {
-		write_log (_T("GetDiskFreeSpaceEx('%s') failed err=%d\n"), buf2, GetLastError ());
-		return -1;
-	}
-
-	fsp->total = TotalNumberOfBytes.QuadPart;
-	fsp->avail = TotalNumberOfFreeBytes.QuadPart;
-
-	return 0;
+	FreeVec (info);
+    }
+    return result;
 }
 
-#else /* ! _WIN32 */
+#else /* ! TARGET_AMIGAOS */
 
-int statfs ();
+#ifdef __BEOS__
+
+#include <be/kernel/fs_info.h>
+
+int get_fs_usage (const char *path, const char *disk, struct fs_usage *fsp)
+{
+    int result = -1;
+    dev_t device = dev_for_path (path);
+
+    if (device >0) {
+	fs_info info;
+	if (fs_stat_dev (device, &info) == 0) {
+	    fsp->fsu_blocks = adjust_blocks (info.total_blocks, info.block_size, 512);
+	    fsp->fsu_bfree = fsp->fsu_bavail = adjust_blocks (info.free_blocks, info.block_size, 512);
+	    fsp->fsu_files = info.total_nodes;
+	    fsp->fsu_ffree = info.free_nodes;
+
+	    result = 0;
+	}
+    }
+    return result;
+};
+
+#else /* ! __BEOS__ */
+
+//int statfs ();
 
 #if HAVE_UNISTD_H
 # include <unistd.h>
@@ -140,13 +176,13 @@ int statfs ();
 
 #if HAVE_SYS_STATVFS_H		/* SVR4 */
 # include <sys/statvfs.h>
-int statvfs ();
+//int statvfs ();
 #endif
 
+#ifdef STAT_READ_FILSYS /* SVR2 */
 /* Read LEN bytes at PTR from descriptor DESC, retrying if interrupted.
-Return the actual number of bytes read, zero for EOF, or negative
-for an error.  */
-
+   Return the actual number of bytes read, zero for EOF, or negative
+   for an error.  */
 static int safe_read (int desc, TCHAR *ptr, int len)
 {
 	int n_chars;
@@ -166,15 +202,15 @@ static int safe_read (int desc, TCHAR *ptr, int len)
 
 	return n_chars;
 }
+#endif
 
 /* Fill in the fields of FSP with information about space usage for
-the filesystem on which PATH resides.
-DISK is the device on which PATH is mounted, for space-getting
-methods that need to know it.
-Return 0 if successful, -1 if not.  When returning -1, ensure that
-ERRNO is either a system error value, or zero if DISK is NULL
-on a system that requires a non-NULL value.  */
-#ifndef WINDOWS
+   the filesystem on which PATH resides.
+   DISK is the device on which PATH is mounted, for space-getting
+   methods that need to know it.
+   Return 0 if successful, -1 if not.  When returning -1, ensure that
+   ERRNO is either a system error value, or zero if DISK is NULL
+   on a system that requires a non-NULL value.  */
 int get_fs_usage (const TCHAR *path, const TCHAR *disk, struct fs_usage *fsp)
 {
 #ifdef STAT_STATFS3_OSF1
@@ -247,10 +283,10 @@ int get_fs_usage (const TCHAR *path, const TCHAR *disk, struct fs_usage *fsp)
 # ifdef STATFS_TRUNCATES_BLOCK_COUNTS
 
 	/* In SunOS 4.1.2, 4.1.3, and 4.1.3_U1, the block counts in the
-	struct statfs are truncated to 2GB.  These conditions detect that
-	truncation, presumably without botching the 4.1.1 case, in which
-	the values are not truncated.  The correct counts are stored in
-	undocumented spare fields.  */
+	   struct statfs are truncated to 2GB.  These conditions detect that
+	   truncation, presumably without botching the 4.1.1 case, in which
+	   the values are not truncated.  The correct counts are stored in
+	   undocumented spare fields.  */
 	if (fsd.f_blocks == 0x1fffff && fsd.f_spare[0] > 0)
 	{
 		fsd.f_blocks = fsd.f_spare[0];
@@ -291,8 +327,8 @@ int get_fs_usage (const TCHAR *path, const TCHAR *disk, struct fs_usage *fsp)
 	if (statfs (path, &fsd, sizeof fsd, 0) < 0)
 		return -1;
 	/* Empirically, the block counts on most SVR3 and SVR3-derived
-	systems seem to always be in terms of 512-byte blocks,
-	no matter what value f_bsize has.  */
+	   systems seem to always be in terms of 512-byte blocks,
+	   no matter what value f_bsize has.  */
 
 #endif /* STAT_STATFS4 */
 
@@ -308,7 +344,10 @@ int get_fs_usage (const TCHAR *path, const TCHAR *disk, struct fs_usage *fsp)
 
 #endif /* STAT_STATVFS */
 
-#if !defined(STAT_STATFS2_FS_DATA) && !defined(STAT_READ_FILSYS)
+#if defined(__PS3__)
+ return -1;
+#else
+#if !defined(STAT_STATFS2_FS_DATA) && !defined(STAT_READ_FILSYS) && !defined(ANDROID)
 	/* !Ultrix && !SVR2 */
 
 	fsp->fsu_blocks = CONVERT_BLOCKS (fsd.f_blocks);
@@ -320,8 +359,9 @@ int get_fs_usage (const TCHAR *path, const TCHAR *disk, struct fs_usage *fsp)
 #endif /* not STAT_STATFS2_FS_DATA && not STAT_READ_FILSYS */
 
 	return 0;
+
+#endif /* ps3 */
 }
-#endif
 
 #if defined(_AIX) && defined(_I386)
 /* AIX PS/2 does not supply statfs.  */
@@ -329,7 +369,7 @@ int get_fs_usage (const TCHAR *path, const TCHAR *disk, struct fs_usage *fsp)
 int
 	statfs (path, fsb)
 	TCHAR *path;
-struct statfs *fsb;
+	struct statfs *fsb;
 {
 	struct stat stats;
 	struct dustat fsd;
@@ -352,6 +392,7 @@ struct statfs *fsb;
 
 #endif /* _AIX && _I386 */
 
-#endif /* ! _WIN32 */
+#endif /* ! __BEOS__ */
+#endif /* ! TARGET_AMIGAOS */
 
 #endif /* __LIBRETRO__ */
