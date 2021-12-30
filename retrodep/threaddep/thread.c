@@ -73,14 +73,14 @@ typedef unsigned (__stdcall *BEGINTHREADEX_FUNCPTR)(void *);
 
 struct thparms
 {
-   void (*f)(void*);
+   void (*f)(void *);
    void *arg;
 };
 
 static unsigned __stdcall thread_init (void *f)
 {
    struct thparms *thp = (struct thparms*)f;
-   void (*fp)(void*) = thp->f;
+   void (*fp)(void *) = thp->f;
    void *arg = thp->arg;
 
    xfree (f);

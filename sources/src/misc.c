@@ -1532,20 +1532,20 @@ void close_rtg(int monid)
 uae_atomic atomic_and(volatile uae_atomic *p, uae_u32 v)
 {
 #if 0
-    return _InterlockedAnd(p, v);
+	return _InterlockedAnd(p, v);
 #else
-    uae_atomic p_orig = *p;
-    *p &= v;
+	uae_atomic p_orig = *p;
+	*p &= v;
 	return p_orig;
 #endif
 }
 uae_atomic atomic_or(volatile uae_atomic *p, uae_u32 v)
 {
 #if 0
-    return _InterlockedOr(p, v);
+	return _InterlockedOr(p, v);
 #else
-    uae_atomic p_orig = *p;
-    *p |= v;
+	uae_atomic p_orig = *p;
+	*p |= v;
 	return p_orig;
 #endif
 }
@@ -1554,16 +1554,29 @@ void atomic_set(volatile uae_atomic *p, uae_u32 v)
 }
 uae_atomic atomic_inc(volatile uae_atomic *p)
 {
+#if 0
+	return _InterlockedIncrement(p);
+#else
 	return *p++;
+#endif
 }
 uae_atomic atomic_dec(volatile uae_atomic *p)
 {
+#if 0
+	return _InterlockedDecrement(p);
+#else
 	return *p--;
+#endif
 }
 uae_u32 atomic_bit_test_and_reset(volatile uae_atomic *p, uae_u32 v)
 {
-	*p = v = 0;
-	return v;
+#if 0
+	return _interlockedbittestandreset(p, v);
+#else
+	uae_atomic p_orig = *p;
+	*p = 0;
+	return p_orig;
+#endif
 }
 
 #ifndef NATMEM_OFFSET

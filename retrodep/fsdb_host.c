@@ -123,7 +123,7 @@ int my_getvolumeinfo(const char *root)
 	struct stat sonuc;
 	int ret = 0;
 
-	if (lstat(root, &sonuc) == -1)
+	if (stat(root, &sonuc) == -1)
 		return -1;
 	if (!S_ISDIR(sonuc.st_mode))
 		return -1;

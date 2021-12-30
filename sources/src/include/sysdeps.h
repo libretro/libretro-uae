@@ -727,9 +727,6 @@ typedef uint8_t uint8;
 #endif
 #endif /* __LIBRETRO__ */
 
-#ifndef lstat
-#define lstat stat
-#endif
 #ifndef tzset
 #define tzset()
 #endif
