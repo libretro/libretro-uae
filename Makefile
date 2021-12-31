@@ -285,12 +285,21 @@ else
 endif
 
 # 7zip
-CFLAGS += -DHAVE_7ZIP -D_7ZIP_ST
+ifneq ($(NO_7ZIP), 1)
+    CFLAGS += -DHAVE_7ZIP -D_7ZIP_ST
+endif
 
 # CHD
 HAVE_CHD = 1
 
-CFLAGS += -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -DUSE_LIBRETRO_VFS
+CFLAGS += -std=gnu99 -DINLINE="inline" -D__LIBRETRO__
+
+# VFS
+ifneq ($(NO_LIBRETRO_VFS), 1)
+    CFLAGS += -DUSE_LIBRETRO_VFS
+endif
+
+CXXFLAGS += -DUAE
 
 include Makefile.common
 
