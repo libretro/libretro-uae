@@ -440,6 +440,11 @@ static void retro_set_core_options()
    static struct retro_core_option_v2_category option_cats_us[] =
    {
       {
+         "system",
+         "System",
+         "Configure system options."
+      },
+      {
          "audio",
          "Audio",
          "Configure audio options."
@@ -453,11 +458,6 @@ static void retro_set_core_options()
          "media",
          "Media",
          "Configure media options."
-      },
-      {
-         "model",
-         "Automatic Models",
-         "Configure automatic model options."
       },
       {
          "input",
@@ -474,6 +474,11 @@ static void retro_set_core_options()
          "RetroPad Mapping",
          "Configure RetroPad mapping options."
       },
+      {
+         "osd",
+         "On-Screen Display",
+         "Configure OSD options."
+      },
       { NULL, NULL, NULL },
    };
 
@@ -482,11 +487,11 @@ static void retro_set_core_options()
    {
       {
          "puae_model",
+         "System > Model",
          "Model",
-         NULL,
          "'Automatic' defaults to 'A500' with floppy disks, 'A1200' with hard drives and 'CD32' with compact discs. 'Automatic' can be overridden with file path tags.\nCore restart required.",
          NULL,
-         NULL,
+         "system",
          {
             { "auto", "Automatic" },
             { "A500OG", "A500 (v1.2, 0.5M Chip)" },
@@ -508,11 +513,11 @@ static void retro_set_core_options()
       },
       {
          "puae_model_options_display",
+         "System > Show Automatic Model Options",
          "Show Automatic Model Options",
-         NULL,
          "Show/hide default model options (Floppy/HD/CD) for 'Automatic' model.\nPage refresh by menu toggle required!",
          NULL,
-         NULL,
+         "system",
          {
             { "disabled", NULL },
             { "enabled", NULL },
@@ -526,7 +531,7 @@ static void retro_set_core_options()
          "Automatic Floppy",
          "Default model when floppies are launched with 'Automatic' model.\nCore restart required.",
          NULL,
-         "model",
+         "system",
          {
             { "A500OG", "A500 (v1.2, 0.5M Chip)" },
             { "A500", "A500 (v1.3, 0.5M Chip + 0.5M Slow)" },
@@ -548,7 +553,7 @@ static void retro_set_core_options()
          "Automatic HD",
          "Default model when HD interface is used with 'Automatic' model. Affects WHDLoad installs and other hard drive images.\nCore restart required.",
          NULL,
-         "model",
+         "system",
          {
             { "A600", "A600 (v3.1, 2M Chip + 8M Fast)" },
             { "A1200OG", "A1200 (v3.1, 2M Chip)" },
@@ -566,7 +571,7 @@ static void retro_set_core_options()
          "Automatic CD",
          "Default model when compact discs are launched with 'Automatic' model.\nCore restart required.",
          NULL,
-         "model",
+         "system",
          {
             { "CDTV", "CDTV (1M Chip)" },
             { "CD32", "CD32 (2M Chip)" },
@@ -577,11 +582,11 @@ static void retro_set_core_options()
       },
       {
          "puae_kickstart",
+         "System > Kickstart ROM",
          "Kickstart ROM",
+         "'Automatic' defaults to the most compatible version for the model. 'AROS' is a built-in replacement with fair compatibility.\nCore restart required.",
          NULL,
-         "'Automatic' defaults to the most compatible version for the model. AROS is a built-in replacement with fair compatibility.\nCore restart required.",
-         NULL,
-         NULL,
+         "system",
          {
             { "auto", "Automatic" },
             { "aros", "AROS" },
@@ -600,11 +605,11 @@ static void retro_set_core_options()
       },
       {
          "puae_cpu_compatibility",
+         "System > CPU Compatibility",
          "CPU Compatibility",
-         NULL,
          "Some games have graphic and/or speed issues without 'Cycle-exact'. 'Cycle-exact' can be forced with '(CE)' file path tag.",
          NULL,
-         NULL,
+         "system",
          {
             { "normal", "Normal" },
             { "compatible", "More compatible" },
@@ -615,11 +620,11 @@ static void retro_set_core_options()
       },
       {
          "puae_cpu_throttle",
+         "System > CPU Speed",
          "CPU Speed",
-         NULL,
          "Ignored with 'Cycle-exact'.",
          NULL,
-         NULL,
+         "system",
          {
             { "-900.0", "-90%" },
             { "-800.0", "-80%" },
@@ -647,11 +652,11 @@ static void retro_set_core_options()
       },
       {
          "puae_cpu_multiplier",
+         "System > CPU Cycle-exact Speed",
          "CPU Cycle-exact Speed",
-         NULL,
          "Applies only with 'Cycle-exact'.",
          NULL,
-         NULL,
+         "system",
          {
             { "0", "Default" },
             { "1", "3.546895 MHz" },
@@ -1125,79 +1130,6 @@ static void retro_set_core_options()
          "disabled"
       },
       {
-         "puae_statusbar",
-         "Video > Statusbar Mode",
-         "Statusbar Mode",
-         "- 'Full': Joyports + Current image + LEDs\n- 'Basic': Current image + LEDs\n- 'Minimal': Track number + FPS hidden",
-         NULL,
-         "video",
-         {
-            { "bottom", "Bottom Full" },
-            { "bottom_minimal", "Bottom Full Minimal" },
-            { "bottom_basic", "Bottom Basic" },
-            { "bottom_basic_minimal", "Bottom Basic Minimal" },
-            { "top", "Top Full" },
-            { "top_minimal", "Top Full Minimal" },
-            { "top_basic", "Top Basic" },
-            { "top_basic_minimal", "Top Basic Minimal" },
-            { NULL, NULL },
-         },
-         "bottom"
-      },
-      {
-         "puae_vkbd_theme",
-         "Video > Virtual KBD Theme",
-         "Virtual KBD Theme",
-         "The keyboard comes up with RetroPad Select by default.",
-         NULL,
-         "video",
-         {
-            { "auto", "Automatic (shadow)" },
-            { "auto_outline", "Automatic (outline)" },
-            { "beige", "Beige (shadow)" },
-            { "beige_outline", "Beige (outline)" },
-            { "cd32", "CD32 (shadow)" },
-            { "cd32_outline", "CD32 (outline)" },
-            { "light", "Light (shadow)" },
-            { "light_outline", "Light (outline)" },
-            { "dark", "Dark (shadow)" },
-            { "dark_outline", "Dark (outline)" },
-            { NULL, NULL },
-         },
-         "auto"
-      },
-      {
-         "puae_vkbd_transparency",
-         "Video > Virtual KBD Transparency",
-         "Virtual KBD Transparency",
-         "Keyboard transparency can be toggled with RetroPad A.",
-         NULL,
-         "video",
-         {
-            { "0%",   NULL },
-            { "25%",  NULL },
-            { "50%",  NULL },
-            { "75%",  NULL },
-            { "100%", NULL },
-            { NULL, NULL },
-         },
-         "25%"
-      },
-      {
-         "puae_gfx_colors",
-         "Video > Color Depth",
-         "Color Depth",
-         "'24-bit' is slower and not available on all platforms. Full restart required.",
-         NULL,
-         "video",
-         {
-            { "16bit", "Thousands (16-bit)" },
-            { "24bit", "Millions (24-bit)" },
-            { NULL, NULL },
-         },
-         "16bit"
-      },
-      {
          "puae_gfx_gamma",
          "Video > Color Gamma",
          "Color Gamma",
@@ -1219,6 +1151,79 @@ static void retro_set_core_options()
             { NULL, NULL },
          },
          "0"
+      },
+      {
+         "puae_gfx_colors",
+         "Video > Color Depth",
+         "Color Depth",
+         "'24-bit' is slower and not available on all platforms. Full restart required.",
+         NULL,
+         "video",
+         {
+            { "16bit", "Thousands (16-bit)" },
+            { "24bit", "Millions (24-bit)" },
+            { NULL, NULL },
+         },
+         "16bit"
+      },
+      {
+         "puae_vkbd_theme",
+         "OSD > Virtual KBD Theme",
+         "Virtual KBD Theme",
+         "The keyboard comes up with RetroPad Select by default.",
+         NULL,
+         "osd",
+         {
+            { "auto", "Automatic (shadow)" },
+            { "auto_outline", "Automatic (outline)" },
+            { "beige", "Beige (shadow)" },
+            { "beige_outline", "Beige (outline)" },
+            { "cd32", "CD32 (shadow)" },
+            { "cd32_outline", "CD32 (outline)" },
+            { "light", "Light (shadow)" },
+            { "light_outline", "Light (outline)" },
+            { "dark", "Dark (shadow)" },
+            { "dark_outline", "Dark (outline)" },
+            { NULL, NULL },
+         },
+         "auto"
+      },
+      {
+         "puae_vkbd_transparency",
+         "OSD > Virtual KBD Transparency",
+         "Virtual KBD Transparency",
+         "Keyboard transparency can be toggled with RetroPad A.",
+         NULL,
+         "osd",
+         {
+            { "0%",   NULL },
+            { "25%",  NULL },
+            { "50%",  NULL },
+            { "75%",  NULL },
+            { "100%", NULL },
+            { NULL, NULL },
+         },
+         "25%"
+      },
+      {
+         "puae_statusbar",
+         "OSD > Statusbar Mode",
+         "Statusbar Mode",
+         "- 'Full': Joyports + Current image + LEDs\n- 'Basic': Current image + LEDs\n- 'Minimal': Track number + FPS hidden",
+         NULL,
+         "osd",
+         {
+            { "bottom", "Bottom Full" },
+            { "bottom_minimal", "Bottom Full Minimal" },
+            { "bottom_basic", "Bottom Basic" },
+            { "bottom_basic_minimal", "Bottom Basic Minimal" },
+            { "top", "Top Full" },
+            { "top_minimal", "Top Full Minimal" },
+            { "top_basic", "Top Basic" },
+            { "top_basic_minimal", "Top Basic Minimal" },
+            { NULL, NULL },
+         },
+         "bottom"
       },
       {
          "puae_audio_options_display",
