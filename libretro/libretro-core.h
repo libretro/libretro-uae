@@ -63,6 +63,15 @@ extern int umain (int argc, TCHAR **argv);
 #define AUTOLOADFASTFORWARD_HD 0x02
 #define AUTOLOADFASTFORWARD_CD 0x04
 
+/* RetroPad options */
+enum
+{
+   RETROPAD_OPTIONS_DISABLED = 0,
+   RETROPAD_OPTIONS_ROTATE,
+   RETROPAD_OPTIONS_JUMP,
+   RETROPAD_OPTIONS_ROTATE_JUMP
+};
+
 /* Functions */
 extern void emu_function(int function);
 enum EMU_FUNCTIONS

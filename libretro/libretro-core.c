@@ -76,8 +76,8 @@ unsigned int opt_dpadmouse_speed = 4;
 unsigned int opt_analogmouse = 0;
 unsigned int opt_analogmouse_deadzone = 20;
 float opt_analogmouse_speed = 1.0;
-unsigned int opt_cd32pad_options = 0;
-unsigned int opt_retropad_options = 0;
+unsigned int opt_cd32pad_options = RETROPAD_OPTIONS_DISABLED;
+unsigned int opt_retropad_options = RETROPAD_OPTIONS_DISABLED;
 char opt_joyport_order[5] = "1234";
 
 #if defined(NATMEM_OFFSET)
@@ -3422,20 +3422,20 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if      (!strcmp(var.value, "disabled"))    opt_retropad_options = 0;
-      else if (!strcmp(var.value, "rotate"))      opt_retropad_options = 1;
-      else if (!strcmp(var.value, "jump"))        opt_retropad_options = 2;
-      else if (!strcmp(var.value, "rotate_jump")) opt_retropad_options = 3;
+      if      (!strcmp(var.value, "disabled"))    opt_retropad_options = RETROPAD_OPTIONS_DISABLED;
+      else if (!strcmp(var.value, "rotate"))      opt_retropad_options = RETROPAD_OPTIONS_ROTATE;
+      else if (!strcmp(var.value, "jump"))        opt_retropad_options = RETROPAD_OPTIONS_JUMP;
+      else if (!strcmp(var.value, "rotate_jump")) opt_retropad_options = RETROPAD_OPTIONS_ROTATE_JUMP;
    }
 
    var.key = "puae_cd32pad_options";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if      (!strcmp(var.value, "disabled"))    opt_cd32pad_options = 0;
-      else if (!strcmp(var.value, "rotate"))      opt_cd32pad_options = 1;
-      else if (!strcmp(var.value, "jump"))        opt_cd32pad_options = 2;
-      else if (!strcmp(var.value, "rotate_jump")) opt_cd32pad_options = 3;
+      if      (!strcmp(var.value, "disabled"))    opt_cd32pad_options = RETROPAD_OPTIONS_DISABLED;
+      else if (!strcmp(var.value, "rotate"))      opt_cd32pad_options = RETROPAD_OPTIONS_ROTATE;
+      else if (!strcmp(var.value, "jump"))        opt_cd32pad_options = RETROPAD_OPTIONS_JUMP;
+      else if (!strcmp(var.value, "rotate_jump")) opt_cd32pad_options = RETROPAD_OPTIONS_ROTATE_JUMP;
    }
 
    var.key = "puae_turbo_fire";
