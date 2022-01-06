@@ -87,7 +87,7 @@ static unsigned char* joystick_value_human(int val[16], int uae_device)
       switch (uae_device)
       {
          case 1:
-            if (opt_retropad_options == 1 || opt_retropad_options == 3)
+            if (opt_retropad_options == RETROPAD_OPTIONS_ROTATE || opt_retropad_options == RETROPAD_OPTIONS_ROTATE_JUMP)
                str[1] = ('2' | 0x80);
             else
                str[1] = (str[1] | 0x80);
@@ -109,7 +109,7 @@ static unsigned char* joystick_value_human(int val[16], int uae_device)
       switch (uae_device)
       {
          case 1:
-            if (opt_retropad_options == 1 || opt_retropad_options == 3)
+            if (opt_retropad_options == RETROPAD_OPTIONS_ROTATE || opt_retropad_options == RETROPAD_OPTIONS_ROTATE_JUMP)
                ; /* no-op */
             else
                str[1] = ('2' | 0x80);
@@ -131,7 +131,7 @@ static unsigned char* joystick_value_human(int val[16], int uae_device)
       switch (uae_device)
       {
          case 1:
-            if (opt_retropad_options == 1 || opt_retropad_options == 3)
+            if (opt_retropad_options == RETROPAD_OPTIONS_ROTATE || opt_retropad_options == RETROPAD_OPTIONS_ROTATE_JUMP)
                str[1] = (str[1] | 0x80);
             break;
          case 3:
@@ -199,7 +199,7 @@ static unsigned int joystick_color(int val[16])
 {
    unsigned color = 0;
 
-   if (opt_cd32pad_options == 1 || opt_cd32pad_options == 3)
+   if (opt_cd32pad_options == RETROPAD_OPTIONS_ROTATE || opt_cd32pad_options == RETROPAD_OPTIONS_ROTATE_JUMP)
    {
       if (val[RETRO_DEVICE_ID_JOYPAD_Y])
          color |= (pix_bytes == 4) ? RGB888(248,0,0) : RGB565(255,0,0);
