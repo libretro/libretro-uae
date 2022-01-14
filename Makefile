@@ -194,7 +194,7 @@ else ifneq (,$(filter $(platform), ps3 psl1ght))
    ZLIB_DIR = $(LIBUTILS)/zlib/
    LDFLAGS := -lm -lpthread -lc
    SOURCES_C += $(CORE_DIR)/deps-ps3/ps3_functions.c
-   STATIC_LINKING=1
+   STATIC_LINKING=0
    STATIC_LINKING_LINK=1
 
 # Emscripten
