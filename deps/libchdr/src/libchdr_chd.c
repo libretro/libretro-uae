@@ -48,9 +48,9 @@
 #include <libchdr/flac.h>
 #include <libchdr/huffman.h>
 
+#include "zlib.h"
 #include "LzmaEnc.h"
 #include "LzmaDec.h"
-#include "zlib.h"
 
 #undef TRUE
 #undef FALSE
