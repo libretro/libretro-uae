@@ -1,6 +1,6 @@
 # PUAE LIBRETRO
 
-Based on PUAE 2.6.1, git commit `0186c1b16f7181ffa02d73e6920d3180ce457c46`
+Based on PUAE 2.6.0b18, git commit [0186c1b16f7181ffa02d73e6920d3180ce457c46](https://github.com/rofl0r/PUAE/commit/0186c1b16f7181ffa02d73e6920d3180ce457c46)
 
 Credits to:
 
