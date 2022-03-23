@@ -1535,7 +1535,7 @@ uae_atomic atomic_and(volatile uae_atomic *p, uae_u32 v)
 	return _InterlockedAnd(p, v);
 #else
 	uae_atomic p_orig = *p;
-	*p &= v;
+	*p = (p_orig & v);
 	return p_orig;
 #endif
 }
@@ -1545,7 +1545,7 @@ uae_atomic atomic_or(volatile uae_atomic *p, uae_u32 v)
 	return _InterlockedOr(p, v);
 #else
 	uae_atomic p_orig = *p;
-	*p |= v;
+	*p = (p_orig | v);
 	return p_orig;
 #endif
 }
@@ -1574,8 +1574,9 @@ uae_u32 atomic_bit_test_and_reset(volatile uae_atomic *p, uae_u32 v)
 	return _interlockedbittestandreset(p, v);
 #else
 	uae_atomic p_orig = *p;
-	*p = 0;
-	return p_orig;
+	uae_atomic mask = (1 << v);
+	*p &= ~mask;
+	return p_orig & mask;
 #endif
 }
 
