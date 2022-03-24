@@ -210,6 +210,13 @@ static char uae_config[2048] = {0};
 static char uae_custom_config[2048] = {0};
 char uae_full_config[4096] = {0};
 
+/* Audio output buffer */
+static struct {
+   int16_t *data;
+   int32_t size;
+   int32_t capacity;
+} output_audio_buffer = {NULL, 0, 0};
+
 /* FPS counter + mapper tick */
 long retro_ticks(void)
 {
@@ -429,6 +436,39 @@ static void retro_autoloadfastforwarding(void)
                ff_counter_on, ff_counter_off, ff_counter_audio, audio_playing);
 #endif
    }
+}
+
+static void ensure_output_audio_buffer_capacity(int32_t capacity)
+{
+   if (capacity <= output_audio_buffer.capacity) {
+      return;
+   }
+
+   output_audio_buffer.data = realloc(output_audio_buffer.data, capacity * sizeof(*output_audio_buffer.data));
+   output_audio_buffer.capacity = capacity;
+   log_cb(RETRO_LOG_DEBUG, "Output audio buffer capacity set to %d\n", capacity);
+}
+
+static void init_output_audio_buffer(int32_t capacity)
+{
+   output_audio_buffer.data = NULL;
+   output_audio_buffer.size = 0;
+   output_audio_buffer.capacity = 0;
+   ensure_output_audio_buffer_capacity(capacity);
+}
+
+static void free_output_audio_buffer()
+{
+   free(output_audio_buffer.data);
+   output_audio_buffer.data = NULL;
+   output_audio_buffer.size = 0;
+   output_audio_buffer.capacity = 0;
+}
+
+static void upload_output_audio_buffer()
+{
+   audio_batch_cb(output_audio_buffer.data, output_audio_buffer.size / 2);
+   output_audio_buffer.size = 0;
 }
 
 static void retro_set_core_options()
@@ -4303,6 +4343,8 @@ void retro_init(void)
    log_cb(RETRO_LOG_DEBUG, "Resolution selected: %dx%d\n", defaultw, defaulth);
    retrow = defaultw;
    retroh = defaulth;
+
+   init_output_audio_buffer(2048);
 }
 
 void retro_deinit(void)
@@ -4317,6 +4359,8 @@ void retro_deinit(void)
 
    /* Free buffers used by libretro-graph */
    libretro_graph_free();
+
+   free_output_audio_buffer();
 
    /* 'Reset' troublesome static variables */
    pix_bytes_initialized = false;
@@ -4485,14 +4529,18 @@ void retro_set_audio_sample_batch(retro_audio_sample_batch_t cb)
 
 #define RETRO_AUDIO_BATCH
 
-void retro_audio_render(const int16_t *data, size_t frames)
+void retro_audio_queue(const int16_t *data, int32_t samples)
 {
-   if ((frames < 1) || !libretro_runloop_active)
+   if ((samples < 1) || !libretro_runloop_active)
       return;
+
 #ifdef RETRO_AUDIO_BATCH
-   audio_batch_cb(data, frames >> 1);
+   if (output_audio_buffer.capacity - output_audio_buffer.size < samples)
+      ensure_output_audio_buffer_capacity((output_audio_buffer.capacity + samples) * 1.5);
+   memcpy(output_audio_buffer.data + output_audio_buffer.size, data, samples * sizeof(*output_audio_buffer.data));
+   output_audio_buffer.size += samples;
 #else
-   for (int x = 0; x < frames; x += 2) audio_cb(data[x], data[x+1]);
+   for (int x = 0; x < samples; x += 2) audio_cb(data[x], data[x + 1]);
 #endif
 }
 
@@ -7030,6 +7078,7 @@ void retro_run(void)
       /* Re-run emulation first pass */
       restart_pending = m68k_go(1, 0);
       video_cb(retro_bmp, zoomed_width, zoomed_height, retrow << (pix_bytes / 2));
+      upload_output_audio_buffer();
       return;
    }
 
@@ -7075,6 +7124,7 @@ void retro_run(void)
    }
 
    video_cb(retro_bmp, zoomed_width, zoomed_height, retrow << (pix_bytes / 2));
+   upload_output_audio_buffer();
 }
 
 bool retro_load_game(const struct retro_game_info *info)
