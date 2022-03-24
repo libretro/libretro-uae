@@ -9,7 +9,7 @@
 #ifndef OSDEP_SOUND_H
 #define OSDEP_SOUND_H
 #define SOUNDSTUFF 1
-extern void retro_audio_render(const int16_t *data, size_t frames);
+extern void retro_audio_queue(const int16_t *data, int32_t samples);
 
 #define sndbuffer paula_sndbuffer
 #define sndbufpt paula_sndbufpt
@@ -30,7 +30,7 @@ static __inline__ void check_sound_buffers (void)
 #ifdef DRIVESOUND
         driveclick_mix ((uae_s16*)sndbuffer, sndbufsize >> 1, currprefs.dfxclickchannelmask);
 #endif	
-        retro_audio_render((short*)sndbuffer, sndbufsize >> 1);
+        retro_audio_queue((short*)sndbuffer, sndbufsize >> 1);
         sndbufpt = sndbuffer;
     }
 }
