@@ -23,17 +23,22 @@ extern void driveclick_mix (uae_s16*, int, int);
 
 extern int soundcheck;
 
-static __inline__ void check_sound_buffers (void)
+static __inline__ void flush_sound_buffers(int32_t min_samples_required)
 {
     unsigned int size = (char *)sndbufpt - (char *)sndbuffer;
 
-    if (size >= sndbufsize) {
+    if (size >= min_samples_required) {
 #ifdef DRIVESOUND
-        driveclick_mix ((uae_s16*)sndbuffer, sndbufsize >> 1, currprefs.dfxclickchannelmask);
-#endif	
-        retro_audio_queue((short*)sndbuffer, sndbufsize >> 1);
+        driveclick_mix((uae_s16 *)sndbuffer, size >> 1, currprefs.dfxclickchannelmask);
+#endif
+        retro_audio_queue((short *)sndbuffer, size >> 1);
         sndbufpt = sndbuffer;
     }
+}
+
+static __inline__ void check_sound_buffers (void)
+{
+    flush_sound_buffers(sndbufsize);
 }
 
 STATIC_INLINE void set_sound_buffers (void)
