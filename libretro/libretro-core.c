@@ -7061,6 +7061,7 @@ void retro_run(void)
       /* Re-run emulation first pass */
       restart_pending = m68k_go(1, 0);
       video_cb(retro_bmp, zoomed_width, zoomed_height, retrow << (pix_bytes / 2));
+      flush_sound_buffers(2);
       upload_output_audio_buffer();
       return;
    }
@@ -7107,6 +7108,7 @@ void retro_run(void)
    }
 
    video_cb(retro_bmp, zoomed_width, zoomed_height, retrow << (pix_bytes / 2));
+   flush_sound_buffers(2);
    upload_output_audio_buffer();
 }
 
