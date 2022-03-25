@@ -3181,9 +3181,7 @@ void compute_framesync (void)
 	} else {
 		vblank_hz = vblank_hz_shf;
 	}
-#if 0
-	printf("%s: %f %f %f\n", __func__, vblank_hz_lace, vblank_hz_lof, vblank_hz_shf);
-#endif
+
 	struct chipset_refresh *cr = get_chipset_refresh ();
 	while (cr) {
 		double v = -1;
@@ -3212,6 +3210,11 @@ void compute_framesync (void)
 					break;
 				} else {
 					v = cr->rate;
+#ifdef __LIBRETRO__
+					/* Allow also non-standard PAL/NTSC rate switching when locked (Dyna Blaster, BC Kid) */
+					if (fabs(vblank_hz - v) > 1)
+						v = (isntsc) ? currprefs.cr[CHIPSET_REFRESH_PAL].rate : currprefs.cr[CHIPSET_REFRESH_NTSC].rate;
+#endif
 				}
 			}
 			if (v < 0)
@@ -6249,7 +6252,6 @@ static void fpscounter (bool frameok)
 		double idle = 1000 - (idle_mavg.mavg == 0 ? 0.0 : (double)idle_mavg.mavg * 1000.0 / vsynctimebase);
 #ifdef __LIBRETRO__
 		int fps = fps_mavg.mavg == 0 ? 0 : (syncbase * 1000) * 10 / fps_mavg.mavg;
-		//printf("SYNCBASE:%d mavg:%d now:%d last:%d fps:%d\n", syncbase, fps_mavg.mavg, now, last, fps);
 #else
 		int fps = fps_mavg.mavg == 0 ? 0 : syncbase * 10 / fps_mavg.mavg;
 #endif
@@ -6479,9 +6481,7 @@ static void vsync_handler_post (void)
 
 #ifdef __LIBRETRO__
 	if (libretro_frame_end)
-	{
 		set_special (SPCFLAG_BRK);
-	}
 #endif
 }
 
