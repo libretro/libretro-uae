@@ -796,6 +796,9 @@ int check_prefs_changed_gfx (void)
    gfxvidinfo.height_allocated         = currprefs.gfx_size_win.height;
    gfxvidinfo.rowbytes                 = gfxvidinfo.width_allocated * gfxvidinfo.pixbytes;
 
+   /* Reset video buffer */
+   memset(retro_bmp, 0, sizeof(retro_bmp));
+
 #if 0
    printf("check_prefs_changed_gfx: %d:%d, res:%d vres:%d\n", changed_prefs.gfx_size_win.width, changed_prefs.gfx_size_win.height, changed_prefs.gfx_resolution, changed_prefs.gfx_vresolution);
 #endif
