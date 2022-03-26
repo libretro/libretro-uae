@@ -7031,11 +7031,7 @@ void retro_run(void)
          request_reset_drawing = true;
       request_init_custom_timer--;
       if (request_init_custom_timer == 0)
-      {
-         /* Clear video buffer */
-         memset(retro_bmp, 0, sizeof(retro_bmp));
          init_custom();
-      }
    }
 
    /* Refresh CPU prefs */
