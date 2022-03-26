@@ -805,6 +805,9 @@ int check_prefs_changed_gfx (void)
    gfxvidinfo->drawbuffer.height_allocated = defaulth;
    gfxvidinfo->drawbuffer.rowbytes         = gfxvidinfo->drawbuffer.width_allocated * gfxvidinfo->drawbuffer.pixbytes;
 
+   /* Reset video buffer */
+   memset(retro_bmp, 0, sizeof(retro_bmp));
+
 #if 0
    printf("%s: %dx%d, res=%d vres=%d\n", __func__,
          changed_prefs.gfx_monitor[0].gfx_size_win.width,
