@@ -767,8 +767,19 @@ int check_prefs_changed_gfx (void)
    else
       return 0;
 
-   changed_prefs.gfx_size_win.width    = defaultw;
-   changed_prefs.gfx_size_win.height   = defaulth;
+   if (gfxvidinfo.width_allocated  != defaultw ||
+       gfxvidinfo.height_allocated != defaulth)
+   {
+      changed_prefs.gfx_size_win.width  = defaultw;
+      changed_prefs.gfx_size_win.height = defaulth;
+
+      gfxvidinfo.width_allocated  = defaultw;
+      gfxvidinfo.height_allocated = defaulth;
+      gfxvidinfo.rowbytes         = gfxvidinfo.width_allocated * gfxvidinfo.pixbytes;
+
+      /* Reset video buffer */
+      memset(retro_bmp, 0, sizeof(retro_bmp));
+   }
 
    if (currprefs.gfx_size_win.width   != changed_prefs.gfx_size_win.width)
        currprefs.gfx_size_win.width    = changed_prefs.gfx_size_win.width;
@@ -791,13 +802,6 @@ int check_prefs_changed_gfx (void)
        currprefs.gfx_gamma             = changed_prefs.gfx_gamma;
        graphics_setup();
    }
-
-   gfxvidinfo.width_allocated          = currprefs.gfx_size_win.width;
-   gfxvidinfo.height_allocated         = currprefs.gfx_size_win.height;
-   gfxvidinfo.rowbytes                 = gfxvidinfo.width_allocated * gfxvidinfo.pixbytes;
-
-   /* Reset video buffer */
-   memset(retro_bmp, 0, sizeof(retro_bmp));
 
 #if 0
    printf("check_prefs_changed_gfx: %d:%d, res:%d vres:%d\n", changed_prefs.gfx_size_win.width, changed_prefs.gfx_size_win.height, changed_prefs.gfx_resolution, changed_prefs.gfx_vresolution);
