@@ -2561,8 +2561,13 @@ static void update_variables(void)
          if (strstr(var.value, "PAL")) changed_prefs.ntscmode = 0;
          else                          changed_prefs.ntscmode = 1;
       }
-      else if (forced_video > -1)
-         changed_prefs.ntscmode = !forced_video;
+      else if (opt_region_auto)
+      {
+         if (forced_video > -1)
+            changed_prefs.ntscmode = !forced_video;
+         else
+            changed_prefs.ntscmode = !(strstr(var.value, "PAL"));
+      }
    }
 
    var.key = "puae_video_aspect";
@@ -6638,7 +6643,6 @@ static bool retro_update_av_info(void)
          video_config &= ~PUAE_VIDEO_PAL;
          video_config_geometry = video_config;
          fake_ntsc = true;
-         forced_video = RETRO_REGION_NTSC;
       }
 
       /* If still no change */
