@@ -775,8 +775,19 @@ int check_prefs_changed_gfx (void)
    if (!config_changed && !display_change_requested)
       return 0;
 
-   changed_prefs.gfx_monitor[0].gfx_size_win.width    = defaultw;
-   changed_prefs.gfx_monitor[0].gfx_size_win.height   = defaulth;
+   if (gfxvidinfo->drawbuffer.width_allocated  != defaultw ||
+       gfxvidinfo->drawbuffer.height_allocated != defaulth)
+   {
+      changed_prefs.gfx_monitor[0].gfx_size_win.width  = defaultw;
+      changed_prefs.gfx_monitor[0].gfx_size_win.height = defaulth;
+
+      gfxvidinfo->drawbuffer.width_allocated  = defaultw;
+      gfxvidinfo->drawbuffer.height_allocated = defaulth;
+      gfxvidinfo->drawbuffer.rowbytes         = gfxvidinfo->drawbuffer.width_allocated * gfxvidinfo->drawbuffer.pixbytes;
+
+      /* Reset video buffer */
+      memset(retro_bmp, 0, sizeof(retro_bmp));
+   }
 
    if (currprefs.gfx_monitor[0].gfx_size_win.width   != changed_prefs.gfx_monitor[0].gfx_size_win.width)
        currprefs.gfx_monitor[0].gfx_size_win.width    = changed_prefs.gfx_monitor[0].gfx_size_win.width;
@@ -800,13 +811,6 @@ int check_prefs_changed_gfx (void)
        currprefs.gfx_gamma             = changed_prefs.gfx_gamma;
        graphics_setup();
    }
-
-   gfxvidinfo->drawbuffer.width_allocated  = defaultw;
-   gfxvidinfo->drawbuffer.height_allocated = defaulth;
-   gfxvidinfo->drawbuffer.rowbytes         = gfxvidinfo->drawbuffer.width_allocated * gfxvidinfo->drawbuffer.pixbytes;
-
-   /* Reset video buffer */
-   memset(retro_bmp, 0, sizeof(retro_bmp));
 
 #if 0
    printf("%s: %dx%d, res=%d vres=%d\n", __func__,
