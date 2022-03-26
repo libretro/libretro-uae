@@ -347,16 +347,16 @@ Pre-installed WHDLoad LHA archives can be launched directly without any kind of 
 - `NTSC` parameter can be used with WHDLoad.
 - Included `ClickNot` for suppressing drive clicking when drive sound emulation is enabled.
 - Included `MEmacs` for file editing (`custom` & `load`).
-- Updated WHDLoad to the latest one (18.5 2019-03-09).
+- Included `xpkmaster.library`.
 - New WHDLoad defaults:
     - `ButtonWait` (Waits for a button press in certain slaves when loading is so fast that you can't enjoy a picture or a tune).
     - `ReadDelay=0` & `WriteDelay=50` (These speed up OS switching on loadings and savings. Saves tend to corrupt HDFs with WriteDelay below 50).
 
 #### Latest changes
 
+- Updated WHDLoad to the latest one (18.7 2021-10-23).
 - Support for Retroplay LHA installs.
 - Support for Arcadia installs (requires KS 1.2, `kick33180.A500` will be copied automatically).
-- Fixed `xpkmaster.library`.
 - Show `ReadMe` before running `MkCustom` after quitting.
 - Changed HDF filesystem from OFS to FFS. Prevents image corruption on unclean shutdowns.
 - Default launch method changed to `WBRun`.
