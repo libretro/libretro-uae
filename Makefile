@@ -292,14 +292,14 @@ endif
 # CHD
 HAVE_CHD = 1
 
-CFLAGS += -std=gnu99 -DINLINE="inline" -D__LIBRETRO__
+CFLAGS += -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD
 
 # VFS
 ifneq ($(NO_LIBRETRO_VFS), 1)
     CFLAGS += -DUSE_LIBRETRO_VFS
 endif
 
-CXXFLAGS += -DUAE
+CXXFLAGS += -DUAE -MMD
 
 include Makefile.common
 
@@ -307,6 +307,7 @@ $(info CFLAGS: $(PLATFLAGS) $(CFLAGS))
 $(info -------)
 
 OBJECTS += $(SOURCES_C:.c=.o) $(SOURCES_CXX:.cpp=.o) $(SOURCES_ASM:.S=.o)
+OBJECT_DEPS = $(OBJECTS:.o=.d)
 
 INCDIRS := $(EXTRA_INCLUDES) $(INCFLAGS)
 
@@ -329,11 +330,13 @@ endif
 %.o: %.S
 	$(CC_AS) $(CFLAGS) -c $^ -o $@
 
+-include $(OBJECT_DEPS)
+
 clean:
-	rm -f $(OBJECTS) $(TARGET)
+	rm -f $(OBJECTS) $(OBJECT_DEPS) $(TARGET)
 
 objectclean:
-	rm -f $(OBJECTS)
+	rm -f $(OBJECTS) $(OBJECT_DEPS)
 
 targetclean:
 	rm -f $(TARGET)
