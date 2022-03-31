@@ -8,7 +8,7 @@
 .core-defs:
   variables:
     JNI_PATH: .
-    CORENAME: puae
+    CORENAME: puae2021
 
 # Inclusion templates, required for the build to work
 include:

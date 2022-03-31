@@ -10,7 +10,7 @@ addons:
       - ubuntu-toolchain-r-test
 env:
   global:
-    - CORE=puae
+    - CORE=puae2021
     - COMPILER_NAME=gcc CXX=g++-7 CC=gcc-7
   matrix:
     - PLATFORM=linux_x64

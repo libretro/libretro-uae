@@ -2,7 +2,7 @@ CORE_DIR  := .
 ROOT_DIR  := .
 PLATFLAGS :=
 SOURCES_C :=
-TARGET_NAME := puae
+TARGET_NAME := puae2021
 
 ifeq ($(platform),)
 platform = unix
