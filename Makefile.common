@@ -148,6 +148,9 @@ SOURCES_C += \
 	$(EMU)/softfloat/softfloat_decimal.c \
 	$(EMU)/softfloat/softfloat_fpsp.c
 
+SOURCES_C += \
+	$(EMU)/qemuvga/esp.c \
+
 #SOURCES_C += \
 #	$(EMU)/jit/compemu.c \
 #	$(EMU)/jit/compemu_fpp.c \

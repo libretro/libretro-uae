@@ -1729,4 +1729,3 @@ void update_disassembly(uae_u32 addr) {}
 void update_memdump(uae_u32 addr) {}
 int console_get (TCHAR *out, int maxlen) { return 0; }
 void console_flush (void) {}
-

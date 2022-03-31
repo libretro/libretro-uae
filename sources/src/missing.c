@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include "uae/string.h"
 #include "uae/types.h"
-#include "writelog.h"
 
 #ifndef HAVE_STRDUP
 

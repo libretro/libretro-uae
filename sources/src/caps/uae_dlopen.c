@@ -2,7 +2,6 @@
 #include "sysdeps.h"
 #include "uae/api.h"
 #include "uae/dlopen.h"
-#include "writelog.h"
 
 #ifdef _WIN32
 #include "windows.h"

@@ -2,6 +2,8 @@
 #include "uae/likely.h"
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 
 extern void activate_debugger(void);

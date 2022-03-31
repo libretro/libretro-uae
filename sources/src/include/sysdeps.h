@@ -239,7 +239,6 @@ struct utimbuf
 #endif
 
 #include "uae/types.h"
-#include "writelog.h"
 
 // Support macros for working with pointers of variable size -> 32bit.
 #ifdef __x86_64__
@@ -470,16 +469,17 @@ extern void mallocemu_free (void *ptr);
 #include "machdep/machdep.h"
 #endif
 
+#define write_dlog    write_log
 #define write_log_err write_log
 #define console_out   write_log
-#define console_out_f 
-#define f_out         
+#define console_out_f
+#define f_out
+#define setconsolemode
 
 extern void console_out (const char *, ...);
-/*extern void console_out_f (const TCHAR *, ...);*/
 extern void console_flush (void);
 extern int  console_get (char *, int);
-/*extern void f_out (void *, const char *, ...);*/
+extern void flush_log (void);
 extern void gui_message (const char *,...);
 extern int gui_message_multibutton (int flags, const char *format,...);
 extern void logging_init (void);

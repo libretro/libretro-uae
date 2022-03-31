@@ -15,7 +15,6 @@
 
 #include "uae/string.h"
 #include "uae/types.h"
-#include "writelog.h"
 
 #ifdef __LIBRETRO__
 #include "libretro.h"
@@ -91,30 +90,6 @@ void jit_abort (const char *fmt, ...)
 void flush_log (void)
 {
 	fflush (stderr);
-}
-
-// Write Debug Log
-void write_dlog (const char *format, ...)
-{
-    va_list ap;
-    va_start (ap, format);
-#ifdef HAVE_VFPRINTF
-    vfprintf (stderr, format, ap);
-#else
-    /* Technique stolen from GCC.  */
-    {
-	int x1, x2, x3, x4, x5, x6, x7, x8;
-	x1 = va_arg (ap, int);
-	x2 = va_arg (ap, int);
-	x3 = va_arg (ap, int);
-	x4 = va_arg (ap, int);
-	x5 = va_arg (ap, int);
-	x6 = va_arg (ap, int);
-	x7 = va_arg (ap, int);
-	x8 = va_arg (ap, int);
-	fprintf (stderr, format, x1, x2, x3, x4, x5, x6, x7, x8);
-    }
-#endif
 }
 
 static char *console_buffer;

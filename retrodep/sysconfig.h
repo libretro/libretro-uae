@@ -14,7 +14,7 @@
 //#define NOFLAGS_SUPPORT_GENCPU
 //#define NOFLAGS_SUPPORT_GENCOMP
 //#define HAVE_GET_WORD_UNSWAPPED
-#define NATMEM_OFFSET natmem_offset
+//#define NATMEM_OFFSET natmem_offset
 #define USE_NORMAL_CALLING_CONVENTION 0
 #define USE_X86_FPUCW 1
 //#define CATWEASEL /* Catweasel MK2/3 support */
@@ -65,7 +65,7 @@
 //#define A2065 /* A2065 Ethernet card */
 #define GFXBOARD /* Hardware graphics board */
 #define NCR /* A4000T/A4091, 53C710/53C770 SCSI */
-//#define NCR9X /* 53C9X SCSI */
+#define NCR9X /* 53C9X SCSI */
 //#define SANA2 /* SANA2 network driver */
 //#define AMAX /* A-Max ROM adapter emulation */
 //#define RETROPLATFORM /* Cloanto RetroPlayer support */
