@@ -1247,7 +1247,7 @@ static void retro_set_core_options()
          "puae_statusbar",
          "OSD > Statusbar Mode",
          "Statusbar Mode",
-         "- 'Full': Joyports + Current image + LEDs\n- 'Basic': Current image + LEDs\n- 'Minimal': Track number + FPS hidden",
+         "- 'Full': Joyports + Messages + LEDs\n- 'Basic': Messages + LEDs\n- 'Minimal': LED colors only",
          NULL,
          "osd",
          {
@@ -1262,6 +1262,20 @@ static void retro_set_core_options()
             { NULL, NULL },
          },
          "bottom"
+      },
+      {
+         "puae_statusbar_messages",
+         "OSD > Statusbar Messages",
+         "Statusbar Messages",
+         "Show messages when statusbar is hidden.",
+         NULL,
+         "osd",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "disabled"
       },
       {
          "puae_audio_options_display",
@@ -2742,6 +2756,14 @@ static void update_variables(void)
       opt_statusbar_position_old = opt_statusbar_position;
    }
 
+   var.key = "puae_statusbar_messages";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (!strcmp(var.value, "enabled"))
+         opt_statusbar |= STATUSBAR_MESSAGES;
+   }
+
    var.key = "puae_vkbd_theme";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -3882,6 +3904,8 @@ static void update_variables(void)
    option_display.key = "puae_gfx_gamma";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_statusbar";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_statusbar_messages";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_vkbd_theme";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
@@ -6336,9 +6360,9 @@ static bool update_vresolution(bool update)
 
 static void update_audiovideo(void)
 {
-   /* Statusbar disk display timer */
-   if (imagename_timer > 0)
-      imagename_timer--;
+   /* Statusbar message timer */
+   if (statusbar_message_timer > 0)
+      statusbar_message_timer--;
 
    /* Update audio settings */
    if (automatic_sound_filter_type_update)
@@ -7107,6 +7131,10 @@ void retro_run(void)
    /* Virtual keyboard */
    if (retro_vkbd)
       print_vkbd();
+
+   /* Forced statusbar messages */
+   if (!retro_statusbar && opt_statusbar & STATUSBAR_MESSAGES && statusbar_message_timer)
+      print_statusbar();
 
    /* Maximum 288p/576p PAL shenanigans:
     * Mask the last line(s), since UAE does not refresh the last line,

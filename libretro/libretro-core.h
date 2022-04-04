@@ -20,9 +20,9 @@
 #include "file/file_path.h"
 #include "encodings/utf.h"
 
-extern int imagename_timer;
 extern void reset_drawing(void);
 extern void print_statusbar(void);
+extern unsigned int statusbar_message_timer;
 extern bool retro_message;
 extern char retro_message_msg[1024];
 
@@ -53,10 +53,11 @@ extern int RGBc(int r, int g, int b);
 extern int umain (int argc, TCHAR **argv);
 
 /* Statusbar */
-#define STATUSBAR_BOTTOM    0x01
-#define STATUSBAR_TOP       0x02
-#define STATUSBAR_BASIC     0x04
-#define STATUSBAR_MINIMAL   0x08
+#define STATUSBAR_BOTTOM   0x01
+#define STATUSBAR_TOP      0x02
+#define STATUSBAR_BASIC    0x04
+#define STATUSBAR_MINIMAL  0x08
+#define STATUSBAR_MESSAGES 0x10
 
 /* Autoloadfastforward */
 #define AUTOLOADFASTFORWARD_FD 0x01
