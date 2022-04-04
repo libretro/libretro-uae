@@ -80,16 +80,20 @@ unsigned int turbo_pulse = 6;
 unsigned int turbo_state[RETRO_DEVICES] = {0};
 unsigned int turbo_toggle[RETRO_DEVICES] = {0};
 
-static void statusbar_text_show(const char *format, ...)
+static void statusbar_message_show(signed char icon, const char *format, ...)
 {
    unsigned char statusbar_temp[RETRO_PATH_MAX] = {0};
    va_list args;
    va_start(args, format);
+
+   if (!icon)
+      icon = ' ';
+
    vsnprintf(statusbar_temp, sizeof(statusbar_temp), format, args);
-   snprintf(statusbar_text, sizeof(statusbar_text), "%c %-98s", (' ' | 0x80), statusbar_temp);
+   snprintf(statusbar_text, sizeof(statusbar_text), "%c %-98s", (icon | 0x80), statusbar_temp);
    va_end(args);
 
-   imagename_timer = 50;
+   statusbar_message_timer = 50;
 }
 
 void emu_function(int function)
@@ -108,11 +112,14 @@ void emu_function(int function)
          memset(jflag, 0, 2*16*sizeof jflag[0][0]);
          /* Lock mousemode */
          mousemode_locked = true;
+         /* Statusbar notification */
+         statusbar_message_show((retro_mousemode) ? 10 : 9, "%s",
+               (retro_mousemode) ? "Mouse Mode" : "Joystick Mode");
          break;
       case EMU_RESET:
          retro_reset_soft();
          /* Statusbar notification */
-         statusbar_text_show("%s", "Reset");
+         statusbar_message_show(0, "%s", "Reset");
          break;
       case EMU_ASPECT_RATIO:
          if (video_config_aspect == 0)
@@ -125,7 +132,7 @@ void emu_function(int function)
          /* Lock aspect ratio */
          opt_aspect_ratio_locked = true;
          /* Statusbar notification */
-         statusbar_text_show("%s %s",
+         statusbar_message_show(5, "%s %s",
                "Pixel Aspect",
                (video_config_aspect == PUAE_VIDEO_PAL) ? "PAL" : "NTSC");
          break;
@@ -138,7 +145,7 @@ void emu_function(int function)
             zoom_mode_id = opt_zoom_mode_id;
          request_update_av_info = true;
          /* Statusbar notification */
-         statusbar_text_show("%s %s",
+         statusbar_message_show(5, "%s %s",
                "Zoom Mode",
                (zoom_mode_id) ? "ON" : "OFF");
          break;
@@ -147,7 +154,7 @@ void emu_function(int function)
          /* Lock turbo fire */
          turbo_fire_locked = true;
          /* Statusbar notification */
-         statusbar_text_show("%s %s",
+         statusbar_message_show(9, "%s %s",
                "Turbo Fire",
                (retro_turbo_fire) ? "ON" : "OFF");
          break;

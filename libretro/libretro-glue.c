@@ -42,7 +42,7 @@ int retro_max_diwstop;
 extern int opt_statusbar;
 extern int opt_statusbar_position;
 
-int imagename_timer = 0;
+unsigned int statusbar_message_timer = 0;
 unsigned char statusbar_text[RETRO_PATH_MAX] = {0};
 
 static bool flag_empty(int val[16])
@@ -249,7 +249,10 @@ void display_current_image(const char *image, bool inserted)
    static char imagename_prev[RETRO_PATH_MAX] = {0};
    unsigned char* imagename_local;
 
-   imagename_timer = 150;
+   /* Skip the initial insert message with forced message mode */
+   if (libretro_runloop_active || (!libretro_runloop_active && !(opt_statusbar & STATUSBAR_MESSAGES)))
+      statusbar_message_timer = 150;
+
    if (strcmp(image, ""))
    {
       snprintf(imagename, sizeof(imagename), "%s%.98s", "  ", path_basename(image));
@@ -262,9 +265,9 @@ void display_current_image(const char *image, bool inserted)
    snprintf(&statusbar_text[0], sizeof(statusbar_text), "%-100s", imagename_local);
 
    if (inserted)
-      statusbar_text[0] = (8 | 0x80);
+      statusbar_text[0] = (7 | 0x80);
    else if (!strcmp(image, ""))
-      statusbar_text[0] = (9 | 0x80);
+      statusbar_text[0] = (8 | 0x80);
 
    free(imagename_local);
    imagename_local = NULL;
@@ -272,7 +275,7 @@ void display_current_image(const char *image, bool inserted)
 
 void print_statusbar(void)
 {
-   if (opt_statusbar & STATUSBAR_BASIC && !imagename_timer)
+   if (opt_statusbar & STATUSBAR_BASIC && !statusbar_message_timer)
       return;
 
    int BOX_Y                = 0;
@@ -511,7 +514,7 @@ void print_statusbar(void)
    /* Statusbar output */
    draw_fbox(0, BOX_Y, BOX_WIDTH, BOX_HEIGHT, 0, GRAPH_ALPHA_100);
 
-   if (imagename_timer > 0)
+   if (statusbar_message_timer)
    {
       draw_text(TEXT_X, TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, GRAPH_BG_ALL, FONT_WIDTH, FONT_HEIGHT, TEXT_LENGTH, statusbar_text);
       return;
