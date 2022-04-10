@@ -7166,7 +7166,9 @@ bool retro_load_game(const struct retro_game_info *info)
    }
 
    struct retro_memory_descriptor memdesc[] = {
-      {RETRO_MEMDESC_SYSTEM_RAM, chipmemory, 0, 0, 0, 0, allocated_chipmem, NULL}
+      {RETRO_MEMDESC_SYSTEM_RAM, chipmemory, 0, 0, 0, 0, allocated_chipmem, "CHIP"},
+      {RETRO_MEMDESC_SYSTEM_RAM, bogomemory, 0, 0, 0, 0, allocated_bogomem, "SLOW"},
+      {RETRO_MEMDESC_SYSTEM_RAM, fastmemory, 0, 0, 0, 0, allocated_fastmem, "FAST"}
    };
 
    struct retro_memory_map mmap = {
@@ -7330,19 +7332,15 @@ bool retro_unserialize(const void *data_, size_t size)
 
 void *retro_get_memory_data(unsigned id)
 {
-#if defined(NATMEM_OFFSET)
-   if ( id == RETRO_MEMORY_SYSTEM_RAM )
-      return natmem_offset;
-#endif
+   if (id == RETRO_MEMORY_SYSTEM_RAM)
+      return chipmemory;
    return NULL;
 }
 
 size_t retro_get_memory_size(unsigned id)
 {
-#if defined(NATMEM_OFFSET)
-   if ( id == RETRO_MEMORY_SYSTEM_RAM )
-      return natmem_size;
-#endif
+   if (id == RETRO_MEMORY_SYSTEM_RAM)
+      return allocated_chipmem;
    return 0;
 }
 

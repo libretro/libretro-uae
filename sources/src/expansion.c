@@ -493,7 +493,11 @@ static int REGPARAM3 fastmem_check (uaecptr addr, uae_u32 size) REGPARAM;
 static uae_u8 *REGPARAM3 fastmem_xlate (uaecptr addr) REGPARAM;
 
 uaecptr fastmem_start; /* Determined by the OS */
+#ifdef __LIBRETRO__
+uae_u8 *fastmemory;
+#else
 static uae_u8 *fastmemory;
+#endif
 
 static uae_u32 REGPARAM2 fastmem_lget (uaecptr addr)
 {

@@ -49,6 +49,10 @@ typedef int (REGPARAM3 *check_func)(uaecptr, uae_u32) REGPARAM;
 
 extern uae_u8 *address_space, *good_address_map;
 extern uae_u8 *chipmemory;
+#ifdef __LIBRETRO__
+extern uae_u8 *bogomemory;
+extern uae_u8 *fastmemory;
+#endif
 
 extern uae_u32 allocated_chipmem;
 extern uae_u32 allocated_fastmem;

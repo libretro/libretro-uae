@@ -689,7 +689,11 @@ static void chipmem_setindirect (void)
 
 /* Slow memory */
 
+#ifdef __LIBRETRO__
+uae_u8 *bogomemory;
+#else
 static uae_u8 *bogomemory;
+#endif
 static int bogomemory_allocated;
 
 static uae_u32 REGPARAM3 bogomem_lget (uaecptr) REGPARAM;
