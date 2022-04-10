@@ -4446,7 +4446,7 @@ void retro_get_system_info(struct retro_system_info *info)
 #endif
    memset(info, 0, sizeof(*info));
    info->library_name     = "PUAE";
-   info->library_version  = "2.6.1" GIT_VERSION;
+   info->library_version  = PACKAGE_VERSION "" GIT_VERSION;
    info->need_fullpath    = true;
    info->block_extract    = true;
    info->valid_extensions = "adf|adz|dms|fdi|ipf|hdf|hdz|lha|slave|info|cue|ccd|nrg|mds|iso|chd|uae|m3u|zip|7z";
