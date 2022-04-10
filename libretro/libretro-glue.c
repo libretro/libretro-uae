@@ -1501,9 +1501,9 @@ void remove_recurse(const char *path)
 
 int fcopy(const char *src, const char *dst)
 {
-   char buf[BUFSIZ] = {0};
-   size_t n         = 0;
-   int ret          = 0;
+   char buf[256] = {0};
+   size_t n      = 0;
+   int ret       = 0;
 
    char path_dst[RETRO_PATH_MAX] = {0};
    snprintf(path_dst, sizeof(path_dst), "%s", dst);
@@ -1546,10 +1546,10 @@ close:
 
 int fcmp(const char *src, const char *dst)
 {
-   char buf_src[BUFSIZ] = {0};
-   char buf_dst[BUFSIZ] = {0};
-   size_t n             = 0;
-   int ret              = 0;
+   char buf_src[256] = {0};
+   char buf_dst[256] = {0};
+   size_t n          = 0;
+   int ret           = 0;
 
    FILE *fp_src = fopen(src, "rb");
    FILE *fp_dst = fopen(dst, "rb");
@@ -1662,54 +1662,71 @@ bool strendswith(const char* str, const char* end)
 }
 
 /* zlib */
-void gz_uncompress(gzFile in, FILE *out)
+void gz_uncompress(const char *in, const char *out)
 {
    char gzbuf[16384];
    int len;
    int err;
 
-   for (;;)
+   struct gzFile_s *in_fp;
+   if ((in_fp = gzopen(in, "r")))
    {
-      len = gzread(in, gzbuf, sizeof(gzbuf));
-      if (len < 0)
-         log_cb(RETRO_LOG_ERROR, "%s", gzerror(in, &err));
-      if (len == 0)
-         break;
-      if ((int)fwrite(gzbuf, 1, (unsigned)len, out) != len)
-         log_cb(RETRO_LOG_ERROR, "GZ write error!\n");
+      FILE *out_fp;
+      if ((out_fp = fopen(out, "wb")))
+      {
+         for (;;)
+         {
+            len = gzread(in_fp, gzbuf, sizeof(gzbuf));
+            if (len <= 0)
+            {
+               if (len < 0)
+                  log_cb(RETRO_LOG_ERROR, "GUnzip: %s\n", gzerror(in_fp, &err));
+               break;
+            }
+
+            if (fwrite(gzbuf, 1, len, out_fp) != len)
+               log_cb(RETRO_LOG_ERROR, "GUnzip: Write error\n");
+         }
+         fclose(out_fp);
+
+         if (!len)
+            log_cb(RETRO_LOG_INFO, "GUnzip: %s\n", out);
+      }
+      gzclose(in_fp);
    }
 }
 
-void zip_uncompress(char *in, char *out, char *lastfile)
+void zip_uncompress(const char *in, const char *out, char *lastfile)
 {
-   unzFile uf = NULL;
-   char *in_local = NULL;
-   in_local = utf8_to_local_string_alloc(in);
+   uLong i;
+   unz_global_info gi;
 
-   uf = unzOpen(in_local);
+   unzFile uf           = NULL;
+   char *in_local       = NULL;
+   const char* password = NULL;
+   int size_buf         = 8192;
+   int err;
+
+   in_local             = utf8_to_local_string_alloc(in);
+   uf                   = unzOpen(in_local);
 
    free(in_local);
    in_local = NULL;
 
-   uLong i;
-   unz_global_info gi;
-   int err;
    err = unzGetGlobalInfo (uf, &gi);
-
-   const char* password = NULL;
-   int size_buf = 8192;
 
    for (i = 0; i < gi.number_entry; i++)
    {
       char filename_inzip[256];
       char filename_withpath[512];
-      filename_inzip[0] = '\0';
-      filename_withpath[0] = '\0';
       char* filename_withoutpath;
       char* p;
       unz_file_info file_info;
       FILE *fout = NULL;
       void* buf;
+
+      filename_inzip[0]    = '\0';
+      filename_withpath[0] = '\0';
 
       buf = (void*)malloc(size_buf);
       if (buf == NULL)
@@ -1729,7 +1746,7 @@ void zip_uncompress(char *in, char *out, char *lastfile)
       while ((*p) != '\0')
       {
          if (((*p) == '/') || ((*p) == '\\'))
-            filename_withoutpath = p+1;
+            filename_withoutpath = p + 1;
          p++;
       }
 
@@ -1741,8 +1758,8 @@ void zip_uncompress(char *in, char *out, char *lastfile)
       else if (!path_is_valid(filename_withpath))
       {
          char* write_filename;
-         int skip = 0;
-         unsigned x = 0;
+         unsigned skip = 0;
+         unsigned x    = 0;
 
          write_filename = local_to_utf8_string_alloc(filename_withpath);
 
@@ -1803,7 +1820,7 @@ void zip_uncompress(char *in, char *out, char *lastfile)
 
       free(buf);
 
-      if ((i+1) < gi.number_entry)
+      if ((i + 1) < gi.number_entry)
       {
          err = unzGoToNextFile(uf);
          if (err != UNZ_OK)
@@ -1863,7 +1880,7 @@ static void *sevenzip_stream_alloc_tmp_impl(ISzAllocPtr p, size_t size)
    return malloc(size);
 }
 
-void sevenzip_uncompress(char *in, char *out, char *lastfile)
+void sevenzip_uncompress(const char *in, const char *out, char *lastfile)
 {
    CFileInStream archiveStream;
    CLookToRead2 lookStream;
