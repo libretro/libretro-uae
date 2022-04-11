@@ -111,6 +111,22 @@ static void hr (void)
 	write_log (_T("--------------------------------------------------------------------------------\n"));
 }
 
+#ifdef __LIBRETRO__
+static void show_version (void)
+{
+#ifndef GIT_VERSION
+#define GIT_VERSION ""
+#endif
+	write_log (_T("PUAE %d.%d.%d%s, %s %s\n"), UAEMAJOR, UAEMINOR, UAESUBREV, GIT_VERSION, __DATE__, __TIME__);
+}
+
+static void show_version_full (void)
+{
+	hr ();
+	show_version ();
+	hr ();
+}
+#else
 static void show_version (void)
 {
 	write_log (_T("PUAE %d.%d.%d (%s)\n"), UAEMAJOR, UAEMINOR, UAESUBREV, PACKAGE_COMMIT);
@@ -124,21 +140,18 @@ static void show_version_full (void)
 {
 	hr ();
 	show_version ();
-#ifdef __LIBRETRO__
-	write_log (_T("\n"));
-#else
 	hr ();
 	write_log (_T("Copyright 1995-2002 Bernd Schmidt\n"));
 	write_log (_T("          1999-2013 Toni Wilen\n"));
 	write_log (_T("          2003-2007 Richard Drummond\n"));
 	write_log (_T("          2006-2013 Mustafa 'GnoStiC' Tufan\n"));
 	write_log (_T("\n"));
-#endif
 	write_log (_T("See the source for a full list of contributors.\n"));
 	write_log (_T("This is free software; see the file COPYING for copying conditions. There is NO\n"));
 	write_log (_T("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"));
 	hr ();
 }
+#endif /* __LIBRETRO__ */
 
 uae_u32 uaesrand (uae_u32 seed)
 {
