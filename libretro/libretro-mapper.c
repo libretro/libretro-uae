@@ -14,7 +14,6 @@
 #include "gui.h"
 #include "xwin.h"
 #include "disk.h"
-#include "hrtimer.h"
 
 /* Mouse speed flags */
 #define MOUSE_SPEED_SLOWER 1

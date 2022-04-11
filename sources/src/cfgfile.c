@@ -4914,11 +4914,7 @@ void default_prefs (struct uae_prefs *p, int type)
 	p->config_host_path[0] = 0;
 
 	p->gfx_scandoubler = 0;
-#ifdef __LIBRETRO__
-    p->start_gui = 0;
-#else
 	p->start_gui = 1;
-#endif
 #ifdef DEBUGGER
 	p->start_debugger = 0;
 #endif
@@ -4928,11 +4924,7 @@ void default_prefs (struct uae_prefs *p, int type)
 	 * to behave identically on all platforms if possible.
 	 * (TW says: maybe it is time to update default config..) */
 	p->illegal_mem = 0;
-#ifdef __LIBRETRO__
-	p->use_serial = 1;
-#else
 	p->use_serial = 0;
-#endif
 	p->serial_demand = 0;
 	p->serial_hwctsrts = 1;
 	p->serial_stopbits = 0;
@@ -4954,11 +4946,7 @@ void default_prefs (struct uae_prefs *p, int type)
 	memset (&p->jports[2], 0, sizeof (struct jport));
 	memset (&p->jports[3], 0, sizeof (struct jport));
 	p->jports[0].id = JSEM_MICE;
-#ifdef __LIBRETRO__
-	p->jports[1].id = JSEM_JOYS;
-#else
 	p->jports[1].id = JSEM_KBDLAYOUT;
-#endif
 	p->jports[2].id = -1;
 	p->jports[3].id = -1;
 	p->keyboard_lang = KBD_LANG_US;
@@ -4972,13 +4960,8 @@ void default_prefs (struct uae_prefs *p, int type)
 	p->sound_interpol = 1;
 	p->sound_filter = FILTER_SOUND_EMUL;
 	p->sound_filter_type = 0;
-#ifdef __LIBRETRO__
-	p->sound_auto = 0;
-	p->sound_cdaudio = true;
-#else
 	p->sound_auto = 1;
 	p->sound_cdaudio = false;
-#endif
 	p->sampler_stereo = false;
 	p->sampler_buffer = 0;
 	p->sampler_freq = 0;
@@ -5064,11 +5047,7 @@ void default_prefs (struct uae_prefs *p, int type)
 	p->immediate_blits = 0;
 	p->waiting_blits = 0;
 	p->collision_level = 2;
-#ifdef __LIBRETRO__
-	p->leds_on_screen = 1;
-#else
 	p->leds_on_screen = 0;
-#endif
 	p->leds_on_screen_mask[0] = p->leds_on_screen_mask[1] = (1 << LED_MAX) - 1;
 	p->keyboard_leds_in_use = 0;
 	p->keyboard_leds[0] = p->keyboard_leds[1] = p->keyboard_leds[2] = 0;
@@ -5139,11 +5118,7 @@ void default_prefs (struct uae_prefs *p, int type)
 #endif
 
 	configure_rom (p, roms, 0);
-#ifndef __LIBRETRO__
-	_tcscpy (p->romfile, _T("kick.rom"));
-#else
 	_tcscpy (p->romfile, _T(""));
-#endif
 	_tcscpy (p->romextfile, _T(""));
 	_tcscpy (p->romextfile2, _T(""));
 	p->romextfile2addr = 0;
@@ -5190,11 +5165,7 @@ void default_prefs (struct uae_prefs *p, int type)
 	p->z3fastmem2_size = 0x00000000;
 	p->z3fastmem_start = 0x10000000;
 	p->chipmem_size = 0x00080000;
-#ifdef __LIBRETRO__
-	p->bogomem_size = 0x00000000;
-#else
 	p->bogomem_size = 0x00080000;
-#endif
 	p->rtgmem_size = 0x00000000;
 	p->rtgmem_type = 1;
 	p->custom_memory_addrs[0] = 0;
@@ -5203,19 +5174,10 @@ void default_prefs (struct uae_prefs *p, int type)
 	p->custom_memory_sizes[1] = 0;
 	p->fastmem_autoconfig = true;
 
-#ifdef __LIBRETRO__
-	p->floppy_auto_ext2 = 2;
-	p->nr_floppies = 1;
-#else
 	p->nr_floppies = 2;
-#endif
 	p->floppy_read_only = false;
 	p->floppyslots[0].dfxtype = DRV_35_DD;
-#ifdef __LIBRETRO__
-	p->floppyslots[1].dfxtype = DRV_NONE;
-#else
 	p->floppyslots[1].dfxtype = DRV_35_DD;
-#endif
 	p->floppyslots[2].dfxtype = DRV_NONE;
 	p->floppyslots[3].dfxtype = DRV_NONE;
 	p->floppy_speed = 100;
@@ -5278,7 +5240,7 @@ void default_prefs (struct uae_prefs *p, int type)
 	cr->locked = false;
 	_tcscpy (cr->label, _T("NTSC"));
 
-	//target_default_options (p, type);
+	target_default_options (p, type);
 
 	zfile_fclose (default_file);
 	default_file = NULL;

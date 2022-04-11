@@ -1,3 +1,10 @@
+#include "libretro-core.h"
+#include "libretro-glue.h"
+#include "libretro-graph.h"
+#include "libretro-mapper.h"
+#include "encodings/utf.h"
+#include "streams/file_stream.h"
+
 #include "sysconfig.h"
 #include "sysdeps.h"
 
@@ -8,18 +15,9 @@
 #include "custom.h"
 #include "drawing.h"
 #include "hotkeys.h"
-#include "hrtimer.h"
-
+#include "disk.h"
 #include "inputdevice.h"
-void inputdevice_release_all_keys(void);
 extern int mouse_port[NORMAL_JPORTS];
-
-#include "libretro-glue.h"
-#include "libretro-graph.h"
-#include "libretro-core.h"
-#include "libretro-mapper.h"
-#include "encodings/utf.h"
-#include "streams/file_stream.h"
 
 extern unsigned int retro_devices[RETRO_DEVICES];
 bool inputdevice_finalized = false;
@@ -541,11 +539,6 @@ void print_statusbar(void)
 
 
 
-int gui_init (void)
-{
-   return 0;
-}
-
 /*
  * Handle target-specific cfgfile options
  */
@@ -559,6 +552,22 @@ int target_parse_option (struct uae_prefs *p, const char *option, const char *va
 }
 
 void target_default_options (struct uae_prefs *p, int type)
+{
+   p->start_gui = false;
+   p->use_serial = 1;
+   p->sound_auto = 0;
+   p->sound_cdaudio = true;
+   p->leds_on_screen = 1;
+   p->bogomem_size = 0x00000000;
+   p->floppy_auto_ext2 = 2;
+   p->nr_floppies = 1;
+   p->floppyslots[1].dfxtype = DRV_NONE;
+
+   p->jports[0].id = JSEM_MICE;
+   p->jports[1].id = JSEM_JOYS;
+}
+
+void target_fixup_options (struct uae_prefs *p)
 {
 }
 
@@ -667,9 +676,6 @@ int graphics_init(void)
    if (pixbuf != NULL)
       return 1;
 
-   currprefs.gfx_size_win.width = defaultw;
-   currprefs.gfx_size_win.height = defaulth;
-
    pixbuf = (unsigned short int*) &retro_bmp[0];
    if (pixbuf == NULL)
    {
@@ -677,24 +683,21 @@ int graphics_init(void)
       return -1;
    }
 
-   gfxvidinfo.width_allocated = currprefs.gfx_size_win.width;
-   gfxvidinfo.height_allocated = currprefs.gfx_size_win.height;
-   gfxvidinfo.maxblocklines = 1000;
-   gfxvidinfo.pixbytes = pix_bytes;
-   gfxvidinfo.rowbytes = gfxvidinfo.width_allocated * gfxvidinfo.pixbytes;
-   gfxvidinfo.bufmem = (unsigned char*)pixbuf;
-   gfxvidinfo.emergmem = 0;
-   gfxvidinfo.linemem = 0;
+   gfxvidinfo.width_allocated       = defaultw;
+   gfxvidinfo.height_allocated      = defaulth;
+   gfxvidinfo.pixbytes              = pix_bytes;
+   gfxvidinfo.rowbytes              = gfxvidinfo.width_allocated * gfxvidinfo.pixbytes;
+   gfxvidinfo.bufmem                = (unsigned char*)pixbuf;
+   gfxvidinfo.linemem               = 0;
+   gfxvidinfo.emergmem              = 0;
 
-   gfxvidinfo.lockscr = retro_lockscr;
-   gfxvidinfo.unlockscr = retro_unlockscr;
-   gfxvidinfo.flush_block = retro_flush_block;
-   gfxvidinfo.flush_clear_screen = retro_flush_clear_screen;
-   gfxvidinfo.flush_screen = retro_flush_screen;
-   gfxvidinfo.flush_line = retro_flush_line;
+   gfxvidinfo.lockscr               = retro_lockscr;
+   gfxvidinfo.unlockscr             = retro_unlockscr;
+   gfxvidinfo.flush_block           = retro_flush_block;
+   gfxvidinfo.flush_clear_screen    = retro_flush_clear_screen;
+   gfxvidinfo.flush_screen          = retro_flush_screen;
+   gfxvidinfo.flush_line            = retro_flush_line;
 
-   prefs_changed = 1;
-   inputdevice_release_all_keys();
 #if 0
    reset_hotkeys();
 #endif
@@ -713,15 +716,6 @@ int is_vsync (void)
    return 0;
 }
 
-int mousehack_allowed (void)
-{
-   return 0;
-}
-
-int debuggable (void)
-{
-   return 0;
-}
 
 int graphics_setup(void)
 {
@@ -753,6 +747,16 @@ int gfx_parse_option (struct uae_prefs *p, const char *option, const char *value
 
 void gfx_default_options(struct uae_prefs *p)
 {
+}
+
+int mousehack_allowed (void)
+{
+   return 0;
+}
+
+int debuggable (void)
+{
+   return 0;
 }
 
 void screenshot (int type, int f)
@@ -807,7 +811,11 @@ int check_prefs_changed_gfx (void)
    }
 
 #if 0
-   printf("check_prefs_changed_gfx: %d:%d, res:%d vres:%d\n", changed_prefs.gfx_size_win.width, changed_prefs.gfx_size_win.height, changed_prefs.gfx_resolution, changed_prefs.gfx_vresolution);
+   printf("%s: %d:%d, res:%d vres:%d\n", __func__,
+         changed_prefs.gfx_size_win.width,
+         changed_prefs.gfx_size_win.height,
+         changed_prefs.gfx_resolution,
+         changed_prefs.gfx_vresolution);
 #endif
    return 1;
 }
@@ -852,10 +860,10 @@ static TCHAR *get_joystick_friendlyname (int joy)
 {
    switch (joy)
    {
+      default:
       case 0:
          return "RetroPad0";
          break;
-      default:
       case 1:
          return "RetroPad1";
          break;
@@ -872,10 +880,10 @@ static char *get_joystick_uniquename (int joy)
 {
    switch (joy)
    {
+      default:
       case 0:
          return "RetroPad0";
          break;
-      default:
       case 1:
          return "RetroPad1";
          break;

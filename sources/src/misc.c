@@ -426,10 +426,6 @@ void target_quit (void)
 {
 }
 
-void target_fixup_options (struct uae_prefs *p)
-{
-}
-
 void fetch_path (TCHAR *name, TCHAR *out, int size)
 {
 	_tcscpy (start_path_data, "./");

@@ -1,8 +1,6 @@
  /*
   * UAE - The Un*x Amiga Emulator
   *
-  * Interface to the Tcl/Tk GUI
-  *
   * Copyright 1996 Bernd Schmidt
   */
 
@@ -18,6 +16,11 @@ extern retro_log_printf_t log_cb;
 
 void gui_disk_image_change (int unitnum, const TCHAR *name, bool writeprotected)
 {
+}
+
+int gui_init (void)
+{
+    return 0;
 }
 
 int gui_open (void)

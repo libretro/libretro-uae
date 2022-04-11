@@ -16,9 +16,6 @@
 #include "savestate.h"
 #include "custom.h"
 #include "xwin.h"
-#include "drawing.h"
-#include "akiko.h"
-#include "blkdev.h"
 #include "disk.h"
 #include "gui.h"
 #include "audio.h"
@@ -6331,7 +6328,7 @@ static void update_audiovideo(void)
    {
       int current_resolution = GET_RES_DENISE (bplcon0);
 #if 0
-      printf("BPLCON0: %d, %d, %d %d\n", bplcon0, current_resolution, diwfirstword_total, diwlastword_total);
+      printf("BPLCON0: %x, %d, %d %d\n", bplcon0, current_resolution, diwfirstword_total, diwlastword_total);
 #endif
 
       /* Super Skidmarks force to SuperHires */
@@ -6369,6 +6366,8 @@ static void update_audiovideo(void)
                retro_max_diwlastword = retro_max_diwlastword_hires * 2;
                request_init_custom_timer = 2;
             }
+            break;
+         default:
             break;
       }
 
@@ -6993,11 +6992,6 @@ void retro_run(void)
    /* AV info change is requested */
    if (request_update_av_info)
       retro_update_av_info();
-
-   /* Single/double line mode changes leave rubbish behind,
-    * therefore clear everything */
-   if (prefs_changed)
-      memset(retro_bmp, 0, sizeof(retro_bmp));
 
    /* Poll inputs */
    input_poll_cb();

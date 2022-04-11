@@ -32,6 +32,20 @@ bool my_stat (const TCHAR *name, struct mystat *ms) {
 	return true;
 }
 
+bool my_chmod (const TCHAR *name, uae_u32 mode)
+{
+#if 0
+	DWORD attr = FILE_ATTRIBUTE_NORMAL;
+	if (!(mode & FILEFLAG_WRITE))
+		attr |= FILE_ATTRIBUTE_READONLY;
+	if (mode & FILEFLAG_ARCHIVE)
+		attr |= FILE_ATTRIBUTE_ARCHIVE;
+	if (chmod (name, attr))
+		return true;
+#endif
+	return false;
+}
+
 static int setfiletime (const TCHAR *name, int days, int minute, int tick, int tolocal)
 {
 	return 0;
@@ -109,7 +123,7 @@ int my_getvolumeinfo(const char *root)
 	struct stat sonuc;
 	int ret = 0;
 
-	if (lstat(root, &sonuc) == -1)
+	if (stat(root, &sonuc) == -1)
 		return -1;
 	if (!S_ISDIR(sonuc.st_mode))
 		return -1;
@@ -417,6 +431,16 @@ int my_issamevolume(const TCHAR *path1, const TCHAR *path2, TCHAR *path)
 	return cnt;
 }
 
+bool my_issamepath(const TCHAR *path1, const TCHAR *path2)
+{
+	TCHAR path1o[MAX_DPATH], path2o[MAX_DPATH];
+	my_canonicalize_path(path1, path1o, sizeof path1o / sizeof(TCHAR));
+	my_canonicalize_path(path2, path2o, sizeof path2o / sizeof(TCHAR));
+	if (!_tcsicmp(path1o, path2o))
+		return true;
+	return false;
+}
+
 int my_setcurrentdir(const TCHAR *curdir, TCHAR *oldcur)
 {
 #ifdef VITA
@@ -438,9 +462,27 @@ int my_setcurrentdir(const TCHAR *curdir, TCHAR *oldcur)
 #endif
 }
 
+bool my_createshortcut(const TCHAR *source, const TCHAR *target, const TCHAR *description) 
+{
+    return false;
+}
+
 bool my_resolvesoftlink(TCHAR *linkfile, int size)
 {
 	return false;
+}
+
+const TCHAR *my_getfilepart(const TCHAR *filename)
+{
+	const TCHAR *p;
+
+	p = _tcsrchr(filename, '\\');
+	if (p)
+		return p + 1;
+	p = _tcsrchr(filename, '/');
+	if (p)
+		return p + 1;
+	return filename;
 }
 
 bool my_isfilehidden(const TCHAR *path)
@@ -456,5 +498,10 @@ TCHAR *target_expand_environment(const TCHAR *path, TCHAR *out, int maxlen)
 {
 	if (!path)
 		return NULL;
+	if (out == NULL) {
+		return my_strdup (path);
+	} else {
+		_tcscpy(out, path);
 		return out;
+	}
 }
