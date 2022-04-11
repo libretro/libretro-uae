@@ -1975,6 +1975,61 @@ static void build_cpufunctbl (void)
 	build_comp ();
 #endif
 
+#ifdef __LIBRETRO__
+	char cpu_table_config[512] = {0};
+	char cpu_table_temp[64] = {0};
+
+	snprintf(cpu_table_temp, sizeof(cpu_table_temp), _T("CPU=%d, FPU=%d%s, MMU=%d, JIT%s=%d."),
+		currprefs.cpu_model,
+		currprefs.fpu_model, currprefs.fpu_model ? (currprefs.fpu_mode > 0 ? _T(" (softfloat)") : (currprefs.fpu_mode < 0 ? _T(" (host 80b)") : _T(" (host 64b)"))) : _T(""),
+		currprefs.mmu_model,
+		currprefs.cachesize ? (currprefs.compfpu ? _T("=CPU/FPU") : _T("=CPU")) : _T(""),
+		currprefs.cachesize);
+	strcat(cpu_table_config, cpu_table_temp);
+
+	regs.address_space_mask = 0xffffffff;
+	if (currprefs.cpu_compatible) {
+		if (currprefs.address_space_24 && currprefs.cpu_model >= 68040)
+			currprefs.address_space_24 = false;
+	}
+	m68k_interrupt_delay = false;
+	if (currprefs.cpu_cycle_exact) {
+		if (tbl == op_smalltbl_14 || tbl == op_smalltbl_13 || tbl == op_smalltbl_21 || tbl == op_smalltbl_23)
+			m68k_interrupt_delay = true;
+	} else if (currprefs.cpu_compatible) {
+		if (currprefs.cpu_model <= 68010 && currprefs.m68k_speed == 0) {
+			m68k_interrupt_delay = true;
+		}
+	}
+
+	if (currprefs.cpu_cycle_exact) {
+		if (currprefs.cpu_model == 68000)
+			strcat(cpu_table_config, _T(" prefetch and cycle-exact"));
+		else
+			strcat(cpu_table_config, _T(" ~cycle-exact"));
+	} else if (currprefs.cpu_memory_cycle_exact) {
+			strcat(cpu_table_config, _T(" ~memory-cycle-exact"));
+	} else if (currprefs.cpu_compatible) {
+		if (currprefs.cpu_model <= 68020) {
+			strcat(cpu_table_config, _T(" prefetch"));
+		} else {
+			strcat(cpu_table_config, _T(" fake prefetch"));
+		}
+	}
+	if (currprefs.m68k_speed < 0)
+		strcat(cpu_table_config, _T(" fast"));
+	if (currprefs.int_no_unimplemented && currprefs.cpu_model == 68060) {
+		strcat(cpu_table_config, _T(" no unimplemented integer instructions"));
+	}
+	if (currprefs.fpu_no_unimplemented && currprefs.fpu_model) {
+		strcat(cpu_table_config, _T(" no unimplemented floating point instructions"));
+	}
+	if (currprefs.address_space_24) {
+		regs.address_space_mask = 0x00ffffff;
+		strcat(cpu_table_config, _T(" 24-bit"));
+	}
+	write_log(_T("%s\n"), cpu_table_config);
+#else
 	write_log(_T("CPU=%d, FPU=%d%s, MMU=%d, JIT%s=%d."),
 		currprefs.cpu_model,
 		currprefs.fpu_model, currprefs.fpu_model ? (currprefs.fpu_mode > 0 ? _T(" (softfloat)") : (currprefs.fpu_mode < 0 ? _T(" (host 80b)") : _T(" (host 64b)"))) : _T(""),
@@ -2024,6 +2079,7 @@ static void build_cpufunctbl (void)
 		write_log(_T(" 24-bit"));
 	}
 	write_log(_T("\n"));
+#endif
 
 	set_cpu_caches (true);
 	target_cpu_speed();
