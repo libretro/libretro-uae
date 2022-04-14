@@ -5247,6 +5247,8 @@ static char* emu_config(int config)
       case EMU_CONFIG_A4030: return
          "cpu_model=68030\n"
          "fpu_model=68882\n"
+         "mmu_model=68030\n"
+         "cpu_24bit_addressing=false\n"
          "chipset=aga\n"
          "chipset_compatible=A4000\n"
          "chipmem_size=4\n"
@@ -5256,6 +5258,8 @@ static char* emu_config(int config)
       case EMU_CONFIG_A4040: return
          "cpu_model=68040\n"
          "fpu_model=68040\n"
+         "mmu_model=68040\n"
+         "cpu_24bit_addressing=false\n"
          "chipset=aga\n"
          "chipset_compatible=A4000\n"
          "chipmem_size=4\n"
@@ -7196,7 +7200,9 @@ bool retro_load_game(const struct retro_game_info *info)
     * then this is not adequate at all). Untangling the
     * full set of values that are recorded is beyond
     * my patience... */
-   struct zfile *state_file = save_state("libretro", 0);
+
+   /* Disable savestates for 68040 fpu for now due to random crash */
+   struct zfile *state_file = currprefs.fpu_model != 68040 ? save_state("libretro", 0) : NULL;
 
    if (state_file)
    {

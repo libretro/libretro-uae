@@ -1110,6 +1110,9 @@ static int save_state_internal (struct zfile *f, const TCHAR *description, int c
 		if (!dst)
 			break;
 		save_chunk(f, dst, len, _T("EXPB"), 0);
+#ifdef __LIBRETRO__
+		xfree (dst);
+#endif
 		i++;
 	}
 #if 0
@@ -1119,14 +1122,23 @@ static int save_state_internal (struct zfile *f, const TCHAR *description, int c
 #endif
 	dst = save_expansion(&len, 0);
 	save_chunk(f, dst, len, _T("EXPA"), 0);
+#ifdef __LIBRETRO__
+	xfree (dst);
+#endif
 #endif
 #ifdef A2065
 	dst = save_a2065 (&len, NULL);
 	save_chunk (f, dst, len, _T("2065"), 0);
+#ifdef __LIBRETRO__
+	xfree (dst);
+#endif
 #endif
 #ifdef PICASSO96
 	dst = save_p96 (&len, 0);
 	save_chunk (f, dst, len, _T("P96 "), 0);
+#ifdef __LIBRETRO__
+	xfree (dst);
+#endif
 #endif
 	save_rams (f, comp);
 
@@ -1221,6 +1233,9 @@ static int save_state_internal (struct zfile *f, const TCHAR *description, int c
 		if (dst) {
 			_stprintf (name, _T("CDU%d"), i);
 			save_chunk (f, dst, len, name, 0);
+#ifdef __LIBRETRO__
+			xfree(dst);
+#endif
 		}
 	}
 

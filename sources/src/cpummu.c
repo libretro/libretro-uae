@@ -1753,7 +1753,9 @@ jmp_buf* __poptry(void) {
 	else {
 		fprintf(stderr,"try stack underflow...\n");
 		// return (NULL);
+#ifndef __LIBRETRO__
 		abort();
+#endif
 	}
 }
 void __pushtry(jmp_buf* j) {
@@ -1763,7 +1765,9 @@ void __pushtry(jmp_buf* j) {
 		s_try_stack_size++;
 	} else {
 		fprintf(stderr,"try stack overflow...\n");
+#ifndef __LIBRETRO__
 		abort();
+#endif
 	}
 }
 int __is_catched(void) {return (s_try_stack_size>0); }
