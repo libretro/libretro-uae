@@ -118,7 +118,7 @@ void emu_function(int function)
       case EMU_RESET:
          retro_reset_soft();
          /* Statusbar notification */
-         statusbar_message_show(0, "%s", "Reset");
+         statusbar_message_show(4, "%s", "Reset");
          break;
       case EMU_ASPECT_RATIO:
          if (video_config_aspect == 0)
