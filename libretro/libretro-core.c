@@ -23,6 +23,10 @@
 #include "memory.h"
 #include "sounddep/sound.h"
 
+#ifndef MAX_FLOPPY_DRIVES
+#define MAX_FLOPPY_DRIVES 4
+#endif
+
 #ifdef USE_LIBRETRO_VFS
 #undef utf8_to_local_string_alloc
 #define utf8_to_local_string_alloc strdup
@@ -194,8 +198,6 @@ bool libretro_ff_enabled = false;
 static bool libretro_supports_option_categories = false;
 #define HAVE_NO_LANGEXTRA
 
-static unsigned int retro_led_state[3] = {0};
-
 char retro_save_directory[RETRO_PATH_MAX] = {0};
 char retro_temp_directory[RETRO_PATH_MAX] = {0};
 char retro_system_directory[RETRO_PATH_MAX] = {0};
@@ -241,30 +243,33 @@ static int retro_keymap_id(const char *val)
    return 0;
 }
 
+static unsigned int retro_led_state[RETRO_LED_NUM] = {0};
 static void retro_led_interface(void)
 {
    /* 0: Power
     * 1: Floppy
     * 2: HD/CD/MD */
 
-   unsigned int led_state[3] = {0};
+   unsigned int led_state[RETRO_LED_NUM] = {0};
+   unsigned int l                        = 0;
+   unsigned int i                        = 0;
 
-   led_state[0] = gui_data.powerled;
+   led_state[RETRO_LED_POWER] = gui_data.powerled;
 
-   for (int i = 0; i < 4; i++)
+   for (i = 0; i < MAX_FLOPPY_DRIVES; i++)
    {
-      if (!led_state[1] && gui_data.drives[i].df[0])
-         led_state[1] = gui_data.drives[i].drive_motor;
+      if (!led_state[RETRO_LED_DRIVE] && gui_data.drives[i].df[0])
+         led_state[RETRO_LED_DRIVE] = gui_data.drives[i].drive_motor;
    }
 
-   if (!led_state[2] && gui_data.hd >= 0)
-      led_state[2] = gui_data.hd;
-   if (!led_state[2] && gui_data.cd >= 0)
-      led_state[2] = gui_data.cd & (LED_CD_ACTIVE | LED_CD_AUDIO);
-   if (!led_state[2] && gui_data.md >= 1)
-      led_state[2] = gui_data.md;
+   if (!led_state[RETRO_LED_HDCDMD] && gui_data.hd >= 0)
+      led_state[RETRO_LED_HDCDMD] = gui_data.hd;
+   if (!led_state[RETRO_LED_HDCDMD] && gui_data.cd >= 0)
+      led_state[RETRO_LED_HDCDMD] = gui_data.cd & (LED_CD_ACTIVE | LED_CD_AUDIO);
+   if (!led_state[RETRO_LED_HDCDMD] && gui_data.md >= 1)
+      led_state[RETRO_LED_HDCDMD] = gui_data.md;
 
-   for (unsigned l = 0; l < sizeof(led_state)/sizeof(led_state[0]); l++)
+   for (l = 0; l < RETRO_LED_NUM; l++)
    {
       if (retro_led_state[l] != led_state[l])
       {
@@ -325,7 +330,7 @@ static void retro_autoloadfastforwarding(void)
    if (opt_autoloadfastforward & AUTOLOADFASTFORWARD_FD && (gui_data.drives[0].df[0] || gui_data.drives[1].df[0]))
    {
       int ff             = -1;
-      int drive_led      = retro_led_state[1];
+      int drive_led      = retro_led_state[RETRO_LED_DRIVE];
       int drive_track    = gui_data.drives[0].drive_track;
       bool audio_playing = paula_playing();
 
@@ -2489,9 +2494,9 @@ void retro_set_environment(retro_environment_t cb)
    bool support_no_game = true;
    environ_cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &support_no_game);
 
-   static struct retro_led_interface led_interface;
+   struct retro_led_interface led_interface;
    environ_cb(RETRO_ENVIRONMENT_GET_LED_INTERFACE, &led_interface);
-   if (led_interface.set_led_state)
+   if (led_interface.set_led_state && !led_state_cb)
       led_state_cb = led_interface.set_led_state;
 
 #ifdef USE_LIBRETRO_VFS
@@ -3029,7 +3034,7 @@ static void update_variables(void)
          if (changed_prefs.floppy_read_only != currprefs.floppy_read_only)
          {
             currprefs.floppy_read_only = val;
-            for (unsigned i = 0; i < 4; i++)
+            for (unsigned i = 0; i < MAX_FLOPPY_DRIVES; i++)
                DISK_reinsert(i);
          }
       }
@@ -3054,7 +3059,7 @@ static void update_variables(void)
 
       /* Setting volume in realtime will crash on first pass */
       if (libretro_runloop_active)
-         for (unsigned i = 0; i < 4; i++)
+         for (unsigned i = 0; i < MAX_FLOPPY_DRIVES; i++)
             changed_prefs.dfxclickvolume_disk[i] = atoi(val);
    }
 
@@ -3100,7 +3105,7 @@ static void update_variables(void)
 
       if (libretro_runloop_active)
       {
-         for (unsigned i = 0; i < 4; i++)
+         for (unsigned i = 0; i < MAX_FLOPPY_DRIVES; i++)
          {
             if (!strcmp(var.value, "internal"))
             {
@@ -4053,7 +4058,7 @@ bool retro_disk_set_eject_state(bool ejected)
             case DC_IMAGE_TYPE_FLOPPY:
             case DC_IMAGE_TYPE_ARCHIVE:
                /* Need to remove duplicates from external drives */
-               for (unsigned i = 1; i < 4; i++)
+               for (unsigned i = 1; i < MAX_FLOPPY_DRIVES; i++)
                   if (!strcmp(currprefs.floppyslots[i].df, dc->files[dc->index]))
                   {
                      changed_prefs.floppyslots[i].df[0] = 0;
@@ -5888,7 +5893,7 @@ static bool retro_create_config(void)
                {
                   for (unsigned i = 1; i < dc->count; i++)
                   {
-                     if (i < 4)
+                     if (i < MAX_FLOPPY_DRIVES)
                      {
                         if (strstr(dc->labels[i], M3U_SAVEDISK_LABEL))
                            continue;
@@ -7119,7 +7124,8 @@ void retro_run(void)
    }
 
    /* LED interface */
-   retro_led_interface();
+   if (led_state_cb)
+      retro_led_interface();
 
    /* Automatic loading fast-forward */
    if (opt_autoloadfastforward)

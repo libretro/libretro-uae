@@ -64,6 +64,15 @@ extern int umain (int argc, TCHAR **argv);
 #define AUTOLOADFASTFORWARD_HD 0x02
 #define AUTOLOADFASTFORWARD_CD 0x04
 
+/* LED interface */
+enum
+{
+   RETRO_LED_POWER = 0,
+   RETRO_LED_DRIVE,
+   RETRO_LED_HDCDMD,
+   RETRO_LED_NUM
+};
+
 /* RetroPad options */
 enum
 {
