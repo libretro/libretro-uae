@@ -247,8 +247,14 @@ static unsigned int retro_led_state[RETRO_LED_NUM] = {0};
 static void retro_led_interface(void)
 {
    /* 0: Power
-    * 1: Floppy
-    * 2: HD/CD/MD */
+    * 1: Floppy drives
+    * 2: HD/CD/MD (NVRAM)
+    * 3: DF0
+    * 4: DF1
+    * 5: DF2
+    * 6: DF3
+    * 7: HD
+    * 8: CD/MD (NVRAM) */
 
    unsigned int led_state[RETRO_LED_NUM] = {0};
    unsigned int l                        = 0;
@@ -256,18 +262,55 @@ static void retro_led_interface(void)
 
    led_state[RETRO_LED_POWER] = gui_data.powerled;
 
+   /* Floppy drives */
    for (i = 0; i < MAX_FLOPPY_DRIVES; i++)
    {
-      if (!led_state[RETRO_LED_DRIVE] && gui_data.drives[i].df[0])
-         led_state[RETRO_LED_DRIVE] = gui_data.drives[i].drive_motor;
+      if (gui_data.drives[i].df[0])
+      {
+         if (!led_state[RETRO_LED_DRIVES])
+            led_state[RETRO_LED_DRIVES] = gui_data.drives[i].drive_motor;
+
+         switch (i)
+         {
+            case 0:
+               led_state[RETRO_LED_DRIVE0] = gui_data.drives[i].drive_motor;
+               break;
+            case 1:
+               led_state[RETRO_LED_DRIVE1] = gui_data.drives[i].drive_motor;
+               break;
+            case 2:
+               led_state[RETRO_LED_DRIVE2] = gui_data.drives[i].drive_motor;
+               break;
+            case 3:
+               led_state[RETRO_LED_DRIVE3] = gui_data.drives[i].drive_motor;
+               break;
+         }
+      }
    }
 
-   if (!led_state[RETRO_LED_HDCDMD] && gui_data.hd >= 0)
-      led_state[RETRO_LED_HDCDMD] = gui_data.hd;
-   if (!led_state[RETRO_LED_HDCDMD] && gui_data.cd >= 0)
-      led_state[RETRO_LED_HDCDMD] = gui_data.cd & (LED_CD_ACTIVE | LED_CD_AUDIO);
-   if (!led_state[RETRO_LED_HDCDMD] && gui_data.md >= 1)
-      led_state[RETRO_LED_HDCDMD] = gui_data.md;
+   /* HD */
+   if (gui_data.hd >= 0)
+   {
+      led_state[RETRO_LED_HD] = gui_data.hd;
+      if (!led_state[RETRO_LED_HDCDMD])
+         led_state[RETRO_LED_HDCDMD] = gui_data.hd;
+   }
+
+   /* CD */
+   if (gui_data.cd >= 0)
+   {
+      led_state[RETRO_LED_CDMD] = gui_data.cd & (LED_CD_ACTIVE | LED_CD_AUDIO);
+      if (!led_state[RETRO_LED_HDCDMD])
+         led_state[RETRO_LED_HDCDMD] = gui_data.cd & (LED_CD_ACTIVE | LED_CD_AUDIO);
+   }
+
+   /* MD (NVRAM) */
+   if (gui_data.md >= 0)
+   {
+      led_state[RETRO_LED_CDMD] = gui_data.md;
+      if (!led_state[RETRO_LED_HDCDMD])
+         led_state[RETRO_LED_HDCDMD] = gui_data.md;
+   }
 
    for (l = 0; l < RETRO_LED_NUM; l++)
    {
@@ -330,7 +373,7 @@ static void retro_autoloadfastforwarding(void)
    if (opt_autoloadfastforward & AUTOLOADFASTFORWARD_FD && (gui_data.drives[0].df[0] || gui_data.drives[1].df[0]))
    {
       int ff             = -1;
-      int drive_led      = retro_led_state[RETRO_LED_DRIVE];
+      int drive_led      = retro_led_state[RETRO_LED_DRIVES];
       int drive_track    = gui_data.drives[0].drive_track;
       bool audio_playing = paula_playing();
 
