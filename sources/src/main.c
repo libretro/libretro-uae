@@ -403,6 +403,10 @@ void fixup_prefs (struct uae_prefs *p, bool userconfig)
 {
 	int err = 0;
 
+#ifdef __LIBRETRO__
+	if (userconfig)
+		return;
+#endif
 	built_in_chipset_prefs (p);
 	fixup_cpu (p);
 	cfgfile_compatibility_rtg(p);
@@ -1087,8 +1091,8 @@ static void parse_cmdline_and_init_file (int argc, TCHAR **argv)
 		target_cfgfile_load (&currprefs, optionsfile, CONFIG_TYPE_DEFAULT, default_config);
 #endif
 	}
-#endif /* __LIBRETRO__ */
 	fixup_prefs (&currprefs, false);
+#endif /* __LIBRETRO__ */
 
 	parse_cmdline (argc, argv);
 }
