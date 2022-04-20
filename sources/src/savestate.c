@@ -576,8 +576,10 @@ static void restore_header (uae_u8 *src)
 	emuname = restore_string ();
 	emuversion = restore_string ();
 	description = restore_string ();
+#if OPEN_LOG > 0
 	write_log (_T("Saved with: '%s %s', description: '%s'\n"),
 		emuname, emuversion, description);
+#endif
 	xfree (description);
 	xfree (emuversion);
 	xfree (emuname);

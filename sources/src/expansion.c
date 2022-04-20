@@ -402,7 +402,9 @@ static void expamem_init_clear2 (void)
 static addrbank *expamem_init_last (void)
 {
 	expamem_init_clear2 ();
+#ifndef __LIBRETRO__
 	write_log (_T("Memory map after autoconfig:\n"));
+#endif
 	memory_map_dump ();
 	return NULL;
 }
@@ -2923,6 +2925,10 @@ bool expansion_can_move(struct uae_prefs *p, int index)
 
 static void expansion_parse_cards(struct uae_prefs *p, bool log)
 {
+#ifdef __LIBRETRO__
+	if (savestate_state)
+		log = false;
+#endif
 	if (log)
 		write_log(_T("Autoconfig board list:\n"));
 	reset_ac_data(p);

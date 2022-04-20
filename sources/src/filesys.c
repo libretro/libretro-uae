@@ -9491,7 +9491,8 @@ static a_inode *restore_filesys_get_base (Unit *u, TCHAR *npath)
 			}
 			p = p2 + 1;
 			if (*p == 0) {
-				write_log (_T("FS: base aino found '%s' ('%s')\n"), a->nname, npath);
+				if (log_filesys)
+					write_log (_T("FS: base aino found '%s' ('%s')\n"), a->nname, npath);
 				xfree (path);
 				return a;
 			}
@@ -9551,7 +9552,8 @@ static uae_u8 *restore_aino (UnitInfo *ui, Unit *u, uae_u8 *src)
 		} else {
 			a->volflags = ui->volflags;
 			recycle_aino (u, a);
-			write_log (_T("FS: Lock (root) '%s' ('%s')\n"), a->aname, a->nname);
+			if (log_filesys)
+				write_log (_T("FS: Lock (root) '%s' ('%s')\n"), a->aname, a->nname);
 		}
 		return src;
 	}
@@ -9592,7 +9594,8 @@ static uae_u8 *restore_aino (UnitInfo *ui, Unit *u, uae_u8 *src)
 		xfree (a->aname);
 		xfree (a);
 	} else {
-		write_log (_T("FS: Lock '%s' ('%s')\n"), a->aname, a->nname);
+		if (log_filesys)
+			write_log (_T("FS: Lock '%s' ('%s')\n"), a->aname, a->nname);
 		recycle_aino (u, a);
 	}
 	return src;
@@ -9628,7 +9631,8 @@ static uae_u8 *restore_key (UnitInfo *ui, Unit *u, uae_u8 *src)
 	openmode = ((k->dosmode & A_FIBF_READ) == 0 ? O_WRONLY
 		: (k->dosmode & A_FIBF_WRITE) == 0 ? O_RDONLY
 		: O_RDWR);
-	write_log (_T("FS: open file '%s' ('%s'), pos=%llu\n"), p, pn, k->file_pos);
+	if (log_filesys)
+		write_log (_T("FS: open file '%s' ('%s'), pos=%llu\n"), p, pn, k->file_pos);
 	a = get_aino (u, &u->rootnode, p, &err);
 	if (!a)
 		write_log (_T("*** FS: Open file aino creation failed '%s'\n"), p);
@@ -9736,22 +9740,26 @@ static uae_u8 *restore_filesys_virtual (UnitInfo *ui, uae_u8 *src, int num)
 	u->volflags = ui->volflags;
 
 	cnt = restore_u32 ();
-	write_log (_T("FS: restoring %d locks\n"), cnt);
+	if (log_filesys)
+		write_log (_T("FS: restoring %d locks\n"), cnt);
 	while (cnt-- > 0)
 		src = restore_aino (ui, u, src);
 
 	cnt = restore_u32 ();
-	write_log (_T("FS: restoring %d open files\n"), cnt);
+	if (log_filesys)
+		write_log (_T("FS: restoring %d open files\n"), cnt);
 	while (cnt-- > 0)
 		src = restore_key (ui, u, src);
 
 	cnt = restore_u32 ();
-	write_log (_T("FS: restoring %d notifications\n"), cnt);
+	if (log_filesys)
+		write_log (_T("FS: restoring %d notifications\n"), cnt);
 	while (cnt-- > 0)
 		src = restore_notify (ui, u, src);
 
 	cnt = restore_u32 ();
-	write_log (_T("FS: restoring %d exkeys\n"), cnt);
+	if (log_filesys)
+		write_log (_T("FS: restoring %d exkeys\n"), cnt);
 	while (cnt-- > 0)
 		src = restore_exkey (ui, u, src);
 
@@ -9792,10 +9800,12 @@ static int recurse_aino (UnitInfo *ui, a_inode *a, int cnt, uae_u8 **dstp)
 		if (a->elock || a->shlock || a->uniq == 0) {
 			if (dst) {
 				TCHAR *fn = NULL;
-				write_log (_T("uniq=%d %lld s=%d e=%d d=%d '%s' '%s'\n"), a->uniq, a->uniq_external, a->shlock, a->elock, a->dir, a->aname, a->nname);
+				if (log_filesys)
+					write_log (_T("uniq=%d %lld s=%d e=%d d=%d '%s' '%s'\n"), a->uniq, a->uniq_external, a->shlock, a->elock, a->dir, a->aname, a->nname);
 				if (a->aname) {
 					fn = getfullaname (a);
-					write_log (_T("->'%s'\n"), fn);
+					if (log_filesys)
+						write_log (_T("->'%s'\n"), fn);
 				}
 				save_u64 (a->uniq);
 				save_u32 (a->locked_children);
@@ -9835,8 +9845,9 @@ static uae_u8 *save_key (uae_u8 *dst, Key *k)
 	save_string (fn);
 	save_u64 (k->file_pos);
 	save_u64 (size);
-	write_log (_T("'%s' uniq=%d size=%lld seekpos=%lld mode=%d dosmode=%d\n"),
-		fn, k->uniq, size, k->file_pos, k->createmode, k->dosmode);
+	if (log_filesys)
+		write_log (_T("'%s' uniq=%d size=%lld seekpos=%lld mode=%d dosmode=%d\n"),
+			fn, k->uniq, size, k->file_pos, k->createmode, k->dosmode);
 	xfree (fn);
 	return dst;
 }
@@ -9867,7 +9878,8 @@ static uae_u8 *save_filesys_virtual (UnitInfo *ui, uae_u8 *dst)
 	Key *k;
 	int cnt, i, j;
 
-	write_log (_T("FSSAVE: '%s'\n"), ui->devname);
+	if (log_filesys)
+		write_log (_T("FSSAVE: '%s'\n"), ui->devname);
 	save_u32 (u->dosbase);
 	save_u32 (u->volume);
 	save_u32 (u->port);
@@ -9880,13 +9892,15 @@ static uae_u8 *save_filesys_virtual (UnitInfo *ui, uae_u8 *dst)
 	save_u32 (u->total_locked_ainos);
 	cnt = recurse_aino (ui, &u->rootnode, 0, NULL);
 	save_u32 (cnt);
-	write_log (_T("%d open locks\n"), cnt);
+	if (log_filesys)
+		write_log (_T("%d open locks\n"), cnt);
 	cnt = recurse_aino (ui, &u->rootnode, 0, &dst);
 	cnt = 0;
 	for (k = u->keys; k; k = k->next)
 		cnt++;
 	save_u32 (cnt);
-	write_log (_T("%d open files\n"), cnt);
+	if (log_filesys)
+		write_log (_T("%d open files\n"), cnt);
 	for (k = u->keys; k; k = k->next)
 		dst = save_key (dst, k);
 	for (j = 0; j < 2; j++) {
@@ -9902,7 +9916,8 @@ static uae_u8 *save_filesys_virtual (UnitInfo *ui, uae_u8 *dst)
 		}
 		if (j == 0) {
 			save_u32 (cnt);
-			write_log (_T("%d notify requests\n"), cnt);
+			if (log_filesys)
+				write_log (_T("%d notify requests\n"), cnt);
 		}
 	}
 	for (j = 0; j < 2; j++) {
@@ -9917,10 +9932,12 @@ static uae_u8 *save_filesys_virtual (UnitInfo *ui, uae_u8 *dst)
 		}
 		if (j == 0) {
 			save_u32 (cnt);
-			write_log (_T("%d exkeys\n"), cnt);
+			if (log_filesys)
+				write_log (_T("%d exkeys\n"), cnt);
 		}
 	}
-	write_log (_T("END\n"));
+	if (log_filesys)
+		write_log (_T("END\n"));
 	return dst;
 }
 
@@ -10002,7 +10019,8 @@ uae_u8 *save_filesys (int num, int *len)
 	/* not initialized yet, do not save */
 	if ((type == FILESYS_VIRTUAL || type == FILESYS_CD) && ui->self == NULL)
 		return NULL;
-	write_log (_T("FS_FILESYS: '%s' '%s'\n"), ui->devname, ui->volname ? ui->volname : _T("<no name>"));
+	if (log_filesys)
+		write_log (_T("FS_FILESYS: '%s' '%s'\n"), ui->devname, ui->volname ? ui->volname : _T("<no name>"));
 	dstbak = dst = xmalloc (uae_u8, 100000);
 	save_u32 (2); /* version */
 	save_u32 (ui->devno);
@@ -10113,7 +10131,8 @@ uae_u8 *restore_filesys (uae_u8 *src)
 	if (type == FILESYS_VIRTUAL || type == FILESYS_CD)
 		src = restore_filesys_virtual (ui, src, devno);
 
-	write_log (_T("'%s' restored\n"), rootdir);
+	if (log_filesys)
+		write_log (_T("'%s' restored\n"), rootdir);
 end:
 	xfree (rootdir);
 	xfree (devname);

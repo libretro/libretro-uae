@@ -1877,7 +1877,7 @@ uae_u8 *restore_blitter_new (uae_u8 *src)
 	restore_u8();
 	restore_u8();
 
-	if (restore_u16() != 0x1234)
+	if (restore_u16() != 0x1234 && log_blitter)
 		write_log (_T("error\n"));
 
 	blt_info.blitter_nasty = restore_u8();
