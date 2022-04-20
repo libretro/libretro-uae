@@ -325,7 +325,7 @@ uae_s64 my_lseek(struct my_openfile_s *mos, uae_s64 offset, int whence)
 	result = (result == 0) ? ftell(mos->fp) : -1;
 #endif
 	if (log_filesys)
-	    write_log("my_lseek result %jd\n", result);
+		write_log("my_lseek result %jd\n", result);
 	return result;
 }
 
@@ -427,7 +427,7 @@ int my_issamevolume(const TCHAR *path1, const TCHAR *path2, TCHAR *path)
 		}
 	}
 	if (log_filesys)
-	    write_log (_T("'%s' (%s) matched with '%s' (%s), extra = '%s'\n"), path1, p1, path2, p2, path);
+		write_log (_T("'%s' (%s) matched with '%s' (%s), extra = '%s'\n"), path1, p1, path2, p2, path);
 	return cnt;
 }
 
@@ -464,7 +464,7 @@ int my_setcurrentdir(const TCHAR *curdir, TCHAR *oldcur)
 
 bool my_createshortcut(const TCHAR *source, const TCHAR *target, const TCHAR *description) 
 {
-    return false;
+	return false;
 }
 
 bool my_resolvesoftlink(TCHAR *linkfile, int size)
