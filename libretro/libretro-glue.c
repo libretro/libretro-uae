@@ -570,14 +570,17 @@ int target_parse_option (struct uae_prefs *p, const char *option, const char *va
 void target_default_options (struct uae_prefs *p, int type)
 {
    p->start_gui = false;
-   p->use_serial = 1;
-   p->sound_auto = 0;
+   p->use_serial = true;
+   p->sound_auto = false;
    p->sound_cdaudio = true;
    p->leds_on_screen = 1;
    p->bogomem.size = 0x00000000;
    p->floppy_auto_ext2 = 2;
    p->nr_floppies = 1;
    p->floppyslots[1].dfxtype = DRV_NONE;
+
+   /* Required for SCSI CD image mounts */
+   p->win32_automount_cddrives = true;
 
    p->jports[0].id = JSEM_MICE;
    p->jports[1].id = JSEM_JOYS;
