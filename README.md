@@ -302,15 +302,16 @@ M3U playlist supports floppy disks, hard drives (all images are mounted at once)
 ## LED interface
 
 Libretro LED interface is presented in the following order:
-- 1. Power
-- 2. Floppy drives
-- 3. HD/CD/MD (NVRAM)
-- 4. DF0
-- 5. DF1
-- 6. DF2
-- 7. DF3
-- 8. HD
-- 9. CD/MD (NVRAM)
+
+1. Power
+2. Floppy drives
+3. HD/CD/MD (NVRAM)
+4. DF0
+5. DF1
+6. DF2
+7. DF3
+8. HD
+9. CD/MD (NVRAM)
 
 ## WHDLoad
 
