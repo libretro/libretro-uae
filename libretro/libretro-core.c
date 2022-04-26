@@ -63,6 +63,7 @@ bool opt_floppy_sound_empty_mute = false;
 bool opt_floppy_multidrive = false;
 unsigned int opt_autoloadfastforward = 0;
 unsigned int opt_use_whdload = 1;
+unsigned int opt_use_whdload_theme = 0;
 unsigned int opt_use_whdload_prefs = 0;
 unsigned int opt_use_boot_hd = 0;
 bool opt_shared_nvram = false;
@@ -860,26 +861,6 @@ static void retro_set_core_options()
          "disabled"
       },
       {
-         "puae_use_boot_hd",
-         "Media > Global Boot HD",
-         "Global Boot HD",
-         "Attach a hard disk meant for Workbench usage, not for WHDLoad! Enabling forces a model with HD interface. Changing HDF size will not replace or edit the existing HDF.\nCore restart required.",
-         NULL,
-         "media",
-         {
-            { "disabled", NULL },
-            { "files", "Files" },
-            { "hdf20", "HDF 20MB" },
-            { "hdf40", "HDF 40MB" },
-            { "hdf80", "HDF 80MB" },
-            { "hdf128", "HDF 128MB" },
-            { "hdf256", "HDF 256MB" },
-            { "hdf512", "HDF 512MB" },
-            { NULL, NULL },
-         },
-         "disabled"
-      },
-      {
          "puae_use_whdload",
          "Media > WHDLoad Support",
          "WHDLoad Support",
@@ -895,6 +876,20 @@ static void retro_set_core_options()
          "files"
       },
       {
+         "puae_use_whdload_theme",
+         "Media > WHDLoad Theme",
+         "WHDLoad Theme",
+         "AmigaOS 'system-configuration' color prefs in WHDLoad helper image. Available only with 'Files' mode.\nCore restart required.\n- 'Default' = Black/White/DarkGray/LightGray\n- 'Native' = Gray/Black/White/LightBlue",
+         NULL,
+         "media",
+         {
+            { "default", "Default" },
+            { "native", "Native" },
+            { NULL, NULL },
+         },
+         "default"
+      },
+      {
          "puae_use_whdload_prefs",
          "Media > WHDLoad Splash Screen",
          "WHDLoad Splash Screen",
@@ -906,6 +901,26 @@ static void retro_set_core_options()
             { "config", "Config (Show only if available)" },
             { "splash", "Splash (Show briefly)" },
             { "both", "Config + Splash (Wait for user input)" },
+            { NULL, NULL },
+         },
+         "disabled"
+      },
+      {
+         "puae_use_boot_hd",
+         "Media > Global Boot HD",
+         "Global Boot HD",
+         "Attach a hard disk meant for Workbench, not for WHDLoad! Enabling forces a model with HD interface. Changing HDF size will not replace or edit the existing HDF.\nCore restart required.",
+         NULL,
+         "media",
+         {
+            { "disabled", NULL },
+            { "files", "Files" },
+            { "hdf20", "HDF 20MB" },
+            { "hdf40", "HDF 40MB" },
+            { "hdf80", "HDF 80MB" },
+            { "hdf128", "HDF 128MB" },
+            { "hdf256", "HDF 256MB" },
+            { "hdf512", "HDF 512MB" },
             { NULL, NULL },
          },
          "disabled"
@@ -3367,6 +3382,14 @@ static void update_variables(void)
       else if (!strcmp(var.value, "hdfs"))     opt_use_whdload = 2;
    }
 
+   var.key = "puae_use_whdload_theme";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if      (!strcmp(var.value, "default"))  opt_use_whdload_theme = 0;
+      else if (!strcmp(var.value, "native"))   opt_use_whdload_theme = 1;
+   }
+
    var.key = "puae_use_whdload_prefs";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -5738,6 +5761,49 @@ static bool retro_create_config(void)
                      /* Copy required files host-wise with file mode */
                      if (path_is_valid(whdload_prefs_path))
                         whdload_prefs_copy();
+
+                     /* Rename theme prefs if necessary */
+                     char whdload_theme_path[RETRO_PATH_MAX];
+                     path_join(whdload_theme_path, retro_save_directory, "WHDLoad/Devs/system-configuration");
+                     char whdload_theme_default_path[RETRO_PATH_MAX];
+                     path_join(whdload_theme_default_path, retro_save_directory, "WHDLoad/Devs/system-configuration-default");
+                     char whdload_theme_native_path[RETRO_PATH_MAX];
+                     path_join(whdload_theme_native_path, retro_save_directory, "WHDLoad/Devs/system-configuration-native");
+
+                     /* Default (black) */
+                     if (!opt_use_whdload_theme)
+                     {
+                        if (path_is_valid(whdload_theme_path) && path_is_valid(whdload_theme_default_path))
+                        {
+                           if (fcmp(whdload_theme_path, whdload_theme_default_path))
+                           {
+                              if (fcopy(whdload_theme_default_path, whdload_theme_path) < 0)
+                                 log_cb(RETRO_LOG_INFO, "WHDLoad failed to change theme to 'Default'\n");
+                              else
+                                 log_cb(RETRO_LOG_INFO, "WHDLoad changed theme to 'Default'\n");
+                           }
+                        }
+                        else if (!path_is_valid(whdload_theme_default_path) && !path_is_valid(whdload_theme_native_path))
+                           ; /* No-op fallback */
+                        else
+                           log_cb(RETRO_LOG_INFO, "WHDLoad theme 'Default' not found. Delete 'WHDLoad' directory to reinstall!\n");
+                     }
+                     /* Native (gray) */
+                     else
+                     {
+                        if (path_is_valid(whdload_theme_path) && path_is_valid(whdload_theme_native_path))
+                        {
+                           if (fcmp(whdload_theme_path, whdload_theme_native_path))
+                           {
+                              if (fcopy(whdload_theme_native_path, whdload_theme_path) < 0)
+                                 log_cb(RETRO_LOG_INFO, "WHDLoad failed to change theme to 'Native'\n");
+                              else
+                                 log_cb(RETRO_LOG_INFO, "WHDLoad changed theme to 'Native'\n");
+                           }
+                        }
+                        else
+                           log_cb(RETRO_LOG_INFO, "WHDLoad theme 'Native' not found. Delete 'WHDLoad' directory to reinstall!\n");
+                     }
                   }
 
                   /* Verify WHDSaves */
