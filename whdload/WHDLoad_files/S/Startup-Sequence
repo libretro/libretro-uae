@@ -53,6 +53,7 @@ ENDIF
 
 Devs:Monitors/NTSC
 Devs:Monitors/PAL
+RUN >NIL: C:JoyMouse ACCEL
 
 IF EXISTS DH0:load
    Execute DH0:load
@@ -179,4 +180,5 @@ ELSE
 ENDIF
 
 MemClear >NIL:
+RUN >NIL: C:JoyMouse OFF
 Execute S:Startup-Sequence
