@@ -368,6 +368,7 @@ Pre-installed WHDLoad LHA archives can be launched directly without any kind of 
 
 #### Latest changes
 
+- Downgraded WHDLoad to 18.6 due to a save related bug in 18.7
 - Updated WHDLoad to the latest one (18.7 2021-10-23).
 - Support for Retroplay LHA installs.
 - Support for Arcadia installs (requires KS 1.2, `kick33180.A500` will be copied automatically).
