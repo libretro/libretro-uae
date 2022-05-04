@@ -671,6 +671,10 @@ void unlockscr(struct vidbuffer *vb, int y_start, int y_end)
    retro_min_diwstart               = min_diwstart;
    retro_max_diwstop                = max_diwstop;
 
+   /* Align the resulting Automatic Zoom screen height to even number */
+   if ((retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line + 1) % 2)
+      retro_thisframe_last_drawn_line++;
+
    /* Flag that we should end the frame, return out of retro_run */
    libretro_frame_end = 1;
 }
