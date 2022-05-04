@@ -583,13 +583,13 @@ static void retro_set_core_options()
          "system",
          {
             { "auto", "Automatic" },
-            { "A500OG", "A500 (v1.2, 0.5M Chip)" },
+            { "A500OG", "A500 (v1.3, 0.5M Chip)" },
             { "A500", "A500 (v1.3, 0.5M Chip + 0.5M Slow)" },
             { "A500PLUS", "A500+ (v2.04, 1M Chip)" },
             { "A600", "A600 (v3.1, 2M Chip + 8M Fast)" },
             { "A1200OG", "A1200 (v3.1, 2M Chip)" },
             { "A1200", "A1200 (v3.1, 2M Chip + 8M Fast)" },
-            { "A2000OG", "A2000 (v1.2, 0.5M Chip + 0.5M Slow)" },
+            { "A2000OG", "A2000 (v1.3, 0.5M Chip + 0.5M Slow)" },
             { "A2000", "A2000 (v3.1, 1M Chip)" },
             { "A4030", "A4000/030 (v3.1, 2M Chip + 8M Fast)" },
             { "A4040", "A4000/040 (v3.1, 2M Chip + 8M Fast)" },
@@ -622,13 +622,13 @@ static void retro_set_core_options()
          NULL,
          "system",
          {
-            { "A500OG", "A500 (v1.2, 0.5M Chip)" },
+            { "A500OG", "A500 (v1.3, 0.5M Chip)" },
             { "A500", "A500 (v1.3, 0.5M Chip + 0.5M Slow)" },
             { "A500PLUS", "A500+ (v2.04, 1M Chip)" },
             { "A600", "A600 (v3.1, 2M Chip + 8M Fast)" },
             { "A1200OG", "A1200 (v3.1, 2M Chip)" },
             { "A1200", "A1200 (v3.1, 2M Chip + 8M Fast)" },
-            { "A2000OG", "A2000 (v1.2, 0.5M Chip + 0.5M Slow)" },
+            { "A2000OG", "A2000 (v1.3, 0.5M Chip + 0.5M Slow)" },
             { "A2000", "A2000 (v3.1, 1M Chip)" },
             { "A4030", "A4000/030 (v3.1, 2M Chip + 8M Fast)" },
             { "A4040", "A4000/040 (v3.1, 2M Chip + 8M Fast)" },
@@ -5176,13 +5176,13 @@ static char* emu_config_string(char *mode, int config)
       switch (config)
       {
          case EMU_CONFIG_A500:      return uae_kickstarts[A500_KS13_ROM].normal;
-         case EMU_CONFIG_A500OG:    return uae_kickstarts[A500_KS12_ROM].normal;
+         case EMU_CONFIG_A500OG:    return uae_kickstarts[A500_KS13_ROM].normal;
          case EMU_CONFIG_A500PLUS:  return uae_kickstarts[A500_KS204_ROM].normal;
          case EMU_CONFIG_A600:      return uae_kickstarts[A600_KS31_ROM].normal;
          case EMU_CONFIG_A1200:     return uae_kickstarts[A1200_KS31_ROM].normal;
          case EMU_CONFIG_A1200OG:   return uae_kickstarts[A1200_KS31_ROM].normal;
          case EMU_CONFIG_A2000:     return uae_kickstarts[A600_KS31_ROM].normal;
-         case EMU_CONFIG_A2000OG:   return uae_kickstarts[A500_KS12_ROM].normal;
+         case EMU_CONFIG_A2000OG:   return uae_kickstarts[A500_KS13_ROM].normal;
          case EMU_CONFIG_A4030:     return uae_kickstarts[A4000_KS31_ROM].normal;
          case EMU_CONFIG_A4040:     return uae_kickstarts[A4000_KS31_ROM].normal;
          case EMU_CONFIG_CDTV:      return uae_kickstarts[A500_KS13_ROM].normal;
