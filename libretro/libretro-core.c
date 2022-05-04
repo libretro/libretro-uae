@@ -5541,14 +5541,14 @@ static bool retro_create_config(void)
                log_cb(RETRO_LOG_INFO, "Found '(A1200OG)' or '(A1200NF)' in: '%s'\n", full_path);
                retro_config_preset("A1200OG");
             }
-            else if (strstr(full_path, "(A1200)") || strstr(full_path, "AGA") || strstr(full_path, "CD32") || strstr(full_path, "AmigaCD"))
+            else if (strstr(full_path, "(A1200)") || strstr(full_path, "CD32"))
             {
-               log_cb(RETRO_LOG_INFO, "Found '(A1200)', 'AGA', 'CD32', or 'AmigaCD' in: '%s'\n", full_path);
+               log_cb(RETRO_LOG_INFO, "Found '(A1200)' or 'CD32' in: '%s'\n", full_path);
                retro_config_preset("A1200");
             }
-            else if (strstr(full_path, "(A600)") || strstr(full_path, "ECS"))
+            else if (strstr(full_path, "(A600)"))
             {
-               log_cb(RETRO_LOG_INFO, "Found '(A600)' or 'ECS' in: '%s'\n", full_path);
+               log_cb(RETRO_LOG_INFO, "Found '(A600)' in: '%s'\n", full_path);
                retro_config_preset("A600");
             }
             else if (strstr(full_path, "(A500+)") || strstr(full_path, "(A500PLUS)"))
@@ -5561,10 +5561,31 @@ static bool retro_create_config(void)
                log_cb(RETRO_LOG_INFO, "Found '(A500OG)' or '(512K)' or '(512KB)' in: '%s'\n", full_path);
                retro_config_preset("A500OG");
             }
-            else if (strstr(full_path, "(A500)") || strstr(full_path, "OCS"))
+            else if (strstr(full_path, "(A500)"))
             {
-               log_cb(RETRO_LOG_INFO, "Found '(A500)' or 'OCS' in: '%s'\n", full_path);
+               log_cb(RETRO_LOG_INFO, "Found '(A500)' in: '%s'\n", full_path);
                retro_config_preset("A500");
+            }
+            else if (strstr(full_path, "AGA") || strstr(full_path, "AmigaCD"))
+            {
+               log_cb(RETRO_LOG_INFO, "Found 'AGA' or 'AmigaCD' in: '%s'\n", full_path);
+               /* Change to A1200 only if not already with AGA */
+               if (!strstr(uae_preset, "A1200") && !strstr(uae_preset, "A40"))
+                  retro_config_preset("A1200");
+            }
+            else if (strstr(full_path, "ECS"))
+            {
+               log_cb(RETRO_LOG_INFO, "Found 'ECS' in: '%s'\n", full_path);
+               /* Change to A600 only if not already with ECS */
+               if (!strstr(uae_preset, "A500PLUS"))
+                  retro_config_preset("A600");
+            }
+            else if (strstr(full_path, "OCS"))
+            {
+               log_cb(RETRO_LOG_INFO, "Found 'OCS' in: '%s'\n", full_path);
+               /* Change to A500 only if not already with OCS */
+               if (!strstr(uae_preset, "A500"))
+                  retro_config_preset("A500");
             }
             else
             {
