@@ -160,6 +160,9 @@ extern int visible_left_border;
 static int visible_left_border_old = 0;
 static int visible_left_border_update_frame_timer = 3;
 
+#define KS2_ZOOM_SAFE_FIRST_LINE 99
+#define KS2_ZOOM_SAFE_LAST_LINE  244
+
 unsigned int video_config = 0;
 unsigned int video_config_old = 0;
 unsigned int video_config_aspect = 0;
@@ -6535,6 +6538,23 @@ static void update_audiovideo(void)
       int retro_thisframe_first_drawn_line_delta = abs(retro_thisframe_first_drawn_line_old - retro_thisframe_first_drawn_line);
       int retro_thisframe_last_drawn_line_delta  = abs(retro_thisframe_last_drawn_line_old - retro_thisframe_last_drawn_line);
 
+      /* For some odd reason KS2+ Kickstarts start with bogus last_drawn_line,
+       * therefore reset to safe values and skip the rest for the frame
+       * to prevent stuck vertical position */
+      if ((retro_thisframe_first_drawn_line == retro_thisframe_first_drawn_line_old
+       && retro_thisframe_first_drawn_line == retro_thisframe_last_drawn_line_old
+       && retro_thisframe_first_drawn_line == -1
+       && retro_thisframe_last_drawn_line < 50)
+       || retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line < 50)
+      {
+         retro_thisframe_first_drawn_line = KS2_ZOOM_SAFE_FIRST_LINE;
+         retro_thisframe_last_drawn_line  = KS2_ZOOM_SAFE_LAST_LINE;
+
+         retro_thisframe_first_drawn_line_old = retro_thisframe_first_drawn_line_start = -1;
+         retro_thisframe_last_drawn_line_old  = retro_thisframe_last_drawn_line_start = -1;
+         return;
+      }
+
 #if 0
       printf("thisrun   first:%3d old:%3d start:%3d last:%3d old:%3d start:%3d\n", retro_thisframe_first_drawn_line, retro_thisframe_first_drawn_line_old, retro_thisframe_first_drawn_line_start, retro_thisframe_last_drawn_line, retro_thisframe_last_drawn_line_old, retro_thisframe_last_drawn_line_start);
 #endif
@@ -6542,7 +6562,7 @@ static void update_audiovideo(void)
          || retro_thisframe_last_drawn_line  != retro_thisframe_last_drawn_line_old)
          && retro_thisframe_first_drawn_line != -1
          && retro_thisframe_last_drawn_line  != -1
-         && retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line > 40
+         && retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line > 50
          && (retro_thisframe_first_drawn_line_delta > 1 || retro_thisframe_last_drawn_line_delta > 1)
       )
       {
@@ -6594,6 +6614,13 @@ static void update_audiovideo(void)
          retro_thisframe_first_drawn_line_start = retro_thisframe_first_drawn_line;
          retro_thisframe_last_drawn_line_start  = retro_thisframe_last_drawn_line;
       }
+   }
+   else if (opt_vertical_offset_auto && zoom_mode_id != 0 && retro_thisframe_first_drawn_line == retro_thisframe_last_drawn_line
+         && retro_thisframe_first_drawn_line != -1)
+   {
+      /* Another odd case of bogus initial drawn_lines with A1200 without Fast RAM */
+      retro_thisframe_first_drawn_line = KS2_ZOOM_SAFE_FIRST_LINE;
+      retro_thisframe_last_drawn_line  = KS2_ZOOM_SAFE_LAST_LINE;
    }
    else
    {
