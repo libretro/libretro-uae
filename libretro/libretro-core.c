@@ -161,7 +161,7 @@ static int visible_left_border_old = 0;
 static int visible_left_border_update_frame_timer = 3;
 
 #define KS2_ZOOM_SAFE_FIRST_LINE 99
-#define KS2_ZOOM_SAFE_LAST_LINE  243
+#define KS2_ZOOM_SAFE_LAST_LINE  244
 
 unsigned int video_config = 0;
 unsigned int video_config_old = 0;
@@ -6571,13 +6571,17 @@ static void update_audiovideo(void)
       /* For some odd reason KS2+ Kickstarts start with bogus last_drawn_line,
        * therefore reset to safe values and skip the rest for the frame
        * to prevent stuck vertical position */
-      if (retro_thisframe_first_drawn_line == retro_thisframe_first_drawn_line_old
+      if ((retro_thisframe_first_drawn_line == retro_thisframe_first_drawn_line_old
        && retro_thisframe_first_drawn_line == retro_thisframe_last_drawn_line_old
        && retro_thisframe_first_drawn_line == -1
-       && retro_thisframe_last_drawn_line < 30)
+       && retro_thisframe_last_drawn_line < 50)
+       || retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line < 50)
       {
          retro_thisframe_first_drawn_line = KS2_ZOOM_SAFE_FIRST_LINE;
          retro_thisframe_last_drawn_line  = KS2_ZOOM_SAFE_LAST_LINE;
+
+         retro_thisframe_first_drawn_line_old = retro_thisframe_first_drawn_line_start = -1;
+         retro_thisframe_last_drawn_line_old  = retro_thisframe_last_drawn_line_start = -1;
          return;
       }
 
@@ -6588,7 +6592,7 @@ static void update_audiovideo(void)
          || retro_thisframe_last_drawn_line  != retro_thisframe_last_drawn_line_old)
          && retro_thisframe_first_drawn_line != -1
          && retro_thisframe_last_drawn_line  != -1
-         && retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line > 40
+         && retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line > 50
          && (retro_thisframe_first_drawn_line_delta > 1 || retro_thisframe_last_drawn_line_delta > 1)
       )
       {
