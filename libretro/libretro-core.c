@@ -56,6 +56,11 @@ char opt_model_fd[10] = {0};
 char opt_model_hd[10] = {0};
 char opt_model_cd[10] = {0};
 char opt_kickstart[20] = {0};
+static int opt_chipmem_size = -1;
+static int opt_bogomem_size = -1;
+static int opt_fastmem_size = -1;
+static int opt_cpu_model = -1;
+static int opt_fpu_model = -1;
 bool opt_region_auto = true;
 bool opt_video_resolution_auto = false;
 bool opt_video_vresolution_auto = false;
@@ -693,20 +698,92 @@ static void retro_set_core_options()
          "auto"
       },
       {
-         "puae_cpu_compatibility",
-         "System > CPU Compatibility",
-         "CPU Compatibility",
-         "Some games have graphic and/or speed issues without 'Cycle-exact'. 'Cycle-exact' can be forced with '(CE)' file path tag.",
+         "puae_chipmem_size",
+         "System > Chip RAM",
+         "Chip RAM",
+         "'Automatic' defaults to the current preset model.\nCore restart required.",
          NULL,
          "system",
          {
-            { "normal", "Normal" },
-            { "compatible", "More compatible" },
-            { "memory", "Cycle-exact (DMA/Memory)" },
-            { "exact", "Cycle-exact (Full)" },
+            { "auto", "Automatic" },
+            { "1", "0.5M" },
+            { "2", "1M" },
+            { "4", "2M" },
             { NULL, NULL },
          },
-         "compatible"
+         "auto"
+      },
+      {
+         "puae_bogomem_size",
+         "System > Slow RAM",
+         "Slow RAM",
+         "'Automatic' defaults to the current preset model.\nCore restart required.",
+         NULL,
+         "system",
+         {
+            { "auto", "Automatic" },
+            { "0", "None" },
+            { "2", "0.5M" },
+            { "4", "1M" },
+            { "6", "1.5M" },
+            { "7", "1.8M" },
+            { NULL, NULL },
+         },
+         "auto"
+      },
+      {
+         "puae_fastmem_size",
+         "System > Z2 Fast RAM",
+         "Z2 Fast RAM",
+         "'Automatic' defaults to the current preset model.\nCore restart required.",
+         NULL,
+         "system",
+         {
+            { "auto", "Automatic" },
+            { "0", "None" },
+            { "1", "1M" },
+            { "2", "2M" },
+            { "4", "4M" },
+            { "8", "8M" },
+            { NULL, NULL },
+         },
+         "auto"
+      },
+      {
+         "puae_cpu_model",
+         "System > CPU Model",
+         "CPU Model",
+         "'Automatic' defaults to the current preset model.\nCore restart required.",
+         NULL,
+         "system",
+         {
+            { "auto", "Automatic" },
+            { "68000", NULL },
+            { "68010", NULL },
+            { "68020", NULL },
+            { "68030", NULL },
+            { "68040", NULL },
+            { "68060", NULL },
+            { NULL, NULL },
+         },
+         "auto"
+      },
+      {
+         "puae_fpu_model",
+         "System > FPU Model",
+         "FPU Model",
+         "'Automatic' defaults to the current preset model.\nCore restart required.",
+         NULL,
+         "system",
+         {
+            { "auto", "Automatic" },
+            { "0", "None" },
+            { "68881", NULL },
+            { "68882", NULL },
+            { "cpu", "CPU internal" },
+            { NULL, NULL },
+         },
+         "auto"
       },
       {
          "puae_cpu_throttle",
@@ -759,6 +836,22 @@ static void retro_set_core_options()
             { NULL, NULL },
          },
          "0"
+      },
+      {
+         "puae_cpu_compatibility",
+         "System > CPU Compatibility",
+         "CPU Compatibility",
+         "Some games have graphic and/or speed issues without 'Cycle-exact'. 'Cycle-exact' can be forced with '(CE)' file path tag.",
+         NULL,
+         "system",
+         {
+            { "normal", "Normal" },
+            { "compatible", "More compatible" },
+            { "memory", "Cycle-exact (DMA/Memory)" },
+            { "exact", "Cycle-exact (Full)" },
+            { NULL, NULL },
+         },
+         "compatible"
       },
       {
          "puae_autoloadfastforward",
@@ -2852,6 +2945,107 @@ static void update_variables(void)
       else if (!strcmp(var.value, "50%"))  opt_vkbd_alpha = GRAPH_ALPHA_50;
       else if (!strcmp(var.value, "75%"))  opt_vkbd_alpha = GRAPH_ALPHA_25;
       else if (!strcmp(var.value, "100%")) opt_vkbd_alpha = GRAPH_ALPHA_0;
+   }
+
+   var.key = "puae_chipmem_size";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      opt_chipmem_size = -1;
+      if (!strstr(var.value, "auto"))
+      {
+         opt_chipmem_size = atoi(var.value);
+
+         strcat(uae_config, "chipmem_size=");
+         strcat(uae_config, var.value);
+         strcat(uae_config, "\n");
+      }
+   }
+
+   var.key = "puae_bogomem_size";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      opt_bogomem_size = -1;
+      if (!strstr(var.value, "auto"))
+      {
+         opt_bogomem_size = atoi(var.value);
+
+         strcat(uae_config, "bogomem_size=");
+         strcat(uae_config, var.value);
+         strcat(uae_config, "\n");
+      }
+   }
+
+   var.key = "puae_fastmem_size";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      opt_fastmem_size = -1;
+      if (!strstr(var.value, "auto"))
+      {
+         opt_fastmem_size = atoi(var.value);
+
+         strcat(uae_config, "fastmem_size=");
+         strcat(uae_config, var.value);
+         strcat(uae_config, "\n");
+      }
+   }
+
+   var.key = "puae_cpu_model";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      opt_cpu_model = -1;
+      if (!strstr(var.value, "auto"))
+      {
+         opt_cpu_model = atoi(var.value);
+
+         strcat(uae_config, "cpu_model=");
+         strcat(uae_config, var.value);
+         strcat(uae_config, "\n");
+
+         if (opt_cpu_model > 68020)
+         {
+            char valbuf[8];
+            if (opt_cpu_model > 68040)
+               snprintf(valbuf, sizeof(valbuf), "%d", 68040);
+            else
+               snprintf(valbuf, sizeof(valbuf), "%d", opt_cpu_model);
+
+            strcat(uae_config, "mmu_model=");
+            strcat(uae_config, valbuf);
+            strcat(uae_config, "\n");
+
+            strcat(uae_config, "cpu_24bit_addressing=false\n");
+         }
+      }
+   }
+
+   var.key = "puae_fpu_model";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      opt_fpu_model = -1;
+      if (!strstr(var.value, "auto"))
+         opt_fpu_model = atoi(var.value);
+      else if (!strcmp(var.value, "cpu") && opt_cpu_model > 0)
+         opt_fpu_model = opt_cpu_model;
+
+      if (opt_fpu_model && opt_cpu_model > 68030)
+         opt_fpu_model = opt_cpu_model;
+      else if (opt_fpu_model < 0 && opt_cpu_model > 68020)
+         opt_fpu_model = 68882;
+
+      if (opt_fpu_model > -1)
+      {
+         char valbuf[8];
+         snprintf(valbuf, sizeof(valbuf), "%d", opt_fpu_model);
+
+         strcat(uae_config, "fpu_model=");
+         strcat(uae_config, valbuf);
+         strcat(uae_config, "\n");
+      }
    }
 
    var.key = "puae_cpu_compatibility";
@@ -5330,7 +5524,6 @@ static char* emu_config(int config)
          "cpu_model=68040\n"
          "fpu_model=68040\n"
          "mmu_model=68040\n"
-         "cpu_24bit_addressing=false\n"
          "chipset=aga\n"
          "chipset_compatible=A4000\n"
          "chipmem_size=4\n"
@@ -6185,6 +6378,7 @@ static bool retro_create_config(void)
                {
                   if ((strstr(filebuf, "kickstart_rom_file=") && filebuf[0] == 'k')
                    || (strstr(filebuf, "cpu_model=") && filebuf[0] == 'c')
+                   || (strstr(filebuf, "fpu_model=") && filebuf[0] == 'f')
                    || (strstr(filebuf, "chipset=") && filebuf[0] == 'c')
                    || (strstr(filebuf, "chipset_compatible=") && filebuf[0] == 'c')
                    || (strstr(filebuf, "chipmem_size=") && filebuf[0] == 'c')
@@ -6192,6 +6386,18 @@ static bool retro_create_config(void)
                    || (strstr(filebuf, "fastmem_size=") && filebuf[0] == 'f'))
                      continue;
                }
+
+               /* Skip overrides always */
+               if (opt_cpu_model > -1 && strstr(filebuf, "cpu_model=") && filebuf[0] == 'c')
+                  continue;
+               if (opt_fpu_model > -1 && strstr(filebuf, "fpu_model=") && filebuf[0] == 'f')
+                  continue;
+               if (opt_chipmem_size > -1 && strstr(filebuf, "chipmem_size=") && filebuf[0] == 'c')
+                  continue;
+               if (opt_bogomem_size > -1 && strstr(filebuf, "bogomem_size=") && filebuf[0] == 'b')
+                  continue;
+               if (opt_fastmem_size > -1 && strstr(filebuf, "fastmem_size=") && filebuf[0] == 'f')
+                  continue;
 
                /* Append */
                retro_config_append(filebuf);
