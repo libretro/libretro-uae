@@ -692,6 +692,33 @@ static void process_turbofire(int retro_port, int i)
    }
 }
 
+static int adjust_analog_deadzone(int analog_axis, int analog_deadzone)
+{
+   int analog_adjusted = analog_axis;
+
+   if (analog_adjusted >= analog_deadzone)
+      analog_adjusted -= analog_deadzone;
+   else if (analog_adjusted <= -analog_deadzone)
+      analog_adjusted += analog_deadzone;
+
+   if (analog_adjusted != analog_axis)
+      analog_adjusted *= 32768.0f / (32768.0f - analog_deadzone);
+
+   return analog_adjusted;
+}
+
+static int process_analogmouse(int analog_axis, int analog_deadzone, int mouse_multiplier)
+{
+   int analog_adjusted = adjust_analog_deadzone(analog_axis, analog_deadzone);
+   int mouse_axis      = 0;
+
+   mouse_axis = analog_adjusted * 10 * opt_analogmouse_speed / (32768.0f / mouse_multiplier);
+   if (!mouse_axis && abs(analog_axis) > analog_deadzone)
+      mouse_axis = (analog_axis > 0) ? 1 : -1;
+
+   return mouse_axis;
+}
+
 static void process_key(unsigned disable_keys)
 {
    unsigned i = 0;
@@ -1490,12 +1517,8 @@ void retro_poll_event()
    static unsigned int mouse_lmb[2] = {0}, mouse_rmb[2] = {0}, mouse_mmb[2] = {0};
    static int16_t mouse_x[2] = {0}, mouse_y[2] = {0};
 
-   int analog_left[2] = {0};
-   int analog_right[2] = {0};
-   double analog_left_magnitude = 0;
-   double analog_right_magnitude = 0;
-   int analog_deadzone = 0;
-   analog_deadzone = (opt_analogmouse_deadzone * 32768 / 100);
+   int analog_stick[2] = {0};
+   int analog_deadzone = opt_analogmouse_deadzone * 32768.0f / 100.0f;
 
    int retro_port;
    for (retro_port = 0; retro_port <= 3; retro_port++)
@@ -1692,40 +1715,36 @@ void retro_poll_event()
    {
       for (j = 0; j < 2; j++)
       {
-         analog_left[0] = (input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X));
-         analog_left[1] = (input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y));
-         analog_left_magnitude = sqrt((analog_left[0]*analog_left[0]) + (analog_left[1]*analog_left[1]));
-         if (analog_left_magnitude <= analog_deadzone)
-         {
-            analog_left[0] = 0;
-            analog_left[1] = 0;
-         }
+         analog_stick[0]  = input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X);
+         analog_stick[1]  = input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y);
+         if (sqrt((analog_stick[0] * analog_stick[0]) + (analog_stick[1] * analog_stick[1])) < analog_deadzone)
+            analog_stick[0] = analog_stick[1] = 0;
 
-         if (abs(analog_left[0]) > analog_deadzone)
-            retro_joystick_analog(j, 0, analog_left[0]);
+         if (abs(analog_stick[0]) > analog_deadzone)
+            retro_joystick_analog(j, 0, adjust_analog_deadzone(analog_stick[0], analog_deadzone));
 
-         if (abs(analog_left[1]) > analog_deadzone)
-            retro_joystick_analog(j, 1, analog_left[1]);
+         if (abs(analog_stick[1]) > analog_deadzone)
+            retro_joystick_analog(j, 1, adjust_analog_deadzone(analog_stick[1], analog_deadzone));
 
          /* Statusbar flags */
-         if (analog_left[1] < analog_deadzone && !aflag[j][RETRO_DEVICE_ID_JOYPAD_UP])
+         if (analog_stick[1] < analog_deadzone && !aflag[j][RETRO_DEVICE_ID_JOYPAD_UP])
             aflag[j][RETRO_DEVICE_ID_JOYPAD_UP] = 1;
-         if (analog_left[1] > -1 && aflag[j][RETRO_DEVICE_ID_JOYPAD_UP])
+         if (analog_stick[1] > -1 && aflag[j][RETRO_DEVICE_ID_JOYPAD_UP])
             aflag[j][RETRO_DEVICE_ID_JOYPAD_UP] = 0;
 
-         if (analog_left[1] > analog_deadzone && !aflag[j][RETRO_DEVICE_ID_JOYPAD_DOWN])
+         if (analog_stick[1] > analog_deadzone && !aflag[j][RETRO_DEVICE_ID_JOYPAD_DOWN])
             aflag[j][RETRO_DEVICE_ID_JOYPAD_DOWN] = 1;
-         if (analog_left[1] < 1 && aflag[j][RETRO_DEVICE_ID_JOYPAD_DOWN])
+         if (analog_stick[1] < 1 && aflag[j][RETRO_DEVICE_ID_JOYPAD_DOWN])
             aflag[j][RETRO_DEVICE_ID_JOYPAD_DOWN] = 0;
 
-         if (analog_left[0] < analog_deadzone && !aflag[j][RETRO_DEVICE_ID_JOYPAD_LEFT])
+         if (analog_stick[0] < analog_deadzone && !aflag[j][RETRO_DEVICE_ID_JOYPAD_LEFT])
             aflag[j][RETRO_DEVICE_ID_JOYPAD_LEFT] = 1;
-         if (analog_left[0] > -1 && aflag[j][RETRO_DEVICE_ID_JOYPAD_LEFT])
+         if (analog_stick[0] > -1 && aflag[j][RETRO_DEVICE_ID_JOYPAD_LEFT])
             aflag[j][RETRO_DEVICE_ID_JOYPAD_LEFT] = 0;
 
-         if (analog_left[0] > analog_deadzone && !aflag[j][RETRO_DEVICE_ID_JOYPAD_RIGHT])
+         if (analog_stick[0] > analog_deadzone && !aflag[j][RETRO_DEVICE_ID_JOYPAD_RIGHT])
             aflag[j][RETRO_DEVICE_ID_JOYPAD_RIGHT] = 1;
-         if (analog_left[0] < 1 && aflag[j][RETRO_DEVICE_ID_JOYPAD_RIGHT])
+         if (analog_stick[0] < 1 && aflag[j][RETRO_DEVICE_ID_JOYPAD_RIGHT])
             aflag[j][RETRO_DEVICE_ID_JOYPAD_RIGHT] = 0;
       }
    }
@@ -1741,14 +1760,10 @@ void retro_poll_event()
                 !mapper_keys[RETRO_DEVICE_ID_JOYPAD_LD] &&
                 !mapper_keys[RETRO_DEVICE_ID_JOYPAD_LU]))
          {
-            analog_left[0] = (input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X));
-            analog_left[1] = (input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y));
-            analog_left_magnitude = sqrt((analog_left[0]*analog_left[0]) + (analog_left[1]*analog_left[1]));
-            if (analog_left_magnitude <= analog_deadzone)
-            {
-               analog_left[0] = 0;
-               analog_left[1] = 0;
-            }
+            analog_stick[0]  = input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X);
+            analog_stick[1]  = input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y);
+            if (sqrt((analog_stick[0] * analog_stick[0]) + (analog_stick[1] * analog_stick[1])) < analog_deadzone)
+               analog_stick[0] = analog_stick[1] = 0;
 
             /* Analog stick speed modifiers */
             mouse_multiplier = 1;
@@ -1757,19 +1772,11 @@ void retro_poll_event()
             if (mouse_speed[j] & MOUSE_SPEED_SLOWER)
                mouse_multiplier = mouse_multiplier / MOUSE_SPEED_SLOW;
 
-            if (abs(analog_left[0]) > 0)
-            {
-               uae_mouse_x[j] = analog_left[0] * 10 * opt_analogmouse_speed / (32768 / mouse_multiplier);
-               if (!uae_mouse_x[j] && abs(analog_left[0]) > analog_deadzone)
-                  uae_mouse_x[j] = (analog_left[0] > 0) ? 1 : -1;
-            }
+            if (abs(analog_stick[0]) > 0)
+               uae_mouse_x[j] = process_analogmouse(analog_stick[0], analog_deadzone, mouse_multiplier);
 
-            if (abs(analog_left[1]) > 0)
-            {
-               uae_mouse_y[j] = analog_left[1] * 10 * opt_analogmouse_speed / (32768 / mouse_multiplier);
-               if (!uae_mouse_y[j] && abs(analog_left[1]) > analog_deadzone)
-                  uae_mouse_y[j] = (analog_left[1] > 0) ? 1 : -1;
-            }
+            if (abs(analog_stick[1]) > 0)
+               uae_mouse_y[j] = process_analogmouse(analog_stick[1], analog_deadzone, mouse_multiplier);
          }
       }
    }
@@ -1786,14 +1793,10 @@ void retro_poll_event()
                 !mapper_keys[RETRO_DEVICE_ID_JOYPAD_RD] &&
                 !mapper_keys[RETRO_DEVICE_ID_JOYPAD_RU]))
          {
-            analog_right[0] = (input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X));
-            analog_right[1] = (input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y));
-            analog_right_magnitude = sqrt((analog_right[0]*analog_right[0]) + (analog_right[1]*analog_right[1]));
-            if (analog_right_magnitude <= analog_deadzone)
-            {
-               analog_right[0] = 0;
-               analog_right[1] = 0;
-            }
+            analog_stick[0]  = input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X);
+            analog_stick[1]  = input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y);
+            if (sqrt((analog_stick[0] * analog_stick[0]) + (analog_stick[1] * analog_stick[1])) < analog_deadzone)
+               analog_stick[0] = analog_stick[1] = 0;
 
             /* Analog stick speed modifiers */
             mouse_multiplier = 1;
@@ -1802,19 +1805,11 @@ void retro_poll_event()
             if (mouse_speed[j] & MOUSE_SPEED_SLOWER)
                mouse_multiplier = mouse_multiplier / MOUSE_SPEED_SLOW;
 
-            if (abs(analog_right[0]) > 0)
-            {
-               uae_mouse_x[j] = analog_right[0] * 10 * opt_analogmouse_speed / (32768 / mouse_multiplier);
-               if (!uae_mouse_x[j] && abs(analog_right[0]) > analog_deadzone)
-                  uae_mouse_x[j] = (analog_right[0] > 0) ? 1 : -1;
-            }
+            if (abs(analog_stick[0]) > 0)
+               uae_mouse_x[j] = process_analogmouse(analog_stick[0], analog_deadzone, mouse_multiplier);
 
-            if (abs(analog_right[1]) > 0)
-            {
-               uae_mouse_y[j] = analog_right[1] * 10 * opt_analogmouse_speed / (32768 / mouse_multiplier);
-               if (!uae_mouse_y[j] && abs(analog_right[1]) > analog_deadzone)
-                  uae_mouse_y[j] = (analog_right[1] > 0) ? 1 : -1;
-            }
+            if (abs(analog_stick[1]) > 0)
+               uae_mouse_y[j] = process_analogmouse(analog_stick[1], analog_deadzone, mouse_multiplier);
          }
       }
    }
