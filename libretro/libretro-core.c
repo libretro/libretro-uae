@@ -6687,7 +6687,7 @@ static void update_audiovideo(void)
    {
       automatic_sound_filter_type_update = false;
       set_config_changed();
-      if (currprefs.cpu_model >= 68020)
+      if (currprefs.chipset_mask & CSMASK_AGA)
          changed_prefs.sound_filter_type = FILTER_SOUND_TYPE_A1200;
       else
          changed_prefs.sound_filter_type = FILTER_SOUND_TYPE_A500;
