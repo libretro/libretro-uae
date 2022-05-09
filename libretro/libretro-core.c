@@ -5495,7 +5495,7 @@ static char* emu_config(int config)
 
       case EMU_CONFIG_A2000: return
          "cpu_model=68000\n"
-         "chipset=ecs\n"
+         "chipset=ecs_agnus\n"
          "chipset_compatible=A2000\n"
          "chipmem_size=2\n"
          "bogomem_size=0\n"
