@@ -16,6 +16,7 @@
 #include "drawing.h"
 #include "hotkeys.h"
 #include "disk.h"
+#include "parser.h"
 #include "inputdevice.h"
 extern int mouse_port[NORMAL_JPORTS];
 
@@ -34,6 +35,7 @@ addrbank *gfxmem_banks[MAX_RTG_BOARDS];
 struct AmigaMonitor AMonitors[MAX_AMIGAMONITORS];
 static int display_change_requested;
 struct vidbuf_description *gfxvidinfo = &adisplays[0].gfxvidinfo;
+struct serparportinfo *comports[MAX_SERPAR_PORTS];
 
 extern unsigned int retro_devices[RETRO_DEVICES];
 bool inputdevice_finalized = false;
