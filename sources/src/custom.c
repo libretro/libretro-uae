@@ -6481,7 +6481,7 @@ static void vsync_handler_post (void)
 
 #ifdef __LIBRETRO__
 	if (libretro_frame_end)
-		set_special (SPCFLAG_BRK);
+		set_special(SPCFLAG_CHECK);
 #endif
 }
 

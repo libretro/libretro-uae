@@ -3991,6 +3991,12 @@ STATIC_INLINE int do_specialties (int cycles)
 
 	if ((regs.spcflags & (SPCFLAG_BRK | SPCFLAG_MODE_CHANGE)))
 		return 1;
+
+#ifdef __LIBRETRO__
+	if (libretro_frame_end)
+		return 1;
+#endif
+
 	return 0;
 }
 
@@ -4406,6 +4412,10 @@ void cpu_halt (int id)
 			if ((regs.spcflags & (SPCFLAG_BRK | SPCFLAG_MODE_CHANGE)))
 				return;
 		}
+#ifdef __LIBRETRO__
+		if (libretro_frame_end)
+			return;
+#endif
 	}
 }
 
