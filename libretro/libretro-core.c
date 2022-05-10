@@ -709,6 +709,7 @@ static void retro_set_core_options()
             { "auto", "Automatic" },
             { "1", "0.5M" },
             { "2", "1M" },
+            { "3", "1.5M" },
             { "4", "2M" },
             { NULL, NULL },
          },
