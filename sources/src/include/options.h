@@ -398,6 +398,13 @@ struct uae_prefs {
 	unsigned int chipset_mask;
 	bool ntscmode;
 	bool genlock;
+	int genlock_image;
+	int genlock_mix;
+	int genlock_scale;
+	int genlock_aspect;
+	bool genlock_alpha;
+	TCHAR genlock_image_file[MAX_DPATH];
+	TCHAR genlock_video_file[MAX_DPATH];
 	int monitoremu;
 	double chipset_refreshrate;
 	struct chipset_refresh cr[MAX_CHIPSET_REFRESH + 2];
@@ -558,6 +565,9 @@ struct uae_prefs {
 	int svga_no_linear;
 #endif
 
+	int win32_midioutdev;
+	int win32_midiindev;
+	bool win32_midirouter;
 	int win32_rtgvblankrate;
 #ifdef USE_CURSES_GFX
 	int curses_reverse_video;

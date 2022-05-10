@@ -1138,12 +1138,6 @@ bool vsync_busywait_do (int *freetime, bool lace, bool oddeven)
 	return v;
 }
 
-int flashscreen;
-
-void doflashscreen (void)
-{
-}
-
 uae_u32 getlocaltime (void)
 {
 	return 0;

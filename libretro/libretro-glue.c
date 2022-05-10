@@ -16,8 +16,11 @@
 #include "drawing.h"
 #include "hotkeys.h"
 #include "disk.h"
+#include "parser.h"
 #include "inputdevice.h"
 extern int mouse_port[NORMAL_JPORTS];
+
+struct serparportinfo *comports[MAX_SERPAR_PORTS];
 
 extern unsigned int retro_devices[RETRO_DEVICES];
 bool inputdevice_finalized = false;

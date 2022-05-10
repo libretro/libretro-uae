@@ -98,8 +98,6 @@ SOURCES_C += \
 	$(EMU)/savestate.c \
 	$(EMU)/scsi.c \
 	$(EMU)/scsiemul.c \
-	$(EMU)/serial.c \
-	$(EMU)/sinctable.c \
 	$(EMU)/statusline.c \
 	$(EMU)/traps.c\
 	$(EMU)/uaenet.c \
@@ -114,6 +112,7 @@ SOURCES_C += \
 	$(RETRODEP)/parser.c \
 	$(RETRODEP)/stubs/debug.c \
 	$(RETRODEP)/stubs/inputrecord.c \
+	$(RETRODEP)/serial_host.c \
 	$(RETRODEP)/machdep/support.c \
 	$(RETRODEP)/sounddep/sound.c \
 	$(RETRODEP)/threaddep/thread.c

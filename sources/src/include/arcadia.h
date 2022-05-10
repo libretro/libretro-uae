@@ -1,5 +1,9 @@
+#ifndef UAE_ARCADIA_H
+#define UAE_ARCADIA_H
 
 #ifdef ARCADIA
+
+struct autoconfig_info;
 
 extern void arcadia_init (void);
 extern int is_arcadia_rom (const TCHAR *path);
@@ -24,4 +28,26 @@ extern int arcadia_flag, arcadia_coin[2];
 #define ARCADIA_BIOS 1
 #define ARCADIA_GAME 2
 
-#endif
+extern int alg_flag;
+extern void alg_map_banks(void);
+extern bool alg_ld_active(void);
+
+extern int alg_get_player(uae_u16);
+extern uae_u16 alg_potgor(uae_u16);
+extern uae_u16 alg_joydat(int, uae_u16);
+extern uae_u8 alg_joystick_buttons(uae_u8, uae_u8, uae_u8);
+
+extern void ld_serial_read(uae_u16 v);
+extern int ld_serial_write(void);
+
+extern int cubo_enabled;
+extern void touch_serial_read(uae_u16 w);
+extern int touch_serial_write(void);
+
+extern bool cubo_init(struct autoconfig_info *aci);
+
+extern void cubo_function(int);
+
+#endif /* ARCADIA */
+
+#endif /* UAE_ARCADIA_H */
