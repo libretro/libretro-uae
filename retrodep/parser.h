@@ -76,3 +76,98 @@ extern void epson_close (void);
 #define PARALLEL_MATRIX_EPSON9 2
 #define PARALLEL_MATRIX_EPSON24 3
 #define PARALLEL_MATRIX_EPSON48 4
+
+#ifndef __WIN32
+#ifndef INVALID_HANDLE_VALUE
+#define INVALID_HANDLE_VALUE NULL
+#endif
+
+#define SOCKET_ERROR   (-1)
+#define SOCKADDR_INET  NULL
+
+typedef unsigned short SOCKET;
+
+typedef unsigned char BYTE;
+typedef unsigned short WORD;
+typedef unsigned int CLOCK;
+
+#define NOPARITY 0
+#define CE_BREAK 0x10
+
+typedef struct addrinfoW {
+  int ai_flags;
+  int ai_family;
+  int ai_socktype;
+  int ai_protocol;
+  size_t ai_addrlen;
+  char *ai_canonname;
+  struct sockaddr *ai_addr;
+  struct addrinfoW *ai_next;
+} ADDRINFOW,*PADDRINFOW;
+
+  typedef struct _COMSTAT {
+    DWORD fCtsHold : 1;
+    DWORD fDsrHold : 1;
+    DWORD fRlsdHold : 1;
+    DWORD fXoffHold : 1;
+    DWORD fXoffSent : 1;
+    DWORD fEof : 1;
+    DWORD fTxim : 1;
+    DWORD fReserved : 25;
+    DWORD cbInQue;
+    DWORD cbOutQue;
+  } COMSTAT,*LPCOMSTAT;
+
+#define DTR_CONTROL_DISABLE 0x0
+#define DTR_CONTROL_ENABLE 0x1
+#define DTR_CONTROL_HANDSHAKE 0x2
+
+#define RTS_CONTROL_DISABLE 0x0
+#define RTS_CONTROL_ENABLE 0x1
+#define RTS_CONTROL_HANDSHAKE 0x2
+#define RTS_CONTROL_TOGGLE 0x3
+
+  typedef struct _DCB {
+    DWORD DCBlength;
+    DWORD BaudRate;
+    DWORD fBinary: 1;
+    DWORD fParity: 1;
+    DWORD fOutxCtsFlow:1;
+    DWORD fOutxDsrFlow:1;
+    DWORD fDtrControl:2;
+    DWORD fDsrSensitivity:1;
+    DWORD fTXContinueOnXoff: 1;
+    DWORD fOutX: 1;
+    DWORD fInX: 1;
+    DWORD fErrorChar: 1;
+    DWORD fNull: 1;
+    DWORD fRtsControl:2;
+    DWORD fAbortOnError:1;
+    DWORD fDummy2:17;
+    WORD wReserved;
+    WORD XonLim;
+    WORD XoffLim;
+    BYTE ByteSize;
+    BYTE Parity;
+    BYTE StopBits;
+    char XonChar;
+    char XoffChar;
+    char ErrorChar;
+    char EofChar;
+    char EvtChar;
+    WORD wReserved1;
+  } DCB,*LPDCB;
+
+  typedef struct _COMMTIMEOUTS {
+    DWORD ReadIntervalTimeout;
+    DWORD ReadTotalTimeoutMultiplier;
+    DWORD ReadTotalTimeoutConstant;
+    DWORD WriteTotalTimeoutMultiplier;
+    DWORD WriteTotalTimeoutConstant;
+  } COMMTIMEOUTS,*LPCOMMTIMEOUTS;
+
+#define MS_CTS_ON ((DWORD)0x10)
+#define MS_DSR_ON ((DWORD)0x20)
+#define MS_RING_ON ((DWORD)0x40)
+#define MS_RLSD_ON ((DWORD)0x80)
+#endif

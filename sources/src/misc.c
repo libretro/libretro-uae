@@ -1383,12 +1383,6 @@ float target_adjust_vblank_hz(int monid, float hz)
 #endif
 }
 
-int flashscreen;   
-
-void doflashscreen (void)
-{
-}
-
 uae_u32 getlocaltime (void)
 {
 	return 0;

@@ -130,7 +130,6 @@ SOURCES_C += \
 	$(EMU)/scsi.c \
 	$(EMU)/scsiemul.c \
 	$(EMU)/scsitape.c \
-	$(EMU)/serial.c \
 	$(EMU)/sndboard.c \
 	$(EMU)/specialmonitors.c \
 	$(EMU)/statusline.c \
@@ -164,6 +163,7 @@ SOURCES_C += \
 	$(RETRODEP)/main.c \
 	$(RETRODEP)/mman.c \
 	$(RETRODEP)/parser.c \
+	$(RETRODEP)/serial_host.c \
 	$(RETRODEP)/machdep/support.c \
 	$(RETRODEP)/sounddep/sound.c \
 	$(RETRODEP)/threaddep/thread.c
