@@ -935,10 +935,12 @@ void serial_open (void)
 		sermap_enabled = true;
 #endif
 	} else {
+#if 0
 		if(!openser (currprefs.sername)) {
 			write_log (_T("SERIAL: Could not open device %s\n"), currprefs.sername);
 			return;
 		}
+#endif
 	}
 	serdev = 1;
 #endif
