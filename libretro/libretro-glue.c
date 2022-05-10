@@ -323,12 +323,12 @@ void print_statusbar(void)
    snprintf(RESOLUTION, sizeof(RESOLUTION), "%4dx%3d", zoomed_width, zoomed_height);
 
    /* Model & memory */
-   int TEXT_X_MODEL  = TEXT_X + (FONT_SLOT*6) + (FONT_WIDTH*32) - ZOOMED_WIDTH_OFFSET;
-   int TEXT_X_MEMORY = TEXT_X + (FONT_SLOT*6) + (FONT_WIDTH*6) - ZOOMED_WIDTH_OFFSET;
+   int TEXT_X_MODEL  = TEXT_X + (FONT_SLOT*6) + (FONT_WIDTH*35) - ZOOMED_WIDTH_OFFSET;
+   int TEXT_X_MEMORY = TEXT_X + (FONT_SLOT*6) + (FONT_WIDTH*3) - ZOOMED_WIDTH_OFFSET;
    /* Sacrifice memory slot if there is not enough width */
    if (!(video_config & PUAE_VIDEO_DOUBLELINE))
    {
-      if (TEXT_X_MEMORY < (TEXT_X_RESOLUTION + FONT_SLOT + (FONT_WIDTH*20)))
+      if (TEXT_X_MEMORY < (TEXT_X_RESOLUTION + FONT_SLOT + (FONT_WIDTH*14)))
          TEXT_X_MEMORY = -1;
    }
 
@@ -338,18 +338,20 @@ void print_statusbar(void)
    mem_size  = (float)(currprefs.chipmem_size / 0x80000) / 2;
    mem_size += (float)(currprefs.bogomem_size / 0x40000) / 4;
    mem_size += (float)(currprefs.fastmem_size / 0x100000);
+   mem_size += (float)(currprefs.z3fastmem_size / 0x100000);
    if (TEXT_X_MEMORY > 0)
-      snprintf(MEMORY, sizeof(MEMORY), (mem_size < 1) ? "%0.1fM" : "%2.0fM", mem_size);
+      snprintf(MEMORY, sizeof(MEMORY), (mem_size < 10) ? "%3.1fM" : "%3.0fM", mem_size);
+
    switch (currprefs.cs_compatible)
    {
       case CP_A500:
-         snprintf(MODEL, sizeof(MODEL), "%s", " A500");
+         snprintf(MODEL, sizeof(MODEL), "%s", "A500");
          break;
       case CP_A500P:
          snprintf(MODEL, sizeof(MODEL), "%s", "A500+");
          break;
       case CP_A600:
-         snprintf(MODEL, sizeof(MODEL), "%s", " A600");
+         snprintf(MODEL, sizeof(MODEL), "%s", "A600");
          break;
       case CP_A1200:
          snprintf(MODEL, sizeof(MODEL), "%s", "A1200");
@@ -361,10 +363,10 @@ void print_statusbar(void)
          snprintf(MODEL, sizeof(MODEL), "%s", "A4000");
          break;
       case CP_CDTV:
-         snprintf(MODEL, sizeof(MODEL), "%s", " CDTV");
+         snprintf(MODEL, sizeof(MODEL), "%s", "CDTV");
          break;
       case CP_CD32:
-         snprintf(MODEL, sizeof(MODEL), "%s", " CD32");
+         snprintf(MODEL, sizeof(MODEL), "%s", "CD32");
          break;
    }
 
@@ -372,8 +374,8 @@ void print_statusbar(void)
    if (video_config & PUAE_VIDEO_DOUBLELINE)
    {
       TEXT_X_RESOLUTION = TEXT_X + (FONT_SLOT*9)  + (FONT_WIDTH*25) - (ZOOMED_WIDTH_OFFSET/2);
-      TEXT_X_MODEL      = TEXT_X + (FONT_SLOT*17) + (FONT_WIDTH*15) - ZOOMED_WIDTH_OFFSET;
-      TEXT_X_MEMORY     = TEXT_X + (FONT_SLOT*16) + (FONT_WIDTH*25) - ZOOMED_WIDTH_OFFSET;
+      TEXT_X_MODEL      = TEXT_X + (FONT_SLOT*17) + (FONT_WIDTH*20) - ZOOMED_WIDTH_OFFSET;
+      TEXT_X_MEMORY     = TEXT_X + (FONT_SLOT*16) + (FONT_WIDTH*15) - ZOOMED_WIDTH_OFFSET;
    }
 
    /* Joy port indicators */

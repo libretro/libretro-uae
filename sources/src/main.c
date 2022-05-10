@@ -332,8 +332,8 @@ void fixup_prefs (struct uae_prefs *p)
   * rtg mem without crashing 64bit linux systems.
 **/
 #ifndef NATMEM_OFFSET
-	max_z3fastmem = 0;
-#endif // NATMEM_OFFSET
+	max_z3fastmem = 0x20000000;
+#endif
 
 	int err = 0;
 

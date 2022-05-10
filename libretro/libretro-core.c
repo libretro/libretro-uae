@@ -59,6 +59,7 @@ char opt_kickstart[20] = {0};
 static int opt_chipmem_size = -1;
 static int opt_bogomem_size = -1;
 static int opt_fastmem_size = -1;
+static int opt_z3mem_size = -1;
 static int opt_cpu_model = -1;
 static int opt_fpu_model = -1;
 bool opt_region_auto = true;
@@ -745,6 +746,30 @@ static void retro_set_core_options()
             { "2", "2M" },
             { "4", "4M" },
             { "8", "8M" },
+            { NULL, NULL },
+         },
+         "auto"
+      },
+      {
+         "puae_z3mem_size",
+         "System > Z3 Fast RAM",
+         "Z3 Fast RAM",
+         "'Automatic' defaults to the current preset model.\nCore restart required.",
+         NULL,
+         "system",
+         {
+            { "auto", "Automatic" },
+            { "0", "None" },
+            { "1", "1M" },
+            { "2", "2M" },
+            { "4", "4M" },
+            { "8", "8M" },
+            { "16", "16M" },
+            { "32", "32M" },
+            { "64", "64M" },
+            { "128", "128M" },
+            { "256", "256M" },
+            { "512", "512M" },
             { NULL, NULL },
          },
          "auto"
@@ -2985,6 +3010,23 @@ static void update_variables(void)
          opt_fastmem_size = atoi(var.value);
 
          strcat(uae_config, "fastmem_size=");
+         strcat(uae_config, var.value);
+         strcat(uae_config, "\n");
+      }
+   }
+
+   var.key = "puae_z3mem_size";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      opt_z3mem_size = -1;
+      if (!strstr(var.value, "auto"))
+      {
+         opt_z3mem_size = atoi(var.value);
+
+         strcat(uae_config, "cpu_24bit_addressing=false\n");
+
+         strcat(uae_config, "z3mem_size=");
          strcat(uae_config, var.value);
          strcat(uae_config, "\n");
       }
@@ -6360,7 +6402,8 @@ static bool retro_create_config(void)
                    || (strstr(filebuf, "chipset_compatible=") && filebuf[0] == 'c')
                    || (strstr(filebuf, "chipmem_size=") && filebuf[0] == 'c')
                    || (strstr(filebuf, "bogomem_size=") && filebuf[0] == 'b')
-                   || (strstr(filebuf, "fastmem_size=") && filebuf[0] == 'f'))
+                   || (strstr(filebuf, "fastmem_size=") && filebuf[0] == 'f')
+                   || (strstr(filebuf, "z3mem_size=") && filebuf[0] == 'z'))
                      continue;
                }
 
@@ -6374,6 +6417,8 @@ static bool retro_create_config(void)
                if (opt_bogomem_size > -1 && strstr(filebuf, "bogomem_size=") && filebuf[0] == 'b')
                   continue;
                if (opt_fastmem_size > -1 && strstr(filebuf, "fastmem_size=") && filebuf[0] == 'f')
+                  continue;
+               if (opt_z3mem_size > -1 && strstr(filebuf, "z3mem_size=") && filebuf[0] == 'z')
                   continue;
 
                /* Append */
