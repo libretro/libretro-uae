@@ -7047,7 +7047,7 @@ static bool retro_update_av_info(void)
    if (change_timing && video_config_old == video_config)
    {
       /* Dyna Blaster and the like stays at fake NTSC to prevent pointless switching back and forth */
-      if (!isntsc && hz > 55)
+      if (!isntsc && hz > 55 && hz < 60)
       {
          video_config |= PUAE_VIDEO_NTSC;
          video_config &= ~PUAE_VIDEO_PAL;
