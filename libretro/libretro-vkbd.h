@@ -20,4 +20,20 @@ extern int vkflag[10];
 #define VKBDX 11
 #define VKBDY 8
 
+#define VKBD_NUMPAD             -2
+#define VKBD_RESET              -3
+#define VKBD_STATUSBAR_SAVEDISK -4
+#define VKBD_JOYMOUSE           -5
+#define VKBD_TURBOFIRE          -6
+#define VKBD_ASPECT_ZOOM        -7
+#define VKBD_SHIFTLOCK          -10
+
+#define VKBD_MOUSE_UP           -11
+#define VKBD_MOUSE_DOWN         -12
+#define VKBD_MOUSE_LEFT         -13
+#define VKBD_MOUSE_RIGHT        -14
+#define VKBD_MOUSE_LMB          -15
+#define VKBD_MOUSE_RMB          -16
+#define VKBD_MOUSE_MMB          -17
+
 #endif /* LIBRETRO_VKBD_H */
