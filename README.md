@@ -50,13 +50,13 @@ The following model presets are provided:
 
 | Short   | Long           | Kickstart | Chipset | Memory                          |
 |---------|----------------|-----------|---------|---------------------------------|
-| A500OG  | Amiga 500      | v1.2      | OCS     | 0.5MB Chip RAM                  |
+| A500OG  | Amiga 500      | v1.3      | OCS     | 0.5MB Chip RAM                  |
 | A500    | Amiga 500      | v1.3      | OCS     | 0.5MB Chip RAM + 0.5MB Slow RAM |
 | A500+   | Amiga 500+     | v2.04     | ECS     | 1MB Chip RAM                    |
 | A600    | Amiga 600      | v3.1      | ECS     | 2MB Chip RAM + 8MB Fast RAM     |
 | A1200OG | Amiga 1200     | v3.1      | AGA     | 2MB Chip RAM                    |
 | A1200   | Amiga 1200     | v3.1      | AGA     | 2MB Chip RAM + 8MB Fast RAM     |
-| A2000OG | Amiga 2000     | v1.2      | OCS     | 0.5MB Chip RAM + 0.5MB Slow RAM |
+| A2000OG | Amiga 2000     | v1.3      | OCS     | 0.5MB Chip RAM + 0.5MB Slow RAM |
 | A2000   | Amiga 2000     | v3.1      | ECS     | 1MB Chip RAM                    |
 | A4030   | Amiga 4000/030 | v3.1      | AGA     | 2MB Chip RAM + 8MB Fast RAM     |
 | A4040   | Amiga 4000/040 | v3.1      | AGA     | 2MB Chip RAM + 8MB Fast RAM     |
@@ -74,20 +74,18 @@ The core has a somewhat compatible built-in AROS Kickstart, which is used as a f
 
 *It is critical to use ROMs with the correct MD5!*
 
-| System | Version                       | Filename               | Amiga Forever                 | Size      | MD5                              |
-|--------|-------------------------------|------------------------|-------------------------------|----------:|----------------------------------|
-| A500   | KS v1.2 rev 33.180            | **kick33180.A500**     | **amiga-os-120.rom**          |   262 144 | 85ad74194e87c08904327de1a9443b7a |
-| A500   | KS v1.3 rev 34.005            | **kick34005.A500**     | **amiga-os-130.rom**          |   262 144 | 82a21c1890cae844b3df741f2762d48d |
-| A500+  | KS v2.04 rev 37.175           | **kick37175.A500**     | **amiga-os-204.rom**          |   524 288 | dc10d7bdd1b6f450773dfb558477c230 |
-| A600   | KS v2.05 rev 37.350           | **kick37350.A600**     | **amiga-os-205-a600.rom**     |   524 288 | 465646c9b6729f77eea5314d1f057951 |
-| A600   | KS v3.1 rev 40.063            | **kick40063.A600**     | **amiga-os-310-a600.rom**     |   524 288 | e40a5dfb3d017ba8779faba30cbd1c8e |
-| A1200  | KS v3.0 rev 39.106            | **kick39106.A1200**    | **amiga-os-300-a1200.rom**    |   524 288 | b7cc148386aa631136f510cd29e42fc3 |
-| A1200  | KS v3.1 rev 40.068            | **kick40068.A1200**    | **amiga-os-310-a1200.rom**    |   524 288 | 646773759326fbac3b2311fd8c8793ee |
-| A2000  | KS v1.2 rev 33.180            | **kick33180.A500**     | **amiga-os-120.rom**          |   262 144 | 85ad74194e87c08904327de1a9443b7a |
-| A2000  | KS v3.1 rev 40.063            | **kick40063.A600**     | **amiga-os-310-a600.rom**     |   524 288 | e40a5dfb3d017ba8779faba30cbd1c8e |
-| A4000  | KS v3.0 rev 39.106            | **kick39106.A4000**    | **amiga-os-300-a4000.rom**    |   524 288 | 9b8bdd5a3fd32c2a5a6f5b1aefc799a5 |
-| A4000  | KS v3.1 rev 40.068            | **kick40068.A4000**    | **amiga-os-310-a4000.rom**    |   524 288 | 9bdedde6a4f33555b4a270c8ca53297d |
-| CDTV   | CDTV extended ROM v1.0        | **kick34005.CDTV**     | **amiga-os-130-cdtv-ext.rom** |   262 144 | 89da1838a24460e4b93f4f0c5d92d48d |
+| System     | Version                       | Filename               | Amiga Forever                 | Size      | MD5                              |
+|------------|-------------------------------|------------------------|-------------------------------|----------:|----------------------------------|
+| A500-A2000 | KS v1.2 rev 33.180            | **kick33180.A500**     | **amiga-os-120.rom**          |   262 144 | 85ad74194e87c08904327de1a9443b7a |
+| A500-A2000 | KS v1.3 rev 34.005            | **kick34005.A500**     | **amiga-os-130.rom**          |   262 144 | 82a21c1890cae844b3df741f2762d48d |
+| A500+      | KS v2.04 rev 37.175           | **kick37175.A500**     | **amiga-os-204.rom**          |   524 288 | dc10d7bdd1b6f450773dfb558477c230 |
+| A600       | KS v2.05 rev 37.350           | **kick37350.A600**     | **amiga-os-205-a600.rom**     |   524 288 | 465646c9b6729f77eea5314d1f057951 |
+| A600-A2000 | KS v3.1 rev 40.063            | **kick40063.A600**     | **amiga-os-310-a600.rom**     |   524 288 | e40a5dfb3d017ba8779faba30cbd1c8e |
+| A1200      | KS v3.0 rev 39.106            | **kick39106.A1200**    | **amiga-os-300-a1200.rom**    |   524 288 | b7cc148386aa631136f510cd29e42fc3 |
+| A1200      | KS v3.1 rev 40.068            | **kick40068.A1200**    | **amiga-os-310-a1200.rom**    |   524 288 | 646773759326fbac3b2311fd8c8793ee |
+| A4000      | KS v3.0 rev 39.106            | **kick39106.A4000**    | **amiga-os-300-a4000.rom**    |   524 288 | 9b8bdd5a3fd32c2a5a6f5b1aefc799a5 |
+| A4000      | KS v3.1 rev 40.068            | **kick40068.A4000**    | **amiga-os-310-a4000.rom**    |   524 288 | 9bdedde6a4f33555b4a270c8ca53297d |
+| CDTV       | CDTV extended ROM v1.0        | **kick34005.CDTV**     | **amiga-os-130-cdtv-ext.rom** |   262 144 | 89da1838a24460e4b93f4f0c5d92d48d |
 
 CD32 requires either separate ROMs (Kickstart + extended ROM) or the combined ROM:
 
