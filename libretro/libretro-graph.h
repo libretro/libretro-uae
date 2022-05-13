@@ -5,6 +5,9 @@
 #define RGB888(r, g, b) (((r * 255 / 31) << 16) | ((g * 255 / 31) << 8) | (b * 255 / 31))
 #define ARGB888(a, r, g, b) ((a << 24) | (r << 16) | (g << 8) | b)
 
+#define COLOR_RED_16             RGB565(128,   0,   0)
+#define COLOR_RED_32       ARGB888(255, 128,   0,   0)
+
 #define COLOR_BLACK_16           RGB565( 10,  10,  10)
 #define COLOR_GRAY_16            RGB565( 96,  96,  96)
 #define COLOR_WHITE_16           RGB565(255, 255, 255)
