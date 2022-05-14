@@ -271,10 +271,16 @@ void display_current_image(const char *image, bool inserted)
    imagename_local = NULL;
 }
 
+extern void draw_frame_extras(void);
+static void retro_draw_frame_extras(void)
+{
+   draw_frame_extras();
+}
+
 void print_statusbar(void)
 {
    if (opt_statusbar & STATUSBAR_BASIC && !statusbar_message_timer)
-      return;
+      goto end;
 
    int BOX_Y                = 0;
    int BOX_WIDTH            = 0;
@@ -535,11 +541,11 @@ void print_statusbar(void)
    draw_text(TEXT_X_RESOLUTION, TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, GRAPH_BG_ALL, FONT_WIDTH, FONT_HEIGHT, 10, RESOLUTION);
    draw_text(TEXT_X_MEMORY,     TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, GRAPH_BG_ALL, FONT_WIDTH, FONT_HEIGHT, 10, MEMORY);
    draw_text(TEXT_X_MODEL,      TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, GRAPH_BG_ALL, FONT_WIDTH, FONT_HEIGHT, 10, MODEL);
+
+end:
+   /* UAE internal LED has to come after statusbar */
+   retro_draw_frame_extras();
 }
-
-
-
-
 
 /*
  * Handle target-specific cfgfile options

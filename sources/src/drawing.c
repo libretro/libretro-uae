@@ -3430,6 +3430,22 @@ bool draw_frame (struct vidbuf_description *vb)
 	return true;
 }
 
+#ifdef __LIBRETRO__
+extern void draw_frame_extras(void)
+{
+	int i;
+	if (currprefs.leds_on_screen) {
+		int slx, sly;
+		statusline_getpos (&slx, &sly, gfxvidinfo.outwidth, gfxvidinfo.outheight);
+		for (i = 0; i < TD_TOTAL_HEIGHT; i++) {
+			int line = sly + i;
+			draw_status_line (line, i);
+			do_flush_line (line);
+		}
+	}
+}
+#endif
+
 void finish_drawing_frame (void)
 {
 	int i;
@@ -3455,10 +3471,7 @@ void finish_drawing_frame (void)
 
 	draw_frame2 ();
 
-#ifdef __LIBRETRO__
-	if (retro_statusbar)
-		print_statusbar();
-#endif
+#ifndef ___LIBRETRO__
 	if (currprefs.leds_on_screen) {
 		int slx, sly;
 		statusline_getpos (&slx, &sly, gfxvidinfo.outwidth, gfxvidinfo.outheight);
@@ -3468,6 +3481,7 @@ void finish_drawing_frame (void)
 			do_flush_line (line);
 		}
 	}
+#endif
 
 #ifdef DEBUGGER
 	if (debug_dma > 1) {
