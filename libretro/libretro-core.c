@@ -7522,7 +7522,7 @@ void retro_run(void)
       print_vkbd();
 
    /* Forced statusbar messages */
-   if (!retro_statusbar && opt_statusbar & STATUSBAR_MESSAGES && statusbar_message_timer)
+   if ((!retro_statusbar && opt_statusbar & STATUSBAR_MESSAGES && statusbar_message_timer) || retro_statusbar)
       print_statusbar();
 
    /* Maximum 288p/576p PAL shenanigans:

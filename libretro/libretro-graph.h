@@ -8,11 +8,9 @@
 #define COLOR_RED_16             RGB565(128,   0,   0)
 #define COLOR_RED_32       ARGB888(255, 128,   0,   0)
 
-#define COLOR_BLACK_16           RGB565( 10,  10,  10)
-#define COLOR_GRAY_16            RGB565( 96,  96,  96)
+#define COLOR_BLACK_16           RGB565(  5,   5,   5)
+#define COLOR_BLACK_32     ARGB888(255,   5,   5,   5)
 #define COLOR_WHITE_16           RGB565(255, 255, 255)
-#define COLOR_BLACK_32     ARGB888(255,  10,  10,  10)
-#define COLOR_GRAY_32      ARGB888(255,  96,  96,  96)
 #define COLOR_WHITE_32     ARGB888(255, 255, 255, 255)
 
 #define COLOR_10_16              RGB565( 10,  10,  10)
@@ -41,6 +39,8 @@
 #define COLOR_BEIGEDARK_16       RGB565(154, 154, 150)
 #define COLOR_BEIGEDARK_32 ARGB888(255, 154, 154, 150)
 
+extern unsigned short int graphed[RETRO_BMP_SIZE];
+
 typedef enum {
    GRAPH_ALPHA_0 = 0,
    GRAPH_ALPHA_25,
@@ -60,9 +60,9 @@ void draw_fbox(int x, int y, int dx, int dy, uint32_t color, libretro_graph_alph
 void draw_fbox_bmp16(uint16_t *buffer, int x, int y, int dx, int dy, uint16_t color, libretro_graph_alpha_t alpha);
 void draw_fbox_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t color, libretro_graph_alpha_t alpha);
 
-void draw_box(int x, int y, int dx, int dy, uint32_t color);
-void draw_box_bmp16(uint16_t *buffer, int x, int y, int dx, int dy, uint16_t color);
-void draw_box_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t color);
+void draw_box(int x, int y, int dx, int dy, int width, int height, uint32_t color, libretro_graph_alpha_t alpha);
+void draw_box_bmp16(uint16_t *buffer, int x, int y, int dx, int dy, int width, int height, uint16_t color, libretro_graph_alpha_t alpha);
+void draw_box_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, int width, int height, uint32_t color, libretro_graph_alpha_t alpha);
 
 void draw_hline(int x, int y, int dx, int dy, uint32_t color);
 void draw_hline_bmp16(uint16_t *buffer, int x, int y, int dx, int dy, uint16_t color);

@@ -3991,12 +3991,12 @@ static void draw_frame2(struct vidbuffer *vbin, struct vidbuffer *vbout)
 #endif
 }
 
-static void draw_frame_extras(struct vidbuffer *vb, int y_start, int y_end)
-{
 #ifdef __LIBRETRO__
-	if (retro_statusbar)
-		print_statusbar();
+void draw_frame_extras(struct vidbuffer *vb, int y_start, int y_end)
+#else
+static void draw_frame_extras(struct vidbuffer *vb, int y_start, int y_end)
 #endif
+{
 	if ((currprefs.leds_on_screen & STATUSLINE_CHIPSET) && softstatusline()) {
 		int slx, sly;
 		int mult = statusline_get_multiplier(vb->monitor_id) / 100;
@@ -4188,7 +4188,9 @@ static void finish_drawing_frame(bool drawlines)
 
 	draw_frame2(vb, vb);
 
+#ifndef __LIBRETRO__
 	draw_frame_extras(vb, -1, -1);
+#endif
 
 	// video port adapters
 	if (currprefs.monitoremu) {
