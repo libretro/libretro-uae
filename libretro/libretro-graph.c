@@ -7,6 +7,8 @@
 #include "libretro-graph.h"
 #include "libretro-font.i"
 
+unsigned short int graphed[RETRO_BMP_SIZE];
+
 static uint16_t *linesurf16 = NULL;
 static int linesurf16_w     = 0;
 static int linesurf16_h     = 0;
@@ -186,53 +188,379 @@ void draw_fbox_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t co
 }
 
 
-void draw_box(int x, int y, int dx, int dy, uint32_t color)
+void draw_box(int x, int y, int dx, int dy, int width, int height, uint32_t color, libretro_graph_alpha_t alpha)
 {
    if (pix_bytes == 4)
-      draw_box_bmp32((uint32_t *)retro_bmp, x, y, dx, dy, color);
+      draw_box_bmp32((uint32_t *)retro_bmp, x, y, dx, dy, width, height, color, alpha);
    else
-      draw_box_bmp16((uint16_t *)retro_bmp, x, y, dx, dy, color);
+      draw_box_bmp16((uint16_t *)retro_bmp, x, y, dx, dy, width, height, color, alpha);
 }
 
-void draw_box_bmp16(uint16_t *buffer, int x, int y, int dx, int dy, uint16_t color)
+void draw_box_bmp16(uint16_t *buffer, int x, int y, int dx, int dy, int width, int height, uint16_t color, libretro_graph_alpha_t alpha)
 {
-   int i, j, idx;
+   int i, j, k, idx;
+   uint16_t *buf_ptr;
 
-   for (i = x; i < x + dx; i++)
+   switch (alpha)
    {
-      idx = i + (y * retrow);
-      buffer[idx] = color;
-      idx = i + ((y + dy) * retrow);
-      buffer[idx] = color;
-   }
+      case GRAPH_ALPHA_0:
+         /* Do nothing - buffer is already the
+          * correct colour */
+         break;
+      case GRAPH_ALPHA_25:
+         for (i = x; i < x + dx + width; i++)
+         {
+            for (k = 0; k < height; k++)
+            {
+               idx = i + (y * retrow) + (k * retrow);
+               buf_ptr = &buffer[idx];
+               if (!graphed[idx])
+               {
+                  BLEND_ALPHA25(color, *buf_ptr, buf_ptr);
+                  graphed[idx] = 1;
+               }
+               idx = i + ((y + dy) * retrow) + (k * retrow);
+               buf_ptr = &buffer[idx];
+               if (!graphed[idx])
+               {
+                  BLEND_ALPHA25(color, *buf_ptr, buf_ptr);
+                  graphed[idx] = 1;
+               }
+            }
+         }
 
-   for (j = y; j < y + dy; j++)
-   {
-      idx = x + (j * retrow);
-      buffer[idx] = color;
-      idx = (x + dx) + (j * retrow);
-      buffer[idx] = color;
+         for (j = y + height; j < y + dy; j++)
+         {
+            for (k = 0; k < width; k++)
+            {
+               idx = x + (j * retrow) + k;
+               buf_ptr = &buffer[idx];
+               if (!graphed[idx])
+               {
+                  BLEND_ALPHA25(color, *buf_ptr, buf_ptr);
+                  graphed[idx] = 1;
+               }
+               idx = (x + dx) + (j * retrow) + k;
+               buf_ptr = &buffer[idx];
+               if (!graphed[idx])
+               {
+                  BLEND_ALPHA25(color, *buf_ptr, buf_ptr);
+                  graphed[idx] = 1;
+               }
+            }
+         }
+         break;
+      case GRAPH_ALPHA_50:
+         for (i = x; i < x + dx + width; i++)
+         {
+            for (k = 0; k < height; k++)
+            {
+               idx = i + (y * retrow) + (k * retrow);
+               buf_ptr = &buffer[idx];
+               if (!graphed[idx])
+               {
+                  BLEND_ALPHA50(color, *buf_ptr, buf_ptr);
+                  graphed[idx] = 1;
+               }
+               idx = i + ((y + dy) * retrow) + (k * retrow);
+               buf_ptr = &buffer[idx];
+               if (!graphed[idx])
+               {
+                  BLEND_ALPHA50(color, *buf_ptr, buf_ptr);
+                  graphed[idx] = 1;
+               }
+            }
+         }
+
+         for (j = y + height; j < y + dy; j++)
+         {
+            for (k = 0; k < width; k++)
+            {
+               idx = x + (j * retrow) + k;
+               buf_ptr = &buffer[idx];
+               if (!graphed[idx])
+               {
+                  BLEND_ALPHA50(color, *buf_ptr, buf_ptr);
+                  graphed[idx] = 1;
+               }
+               idx = (x + dx) + (j * retrow) + k;
+               buf_ptr = &buffer[idx];
+               if (!graphed[idx])
+               {
+                  BLEND_ALPHA50(color, *buf_ptr, buf_ptr);
+                  graphed[idx] = 1;
+               }
+            }
+         }
+         break;
+      case GRAPH_ALPHA_75:
+         for (i = x; i < x + dx + width; i++)
+         {
+            for (k = 0; k < height; k++)
+            {
+               idx = i + (y * retrow) + (k * retrow);
+               buf_ptr = &buffer[idx];
+               if (!graphed[idx])
+               {
+                  BLEND_ALPHA75(color, *buf_ptr, buf_ptr);
+                  graphed[idx] = 1;
+               }
+               idx = i + ((y + dy) * retrow) + (k * retrow);
+               buf_ptr = &buffer[idx];
+               if (!graphed[idx])
+               {
+                  BLEND_ALPHA75(color, *buf_ptr, buf_ptr);
+                  graphed[idx] = 1;
+               }
+            }
+         }
+
+         for (j = y + height; j < y + dy; j++)
+         {
+            for (k = 0; k < width; k++)
+            {
+               idx = x + (j * retrow) + k;
+               buf_ptr = &buffer[idx];
+               if (!graphed[idx])
+               {
+                  BLEND_ALPHA75(color, *buf_ptr, buf_ptr);
+                  graphed[idx] = 1;
+               }
+               idx = (x + dx) + (j * retrow) + k;
+               buf_ptr = &buffer[idx];
+               if (!graphed[idx])
+               {
+                  BLEND_ALPHA75(color, *buf_ptr, buf_ptr);
+                  graphed[idx] = 1;
+               }
+            }
+         }
+         break;
+      case GRAPH_ALPHA_100:
+      default:
+         for (i = x; i <= x + dx; i++)
+         {
+            for (k = 0; k < height; k++)
+            {
+               idx = + i + (y * retrow) + (k * retrow);
+               if (!graphed[idx])
+               {
+                  buffer[idx] = color;
+                  graphed[idx] = 1;
+               }
+               idx = i + ((y + dy) * retrow) + (k * retrow);
+               if (!graphed[idx])
+               {
+                  buffer[idx] = color;
+                  graphed[idx] = 1;
+               }
+            }
+         }
+
+         for (j = y; j <= y + dy; j++)
+         {
+            for (k = 0; k < width; k++)
+            {
+               idx = x + (j * retrow) + k;
+               if (!graphed[idx])
+               {
+                  buffer[idx] = color;
+                  graphed[idx] = 1;
+               }
+               idx = (x + dx) + (j * retrow) + k;
+               if (!graphed[idx])
+               {
+                  buffer[idx] = color;
+                  graphed[idx] = 1;
+               }
+            }
+         }
+         break;
    }
 }
 
-void draw_box_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t color)
+void draw_box_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, int width, int height, uint32_t color, libretro_graph_alpha_t alpha)
 {
-   int i, j, idx;
+   int i, j, k, idx;
+   uint32_t *buf_ptr;
 
-   for (i = x; i < x + dx; i++)
-   {
-      idx = i + (y * retrow);
-      buffer[idx] = color;
-      idx = i + ((y + dy) * retrow);
-      buffer[idx] = color;
-   }
+   color = color & 0xFFFFFF;
 
-   for (j = y; j < y + dy; j++)
+   switch (alpha)
    {
-      idx = x + (j * retrow);
-      buffer[idx] = color;
-      idx = (x + dx) + (j * retrow);
-      buffer[idx] = color;
+      case GRAPH_ALPHA_0:
+         /* Do nothing - buffer is already the
+          * correct colour */
+         break;
+      case GRAPH_ALPHA_25:
+         for (i = x; i < x + dx + width; i++)
+         {
+            for (k = 0; k < height; k++)
+            {
+               idx = i + (y * retrow) + (k * retrow);
+               buf_ptr = &buffer[idx];
+               if (!graphed[idx])
+               {
+                  BLEND32_ALPHA25(color, *buf_ptr, buf_ptr);
+                  graphed[idx] = 1;
+               }
+               idx = i + ((y + dy) * retrow) + (k * retrow);
+               buf_ptr = &buffer[idx];
+               if (!graphed[idx])
+               {
+                  BLEND32_ALPHA25(color, *buf_ptr, buf_ptr);
+                  graphed[idx] = 1;
+               }
+            }
+         }
+
+         for (j = y + height; j < y + dy; j++)
+         {
+            for (k = 0; k < width; k++)
+            {
+               idx = x + (j * retrow) + k;
+               buf_ptr = &buffer[idx];
+               if (!graphed[idx])
+               {
+                  BLEND32_ALPHA25(color, *buf_ptr, buf_ptr);
+                  graphed[idx] = 1;
+               }
+               idx = (x + dx) + (j * retrow) + k;
+               buf_ptr = &buffer[idx];
+               if (!graphed[idx])
+               {
+                  BLEND32_ALPHA25(color, *buf_ptr, buf_ptr);
+                  graphed[idx] = 1;
+               }
+            }
+         }
+         break;
+      case GRAPH_ALPHA_50:
+         for (i = x; i < x + dx + width; i++)
+         {
+            for (k = 0; k < height; k++)
+            {
+               idx = i + (y * retrow) + (k * retrow);
+               buf_ptr = &buffer[idx];
+               if (!graphed[idx])
+               {
+                  BLEND32_ALPHA50(color, *buf_ptr, buf_ptr);
+                  graphed[idx] = 1;
+               }
+               idx = i + ((y + dy) * retrow) + (k * retrow);
+               buf_ptr = &buffer[idx];
+               if (!graphed[idx])
+               {
+                  BLEND32_ALPHA50(color, *buf_ptr, buf_ptr);
+                  graphed[idx] = 1;
+               }
+            }
+         }
+
+         for (j = y + height; j < y + dy; j++)
+         {
+            for (k = 0; k < width; k++)
+            {
+               idx = x + (j * retrow) + k;
+               buf_ptr = &buffer[idx];
+               if (!graphed[idx])
+               {
+                  BLEND32_ALPHA50(color, *buf_ptr, buf_ptr);
+                  graphed[idx] = 1;
+               }
+               idx = (x + dx) + (j * retrow) + k;
+               buf_ptr = &buffer[idx];
+               if (!graphed[idx])
+               {
+                  BLEND32_ALPHA50(color, *buf_ptr, buf_ptr);
+                  graphed[idx] = 1;
+               }
+            }
+         }
+         break;
+      case GRAPH_ALPHA_75:
+         for (i = x; i < x + dx + width; i++)
+         {
+            for (k = 0; k < height; k++)
+            {
+               idx = i + (y * retrow) + (k * retrow);
+               buf_ptr = &buffer[idx];
+               if (!graphed[idx])
+               {
+                  BLEND32_ALPHA75(color, *buf_ptr, buf_ptr);
+                  graphed[idx] = 1;
+               }
+               idx = i + ((y + dy) * retrow) + (k * retrow);
+               buf_ptr = &buffer[idx];
+               if (!graphed[idx])
+               {
+                  BLEND32_ALPHA75(color, *buf_ptr, buf_ptr);
+                  graphed[idx] = 1;
+               }
+            }
+         }
+
+         for (j = y + height; j < y + dy; j++)
+         {
+            for (k = 0; k < width; k++)
+            {
+               idx = x + (j * retrow) + k;
+               buf_ptr = &buffer[idx];
+               if (!graphed[idx])
+               {
+                  BLEND32_ALPHA75(color, *buf_ptr, buf_ptr);
+                  graphed[idx] = 1;
+               }
+               idx = (x + dx) + (j * retrow) + k;
+               buf_ptr = &buffer[idx];
+               if (!graphed[idx])
+               {
+                  BLEND32_ALPHA75(color, *buf_ptr, buf_ptr);
+                  graphed[idx] = 1;
+               }
+            }
+         }
+         break;
+      case GRAPH_ALPHA_100:
+      default:
+         for (i = x; i <= x + dx; i++)
+         {
+            for (k = 0; k < height; k++)
+            {
+               idx = + i + (y * retrow) + (k * retrow);
+               if (!graphed[idx])
+               {
+                  buffer[idx] = color;
+                  graphed[idx] = 1;
+               }
+               idx = i + ((y + dy) * retrow) + (k * retrow);
+               if (!graphed[idx])
+               {
+                  buffer[idx] = color;
+                  graphed[idx] = 1;
+               }
+            }
+         }
+
+         for (j = y; j <= y + dy; j++)
+         {
+            for (k = 0; k < width; k++)
+            {
+               idx = x + (j * retrow) + k;
+               if (!graphed[idx])
+               {
+                  buffer[idx] = color;
+                  graphed[idx] = 1;
+               }
+               idx = (x + dx) + (j * retrow) + k;
+               if (!graphed[idx])
+               {
+                  buffer[idx] = color;
+                  graphed[idx] = 1;
+               }
+            }
+         }
+         break;
    }
 }
 
@@ -403,7 +731,8 @@ static void draw_char_1pass32(const char *string, uint16_t strlen,
 static void draw_char_2pass16(uint16_t *surf,
       uint16_t x, uint16_t y,
       uint8_t xscale, uint8_t yscale,
-      uint16_t fg, uint16_t bg, libretro_graph_bg_t draw_bg)
+      uint16_t fg, uint16_t bg,
+      libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg)
 {
    short int xrepeat = 0;
    short int yrepeat = 0;
@@ -436,7 +765,26 @@ static void draw_char_2pass16(uint16_t *surf,
                {
                   if (yrepeat > y - yscale && yrepeat < surfh + y - (yscale * 2) &&
                       xrepeat >= x + xscale && xrepeat < surfw + x - xscale)
-                     ; /* no-op */
+                  {
+                     switch (alpha)
+                     {
+                        case GRAPH_ALPHA_0:
+                           *yptr = *surf_ptr;
+                           break;
+                        case GRAPH_ALPHA_25:
+                           BLEND_ALPHA25(*surf_ptr, bg, yptr);
+                           break;
+                        case GRAPH_ALPHA_50:
+                           BLEND_ALPHA50(*surf_ptr, bg, yptr);
+                           break;
+                        case GRAPH_ALPHA_75:
+                           BLEND_ALPHA75(*surf_ptr, bg, yptr);
+                           break;
+                        case GRAPH_ALPHA_100:
+                        default:
+                           break;
+                     }
+                  }
                   else
                      *yptr = 0;
                }
@@ -459,7 +807,26 @@ static void draw_char_2pass16(uint16_t *surf,
                   /* Bottom right */
                   if (pcount >= surfhxscale+xscale &&
                       yptr[-surfhxscale-xscale] == fg)
-                     ; /* no-op */
+                  {
+                     switch (alpha)
+                     {
+                        case GRAPH_ALPHA_0:
+                           *yptr = *surf_ptr;
+                           break;
+                        case GRAPH_ALPHA_25:
+                           BLEND_ALPHA25(*surf_ptr, bg, yptr);
+                           break;
+                        case GRAPH_ALPHA_50:
+                           BLEND_ALPHA50(*surf_ptr, bg, yptr);
+                           break;
+                        case GRAPH_ALPHA_75:
+                           BLEND_ALPHA75(*surf_ptr, bg, yptr);
+                           break;
+                        case GRAPH_ALPHA_100:
+                        default:
+                           break;
+                     }
+                  }
                   else
                      *yptr = 0;
                }
@@ -492,7 +859,26 @@ static void draw_char_2pass16(uint16_t *surf,
                       (pcount >= xscale             && yptr[-xscale] == fg)             ||
                       (pcount >= 0                  && yptr[+xscale] == fg)
                   )
-                     ; /* no-op */
+                  {
+                     switch (alpha)
+                     {
+                        case GRAPH_ALPHA_0:
+                           *yptr = *surf_ptr;
+                           break;
+                        case GRAPH_ALPHA_25:
+                           BLEND_ALPHA25(*surf_ptr, bg, yptr);
+                           break;
+                        case GRAPH_ALPHA_50:
+                           BLEND_ALPHA50(*surf_ptr, bg, yptr);
+                           break;
+                        case GRAPH_ALPHA_75:
+                           BLEND_ALPHA75(*surf_ptr, bg, yptr);
+                           break;
+                        case GRAPH_ALPHA_100:
+                        default:
+                           break;
+                     }
+                  }
                   else
                      *yptr = 0;
                }
@@ -523,7 +909,8 @@ static void draw_char_2pass16(uint16_t *surf,
 static void draw_char_2pass32(uint32_t *surf,
       uint16_t x, uint16_t y,
       uint8_t xscale, uint8_t yscale,
-      uint32_t fg, uint32_t bg, libretro_graph_bg_t draw_bg)
+      uint32_t fg, uint32_t bg,
+      libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg)
 {
    short int xrepeat = 0;
    short int yrepeat = 0;
@@ -556,7 +943,26 @@ static void draw_char_2pass32(uint32_t *surf,
                {
                   if (yrepeat > y - yscale && yrepeat < surfh + y - (yscale * 2) &&
                       xrepeat >= x + xscale && xrepeat < surfw + x - xscale)
-                     ; /* no-op */
+                  {
+                     switch (alpha)
+                     {
+                        case GRAPH_ALPHA_0:
+                           *yptr = *surf_ptr;
+                           break;
+                        case GRAPH_ALPHA_25:
+                           BLEND32_ALPHA25(*surf_ptr, bg, yptr);
+                           break;
+                        case GRAPH_ALPHA_50:
+                           BLEND32_ALPHA50(*surf_ptr, bg, yptr);
+                           break;
+                        case GRAPH_ALPHA_75:
+                           BLEND32_ALPHA75(*surf_ptr, bg, yptr);
+                           break;
+                        case GRAPH_ALPHA_100:
+                        default:
+                           break;
+                     }
+                  }
                   else
                      *yptr = 0;
                }
@@ -579,7 +985,26 @@ static void draw_char_2pass32(uint32_t *surf,
                   /* Bottom right */
                   if (pcount >= surfhxscale+xscale &&
                       yptr[-surfhxscale-xscale] == fg)
-                     ; /* no-op */
+                  {
+                     switch (alpha)
+                     {
+                        case GRAPH_ALPHA_0:
+                           *yptr = *surf_ptr;
+                           break;
+                        case GRAPH_ALPHA_25:
+                           BLEND32_ALPHA25(*surf_ptr, bg, yptr);
+                           break;
+                        case GRAPH_ALPHA_50:
+                           BLEND32_ALPHA50(*surf_ptr, bg, yptr);
+                           break;
+                        case GRAPH_ALPHA_75:
+                           BLEND32_ALPHA75(*surf_ptr, bg, yptr);
+                           break;
+                        case GRAPH_ALPHA_100:
+                        default:
+                           break;
+                     }
+                  }
                   else
                      *yptr = 0;
                }
@@ -612,7 +1037,26 @@ static void draw_char_2pass32(uint32_t *surf,
                       (pcount >= xscale             && yptr[-xscale] == fg)             ||
                       (pcount >= 0                  && yptr[+xscale] == fg)
                   )
-                     ; /* no-op */
+                  {
+                     switch (alpha)
+                     {
+                        case GRAPH_ALPHA_0:
+                           *yptr = *surf_ptr;
+                           break;
+                        case GRAPH_ALPHA_25:
+                           BLEND32_ALPHA25(*surf_ptr, bg, yptr);
+                           break;
+                        case GRAPH_ALPHA_50:
+                           BLEND32_ALPHA50(*surf_ptr, bg, yptr);
+                           break;
+                        case GRAPH_ALPHA_75:
+                           BLEND32_ALPHA75(*surf_ptr, bg, yptr);
+                           break;
+                        case GRAPH_ALPHA_100:
+                        default:
+                           break;
+                     }
+                  }
                   else
                      *yptr = 0;
                }
@@ -651,7 +1095,7 @@ void draw_string_bmp16(uint16_t *surf, uint16_t x, uint16_t y,
    unsigned char surfh;
    unsigned char charw = 8;
    unsigned char charh = 8;
-   uint16_t fg_blend = (fg == COLOR_BLACK_16) ? COLOR_GRAY_16 : COLOR_BLACK_16;
+   uint16_t fg_blend = COLOR_BLACK_16;
 
    if (!string)
       return;
@@ -702,7 +1146,7 @@ void draw_string_bmp16(uint16_t *surf, uint16_t x, uint16_t y,
    }
 
    draw_char_1pass16(string, strlen, charw, charh, xscale, yscale, fg, bg);
-   draw_char_2pass16(surf, x, y, xscale, yscale, fg, bg, draw_bg);
+   draw_char_2pass16(surf, x, y, xscale, yscale, fg, bg, alpha, draw_bg);
 }
 
 void draw_string_bmp32(uint32_t *surf, uint16_t x, uint16_t y,
@@ -715,7 +1159,7 @@ void draw_string_bmp32(uint32_t *surf, uint16_t x, uint16_t y,
    unsigned char surfh;
    unsigned char charw = 8;
    unsigned char charh = 8;
-   uint32_t fg_blend = (fg == COLOR_BLACK_32) ? COLOR_GRAY_32 & 0xFFFFFF : COLOR_BLACK_32 & 0xFFFFFF;
+   uint32_t fg_blend = COLOR_BLACK_32 & 0xFFFFFF;
 
    if (!string)
       return;
@@ -769,7 +1213,7 @@ void draw_string_bmp32(uint32_t *surf, uint16_t x, uint16_t y,
    }
 
    draw_char_1pass32(string, strlen, charw, charh, xscale, yscale, fg, bg);
-   draw_char_2pass32(surf, x, y, xscale, yscale, fg, bg, draw_bg);
+   draw_char_2pass32(surf, x, y, xscale, yscale, fg, bg, alpha, draw_bg);
 }
 
 void draw_text(uint16_t x, uint16_t y,

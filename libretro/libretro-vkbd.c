@@ -271,7 +271,7 @@ static const retro_vkeys vkeys[VKBDX * VKBDY * 2] =
 
 
 /* Alternate color keys */
-static int vkbd_alt_keys[] =
+static const int vkbd_alt_keys[] =
 {
    RETROK_F1, RETROK_F2, RETROK_F3, RETROK_F4, RETROK_F5, RETROK_F6, RETROK_F7, RETROK_F8, RETROK_F9, RETROK_F10,
    RETROK_LSHIFT, RETROK_RSHIFT, RETROK_LALT, RETROK_RALT, RETROK_LSUPER, RETROK_RSUPER, VKBD_MOUSE_LMB, VKBD_MOUSE_RMB,
@@ -279,19 +279,20 @@ static int vkbd_alt_keys[] =
    RETROK_ESCAPE, RETROK_BACKQUOTE, RETROK_TAB, RETROK_LCTRL, RETROK_CAPSLOCK, RETROK_RETURN, RETROK_KP_ENTER,
    RETROK_KP_MINUS, RETROK_KP_PLUS, RETROK_KP_DIVIDE, RETROK_KP_MULTIPLY, RETROK_KP_PERIOD,
 };
-static int vkbd_alt_keys_len = sizeof(vkbd_alt_keys) / sizeof(vkbd_alt_keys[0]);
+static const int vkbd_alt_keys_len = sizeof(vkbd_alt_keys) / sizeof(vkbd_alt_keys[0]);
 
 /* Extra color keys */
-static int vkbd_extra_keys[] =
+static const int vkbd_extra_keys[] =
 {
    VKBD_NUMPAD, VKBD_JOYMOUSE, VKBD_TURBOFIRE, VKBD_ASPECT_ZOOM, VKBD_STATUSBAR_SAVEDISK
 };
-static int vkbd_extra_keys_len = sizeof(vkbd_extra_keys) / sizeof(vkbd_extra_keys[0]);
+static const int vkbd_extra_keys_len = sizeof(vkbd_extra_keys) / sizeof(vkbd_extra_keys[0]);
 
 void print_vkbd(void)
 {
    libretro_graph_alpha_t ALPHA      = opt_vkbd_alpha;
    libretro_graph_alpha_t BKG_ALPHA  = ALPHA;
+   libretro_graph_alpha_t BRD_ALPHA  = ALPHA;
    long now                          = retro_ticks() / 1000;
    bool shifted                      = false;
    bool text_outline                 = false;
@@ -394,6 +395,8 @@ void print_vkbd(void)
          break;
    }
 
+   memset(graphed, 0, sizeof(graphed));
+
    if (video_config_geometry & PUAE_VIDEO_HIRES || video_config_geometry & PUAE_VIDEO_SUPERHIRES)
    {
       FONT_WIDTH         = 2;
@@ -437,12 +440,14 @@ void print_vkbd(void)
 
    /* Opacity */
    BKG_ALPHA = (retro_vkbd_transparent) ? ALPHA : GRAPH_ALPHA_100;
+   BRD_ALPHA = GRAPH_ALPHA_50;
 
    /* Key label shifted */
    shifted = false;
-   if (retro_capslock || vkey_sticky1 == RETROK_LSHIFT || vkey_sticky2 == RETROK_LSHIFT || vkey_sticky1 == RETROK_RSHIFT || vkey_sticky2 == RETROK_RSHIFT)
+   if (retro_capslock || vkey_sticky1 == RETROK_LSHIFT || vkey_sticky2 == RETROK_LSHIFT
+                      || vkey_sticky1 == RETROK_RSHIFT || vkey_sticky2 == RETROK_RSHIFT)
       shifted = true;
-   if (vkflag[RETRO_DEVICE_ID_JOYPAD_B] == 1 && (vkey_pressed == RETROK_LSHIFT || vkey_pressed == RETROK_RSHIFT))
+   if (vkflag[RETRO_DEVICE_ID_JOYPAD_B] && (vkey_pressed == RETROK_LSHIFT || vkey_pressed == RETROK_RSHIFT))
       shifted = true;
 
    /* Key layout */
@@ -458,11 +463,8 @@ void print_vkbd(void)
          BKG_COLOR = BKG_COLOR_NORMAL;
          BKG_ALPHA = (retro_vkbd_transparent) ? ALPHA : GRAPH_ALPHA_100;
 
-         /* Empty key */
-         if (vkeys[(y * VKBDX) + x].value == -1)
-            continue;
          /* Reset key color */
-         else if (vkeys[(y * VKBDX) + x].value == VKBD_RESET)
+         if (vkeys[(y * VKBDX) + x].value == VKBD_RESET)
             BKG_COLOR = (pix_bytes == 4) ? COLOR_RED_32 : COLOR_RED_16;
          else
          {
@@ -513,7 +515,8 @@ void print_vkbd(void)
 
          /* Key string */
          snprintf(string, sizeof(string), "%s",
-               (!shifted) ? vkeys[(y * VKBDX) + x + page].normal : vkeys[(y * VKBDX) + x + page].shift);
+               (!shifted) ? vkeys[(y * VKBDX) + x + page].normal
+                          : vkeys[(y * VKBDX) + x + page].shift);
 
          /* Key positions */
          XKEY  = XOFFSET + XBASEKEY + (x * XSIDE);
@@ -521,17 +524,36 @@ void print_vkbd(void)
          YKEY  = YOFFSET + YBASEKEY + (y * YSIDE);
          YTEXT = YOFFSET + YBASETEXT + BKG_PADDING_Y + (y * YSIDE);
 
-         /* Key background */
-         draw_fbox(XKEY+XKEYSPACING, YKEY+YKEYSPACING, XSIDE-XKEYSPACING, YSIDE-YKEYSPACING,
-                   BKG_COLOR, BKG_ALPHA);
+         /* Empty key */
+         if (vkeys[(y * VKBDX) + x].value == -1)
+         {
+            /* Key background */
+            draw_fbox(XKEY+XKEYSPACING, YKEY+YKEYSPACING, XSIDE-XKEYSPACING, YSIDE-YKEYSPACING,
+                      0, BRD_ALPHA);
+         }
+         else
+         {
+            int FONT_ALPHA = BKG_ALPHA;
+            FONT_ALPHA = (FONT_ALPHA < GRAPH_ALPHA_25) ? GRAPH_ALPHA_25 : FONT_ALPHA;
+            FONT_ALPHA = (FONT_ALPHA > GRAPH_ALPHA_75) ? GRAPH_ALPHA_75 : FONT_ALPHA;
 
-         /* Key text */
-         draw_text(XTEXT, YTEXT, FONT_COLOR, BKG_COLOR, GRAPH_ALPHA_25,
-                   (text_outline) ? GRAPH_BG_OUTLINE : GRAPH_BG_SHADOW, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
-                   string);
+            /* Key background */
+            draw_fbox(XKEY+XKEYSPACING, YKEY+YKEYSPACING, XSIDE-XKEYSPACING, YSIDE-YKEYSPACING,
+                      BKG_COLOR, BKG_ALPHA);
+
+            /* Key text */
+            draw_text(XTEXT, YTEXT, FONT_COLOR, BKG_COLOR, FONT_ALPHA,
+                      (text_outline) ? GRAPH_BG_OUTLINE : GRAPH_BG_SHADOW, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
+                      string);
+         }
+
+         /* Key border */
+         draw_box(XKEY+XKEYSPACING-FONT_WIDTH, YKEY+YKEYSPACING-FONT_HEIGHT,
+                  XSIDE-XKEYSPACING+FONT_WIDTH, YSIDE-YKEYSPACING+FONT_HEIGHT,
+                  FONT_WIDTH, FONT_HEIGHT,
+                  0, BRD_ALPHA);
       }
    }
-
 
    /* Opacity */
    BKG_ALPHA = (retro_vkbd_transparent) ?
@@ -545,6 +567,11 @@ void print_vkbd(void)
       BKG_COLOR_SEL = BKG_COLOR_ACTIVE;
    else
       FONT_COLOR = FONT_COLOR_SEL;
+
+   /* Selected key string */
+   snprintf(string, sizeof(string), "%s",
+         (!shifted) ? vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].normal
+                    : vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].shift);
 
    /* Reset key */
    if (vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].value == VKBD_RESET)
@@ -563,15 +590,7 @@ void print_vkbd(void)
 
       if (reset_counter > 0)
          snprintf(string, sizeof(string), "%1d", reset_counter);
-      else
-         snprintf(string, sizeof(string), "%s",
-               (!shifted) ? vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].normal
-                          : vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].shift);
    }
-   else
-      snprintf(string, sizeof(string), "%s",
-            (!shifted) ? vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].normal
-                       : vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].shift);
 
    /* Selected key position */
    XKEY  = XOFFSET + XBASEKEY + (vkey_pos_x * XSIDE);
@@ -580,13 +599,51 @@ void print_vkbd(void)
    YTEXT = YOFFSET + YBASETEXT + BKG_PADDING_Y + (vkey_pos_y * YSIDE);
 
    /* Selected key background */
-   draw_fbox(XKEY+XKEYSPACING, YKEY+YKEYSPACING, XSIDE-XKEYSPACING, YSIDE-YKEYSPACING,
+   draw_fbox(XKEY+XKEYSPACING, YKEY+YKEYSPACING,
+             XSIDE-XKEYSPACING, YSIDE-YKEYSPACING,
              BKG_COLOR_SEL, BKG_ALPHA);
+
+   /* Selected key border */
+   draw_box(XKEY+XKEYSPACING-FONT_WIDTH, YKEY+YKEYSPACING-FONT_HEIGHT,
+            XSIDE-XKEYSPACING+FONT_WIDTH, YSIDE-YKEYSPACING+FONT_HEIGHT,
+            FONT_WIDTH, FONT_HEIGHT,
+            0, BRD_ALPHA);
 
    /* Selected key text */
    draw_text(XTEXT, YTEXT, FONT_COLOR, 0, GRAPH_ALPHA_100,
              GRAPH_BG_NONE, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
              string);
+
+   /* Corner dimming */
+   {
+      unsigned corner_y_min = 0;
+      unsigned corner_y_max = 0;
+      unsigned lores_offset = (zoomed_width < 361 && zoomed_width % 2 == 0);
+
+      /* Top */
+      corner_y_min = 0;
+      corner_y_max = vkbd_y_min - YKEYSPACING;
+      draw_fbox(0, corner_y_min,
+                zoomed_width, corner_y_max,
+                0, BRD_ALPHA);
+
+      /* Bottom */
+      corner_y_min = vkbd_y_max + YKEYSPACING;
+      corner_y_max = zoomed_height - vkbd_y_max - YKEYSPACING;
+      draw_fbox(0, corner_y_min,
+                zoomed_width, corner_y_max,
+                0, BRD_ALPHA);
+
+      /* Left + Right */
+      corner_y_min = vkbd_y_min - YKEYSPACING;
+      corner_y_max = vkbd_y_max - vkbd_y_min + (YKEYSPACING * 2);
+      draw_fbox(0, corner_y_min,
+                vkbd_x_min - XKEYSPACING, corner_y_max,
+                0, BRD_ALPHA);
+      draw_fbox(vkbd_x_max + (XKEYSPACING * 2) + ((lores_offset) ? -XKEYSPACING : 0), corner_y_min,
+                zoomed_width - vkbd_x_max - (XKEYSPACING * (lores_offset ? 1 : 2)), corner_y_max,
+                0, BRD_ALPHA);
+   }
 
 #if POINTER_DEBUG
    draw_hline(pointer_x, pointer_y, 1, 1, RGBc(255, 0, 255));
