@@ -20,6 +20,11 @@ extern int vkflag[10];
 #define VKBDX 11
 #define VKBDY 8
 
+#define VKBDX_GAP_POS 0
+#define VKBDY_GAP_POS 1
+#define VKBDX_GAP_PAD 0
+#define VKBDY_GAP_PAD 4
+
 #define VKBD_NUMPAD             -2
 #define VKBD_RESET              -3
 #define VKBD_STATUSBAR_SAVEDISK -4
