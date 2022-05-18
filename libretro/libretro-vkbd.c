@@ -432,11 +432,23 @@ void print_vkbd(void)
    int XBASETEXT = XBASEKEY + (3 * FONT_WIDTH);
    int YBASETEXT = YBASEKEY + (3 * FONT_HEIGHT);
 
+   int x_gap = 0;
+   int y_gap = 0;
+
+   int vkbd_x_gap_pad = VKBDX_GAP_PAD * FONT_WIDTH;
+   int vkbd_y_gap_pad = VKBDY_GAP_PAD * FONT_HEIGHT;
+
+   XOFFSET -= (vkbd_x_gap_pad / 2);
+   YOFFSET -= (vkbd_y_gap_pad / 2);
+
    /* Coordinates */
    vkbd_x_min = XOFFSET + XBASEKEY + XKEYSPACING;
    vkbd_x_max = XOFFSET - XBASEKEY - XKEYSPACING + zoomed_width;
    vkbd_y_min = YOFFSET + YBASEKEY + YKEYSPACING;
    vkbd_y_max = YOFFSET + YBASEKEY + (YSIDE * VKBDY);
+
+   vkbd_x_max += vkbd_x_gap_pad;
+   vkbd_y_max += vkbd_y_gap_pad;
 
    /* Opacity */
    BKG_ALPHA = (retro_vkbd_transparent) ? ALPHA : GRAPH_ALPHA_100;
@@ -453,11 +465,15 @@ void print_vkbd(void)
    /* Key layout */
    for (x = 0; x < VKBDX; x++)
    {
+      x_gap = 0;
+      if (VKBDX_GAP_POS && VKBDX_GAP_PAD && x >= VKBDX_GAP_POS)
+         x_gap = vkbd_x_gap_pad;
+
       for (y = 0; y < VKBDY; y++)
       {
-         /* Skip selected key */
-         if (((vkey_pos_y * VKBDX) + vkey_pos_x + page) == ((y * VKBDX) + x + page))
-            continue;
+         y_gap = 0;
+         if (VKBDY_GAP_POS && VKBDY_GAP_PAD && y >= VKBDY_GAP_POS)
+            y_gap = vkbd_y_gap_pad;
 
          /* Default key color */
          BKG_COLOR = BKG_COLOR_NORMAL;
@@ -519,26 +535,29 @@ void print_vkbd(void)
                           : vkeys[(y * VKBDX) + x + page].shift);
 
          /* Key positions */
-         XKEY  = XOFFSET + XBASEKEY + (x * XSIDE);
-         XTEXT = XOFFSET + XBASETEXT + BKG_PADDING_X + (x * XSIDE);
-         YKEY  = YOFFSET + YBASEKEY + (y * YSIDE);
-         YTEXT = YOFFSET + YBASETEXT + BKG_PADDING_Y + (y * YSIDE);
+         XKEY  = x_gap + XOFFSET + XBASEKEY + (x * XSIDE);
+         XTEXT = x_gap + XOFFSET + XBASETEXT + BKG_PADDING_X + (x * XSIDE);
+         YKEY  = y_gap + YOFFSET + YBASEKEY + (y * YSIDE);
+         YTEXT = y_gap + YOFFSET + YBASETEXT + BKG_PADDING_Y + (y * YSIDE);
 
          /* Empty key */
          if (vkeys[(y * VKBDX) + x].value == -1)
          {
             /* Key background */
-            draw_fbox(XKEY+XKEYSPACING, YKEY+YKEYSPACING, XSIDE-XKEYSPACING, YSIDE-YKEYSPACING,
+            draw_fbox(XKEY+XKEYSPACING, YKEY+YKEYSPACING,
+                      XSIDE-XKEYSPACING, YSIDE-YKEYSPACING,
                       0, BRD_ALPHA);
          }
-         else
+         /* Not selected key */
+         else if (((vkey_pos_y * VKBDX) + vkey_pos_x + page) != ((y * VKBDX) + x + page))
          {
             int FONT_ALPHA = BKG_ALPHA;
             FONT_ALPHA = (FONT_ALPHA < GRAPH_ALPHA_25) ? GRAPH_ALPHA_25 : FONT_ALPHA;
             FONT_ALPHA = (FONT_ALPHA > GRAPH_ALPHA_75) ? GRAPH_ALPHA_75 : FONT_ALPHA;
 
             /* Key background */
-            draw_fbox(XKEY+XKEYSPACING, YKEY+YKEYSPACING, XSIDE-XKEYSPACING, YSIDE-YKEYSPACING,
+            draw_fbox(XKEY+XKEYSPACING, YKEY+YKEYSPACING,
+                      XSIDE-XKEYSPACING, YSIDE-YKEYSPACING,
                       BKG_COLOR, BKG_ALPHA);
 
             /* Key text */
@@ -592,27 +611,46 @@ void print_vkbd(void)
          snprintf(string, sizeof(string), "%1d", reset_counter);
    }
 
+   x_gap = 0;
+   if (VKBDX_GAP_POS && VKBDX_GAP_PAD && vkey_pos_x >= VKBDX_GAP_POS)
+      x_gap = vkbd_x_gap_pad;
+   y_gap = 0;
+   if (VKBDY_GAP_POS && VKBDY_GAP_PAD && vkey_pos_y >= VKBDY_GAP_POS)
+      y_gap = vkbd_y_gap_pad;
+
    /* Selected key position */
-   XKEY  = XOFFSET + XBASEKEY + (vkey_pos_x * XSIDE);
-   XTEXT = XOFFSET + XBASETEXT + BKG_PADDING_X + (vkey_pos_x * XSIDE);
-   YKEY  = YOFFSET + YBASEKEY + (vkey_pos_y * YSIDE);
-   YTEXT = YOFFSET + YBASETEXT + BKG_PADDING_Y + (vkey_pos_y * YSIDE);
+   XKEY  = x_gap + XOFFSET + XBASEKEY + (vkey_pos_x * XSIDE);
+   XTEXT = x_gap + XOFFSET + XBASETEXT + BKG_PADDING_X + (vkey_pos_x * XSIDE);
+   YKEY  = y_gap + YOFFSET + YBASEKEY + (vkey_pos_y * YSIDE);
+   YTEXT = y_gap + YOFFSET + YBASETEXT + BKG_PADDING_Y + (vkey_pos_y * YSIDE);
 
    /* Selected key background */
    draw_fbox(XKEY+XKEYSPACING, YKEY+YKEYSPACING,
              XSIDE-XKEYSPACING, YSIDE-YKEYSPACING,
              BKG_COLOR_SEL, BKG_ALPHA);
 
-   /* Selected key border */
-   draw_box(XKEY+XKEYSPACING-FONT_WIDTH, YKEY+YKEYSPACING-FONT_HEIGHT,
-            XSIDE-XKEYSPACING+FONT_WIDTH, YSIDE-YKEYSPACING+FONT_HEIGHT,
-            FONT_WIDTH, FONT_HEIGHT,
-            0, BRD_ALPHA);
-
    /* Selected key text */
    draw_text(XTEXT, YTEXT, FONT_COLOR, 0, GRAPH_ALPHA_100,
              GRAPH_BG_NONE, FONT_WIDTH, FONT_HEIGHT, FONT_MAX,
              string);
+
+   /* Gap backgrounds */
+   if (VKBDX_GAP_POS)
+      draw_fbox(XOFFSET+XBASEKEY+(VKBDX_GAP_POS*XSIDE)+FONT_WIDTH, vkbd_y_min-FONT_HEIGHT,
+                vkbd_x_gap_pad-FONT_WIDTH, vkbd_y_max-vkbd_y_min+(FONT_HEIGHT*2),
+                0, BRD_ALPHA);
+
+   if (VKBDY_GAP_POS)
+   {
+      draw_fbox(vkbd_x_min-FONT_WIDTH, YOFFSET+YBASEKEY+(VKBDY_GAP_POS*YSIDE)+FONT_HEIGHT,
+                vkbd_x_max-vkbd_x_min+FONT_WIDTH+XKEYSPACING+FONT_WIDTH, vkbd_y_gap_pad-FONT_HEIGHT,
+                0, BRD_ALPHA);
+#if 0
+      draw_fbox(XOFFSET+XBASEKEY+(VKBDX_GAP_POS*XSIDE)+vkbd_x_gap_pad, YOFFSET+YBASEKEY+(VKBDY_GAP_POS*YSIDE)+FONT_HEIGHT,
+                XSIDE+FONT_WIDTH, vkbd_y_gap_pad-FONT_HEIGHT,
+                0, BRD_ALPHA);
+#endif
+   }
 
    /* Corner dimming */
    {
@@ -764,11 +802,17 @@ void input_vkbd(void)
 
       if (px >= vkbd_x_min && px <= vkbd_x_max && py >= vkbd_y_min && py <= vkbd_y_max)
       {
-         float vkey_width = (float)(vkbd_x_max - vkbd_x_min) / VKBDX;
+         float x_multiplier = (video_config & PUAE_VIDEO_SUPERHIRES) ? 4 : (video_config & PUAE_VIDEO_HIRES) ? 2 : 1;
+         float vkey_width = (float)(vkbd_x_max - vkbd_x_min - (VKBDX_GAP_PAD * x_multiplier)) / VKBDX;
          vkey_pos_x = ((px - vkbd_x_min) / vkey_width);
+         if (VKBDX_GAP_POS && vkey_pos_x >= VKBDX_GAP_POS)
+            vkey_pos_x = ((px - vkbd_x_min + (VKBDX_GAP_PAD * x_multiplier)) / vkey_width);
 
-         float vkey_height = (float)(vkbd_y_max - vkbd_y_min) / VKBDY;
+         float y_multiplier = (video_config & PUAE_VIDEO_DOUBLELINE) ? 2 : 1;
+         float vkey_height = (float)(vkbd_y_max - vkbd_y_min - (VKBDY_GAP_PAD * y_multiplier)) / VKBDY;
          vkey_pos_y = ((py - vkbd_y_min) / vkey_height);
+         if (VKBDY_GAP_POS && vkey_pos_y >= VKBDY_GAP_POS)
+            vkey_pos_y = ((py - vkbd_y_min - (VKBDY_GAP_PAD * y_multiplier)) / vkey_height);
 
          vkey_pos_x = (vkey_pos_x < 0) ? 0 : vkey_pos_x;
          vkey_pos_x = (vkey_pos_x > VKBDX - 1) ? VKBDX - 1 : vkey_pos_x;
