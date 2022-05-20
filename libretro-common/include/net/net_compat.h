@@ -56,6 +56,8 @@
 
 #include <network.h>
 
+#define setsockopt net_setsockopt
+
 #elif defined(VITA)
 
 #include <psp2/net/net.h>
@@ -88,6 +90,7 @@
 #define htonl sceNetHtonl
 #define ntohl sceNetNtohl
 #define htons sceNetHtons
+#define ntohs sceNetNtohs
 #define socklen_t unsigned int
 
 struct hostent
@@ -118,6 +121,7 @@ struct SceNetInAddr inet_aton(const char *ip_addr);
 
 #if !defined(__PSL1GHT__) && defined(__PS3__)
 #include <netex/libnetctl.h>
+#include <netex/errno.h>
 #else
 #include <signal.h>
 #endif
