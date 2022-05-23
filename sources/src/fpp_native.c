@@ -903,7 +903,7 @@ static void fp_log10(fpdata *a, fpdata *b)
 static void fp_log2(fpdata *a, fpdata *b)
 {
 	fp_normal_prec();
-	a->fp = log2l(b->fp);
+	a->fp = logbl(b->fp);
 	fp_reset_normal_prec();
 	fp_round(a);
 }
