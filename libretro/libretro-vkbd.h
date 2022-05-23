@@ -16,6 +16,7 @@ extern libretro_graph_alpha_t opt_vkbd_alpha;
 
 extern retro_input_state_t input_state_cb;
 extern int vkflag[10];
+extern void statusbar_message_show(signed char icon, const char *format, ...);
 
 #define VKBDX 11
 #define VKBDY 8
@@ -31,7 +32,7 @@ extern int vkflag[10];
 #define VKBD_JOYMOUSE           -5
 #define VKBD_TURBOFIRE          -6
 #define VKBD_ASPECT_ZOOM        -7
-#define VKBD_SHIFTLOCK          -10
+#define VKBD_CAPSLOCK           -10
 
 #define VKBD_MOUSE_UP           -11
 #define VKBD_MOUSE_DOWN         -12

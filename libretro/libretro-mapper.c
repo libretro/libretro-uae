@@ -24,10 +24,6 @@
 /* Mouse D-Pad acceleration */
 #define MOUSE_DPAD_ACCEL
 
-/* Press durations */
-#define SHORT_PRESS 400
-#define LONG_PRESS 800
-
 /* Core flags */
 int mapper_keys[RETRO_MAPPER_LAST] = {0};
 long mapper_keys_pressed_time = 0;
@@ -46,16 +42,19 @@ static unsigned int mouse_speed[2] = {0};
 extern bool request_update_av_info;
 extern void retro_reset_soft();
 extern bool retro_statusbar;
+extern long vkbd_mapping_active;
 
 unsigned retro_key_state[RETROK_LAST] = {0};
 unsigned retro_key_state_internal[RETROK_LAST] = {0};
 static unsigned retro_key_event_state[RETROK_LAST] = {0};
 int16_t joypad_bits[RETRO_DEVICES];
+int16_t joypad_axis[RETRO_DEVICES][RETRO_AXIS_MAX];
 extern bool libretro_supports_bitmasks;
 extern bool libretro_ff_enabled;
 extern void retro_fastforwarding(bool);
 extern dc_storage *dc;
 extern unsigned char statusbar_text[RETRO_PATH_MAX];
+extern float retro_refresh;
 
 /* Core options */
 extern unsigned int video_config_aspect;
@@ -79,7 +78,43 @@ unsigned int turbo_pulse = 6;
 unsigned int turbo_state[RETRO_DEVICES] = {0};
 unsigned int turbo_toggle[RETRO_DEVICES] = {0};
 
-static void statusbar_message_show(signed char icon, const char *format, ...)
+int retro_keymap_id(const char *val)
+{
+   int i = 0;
+   while (retro_keys[i].id < RETROK_LAST)
+   {
+      if (!strcmp(retro_keys[i].value, val))
+         return retro_keys[i].id;
+      i++;
+   }
+   return 0;
+}
+
+char *retro_keymap_value(const int id)
+{
+   int i = 0;
+   while (retro_keys[i].id < RETROK_LAST)
+   {
+      if (retro_keys[i].id == id)
+         return retro_keys[i].value;
+      i++;
+   }
+   return 0;
+}
+
+char *retro_keymap_label(const int id)
+{
+   int i = 0;
+   while (retro_keys[i].id < RETROK_LAST)
+   {
+      if (retro_keys[i].id == id)
+         return retro_keys[i].label;
+      i++;
+   }
+   return 0;
+}
+
+void statusbar_message_show(signed char icon, const char *format, ...)
 {
    unsigned char statusbar_temp[RETRO_PATH_MAX] = {0};
    va_list args;
@@ -92,7 +127,7 @@ static void statusbar_message_show(signed char icon, const char *format, ...)
    snprintf(statusbar_text, sizeof(statusbar_text), "%c %-98s", (icon | 0x80), statusbar_temp);
    va_end(args);
 
-   statusbar_message_timer = 50;
+   statusbar_message_timer = 2 * retro_refresh;
 }
 
 void emu_function(int function)
@@ -908,14 +943,17 @@ void update_input(unsigned disable_keys)
    /* RetroPad hotkeys for ports 1 & 2 */
    for (j = 0; j < 2; j++)
    {
+      if (vkbd_mapping_active)
+         continue;
+
       if (retro_devices[j] == RETRO_DEVICE_JOYPAD ||
           retro_devices[j] == RETRO_DEVICE_PUAE_CD32PAD ||
           retro_devices[j] == RETRO_DEVICE_PUAE_ANALOG)
       {
-         LX = input_state_cb(j, RETRO_DEVICE_ANALOG, 0, 0);
-         LY = input_state_cb(j, RETRO_DEVICE_ANALOG, 0, 1);
-         RX = input_state_cb(j, RETRO_DEVICE_ANALOG, 1, 0);
-         RY = input_state_cb(j, RETRO_DEVICE_ANALOG, 1, 1);
+         LX = joypad_axis[j][AXIS_LX];
+         LY = joypad_axis[j][AXIS_LY];
+         RX = joypad_axis[j][AXIS_RX];
+         RY = joypad_axis[j][AXIS_RY];
 
          /* No keymappings for left analog with analog joystick */
          if (retro_devices[j] == RETRO_DEVICE_PUAE_ANALOG)
@@ -1493,6 +1531,15 @@ void retro_poll_event()
          for (i = 0; i < RETRO_DEVICE_ID_JOYPAD_LR; i++)
             joypad_bits[j] |= input_state_cb(j, RETRO_DEVICE_JOYPAD, 0, i) ? (1 << i) : 0;
       }
+   }
+
+   /* Analog sticks for first two controllers */
+   for (j = 0; j < 2; j++)
+   {
+      joypad_axis[j][AXIS_LX] = input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X);
+      joypad_axis[j][AXIS_LY] = input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y);
+      joypad_axis[j][AXIS_RX] = input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X);
+      joypad_axis[j][AXIS_RY] = input_state_cb(j, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y);
    }
 
    /* Keyboard pass-through */

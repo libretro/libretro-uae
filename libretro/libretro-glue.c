@@ -60,6 +60,7 @@ extern int opt_statusbar_position;
 
 unsigned int statusbar_message_timer = 0;
 unsigned char statusbar_text[RETRO_PATH_MAX] = {0};
+extern float retro_refresh;
 
 static bool flag_empty(int val[16])
 {
@@ -267,7 +268,7 @@ void display_current_image(const char *image, bool inserted)
 
    /* Skip the initial insert message with forced message mode */
    if (libretro_runloop_active || (!libretro_runloop_active && !(opt_statusbar & STATUSBAR_MESSAGES)))
-      statusbar_message_timer = 150;
+      statusbar_message_timer = 2 * retro_refresh;
 
    if (strcmp(image, ""))
    {

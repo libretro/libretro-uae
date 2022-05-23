@@ -29,7 +29,9 @@ Based on WinUAE 4500b17, git commit `fa7577b8e3c084e966f977b89d202882b405a44d`
 |-----------------|-------------------------------|
 | B / Enter       | Keypress                      |
 | A               | Toggle transparency           |
-| Y               | Toggle CapsLock               |
+| Y (Short)       | Toggle CapsLock               |
+| Y (Long)        | Quick map button              |
+| Y (Very long)   | Quick clear button            |
 | X               | Press Space                   |
 | Start           | Press Return                  |
 
