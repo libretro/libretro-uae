@@ -7,6 +7,8 @@
 
 #define COLOR_RED_16             RGB565(128,   0,   0)
 #define COLOR_RED_32       ARGB888(255, 128,   0,   0)
+#define COLOR_GREEN_16           RGB565(  0, 128,   0)
+#define COLOR_GREEN_32       ARGB888(255, 0, 128,   0)
 
 #define COLOR_BLACK_16           RGB565(  5,   5,   5)
 #define COLOR_BLACK_32     ARGB888(255,   5,   5,   5)
