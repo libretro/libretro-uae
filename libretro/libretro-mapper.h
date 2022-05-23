@@ -2,6 +2,12 @@
 #define LIBRETRO_MAPPER_H
 
 #define RETRO_DEVICES                   6
+#define RETRO_AXIS_MAX                  4
+
+#define AXIS_LX                         0
+#define AXIS_LY                         1
+#define AXIS_RX                         2
+#define AXIS_RY                         3
 
 #define RETRO_DEVICE_PUAE_JOYSTICK      RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_ANALOG, 0)
 #define RETRO_DEVICE_PUAE_CD32PAD       RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_ANALOG, 1)
@@ -45,7 +51,15 @@
 #define JOYSTICK_FIRE                   -15
 #define JOYSTICK_2ND_FIRE               -16
 
+/* Press durations */
+#define SHORT_PRESS 400
+#define LONG_PRESS 800
+
+extern int retro_keymap_id(const char *val);
+extern char *retro_keymap_value(const int id);
+extern char *retro_keymap_label(const int id);
 extern int16_t joypad_bits[RETRO_DEVICES];
+extern int16_t joypad_axis[RETRO_DEVICES][RETRO_AXIS_MAX];
 extern int mapper_keys[RETRO_MAPPER_LAST];
 extern long mapper_keys_pressed_time;
 extern void retro_poll_event();
@@ -208,7 +222,7 @@ static retro_keymap retro_keys[RETROK_LAST] =
    {RETROK_F14,         "RETROK_F14",          "Keyboard F14"},
    {RETROK_F15,         "RETROK_F15",          "Keyboard F15"},
 /* {RETROK_NUMLOCK,     "RETROK_NUMLOCK",      "Keyboard Num Lock"}, */
-/* {RETROK_CAPSLOCK,    "RETROK_CAPSLOCK",     "Keyboard Caps Lock"}, */
+   {RETROK_CAPSLOCK,    "RETROK_CAPSLOCK",     "Keyboard Caps Lock"},
 /* {RETROK_SCROLLOCK,   "RETROK_SCROLLOCK",    "Keyboard Scroll Lock"}, */
    {RETROK_LSHIFT,      "RETROK_LSHIFT",       "Keyboard Left Shift"},
    {RETROK_RSHIFT,      "RETROK_RSHIFT",       "Keyboard Right Shift"},

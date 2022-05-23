@@ -101,7 +101,7 @@ static char *uae_argv[] = { "puae" };
 static int restart_pending = 0;
 
 static long retro_now = 0;
-static float retro_refresh = 0;
+float retro_refresh = 0;
 
 bool retro_message = false;
 char retro_message_msg[1024] = {0};
@@ -236,18 +236,6 @@ long retro_ticks(void)
       return retro_now;
 
    return perf_cb.get_time_usec();
-}
-
-static int retro_keymap_id(const char *val)
-{
-   int i = 0;
-   while (retro_keys[i].id < RETROK_LAST)
-   {
-      if (!strcmp(retro_keys[i].value, val))
-         return retro_keys[i].id;
-      i++;
-   }
-   return 0;
 }
 
 static unsigned int retro_led_state[RETRO_LED_NUM] = {0};
@@ -2683,13 +2671,35 @@ void retro_set_environment(retro_environment_t cb)
 #endif
 }
 
+void set_variable(const char* key, const char* value)
+{
+   struct retro_variable var = {0};
+
+   var.key   = strdup(key);
+   var.value = strdup(value);
+   if (environ_cb(RETRO_ENVIRONMENT_SET_VARIABLE, &var))
+      log_cb(RETRO_LOG_INFO, "SET_VARIABLE: %s = \"%s\"\n", var.key, var.value);
+}
+
+char* get_variable(const char* key)
+{
+   struct retro_variable var = {0};
+
+   var.key   = key;
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+      return strdup(var.value);
+
+   return NULL;
+}
+
 static void update_variables(void)
 {
-   uae_model[0]  = '\0';
-   uae_config[0] = '\0';
-
    struct retro_variable var = {0};
    struct retro_core_option_display option_display;
+
+   uae_model[0]  = '\0';
+   uae_config[0] = '\0';
 
    var.key = "puae_model";
    var.value = NULL;

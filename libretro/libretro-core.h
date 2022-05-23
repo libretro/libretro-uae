@@ -25,6 +25,8 @@ extern void print_statusbar(void);
 extern unsigned int statusbar_message_timer;
 extern bool retro_message;
 extern char retro_message_msg[1024];
+extern void set_variable(const char* key, const char* value);
+extern char* get_variable(const char *key);
 
 extern int retro_thisframe_first_drawn_line;
 extern int retro_thisframe_last_drawn_line;

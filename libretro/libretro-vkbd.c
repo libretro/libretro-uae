@@ -27,6 +27,10 @@ static int vkbd_x_max = 0;
 static int vkbd_y_min = 0;
 static int vkbd_y_max = 0;
 
+long vkbd_mapping_active = 0;
+static int vkbd_mapping_key = 0;
+static bool vkbd_mapping_activated = false;
+
 /* VKBD_MIN_HOLDING_TIME: Hold a direction longer than this and automatic movement sets in */
 /* VKBD_MOVE_DELAY: Delay between automatic movement from button to button */
 #define VKBD_MIN_HOLDING_TIME 200
@@ -582,7 +586,7 @@ void print_vkbd(void)
    if (vkflag[RETRO_DEVICE_ID_JOYPAD_B] && (vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].value == vkey_sticky1 ||
                                             vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].value == vkey_sticky2))
       ; /* no-op */
-   else if (vkflag[RETRO_DEVICE_ID_JOYPAD_B])
+   else if (vkflag[RETRO_DEVICE_ID_JOYPAD_B] || retro_key_state_internal[vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].value])
       BKG_COLOR_SEL = BKG_COLOR_ACTIVE;
    else
       FONT_COLOR = FONT_COLOR_SEL;
@@ -609,6 +613,23 @@ void print_vkbd(void)
 
       if (reset_counter > 0)
          snprintf(string, sizeof(string), "%1d", reset_counter);
+   }
+
+   /* Quick mapping */
+   {
+      if (vkbd_mapping_active && vkbd_mapping_key && (now / 100) % 2 == 0 ||
+          (now - last_vkey_pressed_time > SHORT_PRESS && vkflag[RETRO_DEVICE_ID_JOYPAD_Y]))
+      {
+         FONT_COLOR    = (pix_bytes == 4) ? COLOR_WHITE_32 : COLOR_WHITE_16;
+         BKG_COLOR_SEL = (pix_bytes == 4) ? COLOR_GREEN_32 : COLOR_GREEN_16;
+      }
+
+      if (vkbd_mapping_active && !vkbd_mapping_key && (now / 100) % 2 == 0 ||
+          (now - last_vkey_pressed_time > LONG_PRESS * 2 && vkflag[RETRO_DEVICE_ID_JOYPAD_Y]))
+      {
+         FONT_COLOR    = (pix_bytes == 4) ? COLOR_WHITE_32 : COLOR_WHITE_16;
+         BKG_COLOR_SEL = (pix_bytes == 4) ? COLOR_RED_32 : COLOR_RED_16;
+      }
    }
 
    x_gap = 0;
@@ -749,6 +770,255 @@ static void input_vkbd_sticky(void)
    }
 }
 
+static void convert_vkbd_to_mapper(int *vkbd_mapping_key, char **var_value)
+{
+   /* Convert VKBD special keys to mapper special keys */
+   switch (*vkbd_mapping_key)
+   {
+      case VKBD_MOUSE_LMB:
+         *var_value = strdup("MOUSE_LEFT_BUTTON");
+         *vkbd_mapping_key = MOUSE_LEFT_BUTTON;
+         break;
+      case VKBD_MOUSE_RMB:
+         *var_value = strdup("MOUSE_RIGHT_BUTTON");
+         *vkbd_mapping_key = MOUSE_RIGHT_BUTTON;
+         break;
+      case VKBD_MOUSE_UP:
+      case VKBD_MOUSE_DOWN:
+      case VKBD_MOUSE_LEFT:
+      case VKBD_MOUSE_RIGHT:
+      case VKBD_NUMPAD:
+         *var_value = strdup("");
+         *vkbd_mapping_key = 0;
+         break;
+
+      case VKBD_STATUSBAR_SAVEDISK:
+         if (retro_capslock)
+         {
+            *var_value = get_variable("puae_mapper_save_disk_toggle");
+            *vkbd_mapping_key = 0;
+         }
+         else
+         {
+            *var_value = strdup("TOGGLE_STATUSBAR");
+            *vkbd_mapping_key = TOGGLE_STATUSBAR;
+         }
+         break;
+      case VKBD_ASPECT_ZOOM:
+         if (retro_capslock)
+         {
+            *var_value = get_variable("puae_mapper_zoom_mode_toggle");
+            *vkbd_mapping_key = 0;
+         }
+         else
+         {
+            *var_value = get_variable("puae_mapper_aspect_ratio_toggle");
+            *vkbd_mapping_key = 0;
+         }
+         break;
+      case VKBD_JOYMOUSE:
+         *var_value = strdup("SWITCH_JOYMOUSE");
+         *vkbd_mapping_key = SWITCH_JOYMOUSE;
+         break;
+      case VKBD_TURBOFIRE:
+         *var_value = get_variable("puae_mapper_turbo_fire_toggle");
+         *vkbd_mapping_key = 0;
+         break;
+      case VKBD_RESET:
+         *var_value = get_variable("puae_mapper_reset");
+         *vkbd_mapping_key = 0;
+         break;
+      case VKBD_CAPSLOCK:
+         *var_value = strdup("RETROK_CAPSLOCK");
+         *vkbd_mapping_key = RETROK_CAPSLOCK;
+         break;
+
+      default:
+         *var_value = strdup(retro_keymap_value(*vkbd_mapping_key));
+         break;
+   }
+}
+
+static bool input_vkbd_mapper(void)
+{
+   long now                 = retro_ticks() / 1000;
+   static int joypad_button = -1;
+   const int threshold      = 20000;
+
+   if (!vkbd_mapping_active)
+      return false;
+
+   /* Init */
+   if (vkbd_mapping_activated)
+   {
+      int converted_key = vkbd_mapping_key;
+      char *converted_label;
+
+      converted_label        = '\0';
+      vkbd_mapping_activated = false;
+
+      convert_vkbd_to_mapper(&converted_key, &converted_label);
+      if (string_is_empty(converted_label))
+      {
+         statusbar_message_show(9, "Unable to map!");
+
+         free(converted_label);
+         converted_label = NULL;
+         goto reset;
+      }
+
+      statusbar_message_show(9, "Press button for \"%s\"",
+            (converted_key) ? retro_keymap_label(converted_key) : converted_label);
+
+      free(converted_label);
+      converted_label = NULL;
+   }
+   /* Waiting for input */
+   else if (joypad_button < 0)
+   {
+      unsigned i = 0, j = 0;
+
+      int duration                 = now - vkbd_mapping_active;
+      int max_duration             = 3000;
+      int duration_sec             = (max_duration + 1000 - duration) / 1000;
+      static int duration_sec_prev = 0;
+
+      for (j = 0; j < 2; j++)
+      {
+         for (i = 0; i < RETRO_DEVICE_ID_JOYPAD_LAST; i++)
+         {
+            switch (i)
+            {
+               case RETRO_DEVICE_ID_JOYPAD_LR:
+                  if (joypad_axis[j][AXIS_LX] > threshold)
+                     joypad_button = i;
+                  break;
+               case RETRO_DEVICE_ID_JOYPAD_LL:
+                  if (joypad_axis[j][AXIS_LX] < -threshold)
+                     joypad_button = i;
+                  break;
+               case RETRO_DEVICE_ID_JOYPAD_LD:
+                  if (joypad_axis[j][AXIS_LY] > threshold)
+                     joypad_button = i;
+                  break;
+               case RETRO_DEVICE_ID_JOYPAD_LU:
+                  if (joypad_axis[j][AXIS_LY] < -threshold)
+                     joypad_button = i;
+                  break;
+
+               case RETRO_DEVICE_ID_JOYPAD_RR:
+                  if (joypad_axis[j][AXIS_RX] > threshold)
+                     joypad_button = i;
+                  break;
+               case RETRO_DEVICE_ID_JOYPAD_RL:
+                  if (joypad_axis[j][AXIS_RX] < -threshold)
+                     joypad_button = i;
+                  break;
+               case RETRO_DEVICE_ID_JOYPAD_RD:
+                  if (joypad_axis[j][AXIS_RY] > threshold)
+                     joypad_button = i;
+                  break;
+               case RETRO_DEVICE_ID_JOYPAD_RU:
+                  if (joypad_axis[j][AXIS_RY] < -threshold)
+                     joypad_button = i;
+                  break;
+
+               default:
+                  if (joypad_bits[j] & (1 << i))
+                     joypad_button = i;
+                  break;
+            }
+         }
+      }
+
+      if (duration_sec != duration_sec_prev)
+      {
+         duration_sec_prev = duration_sec;
+         if (duration_sec < 3)
+            statusbar_message_show(9, "Press button for %d..", duration_sec);
+      }
+
+      /* Don't wait forever */
+      if (duration > max_duration)
+         goto reset;
+   }
+   /* Process selection after all buttons are released */
+   else if (joypad_button > -1 && !joypad_bits[0] && !joypad_bits[1] &&
+         abs(joypad_axis[0][AXIS_LX]) < threshold && abs(joypad_axis[0][AXIS_LY]) < threshold &&
+         abs(joypad_axis[0][AXIS_RX]) < threshold && abs(joypad_axis[0][AXIS_RY]) < threshold &&
+         abs(joypad_axis[1][AXIS_LX]) < threshold && abs(joypad_axis[1][AXIS_LY]) < threshold &&
+         abs(joypad_axis[1][AXIS_RX]) < threshold && abs(joypad_axis[1][AXIS_RY]) < threshold)
+   {
+      char var_key[64];
+      char prefix[32];
+      char *var_value;
+
+      var_value = '\0';
+      snprintf(prefix, sizeof(prefix), "%s", "puae_mapper_");
+
+      /* Build core option key */
+      switch (joypad_button)
+      {
+         case RETRO_DEVICE_ID_JOYPAD_UP: snprintf(var_key, sizeof(var_key), "%s%s", prefix, "up"); break;
+         case RETRO_DEVICE_ID_JOYPAD_DOWN: snprintf(var_key, sizeof(var_key), "%s%s", prefix, "down"); break;
+         case RETRO_DEVICE_ID_JOYPAD_LEFT: snprintf(var_key, sizeof(var_key), "%s%s", prefix, "left"); break;
+         case RETRO_DEVICE_ID_JOYPAD_RIGHT: snprintf(var_key, sizeof(var_key), "%s%s", prefix, "right"); break;
+         case RETRO_DEVICE_ID_JOYPAD_B: snprintf(var_key, sizeof(var_key), "%s%s", prefix, "b"); break;
+         case RETRO_DEVICE_ID_JOYPAD_Y: snprintf(var_key, sizeof(var_key), "%s%s", prefix, "y"); break;
+         case RETRO_DEVICE_ID_JOYPAD_A: snprintf(var_key, sizeof(var_key), "%s%s", prefix, "a"); break;
+         case RETRO_DEVICE_ID_JOYPAD_X: snprintf(var_key, sizeof(var_key), "%s%s", prefix, "x"); break;
+         case RETRO_DEVICE_ID_JOYPAD_L: snprintf(var_key, sizeof(var_key), "%s%s", prefix, "l"); break;
+         case RETRO_DEVICE_ID_JOYPAD_R: snprintf(var_key, sizeof(var_key), "%s%s", prefix, "r"); break;
+         case RETRO_DEVICE_ID_JOYPAD_L2: snprintf(var_key, sizeof(var_key), "%s%s", prefix, "l2"); break;
+         case RETRO_DEVICE_ID_JOYPAD_R2: snprintf(var_key, sizeof(var_key), "%s%s", prefix, "r2"); break;
+         case RETRO_DEVICE_ID_JOYPAD_L3: snprintf(var_key, sizeof(var_key), "%s%s", prefix, "l3"); break;
+         case RETRO_DEVICE_ID_JOYPAD_R3: snprintf(var_key, sizeof(var_key), "%s%s", prefix, "r3"); break;
+         case RETRO_DEVICE_ID_JOYPAD_LU: snprintf(var_key, sizeof(var_key), "%s%s", prefix, "lu"); break;
+         case RETRO_DEVICE_ID_JOYPAD_LD: snprintf(var_key, sizeof(var_key), "%s%s", prefix, "ld"); break;
+         case RETRO_DEVICE_ID_JOYPAD_LL: snprintf(var_key, sizeof(var_key), "%s%s", prefix, "ll"); break;
+         case RETRO_DEVICE_ID_JOYPAD_LR: snprintf(var_key, sizeof(var_key), "%s%s", prefix, "lr"); break;
+         case RETRO_DEVICE_ID_JOYPAD_RU: snprintf(var_key, sizeof(var_key), "%s%s", prefix, "ru"); break;
+         case RETRO_DEVICE_ID_JOYPAD_RD: snprintf(var_key, sizeof(var_key), "%s%s", prefix, "rd"); break;
+         case RETRO_DEVICE_ID_JOYPAD_RL: snprintf(var_key, sizeof(var_key), "%s%s", prefix, "rl"); break;
+         case RETRO_DEVICE_ID_JOYPAD_RR: snprintf(var_key, sizeof(var_key), "%s%s", prefix, "rr"); break;
+         case RETRO_DEVICE_ID_JOYPAD_SELECT: snprintf(var_key, sizeof(var_key), "%s%s", prefix, "select"); break;
+         case RETRO_DEVICE_ID_JOYPAD_START: snprintf(var_key, sizeof(var_key), "%s%s", prefix, "start"); break;
+      }
+
+      /* Prevent locked-up states */
+      if (   (joypad_button == RETRO_DEVICE_ID_JOYPAD_Y && vkbd_mapping_key < 0) ||
+            !strcmp(get_variable(var_key), "TOGGLE_VKBD"))
+      {
+         statusbar_message_show(9, "Illegal mapping combo!");
+
+         free(var_value);
+         var_value = NULL;
+         goto reset;
+      }
+
+      convert_vkbd_to_mapper(&vkbd_mapping_key, &var_value);
+      set_variable(var_key, var_value);
+
+      statusbar_message_show(9, "RetroPad %s = \"%s\"",
+            string_to_upper(&var_key[12]),
+            (vkbd_mapping_key) ? retro_keymap_label(vkbd_mapping_key) : var_value);
+
+      free(var_value);
+      var_value = NULL;
+      goto reset;
+   }
+
+   return true;
+
+reset:
+   vkbd_mapping_active = 0;
+   vkbd_mapping_key    = -1;
+   joypad_button       = -1;
+   retro_vkbd_ready    = -2;
+
+   return true;
+}
+
 void toggle_vkbd(void)
 {
    /* No toggling while key is pressed */
@@ -767,6 +1037,9 @@ void input_vkbd(void)
    unsigned int i = 0;
 
    input_vkbd_sticky();
+
+   if (input_vkbd_mapper())
+      return;
 
    if (!retro_vkbd)
       return;
@@ -843,19 +1116,39 @@ void input_vkbd(void)
       retro_key_up(RETROK_RETURN);
    }
 
-   /* Toggle CapsLock, RetroPad Y */
+   /* Toggle CapsLock / Quick mapper, RetroPad Y */
    i = RETRO_DEVICE_ID_JOYPAD_Y;
    if (!vkflag[i] && mapper_keys[i] >= 0 && ((joypad_bits[0] & (1 << i)) ||
                                              (joypad_bits[1] & (1 << i))))
    {
       vkflag[i] = 1;
-      retro_capslock = !retro_capslock;
+      vkey_pressed = vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + ((retro_vkbd_page) ? VKBDX * VKBDY : 0)].value;
+      vkbd_mapping_key = vkey_pressed;
+
+      last_vkey_pressed = vkey_pressed;
+      last_vkey_pressed_time = now;
    }
    else
    if (vkflag[i] && (!(joypad_bits[0] & (1 << i)) &&
                      !(joypad_bits[1] & (1 << i))))
    {
       vkflag[i] = 0;
+
+      if (now - last_vkey_pressed_time < SHORT_PRESS)
+      {
+         retro_capslock = !retro_capslock;
+      }
+      else
+      {
+         vkbd_mapping_active = now;
+         vkbd_mapping_activated = true;
+
+         /* Clear button with very long press */
+         if (now - last_vkey_pressed_time > LONG_PRESS * 2)
+            vkbd_mapping_key = 0;
+      }
+
+      vkey_pressed = -1;
    }
 
    /* Press Space, RetroPad X */
@@ -926,7 +1219,7 @@ void input_vkbd(void)
                else
                   emu_function(EMU_ASPECT_RATIO);
                break;
-            case VKBD_SHIFTLOCK:
+            case VKBD_CAPSLOCK:
                retro_key_down(RETROK_CAPSLOCK);
                retro_key_up(RETROK_CAPSLOCK);
                break;

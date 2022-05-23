@@ -29,7 +29,9 @@ Based on PUAE 2.6.1 (CPU/custom chips) & WinUAE 4.5.0b17 (CD/audio)
 |-----------------|-------------------------------|
 | B / Enter       | Keypress                      |
 | A               | Toggle transparency           |
-| Y               | Toggle CapsLock               |
+| Y (Short)       | Toggle CapsLock               |
+| Y (Long)        | Quick map button              |
+| Y (Very long)   | Quick clear button            |
 | X               | Press Space                   |
 | Start           | Press Return                  |
 
