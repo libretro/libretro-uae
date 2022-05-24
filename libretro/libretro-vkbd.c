@@ -582,22 +582,26 @@ void print_vkbd(void)
    BKG_ALPHA = (retro_vkbd_transparent) ?
          ((BKG_ALPHA == GRAPH_ALPHA_100) ? GRAPH_ALPHA_100 : GRAPH_ALPHA_75) : GRAPH_ALPHA_100;
 
+   /* Selected key */
+   int current_key_pos = (vkey_pos_y * VKBDX) + vkey_pos_x + page;
+   int current_key_val = vkeys[current_key_pos].value;
+
    /* Pressed key color */
-   if (vkflag[RETRO_DEVICE_ID_JOYPAD_B] && (vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].value == vkey_sticky1 ||
-                                            vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].value == vkey_sticky2))
+   if (vkflag[RETRO_DEVICE_ID_JOYPAD_B] && (current_key_val == vkey_sticky1 ||
+                                            current_key_val == vkey_sticky2))
       ; /* no-op */
-   else if (vkflag[RETRO_DEVICE_ID_JOYPAD_B] || retro_key_state_internal[vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].value])
+   else if (vkflag[RETRO_DEVICE_ID_JOYPAD_B] || retro_key_state_internal[(current_key_val > 0) ? current_key_val : 0])
       BKG_COLOR_SEL = BKG_COLOR_ACTIVE;
    else
       FONT_COLOR = FONT_COLOR_SEL;
 
    /* Selected key string */
    snprintf(string, sizeof(string), "%s",
-         (!shifted) ? vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].normal
-                    : vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].shift);
+         (!shifted) ? vkeys[current_key_pos].normal
+                    : vkeys[current_key_pos].shift);
 
    /* Reset key */
-   if (vkeys[(vkey_pos_y * VKBDX) + vkey_pos_x + page].value == VKBD_RESET)
+   if (current_key_val == VKBD_RESET)
    {
       signed char reset_counter = 0;
       if (last_vkey_pressed_time < now && last_vkey_pressed != -1)
