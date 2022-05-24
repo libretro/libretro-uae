@@ -1249,6 +1249,8 @@ void draw_text_bmp16(uint16_t *buffer, uint16_t x, uint16_t y,
 
    for (i = 0; i < cmax; i++)
    {
+      bool narrow = false;
+
       c = string[i];
       if (c == 0)
          break;
@@ -1259,6 +1261,13 @@ void draw_text_bmp16(uint16_t *buffer, uint16_t x, uint16_t y,
          xpos = 0;
          y += charwidth_default * scaley;
          continue;
+      }
+
+      /* Very narrow letters */
+      if (c == 'l' || c == 'i')
+      {
+         narrow = true;
+         xpos  -= scalex;
       }
 
       if (c & 0x80)
@@ -1272,10 +1281,17 @@ void draw_text_bmp16(uint16_t *buffer, uint16_t x, uint16_t y,
          draw_string_bmp16((uint16_t *)buffer, x + xpos, y, s, 1, scalex, scaley, fgcol, bgcol, alpha, draw_bg);
       }
 
-      charwidth = charwidth_default;
-      /* Narrower lower case */
-      if (c >= 'a' && c <= 'z' && c != 'm' && c != 'w')
-         charwidth = 4;
+      if (narrow)
+      {
+         charwidth = 3;
+      }
+      else
+      {
+         charwidth = charwidth_default;
+         /* Narrower lower case */
+         if (c >= 'a' && c <= 'z' && c != 'm' && c != 'w')
+            charwidth = 4;
+      }
 
       xpos += (charwidth * scalex);
    }
@@ -1305,6 +1321,8 @@ void draw_text_bmp32(uint32_t *buffer, uint16_t x, uint16_t y,
 
    for (i = 0; i < cmax; i++)
    {
+      bool narrow = false;
+
       c = string[i];
       if (c == 0)
          break;
@@ -1315,6 +1333,13 @@ void draw_text_bmp32(uint32_t *buffer, uint16_t x, uint16_t y,
          xpos = 0;
          y += charwidth_default * scaley;
          continue;
+      }
+
+      /* Very narrow letters */
+      if (c == 'l' || c == 'i')
+      {
+         narrow = true;
+         xpos  -= scalex;
       }
 
       if (c & 0x80)
@@ -1328,10 +1353,17 @@ void draw_text_bmp32(uint32_t *buffer, uint16_t x, uint16_t y,
          draw_string_bmp32(buffer, x + xpos, y, s, 1, scalex, scaley, fgcol, bgcol, alpha, draw_bg);
       }
 
-      charwidth = charwidth_default;
-      /* Narrower lower case */
-      if (c >= 'a' && c <= 'z' && c != 'm' && c != 'w')
-         charwidth = 4;
+      if (narrow)
+      {
+         charwidth = 3;
+      }
+      else
+      {
+         charwidth = charwidth_default;
+         /* Narrower lower case */
+         if (c >= 'a' && c <= 'z' && c != 'm' && c != 'w')
+            charwidth = 4;
+      }
 
       xpos += (charwidth * scalex);
    }
