@@ -32,6 +32,7 @@ extern int retro_thisframe_first_drawn_line;
 extern int retro_thisframe_last_drawn_line;
 extern int retro_min_diwstart;
 extern int retro_max_diwstop;
+extern bool retro_av_info_is_lace;
 
 /* File helpers functions */
 #define RETRO_PATH_MAX 512

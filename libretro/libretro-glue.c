@@ -547,7 +547,7 @@ void print_statusbar(void)
    if (statusbar_message_timer)
    {
       draw_text(TEXT_X, TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, GRAPH_BG_ALL, FONT_WIDTH, FONT_HEIGHT, TEXT_LENGTH, statusbar_text);
-      return;
+      goto end;
    }
 
    draw_text(TEXT_X_JOYMODE1,   TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, GRAPH_BG_ALL, FONT_WIDTH, FONT_HEIGHT, 10, JOYMODE1);
@@ -605,7 +605,7 @@ void target_default_options (struct uae_prefs *p, int type)
 void target_fixup_options (struct uae_prefs *p)
 {
    p->gfx_iscanlines = 1;
-   p->gfx_pscanlines = 2;
+   p->gfx_pscanlines = 0;
 }
 
 /* --- mouse input --- */
@@ -688,7 +688,7 @@ void unlockscr(struct vidbuffer *vb, int y_start, int y_end)
    retro_max_diwstop                = max_diwstop;
 
    /* Align the resulting Automatic Zoom screen height to even number */
-   if ((retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line + 1) % 2)
+   if (!retro_av_info_is_lace && (retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line + 1) % 2)
       retro_thisframe_last_drawn_line++;
 
    if (retro_thisframe_first_drawn_line > 0)
@@ -806,21 +806,21 @@ void toggle_fullscreen(int monid, int mode)
 
 int check_prefs_changed_gfx (void)
 {
+   int changed = 0;
+
    if (!config_changed && !display_change_requested)
       return 0;
 
    if (gfxvidinfo->drawbuffer.width_allocated  != defaultw ||
        gfxvidinfo->drawbuffer.height_allocated != defaulth)
    {
+      changed = 1;
       changed_prefs.gfx_monitor[0].gfx_size_win.width  = defaultw;
       changed_prefs.gfx_monitor[0].gfx_size_win.height = defaulth;
 
       gfxvidinfo->drawbuffer.width_allocated  = defaultw;
       gfxvidinfo->drawbuffer.height_allocated = defaulth;
       gfxvidinfo->drawbuffer.rowbytes         = gfxvidinfo->drawbuffer.width_allocated * gfxvidinfo->drawbuffer.pixbytes;
-
-      /* Reset video buffer */
-      memset(retro_bmp, 0, sizeof(retro_bmp));
 
 #if 0
    printf("%s: %dx%d, res=%d vres=%d\n", __func__,
@@ -851,10 +851,12 @@ int check_prefs_changed_gfx (void)
        currprefs.gfx_luminance         = changed_prefs.gfx_luminance;
        currprefs.gfx_contrast          = changed_prefs.gfx_contrast;
        currprefs.gfx_gamma             = changed_prefs.gfx_gamma;
+
+       changed = 1;
        graphics_setup();
    }
 
-   return 1;
+   return changed;
 }
 
 static int target_get_display_scanline2(int displayindex)
@@ -944,6 +946,8 @@ int vsync_isdone(frame_time_t *dt)
 	if (dt)
 		*dt = wait_vblank_timestamp;
 	return vsync_active ? 1 : 0;
+#else
+   return 1;
 #endif
 }
 
@@ -954,7 +958,7 @@ bool target_graphics_buffer_update(int monid)
 
 float target_getcurrentvblankrate(int monid)
 {
-    return 0;
+    return retro_refresh;
 }
 
 void target_reset (void)
@@ -968,6 +972,28 @@ bool target_can_autoswitchdevice(void) { return false; }
 struct netdriverdata **target_ethernet_enumerate (void)
 {
    return NULL;
+}
+
+static int deskhz;
+float target_adjust_vblank_hz(int monid, float hz)
+{
+#if 1
+	return hz;
+#else
+	struct AmigaMonitor *mon = &AMonitors[monid];
+	int maxrate;
+	if (!currprefs.lightboost_strobo)
+		return hz;
+	if (isfullscreen() > 0) {
+		maxrate = mon->currentmode.freq;
+	} else {
+		maxrate = deskhz;
+	}
+	double nhz = hz * 2.0;
+	if (nhz >= maxrate - 1 && nhz < maxrate + 1)
+		hz -= 0.5;
+	return hz;
+#endif
 }
 
 /***************************************************************

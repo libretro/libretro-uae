@@ -3211,11 +3211,8 @@ static void joymousecounter (int joy)
 
 static int inputread;
 
-static void inputdevice_read(void)
+void inputdevice_read_msg(bool vblank)
 {
-#ifndef __LIBRETRO__
-//	if ((inputdevice_logging & (2 | 4)))
-//		write_log(_T("INPUTREAD\n"));
 	int got2 = 0;
 	for (;;) {
 		int got = handle_msgpump(vblank);
@@ -3223,7 +3220,13 @@ static void inputdevice_read(void)
 			break;
 		got2 = 1;
 	}
-#endif
+}
+
+static void inputdevice_read(void)
+{
+//	if ((inputdevice_logging & (2 | 4)))
+//		write_log(_T("INPUTREAD\n"));
+	inputdevice_read_msg(false);
 	if (inputread <= 0) {
 		idev[IDTYPE_MOUSE].read();
 		idev[IDTYPE_JOYSTICK].read();

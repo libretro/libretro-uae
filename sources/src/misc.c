@@ -1365,28 +1365,6 @@ bool vsync_busywait_do (int *freetime, bool lace, bool oddeven)
 #endif
 }
 
-static int deskhz;
-float target_adjust_vblank_hz(int monid, float hz)
-{
-#ifdef __LIBRETRO__
-	return hz;
-#else
-	struct AmigaMonitor *mon = &AMonitors[monid];
-	int maxrate;
-	if (!currprefs.lightboost_strobo)
-		return hz;
-	if (isfullscreen() > 0) {
-		maxrate = mon->currentmode.freq;
-	} else {
-		maxrate = deskhz;
-	}
-	double nhz = hz * 2.0;
-	if (nhz >= maxrate - 1 && nhz < maxrate + 1)
-		hz -= 0.5;
-	return hz;
-#endif
-}
-
 uae_u32 getlocaltime (void)
 {
 	return 0;
@@ -1398,6 +1376,7 @@ void target_spin(int total)
 
 int handle_msgpump (bool vblank)
 {
+    return 0;
 }
 
 void pausevideograb(int pause)
@@ -1406,7 +1385,7 @@ void pausevideograb(int pause)
 
 uae_s64 getsetpositionvideograb(uae_s64 framepos)
 {
-   return 0;
+    return 0;
 }
 
 

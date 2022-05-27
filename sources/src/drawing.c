@@ -58,7 +58,6 @@ happening, all ports should restrict window widths to be multiples of 16 pixels.
 
 #ifdef __LIBRETRO__
 #include "libretro-core.h"
-extern bool retro_statusbar;
 #endif
 
 //#define XLINECHECK
@@ -3814,9 +3813,6 @@ static void center_image (void)
 	if (visible_left_border < 0)
 		visible_left_border = 0;
 	visible_left_border &= ~((xshift (1, lores_shift)) - 1);
-#else
-	if (!visible_left_border)
-		visible_left_border = max_diwlastword - w;
 #endif /* __LIBRETRO__ */
 
 	//write_log (_T("%d %d %d %d %d\n"), max_diwlastword, vidinfo->drawbuffer.inwidth, lores_shift, currprefs.gfx_resolution, visible_left_border);
