@@ -2268,7 +2268,7 @@ static bool get_mouse_position(int *xp, int *yp, int inx, int iny)
 	x = inx;
 	y = iny;
 
-	getgfxoffset(0, &fdx, &fdy, &fmx, &fmy);
+	getgfxoffset(monid, &fdx, &fdy, &fmx, &fmy);
 
 	//write_log("%.2f*%.2f %.2f*%.2f\n", fdx, fdy, fmx, fmy);
 
@@ -2966,15 +2966,6 @@ int magicmouse_alive (void)
 	return mouseedge_alive > 0;
 }
 
-STATIC_INLINE int adjust (int val)
-{
-	if (val > 127)
-		return 127;
-	else if (val < -127)
-		return -127;
-	return val;
-}
-
 static int getbuttonstate (int joy, int button)
 {
 	return (joybutton[joy] & (1 << button)) ? 1 : 0;
@@ -2984,13 +2975,13 @@ static int pc_mouse_buttons[MAX_JPORTS];
 
 static int getvelocity (int num, int subnum, int pct)
 {
-	int val;
-	int v;
-
 	if (pct > 1000)
 		pct = 1000;
-	val = mouse_delta[num][subnum];
-	v = val * pct / 1000;
+	if (pct < 0) {
+		pct = 0;
+	}
+	int val = mouse_delta[num][subnum];
+	int v = val * pct / 1000;
 	if (!v) {
 		if (val < -maxvpos / 2)
 			v = -2;
@@ -3126,10 +3117,14 @@ static void mouseupdate (int pct, bool vsync)
 				mouse_x[i] &= MOUSEXY_MAX - 1;
 			}
 
-			if (mouse_frame_y[i] - mouse_y[i] > max)
+			if (mouse_frame_y[i] - mouse_y[i] > max) {
 				mouse_y[i] = mouse_frame_y[i] - max;
-			if (mouse_frame_y[i] - mouse_y[i] < -max)
+				mouse_y[i] &= MOUSEXY_MAX - 1;
+			}
+			if (mouse_frame_y[i] - mouse_y[i] < -max) {
 				mouse_y[i] = mouse_frame_y[i] + max;
+				mouse_y[i] &= MOUSEXY_MAX - 1;
+			}
 		}
 
 		if (!vsync) {
@@ -3152,18 +3147,14 @@ static void mouseupdate (int pct, bool vsync)
 		}
 	}
 
-
 }
 
-static int input_vpos, input_frame;
+static uae_u32 prev_input_vpos, input_frame, prev_input_frame;
 extern int vpos;
 static void readinput (void)
 {
-	uae_u32 totalvpos;
-	int diff;
-
-	totalvpos = input_frame * current_maxvpos () + vpos;
-	diff = totalvpos - input_vpos;
+	int max = current_maxvpos();
+	int diff = (input_frame * max + vpos) - (prev_input_frame * max + prev_input_vpos);
 	if (diff > 0) {
 		if (diff < 10) {
 			mouseupdate (0, false);
@@ -3171,8 +3162,8 @@ static void readinput (void)
 			mouseupdate (diff * 1000 / current_maxvpos (), false);
 		}
 	}
-	input_vpos = totalvpos;
-
+	prev_input_frame = input_frame;
+	prev_input_vpos = vpos;
 }
 
 static void joymousecounter (int joy)
@@ -3227,7 +3218,7 @@ static void inputdevice_read(void)
 //		write_log(_T("INPUTREAD\n"));
 	int got2 = 0;
 	for (;;) {
-		int got = handle_msgpump();
+		int got = handle_msgpump(vblank);
 		if (!got)
 			break;
 		got2 = 1;
@@ -3977,7 +3968,7 @@ void inputdevice_hsync (bool forceread)
 		while (inprec_playevent (&nr, &state, &max, &autofire))
 			handle_input_event (nr, state, max, (autofire ? HANDLE_IE_FLAG_AUTOFIRE : 0) | HANDLE_IE_FLAG_PLAYBACKEVENT);
 		if (vpos == 0)
-			handle_msgpump ();
+			handle_msgpump(true);
 	}
 	if (!input_record && !input_play) {
 		if (forceread) {
@@ -9056,6 +9047,10 @@ void setmousestate (int mouse, int axis, int data, int isabs)
 			return;
 		}
 	}
+
+	*mouse_p = (*mouse_p) - (*oldm_p);
+	*oldm_p = 0;
+
 	v = (int)d;
 	fract[mouse][axis] += d - v;
 	diff = (int)fract[mouse][axis];

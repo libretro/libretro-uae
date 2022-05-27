@@ -25,7 +25,7 @@
 extern int lores_shift, shres_shift, interlace_seen;
 extern int visible_left_border, visible_right_border;
 extern int detected_screen_resolution;
-extern int hsync_end_left_border, hsynctotal;
+extern int hsync_end_left_border, denisehtotal;
 
 #define AMIGA_WIDTH_MAX (754 / 2)
 #define AMIGA_HEIGHT_MAX (576 / 2)
@@ -90,7 +90,7 @@ STATIC_INLINE int PIXEL_XPOS(int xx)
 }
 
 #define min_diwlastword (0)
-#define max_diwlastword (PIXEL_XPOS(hsynctotal))
+#define max_diwlastword (PIXEL_XPOS(denisehtotal))
 
 STATIC_INLINE int coord_window_to_hw_x(int x)
 {
@@ -141,6 +141,11 @@ STATIC_INLINE bool ce_is_borderntrans(uae_u8 data)
 {
 	return (data & (1 << CE_BORDERNTRANS)) != 0;
 }
+
+#define VB_XBORDER 0x08 // forced border color or bblank
+#define VB_XBLANK 0x04 // forced bblank
+#define VB_PRGVB 0x02 // programmed vblank
+#define VB_NOVB 0x01 // normal
 
 struct color_entry {
 	uae_u16 color_regs_ecs[32];
@@ -303,7 +308,7 @@ struct decision {
 	uae_u16 bplcon3, bplcon4bm, bplcon4sp;
 	uae_u16 fmode;
 #endif
-	uae_u8 nr_planes;
+	uae_u8 nr_planes, max_planes;
 	uae_u8 bplres;
 	bool ehb_seen;
 	bool ham_seen;
@@ -366,7 +371,7 @@ extern void full_redraw_all(void);
 extern bool draw_frame (struct vidbuffer*);
 extern int get_custom_limits (int *pw, int *ph, int *pdx, int *pdy, int *prealh);
 extern void store_custom_limits (int w, int h, int dx, int dy);
-extern void set_custom_limits (int w, int h, int dx, int dy);
+extern void set_custom_limits (int w, int h, int dx, int dy, bool blank);
 extern void check_custom_limits (void);
 extern void get_custom_topedge (int *x, int *y, bool max);
 extern void get_custom_raw_limits (int *pw, int *ph, int *pdx, int *pdy);

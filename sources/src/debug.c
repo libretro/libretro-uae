@@ -6423,7 +6423,7 @@ void debug (void)
 					continue;
 				if (bpn->type == BREAKPOINT_REG_PC) {
 					if (bpn->value1 == pc) {
-						bp = 1;
+						bp = i + 1;
 						break;
 					}
 				} else if (bpn->type >= 0 && bpn->type < BREAKPOINT_REG_END) {
@@ -6495,7 +6495,7 @@ void debug (void)
 							while (seglist) {
 								uae_u32 size = get_long_debug (seglist - 4) - 4;
 								if (pc >= (seglist + 4) && pc < (seglist + size)) {
-									bp = 1;
+									bp = i + 1;
 									break;
 								}
 								seglist = BPTR2APTR(get_long_debug (seglist));
