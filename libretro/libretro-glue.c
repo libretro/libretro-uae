@@ -524,7 +524,7 @@ void print_statusbar(void)
    if (statusbar_message_timer)
    {
       draw_text(TEXT_X, TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, GRAPH_BG_ALL, FONT_WIDTH, FONT_HEIGHT, TEXT_LENGTH, statusbar_text);
-      return;
+      goto end;
    }
 
    draw_text(TEXT_X_JOYMODE1,   TEXT_Y, FONT_COLOR, 0, GRAPH_ALPHA_100, GRAPH_BG_ALL, FONT_WIDTH, FONT_HEIGHT, 10, JOYMODE1);
@@ -654,7 +654,7 @@ void retro_flush_screen (struct vidbuf_description *gfxinfo, int ystart, int yen
    retro_max_diwstop                = max_diwstop;
 
    /* Align the resulting Automatic Zoom screen height to even number */
-   if ((retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line + 1) % 2)
+   if (!retro_av_info_is_lace && (retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line + 1) % 2)
       retro_thisframe_last_drawn_line++;
 
    /* Flag that we should end the frame, return out of retro_run */
@@ -782,6 +782,8 @@ void toggle_fullscreen(int mode)
 
 int check_prefs_changed_gfx (void)
 {
+   int changed = 0;
+
    if (prefs_changed)
       prefs_changed = 0;
    else
@@ -790,6 +792,7 @@ int check_prefs_changed_gfx (void)
    if (gfxvidinfo.width_allocated  != defaultw ||
        gfxvidinfo.height_allocated != defaulth)
    {
+      changed = 1;
       changed_prefs.gfx_size_win.width  = defaultw;
       changed_prefs.gfx_size_win.height = defaulth;
 
@@ -797,8 +800,13 @@ int check_prefs_changed_gfx (void)
       gfxvidinfo.height_allocated = defaulth;
       gfxvidinfo.rowbytes         = gfxvidinfo.width_allocated * gfxvidinfo.pixbytes;
 
-      /* Reset video buffer */
-      memset(retro_bmp, 0, sizeof(retro_bmp));
+#if 0
+   printf("%s: %d:%d, res:%d vres:%d\n", __func__,
+         changed_prefs.gfx_size_win.width,
+         changed_prefs.gfx_size_win.height,
+         changed_prefs.gfx_resolution,
+         changed_prefs.gfx_vresolution);
+#endif
    }
 
    if (currprefs.gfx_size_win.width   != changed_prefs.gfx_size_win.width)
@@ -820,17 +828,12 @@ int check_prefs_changed_gfx (void)
        currprefs.gfx_luminance         = changed_prefs.gfx_luminance;
        currprefs.gfx_contrast          = changed_prefs.gfx_contrast;
        currprefs.gfx_gamma             = changed_prefs.gfx_gamma;
+
+       changed = 1;
        graphics_setup();
    }
 
-#if 0
-   printf("%s: %d:%d, res:%d vres:%d\n", __func__,
-         changed_prefs.gfx_size_win.width,
-         changed_prefs.gfx_size_win.height,
-         changed_prefs.gfx_resolution,
-         changed_prefs.gfx_vresolution);
-#endif
-   return 1;
+   return changed;
 }
 
 

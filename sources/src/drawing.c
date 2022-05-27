@@ -52,7 +52,6 @@
 
 #ifdef __LIBRETRO__
 #include "libretro-core.h"
-extern bool retro_statusbar;
 #endif
 
 /* internal prototypes */

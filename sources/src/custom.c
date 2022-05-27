@@ -3212,7 +3212,9 @@ void compute_framesync (void)
 					v = cr->rate;
 #ifdef __LIBRETRO__
 					/* Allow also non-standard PAL/NTSC rate switching when locked (Dyna Blaster, BC Kid) */
-					if (fabs(vblank_hz - v) > 1 && vblank_hz <= currprefs.cr[CHIPSET_REFRESH_NTSC].rate)
+					if (fabs(vblank_hz - v) > 4 &&
+					      vblank_hz >= currprefs.cr[CHIPSET_REFRESH_PAL].rate &&
+					      vblank_hz <= currprefs.cr[CHIPSET_REFRESH_NTSC].rate)
 						v = (isntsc) ? currprefs.cr[CHIPSET_REFRESH_PAL].rate : currprefs.cr[CHIPSET_REFRESH_NTSC].rate;
 #endif
 				}
