@@ -5430,7 +5430,9 @@ void compute_framesync(void)
 					v = cr->rate;
 #ifdef __LIBRETRO__
 					/* Allow also non-standard PAL/NTSC rate switching when locked (Dyna Blaster, BC Kid) */
-					if (fabs(vblank_hz - v) > 1 && vblank_hz <= currprefs.cr[CHIPSET_REFRESH_NTSC].rate)
+					if (fabs(vblank_hz - v) > 4 &&
+					      vblank_hz >= currprefs.cr[CHIPSET_REFRESH_PAL].rate &&
+					      vblank_hz <= currprefs.cr[CHIPSET_REFRESH_NTSC].rate)
 						v = (isntsc) ? currprefs.cr[CHIPSET_REFRESH_PAL].rate : currprefs.cr[CHIPSET_REFRESH_NTSC].rate;
 #endif
 				}
@@ -5788,39 +5790,26 @@ static void init_hz(bool checkvposw)
 		minfirstline_hw = 0;
 	}
 
-#ifdef __LIBRETRO__
-	/* Sound rate calculation fails if vblank_hzs and maxvpos_nom are allowed to reset to maxvpos ?!
-	 * Also allow replacing all calculations only when PAL is switching to NTSC */
-	if (vpos_count > 0) {
-		// we come here if vpos_count != maxvpos and beamcon0 didn't change
-		// (someone poked VPOSW)
-		if (vpos_count < 10)
-			vpos_count = 10;
-		if (vpos_count < 300 && maxvpos == MAXVPOS_PAL)
-		{
-			vblank_hz = (isntsc ? 15734 : 15625.0) / vpos_count;
-			vblank_hz_nom = vblank_hz_shf = vblank_hz_lof = vblank_hz_lace = (float)vblank_hz;
-			maxvpos_nom = vpos_count - (lof_store ? 1 : 0);
-		}
-		if ((maxvpos_nom >= 256 && maxvpos_nom <= 313) || (beamcon0 & 0x80)) {
-			maxvpos_display = maxvpos_nom;
-		} else if (maxvpos_nom < 256) {
-			maxvpos_display = 255;
-		} else {
-			maxvpos_display = 313;
-		}
-		reset_drawing ();
-	}
-#else
 	if (vpos_count > 0) {
 		// we come here if vpos_count != maxvpos and beamcon0 didn't change
 		// (someone poked VPOSW)
 		if (vpos_count < 10) {
 			vpos_count = 10;
 		}
+#ifdef __LIBRETRO__
+		/* Fake NTSC fails without limits */
+		if (vpos_count > 10 && vpos_count < 300 && maxvpos == MAXVPOS_PAL)
+		{
+			vblank_hz = (isntsc ? 15734.0 : 15625.0) / vpos_count;
+			vblank_hz_nom = vblank_hz_shf = vblank_hz_lof = vblank_hz_lace = (float)vblank_hz;
+			/* SNDRATE will be wrong at interlace toggle if this is allowed (?!) */
+			maxvpos_nom = vpos_count - (lof_store ? 1 : 0);
+		}
+#else
 		vblank_hz = (isntsc ? 15734.0 : 15625.0) / vpos_count;
 		vblank_hz_nom = vblank_hz_shf = vblank_hz_lof = vblank_hz_lace = (float)vblank_hz;
 		maxvpos_nom = vpos_count - (lof_store ? 1 : 0);
+#endif
 		if ((maxvpos_nom >= 256 && maxvpos_nom <= 313) || (beamcon0 & BEAMCON0_VARBEAMEN)) {
 			maxvpos_display = maxvpos_nom;
 		} else if (maxvpos_nom < 256) {
@@ -5831,10 +5820,12 @@ static void init_hz(bool checkvposw)
 		reset_drawing();
 	} else if (vpos_count == 0) {
 		// mode reset
+#ifndef __LIBRETRO__
+		/* Interlace toggle gets stuck in a loop if this is allowed (?!) */
 		vpos_count = maxvpos;
+#endif
 		vpos_count_diff = maxvpos;
 	}
-#endif
 
 	if ((beamcon0 & BEAMCON0_VARVBEN) && (beamcon0 & (BEAMCON0_VARVSYEN | BEAMCON0_VARCSYEN))) {
 		minfirstline = vsync_startline;
@@ -6327,6 +6318,10 @@ static void VPOSW(uae_u16 v)
 		lol = 0;
 	}
 	if (lof_changing) {
+#ifdef __LIBRETRO__
+		/* SNDRATE is wrong at startup without this, requiring extra `init_custom()` (?!) */
+		lof_display = lof_store;
+#endif
 		return;
 	}
 	vpos &= 0x00ff;
@@ -9617,6 +9612,7 @@ extern int log_vsync, debug_vsync_min_delay, debug_vsync_forced_delay;
 static bool framewait(void)
 {
 #ifdef __LIBRETRO__
+	frame_shown = true;
 	return true;
 #endif
 	struct amigadisplay *ad = &adisplays[0];
@@ -10472,6 +10468,7 @@ static bool do_display_slice(void)
 
 static void reset_autoscale(void)
 {
+#ifndef __LIBRETRO__
 	first_bpl_vpos = -1;
 	if (first_bplcon0 != first_bplcon0_old) {
 		vertical_changed = horizontal_changed = true;
@@ -10506,6 +10503,7 @@ static void reset_autoscale(void)
 	plffirstline_total = current_maxvpos();
 	first_bplcon0 = 0;
 	autoscale_bordercolors = 0;
+#endif
 }
 
 static void hautoscale_check(void)
@@ -11765,7 +11763,7 @@ static void hsync_handler_post(bool onvsync)
 		}
 
 	} else if (!currprefs.cpu_thread) {
-
+#ifndef __LIBRETRO__
 		// the rest
 		static int nextwaitvpos;
 		if (vpos == 0)
@@ -11782,7 +11780,7 @@ static void hsync_handler_post(bool onvsync)
 		if (vpos + 1 < maxvpos + lof_store && vpos >= nextwaitvpos && vpos < maxvpos - (maxvpos / 3) && (audio_is_pull() <= 0 || (audio_is_pull() > 0 && audio_pull_buffer()))) {
 			nextwaitvpos += maxvpos_display * 1 / 3;
 			vsyncmintime += vsynctimeperline;
-#ifndef __LIBRETRO__
+
 			if (vsync_isdone(NULL) <= 0 && !currprefs.turbo_emulation) {
 				frame_time_t rpt = read_processor_time();
 				// sleep if more than 2ms "free" time
@@ -11795,8 +11793,8 @@ static void hsync_handler_post(bool onvsync)
 					rpt = read_processor_time();
 				}
 			}
-#endif
 		}
+#endif
 	}
 
 	if (!input_read_done) {
