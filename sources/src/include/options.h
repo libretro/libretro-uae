@@ -16,7 +16,7 @@
 
 #define UAEMAJOR 4
 #define UAEMINOR 9
-#define UAESUBREV 0
+#define UAESUBREV 1
 
 #define MAX_AMIGADISPLAYS 4
 
@@ -781,6 +781,7 @@ struct uae_prefs {
 	int uaeboard_order;
 
 	bool kickshifter;
+	bool scsidevicedisable;
 	bool filesys_no_uaefsdb;
 	bool filesys_custom_uaefsdb;
 	bool mmkeyboard;

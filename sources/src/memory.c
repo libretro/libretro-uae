@@ -52,7 +52,7 @@ bool canbang;
 static bool rom_write_enabled;
 #ifdef JIT
 /* Set by each memory handler that does not simply access real memory. */
-int special_mem;
+int special_mem, special_mem_default;
 /* do not use get_n_addr */
 int jit_n_addr_unsafe;
 #endif
@@ -2964,7 +2964,9 @@ void memory_init (void)
 
 	kickmem_bank.reserved_size = ROM_SIZE_512;
 	mapped_malloc (&kickmem_bank);
-	memset (kickmem_bank.baseaddr, 0, ROM_SIZE_512);
+	if (kickmem_bank.baseaddr) {
+		memset(kickmem_bank.baseaddr, 0, ROM_SIZE_512);
+	}
 	_tcscpy (currprefs.romfile, _T("<none>"));
 	currprefs.romextfile[0] = 0;
 	cpuboard_reset(1);

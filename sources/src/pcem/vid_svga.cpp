@@ -466,6 +466,10 @@ void svga_recalctimings(svga_t *svga)
 
         if (!text) {
             if (!svga->lowres) {
+                if (svga->render == svga_render_2bpp_lowres)
+                    svga->render = svga_render_2bpp_highres;
+                if (svga->render == svga_render_4bpp_lowres)
+                    svga->render = svga_render_4bpp_highres;
                 if (svga->render == svga_render_8bpp_lowres)
                     svga->render = svga_render_8bpp_highres;
                 if (svga->render == svga_render_15bpp_lowres)
@@ -479,6 +483,10 @@ void svga_recalctimings(svga_t *svga)
             }
 
             if (svga->horizontal_linedbl) {
+                if (svga->render == svga_render_2bpp_highres)
+                    svga->render = svga_render_2bpp_lowres;
+                if (svga->render == svga_render_4bpp_highres)
+                    svga->render = svga_render_4bpp_lowres;
                 if (svga->render == svga_render_8bpp_highres)
                     svga->render = svga_render_8bpp_lowres;
                 if (svga->render == svga_render_15bpp_highres)
@@ -1457,7 +1465,7 @@ void svga_doblit(int y1, int y2, int wx, int wy, svga_t *svga)
                 if (xsize<128) xsize=0;
                 if (ysize<32) ysize=0;
 
-                updatewindowsize(xsize * (svga->horizontal_linedbl ? 2 : 1), ysize * (svga->vertical_linedbl ? 2 : 1));
+                updatewindowsize(xsize,  svga->horizontal_linedbl ? 2 : 1, ysize, svga->linedbl ? 2 : 1);
         }
         if (vid_resize)
         {

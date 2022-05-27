@@ -1396,7 +1396,7 @@ void target_spin(int total)
 {
 }
 
-int handle_msgpump (void)
+int handle_msgpump (bool vblank)
 {
 }
 

@@ -746,7 +746,7 @@ static void resetwarning_check (void)
 			resetwarning_phase = 3;
 			write_log (_T("KB: reset warning SP = output\n"));
 			/* System won't reset until handshake signal becomes inactive or 10s has passed */
-			resetwarning_timer = 10 * maxvpos_nom * vblank_hz;
+			resetwarning_timer = (int)(10 * maxvpos_nom * vblank_hz);
 		}
 	} else if (resetwarning_phase == 3) {
 		if (!(ciaacra & 0x40)) { /* second AK_RESETWARNING handshake disabled */
@@ -969,6 +969,7 @@ void CIA_vsync_prehandler (void)
 
 	led_vsync ();
 	CIA_handler ();
+	keybuf_vsync();
 	if (kblostsynccnt > 0) {
 		kblostsynccnt -= maxvpos;
 		if (kblostsynccnt <= 0) {

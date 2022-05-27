@@ -1733,7 +1733,7 @@ void portout(uint16_t portnum, uint8_t v)
 	{
 		case 0x60:
 		if (xb->type >= TYPE_2286) {
-			keyboard_at_write(portnum, v, NULL);
+			keyboard_at_write(portnum, v, &pit);
 		} else {
 			aio = 0x41f;
 		}
@@ -1741,7 +1741,7 @@ void portout(uint16_t portnum, uint8_t v)
 		case 0x61:
 		//write_log(_T("OUT Port B %02x\n"), v);
 		if (xb->type >= TYPE_2286) {
-			keyboard_at_write(portnum, v, NULL);
+			keyboard_at_write(portnum, v, &pit);
 		} else {
 			timer_process();
 			//timer_update_outstanding();
@@ -1798,7 +1798,7 @@ void portout(uint16_t portnum, uint8_t v)
 		break;
 		case 0x64:
 		if (xb->type >= TYPE_2286) {
-			keyboard_at_write(portnum, v, NULL);
+			keyboard_at_write(portnum, v, &pit);
 		}
 		break;
 
