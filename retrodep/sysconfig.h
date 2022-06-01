@@ -38,7 +38,7 @@
 //#define USE_JIT_FPU
 #define AUTOCONFIG /* autoconfig support, fast ram, harddrives etc.. */
 #define SAVESTATE /* State file support */
-//#define ACTION_REPLAY /* Action Replay 1/2/3 support */
+#define ACTION_REPLAY /* Action Replay 1/2/3 support */
 #define NCR /* A4000T/A4091, 53C710/53C770 SCSI */
 #define A2091 /* A590/A2091 SCSI */
 #define SCSI

@@ -504,6 +504,11 @@ STATIC_INLINE void put_long_ce000 (uaecptr addr, uae_u32 v)
 }
 STATIC_INLINE void put_word_ce000 (uaecptr addr, uae_u32 v)
 {
+#ifdef __LIBRETRO__
+	/* Action Replay crashes with Cycle-exact without this */
+	if (addr > 0xffffff)
+	   return;
+#endif
 	mem_access_delay_word_write (addr, v);
 }
 STATIC_INLINE void put_byte_ce000 (uaecptr addr, uae_u32 v)

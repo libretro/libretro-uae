@@ -28,6 +28,7 @@ SOURCES_C += \
 	$(EMU)/a2065.c \
 	$(EMU)/a2091.c \
 	$(EMU)/akiko.c \
+	$(EMU)/ar.c \
 	$(EMU)/arcadia.c \
 	$(EMU)/aros.rom.c \
 	$(EMU)/audio.c \
@@ -80,6 +81,7 @@ SOURCES_C += \
 	$(EMU)/gfxutil.c \
 	$(EMU)/hardfile.c \
 	$(EMU)/hardfile_unix.c \
+	$(EMU)/hrtmon.rom.c \
 	$(EMU)/identify.c \
 	$(EMU)/inputdevice.c \
 	$(EMU)/isofs.c \

@@ -1312,6 +1312,9 @@ void input_vkbd(void)
          /* Reset on long press */
          if (now - last_vkey_pressed_time > VKBD_STICKY_HOLDING_TIME)
             emu_function(EMU_RESET);
+         /* Freeze on short press */
+         else
+            emu_function(EMU_FREEZE);
       }
    }
    else
