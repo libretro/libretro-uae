@@ -6435,7 +6435,9 @@ void m68k_go (int may_quit)
 					record_dma_reset ();
 				}
 				restored = savestate_restore_finish ();
+#ifndef __LIBRETRO__
 				memory_map_dump ();
+#endif
 				if (currprefs.mmu_model == 68030) {
 					mmu030_decode_tc (tc_030, true);
 				} else if (currprefs.mmu_model >= 68040) {
