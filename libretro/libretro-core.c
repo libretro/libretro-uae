@@ -869,7 +869,11 @@ static void retro_set_core_options()
             { "exact", "Cycle-exact" },
             { NULL, NULL },
          },
-         "compatible"
+#if defined(__x86_64__)
+         "exact"
+#else
+         "normal"
+#endif
       },
       {
          "puae_autoloadfastforward",
