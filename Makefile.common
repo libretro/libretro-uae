@@ -103,6 +103,7 @@ SOURCES_C += \
 	$(EMU)/gfxutil.c \
 	$(EMU)/hardfile.c \
 	$(EMU)/hardfile_unix.c \
+	$(EMU)/hrtmon.rom.c \
 	$(EMU)/ide.c \
 	$(EMU)/idecontrollers.c \
 	$(EMU)/identify.c \

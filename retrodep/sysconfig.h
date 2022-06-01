@@ -49,7 +49,7 @@
 #define CPUEMU_35 /* 68030 MMU + cache + CE */
 #define CPUEMU_40 /* generic 680x0 with JIT direct memory access */
 #define CPUEMU_50 /* generic 680x0 with indirect memory access */
-//#define ACTION_REPLAY /* Action Replay 1/2/3 support */
+#define ACTION_REPLAY /* Action Replay 1/2/3 support */
 //#define PICASSO96 /* Picasso96 display card emulation */
 //#define UAEGFX_INTERNAL /* built-in libs:picasso96/uaegfx.card */
 //#define BSDSOCKET /* bsdsocket.library emulation */

@@ -14,6 +14,7 @@
 #include "gui.h"
 #include "xwin.h"
 #include "disk.h"
+#include "ar.h"
 
 /* Mouse speed flags */
 #define MOUSE_SPEED_SLOWER 1
@@ -154,6 +155,14 @@ void emu_function(int function)
          retro_reset_soft();
          /* Statusbar notification */
          statusbar_message_show(4, "%s", "Reset");
+         break;
+      case EMU_FREEZE:
+         /* Cart freeze requires a cart */
+         if (!currprefs.cartfile[0])
+            break;
+         action_replay_freeze();
+         /* Statusbar notification */
+         statusbar_message_show(4, "%s", "Freeze");
          break;
       case EMU_ASPECT_RATIO:
          if (video_config_aspect == 0)
