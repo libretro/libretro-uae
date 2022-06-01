@@ -11948,7 +11948,9 @@ void custom_reset(bool hardreset, bool keyboardreset)
 	target_reset();
 	devices_reset(hardreset);
 	write_log(_T("Reset at %08X. Chipset mask = %08X\n"), M68K_GETPC, currprefs.chipset_mask);
+#ifndef __LIBRETRO__
 	memory_map_dump();
+#endif
 
 	lightpen_active = 0;
 	lightpen_triggered = 0;
