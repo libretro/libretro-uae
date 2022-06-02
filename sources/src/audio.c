@@ -2256,7 +2256,11 @@ static void update_audio_volcnt(int cycles, float evtime, bool nextsmp)
 
 void update_audio (void)
 {
+#ifdef __LIBRETRO__
+	uae_u32 n_cycles = 0;
+#else
 	unsigned long int n_cycles = 0;
+#endif
 #if SOUNDSTUFF > 1
 	static int samplecounter;
 #endif
