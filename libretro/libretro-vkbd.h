@@ -13,6 +13,7 @@ extern void toggle_vkbd(void);
 
 extern unsigned int opt_vkbd_theme;
 extern libretro_graph_alpha_t opt_vkbd_alpha;
+extern libretro_graph_alpha_t opt_vkbd_dim_alpha;
 
 extern retro_input_state_t input_state_cb;
 extern int vkflag[10];

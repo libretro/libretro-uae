@@ -84,6 +84,7 @@ int opt_statusbar_position_old = 0;
 int opt_statusbar_position_offset = 0;
 unsigned int opt_vkbd_theme = 0;
 libretro_graph_alpha_t opt_vkbd_alpha = GRAPH_ALPHA_75;
+libretro_graph_alpha_t opt_vkbd_dim_alpha = GRAPH_ALPHA_25;
 bool opt_keyrah_keypad = false;
 bool opt_keyboard_pass_through = false;
 unsigned int opt_physicalmouse = 1;
@@ -1412,6 +1413,23 @@ static void retro_set_core_options()
          "OSD > Virtual KBD Transparency",
          "Virtual KBD Transparency",
          "Keyboard transparency can be toggled with RetroPad A.",
+         NULL,
+         "osd",
+         {
+            { "0%",   NULL },
+            { "25%",  NULL },
+            { "50%",  NULL },
+            { "75%",  NULL },
+            { "100%", NULL },
+            { NULL, NULL },
+         },
+         "25%"
+      },
+      {
+         "puae_vkbd_dimming",
+         "OSD > Virtual KBD Dimming",
+         "Virtual KBD Dimming",
+         "Dimming level of the surrounding area.",
          NULL,
          "osd",
          {
@@ -2991,6 +3009,17 @@ static void update_variables(void)
       else if (!strcmp(var.value, "100%")) opt_vkbd_alpha = GRAPH_ALPHA_0;
    }
 
+   var.key = "puae_vkbd_dimming";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if      (!strcmp(var.value, "0%"))   opt_vkbd_dim_alpha = GRAPH_ALPHA_0;
+      else if (!strcmp(var.value, "25%"))  opt_vkbd_dim_alpha = GRAPH_ALPHA_25;
+      else if (!strcmp(var.value, "50%"))  opt_vkbd_dim_alpha = GRAPH_ALPHA_50;
+      else if (!strcmp(var.value, "75%"))  opt_vkbd_dim_alpha = GRAPH_ALPHA_75;
+      else if (!strcmp(var.value, "100%")) opt_vkbd_dim_alpha = GRAPH_ALPHA_100;
+   }
+
    var.key = "puae_chipmem_size";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -4218,6 +4247,8 @@ static void update_variables(void)
    option_display.key = "puae_vkbd_theme";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_vkbd_transparency";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_vkbd_dimming";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
 
    /* Audio options */
