@@ -6695,17 +6695,13 @@ static void update_video_center_horizontal(void)
    int visible_left_border_new = retro_max_diwlastword - retrow + (retrow - zoomed_width) / 2;
 
    /* Horizontal centering thresholds */
-   int min_diwstart_limit = 110;
-   int max_diwstop_limit  = 300;
-
-   if (locked_video_horizontal)
-      return;
-
-   min_diwstart_limit *= width_multiplier;
-   max_diwstop_limit  *= width_multiplier;
+   int min_diwstart_limit = 110 * width_multiplier;
+   int max_diwstop_limit  = 300 * width_multiplier;
 
    /* Need proper values for calculations */
-   if (retro_min_diwstart != retro_max_diwstop
+   if (locked_video_horizontal)
+      ; /* no-op */
+   else if (retro_min_diwstart != retro_max_diwstop
     && retro_min_diwstart > 0
     && retro_max_diwstop  > 0
     && retro_min_diwstart < min_diwstart_limit
@@ -6911,7 +6907,7 @@ static void update_audiovideo(void)
          && retro_thisframe_first_drawn_line != -1
          && retro_thisframe_last_drawn_line  != -1
          && retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line > min_height
-         && (retro_thisframe_first_drawn_line_delta > 1 || retro_thisframe_last_drawn_line_delta > 1)
+         && (retro_thisframe_first_drawn_line_delta > (video_config & PUAE_VIDEO_DOUBLELINE) ? 1 : 0 || retro_thisframe_last_drawn_line_delta > (video_config & PUAE_VIDEO_DOUBLELINE) ? 1 : 0)
       )
       {
 #if 0
@@ -6922,14 +6918,20 @@ static void update_audiovideo(void)
          if (retro_thisframe_first_drawn_line_start == -1 && retro_thisframe_last_drawn_line_start == -1)
             request_update_av_info = true;
 
-         if (retro_thisframe_first_drawn_line_delta > 1)
+         if ((retro_thisframe_first_drawn_line_start == retro_thisframe_first_drawn_line
+           && retro_thisframe_last_drawn_line_start  == retro_thisframe_last_drawn_line)
+          || (retro_thisframe_first_drawn_line_old == retro_thisframe_first_drawn_line
+           && retro_thisframe_last_drawn_line_old  == retro_thisframe_last_drawn_line))
+            retro_thisframe_counter = 0;
+
+         if (retro_thisframe_first_drawn_line_delta > (video_config & PUAE_VIDEO_DOUBLELINE) ? 1 : 0)
             retro_thisframe_first_drawn_line_start = (retro_thisframe_first_drawn_line_old > 0) ? retro_thisframe_first_drawn_line_old : retro_thisframe_first_drawn_line;
-         if (retro_thisframe_last_drawn_line_delta > 1)
+         if (retro_thisframe_last_drawn_line_delta > (video_config & PUAE_VIDEO_DOUBLELINE) ? 1 : 0)
             retro_thisframe_last_drawn_line_start  = (retro_thisframe_last_drawn_line_old > 0) ? retro_thisframe_last_drawn_line_old : retro_thisframe_last_drawn_line;
 
          if (retro_thisframe_first_drawn_line_start != retro_thisframe_first_drawn_line
           || retro_thisframe_last_drawn_line_start  != retro_thisframe_last_drawn_line)
-             retro_thisframe_counter = 1;
+            retro_thisframe_counter = 1;
 
          retro_thisframe_first_drawn_line_old = retro_thisframe_first_drawn_line;
          retro_thisframe_last_drawn_line_old  = retro_thisframe_last_drawn_line;
@@ -6937,30 +6939,36 @@ static void update_audiovideo(void)
       else if (retro_thisframe_counter > 0
             && retro_thisframe_first_drawn_line != -1
             && retro_thisframe_last_drawn_line  != -1
-      )
+            && retro_thisframe_first_drawn_line == retro_thisframe_first_drawn_line_old
+            && retro_thisframe_last_drawn_line  == retro_thisframe_last_drawn_line_old)
       {
+         int counter_max = 4;
+         if (abs(retro_thisframe_first_drawn_line_start - retro_thisframe_first_drawn_line) < 2
+          || abs(retro_thisframe_last_drawn_line_start - retro_thisframe_last_drawn_line) < 2)
+            counter_max = 8;
+
 #if 0
          printf("frmcnt %d, first:%3d old:%3d start:%3d delta:%3d last:%3d old:%3d start:%3d delta:%3d\n", retro_thisframe_counter,
                retro_thisframe_first_drawn_line, retro_thisframe_first_drawn_line_old, retro_thisframe_first_drawn_line_start, retro_thisframe_first_drawn_line_delta,
                retro_thisframe_last_drawn_line, retro_thisframe_last_drawn_line_old, retro_thisframe_last_drawn_line_start, retro_thisframe_last_drawn_line_delta);
 #endif
-
-         /* Reset counter if the first drawn line changes while the last line stays the same.
-          * To prevent Lollypop earthquake effect trigger, and allow Superfrog statusbar startup animation */
-         if (retro_thisframe_first_drawn_line != retro_thisframe_first_drawn_line_start
-          && abs(retro_thisframe_last_drawn_line - retro_thisframe_last_drawn_line_start) < 2
-          && abs(retro_thisframe_first_drawn_line_start - retro_thisframe_first_drawn_line) < 5)
-            retro_thisframe_counter = 0;
+         if (retro_thisframe_counter > 0)
+            retro_thisframe_counter++;
 
          /* Prevent geometry change but allow vertical centering if the values return to the starting point during counting */
          if (retro_thisframe_first_drawn_line == retro_thisframe_first_drawn_line_start
           && retro_thisframe_last_drawn_line  == retro_thisframe_last_drawn_line_start)
             retro_av_info_change_geometry = false;
 
-         if (retro_thisframe_counter > 0)
-            retro_thisframe_counter++;
+         /* Reset counter if the first drawn line changes while the last line stays the same.
+          * To prevent Lollypop earthquake effect trigger, and allow Superfrog statusbar startup animation */
+         if (retro_thisframe_first_drawn_line != retro_thisframe_first_drawn_line_start
+          && abs(retro_thisframe_first_drawn_line_start - retro_thisframe_first_drawn_line) > 1
+          && abs(retro_thisframe_first_drawn_line_start - retro_thisframe_first_drawn_line) < 5
+          && abs(retro_thisframe_last_drawn_line_start - retro_thisframe_last_drawn_line) < 2)
+            retro_thisframe_counter = 1;
 
-         if (retro_thisframe_counter > 4)
+         if (retro_thisframe_counter > counter_max)
             request_update_av_info = true;
       }
 
