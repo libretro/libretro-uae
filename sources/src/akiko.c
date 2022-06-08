@@ -1571,7 +1571,8 @@ static void akiko_thread (void *null)
 						write_log (_T("CD32: CD missing but statefile was stored with CD inserted: faking media present\n"));
 					lastmediastate = 3;
 				} else {
-					write_log (_T("CD32: media changed = %d\n"), media);
+					if (log_cd32 > 0)
+						write_log (_T("CD32: media changed = %d\n"), media);
 					lastmediastate = cdrom_disk = media;
 					mediachanged = 1;
 					cdaudiostop_do ();
