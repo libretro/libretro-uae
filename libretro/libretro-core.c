@@ -42,8 +42,8 @@ int defaultw = EMULATOR_DEF_WIDTH;
 int defaulth = EMULATOR_DEF_HEIGHT;
 int retrow = 0;
 int retroh = 0;
-int zoomed_width = 0;
-int zoomed_height = 0;
+int retrow_crop = 0;
+int retroh_crop = 0;
 float aspect_ratio = 0;
 
 extern int bplcon0;
@@ -140,9 +140,9 @@ bool request_reset_soft = false;
 unsigned int request_init_custom_timer = 0;
 unsigned int startup_init_custom_timer = 80;
 unsigned int request_check_prefs_timer = 0;
-unsigned int zoom_mode_id = 0;
-unsigned int opt_zoom_mode_id = 0;
-unsigned int zoom_mode_crop_id = 0;
+unsigned int crop_id = 0;
+unsigned int opt_crop_id = 0;
+unsigned int crop_mode_id = 0;
 unsigned int width_multiplier = 1;
 
 static int opt_vertical_offset = 0;
@@ -172,10 +172,10 @@ extern int visible_left_border;
 static int visible_left_border_old = 0;
 static int visible_left_border_update_frame_timer = 3;
 
-#define PAL_KS2_ZOOM_SAFE_FIRST_LINE  99
-#define PAL_KS2_ZOOM_SAFE_LAST_LINE   244
-#define NTSC_KS2_ZOOM_SAFE_FIRST_LINE 71
-#define NTSC_KS2_ZOOM_SAFE_LAST_LINE  216
+#define PAL_KS2_CROP_SAFE_FIRST_LINE  99
+#define PAL_KS2_CROP_SAFE_LAST_LINE   244
+#define NTSC_KS2_CROP_SAFE_FIRST_LINE 71
+#define NTSC_KS2_CROP_SAFE_LAST_LINE  216
 
 unsigned int video_config = 0;
 unsigned int video_config_old = 0;
@@ -1140,10 +1140,10 @@ static void retro_set_core_options()
          "auto"
       },
       {
-         "puae_zoom_mode",
-         "Video > Zoom Mode",
-         "Zoom Mode",
-         "Crop borders to fit various host screens. Requirements in RetroArch settings:\n- Aspect Ratio: Core provided,\n- Integer Scale: Off.",
+         "puae_crop",
+         "Video > Crop",
+         "Crop",
+         "Remove borders according to 'Crop Mode'.",
          NULL,
          "video",
          {
@@ -1161,9 +1161,31 @@ static void retro_set_core_options()
          "disabled"
       },
       {
-         "puae_zoom_mode_crop",
-         "Video > Zoom Mode Crop",
-         "Zoom Mode Crop",
+         "puae_zoom_mode",
+         "Video > Zoom Mode",
+         "Zoom Mode",
+         "Hidden placeholder for backwards compatibility.",
+         NULL,
+         "video",
+         {
+            { "deprecated", NULL },
+            { "disabled", NULL },
+            { "minimum", "Minimum" },
+            { "smaller", "Smaller" },
+            { "small", "Small" },
+            { "medium", "Medium" },
+            { "large", "Large" },
+            { "larger", "Larger" },
+            { "maximum", "Maximum" },
+            { "auto", "Automatic" },
+            { NULL, NULL },
+         },
+         "deprecated"
+      },
+      {
+         "puae_crop_mode",
+         "Video > Crop Mode",
+         "Crop Mode",
          "'Horizontal + Vertical' & 'Automatic' removes borders completely.",
          NULL,
          "video",
@@ -1180,10 +1202,30 @@ static void retro_set_core_options()
          "both"
       },
       {
+         "puae_zoom_mode_crop",
+         "Video > Zoom Mode Crop",
+         "Zoom Mode Crop",
+         "Hidden placeholder for backwards compatibility.",
+         NULL,
+         "video",
+         {
+            { "deprecated", NULL },
+            { "both", "Horizontal + Vertical" },
+            { "horizontal", "Horizontal" },
+            { "vertical", "Vertical" },
+            { "16:9", "16:9" },
+            { "16:10", "16:10" },
+            { "4:3", "4:3" },
+            { "5:4", "5:4" },
+            { NULL, NULL },
+         },
+         "deprecated"
+      },
+      {
          "puae_vertical_pos",
          "Video > Vertical Position",
          "Vertical Position",
-         "'Automatic' keeps only zoomed screens centered. Positive values move upward and negative values move downward.",
+         "'Automatic' keeps only cropped screens centered. Positive values move upward and negative values move downward.",
          NULL,
          "video",
          {
@@ -1940,10 +1982,20 @@ static void retro_set_core_options()
          "---"
       },
       {
+         "puae_mapper_crop_toggle",
+         "Hotkey > Toggle Crop",
+         "Toggle Crop",
+         "Press the mapped key to toggle crop.",
+         NULL,
+         "hotkey",
+         {{ NULL, NULL }},
+         "---"
+      },
+      {
          "puae_mapper_zoom_mode_toggle",
          "Hotkey > Toggle Zoom Mode",
          "Toggle Zoom Mode",
-         "Press the mapped key to toggle zoom mode.",
+         "Hidden placeholder for backwards compatibility.",
          NULL,
          "hotkey",
          {{ NULL, NULL }},
@@ -2331,7 +2383,7 @@ static void retro_set_core_options()
             || strstr(option_defs_us[i].key, "puae_mapper_mouse_toggle")
             || strstr(option_defs_us[i].key, "puae_mapper_reset")
             || strstr(option_defs_us[i].key, "puae_mapper_aspect_ratio_toggle")
-            || strstr(option_defs_us[i].key, "puae_mapper_zoom_mode_toggle")
+            || strstr(option_defs_us[i].key, "puae_mapper_crop_toggle")
             || strstr(option_defs_us[i].key, "puae_mapper_turbo_fire_toggle")
             || strstr(option_defs_us[i].key, "puae_mapper_save_disk_toggle"))
             hotkey = 1;
@@ -2683,6 +2735,15 @@ static void retro_set_options_display(void)
 {
    struct retro_core_option_display option_display;
 
+   /* Legacy zoom always hidden */
+   option_display.visible = false;
+   option_display.key = "puae_zoom_mode";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_zoom_mode_crop";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_mapper_zoom_mode_toggle";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
    /*** Options display ***/
    if (libretro_supports_option_categories)
    {
@@ -2725,9 +2786,9 @@ static void retro_set_options_display(void)
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_video_aspect";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_zoom_mode";
+   option_display.key = "puae_crop";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_zoom_mode_crop";
+   option_display.key = "puae_crop_mode";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_vertical_pos";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
@@ -2837,7 +2898,7 @@ static void retro_set_options_display(void)
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_mapper_aspect_ratio_toggle";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-   option_display.key = "puae_mapper_zoom_mode_toggle";
+   option_display.key = "puae_mapper_crop_toggle";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_mapper_turbo_fire_toggle";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
@@ -2845,9 +2906,13 @@ static void retro_set_options_display(void)
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
 }
 
+static bool updating_variables = false;
 static void update_variables(void);
 static bool retro_update_display(void)
 {
+   if (updating_variables)
+      return false;
+
    /* Core options */
    bool updated = false;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
@@ -2906,6 +2971,8 @@ char* get_variable(const char* key)
 static void update_variables(void)
 {
    struct retro_variable var = {0};
+
+   updating_variables = true;
 
    uae_model[0]  = '\0';
    uae_config[0] = '\0';
@@ -3792,34 +3859,34 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_zoom_mode";
+   var.key = "puae_crop";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if      (!strcmp(var.value, "disabled")) zoom_mode_id = 0;
-      else if (!strcmp(var.value, "minimum"))  zoom_mode_id = 1;
-      else if (!strcmp(var.value, "smaller"))  zoom_mode_id = 2;
-      else if (!strcmp(var.value, "small"))    zoom_mode_id = 3;
-      else if (!strcmp(var.value, "medium"))   zoom_mode_id = 4;
-      else if (!strcmp(var.value, "large"))    zoom_mode_id = 5;
-      else if (!strcmp(var.value, "larger"))   zoom_mode_id = 6;
-      else if (!strcmp(var.value, "maximum"))  zoom_mode_id = 7;
-      else if (!strcmp(var.value, "auto"))     zoom_mode_id = 8;
+      if      (!strcmp(var.value, "disabled")) crop_id = CROP_NONE;
+      else if (!strcmp(var.value, "minimum"))  crop_id = CROP_MINIMUM;
+      else if (!strcmp(var.value, "smaller"))  crop_id = CROP_SMALLER;
+      else if (!strcmp(var.value, "small"))    crop_id = CROP_SMALL;
+      else if (!strcmp(var.value, "medium"))   crop_id = CROP_MEDIUM;
+      else if (!strcmp(var.value, "large"))    crop_id = CROP_LARGE;
+      else if (!strcmp(var.value, "larger"))   crop_id = CROP_LARGER;
+      else if (!strcmp(var.value, "maximum"))  crop_id = CROP_MAXIMUM;
+      else if (!strcmp(var.value, "auto"))     crop_id = CROP_AUTO;
 
-      opt_zoom_mode_id = zoom_mode_id;
+      opt_crop_id = crop_id;
    }
 
-   var.key = "puae_zoom_mode_crop";
+   var.key = "puae_crop_mode";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if      (!strcmp(var.value, "both"))       zoom_mode_crop_id = 0;
-      else if (!strcmp(var.value, "vertical"))   zoom_mode_crop_id = 1;
-      else if (!strcmp(var.value, "horizontal")) zoom_mode_crop_id = 2;
-      else if (!strcmp(var.value, "16:9"))       zoom_mode_crop_id = 3;
-      else if (!strcmp(var.value, "16:10"))      zoom_mode_crop_id = 4;
-      else if (!strcmp(var.value, "4:3"))        zoom_mode_crop_id = 5;
-      else if (!strcmp(var.value, "5:4"))        zoom_mode_crop_id = 6;
+      if      (!strcmp(var.value, "both"))       crop_mode_id = CROP_MODE_BOTH;
+      else if (!strcmp(var.value, "vertical"))   crop_mode_id = CROP_MODE_VERTICAL;
+      else if (!strcmp(var.value, "horizontal")) crop_mode_id = CROP_MODE_HORIZONTAL;
+      else if (!strcmp(var.value, "16:9"))       crop_mode_id = CROP_MODE_16_9;
+      else if (!strcmp(var.value, "16:10"))      crop_mode_id = CROP_MODE_16_10;
+      else if (!strcmp(var.value, "4:3"))        crop_mode_id = CROP_MODE_4_3;
+      else if (!strcmp(var.value, "5:4"))        crop_mode_id = CROP_MODE_5_4;
    }
 
    var.key = "puae_vertical_pos";
@@ -4286,11 +4353,11 @@ static void update_variables(void)
       mapper_keys[RETRO_MAPPER_ASPECT_RATIO] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_zoom_mode_toggle";
+   var.key = "puae_mapper_crop_toggle";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      mapper_keys[RETRO_MAPPER_ZOOM_MODE] = retro_keymap_id(var.value);
+      mapper_keys[RETRO_MAPPER_CROP] = retro_keymap_id(var.value);
    }
 
    var.key = "puae_mapper_turbo_fire_toggle";
@@ -4381,6 +4448,89 @@ static void update_variables(void)
    device_check_config();
 
    retro_set_options_display();
+
+   /* Handle migration compatibility with old "zoom" */
+   bool request_update_variables      = false;
+   int legacy_zoom                    = -1;
+   int legacy_zoom_crop               = -1;
+   int legacy_zoom_toggle             = -1;
+   char legacy_zoom_string[20]        = {0};
+   char legacy_zoom_crop_string[20]   = {0};
+   char legacy_zoom_toggle_string[20] = {0};
+
+   var.key = "puae_zoom_mode";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if      (!strcmp(var.value, "disabled")) legacy_zoom = CROP_NONE;
+      else if (!strcmp(var.value, "minimum"))  legacy_zoom = CROP_MINIMUM;
+      else if (!strcmp(var.value, "smaller"))  legacy_zoom = CROP_SMALLER;
+      else if (!strcmp(var.value, "small"))    legacy_zoom = CROP_SMALL;
+      else if (!strcmp(var.value, "medium"))   legacy_zoom = CROP_MEDIUM;
+      else if (!strcmp(var.value, "large"))    legacy_zoom = CROP_LARGE;
+      else if (!strcmp(var.value, "larger"))   legacy_zoom = CROP_LARGER;
+      else if (!strcmp(var.value, "maximum"))  legacy_zoom = CROP_MAXIMUM;
+      else if (!strcmp(var.value, "auto"))     legacy_zoom = CROP_AUTO;
+
+      strlcpy(legacy_zoom_string, var.value, sizeof(legacy_zoom_string));
+   }
+
+   var.key = "puae_zoom_mode_crop";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if      (!strcmp(var.value, "both"))       legacy_zoom_crop = CROP_MODE_BOTH;
+      else if (!strcmp(var.value, "vertical"))   legacy_zoom_crop = CROP_MODE_VERTICAL;
+      else if (!strcmp(var.value, "horizontal")) legacy_zoom_crop = CROP_MODE_HORIZONTAL;
+      else if (!strcmp(var.value, "16:9"))       legacy_zoom_crop = CROP_MODE_16_9;
+      else if (!strcmp(var.value, "16:10"))      legacy_zoom_crop = CROP_MODE_16_10;
+      else if (!strcmp(var.value, "4:3"))        legacy_zoom_crop = CROP_MODE_4_3;
+      else if (!strcmp(var.value, "5:4"))        legacy_zoom_crop = CROP_MODE_5_4;
+
+      strlcpy(legacy_zoom_crop_string, var.value, sizeof(legacy_zoom_crop_string));
+   }
+
+   var.key = "puae_mapper_zoom_mode_toggle";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      legacy_zoom_toggle = retro_keymap_id(var.value);
+      strlcpy(legacy_zoom_toggle_string, var.value, sizeof(legacy_zoom_toggle_string));
+   }
+
+   if (legacy_zoom > CROP_NONE)
+   {
+      log_cb(RETRO_LOG_INFO, "Migrating 'zoom_mode' to 'crop'..\n");
+      set_variable("puae_crop", legacy_zoom_string);
+      request_update_variables = true;
+   }
+
+   if (legacy_zoom_crop > 0)
+   {
+      log_cb(RETRO_LOG_INFO, "Migrating 'zoom_mode_crop' to 'crop_mode'..\n");
+      set_variable("puae_crop_mode", legacy_zoom_crop_string);
+      request_update_variables = true;
+   }
+
+   if (legacy_zoom_toggle > 0)
+   {
+      log_cb(RETRO_LOG_INFO, "Migrating 'mapper_zoom_mode_toggle' to 'mapper_crop_toggle'..\n");
+      set_variable("puae_mapper_crop_toggle", legacy_zoom_toggle_string);
+      request_update_variables = true;
+   }
+
+   if (strcmp(legacy_zoom_string, "deprecated"))
+      set_variable("puae_zoom_mode", "deprecated");
+
+   if (strcmp(legacy_zoom_crop_string, "deprecated"))
+      set_variable("puae_zoom_mode_crop", "deprecated");
+
+   if (strcmp(legacy_zoom_toggle_string, "---"))
+      set_variable("puae_mapper_zoom_mode_toggle", "---");
+
+   updating_variables = false;
+   if (request_update_variables)
+      update_variables();
 }
 
 /*****************************************************************************/
@@ -6683,7 +6833,7 @@ void retro_reset_soft()
 /* Vertical centering */
 static void update_video_center_vertical(void)
 {
-   int zoomed_height_normal   = (video_config & PUAE_VIDEO_DOUBLELINE) ? zoomed_height / 2 : zoomed_height;
+   int retroh_crop_normal     = (video_config & PUAE_VIDEO_DOUBLELINE) ? retroh_crop / 2 : retroh_crop;
    int thisframe_y_adjust_new = minfirstline;
 
    /* Need proper values for calculations */
@@ -6691,7 +6841,7 @@ static void update_video_center_vertical(void)
     && retro_thisframe_first_drawn_line > 0 && retro_thisframe_last_drawn_line > 0
     && (retro_thisframe_first_drawn_line < 150 || retro_thisframe_last_drawn_line > 150)
    )
-      thisframe_y_adjust_new = (retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line - zoomed_height_normal) / 2 + retro_thisframe_first_drawn_line;
+      thisframe_y_adjust_new = (retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line - retroh_crop_normal) / 2 + retro_thisframe_first_drawn_line;
    else if (retro_thisframe_first_drawn_line == -1 && retro_thisframe_last_drawn_line == -1 && thisframe_y_adjust_old != 0)
       thisframe_y_adjust_new = thisframe_y_adjust_old;
 
@@ -6708,7 +6858,7 @@ static void update_video_center_vertical(void)
       thisframe_y_adjust = thisframe_y_adjust_new;
 
 #if 0
-   printf("FIRSTDRAWN:%6d LASTDRAWN:%6d   yadjust:%3d old:%3d zoomed_h:%d\n", retro_thisframe_first_drawn_line, retro_thisframe_last_drawn_line, thisframe_y_adjust, thisframe_y_adjust_old, zoomed_height);
+   printf("FIRSTDRAWN:%6d LASTDRAWN:%6d   yadjust:%3d old:%3d crop_h:%d\n", retro_thisframe_first_drawn_line, retro_thisframe_last_drawn_line, thisframe_y_adjust, thisframe_y_adjust_old, retroh_crop);
 #endif
 
    /* Remember the previous value */
@@ -6721,7 +6871,7 @@ static void update_video_center_vertical(void)
 /* Horizontal centering */
 static void update_video_center_horizontal(void)
 {
-   int visible_left_border_new = retro_max_diwlastword - retrow + ((retrow - zoomed_width) / 2) + 2;
+   int visible_left_border_new = retro_max_diwlastword - retrow + ((retrow - retrow_crop) / 2) + 2;
 
    /* Horizontal centering thresholds */
    int min_diwstart_limit = 162 * width_multiplier;
@@ -6735,8 +6885,8 @@ static void update_video_center_horizontal(void)
     && retro_max_diwstop  > 0
     && retro_min_diwstart < min_diwstart_limit
     && retro_max_diwstop  > max_diwstop_limit
-    && (retro_max_diwstop - retro_min_diwstart) <= (zoomed_width + (2 * width_multiplier)))
-      visible_left_border_new = (retro_max_diwstop - retro_min_diwstart - zoomed_width) / 2 + retro_min_diwstart;
+    && (retro_max_diwstop - retro_min_diwstart) <= (retrow_crop + (2 * width_multiplier)))
+      visible_left_border_new = (retro_max_diwstop - retro_min_diwstart - retrow_crop) / 2 + retro_min_diwstart;
    else if (retro_min_diwstart == MAX_STOP && retro_max_diwstop == 0 && visible_left_border != 0)
       visible_left_border_new = visible_left_border;
 
@@ -6883,8 +7033,8 @@ static void update_audiovideo(void)
       request_update_av_info = true;
 
    /* Reuse old values if more valid than current,
-    * since otherwise interlace toggle interferes with zoom */
-   if (opt_vertical_offset_auto && zoom_mode_id != 0)
+    * since otherwise interlace toggle interferes with crop */
+   if (opt_vertical_offset_auto && crop_id != 0)
    {
       if (retro_thisframe_first_drawn_line == -1 && retro_thisframe_first_drawn_line_old != -1)
          retro_thisframe_first_drawn_line = retro_thisframe_first_drawn_line_old;
@@ -6896,7 +7046,7 @@ static void update_audiovideo(void)
    }
 
    /* Automatic vertical offset */
-   if (opt_vertical_offset_auto && zoom_mode_id != 0 && (
+   if (opt_vertical_offset_auto && crop_id != 0 && (
          (retro_thisframe_first_drawn_line != retro_thisframe_last_drawn_line) ||
          (retro_thisframe_first_drawn_line == -1 && retro_thisframe_last_drawn_line == -1))
       )
@@ -6919,8 +7069,8 @@ static void update_audiovideo(void)
        && retro_thisframe_first_drawn_line == -1
        && retro_thisframe_last_drawn_line < 50)
       {
-         retro_thisframe_first_drawn_line = (changed_prefs.ntscmode) ? NTSC_KS2_ZOOM_SAFE_FIRST_LINE : PAL_KS2_ZOOM_SAFE_FIRST_LINE;
-         retro_thisframe_last_drawn_line  = (changed_prefs.ntscmode) ? NTSC_KS2_ZOOM_SAFE_LAST_LINE : PAL_KS2_ZOOM_SAFE_LAST_LINE;
+         retro_thisframe_first_drawn_line = (changed_prefs.ntscmode) ? NTSC_KS2_CROP_SAFE_FIRST_LINE : PAL_KS2_CROP_SAFE_FIRST_LINE;
+         retro_thisframe_last_drawn_line  = (changed_prefs.ntscmode) ? NTSC_KS2_CROP_SAFE_LAST_LINE : PAL_KS2_CROP_SAFE_LAST_LINE;
 
          retro_thisframe_first_drawn_line_start = retro_thisframe_first_drawn_line_old = retro_thisframe_first_drawn_line;
          retro_thisframe_last_drawn_line_start  = retro_thisframe_last_drawn_line_old  = retro_thisframe_last_drawn_line;
@@ -7002,12 +7152,12 @@ static void update_audiovideo(void)
          retro_thisframe_last_drawn_line_start  = retro_thisframe_last_drawn_line;
       }
    }
-   else if (opt_vertical_offset_auto && zoom_mode_id != 0 && retro_thisframe_first_drawn_line == retro_thisframe_last_drawn_line
+   else if (opt_vertical_offset_auto && crop_id != 0 && retro_thisframe_first_drawn_line == retro_thisframe_last_drawn_line
          && retro_thisframe_first_drawn_line != -1)
    {
       /* Another odd case of bogus initial drawn_lines with A1200 without Fast RAM */
-      retro_thisframe_first_drawn_line = (changed_prefs.ntscmode) ? NTSC_KS2_ZOOM_SAFE_FIRST_LINE : PAL_KS2_ZOOM_SAFE_FIRST_LINE;
-      retro_thisframe_last_drawn_line  = (changed_prefs.ntscmode) ? NTSC_KS2_ZOOM_SAFE_LAST_LINE : PAL_KS2_ZOOM_SAFE_LAST_LINE;
+      retro_thisframe_first_drawn_line = (changed_prefs.ntscmode) ? NTSC_KS2_CROP_SAFE_FIRST_LINE : PAL_KS2_CROP_SAFE_FIRST_LINE;
+      retro_thisframe_last_drawn_line  = (changed_prefs.ntscmode) ? NTSC_KS2_CROP_SAFE_LAST_LINE : PAL_KS2_CROP_SAFE_LAST_LINE;
    }
    else
    {
@@ -7107,8 +7257,8 @@ static bool retro_update_av_info(void)
    float hz                    = currprefs.chipset_refreshrate;
 
    /* Prevent unnecessary geometry calls */
-   unsigned base_width_old     = zoomed_width;
-   unsigned base_height_old    = zoomed_height;
+   unsigned base_width_old     = retrow_crop;
+   unsigned base_height_old    = retroh_crop;
    float    aspect_ratio_old   = aspect_ratio;
 
    static bool fake_ntsc_maybe = false;
@@ -7314,7 +7464,7 @@ static bool retro_update_av_info(void)
          if (opt_statusbar_position >= 0 && (defaulth - retroh) >= opt_statusbar_position)
             opt_statusbar_position = defaulth - retroh;
 
-   /* Aspect offset for zoom mode */
+   /* Aspect offset for crop mode */
    opt_statusbar_position_offset = opt_statusbar_position_old - opt_statusbar_position;
 
    /* Compensate for interlace, aargh */
@@ -7355,38 +7505,38 @@ static bool retro_update_av_info(void)
    printf("statusbar:%3d old:%3d offset:%3d, defaulth:%d retroh:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, defaulth, retroh);
 #endif
 
-   /* Apply zoom mode croppings */
-   switch (zoom_mode_id)
+   /* Apply crop mode */
+   switch (crop_id)
    {
-      case 1:
-         zoomed_width  = 360;
-         zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 240 : 270;
+      case CROP_MINIMUM:
+         retrow_crop = 360;
+         retroh_crop = (video_config_geometry & PUAE_VIDEO_NTSC) ? 240 : 270;
          break;
-      case 2:
-         zoomed_width  = 348;
-         zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 240 : 264;
+      case CROP_SMALLER:
+         retrow_crop = 348;
+         retroh_crop = (video_config_geometry & PUAE_VIDEO_NTSC) ? 240 : 264;
          break;
-      case 3:
-         zoomed_width  = 336;
-         zoomed_height = (video_config_geometry & PUAE_VIDEO_NTSC) ? 240 : 256;
+      case CROP_SMALL:
+         retrow_crop = 336;
+         retroh_crop = (video_config_geometry & PUAE_VIDEO_NTSC) ? 240 : 256;
          break;
-      case 4:
-         zoomed_width  = 320;
-         zoomed_height = 240;
+      case CROP_MEDIUM:
+         retrow_crop = 320;
+         retroh_crop = 240;
          break;
-      case 5:
-         zoomed_width  = 320;
-         zoomed_height = 224;
+      case CROP_LARGE:
+         retrow_crop = 320;
+         retroh_crop = 224;
          break;
-      case 6:
-         zoomed_width  = 320;
-         zoomed_height = 216;
+      case CROP_LARGER:
+         retrow_crop = 320;
+         retroh_crop = 216;
          break;
-      case 7:
-         zoomed_width  = 320;
-         zoomed_height = 200;
+      case CROP_MAXIMUM:
+         retrow_crop = 320;
+         retroh_crop = 200;
          break;
-      case 8:
+      case CROP_AUTO:
          /* Automatic width sense fooling */
          /* Walker */
          if (retro_min_diwstart == (145 * width_multiplier) && retro_max_diwstop == (481 * width_multiplier))
@@ -7399,105 +7549,105 @@ static bool retro_update_av_info(void)
             retro_min_diwstart += (32 * width_multiplier);
 
          /* Normalize previous width */
-         zoomed_width /= width_multiplier;
+         retrow_crop /= width_multiplier;
 
          if (retro_min_diwstart != retro_max_diwstop
           && retro_min_diwstart > 0
           && retro_max_diwstop > 0)
-            zoomed_width = (retro_max_diwstop / width_multiplier) - (retro_min_diwstart / width_multiplier);
-         zoomed_width = (zoomed_width < 320) ? 320 : zoomed_width;
+            retrow_crop = (retro_max_diwstop / width_multiplier) - (retro_min_diwstart / width_multiplier);
+         retrow_crop = (retrow_crop < 320) ? 320 : retrow_crop;
 
          if (retro_thisframe_first_drawn_line != retro_thisframe_last_drawn_line
           && retro_thisframe_first_drawn_line > 0
           && retro_thisframe_last_drawn_line > 0)
-            zoomed_height = retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line + 1;
-         zoomed_height = (zoomed_height < 200) ? 200 : zoomed_height;
+            retroh_crop = retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line + 1;
+         retroh_crop = (retroh_crop < 200) ? 200 : retroh_crop;
          break;
       default:
-         zoomed_width  = retrow;
-         zoomed_height = retroh;
+         retrow_crop = retrow;
+         retroh_crop = retroh;
          break;
    }
 
-   /* Zoom mode preset calculations */
-   if (zoom_mode_id > 0)
+   /* Crop mode preset calculations */
+   if (crop_id > 0)
    {
-      float zoom_dar = 0;
-      float zoom_par = retro_get_aspect_ratio(0, 0, true);
-      int zoomed_height_original = zoomed_height;
+      float crop_dar    = 0;
+      float crop_par    = retro_get_aspect_ratio(0, 0, true);
+      int retroh_crop_o = retroh_crop;
 
-      switch (zoom_mode_crop_id)
+      switch (crop_mode_id)
       {
-         case 0: /* Both */
+         case CROP_MODE_BOTH:
             break;
-         case 1: /* Vertical disables horizontal crop */
-            zoomed_width = retrow;
+         case CROP_MODE_VERTICAL: /* Vertical disables horizontal crop */
+            retrow_crop = retrow;
             break;
-         case 2: /* Horizontal disables vertical crop */
-            zoomed_height = retroh;
+         case CROP_MODE_HORIZONTAL: /* Horizontal disables vertical crop */
+            retroh_crop = retroh;
             break;
-         case 3: /* 16:9 */
-            zoom_dar = (float)16/9;
-            zoomed_width = retrow;
-            if (zoomed_height < (int)(zoomed_width * width_multiplier / zoom_dar * zoom_par))
-               zoomed_width = (int)(zoomed_height * zoom_dar / zoom_par);
+         case CROP_MODE_16_9:
+            crop_dar    = (float)16/9;
+            retrow_crop = retrow;
+            if (retroh_crop < (int)(retrow_crop * width_multiplier / crop_dar * crop_par))
+               retrow_crop = (int)(retroh_crop * crop_dar / crop_par);
             break;
-         case 4: /* 16:10 */
-            zoom_dar = (float)16/10;
-            zoomed_width = retrow;
-            if (zoomed_height < (int)(zoomed_width * width_multiplier / zoom_dar * zoom_par))
-               zoomed_width = (int)(zoomed_height * zoom_dar / zoom_par);
+         case CROP_MODE_16_10:
+            crop_dar    = (float)16/10;
+            retrow_crop = retrow;
+            if (retroh_crop < (int)(retrow_crop * width_multiplier / crop_dar * crop_par))
+               retrow_crop = (int)(retroh_crop * crop_dar / crop_par);
             break;
-         case 5: /* 4:3 */
-            zoom_dar = (float)4/3;
-            if (zoomed_height < (int)(zoomed_width * width_multiplier / zoom_dar * zoom_par))
+         case CROP_MODE_4_3:
+            crop_dar    = (float)4/3;
+            if (retroh_crop < (int)(retrow_crop * width_multiplier / crop_dar * crop_par))
             {
-               zoomed_height = (int)(zoomed_width / zoom_dar * zoom_par);
-               if (zoomed_height < zoomed_height_original)
-                  zoomed_height = zoomed_height_original;
-               zoomed_width = (int)(zoomed_height * zoom_dar / zoom_par);
+               retroh_crop = (int)(retrow_crop / crop_dar * crop_par);
+               if (retroh_crop < retroh_crop_o)
+                  retroh_crop = retroh_crop_o;
+               retrow_crop = (int)(retroh_crop * crop_dar / crop_par);
             }
             break;
-         case 6: /* 5:4 */
-            zoom_dar = (float)5/4;
-            if (zoomed_height < (int)(zoomed_width * width_multiplier / zoom_dar * zoom_par))
+         case CROP_MODE_5_4:
+            crop_dar = (float)5/4;
+            if (retroh_crop < (int)(retrow_crop * width_multiplier / crop_dar * crop_par))
             {
-               zoomed_height = (int)(zoomed_width / zoom_dar * zoom_par);
-               if (zoomed_height < zoomed_height_original)
-                  zoomed_height = zoomed_height_original;
-               zoomed_width = (int)(zoomed_height * zoom_dar / zoom_par);
+               retroh_crop = (int)(retrow_crop / crop_dar * crop_par);
+               if (retroh_crop < retroh_crop_o)
+                  retroh_crop = retroh_crop_o;
+               retrow_crop = (int)(retroh_crop * crop_dar / crop_par);
             }
             break;
       }
 
-      /* If previous zoom height was in double line */
-      if (zoomed_height > retroh)
-         zoomed_height /= 2;
+      /* If previous crop height was in double line */
+      if (retroh_crop > retroh)
+         retroh_crop /= 2;
 
-      zoomed_height = (zoomed_height < 200) ? 200 : zoomed_height;
-      zoomed_height *= (video_config & PUAE_VIDEO_DOUBLELINE) ? 2 : 1;
-      if (zoomed_height > retroh)
-         zoomed_height = retroh;
+      retroh_crop = (retroh_crop < 200) ? 200 : retroh_crop;
+      retroh_crop *= (video_config & PUAE_VIDEO_DOUBLELINE) ? 2 : 1;
+      if (retroh_crop > retroh)
+         retroh_crop = retroh;
 
-      zoomed_width = (zoomed_width < 320) ? 320 : zoomed_width;
-      zoomed_width *= width_multiplier;
-      if (zoomed_width > retrow)
-         zoomed_width = retrow;
+      retrow_crop = (retrow_crop < 320) ? 320 : retrow_crop;
+      retrow_crop *= width_multiplier;
+      if (retrow_crop > retrow)
+         retrow_crop = retrow;
    }
 
    /* Fetch default av_info (not current!) */
    struct retro_system_av_info new_av_info;
    retro_get_system_av_info(&new_av_info);
 
-   /* Zoomed geometry update */
-   if (zoomed_height != retroh || zoomed_width != retrow)
+   /* Cropped geometry update */
+   if ( retrow_crop != retrow || retroh_crop != retroh)
    {
-      new_av_info.geometry.base_width   = zoomed_width;
-      new_av_info.geometry.base_height  = zoomed_height;
-      new_av_info.geometry.aspect_ratio = retro_get_aspect_ratio(zoomed_width, zoomed_height, false);
+      new_av_info.geometry.base_width   = retrow_crop;
+      new_av_info.geometry.base_height  = retroh_crop;
+      new_av_info.geometry.aspect_ratio = retro_get_aspect_ratio(retrow_crop, retroh_crop, false);
 
       /* Ensure statusbar stays visible at the bottom */
-      int statusbar_position_offset = retroh - zoomed_height - opt_statusbar_position_offset;
+      int statusbar_position_offset = retroh - retroh_crop - opt_statusbar_position_offset;
       if (opt_statusbar_position >= 0 && statusbar_position_offset >= opt_statusbar_position)
       {
          opt_statusbar_position = statusbar_position_offset;
@@ -7506,7 +7656,7 @@ static bool retro_update_av_info(void)
             opt_statusbar_position = 0;
       }
 #if 0
-      printf("ztatusbar:%3d old:%3d offset:%3d, defaulth:%d retroz:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, defaulth, zoomed_height);
+      printf("ztatusbar:%3d old:%3d offset:%3d, defaulth:%d retroz:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, defaulth, retroh_crop);
 #endif
    }
 
@@ -7529,8 +7679,8 @@ static bool retro_update_av_info(void)
    if (change_timing || change_geometry)
       aspect_ratio = new_av_info.geometry.aspect_ratio;
 
-   /* If zoom mode should be vertically centered automagically */
-   if (opt_vertical_offset_auto && (zoom_mode_id != 0 || zoomed_height != retroh))
+   /* If crop mode should be vertically centered automagically */
+   if (opt_vertical_offset_auto && (crop_id != 0 || retroh_crop != retroh))
       update_video_center_vertical();
    else
       thisframe_y_adjust = minfirstline + opt_vertical_offset;
@@ -7545,11 +7695,11 @@ static bool retro_update_av_info(void)
    if (av_log)
    {
       if (change_timing)
-         printf("  * Update av_info : %dx%d %0.4fHz, zoomed: %dx%d, aspect:%0.3f, video_config:%d\n", retrow, retroh, hz, zoomed_width, zoomed_height, aspect_ratio, video_config_geometry);
+         printf("  * Update av_info : %dx%d %0.4fHz, crop: %dx%d, aspect:%0.3f, video_config:%d\n", retrow, retroh, hz, retrow_crop, retroh_crop, aspect_ratio, video_config_geometry);
       else if (change_geometry)
-         printf("  * Update geometry: %dx%d, zoomed: %dx%d, aspect:%0.3f, video_config:%d\n", retrow, retroh, zoomed_width, zoomed_height, aspect_ratio, video_config_geometry);
+         printf("  * Update geometry: %dx%d, crop: %dx%d, aspect:%0.3f, video_config:%d\n", retrow, retroh, retrow_crop, retroh_crop, aspect_ratio, video_config_geometry);
       else
-         printf("  * Update center  : %dx%d, zoomed: %dx%d, aspect:%0.3f, video_config:%d\n", retrow, retroh, zoomed_width, zoomed_height, aspect_ratio, video_config_geometry);
+         printf("  * Update center  : %dx%d, crop: %dx%d, aspect:%0.3f, video_config:%d\n", retrow, retroh, retrow_crop, retroh_crop, aspect_ratio, video_config_geometry);
    }
 
    /* Triggers check_prefs_changed_gfx() in vsync_handle_check() */
@@ -7681,17 +7831,17 @@ void retro_run(void)
    {
       if (video_config & PUAE_VIDEO_DOUBLELINE)
       {
-         draw_hline(0, 574, zoomed_width, 0, 0);
-         draw_hline(0, 575, zoomed_width, 0, 0);
+         draw_hline(0, 574, retrow_crop, 0, 0);
+         draw_hline(0, 575, retrow_crop, 0, 0);
       }
       else
       {
-         draw_hline(0, 287, zoomed_width, 0, 0);
+         draw_hline(0, 287, retrow_crop, 0, 0);
       }
    }
 
 upload:
-   video_cb(retro_bmp, zoomed_width, zoomed_height, retrow << (pix_bytes / 2));
+   video_cb(retro_bmp, retrow_crop, retroh_crop, retrow << (pix_bytes / 2));
    flush_sound_buffers(4);
    upload_output_audio_buffer();
 }

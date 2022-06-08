@@ -102,7 +102,7 @@ enum EMU_FUNCTIONS
    EMU_FREEZE,
    EMU_SAVE_DISK,
    EMU_ASPECT_RATIO,
-   EMU_ZOOM_MODE,
+   EMU_CROP,
    EMU_TURBO_FIRE,
    EMU_FUNCTION_COUNT
 };
@@ -259,9 +259,27 @@ extern unsigned short int retro_bmp[RETRO_BMP_SIZE];
 extern unsigned int pix_bytes;
 extern int retrow;
 extern int retroh;
-extern int zoomed_width;
-extern int zoomed_height;
+extern int retrow_crop;
+extern int retroh_crop;
 extern unsigned int video_config;
 extern unsigned int video_config_geometry;
+
+#define CROP_NONE            0
+#define CROP_MINIMUM         1
+#define CROP_SMALLER         2
+#define CROP_SMALL           3
+#define CROP_MEDIUM          4
+#define CROP_LARGE           5
+#define CROP_LARGER          6
+#define CROP_MAXIMUM         7
+#define CROP_AUTO            8
+
+#define CROP_MODE_BOTH       0
+#define CROP_MODE_VERTICAL   1
+#define CROP_MODE_HORIZONTAL 2
+#define CROP_MODE_16_9       3
+#define CROP_MODE_16_10      4
+#define CROP_MODE_4_3        5
+#define CROP_MODE_5_4        6
 
 #endif /* LIBRETRO_CORE_H */

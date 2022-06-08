@@ -60,8 +60,8 @@ extern float retro_refresh;
 /* Core options */
 extern unsigned int video_config_aspect;
 extern bool opt_aspect_ratio_locked;
-extern unsigned int zoom_mode_id;
-extern unsigned int opt_zoom_mode_id;
+extern unsigned int crop_id;
+extern unsigned int opt_crop_id;
 extern int opt_statusbar;
 extern int opt_statusbar_position;
 extern unsigned int opt_analogmouse;
@@ -179,18 +179,18 @@ void emu_function(int function)
                "Pixel Aspect",
                (video_config_aspect == PUAE_VIDEO_PAL) ? "PAL" : "NTSC");
          break;
-      case EMU_ZOOM_MODE:
-         if (zoom_mode_id == 0 && opt_zoom_mode_id == 0)
+      case EMU_CROP:
+         if (crop_id == 0 && opt_crop_id == 0)
             break;
-         if (zoom_mode_id > 0)
-            zoom_mode_id = 0;
-         else if (zoom_mode_id == 0)
-            zoom_mode_id = opt_zoom_mode_id;
+         if (crop_id > 0)
+            crop_id = 0;
+         else if (crop_id == 0)
+            crop_id = opt_crop_id;
          request_update_av_info = true;
          /* Statusbar notification */
          statusbar_message_show(5, "%s %s",
-               "Zoom Mode",
-               (zoom_mode_id) ? "ON" : "OFF");
+               "Crop",
+               (crop_id) ? "ON" : "OFF");
          break;
       case EMU_TURBO_FIRE:
          retro_turbo_fire = !retro_turbo_fire;
@@ -887,8 +887,8 @@ void update_input(unsigned disable_keys)
             case RETRO_MAPPER_ASPECT_RATIO:
                emu_function(EMU_ASPECT_RATIO);
                break;
-            case RETRO_MAPPER_ZOOM_MODE:
-               emu_function(EMU_ZOOM_MODE);
+            case RETRO_MAPPER_CROP:
+               emu_function(EMU_CROP);
                break;
             case RETRO_MAPPER_TURBO_FIRE:
                emu_function(EMU_TURBO_FIRE);
@@ -1082,8 +1082,8 @@ void update_input(unsigned disable_keys)
                   emu_function(EMU_RESET);
                else if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_ASPECT_RATIO])
                   emu_function(EMU_ASPECT_RATIO);
-               else if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_ZOOM_MODE])
-                  emu_function(EMU_ZOOM_MODE);
+               else if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_CROP])
+                  emu_function(EMU_CROP);
                else if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_TURBO_FIRE])
                   emu_function(EMU_TURBO_FIRE);
                else if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_SAVE_DISK])
@@ -1168,7 +1168,7 @@ void update_input(unsigned disable_keys)
                   ;/* no-op */
                else if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_ASPECT_RATIO])
                   ;/* no-op */
-               else if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_ZOOM_MODE])
+               else if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_CROP])
                   ;/* no-op */
                else if (mapper_keys[i] == mapper_keys[RETRO_MAPPER_TURBO_FIRE])
                   ;/* no-op */

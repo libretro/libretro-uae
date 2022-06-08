@@ -71,7 +71,7 @@ static const retro_vkeys vkeys[VKBDX * VKBDY * 2] =
    { {10,29},{10,29},VKBD_MOUSE_RIGHT },
    { "J/M" ,"J/M" ,VKBD_JOYMOUSE },
    { "TRBF","TRBF",VKBD_TURBOFIRE },
-   { "ASPR","ZOOM",VKBD_ASPECT_ZOOM },
+   { "ASPR","CROP",VKBD_ASPECT_CROP },
    { "STBR","SVDS",VKBD_STATUSBAR_SAVEDISK },
    { {17}  ,{17}  ,VKBD_RESET },
 
@@ -177,7 +177,7 @@ static const retro_vkeys vkeys[VKBDX * VKBDY * 2] =
    { {10,29},{10,29},VKBD_MOUSE_RIGHT },
    { "J/M" ,"J/M" ,VKBD_JOYMOUSE },
    { "TRBF","TRBF",VKBD_TURBOFIRE },
-   { "ASPR","ZOOM",VKBD_ASPECT_ZOOM },
+   { "ASPR","CROP",VKBD_ASPECT_CROP },
    { "STBR","SVDS",VKBD_STATUSBAR_SAVEDISK },
    { {17}  ,{17}  ,VKBD_RESET },
 
@@ -288,7 +288,7 @@ static const int vkbd_alt_keys_len = sizeof(vkbd_alt_keys) / sizeof(vkbd_alt_key
 /* Extra color keys */
 static const int vkbd_extra_keys[] =
 {
-   VKBD_NUMPAD, VKBD_JOYMOUSE, VKBD_TURBOFIRE, VKBD_ASPECT_ZOOM, VKBD_STATUSBAR_SAVEDISK
+   VKBD_NUMPAD, VKBD_JOYMOUSE, VKBD_TURBOFIRE, VKBD_ASPECT_CROP, VKBD_STATUSBAR_SAVEDISK
 };
 static const int vkbd_extra_keys_len = sizeof(vkbd_extra_keys) / sizeof(vkbd_extra_keys[0]);
 
@@ -427,8 +427,8 @@ void print_vkbd(void)
    int XSIDE     = (320 * FONT_WIDTH) / VKBDX;
    int YSIDE     = 21 * FONT_HEIGHT;
 
-   XPADDING      = zoomed_width - (XSIDE * VKBDX);
-   YPADDING      = zoomed_height - (YSIDE * VKBDY);
+   XPADDING      = retrow_crop - (XSIDE * VKBDX);
+   YPADDING      = retroh_crop - (YSIDE * VKBDY);
 
    int XBASEKEY  = (XPADDING > 0) ? (XPADDING / 2) : 0;
    int YBASEKEY  = (YPADDING > 0) ? (YPADDING / 2) : 0;
@@ -447,7 +447,7 @@ void print_vkbd(void)
 
    /* Coordinates */
    vkbd_x_min = XOFFSET + XBASEKEY + XKEYSPACING;
-   vkbd_x_max = XOFFSET - XBASEKEY - XKEYSPACING + zoomed_width;
+   vkbd_x_max = XOFFSET - XBASEKEY - XKEYSPACING + retrow_crop;
    vkbd_y_min = YOFFSET + YBASEKEY + YKEYSPACING;
    vkbd_y_max = YOFFSET + YBASEKEY + (YSIDE * VKBDY);
 
@@ -683,20 +683,20 @@ void print_vkbd(void)
    {
       unsigned corner_y_min = 0;
       unsigned corner_y_max = 0;
-      unsigned lores_offset = (zoomed_width < 361 && zoomed_width % 2 == 0);
+      unsigned lores_offset = (retrow_crop < 361 && retrow_crop % 2 == 0);
 
       /* Top */
       corner_y_min = 0;
       corner_y_max = vkbd_y_min - YKEYSPACING;
       draw_fbox(0, corner_y_min,
-                zoomed_width, corner_y_max,
+                retrow_crop, corner_y_max,
                 0, BRD_ALPHA);
 
       /* Bottom */
       corner_y_min = vkbd_y_max + YKEYSPACING;
-      corner_y_max = zoomed_height - vkbd_y_max - YKEYSPACING;
+      corner_y_max = retroh_crop - vkbd_y_max - YKEYSPACING;
       draw_fbox(0, corner_y_min,
-                zoomed_width, corner_y_max,
+                retrow_crop, corner_y_max,
                 0, BRD_ALPHA);
 
       /* Left + Right */
@@ -706,7 +706,7 @@ void print_vkbd(void)
                 vkbd_x_min - XKEYSPACING, corner_y_max,
                 0, BRD_ALPHA);
       draw_fbox(vkbd_x_max + (XKEYSPACING * 2) + ((lores_offset) ? -XKEYSPACING : 0), corner_y_min,
-                zoomed_width - vkbd_x_max - (XKEYSPACING * (lores_offset ? 1 : 2)), corner_y_max,
+                retrow_crop - vkbd_x_max - (XKEYSPACING * (lores_offset ? 1 : 2)), corner_y_max,
                 0, BRD_ALPHA);
    }
 
@@ -810,10 +810,10 @@ static void convert_vkbd_to_mapper(int *vkbd_mapping_key, char **var_value)
             *vkbd_mapping_key = TOGGLE_STATUSBAR;
          }
          break;
-      case VKBD_ASPECT_ZOOM:
+      case VKBD_ASPECT_CROP:
          if (retro_capslock)
          {
-            *var_value = get_variable("puae_mapper_zoom_mode_toggle");
+            *var_value = get_variable("puae_mapper_crop_toggle");
             *vkbd_mapping_key = 0;
          }
          else
@@ -1073,8 +1073,8 @@ void input_vkbd(void)
 
    if (p_x != 0 && p_y != 0 && (p_x != last_pointer_x || p_y != last_pointer_y))
    {
-      int px = (int)((p_x + 0x7fff) * zoomed_width / 0xffff);
-      int py = (int)((p_y + 0x7fff) * zoomed_height / 0xffff);
+      int px = (int)((p_x + 0x7fff) * retrow_crop / 0xffff);
+      int py = (int)((p_y + 0x7fff) * retroh_crop / 0xffff);
 
       last_pointer_x = p_x;
       last_pointer_y = p_y;
@@ -1219,9 +1219,9 @@ void input_vkbd(void)
             case VKBD_TURBOFIRE:
                emu_function(EMU_TURBO_FIRE);
                break;
-            case VKBD_ASPECT_ZOOM:
+            case VKBD_ASPECT_CROP:
                if (retro_capslock)
-                  emu_function(EMU_ZOOM_MODE);
+                  emu_function(EMU_CROP);
                else
                   emu_function(EMU_ASPECT_RATIO);
                break;
