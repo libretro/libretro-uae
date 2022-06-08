@@ -2865,9 +2865,9 @@ void retro_set_environment(retro_environment_t cb)
    environ_cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &support_no_game);
 
    struct retro_led_interface led_interface;
-   environ_cb(RETRO_ENVIRONMENT_GET_LED_INTERFACE, &led_interface);
-   if (led_interface.set_led_state && !led_state_cb)
-      led_state_cb = led_interface.set_led_state;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_LED_INTERFACE, &led_interface))
+      if (led_interface.set_led_state && !led_state_cb)
+         led_state_cb = led_interface.set_led_state;
 
 #ifdef USE_LIBRETRO_VFS
    struct retro_vfs_interface_info vfs_iface_info;
