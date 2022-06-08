@@ -606,7 +606,7 @@ static void retro_set_core_options()
          "puae_model_options_display",
          "System > Show Automatic Model Options",
          "Show Automatic Model Options",
-         "Show/hide default model options (Floppy/HD/CD) for 'Automatic' model.\nPage refresh by menu toggle required!",
+         "Show/hide default model options (Floppy/HD/CD) for 'Automatic' model.",
          NULL,
          "system",
          {
@@ -1052,7 +1052,7 @@ static void retro_set_core_options()
          "puae_video_options_display",
          "Show Video Options",
          NULL,
-         "Page refresh by menu toggle required!",
+         "",
          NULL,
          NULL,
          {
@@ -1525,7 +1525,7 @@ static void retro_set_core_options()
          "puae_audio_options_display",
          "Show Audio Options",
          NULL,
-         "Page refresh by menu toggle required!",
+         "",
          NULL,
          NULL,
          {
@@ -1900,7 +1900,7 @@ static void retro_set_core_options()
          "puae_mapping_options_display",
          "Show Mapping Options",
          NULL,
-         "Page refresh by menu toggle required!",
+         "",
          NULL,
          NULL,
          {
