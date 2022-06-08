@@ -169,7 +169,7 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
     if (!retro_statusbar)
         return;
 
-    totalwidth = zoomed_width;
+    totalwidth = retrow_crop;
     num_multip = 1;
     if (currprefs.gfx_resolution == RES_HIRES && currprefs.gfx_vresolution == VRES_NONDOUBLE)
         num_multip = 2;

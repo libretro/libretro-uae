@@ -321,17 +321,17 @@ void print_statusbar(void)
    BOX_Y = TEXT_Y - BOX_PADDING;
 
    /* Statusbar size */
-   BOX_WIDTH = zoomed_width;
-   int ZOOMED_WIDTH_OFFSET = retrow - zoomed_width;
+   BOX_WIDTH = retrow_crop;
+   int CROP_WIDTH_OFFSET = retrow - retrow_crop;
 
    /* Video resolution */
-   int TEXT_X_RESOLUTION = TEXT_X + (FONT_SLOT*4) + (FONT_WIDTH*16) - (ZOOMED_WIDTH_OFFSET/2);
+   int TEXT_X_RESOLUTION = TEXT_X + (FONT_SLOT*4) + (FONT_WIDTH*16) - (CROP_WIDTH_OFFSET/2);
    unsigned char RESOLUTION[10] = {0};
-   snprintf(RESOLUTION, sizeof(RESOLUTION), "%4dx%3d", zoomed_width, zoomed_height);
+   snprintf(RESOLUTION, sizeof(RESOLUTION), "%4dx%3d", retrow_crop, retroh_crop);
 
    /* Model & memory */
-   int TEXT_X_MODEL  = TEXT_X + (FONT_SLOT*6) + (FONT_WIDTH*35) - ZOOMED_WIDTH_OFFSET;
-   int TEXT_X_MEMORY = TEXT_X + (FONT_SLOT*6) + (FONT_WIDTH*3) - ZOOMED_WIDTH_OFFSET;
+   int TEXT_X_MODEL  = TEXT_X + (FONT_SLOT*6) + (FONT_WIDTH*35) - CROP_WIDTH_OFFSET;
+   int TEXT_X_MEMORY = TEXT_X + (FONT_SLOT*6) + (FONT_WIDTH*3) - CROP_WIDTH_OFFSET;
    /* Sacrifice memory slot if there is not enough width */
    if (!(video_config & PUAE_VIDEO_DOUBLELINE))
    {
@@ -380,9 +380,9 @@ void print_statusbar(void)
    /* Double line positions */
    if (video_config & PUAE_VIDEO_DOUBLELINE)
    {
-      TEXT_X_RESOLUTION = TEXT_X + (FONT_SLOT*9)  + (FONT_WIDTH*25) - (ZOOMED_WIDTH_OFFSET/2);
-      TEXT_X_MODEL      = TEXT_X + (FONT_SLOT*17) + (FONT_WIDTH*20) - ZOOMED_WIDTH_OFFSET;
-      TEXT_X_MEMORY     = TEXT_X + (FONT_SLOT*16) + (FONT_WIDTH*15) - ZOOMED_WIDTH_OFFSET;
+      TEXT_X_RESOLUTION = TEXT_X + (FONT_SLOT*9)  + (FONT_WIDTH*25) - (CROP_WIDTH_OFFSET/2);
+      TEXT_X_MODEL      = TEXT_X + (FONT_SLOT*17) + (FONT_WIDTH*20) - CROP_WIDTH_OFFSET;
+      TEXT_X_MEMORY     = TEXT_X + (FONT_SLOT*16) + (FONT_WIDTH*15) - CROP_WIDTH_OFFSET;
    }
 
    /* Joy port indicators */
@@ -653,7 +653,7 @@ void retro_flush_screen (struct vidbuf_description *gfxinfo, int ystart, int yen
    retro_min_diwstart               = min_diwstart;
    retro_max_diwstop                = max_diwstop;
 
-   /* Align the resulting Automatic Zoom screen height to even number */
+   /* Align the resulting Automatic Crop screen height to even number */
    if (!retro_av_info_is_lace && (retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line + 1) % 2)
       retro_thisframe_last_drawn_line++;
 
