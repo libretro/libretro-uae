@@ -32,7 +32,7 @@ extern void statusbar_message_show(signed char icon, const char *format, ...);
 #define VKBD_STATUSBAR_SAVEDISK -4
 #define VKBD_JOYMOUSE           -5
 #define VKBD_TURBOFIRE          -6
-#define VKBD_ASPECT_ZOOM        -7
+#define VKBD_ASPECT_CROP        -7
 #define VKBD_CAPSLOCK           -10
 
 #define VKBD_MOUSE_UP           -11
