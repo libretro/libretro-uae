@@ -4887,14 +4887,6 @@ void retro_init(void)
    static struct retro_core_options_update_display_callback update_display_callback = {retro_update_display};
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_UPDATE_DISPLAY_CALLBACK, &update_display_callback);
 
-   enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
-   if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
-   {
-      log_cb(RETRO_LOG_ERROR, "RGB565 is not supported.\n");
-      environ_cb(RETRO_ENVIRONMENT_SHUTDOWN, NULL);
-      return;
-   }
-
    bool achievements = true;
    environ_cb(RETRO_ENVIRONMENT_SET_SUPPORT_ACHIEVEMENTS, &achievements);
 
@@ -5043,27 +5035,6 @@ static float retro_default_refresh(void)
 
 void retro_get_system_av_info(struct retro_system_av_info *info)
 {
-   /* Need to do this here because core option values are not available in retro_init */
-   if (!pix_bytes_initialized)
-   {
-      pix_bytes_initialized = true;
-      if (pix_bytes == 4)
-      {
-         enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_XRGB8888;
-         if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
-         {
-            pix_bytes = 2;
-            log_cb(RETRO_LOG_INFO, "XRGB8888 is not supported. Trying RGB565.\n");
-            fmt = RETRO_PIXEL_FORMAT_RGB565;
-            if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
-            {
-               log_cb(RETRO_LOG_INFO, "RGB565 is not supported.\n");
-               exit(0);
-            }
-         }
-      }
-   }
-
    info->geometry.base_width   = retrow;
    info->geometry.base_height  = retroh;
    info->geometry.max_width    = EMULATOR_MAX_WIDTH;
@@ -7848,6 +7819,38 @@ upload:
 
 bool retro_load_game(const struct retro_game_info *info)
 {
+   /* Pixel format */
+   if (!pix_bytes_initialized)
+   {
+      pix_bytes_initialized = true;
+      if (pix_bytes == 2)
+      {
+         enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
+         if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
+         {
+            log_cb(RETRO_LOG_ERROR, "RGB565 is not supported.\n");
+            environ_cb(RETRO_ENVIRONMENT_SHUTDOWN, NULL);
+            return false;
+         }
+      }
+      else if (pix_bytes == 4)
+      {
+         enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_XRGB8888;
+         if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
+         {
+            pix_bytes = 2;
+            log_cb(RETRO_LOG_INFO, "XRGB8888 is not supported. Trying RGB565.\n");
+            fmt = RETRO_PIXEL_FORMAT_RGB565;
+            if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
+            {
+               log_cb(RETRO_LOG_INFO, "RGB565 is not supported.\n");
+               environ_cb(RETRO_ENVIRONMENT_SHUTDOWN, NULL);
+               return false;
+            }
+         }
+      }
+   }
+
    /* Content */
    if (info)
    {
