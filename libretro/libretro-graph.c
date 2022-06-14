@@ -804,9 +804,12 @@ static void draw_char_2pass16(uint16_t *surf,
             {
                if (*yptr == bg)
                {
-                  /* Bottom right */
-                  if (pcount >= surfhxscale+xscale &&
-                      yptr[-surfhxscale-xscale] == fg)
+                  /* Right + Bottom right + Bottom */
+                  if (
+                        (pcount >= xscale             && yptr[-xscale] == fg)             ||
+                        (pcount >= surfhxscale+xscale && yptr[-surfhxscale-xscale] == fg) ||
+                        (pcount >= surfhxscale        && yptr[-surfhxscale] == fg)
+                  )
                   {
                      switch (alpha)
                      {
@@ -982,9 +985,12 @@ static void draw_char_2pass32(uint32_t *surf,
             {
                if (*yptr == bg)
                {
-                  /* Bottom right */
-                  if (pcount >= surfhxscale+xscale &&
-                      yptr[-surfhxscale-xscale] == fg)
+                  /* Right + Bottom right + Bottom */
+                  if (
+                        (pcount >= xscale             && yptr[-xscale] == fg)             ||
+                        (pcount >= surfhxscale+xscale && yptr[-surfhxscale-xscale] == fg) ||
+                        (pcount >= surfhxscale        && yptr[-surfhxscale] == fg)
+                  )
                   {
                      switch (alpha)
                      {
