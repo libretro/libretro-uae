@@ -348,7 +348,7 @@ bool dc_replace_file(dc_storage* dc, int index, const char* filename)
       {
          char image_label[RETRO_PATH_MAX];
          image_label[0] = '\0';
-         fill_short_pathname_representation(image_label, full_path_replace, sizeof(image_label));
+         fill_pathname(image_label, path_basename(full_path_replace), "", sizeof(image_label));
 
          /* Dupecheck */
          for (unsigned i = 0; i < dc->count - 1; i++)

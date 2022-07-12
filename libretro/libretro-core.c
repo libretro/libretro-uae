@@ -6044,8 +6044,8 @@ static bool retro_create_config(void)
                hd_image_label[0] = '\0';
 
                if (!string_is_empty(full_path))
-                  fill_short_pathname_representation(
-                        hd_image_label, full_path, sizeof(hd_image_label));
+                  fill_pathname(
+                        hd_image_label, path_basename(full_path), "", sizeof(hd_image_label));
 
                /* Must reset disk control struct here,
                 * otherwise duplicate entries will be
@@ -6402,8 +6402,8 @@ static bool retro_create_config(void)
                disk_image_label[0] = '\0';
 
                if (!string_is_empty(full_path))
-                  fill_short_pathname_representation(
-                        disk_image_label, full_path, sizeof(disk_image_label));
+                  fill_pathname(
+                        disk_image_label, path_basename(full_path), "", sizeof(disk_image_label));
 
                /* Must reset disk control struct here,
                 * otherwise duplicate entries will be
@@ -6532,8 +6532,8 @@ static bool retro_create_config(void)
             cd_image_label[0] = '\0';
 
             if (!string_is_empty(full_path))
-               fill_short_pathname_representation(
-                     cd_image_label, full_path, sizeof(cd_image_label));
+               fill_pathname(
+                     cd_image_label, path_basename(full_path), "", sizeof(cd_image_label));
 
             /* Must reset disk control struct here,
              * otherwise duplicate entries will be
@@ -6644,7 +6644,7 @@ static bool retro_create_config(void)
                   if (!string_is_empty(disk_image) && path_is_valid(disk_image))
                   {
                      /* Add the file to Disk Control */
-                     fill_short_pathname_representation(disk_image_label, disk_image, sizeof(disk_image_label));
+                     fill_pathname(disk_image_label, path_basename(disk_image), "", sizeof(disk_image_label));
                      dc_add_file(dc, disk_image, disk_image_label);
                   }
                }
