@@ -36,6 +36,14 @@ ifneq (,$(findstring unix,$(platform)))
       endif
    endif
 
+# Raspberry Pi 4
+else ifneq (,$(findstring rpi4,$(platform)))
+   TARGET := $(TARGET_NAME)_libretro.so
+   fpic := -fPIC
+   LDFLAGS += -lm -lpthread -ldl
+   CFLAGS += -march=armv8-a+crc+simd -mcpu=cortex-a72
+   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
+
 # RPI
 else ifeq ($(platform), rpi)
 	TARGET := $(TARGET_NAME)_libretro.so
