@@ -7182,16 +7182,23 @@ static void update_audiovideo(void)
          if (retro_thisframe_first_drawn_line_start == -1 && retro_thisframe_last_drawn_line_start == -1)
             request_update_av_info = true;
 
+         /* Update immediately with big enough difference in last line */
+         if (retro_thisframe_last_drawn_line_delta > 47 && retro_thisframe_last_drawn_line_delta < 100)
+            request_update_av_info = true;
+
          if ((retro_thisframe_first_drawn_line_start == retro_thisframe_first_drawn_line
            && retro_thisframe_last_drawn_line_start  == retro_thisframe_last_drawn_line)
           || (retro_thisframe_first_drawn_line_old == retro_thisframe_first_drawn_line
            && retro_thisframe_last_drawn_line_old  == retro_thisframe_last_drawn_line))
             retro_thisframe_counter = 0;
 
-         if (retro_thisframe_first_drawn_line_delta > (video_config & PUAE_VIDEO_DOUBLELINE) ? 1 : 0)
-            retro_thisframe_first_drawn_line_start = (retro_thisframe_first_drawn_line_old > 0) ? retro_thisframe_first_drawn_line_old : retro_thisframe_first_drawn_line;
-         if (retro_thisframe_last_drawn_line_delta > (video_config & PUAE_VIDEO_DOUBLELINE) ? 1 : 0)
-            retro_thisframe_last_drawn_line_start  = (retro_thisframe_last_drawn_line_old > 0) ? retro_thisframe_last_drawn_line_old : retro_thisframe_last_drawn_line;
+         if (!retro_thisframe_counter)
+         {
+            if (retro_thisframe_first_drawn_line_delta > (video_config & PUAE_VIDEO_DOUBLELINE) ? 1 : 0)
+               retro_thisframe_first_drawn_line_start = (retro_thisframe_first_drawn_line_old > 0) ? retro_thisframe_first_drawn_line_old : retro_thisframe_first_drawn_line;
+            if (retro_thisframe_last_drawn_line_delta > (video_config & PUAE_VIDEO_DOUBLELINE) ? 1 : 0)
+               retro_thisframe_last_drawn_line_start  = (retro_thisframe_last_drawn_line_old > 0) ? retro_thisframe_last_drawn_line_old : retro_thisframe_last_drawn_line;
+         }
 
          if (retro_thisframe_first_drawn_line_start != retro_thisframe_first_drawn_line
           || retro_thisframe_last_drawn_line_start  != retro_thisframe_last_drawn_line)
