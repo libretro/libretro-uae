@@ -6915,6 +6915,10 @@ static void update_video_center_vertical(void)
    thisframe_y_adjust_new = (thisframe_y_adjust_new < 0) ? 0 : thisframe_y_adjust_new;
    thisframe_y_adjust_new = (thisframe_y_adjust_new > (minfirstline + 70)) ? (minfirstline + 70) : thisframe_y_adjust_new;
 
+   /* KS 1.3 startup centers off screen for a moment if allowed */
+   if (retro_thisframe_last_drawn_line < 200 && thisframe_y_adjust_new < minfirstline)
+      thisframe_y_adjust_new = thisframe_y_adjust_old;
+
    /* Change value only if altered */
    if (thisframe_y_adjust != thisframe_y_adjust_new)
       thisframe_y_adjust = thisframe_y_adjust_new;
@@ -7159,16 +7163,23 @@ static void update_audiovideo(void)
          if (retro_thisframe_first_drawn_line_start == -1 && retro_thisframe_last_drawn_line_start == -1)
             request_update_av_info = true;
 
+         /* Update immediately with big enough difference in last line */
+         if (retro_thisframe_last_drawn_line_delta > 47 && retro_thisframe_last_drawn_line_delta < 100)
+            request_update_av_info = true;
+
          if ((retro_thisframe_first_drawn_line_start == retro_thisframe_first_drawn_line
            && retro_thisframe_last_drawn_line_start  == retro_thisframe_last_drawn_line)
           || (retro_thisframe_first_drawn_line_old == retro_thisframe_first_drawn_line
            && retro_thisframe_last_drawn_line_old  == retro_thisframe_last_drawn_line))
             retro_thisframe_counter = 0;
 
-         if (retro_thisframe_first_drawn_line_delta > (video_config & PUAE_VIDEO_DOUBLELINE) ? 1 : 0)
-            retro_thisframe_first_drawn_line_start = (retro_thisframe_first_drawn_line_old > 0) ? retro_thisframe_first_drawn_line_old : retro_thisframe_first_drawn_line;
-         if (retro_thisframe_last_drawn_line_delta > (video_config & PUAE_VIDEO_DOUBLELINE) ? 1 : 0)
-            retro_thisframe_last_drawn_line_start  = (retro_thisframe_last_drawn_line_old > 0) ? retro_thisframe_last_drawn_line_old : retro_thisframe_last_drawn_line;
+         if (!retro_thisframe_counter)
+         {
+            if (retro_thisframe_first_drawn_line_delta > (video_config & PUAE_VIDEO_DOUBLELINE) ? 1 : 0)
+               retro_thisframe_first_drawn_line_start = (retro_thisframe_first_drawn_line_old > 0) ? retro_thisframe_first_drawn_line_old : retro_thisframe_first_drawn_line;
+            if (retro_thisframe_last_drawn_line_delta > (video_config & PUAE_VIDEO_DOUBLELINE) ? 1 : 0)
+               retro_thisframe_last_drawn_line_start  = (retro_thisframe_last_drawn_line_old > 0) ? retro_thisframe_last_drawn_line_old : retro_thisframe_last_drawn_line;
+         }
 
          if (retro_thisframe_first_drawn_line_start != retro_thisframe_first_drawn_line
           || retro_thisframe_last_drawn_line_start  != retro_thisframe_last_drawn_line)
