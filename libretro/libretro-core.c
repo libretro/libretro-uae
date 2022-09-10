@@ -104,6 +104,7 @@ extern uae_u32 natmem_size;
 char full_path[RETRO_PATH_MAX] = {0};
 static char *uae_argv[] = { "puae" };
 static int restart_pending = 0;
+static struct puae_cart_info puae_carts[RETRO_NUM_CORE_OPTION_VALUES_MAX] = {0};
 
 static long retro_now = 0;
 float retro_refresh = 0;
@@ -215,6 +216,7 @@ static bool libretro_supports_option_categories = false;
 char retro_save_directory[RETRO_PATH_MAX] = {0};
 char retro_temp_directory[RETRO_PATH_MAX] = {0};
 char retro_system_directory[RETRO_PATH_MAX] = {0};
+char retro_system_data_directory[RETRO_PATH_MAX] = {0};
 static char retro_content_directory[RETRO_PATH_MAX] = {0};
 
 /* Disk Control context */
@@ -343,7 +345,6 @@ void retro_fastforwarding(bool enabled)
 
    environ_cb(RETRO_ENVIRONMENT_SET_FASTFORWARDING_OVERRIDE, &ff_override);
 }
-
 
 static bool paula_playing(void)
 {
@@ -522,6 +523,83 @@ static void upload_output_audio_buffer()
 {
    audio_batch_cb(output_audio_buffer.data, output_audio_buffer.size / 2);
    output_audio_buffer.size = 0;
+}
+
+static void retro_set_paths(void)
+{
+   const char *system_dir = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &system_dir) && system_dir)
+   {
+      strlcpy(retro_system_directory,
+              system_dir,
+              sizeof(retro_system_directory));
+   }
+
+   const char *content_dir = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_CONTENT_DIRECTORY, &content_dir) && content_dir)
+   {
+      strlcpy(retro_content_directory,
+              content_dir,
+              sizeof(retro_content_directory));
+   }
+
+   /* Paths are first run in retro_set_environment(), but saves will not yet be correct then,
+    * therefore re-run in retro_init() and replace when necessary */
+   if (string_is_empty(retro_save_directory) || !strcmp(retro_save_directory, retro_system_directory))
+   {
+      const char *save_dir = NULL;
+      if (environ_cb(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &save_dir) && save_dir)
+      {
+         /* If save directory is defined use it, otherwise use system directory */
+         strlcpy(retro_save_directory,
+                 string_is_empty(save_dir) ? retro_system_directory : save_dir,
+                 sizeof(retro_save_directory));
+      }
+      else
+      {
+         /* Make retro_save_directory the same in case RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY is not implemented by the frontend */
+         strlcpy(retro_save_directory,
+                 retro_system_directory,
+                 sizeof(retro_save_directory));
+      }
+   }
+
+   /* Remove ending slash created by 'savefiles_in_content_dir' */
+   if (retro_save_directory[strlen(retro_save_directory)-1] == DIR_SEP_CHR)
+      retro_save_directory[strlen(retro_save_directory)-1] = '\0';
+
+   /* Hack: Remove one-letter subdirectories from save path,
+    * to prevent multiple WHDLoad images */
+   if (retro_save_directory[strlen(retro_save_directory)-2] == DIR_SEP_CHR)
+      retro_save_directory[strlen(retro_save_directory)-2] = '\0';
+
+   /* Temp directory for ZIPs */
+   snprintf(retro_temp_directory, sizeof(retro_temp_directory), "%s%s%s", retro_save_directory, DIR_SEP_STR, "TEMP");
+
+   /* Use system directory for data files such as driveclick and cartridges */
+   snprintf(retro_system_data_directory, sizeof(retro_system_data_directory), "%s%s%s",
+         retro_system_directory, DIR_SEP_STR, "uae_data");
+   if (!path_is_directory(retro_system_data_directory))
+      snprintf(retro_system_data_directory, sizeof(retro_system_data_directory), "%s%s%s",
+            retro_system_directory, DIR_SEP_STR, "uae");
+}
+
+static void free_puae_carts(void)
+{
+   size_t i;
+   for (i = 0; i < RETRO_NUM_CORE_OPTION_VALUES_MAX; i++)
+   {
+      if (puae_carts[i].value)
+      {
+         free(puae_carts[i].value);
+         puae_carts[i].value = NULL;
+      }
+      if (puae_carts[i].label)
+      {
+         free(puae_carts[i].label);
+         puae_carts[i].label = NULL;
+      }
+   }
 }
 
 static void retro_set_core_options()
@@ -1044,6 +1122,19 @@ static void retro_set_core_options()
             { NULL, NULL },
          },
          "disabled"
+      },
+      /* Sublabel and options filled dynamically in retro_set_environment() */
+      {
+         "puae_cart_file",
+         "Media > Cartridge",
+         "Cartridge",
+         "",
+         NULL,
+         "media",
+         {
+            { NULL, NULL },
+         },
+         NULL
       },
       {
          "puae_video_options_display",
@@ -1686,7 +1777,7 @@ static void retro_set_core_options()
          "puae_floppy_sound_type",
          "Audio > Floppy Sound Type",
          "Floppy Sound Type",
-         "External files go in 'system/uae_data/' or 'system/uae/'.",
+         "External files go in 'system/uae/' or 'system/uae_data/'.",
          NULL,
          "audio",
          {
@@ -2403,7 +2494,7 @@ static void retro_set_core_options()
                   option_defs_us[i].values[j].label = retro_keys[j + hotkeys_skipped + 1].label;
                }
                ++j;
-            };
+            }
          }
          else
          {
@@ -2412,11 +2503,56 @@ static void retro_set_core_options()
                option_defs_us[i].values[j].value = retro_keys[j].value;
                option_defs_us[i].values[j].label = retro_keys[j].label;
                ++j;
-            };
+            }
          }
          option_defs_us[i].values[j].value = NULL;
          option_defs_us[i].values[j].label = NULL;
-      };
+      }
+      else if (!strcmp(option_defs_us[i].key, "puae_cart_file"))
+      {
+         j = 0;
+         option_defs_us[i].values[j].value = "none";
+         option_defs_us[i].values[j].label = "disabled";
+         ++j;
+
+         /* Scan system data directory for cartridges */
+         if (path_is_directory(retro_system_data_directory))
+         {
+            DIR *cart_dir;
+            struct dirent *cart_dirp;
+
+            cart_dir = opendir(retro_system_data_directory);
+            while ((cart_dirp = readdir(cart_dir)) != NULL && j < RETRO_NUM_CORE_OPTION_VALUES_MAX - 1)
+            {
+               if (strendswith(cart_dirp->d_name, "rom"))
+               {
+                  char cart_value[RETRO_PATH_MAX] = {0};
+                  char cart_label[128]            = {0};
+                  snprintf(cart_value, sizeof(cart_value), "%s", cart_dirp->d_name);
+                  snprintf(cart_label, sizeof(cart_label), "%s", path_remove_extension(cart_dirp->d_name));
+
+                  puae_carts[j].value = strdup(cart_value);
+                  puae_carts[j].label = strdup(cart_label);
+
+                  option_defs_us[i].values[j].value = puae_carts[j].value;
+                  option_defs_us[i].values[j].label = puae_carts[j].label;
+                  ++j;
+               }
+
+               puae_carts[j].value = NULL;
+               puae_carts[j].label = NULL;
+            }
+            closedir(cart_dir);
+         }
+
+         option_defs_us[i].values[j].value = NULL;
+         option_defs_us[i].values[j].label = NULL;
+
+         /* Info sublabel */
+         char info[128] = {0};
+         snprintf(info, sizeof(info), "Cartridge images go in 'system/uae/' or 'system/uae_data/'.\nCore restart required.");
+         option_defs_us[i].info = strdup(info);
+      }
       ++i;
    }
 
@@ -2923,6 +3059,8 @@ static bool retro_update_display(void)
 void retro_set_environment(retro_environment_t cb)
 {
    environ_cb = cb;
+   retro_set_paths();
+   free_puae_carts();
    retro_set_core_options();
    retro_set_inputs();
 
@@ -3007,6 +3145,26 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       strlcpy(opt_kickstart, var.value, sizeof(opt_kickstart));
+   }
+
+   var.key = "puae_cart_file";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      char cart_full[RETRO_PATH_MAX] = {0};
+
+      if (!strcmp(var.value, "none"))
+         snprintf(cart_full, sizeof(cart_full), "%s", "");
+      else
+         snprintf(cart_full, sizeof(cart_full), "%s%s%s",
+               retro_system_data_directory, DIR_SEP_STR, var.value);
+
+      if (!string_is_empty(cart_full))
+      {
+         strcat(uae_config, "cart_file=");
+         strcat(uae_config, cart_full);
+         strcat(uae_config, "\n");
+      }
    }
 
    var.key = "puae_video_standard";
@@ -4744,49 +4902,7 @@ void retro_init(void)
    if (!environ_cb(RETRO_ENVIRONMENT_GET_PERF_INTERFACE, &perf_cb))
       perf_cb.get_time_usec = NULL;
 
-   const char *system_dir = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &system_dir) && system_dir)
-   {
-      strlcpy(retro_system_directory,
-              system_dir,
-              sizeof(retro_system_directory));
-   }
-
-   const char *content_dir = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_CONTENT_DIRECTORY, &content_dir) && content_dir)
-   {
-      strlcpy(retro_content_directory,
-              content_dir,
-              sizeof(retro_content_directory));
-   }
-
-   const char *save_dir = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &save_dir) && save_dir)
-   {
-      /* If save directory is defined use it, otherwise use system directory */
-      strlcpy(retro_save_directory,
-              string_is_empty(save_dir) ? retro_system_directory : save_dir,
-              sizeof(retro_save_directory));
-   }
-   else
-   {
-      /* Make retro_save_directory the same in case RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY is not implemented by the frontend */
-      strlcpy(retro_save_directory,
-              retro_system_directory,
-              sizeof(retro_save_directory));
-   }
-
-   /* Remove ending slash created by 'savefiles_in_content_dir' */
-   if (retro_save_directory[strlen(retro_save_directory)-1] == DIR_SEP_CHR)
-      retro_save_directory[strlen(retro_save_directory)-1] = '\0';
-
-   /* Hack: Remove one-letter subdirectories from save path,
-    * to prevent multiple WHDLoad images */
-   if (retro_save_directory[strlen(retro_save_directory)-2] == DIR_SEP_CHR)
-      retro_save_directory[strlen(retro_save_directory)-2] = '\0';
-
-   /* Temp directory for ZIPs */
-   snprintf(retro_temp_directory, sizeof(retro_temp_directory), "%s%s%s", retro_save_directory, DIR_SEP_STR, "TEMP");
+   retro_set_paths();
 
    /* Clean ZIP temp */
    if (!string_is_empty(retro_temp_directory) && path_is_directory(retro_temp_directory))
@@ -4885,6 +5001,9 @@ void retro_deinit(void)
    if (dc)
       dc_free(dc);
 
+   /* Clean dynamic cartridge info */
+   free_puae_carts();
+
    /* Clean ZIP temp */
    if (!string_is_empty(retro_temp_directory) && path_is_directory(retro_temp_directory))
       remove_recurse(retro_temp_directory);
@@ -4892,6 +5011,7 @@ void retro_deinit(void)
    /* Free buffers used by libretro-graph */
    libretro_graph_free();
 
+   /* Free audio buffer */
    free_output_audio_buffer();
 
    /* 'Reset' troublesome static variables */
