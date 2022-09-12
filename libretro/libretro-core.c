@@ -6739,6 +6739,10 @@ static bool retro_create_config(void)
                /* Append */
                retro_config_append(filebuf);
 
+               /* Cycle-exact force */
+               if (strstr(filebuf, "cycle_exact=true") && filebuf[0] == 'c')
+                  cpu_cycle_exact_force = true;
+
                /* Parse Kickstart for alternate namings */
                if ((strstr(filebuf, "kickstart_rom_file=") && filebuf[0] == 'k'))
                {
@@ -6845,7 +6849,13 @@ static bool retro_create_config(void)
 
    /* Forced Cycle-exact */
    if (strstr(full_path, "(CE)"))
+   {
       retro_config_append("cycle_exact=true\n");
+      cpu_cycle_exact_force = true;
+   }
+
+   if (cpu_cycle_exact_force)
+      log_cb(RETRO_LOG_INFO, "Forcing Cycle-exact\n");
 
    /* Scan for specific rows and print the final config in debug log for copypaste purposes */
    log_cb(RETRO_LOG_DEBUG, "Generated config:\n");
@@ -6862,8 +6872,6 @@ static bool retro_create_config(void)
          real_ntsc = true;
       if (strstr(token, "ntsc=false") && token[0] == 'n')
          real_ntsc = false;
-      if (strstr(token, "cycle_exact=true") && token[0] == 'c')
-         cpu_cycle_exact_force = true;
    }
 
    if (real_ntsc && video_config & PUAE_VIDEO_PAL)
