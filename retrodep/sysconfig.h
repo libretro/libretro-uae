@@ -65,7 +65,7 @@
 //#define A2065 /* A2065 Ethernet card */
 #define GFXBOARD /* Hardware graphics board */
 #define NCR /* A4000T/A4091, 53C710/53C770 SCSI */
-#define NCR9X /* 53C9X SCSI */
+//#define NCR9X /* 53C9X SCSI */
 //#define SANA2 /* SANA2 network driver */
 //#define AMAX /* A-Max ROM adapter emulation */
 //#define RETROPLATFORM /* Cloanto RetroPlayer support */
