@@ -44,7 +44,6 @@ SOURCES_C += \
 	$(EMU)/cd32_fmv.c \
 	$(EMU)/cda_play.c \
 	$(EMU)/cdrom.c \
-	$(EMU)/cdrom-handler.c \
 	$(EMU)/cdtv.c \
 	$(EMU)/cfgfile.c \
 	$(EMU)/cia.c \
