@@ -41,10 +41,10 @@ Long press for sticky keys. Stickying the third key will replace the second.
 
 Some games use mouse instead of joystick. D-Pad can be switched between joystick and mouse control in several ways:
 
-- Use the core option: `Quick Menu -> Options -> RetroPad Joystick/Mouse`
+- Use the core option: `Quick Menu > Core Options > RetroPad Joystick/Mouse`
 - Bring up the virtual keyboard with `Select` button, and press the key labeled `J/M`
 - Press the default keyboard shortcut `Right Control`
-- Assign `Switch Joystick/Mouse` to any RetroPad button under `Quick Menu -> Options`
+- Assign `Switch Joystick/Mouse` to any RetroPad button under `Quick Menu > Core Options`
 
 ## Configuration
 
