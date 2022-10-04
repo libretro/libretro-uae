@@ -756,6 +756,7 @@ enum dc_image_type dc_get_image_type(const char* filename)
        strendswith(filename, "adz") ||
        strendswith(filename, "fdi") ||
        strendswith(filename, "dms") ||
+       strendswith(filename, "raw") ||
        strendswith(filename, "ipf"))
       return DC_IMAGE_TYPE_FLOPPY;
 
