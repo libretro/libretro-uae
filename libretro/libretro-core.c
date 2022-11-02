@@ -5949,18 +5949,18 @@ static bool retro_create_config(void)
    if (!string_is_empty(full_path) && (path_is_valid(full_path) || path_is_directory(full_path)))
    {
       /* Extract ZIP for examination */
-      if (strendswith(full_path, "zip")
-       || strendswith(full_path, "7z")
-       || strendswith(full_path, "rp9"))
+      if (strendswith(full_path, ".zip")
+       || strendswith(full_path, ".7z")
+       || strendswith(full_path, ".rp9"))
       {
          char zip_basename[RETRO_PATH_MAX] = {0};
          snprintf(zip_basename, sizeof(zip_basename), "%s", path_basename(full_path));
          path_remove_extension(zip_basename);
 
          path_mkdir(retro_temp_directory);
-         if (strendswith(full_path, "zip") || strendswith(full_path, "rp9"))
+         if (strendswith(full_path, ".zip") || strendswith(full_path, ".rp9"))
             zip_uncompress(full_path, retro_temp_directory, NULL);
-         else if (strendswith(full_path, "7z"))
+         else if (strendswith(full_path, ".7z"))
             sevenzip_uncompress(full_path, retro_temp_directory, NULL);
 
          /* Default to directory mode */
