@@ -747,10 +747,10 @@ typedef uint8_t uint8;
 #define _daylight 0
 #endif
 
-#ifndef log2
+#if !defined(log2) && defined(logb)
 #define log2 logb
 #endif
-#ifndef log2l
+#if !defined(log2l) && defined(logbl)
 #define log2l logbl
 #endif
 
