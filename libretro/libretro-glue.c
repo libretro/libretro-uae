@@ -598,6 +598,9 @@ void target_default_options (struct uae_prefs *p, int type)
    /* Required for SCSI CD image mounts */
    p->win32_automount_cddrives = true;
 
+   /* Required for parallel port joysticks */
+   p->win32_samplersoundcard = -1;
+
    p->jports[0].id = JSEM_MICE;
    p->jports[1].id = JSEM_JOYS;
 }
