@@ -38,10 +38,10 @@
 
 unsigned int libretro_runloop_active = 0;
 unsigned short int retro_bmp[RETRO_BMP_SIZE] = {0};
-int defaultw = EMULATOR_DEF_WIDTH;
-int defaulth = EMULATOR_DEF_HEIGHT;
-int retrow = EMULATOR_DEF_WIDTH;
-int retroh = EMULATOR_DEF_HEIGHT;
+int defaultw = EMULATOR_DEF_WIDTH / 2;
+int defaulth = EMULATOR_DEF_HEIGHT / 2;
+int retrow = EMULATOR_DEF_WIDTH / 2;
+int retroh = EMULATOR_DEF_HEIGHT / 2;
 int retrow_crop = 0;
 int retroh_crop = 0;
 float aspect_ratio = 0;
