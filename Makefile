@@ -256,6 +256,7 @@ else ifeq ($(platform), tvos-arm64)
 else ifneq (,$(findstring armv,$(platform)))
    TARGET := $(TARGET_NAME)_libretro.so
    SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T -Wl,--no-undefined
+   LDFLAGS += -lm -lpthread -ldl
    fpic := -fPIC
    ifneq (,$(findstring cortexa8,$(platform)))
       CFLAGS += -marm -mcpu=cortex-a8
