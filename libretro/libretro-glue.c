@@ -2199,13 +2199,7 @@ UINT32 logical_to_chd_lba(cdrom_file *file, UINT32 loglba, UINT32 *tracknum)
 	{
 		if (loglba < file->cdtoc.tracks[track + 1].logframeofs)
 		{
-			// is this a no-pregap-data track?  compensate for the logical offset pointing to the "wrong" sector.
-			if ((file->cdtoc.tracks[track].pgdatasize == 0) && (loglba > file->cdtoc.tracks[track].pregap))
-			{
-				loglba -= file->cdtoc.tracks[track].pregap;
-			}
-
-			// convert to physical and proceed
+			/* convert to physical and proceed */
 			physlba = file->cdtoc.tracks[track].physframeofs + (loglba - file->cdtoc.tracks[track].logframeofs);
 			chdlba = physlba - file->cdtoc.tracks[track].physframeofs + file->cdtoc.tracks[track].chdframeofs;
 			*tracknum = track;
@@ -2216,97 +2210,20 @@ UINT32 logical_to_chd_lba(cdrom_file *file, UINT32 loglba, UINT32 *tracknum)
 	return loglba;
 }
 
-UINT32 cdrom_read_data(cdrom_file *file, UINT32 lbasector, void *buffer, UINT32 datatype, bool phys)
-{
-	if (file == NULL)
-		return 0;
+/*-------------------------------------------------
+    constructor - "open" a CD-ROM file from an
+    already-opened CHD file
+-------------------------------------------------*/
 
-	// compute CHD sector and tracknumber
-	UINT32 tracknum = 0;
-	UINT32 chdsector;
-
-	if (phys)
-	{
-		chdsector = physical_to_chd_lba(file, lbasector, &tracknum);
-	}
-	else
-	{
-		chdsector = logical_to_chd_lba(file, lbasector, &tracknum);
-	}
-
-	/* copy out the requested sector */
-	UINT32 tracktype = file->cdtoc.tracks[tracknum].trktype;
-
-	if ((datatype == tracktype) || (datatype == CD_TRACK_RAW_DONTCARE))
-	{
-		return (read_partial_sector(file, buffer, lbasector, chdsector, tracknum, 0, file->cdtoc.tracks[tracknum].datasize) == CHDERR_NONE);
-	}
-	else
-	{
-		/* return 2048 bytes of mode 1 data from a 2352 byte mode 1 raw sector */
-		if ((datatype == CD_TRACK_MODE1) && (tracktype == CD_TRACK_MODE1_RAW))
-		{
-			return (read_partial_sector(file, buffer, lbasector, chdsector, tracknum, 16, 2048) == CHDERR_NONE);
-		}
-
-		/* return 2352 byte mode 1 raw sector from 2048 bytes of mode 1 data */
-		if ((datatype == CD_TRACK_MODE1_RAW) && (tracktype == CD_TRACK_MODE1))
-		{
-			UINT8 *bufptr = (UINT8 *)buffer;
-			UINT32 msf = lba_to_msf(lbasector);
-
-			static const UINT8 syncbytes[12] = {0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00};
-			memcpy(bufptr, syncbytes, 12);
-			bufptr[12] = msf>>16;
-			bufptr[13] = msf>>8;
-			bufptr[14] = msf&0xff;
-			bufptr[15] = 1; // mode 1
-			write_log(("CDROM: promotion of mode1/form1 sector to mode1 raw is not complete!\n"));
-			return (read_partial_sector(file, bufptr+16, lbasector, chdsector, tracknum, 0, 2048) == CHDERR_NONE);
-		}
-
-		/* return 2048 bytes of mode 1 data from a mode2 form1 or raw sector */
-		if ((datatype == CD_TRACK_MODE1) && ((tracktype == CD_TRACK_MODE2_FORM1)||(tracktype == CD_TRACK_MODE2_RAW)))
-		{
-			return (read_partial_sector(file, buffer, lbasector, chdsector, tracknum, 24, 2048) == CHDERR_NONE);
-		}
-
-		/* return mode 2 2336 byte data from a 2352 byte mode 1 or 2 raw sector (skip the header) */
-		if ((datatype == CD_TRACK_MODE2) && ((tracktype == CD_TRACK_MODE1_RAW) || (tracktype == CD_TRACK_MODE2_RAW)))
-		{
-			return (read_partial_sector(file, buffer, lbasector, chdsector, tracknum, 16, 2336) == CHDERR_NONE);
-		}
-
-		write_log("CDROM: Conversion from type %d to type %d not supported!\n", tracktype, datatype);
-		return 0;
-	}
-}
-
-UINT32 cdrom_read_subcode(cdrom_file *file, UINT32 lbasector, void *buffer, bool phys)
-{
-	if (file == NULL)
-		return ~0;
-
-	// compute CHD sector and tracknumber
-	UINT32 tracknum = 0;
-	UINT32 chdsector;
-
-	if (phys)
-	{
-		chdsector = physical_to_chd_lba(file, lbasector, &tracknum);
-	}
-	else
-	{
-		chdsector = logical_to_chd_lba(file, lbasector, &tracknum);
-	}
-
-	if (file->cdtoc.tracks[tracknum].subsize == 0)
-		return 0;
-
-	// read the data
-	chd_error err = read_partial_sector(file, buffer, lbasector, chdsector, tracknum, file->cdtoc.tracks[tracknum].datasize, file->cdtoc.tracks[tracknum].subsize);
-	return (err == CHDERR_NONE);
-}
+/**
+ * @fn  cdrom_file *cdrom_open(chd_file *chd)
+ *
+ * @brief   Queries if a given cdrom open.
+ *
+ * @param [in,out]  chd If non-null, the chd.
+ *
+ * @return  null if it fails, else a cdrom_file*.
+ */
 
 cdrom_file *cdrom_open(chd_file *chd)
 {
@@ -2351,27 +2268,40 @@ cdrom_file *cdrom_open(chd_file *chd)
 	physofs = chdofs = logofs = 0;
 	for (i = 0; i < file->cdtoc.numtrks; i++)
 	{
-		file->cdtoc.tracks[i].physframeofs = physofs;
-		file->cdtoc.tracks[i].chdframeofs = chdofs;
-		file->cdtoc.tracks[i].logframeofs = logofs;
+		file->cdtoc.tracks[i].logframeofs = 0;
 
-		// if the pregap sectors aren't in the track, add them to the track's logical length
 		if (file->cdtoc.tracks[i].pgdatasize == 0)
 		{
+			// Anything that isn't cue.
+			// toc (cdrdao): Pregap data seems to be included at the end of previous track.
+			// START/PREGAP is only issued in special cases, for instance alongside ZERO commands.
+			// ZERO and SILENCE commands are supposed to generate additional data that's not included
+			// in the image directly, so the total logofs value must be offset to point to index 1.
 			logofs += file->cdtoc.tracks[i].pregap;
 		}
+		else
+		{
+			// cues: Pregap is the difference between index 0 and index 1 unless PREGAP is specified.
+			// The data is assumed to be in the bin and not generated separately, so the pregap should
+			// only be added to the current track's lba to offset it to index 1.
+			file->cdtoc.tracks[i].logframeofs = file->cdtoc.tracks[i].pregap;
+		}
+
+		file->cdtoc.tracks[i].physframeofs = physofs;
+		file->cdtoc.tracks[i].chdframeofs = chdofs;
+		file->cdtoc.tracks[i].logframeofs += logofs;
+		file->cdtoc.tracks[i].logframes = file->cdtoc.tracks[i].frames - file->cdtoc.tracks[i].pregap;
 
 		// postgap counts against the next track
 		logofs += file->cdtoc.tracks[i].postgap;
 
 		physofs += file->cdtoc.tracks[i].frames;
-		physofs += file->cdtoc.tracks[i].extraframes;
 		chdofs  += file->cdtoc.tracks[i].frames;
 		chdofs  += file->cdtoc.tracks[i].extraframes;
 		logofs  += file->cdtoc.tracks[i].frames;
 
 #if 0
-        printf("Track %02d is format %d subtype %d datasize %d subsize %d frames %d extraframes %d pregap %d pgmode %d presize %d postgap %d logofs %d physofs %d chdofs %d\n", i+1,
+        printf("Track %02d is format %d subtype %d datasize %d subsize %d frames %d extraframes %d pregap %d pgmode %d presize %d postgap %d logofs %d physofs %d chdofs %d logframes %d\n", i+1,
             file->cdtoc.tracks[i].trktype,
             file->cdtoc.tracks[i].subtype,
             file->cdtoc.tracks[i].datasize,
@@ -2384,7 +2314,8 @@ cdrom_file *cdrom_open(chd_file *chd)
             file->cdtoc.tracks[i].postgap,
             file->cdtoc.tracks[i].logframeofs,
             file->cdtoc.tracks[i].physframeofs,
-            file->cdtoc.tracks[i].chdframeofs);
+            file->cdtoc.tracks[i].chdframeofs,
+            file->cdtoc.tracks[i].logframes);
 #endif
 	}
 
@@ -2392,6 +2323,7 @@ cdrom_file *cdrom_open(chd_file *chd)
 	file->cdtoc.tracks[i].physframeofs = physofs;
 	file->cdtoc.tracks[i].logframeofs = logofs;
 	file->cdtoc.tracks[i].chdframeofs = chdofs;
+	file->cdtoc.tracks[i].logframes = 0;
 
 	return file;
 }
@@ -2418,109 +2350,24 @@ void cdrom_close(cdrom_file *file)
 	file = NULL;
 }
 
-static const UINT8 V34_MAP_ENTRY_FLAG_TYPE_MASK = 0x0f;     // what type of hunk
-static const UINT8 V34_MAP_ENTRY_FLAG_NO_CRC = 0x10;        // no CRC is present
 
-chd_error chd_hunk_info(chd_file *cf, UINT32 hunknum, chd_codec_type *compressor, UINT32 *compbytes)
-{
-	// error if invalid
-	if (hunknum >= cf->header.hunkcount)
-		return CHDERR_HUNK_OUT_OF_RANGE;
-
-	// get the map pointer
-	UINT8 *rawmap;
-	switch (cf->header.version)
-	{
-		// v3/v4 map entries
-		case 3:
-		case 4:
-			rawmap = cf->header.rawmap + 16 * hunknum;
-			switch (rawmap[15] & V34_MAP_ENTRY_FLAG_TYPE_MASK)
-			{
-				case V34_MAP_ENTRY_TYPE_COMPRESSED:
-					*compressor = CHD_CODEC_ZLIB;
-					*compbytes = be_read(&rawmap[12], 2) + (rawmap[14] << 16);
-					break;
-
-				case V34_MAP_ENTRY_TYPE_UNCOMPRESSED:
-					*compressor = CHD_CODEC_NONE;
-					*compbytes = cf->header.hunkbytes;
-					break;
-
-				case V34_MAP_ENTRY_TYPE_MINI:
-					*compressor = CHD_CODEC_MINI;
-					*compbytes = 0;
-					break;
-
-				case V34_MAP_ENTRY_TYPE_SELF_HUNK:
-					*compressor = CHD_CODEC_SELF;
-					*compbytes = 0;
-					break;
-
-				case V34_MAP_ENTRY_TYPE_PARENT_HUNK:
-					*compressor = CHD_CODEC_PARENT;
-					*compbytes = 0;
-					break;
-			}
-			break;
-
-		// v5 map entries
-		case 5:
-			rawmap = cf->header.rawmap + cf->header.mapentrybytes * hunknum;
-
-			// uncompressed case
-			if (cf->header.compression[0] == CHD_CODEC_NONE)
-			{
-				if (be_read(&rawmap[0], 4) == 0)
-				{
-					*compressor = CHD_CODEC_PARENT;
-					*compbytes = 0;
-				}
-				else
-				{
-					*compressor = CHD_CODEC_NONE;
-					*compbytes = cf->header.hunkbytes;
-				}
-				break;
-			}
-
-			// compressed case
-			switch (rawmap[0])
-			{
-				case COMPRESSION_TYPE_0:
-				case COMPRESSION_TYPE_1:
-				case COMPRESSION_TYPE_2:
-				case COMPRESSION_TYPE_3:
-					*compressor = cf->header.compression[rawmap[0]];
-					*compbytes = be_read(&rawmap[1], 3);
-					break;
-
-				case COMPRESSION_NONE:
-					*compressor = CHD_CODEC_NONE;
-					*compbytes = cf->header.hunkbytes;
-					break;
-
-				case COMPRESSION_SELF:
-					*compressor = CHD_CODEC_SELF;
-					*compbytes = 0;
-					break;
-
-				case COMPRESSION_PARENT:
-					*compressor = CHD_CODEC_PARENT;
-					*compbytes = 0;
-					break;
-			}
-			break;
-	}
-	return CHDERR_NONE;
-}
-
-//-------------------------------------------------
-//  read_bytes - read from the CHD at a byte level,
-//  using the cache to handle partial hunks
-//-------------------------------------------------
 UINT8 m_cache[CD_FRAME_SIZE*CD_FRAMES_PER_HUNK*2] = {0};
 UINT32 m_cachehunk = 0;
+
+/**
+ * @fn  std::error_condition chd_file::read_bytes(uint64_t offset, void *buffer, uint32_t bytes)
+ *
+ * @brief   -------------------------------------------------
+ *            read_bytes - read from the CHD at a byte level, using the cache to handle partial
+ *            hunks
+ *          -------------------------------------------------.
+ *
+ * @param   offset          The offset.
+ * @param [in,out]  buffer  If non-null, the buffer.
+ * @param   bytes           The bytes.
+ *
+ * @return  The bytes.
+ */
 
 chd_error chd_read_bytes(chd_file *chd, UINT64 offset, void *buffer, UINT32 bytes)
 {
@@ -2562,27 +2409,54 @@ chd_error chd_read_bytes(chd_file *chd, UINT64 offset, void *buffer, UINT32 byte
 	return CHDERR_NONE;
 }
 
-chd_error read_partial_sector(cdrom_file *file, void *dest, UINT32 lbasector, UINT32 chdsector, UINT32 tracknum, UINT32 startoffs, UINT32 length)
+/***************************************************************************
+    CORE READ ACCESS
+***************************************************************************/
+
+/**
+ * @fn  std::error_condition read_partial_sector(void *dest, uint32_t lbasector, uint32_t chdsector, uint32_t tracknum, uint32_t startoffs, uint32_t length, bool phys)
+ *
+ * @brief   Reads partial sector.
+ *
+ * @param [in,out]  dest    If non-null, destination for the.
+ * @param   lbasector       The lbasector.
+ * @param   chdsector       The chdsector.
+ * @param   tracknum        The tracknum.
+ * @param   startoffs       The startoffs.
+ * @param   length          The length.
+ * @param   phys            true to physical.
+ *
+ * @return  The partial sector.
+ */
+
+chd_error read_partial_sector(cdrom_file *file, void *dest, UINT32 lbasector, UINT32 chdsector, UINT32 tracknum, UINT32 startoffs, UINT32 length, bool phys)
 {
 	chd_error result = CHDERR_NONE;
 	bool needswap = false;
 
 	// if this is pregap info that isn't actually in the file, just return blank data
-	if ((file->cdtoc.tracks[tracknum].pgdatasize == 0) && (lbasector < (file->cdtoc.tracks[tracknum].logframeofs + file->cdtoc.tracks[tracknum].pregap)))
+	if (!phys)
 	{
-        write_log("PG missing sector: LBA %d, trklog %d\n", lbasector, file->cdtoc.tracks[tracknum].logframeofs);
-		memset(dest, 0, length);
-		return result;
+		if ((file->cdtoc.tracks[tracknum].pgdatasize == 0) && (lbasector < file->cdtoc.tracks[tracknum].logframeofs))
+		{
+			write_log("PG missing sector: LBA %d, trklog %d\n", lbasector, file->cdtoc.tracks[tracknum].logframeofs);
+			memset(dest, 0, length);
+			return result;
+		}
 	}
 
 	// if a CHD, just read
 	if (file->chd != NULL)
 	{
-#if 0
-		result = file->chd->read_bytes(UINT64(chdsector) * UINT64(CD_FRAME_SIZE) + startoffs, dest, length);
-#else
+		if (!phys && file->cdtoc.tracks[tracknum].pgdatasize != 0)
+		{
+			// chdman (phys=true) relies on chdframeofs to point to index 0 instead of index 1 for extractcd.
+			// Actually playing CDs requires it to point to index 1 instead of index 0, so adjust the offset when phys=false.
+			chdsector += file->cdtoc.tracks[tracknum].pregap;
+		}
+
 		result = chd_read_bytes(file->chd, (UINT64)chdsector * (UINT64)CD_FRAME_SIZE + startoffs, dest, length);
-#endif
+
 		/* swap CDDA in the case of LE GDROMs */
 		if ((file->cdtoc.flags & CD_FLAG_GDROMLE) && (file->cdtoc.tracks[tracknum].trktype == CD_TRACK_AUDIO))
 			needswap = true;
@@ -2620,6 +2494,104 @@ chd_error read_partial_sector(cdrom_file *file, void *dest, UINT32 lbasector, UI
 		}
 	}
 	return result;
+}
+
+UINT32 cdrom_read_data(cdrom_file *file, UINT32 lbasector, void *buffer, UINT32 datatype, bool phys)
+{
+	// compute CHD sector and tracknumber
+	UINT32 tracknum = 0;
+	UINT32 chdsector;
+
+	if (file == NULL)
+		return 0;
+
+	if (phys)
+	{
+		chdsector = physical_to_chd_lba(file, lbasector, &tracknum);
+	}
+	else
+	{
+		chdsector = logical_to_chd_lba(file, lbasector, &tracknum);
+	}
+
+	/* copy out the requested sector */
+	UINT32 tracktype = file->cdtoc.tracks[tracknum].trktype;
+
+	if ((datatype == tracktype) || (datatype == CD_TRACK_RAW_DONTCARE))
+	{
+		return (read_partial_sector(file, buffer, lbasector, chdsector, tracknum, 0, file->cdtoc.tracks[tracknum].datasize, phys) == CHDERR_NONE);
+	}
+	else
+	{
+		/* return 2048 bytes of mode 1 data from a 2352 byte mode 1 raw sector */
+		if ((datatype == CD_TRACK_MODE1) && (tracktype == CD_TRACK_MODE1_RAW))
+		{
+			return (read_partial_sector(file, buffer, lbasector, chdsector, tracknum, 16, 2048, phys) == CHDERR_NONE);
+		}
+
+		/* return 2352 byte mode 1 raw sector from 2048 bytes of mode 1 data */
+		if ((datatype == CD_TRACK_MODE1_RAW) && (tracktype == CD_TRACK_MODE1))
+		{
+			UINT8 *bufptr = (UINT8 *)buffer;
+			UINT32 msf = lba_to_msf(lbasector);
+
+			static const UINT8 syncbytes[12] = {0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00};
+			memcpy(bufptr, syncbytes, 12);
+			bufptr[12] = msf>>16;
+			bufptr[13] = msf>>8;
+			bufptr[14] = msf&0xff;
+			bufptr[15] = 1; // mode 1
+			write_log(("CDROM: promotion of mode1/form1 sector to mode1 raw is not complete!\n"));
+			return (read_partial_sector(file, bufptr+16, lbasector, chdsector, tracknum, 0, 2048, phys) == CHDERR_NONE);
+		}
+
+		/* return 2048 bytes of mode 1 data from a mode2 form1 or raw sector */
+		if ((datatype == CD_TRACK_MODE1) && ((tracktype == CD_TRACK_MODE2_FORM1)||(tracktype == CD_TRACK_MODE2_RAW)))
+		{
+			return (read_partial_sector(file, buffer, lbasector, chdsector, tracknum, 24, 2048, phys) == CHDERR_NONE);
+		}
+
+		/* return 2048 bytes of mode 1 data from a mode2 form2 or XA sector */
+		if ((datatype == CD_TRACK_MODE1) && (tracktype == CD_TRACK_MODE2_FORM_MIX))
+		{
+			return (read_partial_sector(file, buffer, lbasector, chdsector, tracknum, 8, 2048, phys) == CHDERR_NONE);
+		}
+
+		/* return mode 2 2336 byte data from a 2352 byte mode 1 or 2 raw sector (skip the header) */
+		if ((datatype == CD_TRACK_MODE2) && ((tracktype == CD_TRACK_MODE1_RAW) || (tracktype == CD_TRACK_MODE2_RAW)))
+		{
+			return (read_partial_sector(file, buffer, lbasector, chdsector, tracknum, 16, 2336, phys) == CHDERR_NONE);
+		}
+
+		write_log("CDROM: Conversion from type %d to type %d not supported!\n", tracktype, datatype);
+		return 0;
+	}
+}
+
+UINT32 cdrom_read_subcode(cdrom_file *file, UINT32 lbasector, void *buffer, bool phys)
+{
+	// compute CHD sector and tracknumber
+	UINT32 tracknum = 0;
+	UINT32 chdsector;
+
+	if (file == NULL)
+		return 0;
+
+	if (phys)
+	{
+		chdsector = physical_to_chd_lba(file, lbasector, &tracknum);
+	}
+	else
+	{
+		chdsector = logical_to_chd_lba(file, lbasector, &tracknum);
+	}
+
+	if (file->cdtoc.tracks[tracknum].subsize == 0)
+		return 0;
+
+	// read the data
+	chd_error err = read_partial_sector(file, buffer, lbasector, chdsector, tracknum, file->cdtoc.tracks[tracknum].datasize, file->cdtoc.tracks[tracknum].subsize, phys);
+	return (err == CHDERR_NONE);
 }
 
 /*-------------------------------------------------
@@ -2836,47 +2808,6 @@ const char *cdrom_get_subtype_string(UINT32 subtype)
 	}
 }
 
-chd_error metadata_find_entry(chd_file *chd, UINT32 metatag, UINT32 metaindex, metadata_entry *metaentry)
-{
-	/* start at the beginning */
-	metaentry->offset = chd->header.metaoffset;
-	metaentry->prev = 0;
-
-	/* loop until we run out of options */
-	while (metaentry->offset != 0)
-	{
-		UINT8	raw_meta_header[METADATA_HEADER_SIZE];
-		UINT32	count;
-
-		/* read the raw header */
-		core_fseek(chd->file, metaentry->offset, SEEK_SET);
-		count = core_fread(chd->file, raw_meta_header, sizeof(raw_meta_header));
-		if (count != sizeof(raw_meta_header))
-			break;
-
-		/* extract the data */
-		metaentry->metatag = get_bigendian_uint32(&raw_meta_header[0]);
-		metaentry->length = get_bigendian_uint32(&raw_meta_header[4]);
-		metaentry->next = get_bigendian_uint64(&raw_meta_header[8]);
-
-		/* flags are encoded in the high byte of length */
-		metaentry->flags = metaentry->length >> 24;
-		metaentry->length &= 0x00ffffff;
-
-		/* if we got a match, proceed */
-		if (metatag == CHDMETATAG_WILDCARD || metaentry->metatag == metatag)
-			if (metaindex-- == 0)
-				return CHDERR_NONE;
-
-		/* no match, fetch the next link */
-		metaentry->prev = metaentry->offset;
-		metaentry->offset = metaentry->next;
-	}
-
-	/* if we get here, we didn't find it */
-	return CHDERR_METADATA_NOT_FOUND;
-}
-
 /*-------------------------------------------------
     cdrom_parse_metadata - parse metadata into the
     TOC structure
@@ -3043,5 +2974,124 @@ chd_error cdrom_parse_metadata(chd_file *chd, cdrom_toc *toc)
 
 	return CHDERR_NONE;
 }
+
+
+
+
+//**************************************************************************
+//  CONSTANTS
+//**************************************************************************
+
+static const UINT8 V34_MAP_ENTRY_FLAG_TYPE_MASK = 0x0f;     // what type of hunk
+static const UINT8 V34_MAP_ENTRY_FLAG_NO_CRC = 0x10;        // no CRC is present
+
+/**
+ * @fn  std::error_condition chd_file::hunk_info(uint32_t hunknum, chd_codec_type &compressor, uint32_t &compbytes)
+ *
+ * @brief   -------------------------------------------------
+ *            hunk_info - return information about this hunk
+ *          -------------------------------------------------.
+ *
+ * @param   hunknum             The hunknum.
+ * @param [in,out]  compressor  The compressor.
+ * @param [in,out]  compbytes   The compbytes.
+ *
+ * @return  A std::error_condition.
+ */
+
+chd_error chd_hunk_info(chd_file *cf, UINT32 hunknum, chd_codec_type *compressor, UINT32 *compbytes)
+{
+	// error if invalid
+	if (hunknum >= cf->header.hunkcount)
+		return CHDERR_HUNK_OUT_OF_RANGE;
+
+	// get the map pointer
+	UINT8 *rawmap;
+	switch (cf->header.version)
+	{
+		// v3/v4 map entries
+		case 3:
+		case 4:
+			rawmap = cf->header.rawmap + 16 * hunknum;
+			switch (rawmap[15] & V34_MAP_ENTRY_FLAG_TYPE_MASK)
+			{
+				case V34_MAP_ENTRY_TYPE_COMPRESSED:
+					*compressor = CHD_CODEC_ZLIB;
+					*compbytes = be_read(&rawmap[12], 2) + (rawmap[14] << 16);
+					break;
+
+				case V34_MAP_ENTRY_TYPE_UNCOMPRESSED:
+					*compressor = CHD_CODEC_NONE;
+					*compbytes = cf->header.hunkbytes;
+					break;
+
+				case V34_MAP_ENTRY_TYPE_MINI:
+					*compressor = CHD_CODEC_MINI;
+					*compbytes = 0;
+					break;
+
+				case V34_MAP_ENTRY_TYPE_SELF_HUNK:
+					*compressor = CHD_CODEC_SELF;
+					*compbytes = 0;
+					break;
+
+				case V34_MAP_ENTRY_TYPE_PARENT_HUNK:
+					*compressor = CHD_CODEC_PARENT;
+					*compbytes = 0;
+					break;
+			}
+			break;
+
+		// v5 map entries
+		case 5:
+			rawmap = cf->header.rawmap + cf->header.mapentrybytes * hunknum;
+
+			// uncompressed case
+			if (cf->header.compression[0] == CHD_CODEC_NONE)
+			{
+				if (be_read(&rawmap[0], 4) == 0)
+				{
+					*compressor = CHD_CODEC_PARENT;
+					*compbytes = 0;
+				}
+				else
+				{
+					*compressor = CHD_CODEC_NONE;
+					*compbytes = cf->header.hunkbytes;
+				}
+				break;
+			}
+
+			// compressed case
+			switch (rawmap[0])
+			{
+				case COMPRESSION_TYPE_0:
+				case COMPRESSION_TYPE_1:
+				case COMPRESSION_TYPE_2:
+				case COMPRESSION_TYPE_3:
+					*compressor = cf->header.compression[rawmap[0]];
+					*compbytes = be_read(&rawmap[1], 3);
+					break;
+
+				case COMPRESSION_NONE:
+					*compressor = CHD_CODEC_NONE;
+					*compbytes = cf->header.hunkbytes;
+					break;
+
+				case COMPRESSION_SELF:
+					*compressor = CHD_CODEC_SELF;
+					*compbytes = 0;
+					break;
+
+				case COMPRESSION_PARENT:
+					*compressor = CHD_CODEC_PARENT;
+					*compbytes = 0;
+					break;
+			}
+			break;
+	}
+	return CHDERR_NONE;
+}
+
 
 #endif /* WITH_CHD */
