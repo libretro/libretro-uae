@@ -2527,7 +2527,7 @@ static chd_error zlib_codec_init(void *codec, uint32_t hunkbytes)
 
 	/* handle an error */
 	if (err != CHDERR_NONE)
-		free(data);
+		zlib_codec_free(data);
 
 	return err;
 }

@@ -49,8 +49,9 @@ typedef struct cdrom_track_info
 
 	/* fields used in MAME/MESS only */
 	UINT32 logframeofs; /* logical frame of actual track data - offset by pregap size if pregap not physically present */
-	UINT32 physframeofs; /* physical frame of actual track data in CHD data */
+	UINT32 physframeofs;/* physical frame of actual track data in CHD data */
 	UINT32 chdframeofs; /* frame number this track starts at on the CHD */
+	UINT32 logframes;   /* number of frames from logframeofs until end of track data */
 } cdrom_track_info;
 
 typedef struct cdrom_toc
@@ -206,7 +207,7 @@ struct _metadata_entry
 };
 
 chd_error chd_hunk_info(chd_file *chd, UINT32 hunknum, chd_codec_type *compressor, UINT32 *compbytes);
-chd_error read_partial_sector(cdrom_file *file, void *dest, UINT32 lbasector, UINT32 chdsector, UINT32 tracknum, UINT32 startoffs, UINT32 length);
+chd_error read_partial_sector(cdrom_file *file, void *dest, UINT32 lbasector, UINT32 chdsector, UINT32 tracknum, UINT32 startoffs, UINT32 length, bool phys);
 chd_error cdrom_parse_metadata(chd_file *chd, cdrom_toc *toc);
 chd_error chd_read_metadata(chd_file *chd, chd_metadata_tag searchtag, UINT32 searchindex, char *output);
 chd_error metadata_find_entry(chd_file *chd, UINT32 metatag, UINT32 metaindex, metadata_entry *metaentry);

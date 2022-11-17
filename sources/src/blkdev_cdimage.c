@@ -190,7 +190,7 @@ static int do_read (struct cdunit *cdu, struct cdtoc *t, uae_u8 *data, int secto
 		}
 		if (audio && size == 2352)
 			type = CD_TRACK_AUDIO;
-		if (cdrom_read_data(cdu->chd_cdf, sector + t->offset, tmpbuf, type, true)) {
+		if (cdrom_read_data(cdu->chd_cdf, sector + t->offset, tmpbuf, type, false)) {
 			memcpy(data, tmpbuf + offset, size);
 			return 1;
 		}
@@ -1524,8 +1524,8 @@ static int parsechd (struct cdunit *cdu, struct zfile *zcue, const TCHAR *img, c
 		int size;
 		const cdrom_track_info *strack = &stoc->tracks[i];
 		struct cdtoc *dtrack = &cdu->toc[i];
-		dtrack->address = strack->physframeofs;
-		dtrack->offset = strack->chdframeofs;
+		dtrack->address = strack->logframeofs;
+		dtrack->offset = strack->logframeofs;
 		dtrack->adr = cdrom_get_adr_control (cdf, i) >> 4;
 		dtrack->ctrl = cdrom_get_adr_control (cdf, i) & 15;
 		switch (strack->trktype)
