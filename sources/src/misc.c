@@ -1138,7 +1138,7 @@ bool vsync_busywait_do (int *freetime, bool lace, bool oddeven)
 	return v;
 }
 
-unsigned int flashscreen;   
+int flashscreen;
 
 void doflashscreen (void)
 {

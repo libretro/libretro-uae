@@ -189,7 +189,6 @@ static size_t save_state_file_size = 0;
 static unsigned save_state_grace = 2;
 
 unsigned int retro_devices[RETRO_DEVICES] = {0};
-extern int cd32_pad_enabled[NORMAL_JPORTS];
 extern void display_current_image(const char *image, bool inserted);
 
 retro_log_printf_t log_cb = NULL;
@@ -2815,6 +2814,8 @@ error:
 
 static const struct retro_controller_description joyport_controllers[] =
 {
+   { "Automatic", RETRO_DEVICE_JOYPAD },
+   { "RetroPad", RETRO_DEVICE_PUAE_JOYPAD },
    { "CD32 Pad", RETRO_DEVICE_PUAE_CD32PAD },
    { "Analog Joystick", RETRO_DEVICE_PUAE_ANALOG },
    { "Joystick", RETRO_DEVICE_PUAE_JOYSTICK },
@@ -2844,8 +2845,8 @@ static void retro_set_inputs(void)
 
    const struct retro_controller_info ports[] =
    {
-      { joyport_controllers, 6 },
-      { joyport_controllers, 6 },
+      { joyport_controllers, 8 },
+      { joyport_controllers, 8 },
       { parport_controllers, 4 },
       { parport_controllers, 4 },
       { nonport_controllers, 3 },
@@ -5027,42 +5028,18 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 {
    if (port < RETRO_DEVICES)
    {
-      int uae_port;
-      uae_port = (port == 0) ? 1 : 0;
-      cd32_pad_enabled[uae_port] = 0;
       retro_devices[port] = device;
-#if 0
-      switch (device)
+
+      if (port < 2)
       {
-         case RETRO_DEVICE_JOYPAD:
-            log_cb(RETRO_LOG_INFO, "Controller %u: RetroPad\n", (port+1));
-            break;
+         int uae_port;
+         uae_port = (port == 0) ? 1 : 0;
 
-         case RETRO_DEVICE_PUAE_CD32PAD:
-            log_cb(RETRO_LOG_INFO, "Controller %u: CD32 Pad\n", (port+1));
+         cd32_pad_enabled[uae_port] = 0;
+         if (  (device == RETRO_DEVICE_PUAE_CD32PAD) ||
+               (device == RETRO_DEVICE_JOYPAD && (strstr(full_path, "CD32")) || strstr(uae_preset, "CD32")))
             cd32_pad_enabled[uae_port] = 1;
-            break;
-
-         case RETRO_DEVICE_PUAE_ANALOG:
-            log_cb(RETRO_LOG_INFO, "Controller %u: Analog Joystick\n", (port+1));
-            break;
-
-         case RETRO_DEVICE_PUAE_JOYSTICK:
-            log_cb(RETRO_LOG_INFO, "Controller %u: Joystick\n", (port+1));
-            break;
-
-         case RETRO_DEVICE_PUAE_KEYBOARD:
-            log_cb(RETRO_LOG_INFO, "Controller %u: Keyboard\n", (port+1));
-            break;
-
-         case RETRO_DEVICE_NONE:
-            log_cb(RETRO_LOG_INFO, "Controller %u: None\n", (port+1));
-            break;
       }
-#else
-      if (device == RETRO_DEVICE_PUAE_CD32PAD)
-         cd32_pad_enabled[uae_port] = 1;
-#endif
 
       /* After startup input_get_default_joystick will need to be refreshed for cd32<>joystick change to work.
          Doing updateconfig straight from boot will crash, hence inputdevice_finalized */

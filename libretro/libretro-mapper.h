@@ -9,6 +9,7 @@
 #define AXIS_RX                         2
 #define AXIS_RY                         3
 
+#define RETRO_DEVICE_PUAE_JOYPAD        RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_JOYPAD, 0)
 #define RETRO_DEVICE_PUAE_JOYSTICK      RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_ANALOG, 0)
 #define RETRO_DEVICE_PUAE_CD32PAD       RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_ANALOG, 1)
 #define RETRO_DEVICE_PUAE_ANALOG        RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_ANALOG, 2)
@@ -79,6 +80,9 @@ extern void retro_joystick(int, int, int);
 extern void retro_joystick_analog(int, int, int);
 extern void retro_joystick_button(int, int, int);
 extern unsigned int retro_devices[RETRO_DEVICES];
+extern int cd32_pad_enabled[NORMAL_JPORTS];
+extern bool is_retropad(unsigned retro_port);
+extern bool is_cd32pad(unsigned retro_port);
 
 extern int jflag[4][16];
 extern int kjflag[2][16];

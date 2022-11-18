@@ -1,6 +1,11 @@
 #ifndef LIBRETRO_GLUE_H
 #define LIBRETRO_GLUE_H
 
+#include "sysconfig.h"
+#include "sysdeps.h"
+#include "options.h"
+#include "xwin.h"
+
 #include <stdio.h>
 #include "libretro-core.h"
 
