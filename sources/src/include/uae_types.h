@@ -171,5 +171,6 @@ typedef unsigned int      uae_uintptr;
 # endif
 #endif
 
+typedef signed long long evt_t;
 
 #endif /* UAE_TYPES_H */

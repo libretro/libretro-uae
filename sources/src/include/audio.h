@@ -39,8 +39,8 @@ extern void update_audio (void);
 extern void audio_evhandler (void);
 extern void audio_hsync (void);
 extern void audio_update_adkmasks (void);
-extern void update_sound (double clk);
-extern void update_cda_sound (double clk);
+extern void update_sound (float clk);
+extern void update_cda_sound (float clk);
 extern void led_filter_audio (void);
 extern void set_audio (void);
 extern int audio_activate (void);
@@ -52,7 +52,7 @@ extern int sound_available;
 
 extern void audio_sampleripper(int);
 extern int sampleripper_enabled;
-extern void write_wavheader (struct zfile *wavfile, uae_u32 size, uae_u32 freq);
+extern void write_wavheader (struct zfile *wavfile, size_t size, uae_u32 freq);
 
 extern void audio_update_sndboard(unsigned int);
 extern void audio_enable_sndboard(bool);
