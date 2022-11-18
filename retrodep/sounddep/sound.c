@@ -32,11 +32,11 @@ float sound_sync_multiplier = 1.0;
 extern float sampler_evtime;
 #endif
 
-void update_sound (double clk)
+void update_sound (float clk)
 {
 	if (!have_sound)
 		return;
-	scaled_sample_evtime_orig = clk * CYCLE_UNIT * sound_sync_multiplier / (double)obtainedfreq;
+	scaled_sample_evtime_orig = clk * (float)CYCLE_UNIT * sound_sync_multiplier / obtainedfreq;
 	scaled_sample_evtime = scaled_sample_evtime_orig;
 #ifdef SAMPLER
 	sampler_evtime = clk * CYCLE_UNIT * sound_sync_multiplier;
