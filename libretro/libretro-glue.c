@@ -435,31 +435,19 @@ void print_statusbar(void)
    /* Regular joyflags */
    if (!retro_mousemode)
    {
-      switch (retro_devices[0])
-      {
-         case RETRO_DEVICE_PUAE_CD32PAD:
-            snprintf(JOYMODE1, sizeof(JOYMODE1), "%2s", "C1");
-            break;
-         case RETRO_DEVICE_PUAE_ANALOG:
-            snprintf(JOYMODE1, sizeof(JOYMODE1), "%2s", "A1");
-            break;
-         default:
-            snprintf(JOYMODE1, sizeof(JOYMODE1), "%2s", "J1");
-            break;
-      }
+      if (is_cd32pad(0))
+         snprintf(JOYMODE1, sizeof(JOYMODE1), "%2s", "C1");
+      else if (retro_devices[0] == RETRO_DEVICE_PUAE_ANALOG)
+         snprintf(JOYMODE1, sizeof(JOYMODE1), "%2s", "A1");
+      else
+         snprintf(JOYMODE1, sizeof(JOYMODE1), "%2s", "J1");
 
-      switch (retro_devices[1])
-      {
-         case RETRO_DEVICE_PUAE_CD32PAD:
-            snprintf(JOYMODE2, sizeof(JOYMODE2), "%2s", "C2");
-            break;
-         case RETRO_DEVICE_PUAE_ANALOG:
-            snprintf(JOYMODE1, sizeof(JOYMODE1), "%2s", "A2");
-            break;
-         default:
-            snprintf(JOYMODE2, sizeof(JOYMODE2), "%2s", "J2");
-            break;
-      }
+      if (is_cd32pad(1))
+         snprintf(JOYMODE2, sizeof(JOYMODE2), "%2s", "C2");
+      else if (retro_devices[1] == RETRO_DEVICE_PUAE_ANALOG)
+         snprintf(JOYMODE2, sizeof(JOYMODE2), "%2s", "A2");
+      else
+         snprintf(JOYMODE2, sizeof(JOYMODE2), "%2s", "J2");
    }
    else
    {
@@ -468,31 +456,19 @@ void print_statusbar(void)
    }
 
    /* Regular ports */
-   switch (retro_devices[0])
-   {
-      case RETRO_DEVICE_PUAE_CD32PAD:
-         snprintf(JOYPORT1, sizeof(JOYPORT1), "%3s", joystick_value_human(jflag[0], 2));
-         break;
-      case RETRO_DEVICE_PUAE_ANALOG:
-         snprintf(JOYPORT1, sizeof(JOYPORT1), "%3s", joystick_value_human(aflag[0], 4));
-         break;
-      default:
-         snprintf(JOYPORT1, sizeof(JOYPORT1), "%3s", joystick_value_human(jflag[0], 1));
-         break;
-   }
+   if (is_cd32pad(0))
+      snprintf(JOYPORT1, sizeof(JOYPORT1), "%3s", joystick_value_human(jflag[0], 2));
+   else if (retro_devices[0] == RETRO_DEVICE_PUAE_ANALOG)
+      snprintf(JOYPORT1, sizeof(JOYPORT1), "%3s", joystick_value_human(aflag[0], 4));
+   else
+      snprintf(JOYPORT1, sizeof(JOYPORT1), "%3s", joystick_value_human(jflag[0], 1));
 
-   switch (retro_devices[1])
-   {
-      case RETRO_DEVICE_PUAE_CD32PAD:
-         snprintf(JOYPORT2, sizeof(JOYPORT2), "%3s", joystick_value_human(jflag[1], 2));
-         break;
-      case RETRO_DEVICE_PUAE_ANALOG:
-         snprintf(JOYPORT2, sizeof(JOYPORT2), "%3s", joystick_value_human(aflag[1], 4));
-         break;
-      default:
-         snprintf(JOYPORT2, sizeof(JOYPORT2), "%3s", joystick_value_human(jflag[1], 1));
-         break;
-   }
+   if (is_cd32pad(1))
+      snprintf(JOYPORT2, sizeof(JOYPORT2), "%3s", joystick_value_human(jflag[1], 2));
+   else if (retro_devices[1] == RETRO_DEVICE_PUAE_ANALOG)
+      snprintf(JOYPORT2, sizeof(JOYPORT2), "%3s", joystick_value_human(aflag[1], 4));
+   else
+      snprintf(JOYPORT2, sizeof(JOYPORT2), "%3s", joystick_value_human(jflag[1], 1));
 
    /* Parallel ports, hidden if not connected */
    if (retro_devices[2])
@@ -536,9 +512,9 @@ void print_statusbar(void)
    /* Button colorize CD32 Pad */
    int JOY1_COLOR = FONT_COLOR;
    int JOY2_COLOR = FONT_COLOR;
-   if (retro_devices[0] == RETRO_DEVICE_PUAE_CD32PAD)
+   if (is_cd32pad(0))
       JOY1_COLOR = joystick_color(jflag[0]);
-   if (retro_devices[1] == RETRO_DEVICE_PUAE_CD32PAD)
+   if (is_cd32pad(1))
       JOY2_COLOR = joystick_color(jflag[1]);
 
    /* Statusbar output */
@@ -1106,7 +1082,7 @@ struct inputdevice_functions inputdevicefunc_joystick = {
 
 int input_get_default_joystick (struct uae_input_device *uid, int num, int port, int af, int mode, bool gp, bool joymouseswap)
 {
-   if (retro_devices[0] == RETRO_DEVICE_PUAE_CD32PAD)
+   if (is_cd32pad(0))
    {
       uid[0].eventid[ID_AXIS_OFFSET + 0][0]   = INPUTEVENT_JOY2_HORIZ;
       uid[0].eventid[ID_AXIS_OFFSET + 1][0]   = INPUTEVENT_JOY2_VERT;
@@ -1126,6 +1102,9 @@ int input_get_default_joystick (struct uae_input_device *uid, int num, int port,
       uid[0].eventid[ID_BUTTON_OFFSET + 1][0] = INPUTEVENT_JOY2_RIGHT;
       uid[0].eventid[ID_BUTTON_OFFSET + 2][0] = INPUTEVENT_JOY2_UP;
       uid[0].eventid[ID_BUTTON_OFFSET + 3][0] = INPUTEVENT_JOY2_DOWN;
+      uid[0].eventid[ID_BUTTON_OFFSET + 4][0] = -1;
+      uid[0].eventid[ID_BUTTON_OFFSET + 5][0] = -1;
+      uid[0].eventid[ID_BUTTON_OFFSET + 6][0] = -1;
    }
    else
    {
@@ -1133,9 +1112,14 @@ int input_get_default_joystick (struct uae_input_device *uid, int num, int port,
       uid[0].eventid[ID_AXIS_OFFSET + 1][0]   = INPUTEVENT_JOY2_VERT;
       uid[0].eventid[ID_BUTTON_OFFSET + 0][0] = INPUTEVENT_JOY2_FIRE_BUTTON;
       uid[0].eventid[ID_BUTTON_OFFSET + 1][0] = INPUTEVENT_JOY2_2ND_BUTTON;
+      uid[0].eventid[ID_BUTTON_OFFSET + 2][0] = -1;
+      uid[0].eventid[ID_BUTTON_OFFSET + 3][0] = -1;
+      uid[0].eventid[ID_BUTTON_OFFSET + 4][0] = -1;
+      uid[0].eventid[ID_BUTTON_OFFSET + 5][0] = -1;
+      uid[0].eventid[ID_BUTTON_OFFSET + 6][0] = -1;
    }
 
-   if (retro_devices[1] == RETRO_DEVICE_PUAE_CD32PAD)
+   if (is_cd32pad(1))
    {
       uid[1].eventid[ID_AXIS_OFFSET + 0][0]   = INPUTEVENT_JOY1_HORIZ;
       uid[1].eventid[ID_AXIS_OFFSET + 1][0]   = INPUTEVENT_JOY1_VERT;
@@ -1155,6 +1139,9 @@ int input_get_default_joystick (struct uae_input_device *uid, int num, int port,
       uid[1].eventid[ID_BUTTON_OFFSET + 1][0] = INPUTEVENT_JOY1_RIGHT;
       uid[1].eventid[ID_BUTTON_OFFSET + 2][0] = INPUTEVENT_JOY1_UP;
       uid[1].eventid[ID_BUTTON_OFFSET + 3][0] = INPUTEVENT_JOY1_DOWN;
+      uid[1].eventid[ID_BUTTON_OFFSET + 4][0] = -1;
+      uid[1].eventid[ID_BUTTON_OFFSET + 5][0] = -1;
+      uid[1].eventid[ID_BUTTON_OFFSET + 6][0] = -1;
    }
    else
    {
@@ -1164,6 +1151,11 @@ int input_get_default_joystick (struct uae_input_device *uid, int num, int port,
       uid[1].eventid[ID_AXIS_OFFSET + 3][0]   = INPUTEVENT_JOY1_VERT_POT;
       uid[1].eventid[ID_BUTTON_OFFSET + 0][0] = INPUTEVENT_JOY1_FIRE_BUTTON;
       uid[1].eventid[ID_BUTTON_OFFSET + 1][0] = INPUTEVENT_JOY1_2ND_BUTTON;
+      uid[1].eventid[ID_BUTTON_OFFSET + 2][0] = -1;
+      uid[1].eventid[ID_BUTTON_OFFSET + 3][0] = -1;
+      uid[1].eventid[ID_BUTTON_OFFSET + 4][0] = -1;
+      uid[1].eventid[ID_BUTTON_OFFSET + 5][0] = -1;
+      uid[1].eventid[ID_BUTTON_OFFSET + 6][0] = -1;
    }
 
    uid[2].eventid[ID_AXIS_OFFSET + 0][0]   = INPUTEVENT_PAR_JOY1_HORIZ;
@@ -1196,6 +1188,10 @@ int input_get_default_joystick_analog (struct uae_input_device *uid, int num, in
    uid[num].eventid[ID_BUTTON_OFFSET + 1][0] = port ? INPUTEVENT_JOY2_RIGHT : INPUTEVENT_JOY1_RIGHT;
    uid[num].eventid[ID_BUTTON_OFFSET + 2][0] = port ? INPUTEVENT_JOY2_UP : INPUTEVENT_JOY1_UP;
    uid[num].eventid[ID_BUTTON_OFFSET + 3][0] = port ? INPUTEVENT_JOY2_DOWN : INPUTEVENT_JOY1_DOWN;
+   uid[num].eventid[ID_BUTTON_OFFSET + 4][0] = -1;
+   uid[num].eventid[ID_BUTTON_OFFSET + 5][0] = -1;
+   uid[num].eventid[ID_BUTTON_OFFSET + 6][0] = -1;
+
    return 0;
 }
 
