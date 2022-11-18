@@ -1084,7 +1084,7 @@ static int save_state_internal (struct zfile *f, const TCHAR *description, int c
 
 	_tcscpy (name, _T("AUDx"));
 	for (i = 0; i < 4; i++) {
-		dst = save_audio (i, &len, 0);
+		dst = save_audio (i, (size_t*)&len, 0);
 		name[3] = i + '0';
 		save_chunk (f, dst, len, name, 0);
 		xfree (dst);

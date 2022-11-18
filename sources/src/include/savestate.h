@@ -115,7 +115,7 @@ extern uae_u8 *save_blitter_new (int *len, uae_u8 *);
 extern void restore_blitter_finish (void);
 
 extern uae_u8 *restore_audio (int, uae_u8 *);
-extern uae_u8 *save_audio (int, int *, uae_u8 *);
+extern uae_u8 *save_audio (int, size_t *, uae_u8 *);
 extern void restore_audio_finish (void);
 
 extern uae_u8 *restore_cia (int, uae_u8 *);
