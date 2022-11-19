@@ -77,15 +77,32 @@ extern void epson_close (void);
 #define PARALLEL_MATRIX_EPSON24 3
 #define PARALLEL_MATRIX_EPSON48 4
 
+
+
+#define SOCKET_ERROR   (-1)
+#define SOCKADDR_INET  NULL
+#ifndef FD_SETSIZE
+#define FD_SETSIZE 64
+#endif
+
+#define SO_REUSEADDR 0x0004
+#define SO_LINGER 0x0080
+#define SOL_SOCKET 0xffff
+
+typedef unsigned short SOCKET;
+
+struct linger {
+	uae_u16	l_onoff;
+	uae_u16	l_linger;
+};
+
+#undef socklen_t
+#define socklen_t size_t
+
 #ifndef __WIN32
 #ifndef INVALID_HANDLE_VALUE
 #define INVALID_HANDLE_VALUE NULL
 #endif
-
-#define SOCKET_ERROR   (-1)
-#define SOCKADDR_INET  NULL
-
-typedef unsigned short SOCKET;
 
 typedef unsigned char BYTE;
 typedef unsigned short WORD;

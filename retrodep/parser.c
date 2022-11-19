@@ -7,8 +7,6 @@
 * Copyright 1998-1999 Brian King - added MIDI output support
 */
 
-#include "net/net_compat.h"
-
 #include "sysconfig.h"
 
 #undef SERIAL_ENET
@@ -27,6 +25,7 @@
 #include "traps.h"
 #include "threaddep/thread.h"
 #include "serial.h"
+#include "parallel.h"
 #include "savestate.h"
 #include "xwin.h"
 #include "drawing.h"
@@ -221,7 +220,9 @@ static WSADATA wsadata;
 #endif
 static SOCKET serialsocket = INVALID_SOCKET;
 static SOCKET serialconn = INVALID_SOCKET;
+#if 0
 static PADDRINFOW socketinfo;
+#endif
 static char socketaddr[sizeof(SOCKADDR_INET)];
 static BOOL tcpserial;
 
@@ -266,8 +267,8 @@ static void closetcp (void)
 #if 0
 	if (socketinfo)
 		FreeAddrInfoW (socketinfo);
-#endif
 	socketinfo = NULL;
+#endif
 	WSACleanup ();
 }
 
@@ -314,6 +315,7 @@ static int opentcp (const TCHAR *sername)
 		write_log (_T("SERIAL_TCP: GetAddrInfoW() failed, %s:%s: %d\n"), name, port, WSAGetLastError ());
 		goto end;
 	}
+#if 0
 	serialsocket = socket (socketinfo->ai_family, socketinfo->ai_socktype, socketinfo->ai_protocol);
 	if (serialsocket == INVALID_SOCKET) {
 		write_log(_T("SERIAL_TCP: socket() failed, %s:%s: %d\n"), name, port, WSAGetLastError ());
@@ -339,6 +341,7 @@ static int opentcp (const TCHAR *sername)
 		write_log(_T("SERIAL_TCP: setsockopt(SO_REUSEADDR) failed, %s:%s: %d\n"), name, port, WSAGetLastError ());
 		goto end;
 	}
+#endif
 
 	if (waitmode) {
 		while (tcp_is_connected () == false) {
@@ -449,9 +452,9 @@ int openser (const TCHAR *sername)
 		write_log (_T("SERIAL: Using %s CTS/RTS=%d\n"), sername, currprefs.serial_hwctsrts);
 		return 1;
 	}
-#endif
 
 	write_log (_T("SERIAL: serial driver didn't accept new parameters\n"));
+#endif
 	closeser();
 	return 0;
 }
