@@ -6926,7 +6926,7 @@ static void update_video_center_horizontal(void)
     && retro_max_diwstop  > 0
     && retro_min_diwstart < min_diwstart_limit
     && retro_max_diwstop  > max_diwstop_limit
-    && (retro_max_diwstop - retro_min_diwstart) <= (retrow_crop + (2 * width_multiplier)))
+    && (retro_max_diwstop - retro_min_diwstart) <= (retrow_crop + (4 * width_multiplier)))
       visible_left_border_new = (retro_max_diwstop - retro_min_diwstart - retrow_crop) / 2 + retro_min_diwstart;
    else if (retro_min_diwstart == MAX_STOP && retro_max_diwstop == 0 && visible_left_border != 0)
       visible_left_border_new = visible_left_border;
@@ -7138,8 +7138,8 @@ static void update_audiovideo(void)
          if (retro_thisframe_first_drawn_line_start == -1 && retro_thisframe_last_drawn_line_start == -1)
             request_update_av_info = true;
 
-         /* Update immediately with big enough difference in last line */
-         if (retro_thisframe_last_drawn_line_delta > 47 && retro_thisframe_last_drawn_line_delta < 100)
+         /* Update immediately with big enough difference in last line (last line for CD32 no disc) */
+         if (retro_thisframe_last_drawn_line_delta > 47 && retro_thisframe_last_drawn_line_delta < 189)
             request_update_av_info = true;
 
          if ((retro_thisframe_first_drawn_line_start == retro_thisframe_first_drawn_line
