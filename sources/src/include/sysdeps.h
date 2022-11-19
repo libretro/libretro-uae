@@ -514,14 +514,22 @@ extern int gui_message_multibutton (int flags, const char *format,...);
 #ifndef offsetof
 #  define offsetof(type, member)  __builtin_offsetof (type, member)
 #endif /* offsetof */
+
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #else
+#if 0
 typedef int HANDLE;
+#else
+typedef void* HANDLE;
+#endif
 typedef unsigned long DWORD;
 typedef unsigned short WORD;
 typedef long long LONGLONG;
+#ifndef LONG
+typedef long LONG;
+#endif
 DWORD GetLastError(void);
 #endif
 #ifndef ANDROID

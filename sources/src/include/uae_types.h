@@ -171,6 +171,17 @@ typedef unsigned int      uae_uintptr;
 # endif
 #endif
 
+#ifndef BOOL
+typedef int BOOL;
+#endif
+
+#ifndef FALSE
+#define FALSE 0
+#endif
+#ifndef TRUE
+#define TRUE (!FALSE)
+#endif
+
 typedef signed long long evt_t;
 
 #endif /* UAE_TYPES_H */
