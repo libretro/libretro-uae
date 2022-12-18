@@ -145,7 +145,7 @@ int pissoff_value = 15000 * CYCLE_UNIT;
 
 uae_u8 *save_log (int bootlog, int *len)
 {
-   return NULL;
+	return NULL;
 }
 
 int scan_roms (int show)
@@ -224,19 +224,34 @@ bool vsync_switchmode (int monid, int hz)
 int extraframewait = 0;
 int relativepaths = 1;
 
-void sleep_millis_main (int ms)
+static int sleep_millis2 (int ms, bool main)
 {
-   uae_msleep(ms);
+	int ret = 0;
+
+	if (ms < 0)
+		ms = -ms;
+
+	if (main)
+		return 0;
+	else
+		uae_msleep(ms);
+
+	return ret;
 }
 
-void sleep_millis(int ms)
+int sleep_millis_main (int ms)
 {
-   uae_msleep(ms);
+	return sleep_millis2 (ms, true);
+}
+
+int sleep_millis (int ms)
+{
+	return sleep_millis2 (ms, false);
 }
 
 int target_sleep_nanos(int nanos)
 {
-   return 0;
+	return 0;
 }
 
 void target_restart (void)

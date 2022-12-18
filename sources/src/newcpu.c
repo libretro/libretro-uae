@@ -4222,7 +4222,7 @@ int cpu_sleep_millis(int ms)
 		ret = sleep_millis_main(ms);
 //	}
 #elifdef __LIBRETRO__
-	sleep_millis_main(ms);
+	ret = sleep_millis_main(ms);
 #endif
 #ifdef WITH_PPC
 	if (state)
