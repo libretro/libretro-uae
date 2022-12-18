@@ -24,6 +24,7 @@
 #include "akiko.h"
 #include "gui.h"
 #include "crc32.h"
+#include "uae.h"
 #include "sleep.h"
 #include "custom.h"
 #include "newcpu.h"

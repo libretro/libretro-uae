@@ -177,9 +177,29 @@ int vsync_switchmode (int hz)
 
 int extraframewait = 0;
 
-void sleep_millis_main (int ms)
+static int sleep_millis2 (int ms, bool main)
 {
-	uae_msleep (ms);
+	int ret = 0;
+
+	if (ms < 0)
+		ms = -ms;
+
+	if (main)
+		return 0;
+	else
+		uae_msleep(ms);
+
+	return ret;
+}
+
+int sleep_millis_main (int ms)
+{
+	return sleep_millis2 (ms, true);
+}
+
+int sleep_millis (int ms)
+{
+	return sleep_millis2 (ms, false);
 }
 
 void target_restart (void)

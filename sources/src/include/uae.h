@@ -9,18 +9,16 @@
 
 #ifndef __LIBRETRO__
 extern void do_start_program (void);
-#endif
-extern void do_leave_program (void);
-#ifndef __LIBRETRO__
 extern void start_program (void);
 #endif
+extern void do_leave_program (void);
 extern void leave_program (void);
 extern void real_main (int, TCHAR **);
 extern void virtualdevice_init (void);
 extern void usage (void);
-extern void sleep_millis (int ms);
-extern void sleep_millis_main (int ms);
-extern void sleep_millis_busy (int ms);
+extern int sleep_millis (int ms);
+extern int sleep_millis_main (int ms);
+extern int sleep_millis_busy (int ms);
 extern int sleep_resolution;
 
 #define UAE_QUIT 1

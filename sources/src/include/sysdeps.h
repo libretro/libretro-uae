@@ -499,7 +499,6 @@ extern int gui_message_multibutton (int flags, const char *format,...);
 #endif
 #define _tcstod strtod
 #define _T
-#define sleep_millis uae_msleep
 
 #define _istalnum iswalnum
 #ifndef _WIN32
