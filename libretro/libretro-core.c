@@ -5116,6 +5116,9 @@ float retro_get_aspect_ratio(unsigned int width, unsigned int height, bool pixel
 
 static float retro_default_refresh(void)
 {
+   /* Use TV standards with "Locked" mode */
+   if (video_config_allow_hz_change == 2)
+      return (retro_get_region() == RETRO_REGION_NTSC) ? 59.94f : 50.00f;
    return (retro_get_region() == RETRO_REGION_NTSC) ? PUAE_VIDEO_HZ_NTSC : PUAE_VIDEO_HZ_PAL;
 }
 
@@ -7712,7 +7715,7 @@ static bool retro_update_av_info(void)
    retro_get_system_av_info(&new_av_info);
 
    /* Cropped geometry update */
-   if ( retrow_crop != retrow || retroh_crop != retroh)
+   if (retrow_crop != retrow || retroh_crop != retroh)
    {
       new_av_info.geometry.base_width   = retrow_crop;
       new_av_info.geometry.base_height  = retroh_crop;
