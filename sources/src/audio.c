@@ -2637,7 +2637,7 @@ uae_u8 *restore_audio (int nr, uae_u8 *src)
 
 #if defined SAVESTATE || defined DEBUGGER
 
-uae_u8 *save_audio (int nr, size_t *len, uae_u8 *dstptr)
+uae_u8 *save_audio (int nr, int *len, uae_u8 *dstptr)
 {
 	struct audio_channel_data *acd = audio_channel + nr;
 	uae_u8 *dst, *dstbak;
