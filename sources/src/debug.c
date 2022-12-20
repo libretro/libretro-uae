@@ -870,7 +870,7 @@ static void dump_custom_regs (int aga)
 	p1 += 4; // skip chipset type
 	for (i = 0; i < 4; i++) {
 		p4 = p1 + 0xa0 + i * 16;
-		p3 = save_audio (i, (size_t*)&len, 0);
+		p3 = save_audio (i, &len, 0);
 		p4[0] = p3[12];
 		p4[1] = p3[13];
 		p4[2] = p3[14];
