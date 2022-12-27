@@ -5054,7 +5054,7 @@ void retro_get_system_info(struct retro_system_info *info)
 #define GIT_VERSION ""
 #endif
    memset(info, 0, sizeof(*info));
-   info->library_name     = "PUAE";
+   info->library_name     = "PUAE 2021";
    info->library_version  = PACKAGE_VERSION "" GIT_VERSION;
    info->need_fullpath    = true;
    info->block_extract    = true;
