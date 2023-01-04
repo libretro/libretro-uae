@@ -1874,6 +1874,9 @@ static int custom_autoswitch_mouse[MAX_JPORTS_CUSTOM];
 
 void inputdevice_parse_jport_custom(struct uae_prefs *pr, int index, int port, TCHAR *outname)
 {
+#ifdef __LIBRETRO__
+	return;
+#endif
 	const TCHAR *eventstr = pr->jports_custom[index].custom;
 	TCHAR data[CONFIG_BLEN];
 	TCHAR *bufp;
@@ -9544,6 +9547,9 @@ int inputdevice_getjoyportdevice (int port, int val)
 
 void inputdevice_fix_prefs(struct uae_prefs *p, bool userconfig)
 {
+#ifdef __LIBRETRO__
+	return;
+#endif
 	struct jport jport_config_store[MAX_JPORTS];
 	bool changed = false;
 
