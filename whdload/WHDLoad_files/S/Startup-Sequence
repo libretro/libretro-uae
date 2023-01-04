@@ -61,10 +61,10 @@ ELSE
    List #?.slav#? QUICK NOHEAD TO ENV:SLAVE
    IF NOT EXISTS $SLAVE >NIL:
        List #? DIRS QUICK NOHEAD TO ENV:SLAVEDIR
-       IF EXISTS $SLAVEDIR >NIL:
-          CD $SLAVEDIR >NIL:
-          IF EXISTS $SLAVEDIR.slave
-             SETENV SLAVE $SLAVEDIR.slave
+       IF EXISTS "$SLAVEDIR" >NIL:
+          CD "$SLAVEDIR" >NIL:
+          IF EXISTS "$SLAVEDIR.slave"
+             SETENV SLAVE "$SLAVEDIR.slave"
           ELSE
              List #?.slav#? QUICK NOHEAD TO ENV:SLAVE
           ENDIF
