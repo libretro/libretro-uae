@@ -246,7 +246,7 @@ int statusline_get_multiplier(int monid)
 #define RED_DIM         0x880000
 #define RED_BRIGHT      0xCC0000
 
-void draw_status_line_single (int monid, uae_u8 *buf, int bpp, int y, int totalwidth, uae_u32 *rc, uae_u32 *gc, uae_u32 *bc, uae_u32 *alpha)
+void draw_status_line_single(int monid, uae_u8 *buf, int bpp, int y, int totalwidth, uae_u32 *rc, uae_u32 *gc, uae_u32 *bc, uae_u32 *alpha)
 {
 	struct amigadisplay *ad = &adisplays[monid];
 	int x_start, j, led, border;

@@ -409,10 +409,6 @@ void fixup_prefs (struct uae_prefs *p, bool userconfig)
 {
 	int err = 0;
 
-#ifdef __LIBRETRO__
-	if (userconfig)
-		return;
-#endif
 	built_in_chipset_prefs (p);
 	fixup_cpu (p);
 	cfgfile_compatibility_rtg(p);

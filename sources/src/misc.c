@@ -1677,6 +1677,9 @@ void statusline_render(int monid, uae_u8 *buf, int bpp, int pitch, int width, in
 
 bool softstatusline(void)
 {
+#ifdef __LIBRETRO__
+	return true;
+#endif
 	if (currprefs.gfx_api > 0)
 		return false;
 	return (currprefs.leds_on_screen & STATUSLINE_TARGET) == 0;
