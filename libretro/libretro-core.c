@@ -222,13 +222,15 @@ static char retro_content_directory[RETRO_PATH_MAX] = {0};
 dc_storage *dc = NULL;
 
 /* Configs */
+#define UAE_CONFIG_SIZE 32768
 static char uae_model[256] = {0};
 static char uae_preset[20] = {0};
 static char uae_kickstart[RETRO_PATH_MAX] = {0};
 static char uae_kickstart_ext[RETRO_PATH_MAX] = {0};
-static char uae_config[2048] = {0};
+static char uae_config[4096] = {0};
 static char uae_custom_config[2048] = {0};
-char uae_full_config[4096] = {0};
+static char uae_preset_config[2048] = {0};
+char uae_full_config[UAE_CONFIG_SIZE] = {0};
 
 /* Audio output buffer */
 static struct {
@@ -5159,7 +5161,7 @@ static void retro_config_append(const char *row, ...)
    vsprintf(output, row, ap);
    va_end(ap);
 
-   strcat(uae_full_config, output);
+   strlcat(uae_full_config, output, sizeof(uae_full_config));
 }
 
 static void retro_config_force_region(void)
@@ -5289,15 +5291,17 @@ static void retro_config_kickstart(void)
    if (strcmp(opt_kickstart, "auto"))
       strlcpy(uae_kickstart, opt_kickstart, sizeof(uae_kickstart));
 
-   /* Ensure relative path if custom parsed */
-   if (strstr(uae_kickstart, DIR_SEP_STR))
+   /* Ensure relative path if custom parsed if not already valid */
+   if (strstr(uae_kickstart, DIR_SEP_STR) && !path_is_valid(uae_kickstart))
    {
       snprintf(tmp, sizeof(tmp), "%s", path_basename(uae_kickstart));
       strlcpy(uae_kickstart, tmp, sizeof(uae_kickstart));
-   }
 
-   /* Final absolute path */
-   path_join(kickstart, retro_system_directory, uae_kickstart);
+      /* Final absolute path */
+      path_join(kickstart, retro_system_directory, uae_kickstart);
+   }
+   else
+      strlcpy(kickstart, uae_kickstart, sizeof(kickstart));
 
    /* No path validations for AROS */
    if (!strcmp(opt_kickstart, "aros"))
@@ -5727,93 +5731,117 @@ static char* emu_config(int config)
    snprintf(custom_config_file, sizeof(custom_config_file),
             "%s_%s.%s", LIBRETRO_PUAE_PREFIX, emu_config_string("model", config), "uae");
    path_join(custom_config_path, retro_save_directory, custom_config_file);
-
    if (path_is_valid(custom_config_path))
    {
-      log_cb(RETRO_LOG_INFO, "Replacing model preset with: '%s'\n", custom_config_path);
+      log_cb(RETRO_LOG_INFO, "Appending model preset: '%s'\n", custom_config_path);
 
-      char filebuf[RETRO_PATH_MAX] = {0};
       FILE * custom_config_fp;
+      char filebuf[RETRO_PATH_MAX];
       if ((custom_config_fp = fopen(custom_config_path, "r")))
       {
          while (fgets(filebuf, sizeof(filebuf), custom_config_fp))
-            strcat(uae_custom_config, filebuf);
+            strlcat(uae_custom_config, filebuf, sizeof(uae_custom_config));
          fclose(custom_config_fp);
       }
-      return uae_custom_config;
    }
 
    /* chipmem_size (default 1): 1 = 0.5MB, 2 = 1MB, 4 = 2MB
     * bogomem_size (default 0): 2 = 0.5MB, 4 = 1MB, 6 = 1.5MB, 7 = 1.8MB
     * fastmem_size (default 0): 1 = 1.0MB, ...
     */
+   uae_preset_config[0] = '\0';
    switch (config)
    {
-      case EMU_CONFIG_A500: return
+      case EMU_CONFIG_A500:
+         strcat(uae_preset_config,
          "cpu_model=68000\n"
          "chipset=ocs\n"
          "chipset_compatible=A500\n"
          "chipmem_size=1\n"
          "bogomem_size=2\n"
-         "fastmem_size=0\n";
+         "fastmem_size=0\n"
+         );
+         break;
 
-      case EMU_CONFIG_A500OG: return
+      case EMU_CONFIG_A500OG:
+         strcat(uae_preset_config,
          "cpu_model=68000\n"
          "chipset=ocs\n"
          "chipset_compatible=A500\n"
          "chipmem_size=1\n"
          "bogomem_size=0\n"
-         "fastmem_size=0\n";
+         "fastmem_size=0\n"
+         );
+         break;
 
-      case EMU_CONFIG_A500PLUS: return
+      case EMU_CONFIG_A500PLUS:
+         strcat(uae_preset_config,
          "cpu_model=68000\n"
          "chipset=ecs\n"
          "chipset_compatible=A500+\n"
          "chipmem_size=2\n"
          "bogomem_size=0\n"
-         "fastmem_size=0\n";
+         "fastmem_size=0\n"
+         );
+         break;
 
-      case EMU_CONFIG_A600: return
+      case EMU_CONFIG_A600:
+         strcat(uae_preset_config,
          "cpu_model=68000\n"
          "chipset=ecs\n"
          "chipset_compatible=A600\n"
          "chipmem_size=4\n"
          "bogomem_size=0\n"
-         "fastmem_size=8\n";
+         "fastmem_size=8\n"
+         );
+         break;
 
-      case EMU_CONFIG_A1200: return
+      case EMU_CONFIG_A1200:
+         strcat(uae_preset_config,
          "cpu_model=68020\n"
          "chipset=aga\n"
          "chipset_compatible=A1200\n"
          "chipmem_size=4\n"
          "bogomem_size=0\n"
-         "fastmem_size=8\n";
+         "fastmem_size=8\n"
+         );
+         break;
 
-      case EMU_CONFIG_A1200OG: return
+      case EMU_CONFIG_A1200OG:
+         strcat(uae_preset_config,
          "cpu_model=68020\n"
          "chipset=aga\n"
          "chipset_compatible=A1200\n"
          "chipmem_size=4\n"
          "bogomem_size=0\n"
-         "fastmem_size=0\n";
+         "fastmem_size=0\n"
+         );
+         break;
 
-      case EMU_CONFIG_A2000: return
+      case EMU_CONFIG_A2000:
+         strcat(uae_preset_config,
          "cpu_model=68000\n"
          "chipset=ecs_agnus\n"
          "chipset_compatible=A2000\n"
          "chipmem_size=2\n"
          "bogomem_size=0\n"
-         "fastmem_size=0\n";
+         "fastmem_size=0\n"
+         );
+         break;
 
-      case EMU_CONFIG_A2000OG: return
+      case EMU_CONFIG_A2000OG:
+         strcat(uae_preset_config,
          "cpu_model=68000\n"
          "chipset=ocs\n"
          "chipset_compatible=A2000\n"
          "chipmem_size=1\n"
          "bogomem_size=2\n"
-         "fastmem_size=0\n";
+         "fastmem_size=0\n"
+         );
+         break;
 
-      case EMU_CONFIG_A4030: return
+      case EMU_CONFIG_A4030:
+         strcat(uae_preset_config,
          "cpu_model=68030\n"
          "fpu_model=68882\n"
          "mmu_model=68030\n"
@@ -5822,9 +5850,12 @@ static char* emu_config(int config)
          "chipset_compatible=A4000\n"
          "chipmem_size=4\n"
          "bogomem_size=0\n"
-         "fastmem_size=8\n";
+         "fastmem_size=8\n"
+         );
+         break;
 
-      case EMU_CONFIG_A4040: return
+      case EMU_CONFIG_A4040:
+         strcat(uae_preset_config,
          "cpu_model=68040\n"
          "fpu_model=68040\n"
          "mmu_model=68040\n"
@@ -5832,37 +5863,51 @@ static char* emu_config(int config)
          "chipset_compatible=A4000\n"
          "chipmem_size=4\n"
          "bogomem_size=0\n"
-         "fastmem_size=8\n";
+         "fastmem_size=8\n"
+         );
+         break;
 
-      case EMU_CONFIG_CDTV: return
+      case EMU_CONFIG_CDTV:
+         strcat(uae_preset_config,
          "cpu_model=68000\n"
          "chipset=ecs_agnus\n"
          "chipset_compatible=CDTV\n"
          "chipmem_size=2\n"
          "bogomem_size=0\n"
          "fastmem_size=0\n"
-         "floppy0type=-1\n";
+         "floppy0type=-1\n"
+         );
+         break;
 
-      case EMU_CONFIG_CD32: return
+      case EMU_CONFIG_CD32:
+         strcat(uae_preset_config,
          "cpu_model=68020\n"
          "chipset=aga\n"
          "chipset_compatible=CD32\n"
          "chipmem_size=4\n"
          "bogomem_size=0\n"
          "fastmem_size=0\n"
-         "floppy0type=-1\n";
+         "floppy0type=-1\n"
+         );
+         break;
 
-      case EMU_CONFIG_CD32FR: return
+      case EMU_CONFIG_CD32FR:
+         strcat(uae_preset_config,
          "cpu_model=68020\n"
          "chipset=aga\n"
          "chipset_compatible=CD32\n"
          "chipmem_size=4\n"
          "bogomem_size=0\n"
          "fastmem_size=8\n"
-         "floppy0type=-1\n";
+         "floppy0type=-1\n"
+         );
+         break;
 
-      default: return "";
+      default: break;
    }
+
+   strlcat(uae_preset_config, uae_custom_config, sizeof(uae_preset_config));
+   return uae_preset_config;
 }
 
 static void retro_config_preset(char *model)
@@ -6672,9 +6717,14 @@ static bool retro_create_config(void)
 
             while (fgets(filebuf, sizeof(filebuf), configfile_custom))
             {
+               /* Skip input rows */
+               if ((strstr(filebuf, "input.") && filebuf[0] == 'i')
+                || (strstr(filebuf, "joyport") && filebuf[0] == 'j'))
+                  continue;
+
                /* Skip Kickstart row if Kickstart is not automatic */
                if (strcmp(opt_kickstart, "auto"))
-                  if ((strstr(filebuf, "kickstart_rom_file=") && filebuf[0] == 'k'))
+                  if (strstr(filebuf, "kickstart_rom_file=") && filebuf[0] == 'k')
                      continue;
 
                /* Skip Kickstart & model rows if model is not automatic */
@@ -6714,7 +6764,7 @@ static bool retro_create_config(void)
                   cpu_cycle_exact_force = true;
 
                /* Parse Kickstart for alternate namings */
-               if ((strstr(filebuf, "kickstart_rom_file=") && filebuf[0] == 'k'))
+               if (strstr(filebuf, "kickstart_rom_file=") && filebuf[0] == 'k')
                {
                   char *token = strtok(filebuf, "=");
                   while (token != NULL)
@@ -6832,7 +6882,7 @@ static bool retro_create_config(void)
    log_cb(RETRO_LOG_DEBUG, "-----------------\n");
 
    char *token;
-   char uae_full_config_temp[4096];
+   char uae_full_config_temp[UAE_CONFIG_SIZE];
    strlcpy(uae_full_config_temp, uae_full_config, sizeof(uae_full_config_temp));
    for (token = strtok(uae_full_config_temp, "\n"); token; token = strtok(NULL, "\n"))
    {

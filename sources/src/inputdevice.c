@@ -5365,10 +5365,10 @@ void inputdevice_updateconfig_internal (const struct uae_prefs *srcprrefs, struc
 		mice[i].enabled = 0;
 	}
 
-#ifndef __LIBRETRO__
-	compatibility_copy (dstprefs, true);
-#else
+#ifdef __LIBRETRO__
 	compatibility_copy (dstprefs, false);
+#else
+	compatibility_copy (dstprefs, true);
 #endif
 
 	joysticks = dstprefs->joystick_settings[dstprefs->input_selected_setting];
@@ -6476,11 +6476,11 @@ void inputdevice_copy_single_config (struct uae_prefs *p, int src, int dst, int 
 	if (src == dst)
 		return;
 	if (src < MAX_INPUT_SETTINGS) {
-	if (devnum < 0 || gettype (devnum) == IDTYPE_JOYSTICK)
+		if (devnum < 0 || gettype (devnum) == IDTYPE_JOYSTICK)
 			copydev (p->joystick_settings[dst], p->joystick_settings[src], selectedwidget);
-	if (devnum < 0 || gettype (devnum) == IDTYPE_MOUSE)
+		if (devnum < 0 || gettype (devnum) == IDTYPE_MOUSE)
 			copydev (p->mouse_settings[dst], p->mouse_settings[src], selectedwidget);
-	if (devnum < 0 || gettype (devnum) == IDTYPE_KEYBOARD)
+		if (devnum < 0 || gettype (devnum) == IDTYPE_KEYBOARD)
 			copydev (p->keyboard_settings[dst], p->keyboard_settings[src], selectedwidget);
 	}
 }

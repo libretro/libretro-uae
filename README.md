@@ -405,9 +405,9 @@ Note the size of the HDF specified by SIZE_OF_HDF must be greater than size of t
 
 You can pass `.uae` configuration files and they will be appended to the core option configuration.
 
-If `puae_libretro_global.uae` exists in RetroArch `saves` it will be appended to the configuration.
+If `puae_libretro_[model].uae` exists in RetroArch `saves` it will be appended to the model preset section.
 
-If `puae_libretro_[model].uae` exists in RetroArch `saves` it will replace the model preset section.
+If `puae_libretro_global.uae` exists in RetroArch `saves` it will be appended to the configuration.
 
 The final generated configuration output is available in debug level log.
 

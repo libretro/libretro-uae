@@ -39,7 +39,7 @@
 #include "misc.h"
 
 #ifdef __LIBRETRO__
-extern char uae_full_config[4096];
+extern char uae_full_config[32768];
 #endif
 
 static int config_newfilesystem;
