@@ -1546,7 +1546,7 @@ int process_keyboard_pass_through()
 
 void retro_poll_event()
 {
-   unsigned i, j;
+   uint8_t i, j;
    for (j = 0; j < RETRO_DEVICES; j++)
    {
       if (libretro_supports_bitmasks)
@@ -1727,7 +1727,7 @@ void retro_poll_event()
       }
    }
 
-   /* Joypad movement only with digital mouse mode or analog joystick, and virtual keyboard hidden */
+   /* D-pad movement only with digital mouse mode or analog joystick, and virtual keyboard hidden */
    if (!retro_vkbd && (retro_mousemode || retro_devices[0] == RETRO_DEVICE_PUAE_ANALOG ||
                                           retro_devices[1] == RETRO_DEVICE_PUAE_ANALOG))
    {
@@ -1884,6 +1884,58 @@ void retro_poll_event()
 
             if (abs(analog_stick[1]) > 0)
                uae_mouse_y[j] = process_analogmouse(analog_stick[1], analog_deadzone, mouse_multiplier);
+         }
+      }
+   }
+
+   /* Special mouse button handling for keyboard device type */
+   for (j = 0; j < 2; j++)
+   {
+      int8_t retro_device_id_mouse_l = -1;
+      int8_t retro_device_id_mouse_r = -1;
+
+      if (     retro_devices[j] != RETRO_DEVICE_PUAE_KEYBOARD
+            || uae_mouse_l[j] || uae_mouse_r[j])
+         continue;
+
+      /* Search for mouse buttons from core mappings */
+      for (i = 0; i < RETRO_DEVICE_ID_JOYPAD_LAST; i++)
+      {
+         if (mapper_keys[i] == MOUSE_LEFT_BUTTON)
+            retro_device_id_mouse_l = i;
+         else if (mapper_keys[i] == MOUSE_RIGHT_BUTTON)
+            retro_device_id_mouse_r = i;
+
+         if (     retro_device_id_mouse_l > -1
+               && retro_device_id_mouse_r > -1)
+            break;
+      }
+
+      if (     retro_device_id_mouse_l > -1
+            || retro_device_id_mouse_r > -1)
+      {
+         bool mouse_l_pressed = (joypad_bits[j] & (1 << retro_device_id_mouse_l));
+         bool mouse_r_pressed = (joypad_bits[j] & (1 << retro_device_id_mouse_r));
+
+         /* Do not press mouse buttons if keyboard device is pressing keys */
+         if (mouse_l_pressed || mouse_r_pressed)
+         {
+            uint16_t k;
+            bool allow_press = true;
+            for (k = RETROK_BACKSPACE; k < RETROK_LAST; k++)
+            {
+               if (retro_key_state[k])
+               {
+                  allow_press = false;
+                  break;
+               }
+            }
+
+            if (allow_press)
+            {
+               uae_mouse_l[j] = mouse_l_pressed;
+               uae_mouse_r[j] = mouse_r_pressed;
+            }
          }
       }
    }
