@@ -224,7 +224,7 @@ dc_storage *dc = NULL;
 
 /* Configs */
 #define UAE_CONFIG_SIZE 32768
-static char uae_model[256] = {0};
+static char uae_model[1024] = {0};
 static char uae_preset[20] = {0};
 static char uae_kickstart[RETRO_PATH_MAX] = {0};
 static char uae_kickstart_ext[RETRO_PATH_MAX] = {0};
@@ -5175,7 +5175,7 @@ void retro_audio_queue(const int16_t *data, int32_t samples)
 
 static void retro_config_append(const char *row, ...)
 {
-   char output[2048];
+   char output[4096];
    va_list ap;
 
    if (row == NULL)
@@ -5752,6 +5752,9 @@ static char* emu_config(int config)
    char custom_config_path[RETRO_PATH_MAX] = {0};
    char custom_config_file[RETRO_PATH_MAX] = {0};
 
+   /* Reset Kickstart */
+   uae_kickstart[0] = '\0';
+
    snprintf(custom_config_file, sizeof(custom_config_file),
             "%s_%s.%s", LIBRETRO_PUAE_PREFIX, emu_config_string("model", config), "uae");
    path_join(custom_config_path, retro_save_directory, custom_config_file);
@@ -5764,7 +5767,19 @@ static char* emu_config(int config)
       if ((custom_config_fp = fopen(custom_config_path, "r")))
       {
          while (fgets(filebuf, sizeof(filebuf), custom_config_fp))
+         {
             strlcat(uae_custom_config, filebuf, sizeof(uae_custom_config));
+            /* Parse for alternate Kickstart */
+            if (strstr(filebuf, "kickstart_rom_file=") && filebuf[0] == 'k')
+            {
+               char *token = strtok(filebuf, "=");
+               while (token != NULL)
+               {
+                  snprintf(uae_kickstart, sizeof(uae_kickstart), "%s", trimwhitespace(token));
+                  token = strtok(NULL, "=");
+               }
+            }
+         }
          fclose(custom_config_fp);
       }
    }
@@ -5927,7 +5942,8 @@ static char* emu_config(int config)
          );
          break;
 
-      default: break;
+      default:
+         break;
    }
 
    strlcat(uae_preset_config, uae_custom_config, sizeof(uae_preset_config));
@@ -5939,8 +5955,12 @@ static void retro_config_preset(char *model)
    int model_int = emu_config_int(model);
    strlcpy(uae_model, emu_config(model_int), sizeof(uae_model));
    strlcpy(uae_preset, emu_config_string("model", model_int), sizeof(uae_preset));
-   strlcpy(uae_kickstart, emu_config_string("kickstart", model_int), sizeof(uae_kickstart));
-   strlcpy(uae_kickstart_ext, emu_config_string("kickstart_ext", model_int), sizeof(uae_kickstart_ext));
+   /* Allow Kickstart overrides in custom presets */
+   if (string_is_empty(uae_kickstart))
+   {
+      strlcpy(uae_kickstart, emu_config_string("kickstart", model_int), sizeof(uae_kickstart));
+      strlcpy(uae_kickstart_ext, emu_config_string("kickstart_ext", model_int), sizeof(uae_kickstart_ext));
+   }
 }
 
 static bool retro_create_config(void)
@@ -6155,6 +6175,9 @@ static bool retro_create_config(void)
             }
             else
             {
+               /* No model specified */
+               log_cb(RETRO_LOG_INFO, "No model specified in: '%s'\n", full_path);
+
                /* Hard disks must default to a machine with HD interface */
                if (!opt_use_boot_hd &&
                    (dc_get_image_type(full_path) == DC_IMAGE_TYPE_HD ||
@@ -6162,9 +6185,6 @@ static bool retro_create_config(void)
                     m3u == DC_IMAGE_TYPE_HD ||
                     m3u == DC_IMAGE_TYPE_WHDLOAD))
                   retro_config_preset(opt_model_hd);
-
-               /* No model specified */
-               log_cb(RETRO_LOG_INFO, "No model specified in: '%s'\n", full_path);
             }
          }
 
