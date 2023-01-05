@@ -5305,7 +5305,6 @@ static void retro_config_boot_hd(void)
 static void retro_config_kickstart(void)
 {
    char kickstart[RETRO_PATH_MAX];
-   char tmp[RETRO_PATH_MAX];
    bool valid = false;
 
    /* Wrong place for logging model but still the best place */
@@ -5315,9 +5314,10 @@ static void retro_config_kickstart(void)
    if (strcmp(opt_kickstart, "auto"))
       strlcpy(uae_kickstart, opt_kickstart, sizeof(uae_kickstart));
 
-   /* Ensure relative path if custom parsed if not already valid */
-   if (strstr(uae_kickstart, DIR_SEP_STR) && !path_is_valid(uae_kickstart))
+   /* Fix path if not already valid */
+   if (!path_is_valid(uae_kickstart))
    {
+      char tmp[RETRO_PATH_MAX];
       snprintf(tmp, sizeof(tmp), "%s", path_basename(uae_kickstart));
       strlcpy(uae_kickstart, tmp, sizeof(uae_kickstart));
 
