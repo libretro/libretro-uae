@@ -219,13 +219,14 @@ else ifneq (,$(findstring ios,$(platform)))
    SHARED := -dynamiclib
    COMMONFLAGS += -DIOS
    MINVERSION :=
+   PLATFLAGS += -Wno-error=implicit-function-declaration
+   PLATFLAGS += -DUSE_NAMED_SEMAPHORES
    ifeq ($(IOSSDK),)
       IOSSDK := $(shell xcodebuild -version -sdk iphoneos Path)
    endif
    ifeq ($(platform),ios-arm64)
       CC = cc -arch arm64 -isysroot $(IOSSDK)
       CXX = c++ -arch arm64 -isysroot $(IOSSDK)
-      PLATFLAGS += -Wno-error=implicit-function-declaration
    else
       CC = cc -arch armv7 -isysroot $(IOSSDK)
       CXX = c++ -arch armv7 -isysroot $(IOSSDK)
@@ -245,6 +246,7 @@ else ifeq ($(platform), tvos-arm64)
    SHARED := -dynamiclib
    COMMONFLAGS += -DIOS
    PLATFLAGS += -Wno-error=implicit-function-declaration
+   PLATFLAGS += -DUSE_NAMED_SEMAPHORES
    CFLAGS += $(COMMONFLAGS)
    ifeq ($(IOSSDK),)
       IOSSDK := $(shell xcodebuild -version -sdk appletvos Path)
