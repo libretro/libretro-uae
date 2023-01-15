@@ -101,16 +101,12 @@ static int fsdb_name_invalid_2 (const TCHAR *n, int dir)
     if (_tcscmp (n, FSDB_FILE) == 0)
         return -1;
 
-#ifndef __LIBRETRO__
     if (dir) {
-#endif
         if (n[0] == '.' && l == 1)
             return -1;
         if (n[0] == '.' && n[1] == '.' && l == 2)
             return -1;
-#ifndef __LIBRETRO__
     }
-#endif
 
     if (a >= 'a' && a <= 'z')
         a -= 32;
@@ -382,7 +378,9 @@ static char *aname_to_nname(const char *aname, int ascii)
 
     free(buf);
 
-    //write_log("aname_to_nname %s => %s\n", aname, result);
+#if 0
+    write_log("aname_to_nname %s => %s\n", aname, result);
+#endif
     return result;
 }
 
@@ -425,8 +423,12 @@ static char *nname_to_aname(const char *nname, int noconvert)
     *p++ = '\0';
     free(cresult);
 
-    result = string_replace_substring(result, UAEFSDB_BEGINS, "");
-    //write_log("nname_to_aname %s => %s\n", nname, result);
+#ifdef __LIBRETRO__
+    result = string_replace_substring(result, UAEFSDB_BEGINS, strlen(UAEFSDB_BEGINS), "", strlen(""));
+#endif
+#if 0
+    write_log("nname_to_aname %s => %s\n", nname, result);
+#endif
     return result;
 }
 
@@ -463,7 +465,7 @@ static int fsdb_get_file_info(const char *nname, fsdb_file_info *info)
 a_inode *custom_fsdb_lookup_aino_aname(a_inode *base, const TCHAR *aname)
 {
     char *nname = aname_to_nname(aname, 0);
-    //find_nname_case(base->nname, &nname);
+    /*find_nname_case(base->nname, &nname);*/
     char *full_nname = build_nname(base->nname, nname);
     if (!fsdb_name_invalid(aname))
     {
