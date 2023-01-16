@@ -763,9 +763,9 @@ static int adjust_analog_deadzone(int analog_axis, int analog_deadzone)
 {
    int analog_adjusted = analog_axis;
 
-   if (analog_adjusted >= analog_deadzone)
+   if (analog_adjusted > analog_deadzone)
       analog_adjusted -= analog_deadzone;
-   else if (analog_adjusted <= -analog_deadzone)
+   else if (analog_adjusted < -analog_deadzone)
       analog_adjusted += analog_deadzone;
 
    if (analog_adjusted != analog_axis)
@@ -1791,13 +1791,13 @@ void retro_poll_event()
       {
          analog_stick[0] = joypad_axis[j][AXIS_LX];
          analog_stick[1] = joypad_axis[j][AXIS_LY];
-         if (sqrt((analog_stick[0] * analog_stick[0]) + (analog_stick[1] * analog_stick[1])) < analog_deadzone)
+         if (sqrt((analog_stick[0] * analog_stick[0]) + (analog_stick[1] * analog_stick[1])) <= analog_deadzone)
             analog_stick[0] = analog_stick[1] = 0;
 
-         if (abs(analog_stick[0]) > analog_deadzone)
+         if (abs(analog_stick[0]) > 0)
             retro_joystick_analog(j, 0, adjust_analog_deadzone(analog_stick[0], analog_deadzone));
 
-         if (abs(analog_stick[1]) > analog_deadzone)
+         if (abs(analog_stick[1]) > 0)
             retro_joystick_analog(j, 1, adjust_analog_deadzone(analog_stick[1], analog_deadzone));
 
          /* Statusbar flags */
@@ -1836,7 +1836,7 @@ void retro_poll_event()
          {
             analog_stick[0] = joypad_axis[j][AXIS_LX];
             analog_stick[1] = joypad_axis[j][AXIS_LY];
-            if (sqrt((analog_stick[0] * analog_stick[0]) + (analog_stick[1] * analog_stick[1])) < analog_deadzone)
+            if (sqrt((analog_stick[0] * analog_stick[0]) + (analog_stick[1] * analog_stick[1])) <= analog_deadzone)
                analog_stick[0] = analog_stick[1] = 0;
 
             /* Analog stick speed modifiers */
@@ -1869,7 +1869,7 @@ void retro_poll_event()
          {
             analog_stick[0] = joypad_axis[j][AXIS_RX];
             analog_stick[1] = joypad_axis[j][AXIS_RY];
-            if (sqrt((analog_stick[0] * analog_stick[0]) + (analog_stick[1] * analog_stick[1])) < analog_deadzone)
+            if (sqrt((analog_stick[0] * analog_stick[0]) + (analog_stick[1] * analog_stick[1])) <= analog_deadzone)
                analog_stick[0] = analog_stick[1] = 0;
 
             /* Analog stick speed modifiers */
