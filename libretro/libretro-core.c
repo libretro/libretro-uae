@@ -7254,8 +7254,8 @@ static void update_audiovideo(void)
 
          /* Do not consider too big first line deltas as necessary changes.
           * Fixes cases like Fantastic Dizzy and Lollypop screen transition */
-         if (retro_thisframe_first_drawn_line_delta > 165
-          && retro_thisframe_last_drawn_line_delta  < 2)
+         if (retro_thisframe_first_drawn_line_delta > 165 && retro_thisframe_last_drawn_line_delta < 2
+          && retro_thisframe_first_drawn_line > retro_thisframe_first_drawn_line_old)
          {
             retro_thisframe_counter = 0;
             request_update_av_info  = false;
