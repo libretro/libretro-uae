@@ -6,7 +6,9 @@
   * (c) 1995 Bernd Schmidt
   */
 
-typedef enum { DRV_NONE = -1, DRV_35_DD = 0, DRV_35_HD, DRV_525_SD, DRV_35_DD_ESCOM } drive_type;
+typedef enum {
+	DRV_NONE = -1, DRV_35_DD = 0, DRV_35_HD, DRV_525_SD, DRV_35_DD_ESCOM, DRV_PC_525_ONLY_40, DRV_PC_35_ONLY_80, DRV_PC_525_40_80, DRV_525_DD, DRV_FB,
+} drive_type;
 
 #define HISTORY_FLOPPY 0
 #define HISTORY_CD 1
@@ -21,20 +23,20 @@ extern int disk_empty (int num);
 extern void disk_insert (int num, const TCHAR *name, bool forcedwriteprotect);
 extern void disk_insert_force (int num, const TCHAR *name, bool forcedwriteprotect);
 extern void DISK_vsync (void);
-extern int DISK_validate_filename (struct uae_prefs *p, const TCHAR *fname, int leave_open, bool *wrprot, uae_u32 *crc32, struct zfile **zf);
+extern int DISK_validate_filename (struct uae_prefs *p, const TCHAR *fname, int num, TCHAR *outfname, int leave_open, bool *wrprot, uae_u32 *crc32, struct zfile **zf);
 extern void DISK_handler (uae_u32);
 extern void DISK_update (int hpos);
 extern void DISK_update_adkcon (int hpos, uae_u16 v);
 extern void DISK_hsync (void);
 extern void DISK_reset (void);
-extern int disk_getwriteprotect (struct uae_prefs *p, const TCHAR *name);
+extern int disk_getwriteprotect (struct uae_prefs *p, const TCHAR *name, int num);
 extern int disk_setwriteprotect (struct uae_prefs *p, int num, const TCHAR *name, bool writeprotected);
-extern bool disk_creatediskfile (const TCHAR *name, int type, drive_type adftype, const TCHAR *disk_name, bool ffs, bool bootable, struct zfile *copyfrom);
+extern bool disk_creatediskfile (struct uae_prefs *p, const TCHAR *name, int type, drive_type adftype, int hd, const TCHAR *disk_name, bool ffs, bool bootable, struct zfile *copyfrom);
 extern void dumpdisk (void);
 extern int DISK_history_add (const TCHAR *name, int idx, int type, int donotcheck);
 extern TCHAR *DISK_history_get (int idx, int type);
 int DISK_examine_image (struct uae_prefs *p, int num, uae_u32 *crc32);
-extern TCHAR *DISK_get_saveimagepath (const TCHAR *name);
+extern TCHAR *DISK_get_saveimagepath(const TCHAR *name, int type);
 extern void DISK_reinsert (int num);
 extern int disk_prevnext (int drive, int dir);
 extern int disk_prevnext_name (TCHAR *img, int dir);

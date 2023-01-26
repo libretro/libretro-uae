@@ -149,6 +149,7 @@ SOURCES_C += \
 	$(DEPS_DIR)/libz/gzclose.c \
 	$(DEPS_DIR)/libz/gzlib.c \
 	$(DEPS_DIR)/libz/gzread.c \
+	$(DEPS_DIR)/libz/gzwrite.c \
 	$(DEPS_DIR)/libz/inffast.c \
 	$(DEPS_DIR)/libz/inflate.c \
 	$(DEPS_DIR)/libz/inftrees.c \

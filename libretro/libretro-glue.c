@@ -1554,9 +1554,49 @@ bool strendswith(const char* str, const char* end)
 }
 
 /* zlib */
+#define BUFLEN 16384
+
+void gz_compress(const char *in, const char *out)
+{
+   char buf[BUFLEN];
+   size_t len;
+   int err;
+   FILE *in_fp;
+   gzFile out_fp;
+
+   out_fp = gzopen(out, "wb");
+   if (out_fp == NULL)
+      return;
+
+   in_fp = fopen(in, "rb");
+   if (in_fp == NULL)
+      return;
+
+   for (;;)
+   {
+      len = fread(buf, 1, sizeof(buf), in_fp);
+      int buflen;
+
+      if (len <= 0)
+      {
+         if (len < 0)
+            log_cb(RETRO_LOG_ERROR, "GZip: Read error\n");
+         break;
+      }
+
+      buflen = gzwrite(out_fp, buf, len);
+      if (buflen != len)
+         log_cb(RETRO_LOG_ERROR, "GZip: %s\n", gzerror(out_fp, &err));
+   }
+   fclose(in_fp);
+
+   if (gzclose(out_fp) == Z_OK)
+      log_cb(RETRO_LOG_INFO, "GZip: %s\n", out);
+}
+
 void gz_uncompress(const char *in, const char *out)
 {
-   char gzbuf[16384];
+   char gzbuf[BUFLEN];
    int len;
    int err;
 

@@ -3309,7 +3309,7 @@ static int cfgfile_parse_hardware (struct uae_prefs *p, const TCHAR *option, TCH
 		|| cfgfile_yesno (option, value, _T("comp_lowopt"), &p->comp_lowopt)
 #endif
 		|| cfgfile_yesno (option, value, _T("rtg_nocustom"), &p->picasso96_nocustom)
-		|| cfgfile_yesno (option, value, _T("floppy_write_protected"), &p->floppy_read_only)
+		|| cfgfile_yesno (option, value, _T("floppy_write_protect"), &p->floppy_read_only)
 		|| cfgfile_yesno (option, value, _T("uaeserial"), &p->uaeserial))
 		return 1;
 

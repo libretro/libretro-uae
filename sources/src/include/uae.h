@@ -73,3 +73,5 @@ int init_sdl (void);
 
 int uae_get_state (void);
 int uae_state_change_pending (void);
+
+extern int saveimageoriginalpath;

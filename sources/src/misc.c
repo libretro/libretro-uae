@@ -106,6 +106,7 @@ extern void setmaintitle(void);
 extern int isvsync_chipset (void);
 extern int isvsync_rtg (void);
 
+int saveimageoriginalpath = 0;
 
 void getgfxoffset (int *dxp, int *dyp, int *mxp, int *myp)
 {

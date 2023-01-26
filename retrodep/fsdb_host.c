@@ -11,7 +11,8 @@ extern int log_filesys;
 bool my_stat (const TCHAR *name, struct mystat *ms) {
 	struct stat sonuc;
 	if (stat(name, &sonuc) == -1) {
-		write_log("my_stat: stat on file '%s' failed\n", name);
+		if (log_filesys)
+			write_log("my_stat: stat on file '%s' failed\n", name);
 		return false;
 	}
 	if (log_filesys)
@@ -34,16 +35,12 @@ bool my_stat (const TCHAR *name, struct mystat *ms) {
 
 bool my_chmod (const TCHAR *name, uae_u32 mode)
 {
-#if 0
-	DWORD attr = FILE_ATTRIBUTE_NORMAL;
-	if (!(mode & FILEFLAG_WRITE))
-		attr |= FILE_ATTRIBUTE_READONLY;
-	if (mode & FILEFLAG_ARCHIVE)
-		attr |= FILE_ATTRIBUTE_ARCHIVE;
-	if (chmod (name, attr))
-		return true;
-#endif
-	return false;
+    mode_t attr =   (S_IRUSR | S_IRGRP | S_IROTH);
+    attr |=         (S_IXUSR | S_IXGRP | S_IXOTH);
+    if (mode & FILEFLAG_WRITE)
+        attr |=     (S_IWUSR | S_IWGRP | S_IWOTH);
+
+        return chmod (name, attr);
 }
 
 static int setfiletime (const TCHAR *name, int days, int minute, int tick, int tolocal)
