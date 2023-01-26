@@ -48,6 +48,7 @@ extern bool retro_av_info_is_lace;
 /* Usual suspects */
 extern char retro_system_directory[RETRO_PATH_MAX];
 extern char retro_save_directory[RETRO_PATH_MAX];
+extern char retro_temp_directory[RETRO_PATH_MAX];
 extern struct zfile *retro_deserialize_file;
 extern dc_storage *dc;
 extern retro_log_printf_t log_cb;

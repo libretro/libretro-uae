@@ -236,6 +236,7 @@ const cdrom_toc *cdrom_get_toc(cdrom_file *file);
 /* zlib */
 #include "deps/libz/zlib.h"
 #include "deps/libz/unzip.h"
+void gz_compress(const char *in, const char *out);
 void gz_uncompress(const char *in, const char *out);
 void zip_uncompress(const char *in, const char *out, char *lastfile);
 

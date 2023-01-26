@@ -519,7 +519,7 @@ bool dc_save_disk_toggle(dc_storage* dc, bool file_check, bool select)
       retro_message = true;
    }
    else
-      log_cb(RETRO_LOG_INFO, "Save Disk 0 appended\n");
+      log_cb(RETRO_LOG_INFO, "Save Disk 0 appended.\n");
 
    return true;
 }
