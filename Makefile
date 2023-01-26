@@ -295,6 +295,9 @@ else
    LDFLAGS += -s
 endif
 
+# Zlib
+CFLAGS += -DHAVE_ZLIB
+
 # 7zip
 ifneq ($(NO_7ZIP), 1)
     CFLAGS += -DHAVE_7ZIP -D_7ZIP_ST

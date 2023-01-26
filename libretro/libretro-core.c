@@ -71,6 +71,7 @@ bool opt_video_resolution_auto = false;
 bool opt_video_vresolution_auto = false;
 bool opt_floppy_sound_empty_mute = false;
 bool opt_floppy_multidrive = false;
+bool opt_floppy_write_redirect = false;
 unsigned int opt_autoloadfastforward = 0;
 unsigned int opt_use_whdload = 1;
 unsigned int opt_use_whdload_theme = 0;
@@ -525,6 +526,82 @@ static void upload_output_audio_buffer()
 {
    audio_batch_cb(output_audio_buffer.data, output_audio_buffer.size / 2);
    output_audio_buffer.size = 0;
+}
+
+static void floppy_open_redirect(int8_t drive)
+{
+   /* Force check for redirected save disks and uncompress found gzs */
+   if (opt_floppy_write_redirect)
+   {
+      uint8_t i;
+      uint8_t drive_i    = 0;
+      uint8_t max_drives = MAX_FLOPPY_DRIVES;
+
+      if (drive > -1)
+      {
+         drive_i    = drive;
+         max_drives = drive + 1;
+      }
+
+      for (i = drive_i; i < max_drives; i++)
+      {
+         if (!string_is_empty(changed_prefs.floppyslots[i].df))
+         {
+            const char *saveimagepath = DISK_get_saveimagepath(changed_prefs.floppyslots[i].df, -2);
+
+            if (!string_is_empty(saveimagepath) && !path_is_valid(saveimagepath))
+            {
+               char gz_saveimagepath[RETRO_PATH_MAX];
+               snprintf(gz_saveimagepath, sizeof(gz_saveimagepath), "%s%s",
+                     saveimagepath, ".gz");
+
+               if (path_is_valid(gz_saveimagepath))
+                  gz_uncompress(gz_saveimagepath, saveimagepath);
+            }
+
+            disk_setwriteprotect(&currprefs, i, changed_prefs.floppyslots[i].df, 0);
+            DISK_reinsert(i);
+         }
+      }
+   }
+}
+
+static void floppy_close_redirect(int8_t drive)
+{
+   /* Force check for redirected save disks to remove unsaved */
+   {
+      uint8_t i;
+      uint8_t drive_i    = 0;
+      uint8_t max_drives = MAX_FLOPPY_DRIVES;
+
+      if (drive > -1)
+      {
+         drive_i    = drive;
+         max_drives = drive + 1;
+      }
+
+      for (i = drive_i; i < max_drives; i++)
+      {
+         if (!string_is_empty(changed_prefs.floppyslots[i].df))
+         {
+            const char *saveimagepath = DISK_get_saveimagepath(changed_prefs.floppyslots[i].df, -2);
+
+            disk_setwriteprotect(&currprefs, i, changed_prefs.floppyslots[i].df, 1);
+            disk_eject(i);
+
+            if (!string_is_empty(saveimagepath) && path_is_valid(saveimagepath))
+            {
+               char gz_saveimagepath[RETRO_PATH_MAX];
+               snprintf(gz_saveimagepath, sizeof(gz_saveimagepath), "%s%s",
+                     saveimagepath, ".gz");
+
+               gz_compress(saveimagepath, gz_saveimagepath);
+               if (path_is_valid(gz_saveimagepath))
+                  remove(saveimagepath);
+            }
+         }
+      }
+   }
 }
 
 static void retro_set_paths(void)
@@ -1005,7 +1082,21 @@ static void retro_set_core_options()
          "puae_floppy_write_protection",
          "Media > Floppy Write Protection",
          "Floppy Write Protection",
-         "Set all drives read only. Changing this while emulation is running ejects and reinserts all disks. IPF images are always read only!",
+         "Set all drives read only. Changing this while emulation is running ejects and reinserts all disks. IPF images are always read-only!",
+         NULL,
+         "media",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "disabled"
+      },
+      {
+         "puae_floppy_write_redirect",
+         "Media > Floppy Write Redirect",
+         "Floppy Write Redirect",
+         "Writes to a substitute disk under 'saves' instead of original disks. Works also with IPF images.",
          NULL,
          "media",
          {
@@ -3768,19 +3859,68 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       int val = 0;
+
       if (!strcmp(var.value, "enabled")) val = 1;
 
-      if (val)
-         strcat(uae_config, "floppy_write_protected=true\n");
+      if (val == 1)
+         strcat(uae_config, "floppy_write_protect=true\n");
 
       if (libretro_runloop_active)
       {
          changed_prefs.floppy_read_only = val;
          if (changed_prefs.floppy_read_only != currprefs.floppy_read_only)
          {
-            currprefs.floppy_read_only = val;
+            currprefs.floppy_read_only = changed_prefs.floppy_read_only;
             for (unsigned i = 0; i < MAX_FLOPPY_DRIVES; i++)
-               DISK_reinsert(i);
+            {
+               if (      string_is_empty(changed_prefs.floppyslots[i].df)
+                     && !string_is_empty(dc->files[i]))
+                  strcpy(changed_prefs.floppyslots[i].df, dc->files[i]);
+
+               if (!string_is_empty(changed_prefs.floppyslots[i].df))
+                  DISK_reinsert(i);
+
+               if (!opt_floppy_multidrive)
+                  break;
+            }
+         }
+      }
+   }
+
+   var.key = "puae_floppy_write_redirect";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      bool opt_floppy_write_redirect_prev = opt_floppy_write_redirect;
+
+      if (!strcmp(var.value, "disabled")) opt_floppy_write_redirect = false;
+      else                                opt_floppy_write_redirect = true;
+
+      if (libretro_runloop_active)
+      {
+         if (opt_floppy_write_redirect_prev != opt_floppy_write_redirect)
+         {
+            changed_prefs.floppy_read_only = 0;
+            currprefs.floppy_read_only     = changed_prefs.floppy_read_only;
+
+            if (!opt_floppy_write_redirect)
+               floppy_close_redirect(-1);
+
+            for (unsigned i = 0; i < MAX_FLOPPY_DRIVES; i++)
+            {
+               if (      string_is_empty(changed_prefs.floppyslots[i].df)
+                     && !string_is_empty(dc->files[i]))
+                  strcpy(changed_prefs.floppyslots[i].df, dc->files[i]);
+
+               if (!string_is_empty(changed_prefs.floppyslots[i].df))
+                  DISK_reinsert(i);
+
+               if (!opt_floppy_multidrive)
+                  break;
+            }
+
+            if (opt_floppy_write_redirect)
+               floppy_open_redirect(-1);
          }
       }
    }
@@ -4720,6 +4860,7 @@ bool retro_disk_set_eject_state(bool ejected)
          {
             case DC_IMAGE_TYPE_FLOPPY:
             case DC_IMAGE_TYPE_ARCHIVE:
+               floppy_close_redirect(0);
                changed_prefs.floppyslots[0].df[0] = 0;
                disk_eject(0);
                break;
@@ -4745,6 +4886,7 @@ bool retro_disk_set_eject_state(bool ejected)
                   }
 
                strcpy(changed_prefs.floppyslots[0].df, dc->files[dc->index]);
+               floppy_open_redirect(0);
                DISK_reinsert(0);
                break;
             case DC_IMAGE_TYPE_CD:
@@ -8053,6 +8195,9 @@ bool retro_load_game(const struct retro_game_info *info)
    /* > We are now ready to enter the run loop */
    libretro_runloop_active = 1;
 
+   /* Force check for redirected save disks */
+   floppy_open_redirect(-1);
+
    /* Save states
     * > Ensure that save state file path is empty,
     *   since we use memory based save states */
@@ -8104,6 +8249,9 @@ bool retro_load_game(const struct retro_game_info *info)
 
 void retro_unload_game(void)
 {
+   /* Close redirected save disks */
+   floppy_close_redirect(-1);
+
    /* Ensure save state de-serialization file
     * is closed/NULL
     * Note: Have to do this here (not in retro_deinit())

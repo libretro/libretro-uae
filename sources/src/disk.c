@@ -74,6 +74,9 @@ int disk_debug_track = -1;
 
 #ifdef __LIBRETRO__
 #include "libretro-core.h"
+extern bool opt_floppy_write_redirect;
+#undef write_log
+#define write_log
 #endif
 
 int floppy_writemode = 0;
@@ -1241,6 +1244,13 @@ static bool diskfile_iswriteprotect (struct uae_prefs *p, const TCHAR *fname_in,
 	zfile_fclose (zf2);
 	zfile_fread (buffer, sizeof (char), 25, zf1);
 	zfile_fclose (zf1);
+#ifdef __LIBRETRO__
+	if (opt_floppy_write_redirect)
+	{
+		*needwritefile = 1;
+		return 1;
+	}
+#endif
 	if (strncmp ((uae_char*) buffer, "CAPS", 4) == 0) {
 		*needwritefile = 1;
 		return wrprot2;
@@ -3182,6 +3192,14 @@ int disk_setwriteprotect (struct uae_prefs *p, int num, const TCHAR *fname_in, b
 
 	floppy[num].forcedwrprot = false;
 	floppy[num].newnamewriteprotected = false;
+
+#ifdef __LIBRETRO__
+	diskfile_readonly (name2, false);
+	if (string_starts_with(outfname, retro_temp_directory))
+		diskfile_readonly (outfname, false);
+	else
+		diskfile_readonly (outfname, (opt_floppy_write_redirect) ? true : p->floppy_read_only);
+#endif
 
 	return 1;
 }
