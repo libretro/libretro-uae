@@ -7372,10 +7372,6 @@ static void update_audiovideo(void)
          if (retro_thisframe_first_drawn_line_start == -1 && retro_thisframe_last_drawn_line_start == -1)
             request_update_av_info = true;
 
-         /* Update immediately with big enough difference in last line (last line for CD32 no disc) */
-         if (retro_thisframe_last_drawn_line_delta > 47 && retro_thisframe_last_drawn_line_delta < 189)
-            request_update_av_info = true;
-
          if ((retro_thisframe_first_drawn_line_start == retro_thisframe_first_drawn_line
            && retro_thisframe_last_drawn_line_start  == retro_thisframe_last_drawn_line)
           || (retro_thisframe_first_drawn_line_old == retro_thisframe_first_drawn_line
@@ -7402,6 +7398,10 @@ static void update_audiovideo(void)
             retro_thisframe_counter = 0;
             request_update_av_info  = false;
          }
+
+         /* Hasten the result with big enough difference in last line (last line for CD32 no disc) */
+         if (retro_thisframe_last_drawn_line_delta > 47 && retro_thisframe_last_drawn_line_delta < 189)
+            retro_thisframe_counter++;
 
          retro_thisframe_first_drawn_line_old = retro_thisframe_first_drawn_line;
          retro_thisframe_last_drawn_line_old  = retro_thisframe_last_drawn_line;
@@ -7616,7 +7616,7 @@ static bool retro_update_av_info(void)
    {
       if (update_vresolution(true))
       {
-         request_init_custom_timer = 2;
+         request_init_custom_timer = 3;
          set_config_changed();
          return false;
       }
