@@ -5627,12 +5627,13 @@ static void retro_config_harddrives(void)
       {
          path_parent_dir(tmp_str, strlen(tmp_str));
          snprintf(tmp_str_path, sizeof(tmp_str_path), "%s%s", tmp_str, tmp_str_name);
+
          if (!path_is_directory(tmp_str_path))
-         {
-            path_parent_dir(tmp_str_path, strlen(tmp_str));
-            if (tmp_str_path[strlen(tmp_str_path)-1] == DIR_SEP_CHR)
-               tmp_str_path[strlen(tmp_str_path)-1] = '\0';
-         }
+            path_parent_dir(tmp_str_path, strlen(tmp_str_path));
+
+         if (tmp_str_path[strlen(tmp_str_path)-1] == DIR_SEP_CHR)
+            tmp_str_path[strlen(tmp_str_path)-1] = '\0';
+
          tmp_str = strdup(tmp_str_path);
       }
 
