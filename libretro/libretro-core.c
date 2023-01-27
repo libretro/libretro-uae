@@ -547,6 +547,16 @@ static void floppy_open_redirect(int8_t drive)
          if (!string_is_empty(changed_prefs.floppyslots[i].df))
          {
             const char *saveimagepath = DISK_get_saveimagepath(changed_prefs.floppyslots[i].df, -2);
+            char parent_path[RETRO_PATH_MAX];
+
+            strlcpy(parent_path, changed_prefs.floppyslots[i].df, sizeof(parent_path));
+            path_parent_dir(parent_path, strlen(parent_path));
+
+            if (parent_path[strlen(parent_path)-1] == DIR_SEP_CHR)
+               parent_path[strlen(parent_path)-1] = '\0';
+
+            if (string_is_equal(parent_path, retro_save_directory))
+               continue;
 
             if (!string_is_empty(saveimagepath) && !path_is_valid(saveimagepath))
             {
@@ -584,6 +594,16 @@ static void floppy_close_redirect(int8_t drive)
          if (!string_is_empty(changed_prefs.floppyslots[i].df))
          {
             const char *saveimagepath = DISK_get_saveimagepath(changed_prefs.floppyslots[i].df, -2);
+            char parent_path[RETRO_PATH_MAX];
+
+            strlcpy(parent_path, changed_prefs.floppyslots[i].df, sizeof(parent_path));
+            path_parent_dir(parent_path, strlen(parent_path));
+
+            if (parent_path[strlen(parent_path)-1] == DIR_SEP_CHR)
+               parent_path[strlen(parent_path)-1] = '\0';
+
+            if (string_is_equal(parent_path, retro_save_directory))
+               continue;
 
             disk_setwriteprotect(&currprefs, i, changed_prefs.floppyslots[i].df, 1);
             disk_eject(i);
@@ -8224,6 +8244,10 @@ bool retro_load_game(const struct retro_game_info *info)
 
 void retro_unload_game(void)
 {
+   /* Gzip savedisks */
+   if (dc && dc->count > 1 && !string_is_empty(changed_prefs.floppyslots[0].df))
+      dc_save_disk_compress(dc);
+
    /* Close redirected save disks */
    floppy_close_redirect(-1);
 
