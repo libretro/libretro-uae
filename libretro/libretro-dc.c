@@ -87,6 +87,7 @@ void dc_reset(dc_storage* dc)
 
    dc->count       = 0;
    dc->index       = 0;
+   dc->index_prev  = 0;
    dc->eject_state = true;
    dc->replace     = false;
 }
@@ -100,6 +101,7 @@ dc_storage* dc_create(void)
    {
       dc->count = 0;
       dc->index = -1;
+      dc->index_prev = -1;
       dc->eject_state = true;
       dc->replace = false;
       dc->command = NULL;
