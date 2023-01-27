@@ -371,6 +371,52 @@ bool dc_replace_file(dc_storage* dc, int index, const char* filename)
    return true;
 }
 
+void dc_save_disk_uncompress(const char *save_disk_file_name)
+{
+   if (!string_is_empty(save_disk_file_name) && !path_is_valid(save_disk_file_name))
+   {
+      char gz_saveimagepath[RETRO_PATH_MAX];
+      snprintf(gz_saveimagepath, sizeof(gz_saveimagepath), "%s%s",
+            save_disk_file_name, ".gz");
+
+      if (path_is_valid(gz_saveimagepath))
+         gz_uncompress(gz_saveimagepath, save_disk_file_name);
+   }
+}
+
+void dc_save_disk_compress(dc_storage* dc)
+{
+   if (dc)
+   {
+      char save_disk_label[64] = {0};
+      unsigned save_disk_index = 0;
+      unsigned index           = 0;
+
+      snprintf(save_disk_label, 64, "%s %u",
+            M3U_SAVEDISK_LABEL, 0);
+
+      for (index = 0; index < dc->count; index++)
+      {
+         if (!strcmp(dc->labels[index], save_disk_label))
+            save_disk_index = index;
+      }
+
+      if (save_disk_index)
+      {
+         char gz_saveimagepath[RETRO_PATH_MAX];
+         snprintf(gz_saveimagepath, sizeof(gz_saveimagepath), "%s%s",
+               dc->files[save_disk_index], ".gz");
+
+         disk_eject(save_disk_index);
+         retro_disk_set_eject_state(true);
+
+         gz_compress(dc->files[save_disk_index], gz_saveimagepath);
+         if (path_is_valid(gz_saveimagepath))
+            remove(dc->files[save_disk_index]);
+      }
+   }
+}
+
 bool dc_add_m3u_save_disk(
       dc_storage* dc,
       const char* m3u_file, const char* save_dir,
@@ -423,6 +469,13 @@ bool dc_add_m3u_save_disk(
     * it differs from 'disk_name'. This is quite
     * fiddly, however - perhaps it can be added later... */
    save_disk_exists = path_is_valid(save_disk_path);
+
+   /* Check gzipped save disk */
+   if (!save_disk_exists)
+   {
+      dc_save_disk_uncompress(save_disk_path);
+      save_disk_exists = path_is_valid(save_disk_path);
+   }
 
    if (file_check)
       return save_disk_exists;
@@ -486,6 +539,7 @@ bool dc_save_disk_toggle(dc_storage* dc, bool file_check, bool select)
       return dc_add_m3u_save_disk(dc, full_path, retro_save_directory, NULL, 0, true);
 
    dc_add_m3u_save_disk(dc, full_path, retro_save_directory, NULL, 0, false);
+
    if (select)
    {
       unsigned save_disk_index = 0;
