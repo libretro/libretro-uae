@@ -3275,6 +3275,9 @@ static void update_variables(void)
          strcat(uae_config, "cart_file=");
          strcat(uae_config, cart_full);
          strcat(uae_config, "\n");
+
+         if (strstr(var.value, "CD32"))
+            strcat(uae_config, "cd32fmv=true\n");
       }
    }
 
@@ -7212,7 +7215,7 @@ static void update_video_center_horizontal(void)
 
 static bool update_vresolution(bool update)
 {
-   int tmp_interlace_seen = retro_av_info_is_lace;
+   int tmp_interlace_seen = retro_av_info_is_lace || gfxvidinfo->drawbuffer.tempbufferinuse;
 
    /* Lores force to single line */
    if (!(video_config & PUAE_VIDEO_HIRES) && !(video_config & PUAE_VIDEO_SUPERHIRES))
@@ -7352,7 +7355,7 @@ static void update_audiovideo(void)
          (retro_thisframe_first_drawn_line == -1 && retro_thisframe_last_drawn_line == -1))
       )
    {
-      int min_height = 26;
+      int min_height = 10;
       int retro_thisframe_first_drawn_line_delta = abs(retro_thisframe_first_drawn_line_old - retro_thisframe_first_drawn_line);
       int retro_thisframe_last_drawn_line_delta  = abs(retro_thisframe_last_drawn_line_old - retro_thisframe_last_drawn_line);
 

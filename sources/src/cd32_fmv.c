@@ -24,19 +24,23 @@
 #include "devices.h"
 #include "threaddep/thread.h"
 
-#ifndef __LIBRETRO__
-
 #include "cda_play.h"
 #include "archivers/mp2/kjmp2.h"
-#ifndef __LIBRETRO__
+#ifdef WITH_MPEG2
 #include "mpeg2.h"
 #include "mpeg2convert.h"
-#endif
 
 #define FMV_DEBUG 0
 static int fmv_audio_debug = 0;
 static int fmv_video_debug = 0;
 #define DUMP_VIDEO 0
+
+#ifdef __LIBRETRO__
+#if FMV_DEBUG == 0
+#undef write_log
+#define write_log
+#endif
+#endif
 
 /*
  0x200000 - 0x23FFFF ROM (256k)
@@ -397,11 +401,19 @@ static void l64111_setvolume(void)
 	if (!pcmaudio)
 		return;
 	write_log(_T("L64111 mute %d\n"), volume ? 0 : 1);
+#ifdef __LIBRETRO__
+	if (cda_audio_bufsize) {
+#else
 	if (cda) {
+#endif
 		if (audio_mode) {
 			audio_cda_volume(&cas, volume, volume);
 		} else {
+#ifdef __LIBRETRO__
+			cda_setvolume (volume, volume);
+#else
 			cda->setvolume(volume, volume);
+#endif
 		}
 	}
 }
@@ -1385,7 +1397,11 @@ static void fmv_next_cd_audio_buffer_callback(int bufnum, void *param)
 		fmv_bufon[bufnum] = 0;
 		bufnum = 1 - bufnum;
 		if (fmv_bufon[bufnum])
+#ifdef __LIBRETRO__
+			audio_cda_new_buffer(&cas, (uae_s16*)cda_audio_buffers[bufnum], PCM_SECTORS * KJMP2_SAMPLES_PER_FRAME, bufnum, fmv_next_cd_audio_buffer_callback, param);
+#else
 			audio_cda_new_buffer(&cas, (uae_s16*)cda->buffers[bufnum], PCM_SECTORS * KJMP2_SAMPLES_PER_FRAME, bufnum, fmv_next_cd_audio_buffer_callback, param);
+#endif
 		else
 			bufnum = -1;
 	}
@@ -1408,7 +1424,11 @@ static void cd32_fmv_audio_handler(void)
 	if (!fmv_ram_bank.baseaddr)
 		return;
 
+#ifdef __LIBRETRO__
+	if (cd_audio_mode_changed || (cl450_play && !cda_audio_bufsize)) {
+#else
 	if (cd_audio_mode_changed || (cl450_play && !cda)) {
+#endif
 		cd_audio_mode_changed = false;
 		if (cl450_play) {
 			if (audio_mode) {
@@ -1416,8 +1436,13 @@ static void cd32_fmv_audio_handler(void)
 			}
 			audio_mode = currprefs.sound_cdaudio;
 			fmv_bufon[0] = fmv_bufon[1] = 0;
+#ifdef __LIBRETRO__
+			cda_delete();
+			cda_new (PCM_SECTORS, KJMP2_SAMPLES_PER_FRAME * 4, 44100, audio_mode != 0);
+#else
 			delete cda;
 			cda = new cda_audio(PCM_SECTORS, KJMP2_SAMPLES_PER_FRAME * 4, 44100, audio_mode != 0);
+#endif
 			l64111_setvolume();
 		}
 	}
@@ -1431,16 +1456,26 @@ static void cd32_fmv_audio_handler(void)
 		cl450_buffer_empty_cnt = 0;
 	}
 
+#ifdef __LIBRETRO__
+	if (!cda_audio_bufsize || !(l64111_regs[A_CONTROL1] & 1))
+#else
 	if (!cda || !(l64111_regs[A_CONTROL1] & 1))
+#endif
 		return;
 	if (audio_mode) {
 		play0 = fmv_bufon[0];
 		play1 = fmv_bufon[1];
 	} else {
+#ifdef __LIBRETRO__
+		play0 = cda_isplaying(0);
+		play1 = cda_isplaying(1);
+#else
 		play0 = cda->isplaying(0);
 		play1 = cda->isplaying(1);
+#endif
 	}
 	needsectors = PCM_SECTORS;
+
 	if (!play0 && !play1) {
 		needsectors *= 2;
 		write_log(_T("L64111 buffer underflow\n"));
@@ -1460,7 +1495,11 @@ static void cd32_fmv_audio_handler(void)
 	}
 	for (int i = 0; i < PCM_SECTORS; i++) {
 		int offset2 = (offset + i) & l64111_cb_mask;
+#ifdef __LIBRETRO__
+		memcpy(cda_audio_buffers[bufnum] + i * KJMP2_SAMPLES_PER_FRAME * 4, pcmaudio[offset2].pcm, KJMP2_SAMPLES_PER_FRAME * 4);
+#else
 		memcpy(cda->buffers[bufnum] + i * KJMP2_SAMPLES_PER_FRAME * 4, pcmaudio[offset2].pcm, KJMP2_SAMPLES_PER_FRAME * 4);
+#endif
 		pcmaudio[offset2].ready = false;
 	}
 	if (audio_mode) {
@@ -1470,7 +1509,11 @@ static void cd32_fmv_audio_handler(void)
 		}
 		fmv_bufon[bufnum] = 1;
 	} else {
+#ifdef __LIBRETRO__
+		cda_play(bufnum);
+#else
 		cda->play(bufnum);
+#endif
 	}
 	offset += PCM_SECTORS;
 	offset &= l64111_cb_mask;
@@ -1544,14 +1587,27 @@ static void cd32_fmv_free(void)
 	audioram = NULL;
 	xfree(videoram);
 	videoram = NULL;
+#ifdef __LIBRETRO__
+	if (cda_audio_bufsize) {
+#else
 	if (cda) {
+#endif
 		if (audio_mode) {
 			fmv_next_cd_audio_buffer_callback(-1, NULL);
 		} else {
+#ifdef __LIBRETRO__
+			cda_wait(0);
+			cda_wait(1);
+#else
 			cda->wait(0);
 			cda->wait(1);
+#endif
 		}
+#ifdef __LIBRETRO__
+		cda_delete();
+#else
 		delete cda;
+#endif
 	}
 	cda = NULL;
 	uae_sem_destroy(&play_sem);
@@ -1621,10 +1677,7 @@ addrbank *cd32_fmv_init (struct autoconfig_info *aci)
 
 #else
 
-int cd32_fmv_active;
 void cd32_fmv_set_sync(double svpos, double adjust) {}
-void cd32_fmv_genlock(struct vidbuffer *vbin, struct vidbuffer *vbout) {}
-
 addrbank *cd32_fmv_init (struct autoconfig_info *aci) { return NULL; }
 
-#endif /* __LIBRETRO__ */
+#endif /* WITH_MPEG2 */

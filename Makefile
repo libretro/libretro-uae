@@ -306,6 +306,9 @@ endif
 # CHD
 HAVE_CHD = 1
 
+# libmpeg2
+HAVE_MPEG2 = 1
+
 CFLAGS += -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD
 
 # VFS
