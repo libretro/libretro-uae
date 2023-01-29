@@ -10,6 +10,7 @@
 
 #include "options.h"
 #include "uae.h"
+#include "gui.h"
 #include "memory.h"
 #include "xwin.h"
 #include "custom.h"
@@ -43,6 +44,7 @@ bool inputdevice_finalized = false;
 
 extern unsigned int defaultw;
 extern unsigned int defaulth;
+extern unsigned int width_multiplier;
 extern unsigned int libretro_frame_end;
 
 unsigned short int* pixbuf = NULL;
@@ -680,6 +682,20 @@ void unlockscr(struct vidbuffer *vb, int y_start, int y_end)
 
    /* Flag that we should end the frame, return out of retro_run */
    libretro_frame_end = 1;
+
+#ifdef WITH_MPEG2
+   /* CD32 FMV exceptions */
+   if (!changed_prefs.cartfile[0] && gfxvidinfo->drawbuffer.tempbufferinuse)
+      gfxvidinfo->drawbuffer.tempbufferinuse = false;
+
+   if (gfxvidinfo->drawbuffer.tempbufferinuse)
+   {
+      retro_thisframe_first_drawn_line = thisframe_first_drawn_line = minfirstline;
+      retro_thisframe_last_drawn_line  = thisframe_last_drawn_line  = minfirstline + (retroh / 2);
+      retro_max_diwstop                = max_diwstop = (min_diwstart + (352 * width_multiplier));
+      gui_flicker_led(LED_CD, 0, 1);
+   }
+#endif
 }
 
 int graphics_init(bool mousecapture)
@@ -702,11 +718,13 @@ int graphics_init(bool mousecapture)
    gfxvidinfo->drawbuffer.linemem            = 0;
    gfxvidinfo->drawbuffer.emergmem           = 0;
 
-#if 0
-   reset_hotkeys();
-#endif
    reset_drawing();
    graphics_setup();
+
+#ifdef WITH_MPEG2
+   allocvidbuffer(0, &gfxvidinfo->tempbuffer, defaultw, defaulth, pix_bytes * 8);
+   gfxvidinfo->tempbuffer.bufmem             = (unsigned char*)pixbuf;
+#endif
 
 #if 0
    printf("%s: %dx%dx%d bufmem_alloc=%d\n", __func__,
@@ -834,6 +852,9 @@ int check_prefs_changed_gfx (void)
        changed = 1;
        graphics_setup();
    }
+
+   /* 2 = 16bit, 5 = 32bit */
+   currprefs.color_mode = (pix_bytes == 2) ? 2 : 5;
 
    return changed;
 }

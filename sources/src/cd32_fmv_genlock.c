@@ -15,6 +15,10 @@
 #include "cd32_fmv.h"
 #include "xwin.h"
 
+#ifdef __LIBRETRO__
+#include "libretro-core.h"
+#endif
+
 static uae_u8 *mpeg_out_buffer;
 static int mpeg_width, mpeg_height, mpeg_depth;
 static uae_u32 fmv_border_color;
@@ -146,6 +150,10 @@ void cd32_fmv_genlock(struct vidbuffer *vbin, struct vidbuffer *vbout)
 
 	hoffset = (w / mult - mpeg_width) / 2;
 	voffset = (h / mult - mpeg_height) / 2;
+
+#ifdef __LIBRETRO__
+	hoffset -= retrow - retrow_crop;
+#endif
 
 	if (hoffset < 0)
 		hoffset = 0;

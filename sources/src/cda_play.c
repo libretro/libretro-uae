@@ -28,6 +28,7 @@ void cda_delete()
         xfree (cda_audio_buffers[i]);
         cda_audio_buffers[i] = NULL;
     }
+    cda_audio_bufsize = 0;
 }
 
 void cda_new(int num_sectors, int sectorsize, int samplerate, bool internalmode)
@@ -46,8 +47,8 @@ void cda_new(int num_sectors, int sectorsize, int samplerate, bool internalmode)
     }
     cda_audio_num_sectors = num_sectors;
 
-	if (internalmode)
-		return;
+    if (internalmode)
+        return;
 
     cda_audio_active = true;
     cda_audio_playing = true;
@@ -86,17 +87,11 @@ void cda_wait(int bufnum)
 {
     if (!cda_audio_active || !cda_audio_playing)
         return;
-
-    if (cda_audio_buffer_ids[bufnum] == 0)
-        return;
 }
 
 bool cda_isplaying(int bufnum)
 {
-	if (!cda_audio_active || !cda_audio_playing)
-		return false;
-	if (cda_audio_buffer_ids[bufnum] == 0)
-		return false;
-	return true;
+    if (!cda_audio_active || !cda_audio_playing)
+        return false;
+    return true;
 }
-

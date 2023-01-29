@@ -10,6 +10,7 @@ INCFLAGS := \
 	-I$(CORE_DIR) \
 	-I$(RETRODEP) \
 	-I$(DEPS_DIR)/7zip \
+	-I$(DEPS_DIR)/libmpeg2/include \
 	-I$(LIBRETRO) \
 	-I$(LIBRETRO_COMM_DIR)/include \
 	-I$(LIBRETRO_COMM_DIR)/include/compat/zlib
@@ -45,6 +46,7 @@ SOURCES_C += \
 	$(EMU)/caps/uae_dlopen.c \
 	$(EMU)/casablanca.c \
 	$(EMU)/cd32_fmv.c \
+	$(EMU)/cd32_fmv_genlock.c \
 	$(EMU)/cda_play.c \
 	$(EMU)/cdrom.c \
 	$(EMU)/cdtv.c \
@@ -189,7 +191,22 @@ SOURCES_C += \
 	$(EMU)/archivers/lha/shuf.c \
 	$(EMU)/archivers/lha/slide.c \
 	$(EMU)/archivers/lha/uae_lha.c \
-	$(EMU)/archivers/lha/util.c
+	$(EMU)/archivers/lha/util.c \
+	$(EMU)/archivers/mp2/kjmp2.c
+
+ifeq ($(HAVE_MPEG2), 1)
+    CFLAGS += -DWITH_MPEG2
+    SOURCES_C += \
+        $(DEPS_DIR)/libmpeg2/src/convert/rgb.c \
+        $(DEPS_DIR)/libmpeg2/src/cpu_accel.c \
+        $(DEPS_DIR)/libmpeg2/src/cpu_state.c \
+        $(DEPS_DIR)/libmpeg2/src/alloc.c \
+        $(DEPS_DIR)/libmpeg2/src/decode.c \
+        $(DEPS_DIR)/libmpeg2/src/header.c \
+        $(DEPS_DIR)/libmpeg2/src/idct.c \
+        $(DEPS_DIR)/libmpeg2/src/motion_comp.c \
+        $(DEPS_DIR)/libmpeg2/src/slice.c
+endif
 
 ifneq ($(STATIC_LINKING), 1)
 SOURCES_C += \
