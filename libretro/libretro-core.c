@@ -7333,7 +7333,7 @@ static void update_audiovideo(void)
          (retro_thisframe_first_drawn_line == -1 && retro_thisframe_last_drawn_line == -1))
       )
    {
-      int min_height = 26;
+      int min_height = 10;
       int retro_thisframe_first_drawn_line_delta = abs(retro_thisframe_first_drawn_line_old - retro_thisframe_first_drawn_line);
       int retro_thisframe_last_drawn_line_delta  = abs(retro_thisframe_last_drawn_line_old - retro_thisframe_last_drawn_line);
 
