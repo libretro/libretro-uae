@@ -2788,6 +2788,12 @@ UINT32 cdrom_read_data(cdrom_file *file, UINT32 lbasector, void *buffer, UINT32 
 			return (read_partial_sector(file, buffer, lbasector, chdsector, tracknum, 16, 2336, phys) == CHDERR_NONE);
 		}
 
+		/* return 2352 byte mode 1 raw sector from a 2352 byte mode 2 raw sector */
+		if ((datatype == CD_TRACK_MODE1_RAW) && (tracktype == CD_TRACK_MODE2_RAW))
+		{
+			return (read_partial_sector(file, buffer, lbasector, chdsector, tracknum, 0, 2352, phys) == CHDERR_NONE);
+		}
+
 		write_log("CDROM: Conversion from type %d to type %d not supported!\n", tracktype, datatype);
 		return 0;
 	}
