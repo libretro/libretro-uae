@@ -7462,6 +7462,11 @@ static void update_audiovideo(void)
           && abs(retro_thisframe_last_drawn_line_start - retro_thisframe_last_drawn_line) < 2)
             retro_thisframe_counter = 1;
 
+         /* Super Obliteration slide animation jump preventation */
+         if (retro_thisframe_last_drawn_line > 280
+          && retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line < (min_height * 2))
+            retro_thisframe_counter = 1;
+
          if (retro_thisframe_counter > counter_max)
             request_update_av_info = true;
       }
