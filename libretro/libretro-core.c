@@ -2931,6 +2931,7 @@ static const struct retro_controller_description joyport_controllers[] =
    { "RetroPad", RETRO_DEVICE_PUAE_JOYPAD },
    { "CD32 Pad", RETRO_DEVICE_PUAE_CD32PAD },
    { "Analog Joystick", RETRO_DEVICE_PUAE_ANALOG },
+   { "Arcadia", RETRO_DEVICE_PUAE_ARCADIA },
    { "Joystick", RETRO_DEVICE_PUAE_JOYSTICK },
    { "Keyboard", RETRO_DEVICE_PUAE_KEYBOARD },
    { "None", RETRO_DEVICE_NONE },
@@ -2958,12 +2959,12 @@ static void retro_set_inputs(void)
 
    const struct retro_controller_info ports[] =
    {
-      { joyport_controllers, 8 },
-      { joyport_controllers, 8 },
-      { parport_controllers, 4 },
-      { parport_controllers, 4 },
-      { nonport_controllers, 3 },
-      { nonport_controllers, 3 },
+      { joyport_controllers, sizeof(joyport_controllers) / sizeof(joyport_controllers[0]) },
+      { joyport_controllers, sizeof(joyport_controllers) / sizeof(joyport_controllers[0]) },
+      { parport_controllers, sizeof(parport_controllers) / sizeof(parport_controllers[0]) },
+      { parport_controllers, sizeof(parport_controllers) / sizeof(parport_controllers[0]) },
+      { nonport_controllers, sizeof(nonport_controllers) / sizeof(nonport_controllers[0]) },
+      { nonport_controllers, sizeof(nonport_controllers) / sizeof(nonport_controllers[0]) },
       { NULL, 0 }
    };
    
@@ -5199,10 +5200,16 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
          int uae_port;
          uae_port = (port == 0) ? 1 : 0;
 
-         cd32_pad_enabled[uae_port] = 0;
+         cd32_pad_enabled[uae_port]    = 0;
+         arcadia_pad_enabled[uae_port] = 0;
+
          if (  (device == RETRO_DEVICE_PUAE_CD32PAD) ||
-               (device == RETRO_DEVICE_JOYPAD && (strstr(full_path, "CD32")) || strstr(uae_preset, "CD32")))
+               (device == RETRO_DEVICE_JOYPAD && (strstr(full_path, "CD32") || strstr(uae_preset, "CD32"))))
             cd32_pad_enabled[uae_port] = 1;
+         else
+         if (  (device == RETRO_DEVICE_PUAE_ARCADIA) ||
+               (device == RETRO_DEVICE_JOYPAD && strstr(full_path, "_Arcadia")))
+            arcadia_pad_enabled[uae_port] = 1;
       }
 
       /* After startup input_get_default_joystick will need to be refreshed for cd32<>joystick change to work.
