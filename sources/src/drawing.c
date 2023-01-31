@@ -4598,9 +4598,7 @@ static void finish_drawing_frame(bool drawlines)
 
 	draw_frame2(vb, vb);
 
-#ifndef __LIBRETRO__
 	draw_frame_extras(vb, -1, -1);
-#endif
 
 	// video port adapters
 	if (currprefs.monitoremu) {

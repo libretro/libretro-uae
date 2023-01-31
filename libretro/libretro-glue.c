@@ -41,6 +41,7 @@ struct serparportinfo *comports[MAX_SERPAR_PORTS];
 
 extern unsigned int retro_devices[RETRO_DEVICES];
 bool inputdevice_finalized = false;
+extern int retro_ui_get_pointer_state(uint8_t port, int *px, int *py, uint8_t *pb);
 
 extern unsigned int defaultw;
 extern unsigned int defaulth;
@@ -441,6 +442,9 @@ void print_statusbar(void)
          snprintf(JOYMODE1, sizeof(JOYMODE1), "%2s", "C1");
       else if (retro_devices[0] == RETRO_DEVICE_PUAE_ANALOG)
          snprintf(JOYMODE1, sizeof(JOYMODE1), "%2s", "A1");
+      else if (retro_devices[0] == RETRO_DEVICE_PUAE_LIGHTGUN
+            || retro_devices[0] == RETRO_DEVICE_PUAE_LIGHTPEN)
+         snprintf(JOYMODE1, sizeof(JOYMODE1), "%2s", "L1");
       else
          snprintf(JOYMODE1, sizeof(JOYMODE1), "%2s", "J1");
 
@@ -448,6 +452,9 @@ void print_statusbar(void)
          snprintf(JOYMODE2, sizeof(JOYMODE2), "%2s", "C2");
       else if (retro_devices[1] == RETRO_DEVICE_PUAE_ANALOG)
          snprintf(JOYMODE2, sizeof(JOYMODE2), "%2s", "A2");
+      else if (retro_devices[1] == RETRO_DEVICE_PUAE_LIGHTGUN
+            || retro_devices[1] == RETRO_DEVICE_PUAE_LIGHTPEN)
+         snprintf(JOYMODE2, sizeof(JOYMODE2), "%2s", "L2");
       else
          snprintf(JOYMODE2, sizeof(JOYMODE2), "%2s", "J2");
    }
@@ -462,6 +469,9 @@ void print_statusbar(void)
       snprintf(JOYPORT1, sizeof(JOYPORT1), "%3s", joystick_value_human(jflag[0], 2));
    else if (retro_devices[0] == RETRO_DEVICE_PUAE_ANALOG)
       snprintf(JOYPORT1, sizeof(JOYPORT1), "%3s", joystick_value_human(aflag[0], 4));
+   else if (retro_devices[0] == RETRO_DEVICE_PUAE_LIGHTGUN
+         || retro_devices[0] == RETRO_DEVICE_PUAE_LIGHTPEN)
+      snprintf(JOYPORT1, sizeof(JOYPORT1), "%3s", joystick_value_human(mflag[0], 3));
    else
       snprintf(JOYPORT1, sizeof(JOYPORT1), "%3s", joystick_value_human(jflag[0], 1));
 
@@ -469,6 +479,9 @@ void print_statusbar(void)
       snprintf(JOYPORT2, sizeof(JOYPORT2), "%3s", joystick_value_human(jflag[1], 2));
    else if (retro_devices[1] == RETRO_DEVICE_PUAE_ANALOG)
       snprintf(JOYPORT2, sizeof(JOYPORT2), "%3s", joystick_value_human(aflag[1], 4));
+   else if (retro_devices[1] == RETRO_DEVICE_PUAE_LIGHTGUN
+         || retro_devices[1] == RETRO_DEVICE_PUAE_LIGHTPEN)
+      snprintf(JOYPORT2, sizeof(JOYPORT2), "%3s", joystick_value_human(mflag[1], 3));
    else
       snprintf(JOYPORT2, sizeof(JOYPORT2), "%3s", joystick_value_human(jflag[1], 1));
 
@@ -485,12 +498,16 @@ void print_statusbar(void)
    }
 
    /* Mouse flags */
-   if (!flag_empty(mflag[1]))
+   if (!flag_empty(mflag[1])
+         && (  retro_devices[1] != RETRO_DEVICE_PUAE_LIGHTGUN
+            && retro_devices[1] != RETRO_DEVICE_PUAE_LIGHTPEN))
    {
       snprintf(JOYMODE1, sizeof(JOYMODE1), "%2s", "M1");
       snprintf(JOYPORT1, sizeof(JOYPORT1), "%3s", joystick_value_human(mflag[1], 3));
    }
-   if (!flag_empty(mflag[0]))
+   if (!flag_empty(mflag[0])
+      && (  retro_devices[0] != RETRO_DEVICE_PUAE_LIGHTGUN
+         && retro_devices[0] != RETRO_DEVICE_PUAE_LIGHTPEN))
    {
       snprintf(JOYMODE2, sizeof(JOYMODE2), "%2s", "M2");
       snprintf(JOYPORT2, sizeof(JOYPORT2), "%3s", joystick_value_human(mflag[0], 3));
@@ -572,6 +589,7 @@ void target_default_options (struct uae_prefs *p, int type)
    p->floppy_auto_ext2 = 2;
    p->nr_floppies = 1;
    p->floppyslots[1].dfxtype = DRV_NONE;
+   p->lightpen_crosshair = false;
 
    /* Required for SCSI CD image mounts */
    p->win32_automount_cddrives = true;
@@ -589,7 +607,9 @@ void target_fixup_options (struct uae_prefs *p)
    p->gfx_pscanlines = 0;
 }
 
-/* --- mouse input --- */
+/*** Input ***/
+
+/* Mouse */
 void retro_mouse(int port, int dx, int dy)
 {
    mouse_port[port] = 1;
@@ -603,7 +623,7 @@ void retro_mouse_button(int port, int button, int state)
    setmousebuttonstate(port, button, state);
 }
 
-/* --- joystick input --- */
+/* Joystick */
 void retro_joystick(int port, int axis, int state)
 {
    /* Disable mouse in normal ports, joystick/mouse inverted */
@@ -637,7 +657,7 @@ void retro_joystick_button(int port, int button, int state)
    setjoybuttonstate(port, button, state);
 }
 
-/* --- keyboard input --- */
+/* Keyboard */
 void retro_key_down(int key)
 {
    retro_key_state_internal[key] = 1;
@@ -650,6 +670,40 @@ void retro_key_up(int key)
    inputdevice_do_keyboard(keyboard_translation[key], 0);
 }
 
+/* Pointer / lightgun */
+void retro_lightpen_update(void)
+{
+   uint8_t i;
+   uint8_t buttons = 0;
+   int x = 0, y = 0;
+
+   if (!lightpen_enabled)
+      return;
+
+   for (i = 0; i < 2; i++)
+   {
+      uint8_t uae_port = (i == 0) ? 1 : 0;
+
+      x = y = buttons = 0;
+
+      if (retro_devices[i] != RETRO_DEVICE_PUAE_LIGHTGUN
+       && retro_devices[i] != RETRO_DEVICE_PUAE_LIGHTPEN)
+         continue;
+
+      retro_ui_get_pointer_state(i, &x, &y, &buttons);
+
+#if 0
+      printf("%s * port=%d uae_port=%d x=%i y=%i b=%02x\n", __func__, i, uae_port, x, y, buttons);
+#endif
+
+      /* These are post-corrections to UAE internal
+       * mouse-to-lightpen translation, which must
+       * be active in order to lightpen be active.
+       * Buttons are set where mouse movement is set. */
+      lightpen_x[i] = x;
+      lightpen_y[i] = y;
+   }
+}
 
 
 /* Graphics */
@@ -682,6 +736,9 @@ void unlockscr(struct vidbuffer *vb, int y_start, int y_end)
 
    /* Flag that we should end the frame, return out of retro_run */
    libretro_frame_end = 1;
+
+   if (lightpen_enabled)
+      retro_lightpen_update();
 
 #ifdef WITH_MPEG2
    /* CD32 FMV exceptions */
@@ -1351,9 +1408,16 @@ int input_get_default_mouse (struct uae_input_device *uid, int num, int port, in
 
 int input_get_default_lightpen (struct uae_input_device *uid, int num, int port, int af, bool gp, bool joymouseswap, int submode)
 {
-   uid[num].eventid[ID_AXIS_OFFSET + 0][0] = INPUTEVENT_LIGHTPEN_HORIZ;
-   uid[num].eventid[ID_AXIS_OFFSET + 1][0] = INPUTEVENT_LIGHTPEN_VERT;
-   uid[num].eventid[ID_BUTTON_OFFSET + 0][0] = port ? INPUTEVENT_JOY2_3RD_BUTTON : INPUTEVENT_JOY1_3RD_BUTTON;
+   uid[0].eventid[ID_AXIS_OFFSET + 0][0]   = INPUTEVENT_LIGHTPEN_HORIZ;
+   uid[0].eventid[ID_AXIS_OFFSET + 1][0]   = INPUTEVENT_LIGHTPEN_VERT;
+   uid[0].eventid[ID_BUTTON_OFFSET + 0][0] = (submode) ? INPUTEVENT_JOY1_LEFT : INPUTEVENT_JOY1_3RD_BUTTON;
+
+   uid[1].eventid[ID_AXIS_OFFSET + 0][0]   = INPUTEVENT_LIGHTPEN_HORIZ2;
+   uid[1].eventid[ID_AXIS_OFFSET + 1][0]   = INPUTEVENT_LIGHTPEN_VERT2;
+   uid[1].eventid[ID_BUTTON_OFFSET + 0][0] = (submode) ? INPUTEVENT_JOY2_LEFT : INPUTEVENT_JOY2_3RD_BUTTON;
+
+   uid[0].enabled = 1;
+   uid[1].enabled = 1;
    return 0;
 }
 
