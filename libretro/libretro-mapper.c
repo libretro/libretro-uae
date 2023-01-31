@@ -15,6 +15,7 @@
 #include "xwin.h"
 #include "disk.h"
 #include "ar.h"
+#include "custom.h"
 
 /* Mouse speed flags */
 #define MOUSE_SPEED_SLOWER 1
@@ -45,6 +46,7 @@ extern bool request_update_av_info;
 extern void retro_reset_soft();
 extern bool retro_statusbar;
 extern long vkbd_mapping_active;
+extern unsigned int width_multiplier;
 
 unsigned retro_key_state[RETROK_LAST] = {0};
 unsigned retro_key_state_internal[RETROK_LAST] = {0};
@@ -70,6 +72,7 @@ extern unsigned int opt_analogmouse_deadzone;
 extern float opt_analogmouse_speed;
 extern unsigned int opt_dpadmouse_speed;
 extern unsigned int opt_physicalmouse;
+extern int opt_joyport_pointer_color;
 extern bool opt_keyboard_pass_through;
 extern char opt_joyport_order[5];
 
@@ -79,6 +82,69 @@ unsigned int turbo_fire_button = 0;
 unsigned int turbo_pulse = 6;
 unsigned int turbo_state[RETRO_DEVICES] = {0};
 unsigned int turbo_toggle[RETRO_DEVICES] = {0};
+
+int retro_ui_get_pointer_state(uint8_t port, int *px, int *py, uint8_t *pb)
+{
+   int joyport_pointer_color = opt_joyport_pointer_color;
+
+   if (retro_vkbd)
+      return 0;
+
+   *pb = input_state_cb(port, RETRO_DEVICE_LIGHTGUN, 0, RETRO_DEVICE_ID_LIGHTGUN_TRIGGER);
+   if (input_state_cb(port, RETRO_DEVICE_LIGHTGUN, 0, RETRO_DEVICE_ID_LIGHTGUN_IS_OFFSCREEN))
+   {
+      joyport_pointer_color = -1;
+      *px = -1000;
+      *py = -1000;
+   }
+   else
+   {
+      *px = input_state_cb(port, RETRO_DEVICE_LIGHTGUN, 0, RETRO_DEVICE_ID_LIGHTGUN_SCREEN_X);
+      *py = input_state_cb(port, RETRO_DEVICE_LIGHTGUN, 0, RETRO_DEVICE_ID_LIGHTGUN_SCREEN_Y);
+   }
+
+   *px = (int)((*px + 0x7fff) * retrow_crop / 0xffff);
+   *py = (int)((*py + 0x7fff) * retroh_crop / 0xffff);
+
+   if (joyport_pointer_color > -1)
+   {
+      unsigned wm = width_multiplier;
+      unsigned hm = (video_config & PUAE_VIDEO_DOUBLELINE) ? 2 : 1;
+      unsigned pointer_color = 0;
+      unsigned pointer_white = RGBc(255, 255, 255);
+      unsigned color         = joyport_pointer_color + port;
+
+      if ((color == 5 && port > 0)
+       || (color > 7))
+         color = 2;
+
+      switch (color)
+      {
+         case 0: pointer_color = RGBc(  0,   0,   0); break; /* Black */
+         case 1: pointer_color = RGBc(255, 255, 255); break; /* White */
+         case 2: pointer_color = RGBc(255,   0,   0); break; /* Red */
+         case 3: pointer_color = RGBc(  0, 255,   0); break; /* Green */
+         case 4: pointer_color = RGBc(  0,   0, 255); break; /* Blue */
+         case 5: pointer_color = RGBc(255, 255,   0); break; /* Yellow */
+         case 6: pointer_color = RGBc(  0, 255, 255); break; /* Cyan */
+         case 7: pointer_color = RGBc(255,   0, 255); break; /* Purple */
+      }
+
+      draw_hline(*px - (3 * wm), *py, (3 * wm), (1 * hm), pointer_color);
+      draw_hline(*px - (2 * wm), *py, (1 * wm), (1 * hm), pointer_white);
+
+      draw_hline(*px + (1 * wm), *py, (3 * wm), (1 * hm), pointer_color);
+      draw_hline(*px + (2 * wm), *py, (1 * wm), (1 * hm), pointer_white);
+
+      draw_vline(*px, *py - (3 * hm), (1 * wm), (3 * hm), pointer_color);
+      draw_vline(*px, *py - (2 * hm), (1 * wm), (1 * hm), pointer_white);
+
+      draw_vline(*px, *py + (1 * hm), (1 * wm), (3 * hm), pointer_color);
+      draw_vline(*px, *py + (2 * hm), (1 * wm), (1 * hm), pointer_white);
+   }
+
+   return 1;
+}
 
 bool is_retropad(unsigned retro_port)
 {
@@ -1071,8 +1137,10 @@ void update_input(unsigned disable_keys)
 
       if (retro_devices[j] == RETRO_DEVICE_JOYPAD ||
           retro_devices[j] == RETRO_DEVICE_PUAE_JOYPAD ||
-          retro_devices[j] == RETRO_DEVICE_PUAE_ARCADIA ||
           retro_devices[j] == RETRO_DEVICE_PUAE_CD32PAD ||
+          retro_devices[j] == RETRO_DEVICE_PUAE_ARCADIA ||
+          retro_devices[j] == RETRO_DEVICE_PUAE_LIGHTGUN ||
+          retro_devices[j] == RETRO_DEVICE_PUAE_LIGHTPEN ||
           retro_devices[j] == RETRO_DEVICE_PUAE_ANALOG)
       {
          LX = joypad_axis[j][AXIS_LX];
@@ -2086,47 +2154,11 @@ void retro_poll_event()
    /* Ports 1 & 2 */
    for (j = 0; j < 2; j++)
    {
-      /* Mouse buttons to UAE */
-      if (!mouse_lmb[j] && uae_mouse_l[j])
-      {
-         mouse_lmb[j] = 1;
-         mflag[j][RETRO_DEVICE_ID_JOYPAD_B] = 1;
-         retro_mouse_button(j, 0, 1);
-      }
-      else if (mouse_lmb[j] && !uae_mouse_l[j])
-      {
-         mouse_lmb[j] = 0;
-         mflag[j][RETRO_DEVICE_ID_JOYPAD_B] = 0;
-         retro_mouse_button(j, 0, 0);
-      }
-
-      if (!mouse_rmb[j] && uae_mouse_r[j])
-      {
-         mouse_rmb[j] = 1;
-         mflag[j][RETRO_DEVICE_ID_JOYPAD_A] = 1;
-         retro_mouse_button(j, 1, 1);
-      }
-      else if (mouse_rmb[j] && !uae_mouse_r[j])
-      {
-         mouse_rmb[j] = 0;
-         mflag[j][RETRO_DEVICE_ID_JOYPAD_A] = 0;
-         retro_mouse_button(j, 1, 0);
-      }
-
-      if (!mouse_mmb[j] && uae_mouse_m[j])
-      {
-         mouse_mmb[j] = 1;
-         mflag[j][RETRO_DEVICE_ID_JOYPAD_Y] = 1;
-         retro_mouse_button(j, 2, 1);
-      }
-      else if (mouse_mmb[j] && !uae_mouse_m[j])
-      {
-         mouse_mmb[j] = 0;
-         mflag[j][RETRO_DEVICE_ID_JOYPAD_Y] = 0;
-         retro_mouse_button(j, 2, 0);
-      }
-
       /* Mouse movements to UAE */
+      if (uae_mouse_x[j] || uae_mouse_y[j])
+         retro_mouse(j, uae_mouse_x[j], uae_mouse_y[j]);
+
+      /* Statusbar movement flags */
       if (uae_mouse_y[j] < 0 && !mflag[j][RETRO_DEVICE_ID_JOYPAD_UP])
          mflag[j][RETRO_DEVICE_ID_JOYPAD_UP] = 1;
       if (uae_mouse_y[j] > -1 && mflag[j][RETRO_DEVICE_ID_JOYPAD_UP] && !vkflag[RETRO_DEVICE_ID_JOYPAD_B])
@@ -2147,7 +2179,49 @@ void retro_poll_event()
       if (uae_mouse_x[j] < 1 && mflag[j][RETRO_DEVICE_ID_JOYPAD_RIGHT] && !vkflag[RETRO_DEVICE_ID_JOYPAD_B])
          mflag[j][RETRO_DEVICE_ID_JOYPAD_RIGHT] = 0;
 
-      if (uae_mouse_x[j] || uae_mouse_y[j])
-         retro_mouse(j, uae_mouse_x[j], uae_mouse_y[j]);
+      /* Mouse buttons to UAE */
+      int j_mouse = j;
+      if (retro_devices[j] == RETRO_DEVICE_PUAE_LIGHTGUN
+       || retro_devices[j] == RETRO_DEVICE_PUAE_LIGHTPEN)
+         j_mouse = !j;
+
+      if (!mouse_lmb[j] && uae_mouse_l[j])
+      {
+         mouse_lmb[j] = 1;
+         mflag[j][RETRO_DEVICE_ID_JOYPAD_B] = 1;
+         retro_mouse_button(j_mouse, 0, 1);
+      }
+      else if (mouse_lmb[j] && !uae_mouse_l[j])
+      {
+         mouse_lmb[j] = 0;
+         mflag[j][RETRO_DEVICE_ID_JOYPAD_B] = 0;
+         retro_mouse_button(j_mouse, 0, 0);
+      }
+
+      if (!mouse_rmb[j] && uae_mouse_r[j])
+      {
+         mouse_rmb[j] = 1;
+         mflag[j][RETRO_DEVICE_ID_JOYPAD_A] = 1;
+         retro_mouse_button(j_mouse, 1, 1);
+      }
+      else if (mouse_rmb[j] && !uae_mouse_r[j])
+      {
+         mouse_rmb[j] = 0;
+         mflag[j][RETRO_DEVICE_ID_JOYPAD_A] = 0;
+         retro_mouse_button(j_mouse, 1, 0);
+      }
+
+      if (!mouse_mmb[j] && uae_mouse_m[j])
+      {
+         mouse_mmb[j] = 1;
+         mflag[j][RETRO_DEVICE_ID_JOYPAD_Y] = 1;
+         retro_mouse_button(j_mouse, 2, 1);
+      }
+      else if (mouse_mmb[j] && !uae_mouse_m[j])
+      {
+         mouse_mmb[j] = 0;
+         mflag[j][RETRO_DEVICE_ID_JOYPAD_Y] = 0;
+         retro_mouse_button(j_mouse, 2, 0);
+      }
    }
 }

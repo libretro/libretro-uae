@@ -89,7 +89,8 @@ libretro_graph_alpha_t opt_vkbd_dim_alpha = GRAPH_ALPHA_25;
 bool opt_keyrah_keypad = false;
 bool opt_keyboard_pass_through = false;
 unsigned int opt_physicalmouse = 1;
-unsigned int opt_dpadmouse_speed = 4;
+int opt_joyport_pointer_color = -1;
+unsigned int opt_dpadmouse_speed = 6;
 unsigned int opt_analogmouse = 0;
 unsigned int opt_analogmouse_deadzone = 20;
 float opt_analogmouse_speed = 1.0;
@@ -1720,6 +1721,26 @@ static void retro_set_core_options()
          "disabled"
       },
       {
+         "puae_joyport_pointer_color",
+         "OSD > Light Pen/Gun Pointer Color",
+         "Light Pen/Gun Pointer Color",
+         "Crosshair color for light pens and guns.",
+         NULL,
+         "osd",
+         {
+            { "disabled", NULL },
+            { "black", "Black" },
+            { "white", "White" },
+            { "red", "Red" },
+            { "green", "Green" },
+            { "blue", "Blue" },
+            { "yellow", "Yellow" },
+            { "purple", "Purple" },
+            { NULL, NULL },
+         },
+         "blue"
+      },
+      {
          "puae_audio_options_display",
          "Show Audio Options",
          NULL,
@@ -2512,7 +2533,7 @@ static void retro_set_core_options()
          "puae_joyport_order",
          "RetroPad > Joystick Port Order",
          "Joystick Port Order",
-         "Plug RetroPads in different ports. Useful for Arcadia system and games that use the 4-player adapter.",
+         "Plug RetroPads in different ports. Useful for 4-player adapters.",
          NULL,
          "input",
          {
@@ -2935,6 +2956,8 @@ static const struct retro_controller_description joyport_controllers[] =
    { "CD32 Pad", RETRO_DEVICE_PUAE_CD32PAD },
    { "Analog Joystick", RETRO_DEVICE_PUAE_ANALOG },
    { "Arcadia", RETRO_DEVICE_PUAE_ARCADIA },
+   { "Trojan Phazer Lightgun", RETRO_DEVICE_PUAE_LIGHTGUN },
+   { "Lightpen", RETRO_DEVICE_PUAE_LIGHTPEN },
    { "Joystick", RETRO_DEVICE_PUAE_JOYSTICK },
    { "Keyboard", RETRO_DEVICE_PUAE_KEYBOARD },
    { "None", RETRO_DEVICE_NONE },
@@ -4309,6 +4332,21 @@ static void update_variables(void)
       else if (!strcmp(var.value, "hdf512"))   opt_use_boot_hd = 7;
    }
 
+   var.key = "puae_joyport_pointer_color";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if      (!strcmp(var.value, "disabled")) opt_joyport_pointer_color = -1;
+      else if (!strcmp(var.value, "black"))    opt_joyport_pointer_color = 0;
+      else if (!strcmp(var.value, "white"))    opt_joyport_pointer_color = 1;
+      else if (!strcmp(var.value, "red"))      opt_joyport_pointer_color = 2;
+      else if (!strcmp(var.value, "green"))    opt_joyport_pointer_color = 3;
+      else if (!strcmp(var.value, "blue"))     opt_joyport_pointer_color = 4;
+      else if (!strcmp(var.value, "yellow"))   opt_joyport_pointer_color = 5;
+      else if (!strcmp(var.value, "cyan"))     opt_joyport_pointer_color = 6;
+      else if (!strcmp(var.value, "purple"))   opt_joyport_pointer_color = 7;
+   }
+
    var.key = "puae_analogmouse";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -5224,8 +5262,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 
       if (port < 2)
       {
-         int uae_port;
-         uae_port = (port == 0) ? 1 : 0;
+         int uae_port = (port == 0) ? 1 : 0;
 
          cd32_pad_enabled[uae_port]    = 0;
          arcadia_pad_enabled[uae_port] = 0;
@@ -5237,6 +5274,21 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
          if (  (device == RETRO_DEVICE_PUAE_ARCADIA) ||
                (device == RETRO_DEVICE_JOYPAD && strstr(full_path, "_Arcadia")))
             arcadia_pad_enabled[uae_port] = 1;
+
+         changed_prefs.jports[port].mode    = 0;
+         changed_prefs.jports[port].submode = 0;
+
+         if (device == RETRO_DEVICE_PUAE_LIGHTGUN)
+         {
+            changed_prefs.jports[port].mode    = 8;
+            changed_prefs.jports[port].submode = 1;
+         }
+         else
+         if (device == RETRO_DEVICE_PUAE_LIGHTPEN)
+         {
+            changed_prefs.jports[port].mode    = 8;
+            changed_prefs.jports[port].submode = 0;
+         }
       }
 
       /* After startup input_get_default_joystick will need to be refreshed for cd32<>joystick change to work.
