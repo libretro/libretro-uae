@@ -560,7 +560,7 @@ static void process_controller(int retro_port, int i)
    if (retro_port < 2)
    {
       if (is_arcadiapad(0) || is_arcadiapad(1))
-         retro_port_uae = (retro_port == 0) ? 1 : 0;
+         retro_port_uae = !retro_port;
    }
 
    if (i > 3 && i < 8) /* Directions, need to fight around presses on the same axis */
@@ -715,29 +715,7 @@ static void process_controller(int retro_port, int i)
             {
                /* Fake extra Arcadia controls to key presses */
                if (is_arcadiapad(retro_port))
-               {
-                  switch (uae_button)
-                  {
-                     case 6:
-                        retro_key_down((retro_port_uae == 0) ? RETROK_F2 : RETROK_F1);
-                        break;
-                     case 5:
-                        retro_key_down(RETROK_F5);
-                        break;
-                     case 2:
-                     case 3:
-                        retro_key_down((retro_port_uae == 0) ? RETROK_F4 : RETROK_F3);
-                        break;
-                     case 1:
-                        retro_key_down((retro_port_uae == 0) ? RETROK_RSHIFT : RETROK_LSHIFT);
-                        break;
-                     case 0:
-                        retro_joystick_button(retro_port_uae, uae_button, 1);
-                        break;
-                     default:
-                        break;
-                  }
-               }
+                  retro_arcadia_button(retro_port_uae, uae_button, 1);
                else
                   retro_joystick_button(retro_port_uae, uae_button, 1);
 
@@ -765,29 +743,7 @@ static void process_controller(int retro_port, int i)
             {
                /* Fake extra Arcadia controls to key presses */
                if (is_arcadiapad(retro_port))
-               {
-                  switch (uae_button)
-                  {
-                     case 6:
-                        retro_key_up((retro_port_uae == 0) ? RETROK_F2 : RETROK_F1);
-                        break;
-                     case 5:
-                        retro_key_up(RETROK_F5);
-                        break;
-                     case 2:
-                     case 3:
-                        retro_key_up((retro_port_uae == 0) ? RETROK_F4 : RETROK_F3);
-                        break;
-                     case 1:
-                        retro_key_up((retro_port_uae == 0) ? RETROK_RSHIFT : RETROK_LSHIFT);
-                        break;
-                     case 0:
-                        retro_joystick_button(retro_port_uae, uae_button, 0);
-                        break;
-                     default:
-                        break;
-                  }
-               }
+                  retro_arcadia_button(retro_port_uae, uae_button, 0);
                else
                   retro_joystick_button(retro_port_uae, uae_button, 0);
 
@@ -1225,39 +1181,53 @@ void update_input(unsigned disable_keys)
                   mouse_speed[j] |= MOUSE_SPEED_FASTER;
                else if (mapper_keys[i] == JOYSTICK_FIRE)
                {
-                  retro_joystick_button(j, 0, 1);
-                  if (opt_retropad_options == RETROPAD_OPTIONS_ROTATE || opt_retropad_options == RETROPAD_OPTIONS_ROTATE_JUMP)
-                     jflag[j][RETRO_DEVICE_ID_JOYPAD_Y] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_Y] = 1;
+                  uint8_t j_tmp = is_arcadiapad(j) ? !j : j;
+                  if (is_arcadiapad(j))
+                     retro_arcadia_button(j_tmp, 0, 1);
                   else
-                     jflag[j][RETRO_DEVICE_ID_JOYPAD_B] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_B] = 1;
+                     retro_joystick_button(j_tmp, 0, 1);
+
+                  if (opt_retropad_options == RETROPAD_OPTIONS_ROTATE || opt_retropad_options == RETROPAD_OPTIONS_ROTATE_JUMP)
+                     jflag[j_tmp][RETRO_DEVICE_ID_JOYPAD_Y] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_Y] = 1;
+                  else
+                     jflag[j_tmp][RETRO_DEVICE_ID_JOYPAD_B] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_B] = 1;
                }
                else if (mapper_keys[i] == JOYSTICK_2ND_FIRE)
                {
-                  retro_joystick_button(j, 1, 1);
-                  if (opt_retropad_options == RETROPAD_OPTIONS_ROTATE || opt_retropad_options == RETROPAD_OPTIONS_ROTATE_JUMP)
-                     jflag[j][RETRO_DEVICE_ID_JOYPAD_B] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_B] = 1;
+                  uint8_t j_tmp = is_arcadiapad(j) ? !j : j;
+                  if (is_arcadiapad(j))
+                     retro_arcadia_button(j_tmp, 1, 1);
                   else
-                     jflag[j][RETRO_DEVICE_ID_JOYPAD_A] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_A] = 1;
+                     retro_joystick_button(j_tmp, 1, 1);
+
+                  if (opt_retropad_options == RETROPAD_OPTIONS_ROTATE || opt_retropad_options == RETROPAD_OPTIONS_ROTATE_JUMP)
+                     jflag[j_tmp][RETRO_DEVICE_ID_JOYPAD_B] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_B] = 1;
+                  else
+                     jflag[j_tmp][RETRO_DEVICE_ID_JOYPAD_A] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_A] = 1;
                }
                else if (mapper_keys[i] == JOYSTICK_UP)
                {
-                  retro_joystick(j, 1, -1);
-                  jflag[j][RETRO_DEVICE_ID_JOYPAD_UP] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_UP] = 1;
+                  uint8_t j_tmp = is_arcadiapad(j) ? !j : j;
+                  retro_joystick(j_tmp, 1, -1);
+                  jflag[j_tmp][RETRO_DEVICE_ID_JOYPAD_UP] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_UP] = 1;
                }
                else if (mapper_keys[i] == JOYSTICK_DOWN)
                {
-                  retro_joystick(j, 1, 1);
-                  jflag[j][RETRO_DEVICE_ID_JOYPAD_DOWN] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_DOWN] = 1;
+                  uint8_t j_tmp = is_arcadiapad(j) ? !j : j;
+                  retro_joystick(j_tmp, 1, 1);
+                  jflag[j_tmp][RETRO_DEVICE_ID_JOYPAD_DOWN] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_DOWN] = 1;
                }
                else if (mapper_keys[i] == JOYSTICK_LEFT)
                {
-                  retro_joystick(j, 0, -1);
-                  jflag[j][RETRO_DEVICE_ID_JOYPAD_LEFT] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_LEFT] = 1;
+                  uint8_t j_tmp = is_arcadiapad(j) ? !j : j;
+                  retro_joystick(j_tmp, 0, -1);
+                  jflag[j_tmp][RETRO_DEVICE_ID_JOYPAD_LEFT] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_LEFT] = 1;
                }
                else if (mapper_keys[i] == JOYSTICK_RIGHT)
                {
-                  retro_joystick(j, 0, 1);
-                  jflag[j][RETRO_DEVICE_ID_JOYPAD_RIGHT] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_RIGHT] = 1;
+                  uint8_t j_tmp = is_arcadiapad(j) ? !j : j;
+                  retro_joystick(j_tmp, 0, 1);
+                  jflag[j_tmp][RETRO_DEVICE_ID_JOYPAD_RIGHT] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_RIGHT] = 1;
                }
                else if (mapper_keys[i] == TOGGLE_VKBD)
                   mapper_keys_pressed_time = now; /* Decide on release */
@@ -1311,39 +1281,53 @@ void update_input(unsigned disable_keys)
                   mouse_speed[j] &= ~MOUSE_SPEED_FASTER;
                else if (mapper_keys[i] == JOYSTICK_FIRE)
                {
-                  retro_joystick_button(j, 0, 0);
-                  if (opt_retropad_options == RETROPAD_OPTIONS_ROTATE || opt_retropad_options == RETROPAD_OPTIONS_ROTATE_JUMP)
-                     jflag[j][RETRO_DEVICE_ID_JOYPAD_Y] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_Y] = 0;
+                  uint8_t j_tmp = is_arcadiapad(j) ? !j : j;
+                  if (is_arcadiapad(j))
+                     retro_arcadia_button(j_tmp, 0, 0);
                   else
-                     jflag[j][RETRO_DEVICE_ID_JOYPAD_B] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_B] = 0;
+                     retro_joystick_button(j_tmp, 0, 0);
+
+                  if (opt_retropad_options == RETROPAD_OPTIONS_ROTATE || opt_retropad_options == RETROPAD_OPTIONS_ROTATE_JUMP)
+                     jflag[j_tmp][RETRO_DEVICE_ID_JOYPAD_Y] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_Y] = 0;
+                  else
+                     jflag[j_tmp][RETRO_DEVICE_ID_JOYPAD_B] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_B] = 0;
                }
                else if (mapper_keys[i] == JOYSTICK_2ND_FIRE)
                {
-                  retro_joystick_button(j, 1, 0);
-                  if (opt_retropad_options == RETROPAD_OPTIONS_ROTATE || opt_retropad_options == RETROPAD_OPTIONS_ROTATE_JUMP)
-                     jflag[j][RETRO_DEVICE_ID_JOYPAD_B] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_B] = 0;
+                  uint8_t j_tmp = is_arcadiapad(j) ? !j : j;
+                  if (is_arcadiapad(j))
+                     retro_arcadia_button(j_tmp, 1, 0);
                   else
-                     jflag[j][RETRO_DEVICE_ID_JOYPAD_A] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_A] = 0;
+                     retro_joystick_button(j_tmp, 1, 0);
+
+                  if (opt_retropad_options == RETROPAD_OPTIONS_ROTATE || opt_retropad_options == RETROPAD_OPTIONS_ROTATE_JUMP)
+                     jflag[j_tmp][RETRO_DEVICE_ID_JOYPAD_B] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_B] = 0;
+                  else
+                     jflag[j_tmp][RETRO_DEVICE_ID_JOYPAD_A] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_A] = 0;
                }
                else if (mapper_keys[i] == JOYSTICK_UP)
                {
-                  retro_joystick(j, 1, 0);
-                  jflag[j][RETRO_DEVICE_ID_JOYPAD_UP] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_UP] = 0;
+                  uint8_t j_tmp = is_arcadiapad(j) ? !j : j;
+                  retro_joystick(j_tmp, 1, 0);
+                  jflag[j_tmp][RETRO_DEVICE_ID_JOYPAD_UP] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_UP] = 0;
                }
                else if (mapper_keys[i] == JOYSTICK_DOWN)
                {
-                  retro_joystick(j, 1, 0);
-                  jflag[j][RETRO_DEVICE_ID_JOYPAD_DOWN] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_DOWN] = 0;
+                  uint8_t j_tmp = is_arcadiapad(j) ? !j : j;
+                  retro_joystick(j_tmp, 1, 0);
+                  jflag[j_tmp][RETRO_DEVICE_ID_JOYPAD_DOWN] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_DOWN] = 0;
                }
                else if (mapper_keys[i] == JOYSTICK_LEFT)
                {
-                  retro_joystick(j, 0, 0);
-                  jflag[j][RETRO_DEVICE_ID_JOYPAD_LEFT] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_LEFT] = 0;
+                  uint8_t j_tmp = is_arcadiapad(j) ? !j : j;
+                  retro_joystick(j_tmp, 0, 0);
+                  jflag[j_tmp][RETRO_DEVICE_ID_JOYPAD_LEFT] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_LEFT] = 0;
                }
                else if (mapper_keys[i] == JOYSTICK_RIGHT)
                {
-                  retro_joystick(j, 0, 0);
-                  jflag[j][RETRO_DEVICE_ID_JOYPAD_RIGHT] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_RIGHT] = 0;
+                  uint8_t j_tmp = is_arcadiapad(j) ? !j : j;
+                  retro_joystick(j_tmp, 0, 0);
+                  jflag[j_tmp][RETRO_DEVICE_ID_JOYPAD_RIGHT] = mapper_flag[j][RETRO_DEVICE_ID_JOYPAD_RIGHT] = 0;
                }
                else if (mapper_keys[i] == TOGGLE_VKBD)
                {

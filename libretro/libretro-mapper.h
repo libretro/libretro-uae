@@ -80,6 +80,7 @@ extern void retro_mouse_button(int, int, int);
 extern void retro_joystick(int, int, int);
 extern void retro_joystick_analog(int, int, int);
 extern void retro_joystick_button(int, int, int);
+extern void retro_arcadia_button(int, int, int);
 extern unsigned int retro_devices[RETRO_DEVICES];
 extern int cd32_pad_enabled[NORMAL_JPORTS];
 extern int arcadia_pad_enabled[NORMAL_JPORTS];
