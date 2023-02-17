@@ -657,6 +657,46 @@ void retro_joystick_button(int port, int button, int state)
    setjoybuttonstate(port, button, state);
 }
 
+void retro_arcadia_button(int port, int button, int state)
+{
+   if (port < 2)
+   {
+      switch (button)
+      {
+         case 6:
+            if (state)
+               retro_key_down((port == 0) ? RETROK_F2 : RETROK_F1);
+            else
+               retro_key_up((port == 0) ? RETROK_F2 : RETROK_F1);
+            break;
+         case 5:
+            if (state)
+               retro_key_down(RETROK_F5);
+            else
+               retro_key_up(RETROK_F5);
+            break;
+         case 2:
+         case 3:
+            if (state)
+               retro_key_down((port == 0) ? RETROK_F4 : RETROK_F3);
+            else
+               retro_key_up((port == 0) ? RETROK_F4 : RETROK_F3);
+            break;
+         case 1:
+            if (state)
+               retro_key_down((port == 0) ? RETROK_RSHIFT : RETROK_LSHIFT);
+            else
+               retro_key_up((port == 0) ? RETROK_RSHIFT : RETROK_LSHIFT);
+            break;
+         case 0:
+            retro_joystick_button(port, button, state);
+            break;
+         default:
+            break;
+      }
+   }
+}
+
 /* Keyboard */
 void retro_key_down(int key)
 {
