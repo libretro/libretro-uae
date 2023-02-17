@@ -7301,7 +7301,7 @@ static void update_audiovideo(void)
        * retro_max_diwlastword change which is crucial for visible_left_border */
       if (request_init_custom)
       {
-         request_init_custom_timer = 1;
+         request_init_custom_timer = 2;
          retro_min_diwstart_old    = -1;
          retro_max_diwstop_old     = -1;
          visible_left_border       = retro_max_diwlastword - retrow;
