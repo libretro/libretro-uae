@@ -209,7 +209,7 @@
 
 /* Define to 1 if you have the <signal.h> header file. */
 #if !defined(__PS3__) && !defined(_WIN32) && !defined(WIIU)
-#define HAVE_SIGNAL 1
+//#define HAVE_SIGNAL 1
 #endif
 
 /* Define to 1 if you have the `sleep' function. */

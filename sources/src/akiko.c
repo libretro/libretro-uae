@@ -1046,6 +1046,10 @@ static int cdrom_command_multi (void)
 		cdaudiostop ();
 	cdrom_paused = 0;
 	cdrom_speed = (cdrom_command_buffer[8] & 0x40) ? 2 : 1;
+#ifdef __LIBRETRO__
+	/* WTF, fixes Lamborghini with Cycle-exact and Fightin' Spirit */
+	cdrom_speed = 2;
+#endif
 	cdrom_result_buffer[0] = cdrom_command;
 	cdrom_result_buffer[1] = 0;
 	if (!cdrom_disk) {
