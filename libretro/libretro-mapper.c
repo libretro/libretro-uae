@@ -620,7 +620,7 @@ static int retro_button_to_uae_button(int retro_port, int i)
 static void process_controller(int retro_port, int i)
 {
    int retro_port_uae = opt_joyport_order[retro_port] - 49;
-   int uae_button = -1;
+   int uae_button     = -1;
 
    /* Always switch Arcadia ports */
    if (retro_port < 2)
@@ -825,11 +825,22 @@ static void process_controller(int retro_port, int i)
 static void process_turbofire(int retro_port, int i)
 {
    int retro_port_uae = opt_joyport_order[retro_port] - 49;
-   int fire_button = RETRO_DEVICE_ID_JOYPAD_B;
+   int fire_button    = RETRO_DEVICE_ID_JOYPAD_B;
+
+   /* Always switch Arcadia ports */
+   if (retro_port < 2)
+   {
+      if (is_arcadiapad(0) || is_arcadiapad(1))
+         retro_port_uae = !retro_port;
+   }
 
    /* Face button rotate correction for statusbar flag */
-   if ((is_retropad(retro_port) && (opt_retropad_options == RETROPAD_OPTIONS_ROTATE || opt_retropad_options == RETROPAD_OPTIONS_ROTATE_JUMP))
-    || (is_cd32pad(retro_port) && (opt_cd32pad_options == RETROPAD_OPTIONS_ROTATE || opt_cd32pad_options == RETROPAD_OPTIONS_ROTATE_JUMP)))
+   if (((is_retropad(retro_port) || is_arcadiapad(retro_port))
+         && (  opt_retropad_options == RETROPAD_OPTIONS_ROTATE
+            || opt_retropad_options == RETROPAD_OPTIONS_ROTATE_JUMP))
+      || (is_cd32pad(retro_port)
+         && (  opt_cd32pad_options == RETROPAD_OPTIONS_ROTATE
+            || opt_cd32pad_options == RETROPAD_OPTIONS_ROTATE_JUMP)))
       fire_button = RETRO_DEVICE_ID_JOYPAD_Y;
 
    if (!retro_turbo_fire || i != turbo_fire_button ||
@@ -1737,8 +1748,8 @@ void retro_poll_event()
    int analog_stick[2] = {0};
    int analog_deadzone = opt_analogmouse_deadzone * 32768.0f / 100.0f;
 
-   int retro_port;
-   for (retro_port = 0; retro_port <= 3; retro_port++)
+   uint8_t retro_port;
+   for (retro_port = 0; retro_port < MAX_JPORTS; retro_port++)
    {
       if (retro_mousemode)
          continue;
