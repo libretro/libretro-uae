@@ -625,11 +625,15 @@ void update_debug_info(void)
 {
 }
 
+void logging_init(void)
+{
+}
+
 #ifdef __LIBRETRO__
-const TCHAR *target_get_display_name (int num, bool friendlyname){return NULL;}
-int target_get_display (const TCHAR *name){return -1;}
-int target_checkcapslock (int scancode, int *state){return 0;}
-void setmaintitle(){}
+const TCHAR *target_get_display_name(int num, bool friendlyname) { return NULL; }
+int target_get_display(const TCHAR *name) { return -1; }
+int target_checkcapslock(int scancode, int *state) { return 0; }
+void setmaintitle() {}
 #endif
 
 #if defined PICASSO96

@@ -251,7 +251,8 @@ int make_hdf (char *hdf_path, char *hdf_size, char *device_name);
 
 /* Misc */
 int qstrcmp(const void *a, const void *b);
-void remove_recurse(const char *path);
+int retro_remove(const char *path);
+int remove_recurse(const char *path);
 int fcopy(const char *src, const char *dst);
 int fcmp(const char *src, const char *dst);
 uint64_t fsize(const char *path);

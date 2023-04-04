@@ -133,10 +133,17 @@ struct mystat
 	struct mytimeval mtime;
 };
 
+#ifdef __LIBRETRO__
+#include <retro_dirent.h>
 struct my_opendir_s
 {
+#if 1
+	RDIR *dh;
+	int dp;
+#else
 	DIR *dh;
 	struct dirent *dp;
+#endif
 };
 
 struct my_openfile_s
@@ -148,6 +155,7 @@ struct my_openfile_s
 #endif
 	char *path;
 };
+#endif
 
 extern TCHAR *nname_begin (TCHAR *);
 

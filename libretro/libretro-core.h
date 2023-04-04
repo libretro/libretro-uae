@@ -18,6 +18,7 @@
 #include "libretro-dc.h"
 #include "string/stdstring.h"
 #include "file/file_path.h"
+#include "retro_dirent.h"
 #include "encodings/utf.h"
 
 extern void reset_drawing(void);
