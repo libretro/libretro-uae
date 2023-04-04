@@ -618,7 +618,7 @@ static void floppy_close_redirect(int8_t drive)
 
                gz_compress(saveimagepath, gz_saveimagepath);
                if (path_is_valid(gz_saveimagepath))
-                  remove(saveimagepath);
+                  retro_remove(saveimagepath);
             }
          }
       }
@@ -5893,7 +5893,7 @@ static void whdload_prefs_copy(void)
          if (!fcmp(src, dst))
             return;
 
-         remove(dst);
+         retro_remove(dst);
       }
 
       if (fcopy(src, dst) < 0)
@@ -6243,19 +6243,27 @@ static bool retro_create_config(void)
          char zip_m3u_list[DC_MAX_SIZE][RETRO_PATH_MAX] = {0};
          char zip_m3u_path[RETRO_PATH_MAX] = {0};
          snprintf(zip_m3u_path, sizeof(zip_m3u_path), "%s%s%s.m3u",
-               retro_temp_directory, DIR_SEP_STR, utf8_to_local_string_alloc(zip_basename));
+               utf8_to_local_string_alloc(retro_temp_directory),
+               DIR_SEP_STR,
+               utf8_to_local_string_alloc(zip_basename));
          int zip_m3u_num = 0;
 
-         DIR *zip_dir;
+         RDIR *zip_dir;
          struct dirent *zip_dirp;
-         zip_dir = opendir(retro_temp_directory);
+         zip_dir = retro_opendir(retro_temp_directory);
          char *zip_lastfile = {0};
-         while ((zip_dirp = readdir(zip_dir)) != NULL)
+         while (retro_readdir(zip_dir))
          {
-            if (zip_dirp->d_name[0] == '.' || strendswith(zip_dirp->d_name, "m3u") || zip_mode > 1 || browsed_file[0] != '\0')
+            const char *name = retro_dirent_get_name(zip_dir);
+
+            if (name[0] == '.' || strendswith(name, "m3u") || zip_mode > 1 || browsed_file[0] != '\0')
                continue;
 
-            zip_lastfile = local_to_utf8_string_alloc(zip_dirp->d_name);
+#ifdef USE_LIBRETRO_VFS
+            zip_lastfile = strdup(name);
+#else
+            zip_lastfile = utf8_to_local_string_alloc(name);
+#endif
 
             /* Multi file mode, generate playlist */
             if (dc_get_image_type(zip_lastfile) == DC_IMAGE_TYPE_FLOPPY ||
@@ -6298,7 +6306,7 @@ static bool retro_create_config(void)
                snprintf(full_path, sizeof(full_path), "%s", zip_lastfile_path);
          }
 
-         closedir(zip_dir);
+         retro_closedir(zip_dir);
          if (zip_lastfile)
             free(zip_lastfile);
          zip_lastfile = NULL;
@@ -6311,11 +6319,14 @@ static bool retro_create_config(void)
                   snprintf(full_path, sizeof(full_path), "%s%s%s", retro_temp_directory, DIR_SEP_STR, browsed_file);
                break;
             case 1: /* Generated playlist */
-               zip_m3u = fopen(zip_m3u_path, "w");
                qsort(zip_m3u_list, zip_m3u_num, RETRO_PATH_MAX, qstrcmp);
-               for (int l = 0; l < zip_m3u_num; l++)
-                  fprintf(zip_m3u, "%s\n", zip_m3u_list[l]);
-               fclose(zip_m3u);
+               zip_m3u = fopen(zip_m3u_path, "w");
+               if (zip_m3u)
+               {
+                  for (unsigned l = 0; l < zip_m3u_num; l++)
+                     fprintf(zip_m3u, "%s\n", zip_m3u_list[l]);
+                  fclose(zip_m3u);
+               }
                snprintf(full_path, sizeof(full_path), "%s", zip_m3u_path);
                log_cb(RETRO_LOG_INFO, "->M3U: %s\n", zip_m3u_path);
                break;
@@ -6511,7 +6522,7 @@ static bool retro_create_config(void)
 
                      /* Extract GZ */
                      gz_uncompress(whdload_prefs_gz_path, whdload_prefs_path);
-                     remove(whdload_prefs_gz_path);
+                     retro_remove(whdload_prefs_gz_path);
                   }
                   else
                      log_cb(RETRO_LOG_ERROR, "Unable to create WHDLoad.prefs: '%s'\n", whdload_prefs_path);
@@ -6560,7 +6571,7 @@ static bool retro_create_config(void)
                         log_cb(RETRO_LOG_ERROR, "Unable to create new WHDLoad.prefs: '%s'\n", whdload_prefs_new_path);
 
                      /* Remove old backup prefs */
-                     remove(whdload_prefs_backup_path);
+                     retro_remove(whdload_prefs_backup_path);
 
                      /* Backup old and update new prefs */
                      rename(whdload_prefs_path, whdload_prefs_backup_path);
@@ -6595,7 +6606,7 @@ static bool retro_create_config(void)
 
                         /* Extract ZIP */
                         zip_uncompress(whdload_files_zip_path, whdload_path, NULL);
-                        remove(whdload_files_zip_path);
+                        retro_remove(whdload_files_zip_path);
                      }
 
                      if (!path_is_directory(whdload_c_path))
@@ -6717,7 +6728,7 @@ static bool retro_create_config(void)
 
                         /* Extract GZ */
                         gz_uncompress(whdload_hdf_gz_path, whdload_hdf_path);
-                        remove(whdload_hdf_gz_path);
+                        retro_remove(whdload_hdf_gz_path);
                      }
                      else
                         log_cb(RETRO_LOG_ERROR, "Unable to create WHDLoad image file: '%s'\n", whdload_hdf_path);
@@ -6750,7 +6761,7 @@ static bool retro_create_config(void)
 
                         /* Extract GZ */
                         gz_uncompress(whdsaves_hdf_gz_path, whdsaves_hdf_path);
-                        remove(whdsaves_hdf_gz_path);
+                        retro_remove(whdsaves_hdf_gz_path);
                      }
                      else
                         log_cb(RETRO_LOG_ERROR, "Unable to create WHDSaves image file: '%s'\n", whdsaves_hdf_path);

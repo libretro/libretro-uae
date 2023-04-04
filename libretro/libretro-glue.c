@@ -591,14 +591,17 @@ void target_default_options (struct uae_prefs *p, int type)
    p->floppyslots[1].dfxtype = DRV_NONE;
    p->lightpen_crosshair = false;
 
+   p->jports[0].id = JSEM_MICE;
+   p->jports[1].id = JSEM_JOYS;
+
+   p->gfx_monitor[0].gfx_size_fs.width  = EMULATOR_MAX_WIDTH;
+   p->gfx_monitor[0].gfx_size_fs.height = EMULATOR_MAX_HEIGHT;
+
    /* Required for SCSI CD image mounts */
    p->win32_automount_cddrives = true;
 
    /* Required for parallel port joysticks */
    p->win32_samplersoundcard = -1;
-
-   p->jports[0].id = JSEM_MICE;
-   p->jports[1].id = JSEM_JOYS;
 }
 
 void target_fixup_options (struct uae_prefs *p)
@@ -1652,33 +1655,86 @@ int qstrcmp(const void *a, const void *b)
    return sensible_strcmp(pa, pb);
 }
 
-void remove_recurse(const char *path)
+int retro_remove(const char *path)
+{
+#if defined(_WIN32) && !defined(LEGACY_WIN32)
+   wchar_t *pathW = utf8_to_utf16_string_alloc(path);
+
+   if (pathW)
+   {
+      if (DeleteFileW(pathW))
+      {
+         free(pathW);
+         return 0;
+      }
+      free(pathW);
+      return -1;
+   }
+
+   return DeleteFile(path);
+#else
+   return remove(path);
+#endif
+}
+
+int retro_rmdir(const char *path)
+{
+#if defined(_WIN32) && !defined(LEGACY_WIN32)
+   wchar_t *pathW = utf8_to_utf16_string_alloc(path);
+
+   if (pathW)
+   {
+      if (RemoveDirectoryW(pathW))
+      {
+         free(pathW);
+         return 0;
+      }
+      free(pathW);
+      return -1;
+   }
+
+   return RemoveDirectory(path);
+#else
+   return rmdir(path);
+#endif
+}
+
+int remove_recurse(const char *path)
 {
    struct dirent *dirp;
    char filename[RETRO_PATH_MAX];
-   DIR *dir = opendir(path);
+   int ret   = 0;
+   RDIR *dir = retro_opendir(path);
    if (dir == NULL)
-      return;
+      return -1;
 
-   while ((dirp = readdir(dir)) != NULL)
+   while (retro_readdir(dir))
    {
-      if (dirp->d_name[0] == '.')
+      const char *name = retro_dirent_get_name(dir);
+
+      if (name[0] == '.')
          continue;
 
-      sprintf(filename, "%s%s%s", path, DIR_SEP_STR, dirp->d_name);
-      log_cb(RETRO_LOG_INFO, "Clean: %s\n", filename);
+      snprintf(filename, sizeof(filename), "%s%s%s", path, DIR_SEP_STR, name);
 
       if (path_is_directory(filename))
-         remove_recurse(filename);
+         ret = remove_recurse(filename);
       else
-         remove(filename);
+         ret = retro_remove(filename);
+
+      if (!ret)
+         log_cb(RETRO_LOG_INFO, "Clean: %s\n", filename);
+      else
+         log_cb(RETRO_LOG_INFO, "Clean fail: %s\n", filename);
    }
 
-   closedir(dir);
+   retro_closedir(dir);
 
    /* Leave the root directory for RAM disk usage */
    if (strcmp(retro_temp_directory, path))
-      rmdir(path);
+      retro_rmdir(path);
+
+   return ret;
 }
 
 int fcopy(const char *src, const char *dst)
@@ -1983,11 +2039,17 @@ void zip_uncompress(const char *in, const char *out, char *lastfile)
          unsigned skip = 0;
          unsigned x    = 0;
 
+#ifdef USE_LIBRETRO_VFS
+         write_filename = strdup(filename_withpath);
+#else
          write_filename = local_to_utf8_string_alloc(filename_withpath);
+#endif
 
+#if 0
          /* Replace non-ascii chars with underscore */
          for (x = 128; x < 256; x++)
             string_replace_all_chars(write_filename, x, '_');
+#endif
 
          err = unzOpenCurrentFilePassword(uf, password);
          if (err != UNZ_OK)
