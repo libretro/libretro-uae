@@ -6,6 +6,11 @@
 
 #include "libretro-core.h"
 
+#ifdef USE_LIBRETRO_VFS
+#undef local_to_utf8_string_alloc
+#define local_to_utf8_string_alloc strdup
+#endif
+
 extern int log_filesys;
 
 bool my_stat (const TCHAR *name, struct mystat *ms) {
@@ -16,7 +21,7 @@ bool my_stat (const TCHAR *name, struct mystat *ms) {
 		return false;
 	}
 	if (log_filesys)
-		write_log("fs_stat returned size %9jd: %s\n", sonuc.st_size, name);
+		write_log("stat returned size %9jd: %s\n", sonuc.st_size, name);
 	ms->size = sonuc.st_size;
 	ms->mode = 0;
 	if (sonuc.st_mode & S_IRUSR) {
@@ -120,7 +125,11 @@ int my_getvolumeinfo(const char *root)
 	struct stat sonuc;
 	int ret = 0;
 
+#ifdef USE_LIBRETRO_VFS
+	if (stat(utf8_to_local_string_alloc(root), &sonuc) == -1)
+#else
 	if (stat(root, &sonuc) == -1)
+#endif
 		return -1;
 	if (!S_ISDIR(sonuc.st_mode))
 		return -1;
@@ -156,9 +165,10 @@ struct my_opendir_s *my_opendir(const TCHAR *name)
 	if (!mod)
 		return NULL;
 
-	DIR* dir = opendir(name);
+	RDIR* dir = retro_opendir(name);
 	if (!dir) {
 		write_log("my_opendir '%s' failed\n", name);
+		xfree(mod);
 		return NULL;
 	}
 	else if (log_filesys)
@@ -172,17 +182,17 @@ void my_closedir(struct my_opendir_s *mod)
 {
 	if (mod)
 	{
-		closedir(mod->dh);
-		free(mod);
+		retro_closedir(mod->dh);
+		xfree(mod);
 	}
 }
 
 int my_readdir(struct my_opendir_s* mod, TCHAR* name)
 {
-	mod->dp = readdir(mod->dh);
+	mod->dp = retro_readdir(mod->dh);
 	if (!mod->dp)
 		return 0;
-	_tcscpy (name, mod->dp->d_name);
+	_tcscpy (name, retro_dirent_get_name(mod->dh));
 	if (log_filesys)
 		write_log("my_readdir => '%s'\n", name);
 	return 1;
@@ -307,8 +317,8 @@ void my_close(struct my_openfile_s* mos)
 #endif
 	if (result != 0)
 		write_log("error %d closing file '%s'\n", result, mos->path);
-	free(mos->path);
-	free(mos);
+	xfree(mos->path);
+	xfree(mos);
 }
 
 uae_s64 my_lseek(struct my_openfile_s *mos, uae_s64 offset, int whence)
@@ -354,7 +364,7 @@ uae_s64 my_fsize(struct my_openfile_s* mos) {
 		return -1;
 	}
 	else if (log_filesys)
-		write_log("my_fsize: '%s' = %d\n", mos->path, sonuc.st_size);
+		write_log("my_fsize '%s' %d\n", mos->path, sonuc.st_size);
 
 	return sonuc.st_size;
 #else
@@ -364,10 +374,11 @@ uae_s64 my_fsize(struct my_openfile_s* mos) {
 		write_log("my_fsize: fseek on file '%s' failed\n", mos->path);
 		return -1;
 	}
-	else if (log_filesys)
-		write_log("my_fsize: '%s' = %d\n", mos->path, size);
 
 	size = ftell(mos->fp);
+	if (log_filesys)
+		write_log("my_fsize '%s' %d\n", mos->path, size);
+
 	fseek(mos->fp, current, SEEK_SET);
 	return size;
 #endif

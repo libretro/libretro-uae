@@ -9416,9 +9416,9 @@ TCHAR *get_error_log (void)
 	return s;
 #endif
 }
+#ifndef __LIBRETRO__
 void error_log (const TCHAR *format, ...)
 {
-#ifndef __LIBRETRO__
 	TCHAR buffer[256], *bufp;
 	int bufsize = 256;
 	va_list parms;
@@ -9463,5 +9463,5 @@ void error_log (const TCHAR *format, ...)
 
 	if (bufp != buffer)
 		xfree (bufp);
-#endif
 }
+#endif

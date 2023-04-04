@@ -160,6 +160,8 @@ extern int amigamonid;
 extern char *my_strdup (const char *s);
 #endif
 
+#define error_log write_log
+
 void getgfxoffset(int monid, float *dxp, float *dyp, float *mxp, float *myp);
 int isfullscreen (void);
 void fetch_configurationpath (TCHAR *out, int size);

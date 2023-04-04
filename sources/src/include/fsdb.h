@@ -120,10 +120,16 @@ typedef struct a_inode_struct {
 } a_inode;
 
 #ifdef __LIBRETRO__
+#include <retro_dirent.h>
 struct my_opendir_s
 {
+#if 1
+	RDIR *dh;
+	int dp;
+#else
 	DIR *dh;
 	struct dirent *dp;
+#endif
 };
 
 struct my_openfile_s
