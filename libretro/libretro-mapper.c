@@ -936,7 +936,6 @@ static void process_key(unsigned disable_keys)
           || disable_keys == 2)
             retro_key_event_state[i] = 0;
 
-
          /* Skip numpad if Keyrah is active */
          if (opt_keyrah_keypad)
          {
