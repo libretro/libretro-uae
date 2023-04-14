@@ -1530,24 +1530,10 @@ static void retro_set_core_options()
          "auto"
       },
       {
-         "puae_gfx_flickerfixer",
-         "Video > Remove Interlace Artifacts",
-         "Remove Interlace Artifacts",
-         "Best suited for still screens, Workbench etc.",
-         NULL,
-         "video",
-         {
-            { "disabled", NULL },
-            { "enabled", NULL },
-            { NULL, NULL },
-         },
-         "disabled"
-      },
-      {
          "puae_immediate_blits",
          "Video > Immediate/Waiting Blits",
          "Immediate/Waiting Blits",
-         "'Immediate Blitter' is ignored with 'Cycle-exact'.",
+         "- 'Immediate Blitter': Faster but less compatible blitter emulation.\n- 'Wait for Blitter': Compatibility hack for programs that don't wait for the blitter correctly.",
          NULL,
          "video",
          {
@@ -1573,6 +1559,20 @@ static void retro_set_core_options()
             { NULL, NULL },
          },
          "playfields"
+      },
+      {
+         "puae_gfx_flickerfixer",
+         "Video > Remove Interlace Artifacts",
+         "Remove Interlace Artifacts",
+         "Best suited for still screens, Workbench etc.",
+         NULL,
+         "video",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "disabled"
       },
       {
          "puae_gfx_framerate",
