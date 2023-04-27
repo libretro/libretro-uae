@@ -36,17 +36,17 @@ ENDIF
 
 Assign EXISTS RASystem: >NIL:
 IF NOT WARN
-    Execute S:KSCopy
+   Execute S:KSCopy
 
-    IF NOT EXISTS WHDLoad:L/WHDLoad.key
-       IF EXISTS RASystem:WHDLoad.key
-          Copy RASystem:WHDLoad.key WHDLoad:L/
-       ENDIF
-    ENDIF
+   IF NOT EXISTS WHDLoad:L/WHDLoad.key
+      IF EXISTS RASystem:WHDLoad.key
+         Copy RASystem:WHDLoad.key WHDLoad:L/
+      ENDIF
+   ENDIF
 
-    IF EXISTS RASystem:WHDLoad.prefs
-       Copy RASystem:WHDLoad.prefs WHDLoad:S/
-    ENDIF
+   IF EXISTS RASystem:WHDLoad.prefs
+      Copy RASystem:WHDLoad.prefs WHDLoad:S/
+   ENDIF
 ENDIF
 
 
@@ -59,16 +59,23 @@ IF EXISTS DH0:load
    Execute DH0:load
 ELSE
    List #?.slav#? QUICK NOHEAD TO ENV:SLAVE
-   IF NOT EXISTS $SLAVE >NIL:
-       List #? DIRS QUICK NOHEAD TO ENV:SLAVEDIR
-       IF EXISTS "$SLAVEDIR" >NIL:
-          CD "$SLAVEDIR" >NIL:
-          IF EXISTS "$SLAVEDIR.slave"
-             SETENV SLAVE "$SLAVEDIR.slave"
-          ELSE
-             List #?.slav#? QUICK NOHEAD TO ENV:SLAVE
-          ENDIF
-       ENDIF
+   IF "$SLAVE" EQ ""
+      List #?.info QUICK NOHEAD TO ENV:INFO
+      List #? DIRS QUICK NOHEAD TO ENV:SLAVEDIR
+      IF "$INFO" EQ ""
+         CD "$SLAVEDIR" >NIL:
+         List #? DIRS QUICK NOHEAD TO ENV:SLAVEDIR
+      ENDIF
+
+      List #?.slav#? QUICK NOHEAD TO ENV:SLAVE
+      IF "$SLAVE" EQ ""
+         IF NOT "$SLAVEDIR" EQ ""
+            CD "$SLAVEDIR" >NIL:
+            IF EXISTS "$SLAVEDIR.slave"
+               SETENV SLAVE "$SLAVEDIR.slave"
+            ENDIF
+         ENDIF
+      ENDIF
    ENDIF
 
    SETENV WBRUN ""
@@ -134,7 +141,7 @@ ELSE
          ELSE
             SETENV WBRUN notfound
          ENDIF
-        
+
          IF EXISTS $WBRUN.info
             List $WBRUN.info QUICK NOHEAD LFORMAT %M TO ENV:WBRUN
             WBRun "$WBRUN" SYNC
@@ -146,8 +153,26 @@ ELSE
                   WHDLoad Preload game.slave $CUSTOM
                ENDIF
             ELSE
-               SETENV WBSEL 1
-               Execute S:WBSelect
+               IF EXISTS "Workbench31 4 MB.info"
+                  SETENV WBSEL ""
+                  SETENV SLAVE ""
+                  WBRun "Workbench31 4 MB" SYNC
+                  SKIP End
+               ENDIF
+               IF EXISTS "Workbench31_4.info"
+                  SETENV WBSEL ""
+                  SETENV SLAVE ""
+                  WBRun "Workbench31_4" SYNC
+                  SKIP End
+               ENDIF
+
+               IF EXISTS "$SLAVEDIR.info"
+                  SETENV WBRUN $SLAVEDIR
+                  WBRun "$WBRUN" SYNC
+               ELSE
+                  SETENV WBSEL 1
+                  Execute S:WBSelect
+               ENDIF
             ENDIF
          ENDIF
       ELSE
