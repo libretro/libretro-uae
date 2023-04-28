@@ -149,6 +149,15 @@ static int fsdb_name_invalid_2x (const TCHAR *n, int dir)
             return 2;
     }
 
+#ifdef __LIBRETRO__
+    /* Also illegal chars */
+    for (i = 0; i < l; i++)
+    {
+        if (n[i] < 0)
+            return 2;
+    }
+#endif
+
     return 0; /* the filename passed all checks, now it should be ok */
 }
 
@@ -366,6 +375,16 @@ static char *aname_to_nname(const char *aname, int ascii)
                 break;
             }
         }
+
+#ifdef __LIBRETRO__
+        /* Convert superscript 2 and 3 to normal chars */
+        if (x == 178 || x == 179)
+        {
+            repl = 1;
+            x = (x == 178) ? '2' : '3';
+        }
+#endif
+
         if (i == len - 1) {
             // last character, we can now check the file ending
             if (len >= 5 && strncasecmp(aname + len - 5, ".uaem", 5) == 0) {
