@@ -65,6 +65,7 @@ extern int opt_statusbar_position;
 unsigned int statusbar_message_timer = 0;
 unsigned char statusbar_text[RETRO_PATH_MAX] = {0};
 extern float retro_refresh;
+extern char full_path[RETRO_PATH_MAX];
 
 static bool flag_empty(int val[16])
 {
@@ -616,6 +617,7 @@ void target_fixup_options (struct uae_prefs *p)
 void retro_mouse(int port, int dx, int dy)
 {
    mouse_port[port] = 1;
+   cd32_pad_enabled[port] = 0;
    setmousestate(port, 0, dx, 0);
    setmousestate(port, 1, dy, 0);
 }
@@ -623,7 +625,18 @@ void retro_mouse(int port, int dx, int dy)
 void retro_mouse_button(int port, int button, int state)
 {
    mouse_port[port] = 1;
+   cd32_pad_enabled[port] = 0;
    setmousebuttonstate(port, button, state);
+}
+
+static void retro_cd32pad_enable(int port)
+{
+   if (     (retro_devices[port] == RETRO_DEVICE_PUAE_CD32PAD)
+         || (  (retro_devices[port] == RETRO_DEVICE_JOYPAD)
+               && (strstr(full_path, "CD32") || currprefs.cs_compatible == CP_CD32)
+            )
+      )
+      cd32_pad_enabled[port] = 1;
 }
 
 /* Joystick */
@@ -634,6 +647,9 @@ void retro_joystick(int port, int axis, int state)
    {
       int m_port = (port == 0) ? 1 : 0;
       mouse_port[m_port] = 0;
+
+      if (!cd32_pad_enabled[m_port])
+         retro_cd32pad_enable(m_port);
    }
    setjoystickstate(port, axis, state, 1);
 }
@@ -645,6 +661,7 @@ void retro_joystick_analog(int port, int axis, int state)
    {
       int m_port = (port == 0) ? 1 : 0;
       mouse_port[m_port] = 0;
+      cd32_pad_enabled[m_port] = 0;
    }
    setjoystickstate(port, axis, state, 32768);
 }
@@ -656,6 +673,9 @@ void retro_joystick_button(int port, int button, int state)
    {
       int m_port = (port == 0) ? 1 : 0;
       mouse_port[m_port] = 0;
+
+      if (!cd32_pad_enabled[m_port])
+         retro_cd32pad_enable(m_port);
    }
    setjoybuttonstate(port, button, state);
 }
