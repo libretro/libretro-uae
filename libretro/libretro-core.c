@@ -36,14 +36,14 @@
 #define utf8_to_local_string_alloc strdup
 #endif
 
-unsigned int libretro_runloop_active = 0;
+uint8_t libretro_runloop_active = 0;
 unsigned short int retro_bmp[RETRO_BMP_SIZE] = {0};
-int defaultw = EMULATOR_DEF_WIDTH / 2;
-int defaulth = EMULATOR_DEF_HEIGHT / 2;
-int retrow = EMULATOR_DEF_WIDTH / 2;
-int retroh = EMULATOR_DEF_HEIGHT / 2;
-int retrow_crop = 0;
-int retroh_crop = 0;
+unsigned short int defaultw = EMULATOR_DEF_WIDTH / 2;
+unsigned short int defaulth = EMULATOR_DEF_HEIGHT / 2;
+unsigned short int retrow = EMULATOR_DEF_WIDTH / 2;
+unsigned short int retroh = EMULATOR_DEF_HEIGHT / 2;
+unsigned short int retrow_crop = 0;
+unsigned short int retroh_crop = 0;
 float aspect_ratio = 0;
 
 extern int bplcon0;
@@ -72,11 +72,12 @@ bool opt_video_vresolution_auto = false;
 bool opt_floppy_sound_empty_mute = false;
 bool opt_floppy_multidrive = false;
 bool opt_floppy_write_redirect = false;
-unsigned int opt_autoloadfastforward = 0;
-unsigned int opt_use_whdload = 1;
-unsigned int opt_use_whdload_theme = 0;
-unsigned int opt_use_whdload_prefs = 0;
-unsigned int opt_use_boot_hd = 0;
+uint8_t opt_autoloadfastforward = 0;
+uint8_t opt_use_whdload = 1;
+uint8_t opt_use_whdload_theme = 0;
+uint8_t opt_use_whdload_prefs = 0;
+bool opt_use_whdload_nowritecache = false;
+uint8_t opt_use_boot_hd = 0;
 bool opt_shared_nvram = false;
 bool opt_cd_startup_delayed_insert = false;
 int opt_statusbar = 0;
@@ -125,7 +126,7 @@ extern bool turbo_fire_locked;
 extern unsigned int turbo_fire_button;
 extern unsigned int turbo_pulse;
 extern bool inputdevice_finalized;
-unsigned int pix_bytes = 2;
+uint8_t pix_bytes = 2;
 static bool pix_bytes_initialized = false;
 static bool cpu_cycle_exact_force = false;
 static bool automatic_sound_filter_type_update = true;
@@ -180,11 +181,11 @@ static int visible_left_border_update_frame_timer = 3;
 #define NTSC_KS2_CROP_SAFE_FIRST_LINE 71
 #define NTSC_KS2_CROP_SAFE_LAST_LINE  216
 
-unsigned int video_config = 0;
-unsigned int video_config_old = 0;
-unsigned int video_config_aspect = 0;
-unsigned int video_config_geometry = 0;
-unsigned int video_config_allow_hz_change = 0;
+unsigned short int video_config = 0;
+unsigned short int video_config_old = 0;
+unsigned short int video_config_aspect = 0;
+unsigned short int video_config_geometry = 0;
+uint8_t video_config_allow_hz_change = 0;
 bool opt_aspect_ratio_locked = false;
 
 struct zfile *retro_deserialize_file = NULL;
@@ -1210,6 +1211,20 @@ static void retro_set_core_options()
             { "config", "Config (Show only if available)" },
             { "splash", "Splash (Show briefly)" },
             { "both", "Config + Splash (Wait for user input)" },
+            { NULL, NULL },
+         },
+         "disabled"
+      },
+      {
+         "puae_use_whdload_nowritecache",
+         "Media > WHDLoad NoWriteCache",
+         "WHDLoad NoWriteCache",
+         "Write save data immediately or on WHDLoad quit. Write cache enabled runs the core a few frames after frontend quit in order to trigger WHDLoad quit and flush the cache.\nCore restart required.",
+         NULL,
+         "media",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
             { NULL, NULL },
          },
          "disabled"
@@ -4311,6 +4326,14 @@ static void update_variables(void)
       else if (!strcmp(var.value, "both"))     opt_use_whdload_prefs = 3;
    }
 
+   var.key = "puae_use_whdload_nowritecache";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (!strcmp(var.value, "disabled")) opt_use_whdload_nowritecache = false;
+      else                                opt_use_whdload_nowritecache = true;
+   }
+
    var.key = "puae_cd_startup_delayed_insert";
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -5906,6 +5929,28 @@ static void whdload_prefs_copy(void)
    }
 }
 
+static void whdload_quitkey(void)
+{
+   int i;
+
+   if (     opt_use_whdload_nowritecache
+         || string_is_empty(currprefs.mountconfig[0].ci.volname))
+      return;
+
+   log_cb(RETRO_LOG_INFO, "WHDLoad QuitKey triggered..\n");
+   libretro_runloop_active = 0;
+
+   retro_key_down(RETROK_KP_MINUS);
+   for (i = 0; i < 2; i++)
+      m68k_go(1, 1);
+
+   retro_key_up(RETROK_KP_MINUS);
+   for (i = 0; i < retro_refresh / 2; i++)
+      m68k_go(1, 1);
+
+   libretro_runloop_active = 1;
+}
+
 static char* emu_config_string(char *mode, int config)
 {
    if (!strcmp(mode, "model"))
@@ -6543,10 +6588,26 @@ static bool retro_create_config(void)
                char whdload_buf_new[4096] = {0};
                if ((whdload_prefs_fp = fopen(whdload_prefs_path, "r")))
                {
-                  bool whdload_prefs_changes = false;
+                  bool whdload_prefs_changes  = false;
+                  bool whdload_quitkey_set    = false;
+                  const char *whdload_quitkey = "$4a";
+
                   while (fgets(whdload_buf, sizeof(whdload_buf), whdload_prefs_fp))
                   {
-                     if (strstr(whdload_buf, "ConfigDelay=") && whdload_buf[0] == 'C')
+                     if (opt_use_whdload_nowritecache
+                           && strstr(whdload_buf, "NoWriteCache") && whdload_buf[0] == ';')
+                        snprintf(whdload_buf_row, sizeof(whdload_buf_row), "%s", whdload_buf + 1);
+                     else if (!opt_use_whdload_nowritecache
+                           && strstr(whdload_buf, "NoWriteCache") && whdload_buf[0] == 'N')
+                        snprintf(whdload_buf_row, sizeof(whdload_buf_row), ";%s", whdload_buf);
+                     else if (!opt_use_whdload_nowritecache
+                           && strstr(whdload_buf, "QuitKey=") && whdload_buf[0] == 'Q')
+                     {
+                        /* WHDLoad save data quit requires having a standard quit key */
+                        snprintf(whdload_buf_row, sizeof(whdload_buf_row), "QuitKey=%s\n", whdload_quitkey);
+                        whdload_quitkey_set = true;
+                     }
+                     else if (strstr(whdload_buf, "ConfigDelay=") && whdload_buf[0] == 'C')
                         snprintf(whdload_buf_row, sizeof(whdload_buf_row), "ConfigDelay=%d\n", WHDLoad_ConfigDelay);
                      else if (strstr(whdload_buf, "SplashDelay=") && whdload_buf[0] == 'S')
                         snprintf(whdload_buf_row, sizeof(whdload_buf_row), "SplashDelay=%d\n", WHDLoad_SplashDelay);
@@ -6559,6 +6620,14 @@ static bool retro_create_config(void)
                         whdload_prefs_changes = true;
 
                      strlcat(whdload_buf_new, whdload_buf_row, sizeof(whdload_buf_new));
+                  }
+
+                  /* retro_unload triggers QuitKey (Numpad -) and runs a few frames so that data gets saved */
+                  if (!opt_use_whdload_nowritecache && !whdload_quitkey_set)
+                  {
+                     snprintf(whdload_buf_row, sizeof(whdload_buf_row), "QuitKey=%s\n", whdload_quitkey);
+                     strlcat(whdload_buf_new, whdload_buf_row, sizeof(whdload_buf_new));
+                     whdload_prefs_changes = true;
                   }
 
                   fclose(whdload_prefs_fp);
@@ -7194,6 +7263,9 @@ static bool retro_create_config(void)
 
 void retro_reset(void)
 {
+   /* Ensure WHDLoad saves are written with write cache enabled */
+   whdload_quitkey();
+
    if (forced_video < 0)
       video_config_old = 0;
    fake_ntsc = false;
@@ -8353,6 +8425,9 @@ bool retro_load_game(const struct retro_game_info *info)
 
 void retro_unload_game(void)
 {
+   /* Ensure WHDLoad saves are written with write cache enabled */
+   whdload_quitkey();
+
    /* Gzip savedisks */
    if (dc && dc->count > 1 && !string_is_empty(changed_prefs.floppyslots[0].df))
       dc_save_disk_compress(dc);

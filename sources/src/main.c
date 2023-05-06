@@ -52,8 +52,8 @@
 #endif
 
 #ifdef __LIBRETRO__
-static int real_main2_ret = 0;
-unsigned int libretro_frame_end = 0;
+static int8_t real_main2_ret = 0;
+uint8_t libretro_frame_end = 0;
 static void hr (void)
 {
 	write_log (_T("--------------------------------------------------------------------------------\n"));

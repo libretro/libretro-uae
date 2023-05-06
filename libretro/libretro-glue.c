@@ -43,10 +43,10 @@ extern unsigned int retro_devices[RETRO_DEVICES];
 bool inputdevice_finalized = false;
 extern int retro_ui_get_pointer_state(uint8_t port, int *px, int *py, uint8_t *pb);
 
-extern unsigned int defaultw;
-extern unsigned int defaulth;
-extern unsigned int width_multiplier;
-extern unsigned int libretro_frame_end;
+extern unsigned short int defaultw;
+extern unsigned short int defaulth;
+extern uint8_t width_multiplier;
+extern uint8_t libretro_frame_end;
 
 unsigned short int* pixbuf = NULL;
 extern unsigned short int retro_bmp[RETRO_BMP_SIZE];

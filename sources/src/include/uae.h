@@ -13,8 +13,8 @@
 
 #ifdef __LIBRETRO__
 extern void libretro_do_restart (int argc, TCHAR **argv);
-extern unsigned int libretro_runloop_active;
-extern unsigned int libretro_frame_end;
+extern uint8_t libretro_runloop_active;
+extern uint8_t libretro_frame_end;
 #endif
 
 extern void do_start_program (void);
