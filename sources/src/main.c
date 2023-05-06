@@ -94,16 +94,17 @@ TCHAR optionsfile[256];
 static unsigned long randseed;
 static unsigned long oldhcounter;
 
-#ifdef __LIBRETRO__
-static int real_main2_ret = 0;
-#endif
-
 #ifndef _WIN32
 // Prototype in sysdeps.h
 DWORD GetLastError(void)
 {
 	return errno;
 }
+#endif
+
+#ifdef __LIBRETRO__
+static int8_t real_main2_ret = 0;
+uint8_t libretro_frame_end = 0;
 #endif
 
 static void hr (void)
@@ -604,9 +605,6 @@ void fixup_prefs (struct uae_prefs *p)
 }
 
 int quit_program = 0;
-#ifdef __LIBRETRO__
-unsigned int libretro_frame_end = 0;
-#endif
 static int restart_program;
 static TCHAR restart_config[MAX_DPATH];
 static int default_config;

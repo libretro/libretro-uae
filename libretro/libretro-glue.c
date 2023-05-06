@@ -25,9 +25,10 @@ struct serparportinfo *comports[MAX_SERPAR_PORTS];
 extern unsigned int retro_devices[RETRO_DEVICES];
 bool inputdevice_finalized = false;
 
-extern unsigned int defaultw;
-extern unsigned int defaulth;
-extern unsigned int libretro_frame_end;
+extern unsigned short int defaultw;
+extern unsigned short int defaulth;
+extern uint8_t width_multiplier;
+extern uint8_t libretro_frame_end;
 
 unsigned short int* pixbuf = NULL;
 extern unsigned short int retro_bmp[RETRO_BMP_SIZE];
