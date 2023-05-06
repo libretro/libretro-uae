@@ -265,13 +265,13 @@ struct puae_cart_info
 #define RETRO_BMP_SIZE          (EMULATOR_DEF_WIDTH * EMULATOR_DEF_HEIGHT * 4) /* 4x is big enough for 24-bit SuperHires double line */
 
 extern unsigned short int retro_bmp[RETRO_BMP_SIZE];
-extern unsigned int pix_bytes;
-extern int retrow;
-extern int retroh;
-extern int retrow_crop;
-extern int retroh_crop;
-extern unsigned int video_config;
-extern unsigned int video_config_geometry;
+extern uint8_t pix_bytes;
+extern unsigned short int retrow;
+extern unsigned short int retroh;
+extern unsigned short int retrow_crop;
+extern unsigned short int retroh_crop;
+extern unsigned short int video_config;
+extern unsigned short int video_config_geometry;
 
 #define CROP_NONE            0
 #define CROP_MINIMUM         1
