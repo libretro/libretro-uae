@@ -1722,6 +1722,20 @@ static void retro_set_core_options()
          "bottom"
       },
       {
+         "puae_statusbar_startup",
+         "OSD > Statusbar Startup",
+         "Statusbar Startup",
+         "Show statusbar on startup.",
+         NULL,
+         "osd",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "disabled"
+      },
+      {
          "puae_statusbar_messages",
          "OSD > Statusbar Messages",
          "Statusbar Messages",
@@ -3094,6 +3108,8 @@ static void retro_set_options_display(void)
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_statusbar";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_statusbar_startup";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_statusbar_messages";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_vkbd_theme";
@@ -3540,6 +3556,19 @@ static void update_variables(void)
          opt_statusbar |= STATUSBAR_MINIMAL;
 
       opt_statusbar_position_old = opt_statusbar_position;
+   }
+
+   var.key = "puae_statusbar_startup";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (!libretro_runloop_active)
+      {
+         if (!strcmp(var.value, "enabled"))
+            retro_statusbar = true;
+         else
+            retro_statusbar = false;
+      }
    }
 
    var.key = "puae_statusbar_messages";
