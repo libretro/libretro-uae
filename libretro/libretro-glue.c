@@ -19,6 +19,7 @@
 #include "disk.h"
 #include "parser.h"
 #include "inputdevice.h"
+#include "newcpu.h"
 extern int mouse_port[NORMAL_JPORTS];
 
 int log_scsi;
@@ -799,6 +800,7 @@ void unlockscr(struct vidbuffer *vb, int y_start, int y_end)
 
    /* Flag that we should end the frame, return out of retro_run */
    libretro_frame_end = 1;
+   set_special(SPCFLAG_CHECK);
 
    if (lightpen_enabled)
       retro_lightpen_update();
