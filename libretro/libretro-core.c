@@ -5895,7 +5895,7 @@ static void whdload_quitkey(void)
       m68k_go(1, 1);
 
    retro_key_up(RETROK_KP_MINUS);
-   for (i = 0; i < retro_refresh / 2; i++)
+   for (i = 0; i < retro_refresh * 2; i++)
       m68k_go(1, 1);
 
    libretro_runloop_active = 1;
