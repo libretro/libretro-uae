@@ -77,7 +77,7 @@ extern void master_sound_volume (int);
 #define SOUND8_BASE_VAL 128
 
 #define DEFAULT_SOUND_MAXB 4096
-#define DEFAULT_SOUND_MINB 1024
+#define DEFAULT_SOUND_MINB 1764
 #define DEFAULT_SOUND_BITS 16
 #define DEFAULT_SOUND_FREQ 44100
 

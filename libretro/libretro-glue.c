@@ -18,6 +18,7 @@
 #include "disk.h"
 #include "parser.h"
 #include "inputdevice.h"
+#include "newcpu.h"
 extern int mouse_port[NORMAL_JPORTS];
 
 struct serparportinfo *comports[MAX_SERPAR_PORTS];
@@ -701,6 +702,7 @@ void retro_flush_screen (struct vidbuf_description *gfxinfo, int ystart, int yen
 
    /* Flag that we should end the frame, return out of retro_run */
    libretro_frame_end = 1;
+   set_special(SPCFLAG_CHECK);
 }
 
 void retro_flush_block (struct vidbuf_description *gfxinfo, int ystart, int yend)

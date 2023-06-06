@@ -8206,7 +8206,7 @@ void retro_run(void)
       libretro_do_restart(sizeof(uae_argv)/sizeof(*uae_argv), uae_argv);
       /* Re-run emulation first pass */
       restart_pending = m68k_go(1, 0);
-      goto upload;
+      return;
    }
 
    /* Resume emulation for 1 frame */
@@ -8257,7 +8257,6 @@ void retro_run(void)
 
 upload:
    video_cb(retro_bmp, retrow_crop, retroh_crop, retrow << (pix_bytes / 2));
-   flush_sound_buffers(4);
    upload_output_audio_buffer();
 }
 
