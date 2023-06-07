@@ -3207,11 +3207,9 @@ void retro_set_environment(retro_environment_t cb)
     * and must set only once, since `retro_set_environment`
     * is called multiple times, and save dir is wrong later.. */
    if (string_is_empty(retro_temp_directory))
-   {
       retro_set_paths();
-      retro_set_core_options();
-   }
 
+   retro_set_core_options();
    retro_set_inputs();
 
    bool support_no_game = true;
