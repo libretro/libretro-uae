@@ -2,6 +2,7 @@ CORE_DIR  := .
 ROOT_DIR  := .
 PLATFLAGS :=
 SOURCES_C :=
+EXEEXT    :=
 TARGET_NAME := puae
 
 ifeq ($(platform),)
@@ -15,6 +16,10 @@ else ifneq ($(findstring Darwin,$(shell uname -s)),)
 else ifneq ($(findstring win,$(shell uname -s)),)
    platform = win
 endif
+endif
+
+ifeq ($(platform), win)
+   EXEEXT := .exe
 endif
 
 ifeq ($(capsimg), 1)
@@ -320,13 +325,15 @@ CXXFLAGS += -DUAE -MMD
 
 include Makefile.common
 
-$(info CFLAGS: $(PLATFLAGS) $(CFLAGS))
-$(info -------)
-
 OBJECTS += $(SOURCES_C:.c=.o) $(SOURCES_CXX:.cpp=.o) $(SOURCES_ASM:.S=.o)
 OBJECT_DEPS = $(OBJECTS:.o=.d)
 
 INCDIRS := $(EXTRA_INCLUDES) $(INCFLAGS)
+
+default:
+	$(info CFLAGS: $(PLATFLAGS) $(CFLAGS))
+	$(info -------)
+	$(MAKE) $(TARGET)
 
 all: $(TARGET)
 
@@ -358,5 +365,90 @@ objectclean:
 targetclean:
 	rm -f $(TARGET)
 
-.PHONY: clean
+### generators ###
+gen:
+	mkdir -p sources/gen
+	$(MAKE) gen/build68k
+	$(MAKE) gen/cpudefs.c
 
+	$(MAKE) gen/genlinetoscr gen/genblitter
+	$(MAKE) gen/linetoscr.c gen/blit.h
+
+	$(MAKE) gen/gencpu # gen/gencomp
+	$(MAKE) gen/cpuemu_0.c # gen/compemu.c
+	$(MAKE) genclean
+
+genclean:
+	rm -r sources/gen
+
+### build68k ###
+gen/build68k:
+	$(info Building build68k)
+	$(CC) $(INCDIRS) sources/src/build68k.c sources/src/writelog.c -o sources/gen/build68k$(EXEEXT)
+
+gen/cpudefs.c: sources/gen/build68k$(EXEEXT) sources/src/table68k
+	$(info Generating cpudefs)
+	sources/gen/build68k$(EXEEXT) < sources/src/table68k > sources/src/cpudefs.c
+
+### genlinetoscr ###
+gen/genlinetoscr:
+	$(info Building genlinetoscr)
+	$(CC) $(INCDIRS) sources/src/genlinetoscr.c -o sources/gen/genlinetoscr$(EXEEXT)
+
+gen/linetoscr.c: sources/gen/genlinetoscr$(EXEEXT)
+	$(info Generating linetoscr)
+	sources/gen/genlinetoscr$(EXEEXT) > sources/src/linetoscr.c
+	sources/gen/genlinetoscr$(EXEEXT) -b > sources/src/linetoscr-be.c
+
+### genblitter ###
+gen/genblitter:
+	$(info Building genblitter)
+	$(CC) $(INCDIRS) sources/src/genblitter.c sources/src/blitops.c -o sources/gen/genblitter$(EXEEXT)
+
+gen/blit.h: sources/gen/genblitter$(EXEEXT)
+	$(info Generating blit.h)
+	sources/gen/genblitter$(EXEEXT) i > sources/src/include/blit.h
+	$(info Generating blitfunc.h)
+	sources/gen/genblitter$(EXEEXT) h > sources/src/include/blitfunc.h
+	$(info Generating blitfunc.c)
+	sources/gen/genblitter$(EXEEXT) f > sources/src/blitfunc.c
+	$(info Generating blittable.c)
+	sources/gen/genblitter$(EXEEXT) t > sources/src/blittable.c
+
+### gencpu ###
+gen/gencpu:
+	$(info Building gencpu)
+	$(CC) $(INCDIRS) sources/src/gencpu.c sources/src/cpudefs.c sources/src/readcpu.c sources/src/gen.c -o sources/gen/gencpu$(EXEEXT)
+
+gen/cpuemu_0.c: sources/gen/gencpu$(EXEEXT)
+	$(info Generating cpuemu_*)
+	cd sources/gen && ./gencpu$(EXEEXT)
+	mv sources/gen/cpuemu_0.cpp sources/src/cpuemu_0.c
+	mv sources/gen/cpuemu_11.cpp sources/src/cpuemu_11.c
+	mv sources/gen/cpuemu_13.cpp sources/src/cpuemu_13.c
+	mv sources/gen/cpuemu_20.cpp sources/src/cpuemu_20.c
+	mv sources/gen/cpuemu_21.cpp sources/src/cpuemu_21.c
+	mv sources/gen/cpuemu_22.cpp sources/src/cpuemu_22.c
+	mv sources/gen/cpuemu_23.cpp sources/src/cpuemu_23.c
+	mv sources/gen/cpuemu_24.cpp sources/src/cpuemu_24.c
+	mv sources/gen/cpuemu_31.cpp sources/src/cpuemu_31.c
+	mv sources/gen/cpuemu_32.cpp sources/src/cpuemu_32.c
+	mv sources/gen/cpuemu_33.cpp sources/src/cpuemu_33.c
+	mv sources/gen/cpuemu_34.cpp sources/src/cpuemu_34.c
+	mv sources/gen/cpuemu_35.cpp sources/src/cpuemu_35.c
+	mv sources/gen/cpuemu_40.cpp sources/src/cpuemu_40.c
+	mv sources/gen/cpuemu_50.cpp sources/src/cpuemu_50.c
+	mv sources/gen/cpustbl.cpp sources/src/cpustbl.c
+	mv sources/gen/cputbl.h sources/src/include/cputbl.h
+
+### gencomp ###
+gen/gencomp:
+	$(info Building gencomp)
+	$(CC) $(INCDIRS) sources/src/jit/gencomp.c sources/src/cpudefs.c sources/src/readcpu.c sources/src/gen.c -o sources/gen/gencomp$(EXEEXT)
+
+gen/compemu.c: sources/gen/gencomp$(EXEEXT)
+	sources/gen/gencomp$(EXEEXT)
+
+
+
+.PHONY: all clean objectclean targetclean gen
