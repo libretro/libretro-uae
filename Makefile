@@ -317,13 +317,16 @@ CXXFLAGS += -DUAE -MMD
 
 include Makefile.common
 
-$(info CFLAGS: $(PLATFLAGS) $(CFLAGS))
-$(info -------)
 
 OBJECTS += $(SOURCES_C:.c=.o) $(SOURCES_CXX:.cpp=.o) $(SOURCES_ASM:.S=.o)
 OBJECT_DEPS = $(OBJECTS:.o=.d)
 
 INCDIRS := $(EXTRA_INCLUDES) $(INCFLAGS)
+
+default:
+	$(info CFLAGS: $(PLATFLAGS) $(CFLAGS))
+	$(info -------)
+	$(MAKE) $(TARGET)
 
 all: $(TARGET)
 
