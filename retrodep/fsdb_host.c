@@ -8,7 +8,7 @@
 
 #ifdef USE_LIBRETRO_VFS
 #undef local_to_utf8_string_alloc
-#define local_to_utf8_string_alloc strdup
+#define local_to_utf8_string_alloc my_strdup
 #endif
 
 extern int log_filesys;
@@ -81,12 +81,7 @@ int my_existstype(const char *name, int mode)
 {
 	int ret = 0;
 
-	char *utf8 = NULL;
-#ifdef USE_LIBRETRO_VFS
-	utf8 = my_strdup(name);
-#else
-	utf8 = local_to_utf8_string_alloc(name);
-#endif
+	const char *utf8 = local_to_utf8_string_alloc(name);
 
 	if (path_is_valid(utf8))
 	{
@@ -103,9 +98,6 @@ int my_existstype(const char *name, int mode)
 				break;
 		}
 	}
-
-	free(utf8);
-	utf8 = NULL;
 
 	return ret;
 }
@@ -244,16 +236,10 @@ int my_rename(const TCHAR *oldname, const TCHAR *newname)
 
 struct my_openfile_s *my_open(const TCHAR *name, int flags)
 {
-	char *name_utf8;
+	const char *name_utf8 = local_to_utf8_string_alloc(name);
 
 	if (log_filesys)
 		write_log("my_open '%s' flags=%x\n", name, flags);
-
-#ifdef USE_LIBRETRO_VFS
-	name_utf8 = local_to_utf8_string_alloc(name);
-#else
-	name_utf8 = my_strdup(name);
-#endif
 
 #ifdef FD_OPEN
 	int open_flags = O_BINARY;
@@ -289,8 +275,6 @@ struct my_openfile_s *my_open(const TCHAR *name, int flags)
 	free(fopen_flags);
 	fopen_flags = NULL;
 #endif
-	free(name_utf8);
-	name_utf8 = NULL;
 
 	struct my_openfile_s *mos;
 	mos = xmalloc (struct my_openfile_s, 1);

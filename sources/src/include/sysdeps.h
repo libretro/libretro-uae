@@ -518,10 +518,8 @@ extern int gui_message_multibutton (int flags, const char *format,...);
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #else
-#if 0
+#ifndef HANDLE
 typedef int HANDLE;
-#else
-typedef void* HANDLE;
 #endif
 typedef unsigned long DWORD;
 typedef unsigned short WORD;
@@ -547,11 +545,6 @@ typedef uint8_t uint8;
 
 #ifndef _WIN32
 #define TCHAR char
-#endif
-
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 #endif
 
 #ifdef VITA

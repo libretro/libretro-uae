@@ -15,12 +15,12 @@
 #define FSDB_FILE _T("_UAEFSDB.___")
 #endif
 
+#include "sysconfig.h"
+#include "sysdeps.h"
+
 #ifndef FSDB_DIR_SEPARATOR
 #define FSDB_DIR_SEPARATOR '/'
 #endif
-
-#include "sysconfig.h"
-#include "sysdeps.h"
 
 /* AmigaOS errors */
 #define ERROR_NO_FREE_STORE			103
