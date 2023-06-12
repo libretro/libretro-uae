@@ -4,3 +4,4 @@
 *.a
 
 *.dll
+sources/gen/
