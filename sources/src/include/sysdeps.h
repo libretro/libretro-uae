@@ -699,11 +699,6 @@ typedef uint8_t uint8;
 
 #include "misc.h"
 
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif
-
 #ifdef VITA
 #include <psp2/types.h>
 #include <psp2/io/dirent.h>

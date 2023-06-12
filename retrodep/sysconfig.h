@@ -599,7 +599,18 @@
 #define ftello rftell
 #undef _ftelli64
 #define _ftelli64 rftell
+#else /* NO_LIBRETRO_VFS = 1 */
+#ifndef WIN32
+#undef HANDLE
+#define HANDLE FILE*
 #endif
+#ifndef _fseeki64
+#define _fseeki64 fseeko64
+#endif
+#ifndef _ftelli64
+#define _ftelli64 ftello64
+#endif
+#endif /* USE_LIBRETRO_VFS */
 
 #ifndef PATH_MAX
 #define PATH_MAX    256
