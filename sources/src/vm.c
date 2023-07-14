@@ -28,6 +28,10 @@
 #define HAVE_MAP_32BIT 1
 #endif
 
+#ifndef NATMEM_OFFSET
+extern uae_u8 *natmem_reserved;
+#endif
+
 // #define CLEAR_MEMORY_ON_COMMIT
 
 // #define LOG_ALLOCATIONS

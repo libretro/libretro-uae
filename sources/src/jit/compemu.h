@@ -46,6 +46,8 @@ typedef uae_u32 uintptr;
 #define USE_JIT
 #endif
 
+#define JITPTR (uae_u32)(uintptr)
+
 #ifdef USE_JIT
 
 #ifdef JIT_DEBUG
@@ -74,7 +76,7 @@ struct cpu_history {
 };
 
 union cacheline {
-	cpuop_func* handler;
+	cpuop_func *handler;
 	struct blockinfo_t * bi;
 };
 

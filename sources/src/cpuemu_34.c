@@ -19256,7 +19256,6 @@ uae_u32 REGPARAM2 op_4848_34_ff(uae_u32 opcode)
 	int count_cycles = 0;
 	uae_u32 real_opcode = opcode;
 	uae_u32 srcreg = (real_opcode & 7);
-	m68k_incpci(2);
 	op_illg(opcode);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
@@ -22609,15 +22608,18 @@ uae_u32 REGPARAM2 op_4e72_34_ff(uae_u32 opcode)
 		Exception(8);
 		return 0;
 	}
-	uae_s16 src = get_iword_mmu030c_state(2);
-	uae_u16 sr = src;
+	if (!regs.stopped) {
+		uae_s16 src = get_iword_mmu030c_state(2);
+		regs.ir = src;
+	}
+	uae_u16 sr = regs.ir;
 	regs.sr = sr;
-	MakeFromSR();
-	m68k_setstopped();
-	m68k_incpci(4);
+	checkint();
+	MakeFromSR_STOP();
+	do_cycles_stop(4);
+	m68k_setstopped(1);
 	return (1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4;
 }
-/* 4 0,0   */
 
 /* RTE.L  */
 uae_u32 REGPARAM2 op_4e73_34_ff(uae_u32 opcode)
@@ -22662,7 +22664,6 @@ uae_u32 REGPARAM2 op_4e73_34_ff(uae_u32 opcode)
 		oldsr = newsr;
 		MakeFromSR_T0();
 	}
-	MakeFromSR_intmask(regs.sr, newsr);
 	regs.sr = newsr;
 	MakeFromSR_T0();
 	if (newpc & 1) {

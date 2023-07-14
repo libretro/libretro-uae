@@ -15,6 +15,7 @@
 #include "dongle.h"
 #include "events.h"
 #include "uae.h"
+#include "debug.h"
 
 #define ROBOCOP3 1
 #define LEADERBOARD 2
@@ -28,9 +29,11 @@
 #define LOGISTIX 10
 #define SCALA_RED 11
 #define SCALA_GREEN 12
+#define STRIKERMANAGER 13
+#define MPSOCCERMANAGER 14
 
 static int dflag;
-static unsigned int cycles;
+static frame_time_t cycles;
 
 /*
 RoboCop 3
@@ -92,6 +95,20 @@ Scala MM (Red)
 - 10uF Capacitor between fire button and second button pin
 - Drives firebutton high, then low
 - Polls POTGOR second button pin, it must go low between about 350000-540000 DMA cycles.
+
+Striker Manager
+
+- Writes 0x0F00 to POTGO few times
+- Reads JOY1DAT, expects AND 0x303 == 0x200 or 0x203
+- Reads JOY1DAT in a loop until AND 0x303 == 0x200 or 0x203 (opposite from previous read)
+- Resets the system if wrong value after 200 000 read attemps.
+
+Multi-Player Soccer Manager
+
+- Writes 0x0F00 to POTGO few times
+- Reads JOY1DAT, expects AND 0x303 == 0x301 or 0x302
+- Reads JOY1DAT in a loop until AND 0x303 == 0x301 or 0x302 (opposite from previous read)
+- Resets the system if wrong value after 200 000 read attemps.
 
 */
 
@@ -213,6 +230,30 @@ uae_u16 dongle_joydat (int port, uae_u16 val)
 			val = 0x0303;
 		}
 		break;
+	case STRIKERMANAGER:
+		if (port == 1) {
+			if (dflag >= 4) {
+				val &= ~0x0303;
+				val |= 0x0203;
+				dflag--;
+			} else if (dflag > 0) {
+				val &= ~0x0303;
+				val |= 0x0200;
+			}
+		}
+		break;
+	case MPSOCCERMANAGER:
+		if (port == 1) {
+			if (dflag >= 4) {
+				val &= ~0x0303;
+				val |= 0x0302;
+				dflag--;
+			} else if (dflag > 0) {
+				val &= ~0x0303;
+				val |= 0x0301;
+			}
+		}
+		break;
 	}
 	return val;
 }
@@ -227,6 +268,16 @@ void dongle_potgo (uae_u16 val)
 	case LOGISTIX:
 	case DAMESGRANDMAITRE:
 		dflag = (uaerand () & 7) - 3;
+		break;
+	case STRIKERMANAGER:
+	case MPSOCCERMANAGER:
+		if ((val & 0x0500) == 0x0500) {
+			dflag++;
+		} else {
+			if (dflag > 0) {
+				dflag--;
+			}
+		}
 		break;
 	}
 

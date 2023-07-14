@@ -175,7 +175,7 @@ struct ini_data *ini_load(const TCHAR *path, bool sort)
 	FILE *f = _tfopen(path, _T("rb"));
 	if (!f)
 		return NULL;
-	int v = fread(tmp, 1, sizeof tmp, f);
+	size_t v = fread(tmp, 1, sizeof tmp, f);
 	fclose (f);
 	if (v == 3 && tmp[0] == 0xef && tmp[1] == 0xbb && tmp[2] == 0xbf) {
 		f = _tfopen (path, _T("rt, ccs=UTF-8"));
@@ -416,7 +416,7 @@ bool ini_getdata_multi(struct ini_data *ini, const TCHAR *section, const TCHAR *
 	if (!ini_getstring_multi(ini, section, key, &out2, ctx))
 		return false;
 
-	len = _tcslen(out2);
+	len = uaetcslen(out2);
 	outp = xcalloc(uae_u8, len);
 	if (!outp)
 		goto err;
@@ -573,6 +573,7 @@ bool ini_addstring(struct ini_data *ini, const TCHAR *section, const TCHAR *key,
 
 bool ini_delete(struct ini_data *ini, const TCHAR *section, const TCHAR *key)
 {
+	bool deleted = false;
 	for (int c = 0; c < ini->inilines; c++) {
 		struct ini_line *il = ini->inidata[c];
 		if (il && !_tcsicmp(section, il->section) && (key == NULL || !_tcsicmp(key, il->key))) {
@@ -582,9 +583,8 @@ bool ini_delete(struct ini_data *ini, const TCHAR *section, const TCHAR *key)
 			xfree(il);
 			ini->inidata[c] = NULL;
 			ini->modified = true;
-			return true;
+			deleted = true;
 		}
 	}
-	return false;
+	return deleted;
 }
-

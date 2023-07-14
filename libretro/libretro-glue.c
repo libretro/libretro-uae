@@ -296,14 +296,21 @@ void display_current_image(const char *image, bool inserted)
    imagename_local = NULL;
 }
 
-extern void draw_frame_extras(struct vidbuffer *vb, int y_start, int y_end);
+#include "statusline.h"
+extern void draw_status_line(int monid, int line, int statusy);
 static void retro_draw_frame_extras(void)
 {
    struct amigadisplay *ad = &adisplays[0];
    struct vidbuf_description *vidinfo = &ad->gfxvidinfo;
    struct vidbuffer *vb = &vidinfo->drawbuffer;
 
-   draw_frame_extras(&vidinfo->drawbuffer, -1, -1);
+   int slx, sly;
+   int mult = 1;
+   statusline_getpos(vb->monitor_id, &slx, &sly, vb->outwidth, vb->outheight);
+   for (int i = 0; i < TD_TOTAL_HEIGHT * mult; i++) {
+      int line = sly + i;
+      draw_status_line(vb->monitor_id, line, i);
+   }
 }
 
 void print_statusbar(void)
@@ -575,7 +582,7 @@ void target_save_options (struct zfile* f, struct uae_prefs *p)
 {
 }
 
-int target_parse_option (struct uae_prefs *p, const char *option, const char *value)
+int target_parse_option (struct uae_prefs *p, const char *option, const char *value, int type)
 {
    return 0;
 }
@@ -585,7 +592,6 @@ void target_default_options (struct uae_prefs *p, int type)
    p->start_gui = false;
    p->use_serial = true;
    p->sound_auto = false;
-   p->sound_cdaudio = true;
    p->leds_on_screen = 1;
    p->bogomem.size = 0x00000000;
    p->floppy_auto_ext2 = 2;
@@ -593,8 +599,8 @@ void target_default_options (struct uae_prefs *p, int type)
    p->floppyslots[1].dfxtype = DRV_NONE;
    p->lightpen_crosshair = false;
 
-   p->jports[0].id = JSEM_MICE;
-   p->jports[1].id = JSEM_JOYS;
+   p->jports[0].jd[0].id = JSEM_MICE;
+   p->jports[1].jd[0].id = JSEM_JOYS;
 
    p->gfx_monitor[0].gfx_size_fs.width  = EMULATOR_MAX_WIDTH;
    p->gfx_monitor[0].gfx_size_fs.height = EMULATOR_MAX_HEIGHT;

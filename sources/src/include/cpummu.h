@@ -42,16 +42,7 @@
 #endif
 
 #define DUNUSED(x)
-#ifndef D
 #define D
-#endif
-#ifndef bug
-#if DEBUG
-#define bug write_log
-#else
-#define bug
-#endif
-#endif
 
 static __inline void flush_internals (void) { }
 

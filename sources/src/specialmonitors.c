@@ -2293,7 +2293,7 @@ static uae_u8 get_noise(void)
 struct png_cb
 {
 	uae_u8 *ptr;
-	int size;
+	size_t size;
 };
 
 static void /*__cdecl*/ readcallback(png_structp png_ptr, png_bytep out, png_size_t count)
@@ -2409,7 +2409,7 @@ end:
 static bool load_genlock_image(void) { return false; }
 #endif
 
-static bool do_genlock(struct vidbuffer *src, struct vidbuffer *dst, bool doublelines, int oddlines)
+static bool do_genlock(struct vidbuffer *src, struct vidbuffer *dst, bool doublelines, int oddlines, bool zclken)
 {
 	struct vidbuf_description *avidinfo = &adisplays[dst->monitor_id].gfxvidinfo;
 
@@ -2602,6 +2602,7 @@ skip:
 		if (yoff >= src->inheight)
 			continue;
 
+		bool ztoggle = false;
 		uae_u8 *line = src->bufmem + yoff * src->rowbytes;
 		uae_u8 *lineprev = yoff > 0 ? src->bufmem + (yoff - 1) * src->rowbytes : NULL;
 		uae_u8 *dstline = dst->bufmem + ((y * 2 + oddlines) - dst->yoffset) * dst->rowbytes;
@@ -2616,10 +2617,11 @@ skip:
 		uae_u8 *s = line;
 		uae_u8 *d = dstline;
 		uae_u8 *s_genlock = line_genlock;
+		int hwidth = 0;
 		for (x = 0; x < src->inwidth; x++) {
 			uae_u8 *s2 = s + src->rowbytes;
 			uae_u8 *d2 = d + dst->rowbytes;
-			if (is_transparent(*s_genlock)) {
+			if ((!zclken && is_transparent(*s_genlock)) || (zclken && ztoggle)) {
 				a = amix2;
 				if (genlock_error) {
 					r = 0x00;
@@ -2652,6 +2654,12 @@ skip:
 			s += src->pixbytes;
 			d += dst->pixbytes;
 			s_genlock++;
+			// ZCLKEN hires pixel clock
+			hwidth += 1 << currprefs.gfx_resolution;
+			if (hwidth >= 2) {
+				hwidth = 0;
+				ztoggle = !ztoggle;
+			}
 		}
 	}
 
@@ -2659,25 +2667,25 @@ skip:
 	return true;
 }
 
-bool emulate_genlock(struct vidbuffer *src, struct vidbuffer *dst)
+bool emulate_genlock(struct vidbuffer *src, struct vidbuffer *dst, bool zclken)
 {
 	bool v;
 	if (interlace_seen) {
 		if (currprefs.gfx_iscanlines) {
-			v = do_genlock(src, dst, false, lof_store ? 0 : 1);
+			v = do_genlock(src, dst, false, lof_store ? 0 : 1, zclken);
 			if (v && currprefs.gfx_iscanlines > 1)
 				blank_generic(src, dst, lof_store ? 1 : 0);
 		} else {
-			v = do_genlock(src, dst, false, 0);
-			v |= do_genlock(src, dst, false, 1);
+			v = do_genlock(src, dst, false, 0, zclken);
+			v |= do_genlock(src, dst, false, 1, zclken);
 		}
 	} else {
 		if (currprefs.gfx_pscanlines) {
-			v = do_genlock(src, dst, false, lof_store ? 0 : 1);
+			v = do_genlock(src, dst, false, lof_store ? 0 : 1, zclken);
 			if (v && currprefs.gfx_pscanlines >= 2)
-				do_genlock(src, dst, false, lof_store ? 1 : 0);
+				do_genlock(src, dst, false, lof_store ? 1 : 0, zclken);
 		} else {
-			v = do_genlock(src, dst, true, 0);
+			v = do_genlock(src, dst, true, 0, zclken);
 		}
 	}
 	return v;
@@ -3638,7 +3646,7 @@ bool specialmonitor_need_genlock(void)
 	case MONITOREMU_COLORBURST:
 	return true;
 	}
-	if (currprefs.genlock_image && currprefs.genlock)
+	if (currprefs.genlock_image && (currprefs.genlock || currprefs.genlock_effects))
 		return true;
 	return false;
 }

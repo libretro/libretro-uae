@@ -512,13 +512,21 @@ void branch_stack_pop_rts(uaecptr oldpc)
 
 void branch_stack_push(uaecptr oldpc, uaecptr newpc)
 {
-	if (!stackframes)
+	if (!stackframes) {
 		return;
+	}
 	if (!stackframemode) {
-		if (debug_waiting || (!regs.s && get_long_host(exec_thistask) != debug_task))
+		if (debug_waiting || (!regs.s && get_long_host(exec_thistask) != debug_task)) {
 			return;
+		}
 	}
 	int cnt = regs.s ? stackframecntsuper : stackframecnt;
+	if (cnt >= MAX_STACKFRAMES) {
+		write_log(_T("Stack frame %c max limit reached!\n"), regs.s ? 'S' : 'U');
+		stackframecntsuper = 0;
+		stackframecnt = 0;
+		return;
+	}
 	struct debugstackframe *sf = regs.s ? &stackframessuper[cnt] : &stackframes[cnt];
 	sf->current_pc = regs.instruction_pc;
 	sf->next_pc = newpc;
@@ -1160,7 +1168,7 @@ static bool loadcodefiledata(struct debugcodefile *cf)
 				s[MAX_SOURCELINELEN] = 0;
 			}
 			cf->lineptr[linecnt++] = s;
-			int len = strlen((char*)s);
+			int len = uaestrlen((char*)s);
 			if (len > 0 && s[len - 1] == 13)
 				s[len - 1] = 0;
 		}
@@ -1574,6 +1582,9 @@ static uae_u8 *loadhunkfile(uae_u8 *file, int filelen, uae_u32 seglist, int segm
 					int relochunk = gl(p);
 					p += 4;
 					if (relochunk > last) {
+						xfree(hunkoffsets);
+						xfree(hunklens);
+						xfree(out);
 						return 0;
 					}
 					uaecptr hunkptr = hunkoffsets[relochunk] + relocate_base;
@@ -2035,7 +2046,7 @@ static bool debugger_load_fd(void)
 			if (!zfile_fgetsa(line, sizeof(line), zf))
 				break;
 			for (;;) {
-				int len = strlen(line);
+				int len = uaestrlen(line);
 				if (len < 1)
 					break;
 				char c = line[len - 1];
@@ -2983,9 +2994,13 @@ static uae_u8 *loadelffile(uae_u8 *file, int filelen, uae_u8 *dbgfile, int debug
 #endif
 
 end:
-	xfree(lelfs);
+	
 	if (startp && startseg >= 0)
-		*startp = lelfs[startseg].dma->start;
+		if (lelfs)
+			*startp = lelfs[startseg].dma->start;
+
+	xfree(lelfs);
+
 	if (parentidp)
 		*parentidp = parentid;
 	return outp;
@@ -3567,7 +3582,7 @@ bool debugmem_get_symbol_value(const TCHAR *name, uae_u32 *valp)
 {
 	for (int i = 0; i < libnamecnt; i++) {
 		struct libname *libname = &libnames[i];
-		int lnlen = _tcslen(libname->name);
+		int lnlen = uaetcslen(libname->name);
 		// "libname/lvoname"?
 		if (!_tcsnicmp(name, libname->name, lnlen) && _tcslen(name) > lnlen + 1 && name[lnlen] == '/') {
 			for (int j = 0; j < libsymbolcnt; j++) {
@@ -3651,11 +3666,11 @@ int debugmem_get_symbol(uaecptr addr, TCHAR *out, int maxsize)
 				}
 #endif
 
-				if (maxsize > _tcslen(txt)) {
+				if (maxsize > uaetcslen(txt)) {
 					if (found)
 						_tcscat(out, _T("\n"));
 					_tcscat(out, txt);
-					maxsize -= _tcslen(txt);
+					maxsize -= uaetcslen(txt);
 				}
 			}
 			found = i + 1;
@@ -3728,9 +3743,9 @@ int debugmem_get_sourceline(uaecptr addr, TCHAR *out, int maxsize)
 					TCHAR txt[256];
 					last_codefile = cf;
 					_stprintf(txt, _T("Source file: %s\n"), cf->name);
-					if (maxsize > _tcslen(txt)) {
+					if (maxsize > uaetcslen(txt)) {
 						_tcscat(out, txt);
-						maxsize -= _tcslen(txt);
+						maxsize -= uaetcslen(txt);
 					}
 				}
 				if (lastline - line > 10)
@@ -3738,10 +3753,10 @@ int debugmem_get_sourceline(uaecptr addr, TCHAR *out, int maxsize)
 				for (int j = line; j < lastline; j++) {
 					TCHAR txt[256];
 					TCHAR *s = au((uae_char*)cf->lineptr[j]);
-					if (maxsize > 6 + _tcslen(s) + 2) {
+					if (maxsize > 6 + uaetcslen(s) + 2) {
 						_stprintf(txt, _T("%5d %s\n"), j, s);
 						_tcscat(out, txt);
-						maxsize -= _tcslen(txt) + 2;
+						maxsize -= uaetcslen(txt) + 2;
 					}
 					xfree(s);
 				}

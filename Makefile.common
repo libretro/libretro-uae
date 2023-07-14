@@ -140,6 +140,7 @@ SOURCES_C += \
 	$(EMU)/uaenet.c \
 	$(EMU)/uaeresource.c \
 	$(EMU)/uaeserial.c \
+	$(EMU)/vm.c \
 	$(EMU)/writelog.c \
 	$(EMU)/x86.c \
 	$(EMU)/zfile.c \

@@ -9,6 +9,8 @@ extern volatile bool cd_audio_mode_changed;
 class cda_audio {
 private:
     int bufsize;
+    int num_sectors;
+	int sectorsize;
     int volume[2];
     bool playing;
     bool active;
@@ -16,10 +18,8 @@ private:
 
 public:
     uae_u8 *buffers[2];
-    int num_sectors;
-	int sectorsize;
 
-	cda_audio(int num_sectors, int sectorsize, int samplerate, bool internalmode);
+	cda_audio(int num_sectors, int sectorsize, int samplerate);
 	~cda_audio();
 	void setvolume(int left, int right);
 	bool play(int bufnum);
@@ -48,7 +48,7 @@ extern bool cda_audio_play;
 extern int cda_audio_wait;
 extern bool cda_audio_isplaying;
 
-extern void cda_new(int num_sectors, int sectorsize, int samplerate, bool internalmode);
+extern void cda_new(int num_sectors, int sectorsize, int samplerate);
 extern void cda_delete(void);
 extern void cda_setvolume(int left, int right);
 extern bool cda_play(int bufnum);

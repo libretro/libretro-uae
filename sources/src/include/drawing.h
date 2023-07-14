@@ -125,23 +125,25 @@ STATIC_INLINE int coord_window_to_diw_x(int x)
 #define CE_EXTBLANKSET 3
 #define CE_SHRES_DELAY_SHIFT 8
 
-STATIC_INLINE bool ce_is_borderblank(uae_u8 data)
+STATIC_INLINE bool ce_is_borderblank(uae_u16 data)
 {
 	return (data & (1 << CE_BORDERBLANK)) != 0;
 }
-STATIC_INLINE bool ce_is_extblankset(uae_u8 data)
+STATIC_INLINE bool ce_is_extblankset(uae_u16 data)
 {
 	return (data & (1 << CE_EXTBLANKSET)) != 0;
 }
-STATIC_INLINE bool ce_is_bordersprite(uae_u8 data)
+STATIC_INLINE bool ce_is_bordersprite(uae_u16 data)
 {
 	return (data & (1 << CE_BORDERSPRITE)) != 0;
 }
-STATIC_INLINE bool ce_is_borderntrans(uae_u8 data)
+STATIC_INLINE bool ce_is_borderntrans(uae_u16 data)
 {
 	return (data & (1 << CE_BORDERNTRANS)) != 0;
 }
 
+#define VB_VB 0x20 // vblank
+#define VB_VS 0x10 // vsync
 #define VB_XBORDER 0x08 // forced border color or bblank
 #define VB_XBLANK 0x04 // forced bblank
 #define VB_PRGVB 0x02 // programmed vblank
@@ -239,8 +241,7 @@ STATIC_INLINE void color_reg_cpy (struct color_entry *dst, struct color_entry *s
 
 #define COLOR_CHANGE_BRDBLANK 0x80000000
 #define COLOR_CHANGE_SHRES_DELAY 0x40000000
-#define COLOR_CHANGE_HSYNC_HACK 0x20000000
-#define COLOR_CHANGE_BLANK 0x10000000
+#define COLOR_CHANGE_BLANK 0x20000000
 #define COLOR_CHANGE_ACTBORDER (COLOR_CHANGE_BLANK | COLOR_CHANGE_BRDBLANK)
 #define COLOR_CHANGE_MASK 0xf0000000
 struct color_change {
@@ -259,7 +260,7 @@ struct color_change {
 #define MAXVPOS_WRAPLINES 10
 
 /* No divisors for MAX_PIXELS_PER_LINE; we support AGA and SHRES sprites */
-#define MAX_SPR_PIXELS (((MAXVPOS + MAXVPOS_WRAPLINES) * 2 + 1) * MAX_PIXELS_PER_LINE)
+#define MAX_SPR_PIXELS ((((MAXVPOS + MAXVPOS_WRAPLINES) * 2 + 1) * MAX_PIXELS_PER_LINE) / 4)
 
 struct sprite_entry
 {
@@ -286,7 +287,7 @@ extern uae_u16 spixels[MAX_SPR_PIXELS * 2];
 #endif
 
 /* Way too much... */
-#define MAX_REG_CHANGE ((MAXVPOS + MAXVPOS_WRAPLINES) * 2 * MAXHPOS)
+#define MAX_REG_CHANGE ((MAXVPOS + MAXVPOS_WRAPLINES) * 2 * MAXHPOS / 2)
 
 extern struct color_entry *curr_color_tables, *prev_color_tables;
 
@@ -357,14 +358,14 @@ enum nln_how {
 };
 
 extern void hsync_record_line_state (int lineno, enum nln_how, int changed);
-extern void vsync_handle_redraw (int long_field, int lof_changed, uae_u16, uae_u16, bool drawlines);
+extern void vsync_handle_redraw (int long_field, int lof_changed, uae_u16, uae_u16, bool drawlines, bool initial);
 extern bool vsync_handle_check (void);
 extern void draw_lines(int end, int section);
 extern void init_hardware_for_drawing_frame (void);
 extern void reset_drawing (void);
 extern void drawing_init (void);
-extern bool notice_interlace_seen (bool);
-extern void notice_resolution_seen (int, bool);
+extern bool notice_interlace_seen(int, bool);
+extern void notice_resolution_seen(int, bool);
 extern bool frame_drawn (int monid);
 extern void redraw_frame(void);
 extern void full_redraw_all(void);
@@ -376,7 +377,7 @@ extern void check_custom_limits (void);
 extern void get_custom_topedge (int *x, int *y, bool max);
 extern void get_custom_raw_limits (int *pw, int *ph, int *pdx, int *pdy);
 void get_custom_mouse_limits (int *pw, int *ph, int *pdx, int *pdy, int dbl);
-extern void putpixel (uae_u8 *buf, uae_u8 *genlockbuf, int bpp, int x, xcolnr c8, int opaq);
+extern void putpixel (uae_u8 *buf, uae_u8 *genlockbuf, int bpp, int x, xcolnr c8);
 extern void allocvidbuffer(int monid, struct vidbuffer *buf, int width, int height, int depth);
 extern void freevidbuffer(int monid, struct vidbuffer *buf);
 extern void check_prefs_picasso(void);

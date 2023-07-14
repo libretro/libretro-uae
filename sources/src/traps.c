@@ -234,7 +234,7 @@ struct TrapContext
 	volatile bool trap_done;
 	uae_u32 calllib_regs[16];
 	uae_u8 calllib_reg_inuse[16];
-	int tindex;
+	size_t tindex;
 	int tcnt;
 	TRAP_CALLBACK callback;
 	void *callback_ud;
@@ -574,9 +574,9 @@ static void hardware_trap_ack(TrapContext *ctx)
 static void hardware_trap_thread(void *arg)
 {
 #if 0
-	int tid = (uae_u32)arg;
+	size_t tid = (size_t)arg;
 #else
-	int tid = *((int*)arg);
+	size_t tid = *((size_t*)arg);
 #endif
 	for (;;) {
 		TrapContext *ctx = (TrapContext*)read_comm_pipe_pvoid_blocking(&trap_thread_pipe[tid]);
@@ -824,7 +824,7 @@ void init_traps(void)
 {
 	trap_count = 0;
 	if (!trap_thread_id[0] && trap_is_indirect()) {
-		for (int i = 0; i < TRAP_THREADS; i++) {
+		for (size_t i = 0; i < TRAP_THREADS; i++) {
 			init_comm_pipe(&trap_thread_pipe[i], 100, 1);
 			hardware_trap_kill[i] = 1;
 #if 0
@@ -1075,6 +1075,16 @@ void trap_put_long(TrapContext *ctx, uaecptr addr, uae_u32 v)
 		put_long(addr, v);
 	}
 }
+void trap_put_longt(TrapContext* ctx, uaecptr addr, size_t v)
+{
+	if (trap_is_indirect_null(ctx)) {
+		call_hardware_trap_back(ctx, TRAPCMD_PUT_LONG, addr, (uae_u32)v, 0, 0);
+	}
+	else {
+		put_long(addr, (uae_u32)v);
+	}
+}
+
 void trap_put_word(TrapContext *ctx, uaecptr addr, uae_u16 v)
 {
 	if (trap_is_indirect_null(ctx)) {

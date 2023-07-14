@@ -28,6 +28,7 @@ void free_shm (void);
 bool preinit_shm (void);
 extern bool canbang;
 extern bool jit_direct_compatible_memory;
+extern uaecptr highest_ram;
 
 #define Z3BASE_UAE 0x10000000
 #define Z3BASE_REAL 0x40000000
@@ -49,7 +50,7 @@ typedef void (REGPARAM3 *mem_put_func)(uaecptr, uae_u32) REGPARAM;
 typedef uae_u8 *(REGPARAM3 *xlate_func)(uaecptr) REGPARAM;
 typedef int (REGPARAM3 *check_func)(uaecptr, uae_u32) REGPARAM;
 
-extern uae_u32 max_z3fastmem;
+extern uae_u32 max_z3fastmem, max_physmem;
 
 extern uae_u32 wait_cpu_cycle_read (uaecptr addr, int mode);
 extern void wait_cpu_cycle_write (uaecptr addr, int mode, uae_u32 v);
@@ -109,7 +110,9 @@ enum
 #define ABFLAG_CACHE_ENABLE_ALL (ABFLAG_CACHE_ENABLE_BOTH | ABFLAG_CACHE_ENABLE_INS_BURST | ABFLAG_CACHE_ENABLE_DATA_BURST)
 
 typedef struct addrbank {
-	/* These ones should be self-explanatory... */
+	/* These ones should be self-explanatory...
+	 * Do not move. JIT depends on it
+	 */
 	mem_get_func lget, wget, bget;
 	mem_put_func lput, wput, bput;
 	/* Use xlateaddr to translate an Amiga address to a uae_u8 * that can
@@ -145,6 +148,8 @@ typedef struct addrbank {
 	uae_u8 *baseaddr_direct_r;
 	uae_u8 *baseaddr_direct_w;
 	uae_u32 startaccessmask;
+	bool barrier;
+	uae_u32 protectmode;
 } addrbank;
 
 #define MEMORY_MIN_SUBBANK 1024
@@ -439,7 +444,8 @@ extern addrbank debugmem_bank;
 extern addrbank a3000lmem_bank;
 extern addrbank a3000hmem_bank;
 extern addrbank extendedkickmem_bank;
-extern addrbank extendedkickmem2_bank;
+extern addrbank extendedkickmem2a_bank;
+extern addrbank extendedkickmem2b_bank;
 extern addrbank custmem1_bank;
 extern addrbank custmem2_bank;
 extern addrbank romboardmem_bank[MAX_ROM_BOARDS];
@@ -530,6 +536,7 @@ extern bool read_kickstart_version(struct uae_prefs *p);
 extern void chipmem_setindirect(void);
 extern void initramboard(addrbank *ab, struct ramboard *rb);
 extern void loadboardfile(addrbank *ab, struct boardloadfile *lf);
+extern void mman_set_barriers(bool);
 
 uae_u32 memory_get_long(uaecptr);
 uae_u32 memory_get_word(uaecptr);

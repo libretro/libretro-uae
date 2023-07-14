@@ -25,7 +25,9 @@
 #include "sounddep/sound.h"
 #include "events.h"
 #include "savestate.h"
+#ifdef DRIVESOUND
 #include "driveclick.h"
+#endif
 #include "zfile.h"
 #include "uae.h"
 #include "gui.h"
@@ -50,6 +52,7 @@
 #define DEBUG_CHANNEL_MASK 15
 #define TEST_AUDIO 0
 #define TEST_MISSED_DMA 0
+#define TEST_MANUAL_AUDIO 0
 
 #define PERIOD_MIN 4
 #define PERIOD_MIN_NONCE 60
@@ -116,7 +119,7 @@ static float firmem[2 * FIR_WIDTH + 1];
 
 struct audio_channel_data
 {
-	unsigned int evtime;
+	uae_u32 evtime;
 	bool dmaenstore;
 	bool intreq2;
 	int irqcheck;
@@ -127,6 +130,9 @@ struct audio_channel_data
 	bool dat_written;
 #if TEST_MISSED_DMA
 	bool dat_loaded;
+#endif
+#if TEST_MANUAL_AUDIO
+	bool mdat_loaded;
 #endif
 	uaecptr lc, pt;
 	int state;
@@ -214,7 +220,7 @@ static void namesplit (TCHAR *s)
 {
 	int l;
 
-	l = _tcslen (s) - 1;
+	l = uaetcslen(s) - 1;
 	while (l >= 0) {
 		if (s[l] == '.')
 			s[l] = 0;
@@ -274,7 +280,7 @@ void audio_sampleripper (int mode)
 				convertsample (rs->sample, rs->len);
 				zfile_fwrite (rs->sample, rs->len, 1, wavfile);
 				convertsample (rs->sample, rs->len);
-				write_wavheader (wavfile, zfile_ftell(wavfile), freq);
+				write_wavheader (wavfile, zfile_ftell32(wavfile), freq);
 				zfile_fclose (wavfile);
 				write_log (_T("SAMPLERIPPER: %d: %dHz %d bytes\n"), cnt, freq, rs->len);
 			} else {
@@ -1392,12 +1398,10 @@ static void audio_event_reset (void)
 
 	last_cycles = get_cycles ();
 	next_sample_evtime = scaled_sample_evtime;
-	if (!isrestore ()) {
-		for (i = 0; i < AUDIO_CHANNELS_PAULA; i++)
-			zerostate (i);
-		for (i = 0; i < audio_total_extra_streams; i++)
-			audio_stream[i].evtime = MAX_EV;
-	}
+	for (i = 0; i < AUDIO_CHANNELS_PAULA; i++)
+		zerostate (i);
+	for (i = 0; i < audio_total_extra_streams; i++)
+		audio_stream[i].evtime = MAX_EV;
 	schedule_audio ();
 	events_schedule ();
 	samplecnt = 0;
@@ -1421,9 +1425,11 @@ int audio_activate (void)
 	int ret = 0;
 
 	if (!audio_work_to_do) {
-		restart_sound_buffer ();
+		restart_sound_buffer();
 		ret = 1;
-		audio_event_reset ();
+		if (!isrestore()) {
+			audio_event_reset();
+		}
 	}
 	audio_work_to_do = 4 * maxvpos_nom * 50;
 	return ret;
@@ -1444,55 +1450,46 @@ static void update_volume(int nr, uae_u16 v)
 	cdp->data.audvol = v;
 }
 
-uae_u16 audio_dmal (void)
+uae_u16 audio_dmal(void)
 {
 	uae_u16 dmal = 0;
 	for (int nr = 0; nr < AUDIO_CHANNELS_PAULA; nr++) {
 		struct audio_channel_data *cdp = audio_channel + nr;
 		if (cdp->dr)
-			dmal |= 1 << (nr * 2);
-		if (cdp->dsr)
 			dmal |= 1 << (nr * 2 + 1);
+		if (cdp->dsr)
+			dmal |= 1 << (nr * 2 + 0);
 		cdp->dr = cdp->dsr = false;
 	}
 	return dmal;
 }
 
-static int isirq (int nr)
+static int isirq(int nr)
 {
-	return INTREQR () & (0x80 << nr);
+	return INTREQR() & (0x80 << nr);
 }
 
-static void audio_setirq_event(uae_u32 nr)
-{
-	INTREQ_0 (0x8000 | (0x80 << nr));
-}
-
-static void setirq (int nr, int which)
+static void setirq(int nr, int which)
 {
 #if DEBUG_AUDIO > 0
 	struct audio_channel_data *cdp = audio_channel + nr;
-	if (debugchannel (nr) && cdp->wlen > 1)
+	if (debugchannel (nr))
 		write_log (_T("SETIRQ%d (%d,%d) PC=%08X\n"), nr, which, isirq (nr) ? 1 : 0, M68K_GETPC);
 #endif
-	// audio interrupts are delayed by 2 cycles
-	if (!currprefs.cachesize && currprefs.cpu_compatible) {
-		event2_newevent_xx (-1, 2 * CYCLE_UNIT + CYCLE_UNIT / 2, nr, audio_setirq_event);
-	} else {
-		audio_setirq_event(nr);
-	}
+	// audio interrupts are delayed by 1 CCK
+	INTREQ_INT(nr + 7, CYCLE_UNIT);
 }
 
-static void newsample (int nr, sample8_t sample)
+static void newsample(int nr, sample8_t sample)
 {
 	struct audio_channel_data *cdp = audio_channel + nr;
 #if DEBUG_AUDIO > 0
-	if (!debugchannel (nr))
+	if (!debugchannel(nr))
 		sample = 0;
 #endif
 #if DEBUG_AUDIO > 2
-	if (debugchannel (nr))
-		write_log (_T("SAMPLE%d: %02x\n"), nr, sample & 0xff);
+	if (debugchannel(nr))
+		write_log(_T("SAMPLE%d: %02x\n"), nr, sample & 0xff);
 #endif
 	if (!(audio_channel_mask & (1 << nr)))
 		sample = 0;
@@ -1504,7 +1501,7 @@ static void newsample (int nr, sample8_t sample)
 	}
 }
 
-static void setdsr(uae_u32 v)
+void event_setdsr(uae_u32 v)
 {
 	struct audio_channel_data* cdp = audio_channel + v;
 	cdp->dsr = true;
@@ -1527,9 +1524,9 @@ static void setdr(int nr, bool startup)
 
 		if (!startup && cdp->wlen == 1) {
 			if (!currprefs.cachesize && (cdp->per < PERIOD_LOW * CYCLE_UNIT || currprefs.cpu_compatible)) {
-				event2_newevent_xx(-1, 1 * CYCLE_UNIT, nr, setdsr);
+				event2_newevent_xx(-1, 1 * CYCLE_UNIT, nr, event_setdsr);
 			} else {
-				setdsr(nr);
+				event_setdsr(nr);
 			}
 #if DEBUG_AUDIO > 0
 			if (debugchannel(nr))
@@ -1582,6 +1579,12 @@ static void loaddat (int nr, bool modper)
 		cdp->dat2 = cdp->dat;
 	}
 
+#if TEST_MANUAL_AUDIO
+	if (!cdp->mdat_loaded) {
+		write_log("Missed manual AUD%dDAT\n", nr);
+	}
+	cdp->mdat_loaded = false;
+#endif
 #if TEST_MISSED_DMA
 	if (!cdp->dat_loaded) {
 		write_log("Missed DMA %d\n", nr);
@@ -1598,6 +1601,11 @@ static void loadper1(int nr)
 {
 	struct audio_channel_data *cdp = audio_channel + nr;
 	cdp->evtime = 1 * CYCLE_UNIT;
+#if DEBUG_AUDIO2 > 0
+	if (debugchannel(nr)) {
+		write_log(_T("LOADPERP%d: %d\n"), nr, cdp->evtime / CYCLE_UNIT);
+	}
+#endif
 }
 
 static void loadperm1(int nr)
@@ -1609,6 +1617,11 @@ static void loadperm1(int nr)
 	} else {
 		cdp->evtime = 65536 * CYCLE_UNIT + cdp->per;
 	}
+#if DEBUG_AUDIO2 > 0
+	if (debugchannel(nr)) {
+		write_log(_T("LOADPERM%d: %d\n"), nr, cdp->evtime / CYCLE_UNIT);
+	}
+#endif
 }
 
 static void loadper (int nr)
@@ -1619,6 +1632,11 @@ static void loadper (int nr)
 	cdp->data.mixvol = cdp->data.audvol;
 	if (cdp->evtime < CYCLE_UNIT)
 		write_log (_T("LOADPER%d bug %d\n"), nr, cdp->evtime);
+#if DEBUG_AUDIO2 > 0
+	if (debugchannel(nr)) {
+		write_log(_T("LOADPER%d: %d\n"), nr, cdp->evtime / CYCLE_UNIT);
+	}
+#endif
 }
 
 
@@ -1985,7 +2003,6 @@ static int sound_prefs_changed (void)
 		|| changed_prefs.sound_volume_board != currprefs.sound_volume_board
 		|| changed_prefs.sound_stereo_swap_paula != currprefs.sound_stereo_swap_paula
 		|| changed_prefs.sound_stereo_swap_ahi != currprefs.sound_stereo_swap_ahi
-		|| changed_prefs.sound_cdaudio != currprefs.sound_cdaudio
 		|| changed_prefs.sound_filter != currprefs.sound_filter
 		|| changed_prefs.sound_filter_type != currprefs.sound_filter_type)
 		return -1;
@@ -2023,7 +2040,7 @@ void check_prefs_changed_audio (void)
 		ch = sound_prefs_changed ();
 		if (ch > 0) {
 #ifdef AVIOUTPUT
-			AVIOutput_Restart ();
+			AVIOutput_Restart(true);
 #endif
 			clear_sound_buffers ();
 		}
@@ -2073,7 +2090,6 @@ void set_audio (void)
 	currprefs.sound_volume_master = changed_prefs.sound_volume_master;
 	currprefs.sound_volume_board = changed_prefs.sound_volume_board;
 	currprefs.sound_volume_cd = changed_prefs.sound_volume_cd;
-	currprefs.sound_cdaudio = changed_prefs.sound_cdaudio;
 	currprefs.sound_stereo_swap_paula = changed_prefs.sound_stereo_swap_paula;
 	currprefs.sound_stereo_swap_ahi = changed_prefs.sound_stereo_swap_ahi;
 
@@ -2393,7 +2409,7 @@ void audio_hsync (void)
 	previous_volcnt_update = 0;
 }
 
-static void audxdat_func(uae_u32 v)
+void event_audxdat_func(uae_u32 v)
 {
 	int nr = v & 3;
 	int chan_ena = (v & 0x80) != 0;
@@ -2419,6 +2435,12 @@ static void audxdat_func(uae_u32 v)
 		} else {
 			cdp->dat = v >> 8;
 			cdp->dat_written = true;
+#if TEST_MANUAL_AUDIO
+			if (cdp->mdat_loaded) {
+				write_log("CH%d double load\n", nr);
+			}
+			cdp->mdat_loaded = true;
+#endif
 		}
 	} else {
 		cdp->dat = v >> 8;
@@ -2432,7 +2454,7 @@ static void audxdat_func(uae_u32 v)
 	cdp->dat_written = false;
 }
 
-void AUDxDAT_addr (int nr, uae_u16 v, uaecptr addr)
+void AUDxDAT_addr(int nr, uae_u16 v, uaecptr addr)
 {
 	struct audio_channel_data *cdp = audio_channel + nr;
 	int chan_ena = (dmacon & DMA_MASTER) && (dmacon & (1 << nr));
@@ -2464,30 +2486,26 @@ void AUDxDAT_addr (int nr, uae_u16 v, uaecptr addr)
 	}
 	uae_u32 vv = nr | (chan_ena ? 0x80 : 0) | (v << 8);
 	if (!currprefs.cachesize && (cdp->per < PERIOD_LOW * CYCLE_UNIT || currprefs.cpu_compatible)) {
-		int cyc;
+		int cyc = 0;
 		if (chan_ena) {
-			// AUDxLEN is processed after 2 cycle delay
-			cyc = 2 * CYCLE_UNIT;
-		} else if (cdp->state == 0) {
-			cyc = 1 * CYCLE_UNIT;
-		} else {
+			// AUDxLEN is processed after 1 CCK delay
 			cyc = 1 * CYCLE_UNIT;
 		}
 		if (cyc > 0) {
-			event2_newevent_xx(-1, cyc, vv, audxdat_func);
+			event2_newevent_xx(-1, cyc, vv, event_audxdat_func);
 		} else {
-			audxdat_func(vv);
+			event_audxdat_func(vv);
 		}
 	} else {
-		audxdat_func(vv);
+		event_audxdat_func(vv);
 	}
 }
-void AUDxDAT (int nr, uae_u16 v)
+void AUDxDAT(int nr, uae_u16 v)
 {
-	AUDxDAT_addr (nr, v, 0xffffffff);
+	AUDxDAT_addr(nr, v, 0xffffffff);
 }
 
-uaecptr audio_getpt (int nr, bool reset)
+uaecptr audio_getpt(int nr, bool reset)
 {
 	struct audio_channel_data *cdp = audio_channel + nr;
 	uaecptr p = cdp->pt;
@@ -2495,14 +2513,14 @@ uaecptr audio_getpt (int nr, bool reset)
 	if (reset)
 		cdp->pt = cdp->lc;
 	cdp->ptx_tofetch = false;
-	return p;
+	return p & ~1;
 }
 
-void AUDxLCH (int nr, uae_u16 v)
+void AUDxLCH(int nr, uae_u16 v)
 {
 	struct audio_channel_data *cdp = audio_channel + nr;
-	audio_activate ();
-	update_audio ();
+	audio_activate();
+	update_audio();
 
 	// someone wants to update PT but DSR has not yet been processed.
 	// too fast CPU and some tracker players: enable DMA, CPU delay, update AUDxPT with loop position
@@ -2531,11 +2549,11 @@ void AUDxLCH (int nr, uae_u16 v)
 	}
 }
 
-void AUDxLCL (int nr, uae_u16 v)
+void AUDxLCL(int nr, uae_u16 v)
 {
 	struct audio_channel_data *cdp = audio_channel + nr;
-	audio_activate ();
-	update_audio ();
+	audio_activate();
+	update_audio();
 	if (usehacks() && ((cdp->ptx_tofetch && cdp->state == 1) || cdp->ptx_written)) {
 #ifdef __LIBRETRO__
 		static int warned = 1;
@@ -2696,6 +2714,11 @@ void restore_audio_finish (void)
 	events_schedule ();
 }
 
+void restore_audio_start(void)
+{
+	audio_event_reset();
+}
+
 uae_u8 *restore_audio (int nr, uae_u8 *src)
 {
 	struct audio_channel_data *acd = audio_channel + nr;
@@ -2730,7 +2753,7 @@ uae_u8 *restore_audio (int nr, uae_u8 *src)
 	return src;
 }
 
-uae_u8 *save_audio (int nr, int *len, uae_u8 *dstptr)
+uae_u8 *save_audio (int nr, size_t *len, uae_u8 *dstptr)
 {
 	struct audio_channel_data *acd = audio_channel + nr;
 	uae_u8 *dst, *dstbak;

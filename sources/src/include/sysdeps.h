@@ -23,6 +23,40 @@
 #define UAE
 #endif
 
+#ifdef __cplusplus
+#include <string>
+using namespace std;
+#else
+#include <string.h>
+#include <ctype.h>
+#endif
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <assert.h>
+#include <limits.h>
+
+#if defined(_M_ARM64) || defined(_M_ARM64EC) 
+#define CPU_arm 1
+#define ARM_ASSEMBLY 1
+#define CPU_64_BIT 1
+#elif defined(__arm__) || defined(_M_ARM)
+#define CPU_arm 1
+#define ARM_ASSEMBLY 1
+#elif defined(__x86_64__) || defined(_M_AMD64)
+#define CPU_x86_64 1
+#define CPU_64_BIT 1
+#define X86_64_ASSEMBLY 1
+#elif defined(__i386__) || defined(_M_IX86)
+#define CPU_i386 1
+#define X86_ASSEMBLY 1
+#define SAHF_SETO_PROFITABLE
+#elif defined(__powerpc__) || defined(_M_PPC)
+#define CPU_powerpc 1
+#else
+#error unrecognized CPU type
+#endif
+
 #ifdef _WIN32
 /* Parameters are passed in ECX, EDX for both x86 and x86-64 (RCX, RDX).
  * For x86-64, __fastcall is the default, so it isn't really required. */
@@ -42,6 +76,14 @@
 #define REGPARAM
 #define REGPARAM2 JITCALL
 #define REGPARAM3 JITCALL
+
+#include <tchar.h>
+
+#if CPU_64_BIT
+#define addrdiff(a, b) ((int)((a) - (b)))
+#else
+#define addrdiff(a, b) ((a) - (b))
+#endif
 
 #if defined(__cplusplus)
 #include <cstddef>
@@ -353,6 +395,8 @@ extern void my_trim (TCHAR*);
 extern TCHAR *my_strdup_trim (const TCHAR*);
 extern void to_lower (TCHAR *s, int len);
 extern void to_upper (TCHAR *s, int len);
+extern int uaestrlen(const char*);
+extern int uaetcslen(const TCHAR*);
 
 #define ENUMDECL typedef enum
 #define ENUMNAME(name) name
@@ -469,6 +513,7 @@ extern void mallocemu_free (void *ptr);
 #include "machdep/machdep.h"
 #endif
 
+#define uae_log       write_log
 #define write_dlog    write_log
 #define write_log_err write_log
 #define console_out   write_log

@@ -214,7 +214,7 @@ static const int fmv_board_size = 1048576;
 #define CL450_VIDEO_BUFFER_SIZE (352 * 288 * 4)
 
 static uae_u16 cl450_regs[256];
-static double cl450_scr;
+static float cl450_scr;
 #define CL450_IMEM_WORDS (2 * 512)
 #define CL450_TMEM_WORDS 128
 #define CL450_HMEM_WORDS 16
@@ -232,10 +232,9 @@ static uae_u16 cl450_threshold;
 static int cl450_buffer_offset;
 static int cl450_buffer_empty_cnt;
 static int libmpeg_offset;
-static bool audio_mode;
 static uae_sem_t play_sem;
 static volatile bool fmv_bufon[2];
-static double fmv_syncadjust;
+static float fmv_syncadjust;
 static struct cd_audio_state cas;
 
 struct cl450_videoram
@@ -406,15 +405,7 @@ static void l64111_setvolume(void)
 #else
 	if (cda) {
 #endif
-		if (audio_mode) {
-			audio_cda_volume(&cas, volume, volume);
-		} else {
-#ifdef __LIBRETRO__
-			cda_setvolume (volume, volume);
-#else
-			cda->setvolume(volume, volume);
-#endif
-		}
+		audio_cda_volume(&cas, volume, volume);
 	}
 }
 
@@ -607,11 +598,11 @@ static uae_u8 *parse_audio_header(uae_u8 *p)
 			p += 5;
 			psize -= 5;
 			if (audio_head_detect >= 3) {
-				l64111_regs[A_PRESENT1] = pts >> 0;
-				l64111_regs[A_PRESENT2] = pts >> 8;
-				l64111_regs[A_PRESENT3] = pts >> 16;
-				l64111_regs[A_PRESENT4] = pts >> 24;
-				l64111_regs[A_PRESENT5] = pts >> 32;
+				l64111_regs[A_PRESENT1] = (uae_u16)(pts >> 0);
+				l64111_regs[A_PRESENT2] = (uae_u16)(pts >> 8);
+				l64111_regs[A_PRESENT3] = (uae_u16)(pts >> 16);
+				l64111_regs[A_PRESENT4] = (uae_u16)(pts >> 24);
+				l64111_regs[A_PRESENT5] = (uae_u16)(pts >> 32);
 				//write_log(_T("audio PTS %09llx SCR %09llx\n"), pts, (uae_u64)cl450_scr);
 				l64111_set_status(2, PTS_AVAILABLE);
 			}
@@ -648,9 +639,9 @@ static void l64111_parse(void)
 	}
 
 	if (audio_frame_size && audio_data_remaining)
-		p += l64111_get_frame(p, L64111_FIFO_BYTES - (p - l64111_fifo));
+		p += l64111_get_frame(p, L64111_FIFO_BYTES - addrdiff(p, l64111_fifo));
 
-	while (p - l64111_fifo < L64111_FIFO_LOOKUP || ((p - l64111_fifo) & 1)) {
+	while (p - l64111_fifo < L64111_FIFO_LOOKUP || (addrdiff(p, l64111_fifo) & 1)) {
 		uae_u8 *op = p;
 		int size = 0;
 
@@ -685,16 +676,16 @@ static void l64111_parse(void)
 		}
 
 		if (audio_skip_size) {
-			int size = audio_skip_size > L64111_FIFO_BYTES - (p - l64111_fifo) ? L64111_FIFO_BYTES - (p - l64111_fifo) : audio_skip_size;
+			int size = audio_skip_size > L64111_FIFO_BYTES - addrdiff(p, l64111_fifo) ? L64111_FIFO_BYTES - addrdiff(p, l64111_fifo) : audio_skip_size;
 			p += size;
 			audio_skip_size -= size;
 		}
 		if (L64111_FIFO_BYTES - (p - l64111_fifo) > 0 && audio_data_remaining) {
 			if (audio_frame_size) {
-				p += l64111_get_frame(p, L64111_FIFO_BYTES - (p - l64111_fifo));
+				p += l64111_get_frame(p, L64111_FIFO_BYTES - addrdiff(p, l64111_fifo));
 			} else if (p[0] == 0xff && (p[1] & (0x80 | 0x40 | 0x20)) == (0x80 | 0x40 | 0x20)) {
 				if (parse_mp2_frame(p))
-					p += l64111_get_frame(p, L64111_FIFO_BYTES - (p - l64111_fifo));
+					p += l64111_get_frame(p, L64111_FIFO_BYTES - addrdiff(p, l64111_fifo));
 			}
 		}
 
@@ -704,7 +695,7 @@ static void l64111_parse(void)
 				audio_data_remaining--;
 		}
 	}
-	l64111_fifo_cnt = L64111_FIFO_BYTES - (p - l64111_fifo);
+	l64111_fifo_cnt = L64111_FIFO_BYTES - addrdiff(p, l64111_fifo);
 	if (l64111_fifo_cnt < 0)
 		l64111_fifo_cnt = 0;
 	if (l64111_fifo_cnt > 0)
@@ -767,7 +758,7 @@ static void l64111_wput (uaecptr addr, uae_u16 v)
 			return;
 		}
 		l64111_fifo[l64111_fifo_cnt++] = v >> 8;
-		l64111_fifo[l64111_fifo_cnt++] = v;
+		l64111_fifo[l64111_fifo_cnt++] = (uae_u8)v;
 		if (l64111_fifo_cnt == L64111_FIFO_BYTES) {
 			l64111_parse();
 		}
@@ -786,7 +777,7 @@ static void l64111_wput (uaecptr addr, uae_u16 v)
 
 static uae_u8 l64111_bget(uaecptr addr)
 {
-	return l64111_wget(addr);
+	return (uae_u8)l64111_wget(addr);
 }
 static void l64111_bput(uaecptr addr, uae_u8 v)
 {
@@ -809,7 +800,7 @@ static void cl450_write_dram(int addr, uae_u16 w)
 	if (!fmv_ram_bank.baseaddr)
 		return;
 	fmv_ram_bank.baseaddr[addr * 2 + 0] = w >> 8;
-	fmv_ram_bank.baseaddr[addr * 2 + 1] = w;
+	fmv_ram_bank.baseaddr[addr * 2 + 1] = (uae_u8)w;
 }
 
 #if DUMP_VIDEO
@@ -981,7 +972,7 @@ static void cl450_to_scr(void)
 	v = ((uae_u64)cl450_regs[HOST_scr0] & 7) << 30;
 	v |= (cl450_regs[HOST_scr1] & 0x7fff) << 15;
 	v |= cl450_regs[HOST_scr2] & 0x7fff;
-	cl450_scr = v;
+	cl450_scr = (float)v;
 }
 
 static void cl450_reset_cmd(void)
@@ -1005,7 +996,6 @@ static void cl450_newcmd(void)
 	{
 		case CL_Play:
 			cl450_play = 1;
-			audio_mode = currprefs.sound_cdaudio;
 			write_log(_T("CL450 PLAY\n"));
 			break;
 		case CL_Pause:
@@ -1071,7 +1061,6 @@ static void cl450_newcmd(void)
 		case CL_Reset:
 			write_log(_T("CL450 Reset\n"));
 			cl450_reset_cmd();
-			audio_mode = currprefs.sound_cdaudio;
 			break;
 		case CL_FlushBitStream:
 			write_log(_T("CL450 CL_FlushBitStream\n"));
@@ -1143,7 +1132,7 @@ static uae_u16 cl450_wget (uaecptr addr)
 static void cl450_data_wput(uae_u16 v)
 {
 	fmv_ram_bank.baseaddr[CL450_MPEG_BUFFER + cl450_buffer_offset + 0] = v >> 8;
-	fmv_ram_bank.baseaddr[CL450_MPEG_BUFFER + cl450_buffer_offset + 1] = v;
+	fmv_ram_bank.baseaddr[CL450_MPEG_BUFFER + cl450_buffer_offset + 1] = (uae_u8)v;
 	if (cl450_buffer_offset < CL450_MPEG_BUFFER_SIZE - 2)
 		cl450_buffer_offset += 2;
 }
@@ -1251,7 +1240,7 @@ static void cl450_wput(uaecptr addr, uae_u16 v)
 
 static uae_u8 cl450_bget(uaecptr addr)
 {
-	return cl450_wget(addr);
+	return (uae_u8)cl450_wget(addr);
 }
 static void cl450_bput(uaecptr addr, uae_u8 v)
 {
@@ -1381,10 +1370,10 @@ static void REGPARAM2 fmv_bput (uaecptr addr, uae_u32 w)
 		io_bput (addr, w);
 }
 
-static double max_sync_vpos;
-static double remaining_sync_vpos;
+static float max_sync_vpos;
+static float remaining_sync_vpos;
 
-void cd32_fmv_set_sync(double svpos, double adjust)
+void cd32_fmv_set_sync(float svpos, float adjust)
 {
 	max_sync_vpos = svpos / adjust;
 	fmv_syncadjust = adjust;
@@ -1431,17 +1420,14 @@ static void cd32_fmv_audio_handler(void)
 #endif
 		cd_audio_mode_changed = false;
 		if (cl450_play) {
-			if (audio_mode) {
-				audio_cda_new_buffer(&cas, NULL, -1, -1, NULL, NULL);
-			}
-			audio_mode = currprefs.sound_cdaudio;
+			audio_cda_new_buffer(&cas, NULL, -1, -1, NULL, NULL);
 			fmv_bufon[0] = fmv_bufon[1] = 0;
 #ifdef __LIBRETRO__
 			cda_delete();
-			cda_new (PCM_SECTORS, KJMP2_SAMPLES_PER_FRAME * 4, 44100, audio_mode != 0);
+			cda_new (PCM_SECTORS, KJMP2_SAMPLES_PER_FRAME * 4, 44100);
 #else
 			delete cda;
-			cda = new cda_audio(PCM_SECTORS, KJMP2_SAMPLES_PER_FRAME * 4, 44100, audio_mode != 0);
+			cda = new cda_audio(PCM_SECTORS, KJMP2_SAMPLES_PER_FRAME * 4, 44100);
 #endif
 			l64111_setvolume();
 		}
@@ -1462,20 +1448,9 @@ static void cd32_fmv_audio_handler(void)
 	if (!cda || !(l64111_regs[A_CONTROL1] & 1))
 #endif
 		return;
-	if (audio_mode) {
-		play0 = fmv_bufon[0];
-		play1 = fmv_bufon[1];
-	} else {
-#ifdef __LIBRETRO__
-		play0 = cda_isplaying(0);
-		play1 = cda_isplaying(1);
-#else
-		play0 = cda->isplaying(0);
-		play1 = cda->isplaying(1);
-#endif
-	}
+	play0 = fmv_bufon[0];
+	play1 = fmv_bufon[1];
 	needsectors = PCM_SECTORS;
-
 	if (!play0 && !play1) {
 		needsectors *= 2;
 		write_log(_T("L64111 buffer underflow\n"));
@@ -1502,19 +1477,11 @@ static void cd32_fmv_audio_handler(void)
 #endif
 		pcmaudio[offset2].ready = false;
 	}
-	if (audio_mode) {
-		if (!play0 && !play1) {
-			fmv_bufon[bufnum] = 1;
-			fmv_next_cd_audio_buffer_callback(1 - bufnum, NULL);
-		}
+	if (!play0 && !play1) {
 		fmv_bufon[bufnum] = 1;
-	} else {
-#ifdef __LIBRETRO__
-		cda_play(bufnum);
-#else
-		cda->play(bufnum);
-#endif
+		fmv_next_cd_audio_buffer_callback(1 - bufnum, NULL);
 	}
+	fmv_bufon[bufnum] = 1;
 	offset += PCM_SECTORS;
 	offset &= l64111_cb_mask;
 	l64111_regs[A_CB_READ] = offset;
@@ -1527,7 +1494,7 @@ static void cd32_fmv_hsync_handler(void)
 		return;
 
 	if (cl450_play > 0)
-		cl450_scr += 90000.0 / (hblank_hz / fmv_syncadjust);
+		cl450_scr += 90000.0f / (hblank_hz / fmv_syncadjust);
 
 	if (cl450_video_hsync_wait > 0)
 		cl450_video_hsync_wait--;
@@ -1540,7 +1507,7 @@ static void cd32_fmv_hsync_handler(void)
 			cl450_videoram_read &= CL450_VIDEO_BUFFERS - 1;
 			cl450_videoram_cnt--;
 		}
-		cl450_video_hsync_wait = max_sync_vpos;
+		cl450_video_hsync_wait = (int)max_sync_vpos;
 		while (remaining_sync_vpos >= 1.0) {
 			cl450_video_hsync_wait++;
 			remaining_sync_vpos -= 1.0;
@@ -1592,17 +1559,7 @@ static void cd32_fmv_free(void)
 #else
 	if (cda) {
 #endif
-		if (audio_mode) {
-			fmv_next_cd_audio_buffer_callback(-1, NULL);
-		} else {
-#ifdef __LIBRETRO__
-			cda_wait(0);
-			cda_wait(1);
-#else
-			cda->wait(0);
-			cda->wait(1);
-#endif
-		}
+		fmv_next_cd_audio_buffer_callback(-1, NULL);
 #ifdef __LIBRETRO__
 		cda_delete();
 #else
