@@ -41,7 +41,11 @@ static TCHAR *parsedvaluess[MAX_VALUES];
 // 2            * / %           left to right
 // 3            + -             left to right
 // 4            =               right to left
+#ifdef __LIBRETRO__
+static int op_preced(const unsigned char c)
+#else
 static int op_preced(const TCHAR c)
+#endif
 {
     switch(c)    {
         case '!':
@@ -61,7 +65,11 @@ static int op_preced(const TCHAR c)
     return 0;
 }
  
+#ifdef __LIBRETRO__
+static bool op_left_assoc(const unsigned char c)
+#else
 static bool op_left_assoc(const TCHAR c)
+#endif
 {
     switch(c)    {
         // left to right
@@ -75,7 +83,11 @@ static bool op_left_assoc(const TCHAR c)
     return false;
 }
  
+#ifdef __LIBRETRO__
+static unsigned int op_arg_count(const unsigned char c)
+#else
 static unsigned int op_arg_count(const TCHAR c)
+#endif
 {
     switch(c)  {
         case '?':
@@ -297,7 +309,11 @@ static TCHAR *stacktostring(struct calcstack *st)
 }
 
 
+#ifdef __LIBRETRO__
+static TCHAR *docalcxs(unsigned char op, TCHAR *v1, TCHAR *v2, double *voutp)
+#else
 static TCHAR *docalcxs(TCHAR op, TCHAR *v1, TCHAR *v2, double *voutp)
+#endif
 {
     TCHAR tmp[MAX_DPATH];
     tmp[0] = 0;
@@ -335,7 +351,11 @@ static TCHAR *docalcxs(TCHAR op, TCHAR *v1, TCHAR *v2, double *voutp)
     return my_strdup(tmp);
 }
 
+#ifdef __LIBRETRO__
+static bool docalcx(unsigned char op, double v1, double v2, double *valp)
+#else
 static bool docalcx(TCHAR op, double v1, double v2, double *valp)
+#endif
 {
     double v = 0;
 	switch (op)
@@ -398,7 +418,11 @@ static bool docalcx(TCHAR op, double v1, double v2, double *valp)
 
 static bool docalc2(TCHAR op, struct calcstack *sv1, struct calcstack *sv2, double *valp, TCHAR *sp)
 {
+#ifdef __LIBRETRO__
+    sp = NULL;
+#else
     *sp = NULL;
+#endif
     *valp = 0;
     if (isstackstring(sv1) || isstackstring(sv2)) {
         TCHAR *v1 = stacktostring(sv1);
