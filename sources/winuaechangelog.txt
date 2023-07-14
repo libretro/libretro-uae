@@ -1,4 +1,605 @@
 
+5.0.0
+
+- Wait for blitter hung if blitter hung. Now it exists if blitter is in hung state or it has waited few frames.
+
+Beta 15: (RC7)
+
+- 4.10.0 introduced low to high/high to low IPL delay is optional and off by default, it seems to only happen when Paula IPL lines have extra load (like expansion devices or logic analyzer probes..). Config file only: ipl_delay=true
+- Fixed About panel title font size.
+- Debugger command mid command calculation support fixed (for example "d $1234+10 1" works again)
+- RC tag removed.
+
+Beta 14: (RC6)
+
+- "Remove interlace artifacts" + accurate modes: some blitter cycles were also rerun during "scandoubled" line.
+- Added Multi-Player Soccer Manager dongle emulation. This is very similar to Striker Manager dongle.
+- On the fly switch from AGA to OCS/ECS and then back didn't restore original AGA background color until running program wrote different value to COLOR0 register.
+- In some situations refresh conflict (even if it was harmless single cycle conflict due to bitplane DMA being enabled with "bad" position) left sprites in always on horizontal "conflict offset" state. (4.9.9+)
+- Added jit_inhibit config entry, can be used to force disable JIT temporarily even if uae-configuration/custom event is used to enable JIT. When you really want JIT disabled but don't want to modify anything else.
+
+Beta 13: (RC5)
+
+- Sprite buffer overflow was still possible. Adjusted buffer size again and added limit check, if it is still going to overflow, sprite emulation is skipped until next frame. Problem with this buffer is that it is static, it needs to be as big as max supported programmed display mode which is waste of memory when emulating normal PAL/NTSC modes. It needs to be dynamically allocated. But it is too late now. ("Green" Big Time Sensuality / Axis)
+- Game ports panel autofire options didn't do anything (b8)
+- b8 "Allow moving vertical position backwards (VPOSW/VHPOSW writes) if current vpos is out of range" only handled VHPOSW writes. Agony interlace title screen swapped odd/even fields if accurate A500 ECS 68000 mode (CLR.W $DFF02A..)
+- Added Striker Manager dongle emulation.
+
+Beta 12: (RC4)
+
+- Integer scale in high overscan modes (Overscan+, Extreme and larger) used default native mode width/height, not selected overscan mode width/height.
+- OCS Denise earliest allowed BPL1DAT access check (which was updated in b5) didn't disable border even if horizontal DIW was already open, previously earliest allowed was small enough to not cause this side-effect. (For example Seven Seas / Andromeda)
+- Check that prevented unnecessary writes to same color register in same cycle (can happen in fast CPU modes) was not correct and in some situations triggered even in cycle exact modes (Hotbleeps / Loonies) 
+- Off by one in bitplane sequencer stopping due to DMA being disabled. (Denise test case)
+- If bitplane DMA was disabled when it was in "ddfstop passed" condition and DMA was re-enabled in later line (which finishes "ddfstop passed" condition, stopping bitplane sequencer after single "block"): lower priority DMA channels lost cycles because they incorrectly saw bitplane DMA being enabled and active normally during whole scanline.
+- Debugger sprite "sp" option now uses ECS height bits when outputting sprite pattern if mode is ECS or AGA.
+- Blitter internal state after line mode had ended was not correct since 4.9.2+ (Cemetery Of Silence / Possessed)
+- Loading new statefile when emulation was running and blitter was active: it was possible blitter got stuck in active state. I have noticed this many times randomly but I finally found repeateable test case.
+- FloppyBridge write protection status in GUI is now mirroring drive floppy protection status. Previously it was always shown as write protected (checkbox disabled and ticked). This didn't affect floppy drive writing, it was only visual problem. Note that GUI write protection status is not updated in real time, it is only updated when selecting floppy drives GUI panel.
+- b10 automatic scaling fix fixed. Last line was off by one if bitplane ended normally (vertical diw end matched), wrong check was changed (plane count become zero or DMA was disabled). Interlace mode had one extra line at the bottom.
+- Autoscale filter modes horizontal positioning was randomly unreliable or jittery if switched from programmed mode (or Picasso96 with "hidden" 31KHz mode) to native mode.
+- About, contributors and error log window DPI/GUI font scaling support.
+- CPU panel slider refresh update, previously any slider move caused slider update which could have caused side-effects.
+
+Beta 11: (RC3)
+
+- jit_blacklist config entry parsing out of bounds array access fix.
+- Sprite buffer size was reduced too much (4.10.1), Big time sensuality / Axis buffer overflow. 
+- Debugger H history with DMA debugger data improved formatting. DMA debugger data was from previous field in some situations. (Wrong frame counter variable used to keep track of current and previous field)
+- Systray icon -> Floppy drives: DF1, DF2 and DF3 selected image from DF0:. Probably has been broken since it was introduced..
+- RC tag is back, easier to keep track of versions. Beta tag is removed because it makes some functional differences (beta dialog etc..).
+
+Beta 10: (RC2)
+
+- On the fly gameports panel autofire mode setting change (for example using uae-configuration or executing custom event) was not supported.
+- Fixed memory double free in b9 calculator update.
+- Debugger ? binary output grouped to 4*8 bits.
+- Cached bitplane DMA cycle sequence could have used wrong odd/even line mode if programmed mode was enabled when PAL/NTSC bitplane was active.
+- If active bitplane was "behind" left horizontal blank (usually only if mode is "weird"), bitplane had extra horizontal offset.
+- Some re-recorder fixes but it still loses sync randomly. Not required to work in 5.0 (it has never worked) but I'll try to debug this before final 5.0.
+- Automatic scaling missed one line at the bottom and in certain situations top had one empty line. (Probably side-effect of 4.9.x display emulation rewrite)
+- RTC address space memwatch points didn't work correctly.
+- Beta tag removed.
+
+Beta 9: (RC1)
+
+- Debugger calculator (also used by custom input events) >> and << shift operators added. Negative hex and binary value support (?$-xx now works as expected). Ternary operator support ("condition_formula ? formula_calculated_if_true : formula_calculated_if false"). String parameters and string comparisons supported. Can be useful in custom input events. (for example "gfx_resolution=[\'gfx_linemode\'=='double2'?'hires':'lores']")
+- Serial port GUI now have separate options to enable handshake/status pin emulation (RTS/CTS/DTR/DTE/CD) and Ring Indicator. RI is off by default because it is shared with printer port SEL which broke parallel port joystick if serial port was also enabled after RI update. "RTS/CTS" renamed to more correct "Host RTS/CTS" (Host serial port hardware handles RTS/CTS automatically, Amiga side does not need to care)
+- Sound GUI panel slider flickering fixed when modifying (almost) any other sound configuration setting.
+- Added v2.01 ICD AdSCSI 2000 ROM (v32.1 icddisk.device). Renamed v2.x (v33.0) to v2.1 because now it is almost certain it is v2.1.
+- Only disk insert cleared forced floppy drive turbo mode (enabled when executable is inserted in disk drive). Now it is also cleared when "disk" is ejected, allowing floppy sounds (if enabled) to play normally. Floppy sounds are not played in turbo mode.
+
+Beta 8:
+
+- input.advancedmultiinput=true now also enables GUI "multiple input devices connected to same joystick port" Game Ports panel support. It is hidden because it is not complete yet and it is too late to do any possible breaking changes.
+- Allow moving vertical position backwards (VPOSW/VHPOSW writes) if current vpos is out of range (vpos was previously in same frame moved past max vertical). Currently free backwards vertical position move is not allowed because it can cause bad side-effects and it can't be used for anything useful.
+- Inter-process serial port emulation was unreliable (4.9.0+)
+- Added inter-process serial port emulation RTS, CTS, DSR, DTE, CD and serial break support. (CTS->RTS, DTE->DSR/CD, both directions).
+- Debugger breakpoints can now be chained, breakpoint chain breaks to debugger only when all chained breakpoints' condition matches. (for example: "wo 0 a0===0 s1" and "wo 1 a1==0" breaks when both A0 and A1 is zero. s1 = this breakpoint (#0) is chained to breakpoint #1)
+- Extra breakpoint parameters (N: count N times before breaking and S: chained) are now only accepted at the end of command.
+- Breakpoint N parameter counting down is now logged.
+- Input panel mode("Configuration #1-3" selected) and mouse inserted using Game ports panel to any port and then later removed: [PORTS] events that used more than 1 slot were not removed. ([PORTS] label was removed but event was not). This caused mouse autoswitch only work once in input panel mode if mouse.
+
+Beta 7:
+
+- Paths panel string "System ROMs" had disappeared (b6)
+- GDI mode, possibly also D3D11 mode had wrong screen positioning/size after mode change in some situations.
+- Switching HW RTG modes with scaling enabled: new mode was not always using correct size (b5)
+- Input panel "Device enabled" checkbox state was not refreshed when Input mode was changed (Game Ports Panel, Configuration #1-#3).
+- Saving config after GUI was opened for the first time without default.uae, then loading it and saving it again: second saved config file was not identical.
+- Adjusted "VGA mode resolution autoswitch" switch range, some OS 3.2 native display monitors have been changed and it triggered autoswitch incorrectly.
+- Native mode integer scale behavior adjusted. Removed some earlier beta auto-adjustments because they would break programmed modes in integer scaling.
+- RTG integer scale didn't support scaling multiplers smaller than 1x. 1/2x and 1/4x is now supported.
+- Changed uaegfx Picasso96 BoardName field to "UAE" (was "uaegfx.card"). Now P96Prefs created modes have same prefix as UAE internally generated modes.
+- Fixed disassembler FMOVE.L/FMOVEM.L to/from control registers register order (FPCR and FPIAR was swapped)
+
+Beta 6:
+
+- Bumped version to 5.0. No more 4.10.x versions.
+- Input left/right joystick autoswitching mode is back, disabled by default, add input.autoswitchleftright=true to enable.
+- Added input.advancedmultiinput config entry which currently enables inserting same input device in multiple ports (game ports panel) and in future enables multiple input devices in same game port GUI support.
+- Enable also JIT FPU when JIT checkbox is getting ticked and FPU emulation (with host CPU mode) is already enabled.
+- Fixed possible crash when quitting emulation when RTG mode with hardware sprite is active (b5)
+- Inserting supported non-Amiga formatted disk image (for example PC DOS formatted image) in standard Amiga 3.5" DD drive was rejected, drive compatibility check didn't accept standard 3.5" DD drive. Image was accepted if drive was 3.5" HD drive. (Was probably broken when bridgeboard drive support was improved)
+- Initial ROM scan window was invisible. (Not sure when it got broken or if it depends on Windows version)
+- Added custom data path configuration to Paths panel. Data path = default path where config files, logs, statefiles etc are loaded and saved. This was supposed to have been added ages ago.. (previously available via command line -datapath parameter). Paths panel also now shows currently active data path.
+- uaegfx internally generated modes didn't have active flag set and display parameters (total vertical/horizontal and sync lengths, values that are ignored by uaegfx) were technically invalid. Set active flag and made hor/ver totals slightly larger than visible resolution and adjusted sync values. Board type was not set to uaegfx (it was set correctly, then overwritten by wrong value) Some Picasso96 tools might have gotten confused.
+- RTG hardware sprite update in b5 added caching that was not properly flushed when cursor shape was updated.
+
+Some new "ross test" edge case chipset fixes:
+
+- If chipset timing event was queued in same cycle as hsync event, hsync event was executed last. Hsync event should always have priority. This was "optimized" some time ago but it was wrong. (BPL1DAT write during same cycle didn't enable sprites in ECS Denise config)
+- Very early BPL1DAT write didn't update sprite minimum visible horizontal position correctly, in some situations sprite that was "hidden" behind border didn't become fully visible.
+- If BPL1DAT enables sprite(s) and "bordersprite" condition was possible (ECS Denise or AGA), enabled sprites activated border sprite state even if new visible sprite pixel would have been hidden by HDIW start. AGA 0.5 pixel lores "bordersprite" condition + borderblank enabled: "bordersprite's" complete pixel (1 lores) become visible.
+- Bitplane DMA BPL1DAT access does not anymore open border if OCS Denise and BPL1DAT position was before HBLANK end. (OCS Denise undocumented feature, does not exist in ECS Denise or AGA which allows border open after HSYNC start). Manual BPL1DAT write already did this. ECS Denise earliest possible BPL1DAT access that opens border was 2 cycles too late.
+- ECS Denise superhires sprite more accurate color selection emulation ("scrambled" odd/even palette access). Attached sprites are not yet correct (it does something in this mode but it can't be what normally working attachment does). Also it appears first pixel column of ECS superhires sprite is invisible (not transparent, appears as COLOR0, not background bitplane), this is not yet emulated. Sprites 4 to 7 are not working (nothing appears on screen) when in ECS superhires mode. (Agnus still does normal SPRxPOS/CTL and SPRxDATA/B writes)
+
+Beta 5:
+
+- Programmed mode aspect ratio correction ("VGA mode resolution autoswitch") improved. Programmed modes should now always have correct aspect (no more halved horizontal size)
+- Integer scaling now automatically doubles width of display if original width is smaller than height and doubled width still fits.
+- GDI mode display position might have been wrong in some situations after switching modes.
+- Direct3D 11 mode world matrix coordinate handling fixed (finally, has been wrong since D3D11 mode was introduced). Scanlines etc are not anymore affected by scaling settings. Rotation (gfx_rotation) also now works correctly.
+- RTG hardware sprite (mouse cursor) is now properly clipped when near edges of screen.
+
+Beta 4:
+
+- VHPOSW updates, copper special odd/even last cycle condition used original maxhpos value, not VHPOSW write "faked" hpos value. Do not do horizontal adjustments if CPU speed is fastest possible and/or JIT is enabled and VHPOSW access was CPU. Copper VHPOSW write is always accepted (which can only work if ECS or AGA).
+- ROM rescan in ini mode didn't clear previously detected ROMs. Ini file whole section delete only deleted first entry in section.
+- Added new KS ROMs to ROM scanner.
+- uaegfx and hardware emulated RTG board and emulation window smaller than RTG resolution: part of right or bottom of display was clipped. (Used window size to check limits instead of internal surface size)
+- Statefile restore fixes, 68020+ blitter wait hang after loading statefile, "cpu trace" error dialog shown even when there was nothing wrong.
+- If reset was requested, it wasn't processed until next vsync. Between reset request and reset process CPU might have executed random data, temporarily flooding log with invalid access errors, exceptions etc.
+- CIA synchronize clock drift bug fix (4.10.0)
+
+Beta 3:
+
+- Changed keyboard reset warning again: when reset keys are pressed, reset warning starts, when reset warning ends, system is reset but reset is kept active until at least one key is released. Keeping reset keys pressed more than 5 seconds force hard reset like non-reset warning config already did. Both keyboard reset modes now work identically.
+- Programmed mode "do not include hidden lines" (b1) removed one too many line, breaking some programmed modes interlace field order.
+- Interlace automatic LOF toggle cycle was still using pre-4.9 horizontal position origin. (Toggled 3 cycles too early, correct position is cycle 1 of line 0)
+- LOL (NTSC long line) was toggled 1 cycle too early. Both LOF and LOL toggle when HPOS=1.
+- COPJMP1+COPJMP2 strobe when Copper DMA is off stops the copper: this was not correct, if both strobes are generated, Copper instruction pointer is loaded with COP1PT OR'd with COP2PT. This usually indirectly stops the copper because it will sooner or later do MOVE to "dangerous" register. This is same address OR behavior as any other DMA pointer if more than one gets activated in same cycle (for example refresh + bitplane conflict). This was done before logic analyzer checks and was forgotten..
+- HAM5/HAM7 was incorrectly allowed in AGA mode (broken probably in 4.9?). AGA only enables HAM if 6 or 8 planes.
+- Disk image was accidentally opened twice, preventing disk image deletion/editing without closing WinUAE (b1)
+- When disk image is ejected using GUI, close image file handle immediately (previously it was closed after returning back to emulation)
+- Mounting exe as HD floppy image created broken disk structure if file was larger than 1329664 bytes. Bitmap block used original DD block location but was allocated after HD root block.
+- Filter mode "default" now always scales if programmed chipset display mode.
+- Debugger breakpoints are now also reported when single stepping (f and fo etc), previously trace override other breakpoint detection.
+- Debugger wf didn't fill in binary mode.
+- GVP 2040 original ROM image added (No 68060 support). "tekscsi2.device 1.1 (17.4.95)". Filesystem loader has serial debugging enabled. Updated 68060 variant is "tekscsi2.device 1.0 (27.8.95)". For some reason newer version has 1.0 in version string but device internal version is still 1.1.
+- Changed new Agnus Chip RAM max addressing advanced chipset option: default equals Chip RAM size. Forcing 512k when OCS can break old configs and cause confusion and result will look like new emulation bug.
+- Some VHPOSW horizontal change support improvements. It is still a hack but it is simpler hack and generic, required changes are now dynamically calculated. It is not anymore hardwired to Smooth Copper / Up Front specific VHPOSW horizontal position changes. Demo specific hacks removed. Also now horizontal position moves beyond maxhpos is also emulated, hpos counts to 0xFF before wrapping around. DMA debugger also updated to support skipped or doubled cycles. VHSPOW behavior needs future undocumented feature thread post. (Weird test cases by ross)
+
+Beta 2:
+
+- There is no undocumented HAM behavior, it was bug in emulation, in certain situations HAM decoding incorrectly started before border and fix only accidentally worked in test case. (b1)
+- Hardware info panel now shows complete memory map when emulation has been started. Before starting emulation it works like previously (adjustable, lists expansion devices only). Added address space end column. (TODO: more info, perhaps also include PCI devices)
+- Added backslash/F11 swap key option to Input panel. This is global option (registry/ini) and swap is done after input mapping. Reverts b1 key swap.
+- Enabling Copper DMA didn't wake up Copper immediately but when next line started. (4.9.something probably)
+- Added inverted lightpen/gun input events. (ALG Fast Draw Showdown)
+- If any debugger memory search command (s, fa, etc) have start address parameter that points to any ROM address, search runs normally until last ROM address. Previously searching from ROM addresses was not possible.
+- If keyboard reset warning was enabled, releasing reset keys caused second reset if they were kept pressed until reset warning had internally generated reset. (4.10.0)
+- If keyboard reset warning is enabled, keyboard reset does not start (and reset warning key code is not sent) until at least one key is released and if keys are kept more than 5 seconds, hard reset is forced. Previously if keyboard reset warning was enabled, reset always started immediately and forced hard reset was not possible.
+
+Beta 1:
+
+- 1.5M Chip RAM size is now working correctly in all configurations. (Except JIT which does not like non-power of two RAM sizes)
+- Added Agnus chip ram max size option to advanced chipset. Can be used to configure larger Chip RAM size than Agnus DMA supported size.
+- Added A1000 Denise model selection to advanced chipset (A1000 Denise without EHB and A1000 Denise with EHB). Previously Agnus type was used to select if A1000 Denise features/bugs were emulated. Autoselect = Chipset type selected from chipset panel.
+- Removed Agnus blitter busy bug and No-EHB Denise Advanced chipset options. Above Agnus and Denise model selection replaces them.
+- If CPU was waiting for chip bus read or write (At least one cycle was stolen from CPU) when debugger was exited or GUI was entered, next CPU chip bus wait cycle was not counted.
+- Blitter state is now fully saved even if blitter is in mid-operation. (cycle-accurate modes only). Previously blitter was force-finished if blitter was active when state was saved.
+- Copper "overflow" to beginning of next field is now statefile supported.
+- Chipset internal delay events are now accurately saved with state files. (Test cases by ross as usual)
+- Statefile save exactly when CPU was about to do memory chip bus read or write: restore skipped this pending read or write.
+- Updates to CPU state save support. In some situations state save/restore support was not correct and/or not cycle accurate.
+- CD32 state was always saved, even when no CD32 features were enabled.
+- Fixed LPSTOP instruction (68060 only, Low Power STOP). Broke when STOP instruction emulation was rewritten to match real 68000 behavior. No known Amiga programs use LPSTOP. (4.10.0)
+- Level 7 interrupt input event now keeps NMI active until CPU detects it. Previously it only made a short pulse that was unreliable.
+- If VPOSW has been written to more than once during single field and writes only modified LOF-bit and later write(s) during same field restored original LOF value: don't recalculate display settings when next field starts. LOF state only affects display during vertical sync and few lines before and after, it can be "safely" modified mid screen (with side-effects in some situations..)
+- HAM previously unknown (?) and undocumented feature emulated. If bitplane is active earlier than horizontal border ends, last pixel under the border is HAM decoded normally using bitplane pixel value, it is not decoded using border color.
+- In some situations when emulator config was changed on the fly (for example 68000 CE to 68020 non-CE), CPU emulator and other parts of emulator was not configured for new configuration.
+- Prometheus PCI bridge PCI config space byte wide access endian swap fix.
+- Picasso IV flash rom support. Not very useful because it can't be used to fully "generate" Picasso IV flash ROM image file (like you can do with PPC boards). Official flasher does not update first 16k of flash that contains autoconfig nybbles and loader code and Picasso IV and official updater can't work if it is missing.
+- Serial port SERDATR TBE bit was unreliable in accurate modes. (4.10.0)
+- Fixed floppy related bug where initial bit offset becomes negative, causing out of bounds array access (that may or may not cause a random crash).
+- Fixed Input panel custom event string to GUI temporary config and from GUI temporary config to active config copying that caused double memory free. (Very old bug).
+- On the fly disk check from GUI (for example ? in Quickstart panel), which reads boot and root block and shows disk information, which changed disk rotational position but it wasn't restored.
+
+- Disabled strange ages old german keyboard layout only "#" key hack and changed 2 very rarely, if ever, used, default keys: Amiga key left of backspace which does not exist on any PC keyboards is now mapped to F11. Key left of enter (which only exists on european PC keyboards) is now mapped to correct matching Amiga key. (was previously key left of backspace for some reason). Hack can be optionally restored if there really was some reason for this hack. (I suspect original reason was pre-RawInput Windows 9x/ME DirectInput limit that possibly didn't allow all keys to be read normally).
+- Ultra extreme overscan mode now includes blanking regions drawn using grid pattern. Added new HV ultra extreme overscan mode that shows HSYNC, VSYNC, Blank and Borderblank regions. Can be useful when creating/debugging programmed display modes. C mode shows CSYNC pattern, which is accurate enough to correctly handle at least some weird modes by ross :)
+- Added reset warp mode Misc panel option. Reset automatically enables warp mode, first copper DMA activation (KS ROM sets it just before disk/HD boot starts) starts warp mode auto disable countdown. Default is 1 second delay before warp mode disables. warpboot_delay config file entry can be used to change delay value (value in frames). Makes KS ROM hardware initializations almost immediate without affecting compatibility.
+- Bring GUI window on top if emulation window gets left mouse button double click or F12 (or configured GUI key) key press and GUI is open. Close GUI if ESC is pressed when GUI is open and emulation window has focus.
+- SCSI CD command READ TOC, format type 0 returned invalid data (4.10.1)
+- Added button toggle mode (press and release: button gets pressed, press and release again: button gets released) to Game Ports panel autofire mode select menu.
+- A600 non-expanded Quickstart RTC selection fixed. RTC should not be selected unless RAM expansion is configured.
+- Added missing Picmatic ROMs (European American Laser Games variant). Zorton Brothers and Marbella Vice.
+- Added Disable keyboard and Disable game controllers when mouse not captured options to Pri & Extensions panel.
+- Game port setting now accepts joyportnameX and/or joyportfriendlynameX=<name> + joyportX=customY simultaneously. This forces custom config Y to be mapped to named controller, ignoring device index value in custom config. Makes it easier to create config files with custom game port settings programmatically.
+- Added possibility to have same Game ports panel joystick in more than one joystick port. Config file only currently. Use same config file entries with index number (for example "joyportfriendlyname1_1=<controller name>")
+- Added screen rotation support, to fully support Fast Draw Showdown (American Laser games) game that had 90 degree rotated display. Direct3D9 mode only so far. Config file only: gfx_rotation=<rotation angle in degrees>, gfx_rotation=-90 for Fast Draw Showdown.
+- Removed Expansion panel CD32 FMV checkbox. It is available via expansion list and needs ROM selection.
+- Integer scaling now has 5% (width and height) safety margin before switching to smaller multiplier.
+- If programmed mode: do not include scanlines hidden in vertical blank when calculating display size (for integer scaling/autoscale etc)
+
+
+4.10.1
+
+Beta 6 (RC2):
+
+- "Default" joystick mode didn't fully enable CD32 pad mode when CD32 hardware was configured. (Very long ago?)
+- Write to CIA timer HI register always loaded the timer in cycle-accurate CIA mode. Timer is not loaded if it is in continuous mode and timer is running. (HippoPlayer unstable playback speed). Fast CPU modes used "immediate" (CIA internal state change delays not emulated) CIA mode which was correct. (4.9.2 CIA rewrite)
+
+Beta 5 (RC1):
+
+- Fullscreen GUI Misc panel option ticked + D3D 11 mode exclusive fullscreen + enter GUI which drops back to desktop: GUI used full desktop size, when it should have used "work area" ("work area" does not include for example Task bar)
+- End directory filesystem threads earlier in shutdown sequence, previously it was too late, after Amiga address space was freed, causing crash if filesystem queue had commands pending and they needed to read or write Amiga side memory.
+- Improved Game ports panel Custom mapping autoswitch selection. Select first Custom config that has at least Amiga button fire button or second button mapped to connected input device that initiated autoswitch.
+
+Beta 4:
+
+- Added continuous screenshot mode to GUI (Was previously available via input events). When ticked, screenshot is taken automatically every frame.
+- Fixed video recording and continuous screenshot including extra blank frame when loading new statefile. (4.9.0)
+- Fixed second frame appearing corrupted after loading statefile due to not re-initializing long/short frame internal variables at startup (only visible in video recording or screenshot). (4.9.0)
+- If game controller was configured using Game Ports panel (Custom #x setting) and device didn't have any Input panel mappings, config file input device matching with currently installed input devices was not done. This meant if config was moved to other PC, device specific input config was not loaded correctly. Now it also matches devices using only USB VID and PID if better match is not found. (Full match -> Partial match -> VID+PID only if exists -> Device friendly name)
+- If config file has input device that is not currently connected, saving the config file didn't save non-connected device's config data. Now it is saved (like it was supposed to already do)
+- Game Ports panel custom settings were not corrected automatically if device indexes changed (new input devices connected or removed)
+- If Game Ports custom setting has entries that don't map to any currently connected device, show unmapped events as "<event name>=?" instead of showing nothing.
+- CALLM disassembly fixed.
+- 68030 MMU state was partially reset when loading statefile.
+- If fast CPU mode program writes to color registers (usually COLOR0 to create background color rainbows), skip write if previous write already happened in same chipset cycle. This could have overflowed buffer that stores state where and when color change should happen in rendering part of emulation. Fast CPU modes don't slow down CPU by emulating chipset or chip ram delays.
+- Reduced size of sprite buffers (which was huge), buffer size was enough to have whole screen filled with sprites in max superhires/800 lines screen mode which can't happen.
+- "uae-configuration statefile_save <filename>" can be used to create statefile (note that save happens when vblank starts next, it is not saved immediately but uae-configuration still returns immediately)
+
+Beta 3:
+
+- Serial port RI (ring indicator) was inverted. If both printer and serial port was enabled, printer port SEL was pulled down even when RI was inactive.
+- DSKBYTR behavior updated after more testing. It is updated all the time normally except if DSKLEN WRITE bit is set without DMA enable. It is even updated (with zeros) when disk write DMA is currently active.
+- Dumping CPU state after JIT unhandled exception or program jumping to IO space won't open console window anymore.
+- If 2 back to back internal cycle count events had same cycle count value, order of executed events was undefined. Now they are executed in FIFO order. Interrupt clearing and setting at same cycle queued two events, interrupt was lost if they were executed in opposite order. Fixed weird music issue in Jesus on E's / LSD.
+- Fixed PCI bridgeboard crash if non-existing PCI board IO or RAM space was accessed.
+- FM801 does not seem to have PCI Device control register Interrupt Disable bit (marked as reserved in datasheet). Made it unchangeable (and few other PCI config bits) to fix Mediator FM801 driver audio playback hang. (Possibly this worked with some older Mediator drivers)
+- Added command line option "-winekeyboard" to change handling of PAUSE and NUMLOCK keys as a workaround for different (buggy?) Wine RawInput key codes and flags. (falcon35180)
+
+Beta 2:
+
+- Bitplane DMA stealing sprite DMA off by one fix (b1)
+- Platform specific hardware specific config entries didn't parse correctly and were ignored (b1)
+- B1 sprite/blitter conflict was unreliable (not accurate side-effects in some situations, probably no one really cares as usual..)
+- DSKBYTR WORDSYNC bit was previously autocleared after short delay. Now it stays on as long as DSKSYNC matches. Was very old workaround for old and wrong WORDSYNC behavior. Load DSKBYTR only when valid data is available. Real HW does not seem to load DSKBYTR when only zeros are read. (Most likely DSKBYTR is not loaded if PLL is not locked?)
+
+Beta 1:
+
+- Fixed possible single scan line graphics corruption if BPLCON0 was changed when horizontal sync started (Caused by last minute 4.10.0 bug fix).
+- Interlace config scaling mode was saved as RTG scaling mode which could write incorrect config entry or cause a crash.
+- When saving config, check index values of array type config entries, preventing possible out of bounds memory access if entry is invalid (negative or too large) for some reason, like above bug. Config entry is internally index number, index is used to select config file entry value. If invalid value is detected, message is logged and config entry write is skipped.
+- Removed useless "Scanlines" option under PAL filter extra settings.
+- GDI mode RTG hardware cursor was not fully disabled when emulated Amiga was reset.
+- GDI cursor leaved garbage on screen if hardware sprite coordinates were negative.
+- Taking screenshot, DF0: is enabled but empty and CD drive is enabled but not empty: select CD image name.
+- Disabled move left/right joystick autoswitching mode (was too easy to do it accidentally without noticing what happened). Only buttons are supported now. Improved popup description text of autoswitch option.
+- Vblank interrupt trigger was 2 cycles too late. (Cracked The deep hang). This was supposed to be correct but probably some test results were misunderstood. Or something.
+- Copper write to DMACON that disables copper DMA: copper stopped 1 cycle too early. (Following copper instruction's first instruction word is still fetched)
+- DMACON write that switches blitter DMA on or off when blitter is running was not fully cycle-accurate. Now it is. (Blitter nasty was already correct)
+- Yet another sprite DMA conflict found (Thanks ross again :)) and emulated. If sprite DMA is switched on exactly 3 cycles before sprite's DMA slot, DMA decision is done and sprite pointer is increased but slot is not allocated, DMA transfer does not happen and RGA bus appears in idle state (0x01FE). If some other DMA channel allocates same slot, it conflicts and usual RGA bus AND and DMA pointer OR operations happens. Bitplane or blitter seems to be only channels that can conflict in this situation. CPU also can use this cycle safely. (Why do sprites have 2 different kinds of undocumented and weird conflicts?)
+- Disk DSKSYNC interrupt behavior adjusted (not done any proper tests yet to fully confirm it), INTREQ DSKSYN bit only seems to get set when internal DSKBYTR WORDEQUAL bit changes from 0 to 1 because without drives selected (internal buffer value is static) and causing DSKSYNC match: DSKBYTR WORDEQUAL is one but interrupt only happens once (for example setting DSKSYNC to non-matching value and back to matching will generate single interrupt. Only writing same matching value again won't generate new interrupt). This behavior was never accurate and some versions had different hacks. Hopefully this is more correct behavior. (Retrovision / Insane and others I don't remember)
+- Some timing operations still used old 32-bit wrap around timer checks that can return bad results with new 64-bit internal cycle counter. Affected standard vsync mode.
+- Clear Harddrives panel list when loading hardware-only config.
+- Platform specific config entries ("win32.???") were host only. Separated to host and hardware config entries. Moved win32.rtg_vblank to hardware config (Also this shouldn't be in platform specific anymore..)
+
+4.10.0
+
+Beta 11 (RC3):
+
+- Fixed magic mouse without virtual mouse driver installed in RTG modes. (4.9.0)
+- Memwatch N flag was not cleared when watchpoint was reset.
+- Syncronize clock option was broken, when active, CIA-A TOD was stopped. Broken when CIA emulation was refactored (b1).
+- Small 68040+ "cycle-exact" adjustments.
+
+Beta 10 (RC2):
+
+- Bumped version to 4.10.0
+- 64-bit natmem limit increased to support G-REX PCI VRAM modification detection (Only draw lines that have been modified). Previously Voodoo 3 + G-REX always forced whole screen refresh. G-REX PCI memory space is above 2G "limit". Check also current limit to prevent "picasso_getwritewatch 87" log messages when running 32-bit version.
+- SupraDrive AMAB5 and AMAB6 are also 8k. Removed extra duplicated 8k. Previous SupraDrive 2000DMA ROM is called "44-25B" (Hand written text on ROM label did say 44-25B but I thought it was some kind of checksum or something but SupraRomChk on SupraBoot3.8B install disk does detect it as "44-25B"). Updated 2000DMA ROM mapping, SupraRomChck now detects supported ROMs correctly. Remaining undumped official Supra ROMs are "33-11B" and AMAB1, listed inside SupraRomChk executable. (Also some AMAB5 and AMAB6 beta roms are listed)
+- Added Hardital Synthesis/Super Big Bang v48.5 (previous was v53.1)
+- Serial port ring indicator (RI) signal support (RI is shared with printer port SELECT line)
+- Fix out of bounds buffer access when checking what should be written to write-only register that was read. (b5)
+
+Beta 9 (RC1):
+
+- Direct3D9 mode overlay mode didn't show Amiga screen in most configurations.
+- JIT interrupt handling fix part 2.
+- Debugger SMC detector cache flush does not anymore clear whole SMC state array (which can be huge if Amiga RAM is located in Z3 space). When state array needs to be reset, reset only RAM and ROM regions. Max SMC array size is now automatically same as highest RAM address.
+- Autoresolution didn't do anything unless gfx_windowed_multi or gfx_fullscreen_multi had non-zero values (b1)
+- Autoscale worked incorrectly in programmed modes. (b1)
+- Disable GUI Wait for blitter checkbox in 68000/010 cycle-exact modes. Previously it was allowed but did nothing.
+- CDTV/CD32 Quickstart didn't use new NVRAM Files -path (b1)
+- Added Supra AMAB2 ROM to ROM scanner. (Seems to support at least 2000DMA and AutoBoot models). AMAB1 is still missing, previously added 2000DMA ROM most likely isn't AMAB1 because it only supports 2000DMA. 2000DMA ROM selection now also lists all AMAB roms because AMAB2-4 have 2000DMA support (AMAB5/6 dropped 2000DMA support) and ROM scanner selection logic does not support filtering ROMs that have same type.
+
+Beta 8:
+
+- RTG to chipset mode (non-interlaced) switch didn't enable native mode filter (b7)
+- If CIA-A TOD counting was PSU tick based, ticks that were delayed until next scan line (due to CIA internal TOD counting delays) were lost. (b1)
+- Added GVP A1208 Z2 RAM + SCSI board. It is basically GVP Series II Z2 SCSI controller + RAM expansion in different form. Uses usual GVP Series 2 SCSI ROMs. If A1208 is emulated and Z2 RAM is enabled, Z2 RAM gets GVP A1208 Z2 RAM autoconfig data. A1208 GVP internal device ID is 0x97.
+- JIT mode interrupt handling restored, JIT needs "different" interrupt handling than non-JIT modes for best performance. (b5)
+- uaegfx blitter emulation was accidentally disabled since b4.
+- uaegfx b1 update had wrong operator in masked 8-bit DST=SRC blitter function (Turbotext scrolling in 8-bit) (b1)
+- uaegfx non-basic blitter functions (for example mask set or not commomly used) didn't handle overlapping source and destination correctly. (Turbotext scrolling in 8-bit mode)
+- gfx_left_windowed and gfx_top_windowed config file entries replaced with gfx_x_windowed and gfx_y_windowed. Reason was swapped coordinates but to keep backwards compatibility, new config entries have been added instead of fixing it by swapping them. Old config entries still work.
+- A4000 Quickstart mode set PSU tick CIA-A TOD timing but A4000 does not have PSU tick hardware.
+- 68020 cycle-exact timing adjustment (Lionheart whdload slave v2.3)
+- Increased A1200 68020 approximate speed slightly. (Many AGA demos had slowdowns). CE mode is not changed.
+- Rare SupraDrive 2000DMA boot ROM was finally dumped. Support added.
+- Debugger memwatch command parsing changed. Some parameters got skipped. Value match is now V<value>.
+- Debugger string ot integer parser error condition support added. Potentially dangerous commands are now aborted if expected address can't be parsed (like 'g <typo in hex address that does not parse>'), previously failed string to integer conversion returned zero value.
+
+Beta 7:
+
+- When on the fly changing floppy type from FloppyBridge drive to normal or vice versa, disk change is now simulated automatically.
+- floppyXprofile (x=drive number) config file entry can be used to change drive type on the fly using uae-configuration. Replaces floppyXtype which uses magic number parameters (it is still supported). Floppy type can be for example "35dd" or "35hd" or "floppybridge". (TODO: floppybridge:<parameters> support)
+- CPU instruction prefetches are marked with "I" and data accesses with "D" in DMA debugger (for example "CPU-RWI")
+- Do not allow JIT FPU option if no FPU is selected.
+- If copper used last cycle of frame: following copper instruction (=very last instruction of copper before it restarts) was shown incorrectly in DMA debugger (visual bug only).
+- Special empty copper cycles where copper allocates the cycle but leaves it unused are now marked with "C" in DMA debugger.
+- Disk DMA write to nowhere (no drives selected) never finished. This (and reading which was fixed in b6) was working in older version, probably broke in b1.
+- Disk DMA write DMA slots now have correct order (Read DMA: slots are filled from right to left, write DMA: filled from left to right).
+- Floppy index sync (CIA-B flag) CIA interrupt bit was "sticky" in some situations. (b1)
+- CHD CD audio sync fix. (Always use logical block access method)
+- Some filter options still used non-interlace filter mode settings when interlace mode filter was active.
+- D3D11 mode integer scaling artifacts fixed. (b1)
+- D3D11 shader support code leaked ID3D11RenderTargetView, causing problems when shader or parameters were changed on the fly.
+- Double clicking windowed mode window title bar always switched to fullscreen mode (should only switch if Shift pressed=Fullscreen or Control pressed=Fullwindow is pressed). Possibly Windows version dependant.
+- DIWSTRT and DIWSTOP same vertical start and end was unreliable (James Pond 2 intro glitch)
+
+Beta 6:
+
+- Interlace mode filter crash fix (b5).
+- Disk read DMA started (without DSKSYNC) and reading "nothing" (no drives connected): disk DMA never finished. (CDTV boot hang without DF0:)
+- CIA B timer counting timer A underflows or CNT: generated interrupt was 1 timer count too early.
+- 68060 without FPU and executing FPU instruction that uses -(an) or (an)+ addressing mode: address register's original value was restored twice when F-line exception stack frame was being created. Second time it used invalid register value causing D7 to be modified.
+- Audio interrupts and AUDxDAT processing delays fixed. They were too long (2 CCK) when correct delay is only 1 CCK. 2 CCK appeared to be correct because previously interrupt timing was wrong.
+- Keep CPU halted when keyboard reset keys are kept pressed. (b3 reset change update)
+- EHB mode was unreliable in AGA mode (b5)
+- 68010+ BKPT illegal instruction exception had stacked PC pointing to next instruction but it should point to BKPT.
+- 68010 DIVU overflow condition undefined N flag behavior updated. (DIVS overflow undefined flags are still not fully correct)
+- Copper/blitter bug tested, updated and confirmed and is enabled by default again (only if 68000 and cycle-exact). This is the infamous chipset bug that can cause copper pointer to blitter pointer copy if copper was waiting, CPU wrote to COPJMPx during odd cycle and blitter was active. Not 100% accurate (modulos are not added correctly when glitch happens) in line mode because line mode internal "micro-operations" are not fully correct (exactly when pointers change, modulo is added etc, invisible operations that don't affect line mode output).
+
+Conditions that are needed to trigger this bug:
+- Copper is waiting.
+- CPU writes to COPJMP, using odd cycle. (Odd cycle seems to mess up copper COPJMP cycle allocation logic)
+- 3rd cycle after COPJMP is blitter DMA transfer cycle. (1st and 2nd cycle can be used by CPU or any DMA channel)
+If above conditions are true:
+- Blitter DMA accesses address: blitter pointer OR current copper pointer (Copper pointer before COPJMP updates it)
+- Old copper pointer gets copied to blitter address pointer. The very nasty part of this bug.
+- New copper pointer is increase by blitter modulo (if this blitter access would have added modulo)
+
+Beta 5:
+
+- If copper used last cycle in scanline and last cycle was even cycle (PAL 226) and it wanted next possible copper cycle and it was free: copper will allocate cycle 1 (Copper won't use it, neither can CPU or blitter. Cycle is allocated because it is 2 cycles from 226 but it is unusable because it isn't even cycle) and cycle 2 (copper uses this normally) of next scanline. This was implemented before 4.9 but was lost when custom emulation cycle allocation rewrite was done.
+- Reading from non-existing register always returned FFFF instead of data that previous cycle's possible DMA access transferred. (Equipose / Complex hang)
+- Don't keep "interrupt active" flag set if IPL is >0 but CPU interrupt mask is higher or same as current interrupt level. Only check it if mask gets lowered. Prevents unnecessary status flag checks between each emulated instruction.
+- Fill color palette entries with pseudo-random contents at power up. (Except COLOR0 to not get annoying color flash at startup. Which does randomly happen on real HW.)
+- EHB mode OCS/ECS vs AGA difference emulated. OCS/ECS number of active plane does not affect EHB (only HAM, DPF or KILLEHB disables EHB). For example if plane count changes mid scanline from 6 to 5, EHB stays active and remaining data in plane 6's shifters still appear as EHB plane. But on AGA plane count change causes switch to normal color mode immediately, plane 6's remaining data selects color palette entries 32 to 63. (G.Rowdy / Desire)
+- In some situations if same scan line enabled and disabled EHB, whole scan line was drawn without EHB. (G.Rowdy / Desire)
+- Replaced C-library pseudo-random number generator with simple xorshift algorithm.
+- Ultra extreme overscan mode screenshot was vertically clipped.
+- Remove interlace artifacts option fixed. (b1)
+- Added optional chipset interlace mode filter panel settings. If enabled and at least one entry is different than normal native mode filter panel, filter is selected when current native is interlaced and switched back to normal native filter when mode switches back to non-interlaced.
+- Added semaphore locking to A2065 emulation, previously it was possible to free A2065 resources while some other thread (for example slirp) was currently accessing its on-board RAM.
+- Fixed serial port MIDI emulation hang. (b1)
+
+Beta 4:
+
+- Remaining IPL fixes (LINK, UNLK, MOVE to SR/CCR, AND/EOR/OR SR/CCR, CPU wait state IPL fix).
+- Emulated Paula side-effect that affects IPL timing. IPLx line state changes from low to high (IPL is active low) are about 0.5 CCK later than high to low transitions. This delays CPU IPL change detection by 2 CPU clocks if any IPL line had low to high transition. CPU accepts IPL change only if has been stable for 2 CPU clocks. (for example 3 to 5 has delay, 4 to 5 does not)
+- Enable only WASAPI audio by default.
+- Debugger break point command accepts number of hits before breaking to debugger (f Nxx <address> where xx is number of hits required)
+- uaegfx overlay limit checks compared Amiga side VRAM end against physical host side bitmap end which accidentally passed if 64-bit Windows. Overlay window was usually empty if 32-bit Windows. (It might have worked in some configurations when using Z2 uaegfx)
+- GUI Help button is now always available and opens if exists: (in priority order) winuae.chm, winuae.pdf. If neither is found, help web page is opened (without asking first like previously)
+- It is still possible to run windowed WinUAE if desktop is 16-bit but it can cause graphics problems. Not sure if this needs to be supported anymore.
+
+68000 based A500 like unexpanded (Fast RAM expansion is supported) configurations should be now 100% cycle-accurate. (If there are no bugs, many edge cases need complex and very carefully timed cycle accurate tests that are not easy to do)
+
+Note that this does not mean all features are fully emulated, for example OCS and ECS Denise mid-screen resolution changes are not pixel accurate. Accurate as in if resolution change is not carefully coded, there can be few extra or missing pixels when resolution changes. AGA does not have this side-effect.
+
+
+Beta 3:
+
+- 68000 IPL check position is now almost fully accurate (Still some special cases to check and test). Very big thanks to fx68k author!
+- W debugger command hang fixed.
+- Full drive/RDB mode is now normal checbox. Hopefully it is now less confusing than button that didn't really look like a button. If selected HDF already has RDSK identifer, checkbox is ticked and disabled. Checkbox can be only ticked/unticked if selected HDF does not have RDSK identifier.
+- GDI mode didn't force 32-bit screen depth mode.
+- FloppyBridge uae-configuration change now really updates all internal variables.
+- Screenshots didn't work if 256 color checkbox was not ticked (tried to create 24-bit palette indexed image)
+- DMACONR blitter status 1 cycle delay was broken (Circle scroller / UFO)
+- Enabling DMA debugger and then returning to emulator continuously reported conflicts until next frame had finished. DMA debugger init was changed but tables were not fully initialized.
+- Keyboard reset now behaves more like real hardware. Press keys, hardware gets reset (if keyboard reset warning is not active), reset continues only when at least 1 key is released. If all keys are kept pressed more than 5 seconds: do hard reset.
+- DMA debugger CIA access line includes also E-clock state (0, 2, <data access info>, 6, 8) and any "wasted" cycles needed to sync with E-clock are marked with "-".
+- DMA debugger is wider. More space for future features.
+- New cputester tests done, for example all SR modification instructions (including STOP) tested with both trace + pending interrupt. No errors found.
+- If STOP was executed without trace active and STOP enabled trace, STOP still stops normally and only interrupt can wake it up. (b1)
+- Blitter busy bit read incorrectly as blit not busy if blitter was in non-nasty mode and not line mode and CPU stole second to last D channel slot.
+- Removed all remaining Windows 7/Vista checks (from days when XP and Vista was still supported).
+- "Remove interlace artifacts" is broken. Will be fixed later.
+
+68000 IPL notes:
+
+"IPL check/sample position" = when 68000 microcode detects if IPL line has changed, this depends on instruction and addressing mode. This affects when new interrupt starts, if it happens early enough during current instruction, interrupt can start when current instruction ends but if it happens later, following instruction is executed first.
+
+This can affect programs that for example enable interrupts and interrupt is already pending. Depending on current and following instruction, interrupt can start immediately or after next instruction. It can even break bad programs.
+
+IPL check is most commonly at the beginning of instruction after EA calculations or when last prefetch starts.
+- MOVEM.x <regs>,(An)+ checks IPL at the beginning of instruction. All other MOVEM addressing modes check it at the end of instruction.
+- MUL check IPL at the beginning of instruction, DIV check it at the end of instruction.
+- DIVS is special, if dividend is negative and divisor is positive, IPL check position is 2 cycles earlier (4 vs 6 cycles counted from end of instruction).
+- MOVEs are quite complex, common fetch position is when data is read but it really depends on source and destination EA and size. One exception are absolute short/long destinations which always have IPL check at the same position. Word moves are also mostly similar except immediate source and (an), (an)+ and -(an) destinations.
+- If instruction generates exception (including trap, divide by zero, chk), IPL is not checked. IPL check is always after exception checks.
+- Interrupt exception processing seems to check IPL at least 2 cycles earlier than non-interrupt exceptions.
+- If IPL check is at mid memory access, any wait state (DMA channel steals cycles from CPU) will also delay IPL check. Same also happens if memory access is using 6800 cycle (CIA access), IPL check is at the end of CIA access cycle.
+
+This finally makes 68000 emulation complete. Everything observable (that Amiga uses) outside of 68000 should be 100% cycle-accurate now.
+
+Beta 2:
+
+- Display resync blanking was stuck enabled (~1s blank screen when mode switches)
+- Internal emulated serial devices (for example laserdisc player) data transfer was unstable.
+- Z3 hardware emulated RTG board autoconfig size data was fixed and then was broken again.
+- Some NCR710+ SCSI controllers hung.
+- Serial port status bits were not correct in all CPU modes.
+- Internal CPU instruction emulation table refactoring, use separate table for instructions that return total cycles and instruction that count cycles internally (cycle-exact modes).
+- Quickstart panel floppy type dialog was partially clipped if GUI was using smaller default size.
+- D3D9 full install was accidentally required (d3dcompiler_47.dll error message).
+- Automatic fall back to GDI mode (if both D3D11 and D3D9 is not available) retried forever.
+
+Pre-4.9.2 fixes:
+
+- Box art path detection didn't parse cdimage0 paths correctly if path had "," character. ("," needs special case because path can be optionally followed by ",delay")
+- If only one autoconfig device was enabled and it was removed when emulator was running and then system was hard reset: old autoconfig data was not cleared causing disabled device to get misdetected by AmigaOS which usually caused hang.
+
+Beta 1:
+
+4.9.9 (or something like that) beta series start soon (1-2 weeks).
+Because huge amount of low level changes, next version won't be 5.0. Next version is almost guaranteed to have too many stupid bugs to be called 5.0.
+
+Main reason for delay is 68000 IPL timing testing. The last important part of cycle-accuracy. So far there has been 3 attempts this year, initial plan was to use serial port interrupts to generate cycle-accurately timed interrupt (connect TX to RX pin, send byte, when byte gets received, interrupt is generated). This didn't work because Paula serial port internal delays wasa unknown and I had no idea how to test it. Next plan was to use external hardware (microcontroller that pulls IPL lines). It worked but it wasn't fully cycle-accurate because of async clocks and it was annoying to use (I also didn't like requiring external hardware), it would have needed more hardware and I wanted to be it to be as simple as possible. Then we (me and ross) finally run out of weird display and CIA related tests and decided to analyze serial port timing. It took few more weeks (and also helped to confirm Paula interrupt timing). Finally serial port interrupt was usable for IPL testing. Still some tester software updates and testing to do before real work starts. This probably takes at least 1-2 months (it is soo boring..) which is the reason I plan to start beta series before IPL updates are done.
+
+Current changelog:
+
+- Added "Ultra extreme debug" overscan mode. Complete raster is fully visible, horizontal and vertical blanking disabled (including borderblank). COLOR0 changes are always visible.
+- CPU chipset bus access cycle allocation was not fully accurate. Basically addressing part of cycle and data transfer part of cycle was swapped. Has been wrong since CE mode was introduced. Fixes for example Batman the Caped Crusader. (Single cycle difference was all that was needed to fix it..). This can break some older state files.
+- 68000 STOP emulation rewritten, cycle usage and interrupt start timing is fully cycle accurate now.
+- If all bitplane start conditions were active except vertical DIWSTRT and DIWSTRT was written later with vertical value == current vertical, bitplane DMA started immediately but there should be 2 cycle delay. If bitplane DMA was disabled but all other conditions were already active and then DMACON was written to enable BPL DMA: DMA started 1-2 cycles too late.
+- If (quite short) bitplane DMA ends before all sprite slots have been processed, remaining sprite slots can still work normally (sprites are only inhibited when internal bitplane activity signal is active). This can also trigger very nasty (previously unknown?) chipset bug: when last bitplane DMA fetch happens, sprite DMA is not anymore inhibited by bitplane DMA (sort of off-by-one bug) and if same slot has active sprite, it will conflict with bitplane DMA. It can cause unexpected DMA write to another custom register (instead of BPLxDAT), possible range is from 0x100 to 0x11E. For example if it happens to be BPLCON0 (0x100), display can get corrupted or monitor can lose sync (or shows "No signal" message) if ERSY bit gets set. (Guess how this bug was found.. It was quite confusing when very innocent looking test program suddenly caused display to lose sync only on real hardware). This is now accurately emulated and DMA debugger will log conflicts.
+- Bitplane refresh slot conflicts are accurately emulated (see below)
+- Added monitor sync method configuration. Default is "Combined" (matches previous UAE versions that basically combines both modes), C-Sync: use composite sync signal as sync source, HV-Sync: use separate horizontal and vertical sync signals (VGA). Some programmed modes can have differences between sync modes or only work in HV sync mode or only in C sync mode in real world. For example ECS Denise can't generate both valid C-sync and programmed horizontal blanking simultaneously. AGA does not have this limitation.
+- Emulated display is now blanked if programmed display mode settings are impossible (real display would lose sync, become blanked or show "no signal"), for example really too short or really too long sync pulses, BPLCON0 ERSY set without genlock, BEAMCON0 BLANKEN or CSYTRUE and CSYNC monitor setting selected etc.. If old statefile is loaded with ERSY set without genlock: enable genlock to prevent unexpected blank screen.
+- Optional display resync blank screen added to Display panel. (Simulates "modern" display mode resync delay). If not enabled, OSD FPS counter will temporarily show "---"
+- DMA debugger had wrong address shown for second copper WAIT/SKIP cycle. (was same as previous read cycle)
+- Hires resolution and hires BPLCON1 bit set (or shres and shres BPLCON1 bit): single pixel horizontal offset may have appeared in right side of screen. AGA and non-subpixel mode only. (Skidmarks II in hires mode)
+- RTC is automatically enabled if chipset extra=<model without RTC> and system has fast ram, slow ram or chip ram expansion.
+- Higher 68000/010 integer clock multipliers (4x+) in CE mode: chipset access timing was not accurate.
+- A1000 Denise bug emulated: sprites end horizontally 1 lores pixel later than bitplane horizontal window end. Currently enabled when A1000 Agnus is selected.
+- Replaced internal 32-bit cycle counter with 64-bit counter, simplifies internal logic because annoying counter wrap around handling is not needed anymore.
+- Playfield to playfield collision (full collision) only worked when same line had at least one active sprite. (4.9.0)
+- Sprite to playfield collisions didn't work correctly (4.9.0)
+- Horizontal blanking was missing if programmed screen mode was active without programmed horizontal blanking (hardwired blanking should have been active)
+- CIA emulation refactored, fully cycle-accurate now. See below.
+- Max allowed programmed mode non-interlaced vertical line count is now 800 (from 592), special 700+ line programmed modes are possible and compatible with real SVGA monitors.
+- Statefile restore didn't restore static BPLxDAT values correctly (only affects OCS/ECS programs that use "7-plane" mode and only update BPLxDATs at startup). (broke in 4.1.0)
+- Copper zero cycle special cases updated, odd/even line length difference emulated. Copper list that "overflows" to beginning of next frame special case timing emulated, if copper has pending DMA request when COPJMP happens, COPJMP startup gets delayed by 1 copper cycle. Previously copper state was reset at cycle 0 and delayed start was queued which is not correct because first line's cycles 0 and 2 are still normally available for previous frame's copper list.
+- Blitter startup sometimes had extra idle cycle (4.9.0)
+- Blitter line mode with blit width != 2 is now accurately emulated and draws correct strange looking "lines" (previously it didn't do anything or line was normal looking)
+- Blitter interrupt started 1 cycle too late. (+1 was added long time ago becase it fixes one demo but actual bug was following INTREQ register handling)
+- If Paula internally sets INTREQ bit (not by writing to INTREQ with CPU or Copper): IPL line changes 1 CCK earlier, before INTREQR read returns new bit set.
+- Starting emulation or loading statefile before emulation has been started: vblank state variables was not initialized correctly, first field enabled sprite DMA too early. (4.9.0 or .1). Hardreset started was not exactly same as initial boot, CPU started few cycles later if hard reset.
+- Mid screen resolution changes are now pixel perfect (AGA fully implemented, OCS and ECS Denise only partially correct)
+- Save MSM6242B RTC model control registers to RTC file if they are modified. Previously only RF5C01A control registers (and NVRAM) was saved.
+- Serial port interrupts and SERDATR are now cycle-accurate. (Only if CPU memory cycle exact enabled)
+- Serial port transmit interrupts and SERDATR transmit related bits are now emulated even when serial port = none.
+- Serial port optional loopback mode added. TX->RX. RTS->CTS. DTR->DSR+CD. This is also cycle-accurate (for cputester IPL timing testing without extra hardware, only need TX to RX jumper wire)
+- Second 1M extended ROM bank is now internally split to two 512k banks. Non-aligned bank start and size caused problems in some configs.
+- uaegfx Picasso96 v3.0+ mixed mode screen dragging is enabled by default. 4.9.1 required "-p96test 1" command line parameter.
+- 4.9.1 uaegfx Picasso96 screen dragging without ""-p96test 1" command line parameter crashed emulated Amiga.
+- uaegfx new Picasso96 features are now optional (all enabled by default). Config file only.
+- uaegfx all Picasso96 functions are now fully "hardware accelerated" (uses host side native code), excluding line draw. Previously some functions only supported common minterms/mask operations, unsupported operations were handled by Picasso96 software. Minterms that read and invert destination do not anymore invert unused/alpha bits if mode has them (15bit/32bit). Always use RGBFormat parameter in D7 if available, instead of RenderInfo RGBFormat variable.
+- Chipset programmed display modes (again) use horizontal blanking timing to calculate display positioning. It has been confirmed that at least some early/mid 1990s multisync SVGA monitors (for example Microvitec 1438) do also use blanking timing to calculate display size and position instead of only relying on hsync/vsync timing.
+- Hardware emulated RTG boards that have physically swapped red and blue output (Spectrum, Piccolo, Piccolo SD64) had wrong colors in 24/32-bit modes.
+- Piccolo Z3 and Piccolo SD64 Z3 had wrong autoconfig board logical size (which crashed the driver).
+- If hardware emulated RTG board VRAM was immediately (no gap in address space) after any RAM/ROM region and JIT direct was enabled: first 4096 bytes (host CPU page size) of VRAM was not fully JIT direct compatible and any direct read or write to first 4096 bytes would not access VRAM correctly, causing unexpected graphics glitches.
+- Simplified JIT direct exception handler, win32 exception context structure can be used to directly read and modify any host CPU registers, there is no need for trampolines and self modifying code.
+- Chip RAM and Slow RAM initial power up pattern emulation is enabled by default (checkbox in advanced chipset). Now matches my real hardware (A500 OCS/A500 ECS/A1200) but modified configurations like ECS Agnus in rev5 (or older) mainboard don't create correct patterns. Random set/cleared bits are not generated, only all ones/all zeros repeating pattern. Pattern depends on ram chip type and manufacturer. Other chips can have different patterns.
+- Disk data read returned random data even when no drive was selected (should return zeros only). Fixes corruption in original Nitro Psygnosis screen. Also fixed another related bug when no selected drives and disk sync matches side-effect that caused Juke Box 2 / Dreamdealers to hang at boot.
+
+- Switched to Visual Studio 2022.
+- Larger default GUI size and slightly larger font if Windows desktop is large enough (at least 1600*1024)
+- Finally removed huge amounts of compilation warnings (excluding PCem).
+- Quickstart panel initial UI element is now DF0: image selection button. Too many accidental Amiga model changes..
+- DirectDraw support removed, added GDI (win32 basic GDI API) support. Function differences: exclusive fullscreen is not supported (switches to D3D11/9 if attempted), all basic scaling modes and uaegfx hardware cursor supported.
+- Box art window screen shot rightmost pixel column and bottom pixel row was not visible.
+- Crash dump dialog close button usually didn't do anything.
+- ROM scanner dialog didn't use correct GUI size and fonts.
+- CyberStorm MK I update: Accelerator and SCSI has been split. CyberSCSI module is now expansion board and has separate ROM image (works similar to Blizzard SCSI Kit). Main ROM should be only configured if CPU is 68060 because it will crash if CPU is 68040, it is only needed to disable 68060 FPU. Real CSMK1 had empty ROM socket(s) if installed CPU was 68040.
+- Visual DMA debugger shows conflicting cycles as blinking red pixels.
+- DMA debugger (both console and visual) better support for variable/toggling horizontal and vertical line counts.
+- It was not possible to enter debugger anymore if CPU was stuck in stopped state after entering and exiting the debugger once.
+- Added OR, AND and XOR operators to debugger calculator (|, &, ^)
+- Debugger v command does not anymore crash if hpos or vpos is out of range.
+- Debugger v command now (at least temporarily) shows Chip RAM row and column (RAS and CAS) addressing values. Very important for REFPTR and refresh/bitplane conflict behavior.
+- Debugger sp command parsed attached sprites incorrectly (since the beginning).
+- Changed CTRL+F12 fullscreen/windowed switch: If already switched from full-window to window. Next CTRL+F12 will return back to full-window, not fullscreen.
+- Quickstart panel floppy bootblock check used current track of drive (not track 0). Broken when FloppyBridge support was added.
+- Reset FloppyBridge state when changing floppy drive type to/from FB drive type to some other drive type. Fixes uae-configuration on the fly floppy drive type change to/from FB.
+- Memwatch break point that crossed 64k "bank" didn't map last 64k "bank" if it was only partially needed.
+- Self modifying code (smc) debugger feature now clears detected modifications if 68020+ instruction cache is flushed.
+- Do not add CPU instruction history entries when CPU is stopped.
+- Horizontal and vertical position is now included in debugger history output (H/HH)
+- Added CPU STOP state information to DMA debugger (| = STOP idle cycle, + = STOP idle cycle and higher IPL detected = STOP ending soon)
+- DMA debugger decimal horizontal cycle counter value removed, replaced with current IPL (interrupt level) line state.
+- DMA debugger shows CPU opcodes in basic form ("NOP", "MOVE" etc), vertically. It looks a bit weird but didn't have better ideas..
+- Advanced chipset CD32 NVRAM or C2P without CD32 CD was not fully supported.
+- CD32/CDTV Quickstart mode "remembered" previous DF0: setting and didn't disable it by default (even if Quickstart panel showed it as disabled)
+- CD32/CDTV Quickstart panel DF0: was not possible to select/enable.
+- uaegfx automatic integer scaling supported (chooses max fully visible integer scaling multiplier), manual filter panel horizontal/vertical multipliers supported.
+- END+F9 monitor switching is not anymore hardwired and can be changed using input panel. (END+F9 debug colors when in lagless vsync mode is still hardwired)
+- CD audio is now always mixed with Paula audio. Separate CD audio output support removed.
+- CD audio was not resumed if WinUAE was unminimized and minimize was configured to pause emulation.
+- Z2 RAM configuration was unreliable. (4.9.0)
+- Some American Laser Games didn't have ROM descrambling support. Added missing ROM variants.
+- Added American Laser Games Quickstart support.
+- If Quickstart ROM based Arcade hardware config (Arcadia or ALG) is selected, NVRAM file name is automatically set to ROM name. Genlock video file path is also set if ALG ROM is selected. Config files are not affected.
+- Added all 3.1.4+ official KS ROMs to ROM scanner.
+- ROM file list sorting changed, added grouping, sort by group priority first (KS ROMs, extended KS ROMs, freezer ROMs etc..), then alphabetically.
+- Integer scaling had scaling artifacts that depended on window size and other variables. (Old bug)
+- Added NVRAM path to Paths panel. (Arcade/CD32/CDTV hardware NVRAM files default to this path)
+- Sometimes old graphics was temporarily visible in RTG modes if RTG had visible black borders (depends on scaling mode) and screen was switched and new screen had larger size/resolution.
+- CTRL+C in console window does not anymore close WinUAE. (CTRL+C in newer Windows versions can work as a Copy operation)
+- Added video recording file select inputevent. This also starts recording if file was selected.
+- Window border FPS counter value has "R" appended if recording is active.
+- Creating directory filesystem soft link didn't work (returned "object not found") in relative path mode (Windows needs absolute path when creating shortcut files)
+- Directory filesystem soft links only resolved if directory containing link was listed first or if softlink was created in same session (softlink was "cached" by filesystem emulation).
+- Added "Slow" flag to RAM panel. If set, selected memory bank has Chip RAM timing but is not Chip RAM capable. Advanced chipset panel "C00000 is Fast RAM" removed, it is not needed anymore. (Only affects CPU speed in cycle exact modes)
+- ECS Denise Genlock features can be enabled manually: genlock_effects=<number of color palette indexes that become transparent> or p<number of bitplanes that becomes transparent if bit set>. "brdntran" can be used to force enable BPLCON2 BRDNTRAN bit, "brdrblnk" to force enable BPLCON2 BRDRBLNK bit. Separated by comma. (for example "genlock_effects=3,15,p7")
+- Genlock sprite color selection bug fix.
+- Genlock ECS Denise BPLCON2 BRDNTRAN emulation fixed. Not real HW tested but I think it is supposed to make border look normal even if color 0 is genlock transparent.
+- Genlock ZCLKEN BPLCON3 bit emulated, if set, genlock transparency video out pin (PIXELSW) starts outputting 14MHz pixel clock. Emulation creates alternating hires pixel size toggling transparency if enabled and genlock is configured. (Which probably is what happens in real world too when genlock is connected. Originally it probably was supposed to be pixel sync signal for external video devices)
+- Added Output panel optional 256 color palette indexed png screenshot support. If screenshot has more than 256 unique colors, 24-bit png is created like previously. It also tries to keep original palette order: first screenshot's unique colors are collected, then custom color register values are collected (values at the end of previous field), screenshot colors are matched with custom colors, if match found, color is marked as allocated. Then all remaining colors (copper color changes, EHB, HAM, on screen leds, blanking black etc..) are added to palette. If total is more than 256, 24-bit png is created. 256 color mode also tries to preserve first 32 color palette entries. (Preserved = color is not overwritten by another color even if color is not used in screenshot)
+- Optional IFF screenshot support (-screenshotiff or screenshot_mode=2 registry/ini). IFF mode does not attempt to preserve first 32 color palette entries to keep image depth as small as possible. IFF is not (yet) compressed.
+- Debugger 's' and 'W' quoting support improved, for example "W xxx "ab'c" works as expected.
+
+CIA updates:
+
+- Major rewrite, code duplication removed.
+- Cycle-accurate (timers were cycle-accurate previously but not much else), CIA bugs/"features" emulated. Most of these have been inherited from 6526.
+- CIA E-clock counting and CPU to E-clock synchronization rewritten.
+- CIA-B TOD increment horizontal position calculation was broken, CIA-B TOD was incremented too early horizontally and could increase TOD twice if TOD was also modified in same line or line's TOD increment might have been missed completely. More compatible/CE only.
+- CIA TOD internal increment by 1 is weird, TOD incremented value can be only updated every 4th E-clock (I guess full timer update is internally spread to 4 cycles). This also affects alarm interrupt timing.
+- CIA-A TOD increment position is now cycle-accurate, including above every 4th E-clock behavior.
+- CIA CPU access E-clock sync updated to include delay caused by VPA/VMA signals.
+- CIA interrupts are delayed by 1 E-clock.
+- Many undocumented special cases emulated, for example timer latch values 0 and 1 work unexpectedly (not very surprising, zero timer value probably wasn't designed to be used..).
+- If CIA timer was started by writing to TxHI (ONESHOT mode) with timer previously loaded with value==0: interrupt is generated 1 cycle earlier than normally.
+- CIA B-timer counting A-timer underflows: B-timer counts down 2 cycles after A had underflowed. Was immediate previously.
+- Added E-clock phase (0 to 4) config file entry. Real 68000 E-clock phase relative to CPU clock is random, decided when system is powered up. At least my real A500 rarely powers up in E-clock phase=0 state (which UAE uses by default). Usually it seems to be 2 or 3. Phase can be detected in software using some tricks but no normal program cares.
+- Word read from CIA-B space now returns correct register contents in upper byte. Previously it returned register content OR'd with previous bus data.
+- CIA accesses added to DMA debugger (new line)
+- Debugger CIA register dump current timer values were not necessary actual current values but values when any CIA register was last accessed.
+- CIA E-clock cycle option added, A500 (68000 generates E-clock timing) has slightly different E-clock timing than A600 (Gayle generates E-clock). Option added to Advanced chipset. No normal program cares but this difference can be detected by software. Main difference is that Gayle generated E-clock is 2 CPU clocks longer than 68000 internal generated E-clock which makes it impossible to do back to back CIA accesses if Gayle based Amiga.
+- Most special case are only emulated if CPU is more compatible and not fastest possible.
+
+Refresh slot conflict details:
+
+- Main discovery was hidden internal DMA refresh pointer ("RDMAPT"). REFPTR can be written to modify it (not 1:1 because REFPTR is only 16 bits, few low bits affect multiple RDMAPT bits).
+- OCS has very different RDMAPT to RAS/CAS mapping than other chipsets. ECS 1M, ECS 2M and AGA have only small differences. Currently there is no separate 1M/2M Agnus selection, 2M Agnus is selected if Chip RAM size is larger than 1M and not AGA. This is not important because it only affects refresh conflict side-effects.
+
+When bitplane DMA conflicts with refresh slot:
+- Both RDMAPT and BPLxPT gets modified: Temp PT = RDMAPT OR BPLxPT. TPT is increased by 2 (if OCS) or $200 (if ECS). This increases Chip RAM RAS addressing value by one which is used for Chip DRAM refresh (RAS only refresh. AGA uses CBR refresh and RDMAPT increment has been removed). This overrides normal BPTxPT increase by 2. If BPL modulo is added, modulo is OR'd with refresh $2/$200 value, then modified modulo is added to TPT. Finally TPT is copied back to RDMAPT and BPLxPT. This explains graphics corruption but is not the only reason.
+- DMA target address becomes BPLxDAT AND refresh slot address. First refresh slot: strobe address AND BPLxDAT which always results in read-only register so nothing special happens. Denise also does not see this BPLxDAT write which can make a visible difference if it was originally BPL1DAT. If later refresh slot (and not ECS and not NTSC long line which uses second refresh slot for STRLONG strobe): 0x1FE AND BPLxDAT = always original BPLxDAT.
+- Because horizontal strobe register address gets corrupted, Denise does not know where horizontal start is located. Horizontal strobe normally resets Denise/Lisa internal horizontal counter.
+- Paula also does not see horizontal strobe: disk and audio DMA requests are not sent to Agnus during conflict lines, this causes audio glitches. (and failed disk read/writes)
+
+Missing horizontal strobe causes Denise's internal 9-bit horizontal counter to free-run which adds "random" offset to every horizontal decision inside Denise:
+- DIW (DIWSTRT/STOP/HIGH). Visually this causes full horizontal overscan with unusual border color stripe pattern that repeats every 7 lines.
+- Bitplane horizontal BPLCON1 positioning becomes jagged.
+- Sprite horizontal position. Sprites become horizontal stripes and same stripe can appear twice/scanline.
+- Horizontal blanking. This can cause display device to see non-black color in horizontal or vertical blanking region (if COLOR0 is not black), confusing black level detection. Usual side-effect is line becoming darker than other lines or have pulsing brightness or weird colors (if COLOR0 RGB components have different values). This is not (yet) emulated.
+
+Example programs that have refresh bitplane DMA conflicts if ECS Agnus:
+
+http://janeway.exotica.org.uk/release.php?id=6029 (Only single conflict)
+http://janeway.exotica.org.uk/release.php?id=2219 (Multiple conflict lines)
+http://janeway.exotica.org.uk/release.php?id=19588 (Whole visible display! Everything!)
+
+Note that glitches can change depending on unused memory contents, memory config and chipset model.
+WARNING: last 2 have very glitchy music because Paula can't send new audio DMA requests to Agnus if first refresh cycle conflicts.
+
+TODO:
+
+68000 IPL testing and fixing. Tester working using TX to RX serial loop back (No more need for external hardware). Tester and emulation updates should be finally done, instruction testing will start soon.
+Pixel perfect (including chip model specific "artifacts") OCS Denise and ECS Denise mid screen horizontal resolution change.
+
+Thanks to ross again for Display/CIA/Serial tests that require extreme cycle-accuracy to work correctly :)
+
+
 4.9.1
 
 Beta 9:

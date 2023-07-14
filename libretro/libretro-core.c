@@ -5328,19 +5328,19 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
                (device == RETRO_DEVICE_JOYPAD && strstr(full_path, "_Arcadia")))
             arcadia_pad_enabled[uae_port] = 1;
 
-         changed_prefs.jports[port].mode    = 0;
-         changed_prefs.jports[port].submode = 0;
+         changed_prefs.jports[port].jd[0].mode    = 0;
+         changed_prefs.jports[port].jd[0].submode = 0;
 
          if (device == RETRO_DEVICE_PUAE_LIGHTGUN)
          {
-            changed_prefs.jports[port].mode    = 8;
-            changed_prefs.jports[port].submode = 1;
+            changed_prefs.jports[port].jd[0].mode    = 8;
+            changed_prefs.jports[port].jd[0].submode = 1;
          }
          else
          if (device == RETRO_DEVICE_PUAE_LIGHTPEN)
          {
-            changed_prefs.jports[port].mode    = 8;
-            changed_prefs.jports[port].submode = 0;
+            changed_prefs.jports[port].jd[0].mode    = 8;
+            changed_prefs.jports[port].jd[0].submode = 0;
          }
       }
 

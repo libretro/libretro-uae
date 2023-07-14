@@ -629,6 +629,7 @@ static bool isdataflyerscsiplus(uaecptr addr, uae_u32 *v, int size)
 
 static bool isa4000t (uaecptr *paddr)
 {
+#ifdef NCR
 	if (!is_a4000t_scsi())
 		return false;
 	uaecptr addr = *paddr;
@@ -637,6 +638,9 @@ static bool isa4000t (uaecptr *paddr)
 	addr &= 0xff;
 	*paddr = addr;
 	return true;
+#else
+	return false;
+#endif
 }
 
 static uae_u32 REGPARAM2 gayle_lget (uaecptr addr)
@@ -734,6 +738,7 @@ static void REGPARAM2 gayle_lput (uaecptr addr, uae_u32 value)
 		return;
 	}
 	if (isa4000t(&addr)) {
+#ifdef NCR
 		if (addr >= NCR_ALT_OFFSET) {
 			addr &= NCR_MASK;
 			ncr710_io_bput_a4000t(addr + 3, value >> 0);
@@ -747,6 +752,7 @@ static void REGPARAM2 gayle_lput (uaecptr addr, uae_u32 value)
 			ncr710_io_bput_a4000t(addr + 1, value >> 16);
 			ncr710_io_bput_a4000t(addr + 0, value >> 24);
 		}
+#endif
 		return;
 	}
 	ide_reg = get_gayle_ide_reg (addr, &ide);
@@ -1278,7 +1284,7 @@ static void initscideattr (int readonly)
 	strcpy ((char*)p, "Generic Emulated PCMCIA IDE");
 	p += strlen ((char*)p) + 1;
 	*p++= 0xff;
-	*rp = p - rp - 1;
+	*rp = addrdiff(p, rp) - 1;
 
 	/* CISTPL_FUNCID */
 	*p++ = 0x21;
@@ -1380,7 +1386,7 @@ static void initsramattr (int size, int readonly)
 	sprintf ((char*)p, "Generic Emulated %dKB PCMCIA SRAM Card", size >> 10);
 	p += strlen ((char*)p) + 1;
 	*p++= 0xff;
-	*rp = p - rp - 1;
+	*rp = addrdiff(p, rp) - 1;
 
 	/* CISTPL_FUNCID */
 	*p++ = 0x21;
@@ -1505,10 +1511,10 @@ static int initpcmcia (const TCHAR *path, int readonly, int type, int reset, str
 
 		if (!pcmcia_disk->hfd.drive_empty) {
 			int extrasize = 0;
-			pcmcia_common_size = pcmcia_disk->hfd.virtsize;
+			pcmcia_common_size = (int)pcmcia_disk->hfd.virtsize;
 			if (pcmcia_disk->hfd.virtsize > 4 * 1024 * 1024) {
 				write_log (_T("PCMCIA SRAM: too large device, %llu bytes\n"), pcmcia_disk->hfd.virtsize);
-				extrasize = pcmcia_disk->hfd.virtsize - 4 * 1024 * 1024;
+				extrasize = (int)pcmcia_disk->hfd.virtsize - 4 * 1024 * 1024;
 				if (extrasize > 262144)
 					extrasize = 262144;
 				extrasize &= ~511;
@@ -2202,7 +2208,7 @@ static void gayle_init(void)
 	device_add_exit(gayle_free);
 }
 
-uae_u8 *save_gayle (int *len, uae_u8 *dstptr)
+uae_u8 *save_gayle(size_t *len, uae_u8 *dstptr)
 {
 	uae_u8 *dstbak, *dst;
 
@@ -2222,7 +2228,7 @@ uae_u8 *save_gayle (int *len, uae_u8 *dstptr)
 	return dstbak;
 }
 
-uae_u8 *save_gayle_ide (int num, int *len, uae_u8 *dstptr)
+uae_u8 *save_gayle_ide(int num, size_t *len, uae_u8 *dstptr)
 {
 	uae_u8 *dstbak, *dst;
 	struct ide_hdf *ide;

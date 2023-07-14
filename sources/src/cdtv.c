@@ -17,6 +17,8 @@
 #include "sysconfig.h"
 #include "sysdeps.h"
 
+#ifdef CDTV
+
 #include "options.h"
 #include "memory.h"
 #include "custom.h"
@@ -597,8 +599,8 @@ static void cdrom_command_thread (uae_u8 b)
 		break;
 	case 0x83:
 		if (cdrom_command_cnt_in == 7) {
-			memcpy (cdrom_command_output, MODEL_NAME, strlen (MODEL_NAME)); 
-			cdrom_command_accepted (strlen (MODEL_NAME), s, &cdrom_command_cnt_in);
+			memcpy (cdrom_command_output, MODEL_NAME, uaestrlen(MODEL_NAME)); 
+			cdrom_command_accepted (uaestrlen(MODEL_NAME), s, &cdrom_command_cnt_in);
 			cd_finished = 1;
 		}
 	case 0x84:
@@ -1082,7 +1084,7 @@ void cdtv_getdmadata (uae_u32 *acr)
 	*acr = dmac_acr;
 }
 
-static void checkint (void)
+static void cdtv_checkint (void)
 {
 	int irq = 0;
 
@@ -1099,7 +1101,7 @@ static void checkint (void)
 
 void cdtv_scsi_int (void)
 {
-	checkint ();
+	cdtv_checkint ();
 }
 void cdtv_scsi_clear_int (void)
 {
@@ -1108,7 +1110,7 @@ void cdtv_scsi_clear_int (void)
 
 static void rethink_cdtv (void)
 {
-	checkint ();
+	cdtv_checkint ();
 	tp_check_interrupts ();
 }
 
@@ -1134,7 +1136,7 @@ static void CDTV_hsync_handler (void)
 		dma_finished = 0;
 		cdtv_hsync = -1;
 	}
-	checkint ();
+	cdtv_checkint ();
 
 	if (cdrom_command_done) {
 		cdrom_command_done = 0;
@@ -1283,7 +1285,7 @@ static uae_u32 dmac_bget2 (uaecptr addr)
 	case 0x93:
 		if (cdtvscsi) {
 			v = wdscsi_get (&wd_cdtv->wc, wd_cdtv);
-			checkint ();
+			cdtv_checkint ();
 		}
 		break;
 	case 0xa1:
@@ -1386,13 +1388,13 @@ static void dmac_bput2 (uaecptr addr, uae_u32 b)
 	case 0x91:
 		if (cdtvscsi) {
 			wdscsi_sasr (&wd_cdtv->wc, b);
-			checkint ();
+			cdtv_checkint ();
 		}
 		break;
 	case 0x93:
 		if (cdtvscsi) {
 			wdscsi_put (&wd_cdtv->wc, wd_cdtv, b);
-			checkint ();
+			cdtv_checkint ();
 		}
 		break;
 	case 0xa1:
@@ -1416,7 +1418,7 @@ static void dmac_bput2 (uaecptr addr, uae_u32 b)
 	case 0xe4:
 	case 0xe5:
 		dmac_istr = 0;
-		checkint ();
+		cdtv_checkint ();
 		break;
 	case 0xe8:
 	case 0xe9:
@@ -1589,7 +1591,7 @@ static void cdtv_savecardmem (uae_u8 *p, int size)
 static void cdtv_battram_reset (void)
 {
 	struct zfile *f;
-	int v;
+	size_t v;
 
 	memset (cdtv_battram, 0, CDTV_NVRAM_SIZE);
 	cfgfile_resolve_path_out_load(currprefs.flashfile, flashfilepath, MAX_DPATH, PATH_ROM);
@@ -1780,7 +1782,7 @@ bool cdtvscsi_init(struct autoconfig_info *aci)
 
 #ifdef SAVESTATE
 
-uae_u8 *save_cdtv_dmac (int *len, uae_u8 *dstptr)
+uae_u8 *save_cdtv_dmac (size_t *len, uae_u8 *dstptr)
 {
 	uae_u8 *dstbak, *dst;
 	
@@ -1820,7 +1822,7 @@ uae_u8 *restore_cdtv_dmac (uae_u8 *src)
 	return src;
 }
 
-uae_u8 *save_cdtv (int *len, uae_u8 *dstptr)
+uae_u8 *save_cdtv (size_t *len, uae_u8 *dstptr)
 {
 	uae_u8 *dstbak, *dst;
 
@@ -1950,4 +1952,6 @@ void restore_cdtv_final(void)
 	}
 }
 
-#endif
+#endif /* SAVESTATE */
+
+#endif /* CDTV */

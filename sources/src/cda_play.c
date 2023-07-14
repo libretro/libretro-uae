@@ -31,7 +31,7 @@ void cda_delete()
     cda_audio_bufsize = 0;
 }
 
-void cda_new(int num_sectors, int sectorsize, int samplerate, bool internalmode)
+void cda_new(int num_sectors, int sectorsize, int samplerate)
 {
     memset(&cda_audio_buffers, 0, sizeof cda_audio_buffers);
 
@@ -46,9 +46,6 @@ void cda_new(int num_sectors, int sectorsize, int samplerate, bool internalmode)
         cda_audio_buffers[i] = xcalloc (uae_u8, num_sectors * ((cda_audio_bufsize + 4095) & ~4095));
     }
     cda_audio_num_sectors = num_sectors;
-
-    if (internalmode)
-        return;
 
     cda_audio_active = true;
     cda_audio_playing = true;

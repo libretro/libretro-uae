@@ -43,7 +43,7 @@ static bool sndboard_init_capture(int freq);
 static void uaesndboard_reset(int hardreset);
 static void sndboard_reset(int hardreset);
 
-static double base_event_clock;
+static float base_event_clock;
 
 extern addrbank uaesndboard_bank_z2, uaesndboard_bank_z3;
 
@@ -646,7 +646,7 @@ static bool audio_state_sndboard_uae(int streamid, void *params)
 	if (!s)
 		return false;
 	int highestch = s->ch;
-	int streamnum = s - data->stream;
+	int streamnum = (int)(s - data->stream);
 	if (s->play && (data->streammask & (1 << streamnum))) {
 		uaecptr addr;
 		int len;
@@ -855,7 +855,7 @@ static void uaesnd_timer(uae_u32 v)
 	if (s->timer_cnt > 0 && data->enabled) {
 		s->timer_event_time = uaesnd_timer_period(s->timer_cnt);
 		if (s->timer_event_time > 0) {
-			event2_newevent_xx(-1, s->timer_event_time, s - &data->stream[0], uaesnd_timer);
+			event2_newevent_xx(-1, s->timer_event_time, (int)(s - &data->stream[0]), uaesnd_timer);
 			uaesnd_irq(s, 0x10);
 		}
 	}
@@ -884,7 +884,7 @@ static void uaesnd_put(struct uaesndboard_data *data, struct uaesndboard_stream 
 				s->timer_event_time = uaesnd_timer_period(timer_cnt);
 				if (s->timer_event_time > 0) {
 					s->timer_cnt = timer_cnt;
-					event2_newevent_xx(-1, s->timer_event_time, ((data - &uaesndboard[0]) << 16) | (s - &data->stream[0]), uaesnd_timer);
+					event2_newevent_xx(-1, s->timer_event_time, (((int)(data - &uaesndboard[0])) << 16) | ((int)(s - &data->stream[0])), uaesnd_timer);
 				}
 			}
 		}
@@ -1499,7 +1499,7 @@ extern addrbank toccata_bank;
 #define STATUS_READ_RECORD_HALF 4
 
 
-void update_sndboard_sound (double clk)
+void update_sndboard_sound (float clk)
 {
 	base_event_clock = clk;
 }
@@ -1675,8 +1675,8 @@ static void codec_start(struct snddev_data *data)
 
 	codec_setup(data);
 
-	data->event_time = base_event_clock * CYCLE_UNIT / data->freq;
-	data->record_event_time = base_event_clock * CYCLE_UNIT / (data->freq_adjusted * data->record_bytespersample);
+	data->event_time = (int)(base_event_clock * CYCLE_UNIT / data->freq);
+	data->record_event_time = (int)(base_event_clock * CYCLE_UNIT / (data->freq_adjusted * data->record_bytespersample));
 	data->record_event_counter = 0;
 
 	if (data->snddev_active & STATUS_FIFO_PLAY) {
@@ -1975,8 +1975,6 @@ static void toccata_put(struct snddev_data *data, uaecptr addr, uae_u8 v)
 			data->fifo_write_index = 0;
 			data->fifo_read_index = 0;
 			data->data_in_fifo = 0;
-			data->snddev_status = 0;
-			data->snddev_irq = 0;
 			data->fifo_half = 0;
 		} else if (addr < 0x90 || addr >= 0xc0) {
 			hit = false;
@@ -1991,8 +1989,6 @@ static void toccata_put(struct snddev_data *data, uaecptr addr, uae_u8 v)
 				data->fifo_write_index = 0;
 				data->fifo_read_index = 0;
 				data->data_in_fifo = 0;
-				data->snddev_status = 0;
-				data->snddev_irq = 0;
 				data->fifo_half = 0;
 			} else if ((addr & 0x00ff) == 0x19) { // ?
 				;
@@ -2531,7 +2527,7 @@ static void fm801_play(struct fm801_data *data)
 	data->freq = fm801_freq[f];
 	if (!data->freq)
 		data->freq = 44100;
-	data->event_time = base_event_clock * CYCLE_UNIT / data->freq;
+	data->event_time = (int)(base_event_clock * CYCLE_UNIT / data->freq);
 	data->bits = (control & 0x4000) ? 16 : 8;
 	f = (control >> 12) & 3;
 	switch (f)
@@ -2691,19 +2687,28 @@ static bool fm801_init(struct pci_board_state *pcibs, struct autoconfig_info *ac
 	return false;
 }
 
+static void fm801_config(struct pci_board_state *pcibs, uae_u8 *cfg)
+{
+	// Status register is read-only
+	cfg[4] = 0x02;
+	cfg[5] = 0x80;
+	// Clear command register reserved
+	cfg[6] &= 3;
+}
+
 static const struct pci_config fm801_pci_config =
 {
-	0x1319, 0x0801, 0, 0, 0xb2, 0x040100, 0x80, 0x1319, 0x1319, 1, 0x04, 0x28, { 128 | 1, 0, 0, 0, 0, 0, 0 }
+	0x1319, 0x0801, 0, 0x280, 0xb2, 0x040100, 0x80, 0x1319, 0x1319, 1, 0x04, 0x28, { 128 | 1, 0, 0, 0, 0, 0, 0 }
 };
 static const struct pci_config fm801_pci_config_func1 =
 {
-	0x1319, 0x0802, 0, 0, 0xb2, 0x098000, 0x80, 0x1319, 0x1319, 0, 0x04, 0x28, { 16 | 1, 0, 0, 0, 0, 0, 0 }
+	0x1319, 0x0802, 0, 0x280, 0xb2, 0x098000, 0x80, 0x1319, 0x1319, 0, 0x04, 0x28, { 16 | 1, 0, 0, 0, 0, 0, 0 }
 };
 
 const struct pci_board fm801_pci_board =
 {
 	_T("FM801"),
-	&fm801_pci_config, fm801_init, fm801_free, fm801_reset, fm801_hsync_handler,
+	&fm801_pci_config, fm801_init, fm801_free, fm801_reset, fm801_hsync_handler, fm801_config,
 	{
 		{ fm801_lget, fm801_wget, fm801_bget, fm801_lput, fm801_wput, fm801_bput },
 		{ NULL },
@@ -2719,7 +2724,7 @@ const struct pci_board fm801_pci_board =
 const struct pci_board fm801_pci_board_func1 =
 {
 	_T("FM801-2"),
-	&fm801_pci_config_func1, NULL, NULL, NULL, NULL,
+	&fm801_pci_config_func1, NULL, NULL, NULL, NULL, fm801_config,
 	{
 		{ fm801_lget, fm801_wget, fm801_bget, fm801_lput, fm801_wput, fm801_bput },
 		{ NULL },
@@ -2813,7 +2818,7 @@ static const struct pci_config solo1_pci_config =
 const struct pci_board solo1_pci_board =
 {
 	_T("SOLO1"),
-	&solo1_pci_config, solo1_init, solo1_free, solo1_reset, NULL,
+	&solo1_pci_config, solo1_init, solo1_free, solo1_reset, NULL, NULL,
 	{
 		{ solo1_lget, solo1_wget, solo1_bget, solo1_lput, solo1_wput, solo1_bput },
 		{ solo1_lget, solo1_wget, solo1_bget, solo1_lput, solo1_wput, solo1_bput },
@@ -2901,7 +2906,7 @@ int AUD_write(SWVoiceOut *sw, void *pcm_buf, int size)
 void AUD_set_active_out(SWVoiceOut *sw, int on)
 {
 	sw->active = on != 0;
-	sw->event_time = base_event_clock * CYCLE_UNIT / sw->freq;
+	sw->event_time = (int)(base_event_clock * CYCLE_UNIT / sw->freq);
 	sw->samplebuf_index = 0;
 	sw->samplebuf_total = 0;
 	calculate_volume_qemu();

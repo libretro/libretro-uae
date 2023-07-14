@@ -1285,6 +1285,55 @@ void protect_roms (bool protect)
 	}
 }
 
+// Mark indirect regions (indirect VRAM) as non-accessible when JIT direct is active.
+// Beginning of region might have barrier region which is not marked as non-accessible,
+// allowing JIT direct to think it is directly accessible VRAM.
+void mman_set_barriers(bool disable)
+{
+	addrbank *abprev = NULL;
+	for (int i = 0; i < MEMORY_BANKS; i++) {
+		uaecptr addr = i * 0x10000;
+		addrbank *ab = &get_mem_bank(addr);
+		if (ab == abprev) {
+			continue;
+		}
+		int size = 0x10000;
+		for (int j = i + 1; j < MEMORY_BANKS; j++) {
+			uaecptr addr2 = j * 0x10000;
+			addrbank *ab2 = &get_mem_bank(addr2);
+			if (ab2 != ab) {
+				break;
+			}
+			size += 0x10000;
+		}
+		abprev = ab;
+		if (ab && ab->baseaddr == NULL && (ab->flags & ABFLAG_ALLOCINDIRECT)) {
+			DWORD old;
+			if (disable || !currprefs.cachesize || currprefs.comptrustbyte || currprefs.comptrustword || currprefs.comptrustlong) {
+				if (!ab->protectmode) {
+					ab->protectmode = PAGE_READWRITE;
+				}
+				if (!VirtualProtect(addr + natmem_offset, size, ab->protectmode, &old)) {
+					size = 0x1000;
+					VirtualProtect(addr + natmem_offset, size, ab->protectmode, &old);
+				}
+				write_log("%08x-%08x = access restored (%08x)\n", addr, size, ab->protectmode);
+			} else {
+				if (VirtualProtect(addr + natmem_offset, size, PAGE_NOACCESS, &old)) {
+					ab->protectmode = old;
+					write_log("%08x-%08x = set to no access\n", addr, addr + size);
+				} else {
+					size = 0x1000;
+					if (VirtualProtect(addr + natmem_offset, size, PAGE_NOACCESS, &old)) {
+						ab->protectmode = old;
+						write_log("%08x-%08x = set to no access\n", addr, addr + size);
+					}
+				}
+			}
+		}
+	}
+}
+
 int uae_shmdt (const void *shmaddr)
 {
 	return 0;

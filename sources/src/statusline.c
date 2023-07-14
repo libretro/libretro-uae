@@ -34,8 +34,8 @@ void statusline_getpos(int monid, int *x, int *y, int width, int height)
 	int mx = td_custom ? 1 : statusline_get_multiplier(monid) / 100;
 	int total_height = TD_TOTAL_HEIGHT * mx;
 #ifdef __LIBRETRO__
-	currprefs.osd_pos.x=0;
-	currprefs.osd_pos.y=(opt_statusbar_position == -1) ? 30000 : opt_statusbar_position; /* Have to fake -1 to get -0 as top position */
+	currprefs.osd_pos.x = 0;
+	currprefs.osd_pos.y = (opt_statusbar_position == -1) ? 30000 : opt_statusbar_position; /* Have to fake -1 to get -0 as top position */
 #endif
 	if (currprefs.osd_pos.x >= 20000) {
 		if (currprefs.osd_pos.x >= 30000)
@@ -115,31 +115,31 @@ static void write_tdnumber(uae_u8 *buf, int bpp, int x, int y, int num, uae_u32 
 	for (j = 0; j < (td_numbers_width * num_multip); j++) {
 		if (*numptr == 'x')
 		{
-			putpixel (buf, NULL, bpp, x + j, c1, 1);
+			putpixel (buf, NULL, bpp, x + j, c1);
             switch (num_multip)
             {
                 case 2:
-                    putpixel (buf, NULL, bpp, x + 1 + j, c1, 1);
+                    putpixel (buf, NULL, bpp, x + 1 + j, c1);
                     break;
                 case 4:
-                    putpixel (buf, NULL, bpp, x + 1 + j, c1, 1);
-                    putpixel (buf, NULL, bpp, x + 2 + j, c1, 1);
-                    putpixel (buf, NULL, bpp, x + 3 + j, c1, 1);
+                    putpixel (buf, NULL, bpp, x + 1 + j, c1);
+                    putpixel (buf, NULL, bpp, x + 2 + j, c1);
+                    putpixel (buf, NULL, bpp, x + 3 + j, c1);
                     break;
             }
         }
 		else if (*numptr == '+')
 		{
-		    putpixel (buf, NULL, bpp, x + j, c2, 0);
+		    putpixel (buf, NULL, bpp, x + j, c2);
 		    switch (num_multip)
 		    {
 		        case 2:
-		            putpixel (buf, NULL, bpp, x + 1 + j, c2, 0);
+		            putpixel (buf, NULL, bpp, x + 1 + j, c2);
 		            break;
 		        case 4:
-		            putpixel (buf, NULL, bpp, x + 1 + j, c2, 0);
-		            putpixel (buf, NULL, bpp, x + 2 + j, c2, 0);
-		            putpixel (buf, NULL, bpp, x + 3 + j, c2, 0);
+		            putpixel (buf, NULL, bpp, x + 1 + j, c2);
+		            putpixel (buf, NULL, bpp, x + 2 + j, c2);
+		            putpixel (buf, NULL, bpp, x + 3 + j, c2);
 		            break;
             }
         }
@@ -161,9 +161,9 @@ static void write_tdnumber(uae_u8 *buf, int bpp, int x, int y, int num, uae_u32 
 	for (j = 0; j < td_numbers_width; j++) {
 		for (int k = 0; k < mult; k++) {
 			if (*numptr == 'x')
-				putpixel(buf, NULL, bpp, x + j * mult + k, c1, 1);
+				putpixel(buf, NULL, bpp, x + j * mult + k, c1);
 			else if (*numptr == '+')
-				putpixel(buf, NULL, bpp, x + j * mult + k, c2, 0);
+				putpixel(buf, NULL, bpp, x + j * mult + k, c2);
 		}
 		numptr++;
 	}
@@ -554,34 +554,34 @@ void draw_status_line_single(int monid, uae_u8 *buf, int bpp, int y, int totalwi
         x = x_start - num_multip + 1 + pos * TD_WIDTH;
         if (!border)
         {
-            putpixel (buf, NULL, bpp, x, cb, 0);
+            putpixel (buf, NULL, bpp, x, cb);
             switch (num_multip)
             {
                 case 2:
-                    putpixel (buf, NULL, bpp, x + 1, cb, 0);
+                    putpixel (buf, NULL, bpp, x + 1, cb);
                     break;
                 case 4:
-                    putpixel (buf, NULL, bpp, x + 1, cb, 0);
-                    putpixel (buf, NULL, bpp, x + 2, cb, 0);
-                    putpixel (buf, NULL, bpp, x + 3, cb, 0);
+                    putpixel (buf, NULL, bpp, x + 1, cb);
+                    putpixel (buf, NULL, bpp, x + 2, cb);
+                    putpixel (buf, NULL, bpp, x + 3, cb);
                     break;
             }
         }
         x = x + (num_multip);
         for (j = 0; j < TD_LED_WIDTH - num_multip; j++)
-            putpixel (buf, NULL, bpp, x + j, c, 0);
+            putpixel (buf, NULL, bpp, x + j, c);
         if (!border)
         {
-            putpixel (buf, NULL, bpp, x + j, cb, 0);
+            putpixel (buf, NULL, bpp, x + j, cb);
             switch (num_multip)
             {
                 case 2:
-                    putpixel (buf, NULL, bpp, x + 1 + j, cb, 0);
+                    putpixel (buf, NULL, bpp, x + 1 + j, cb);
                     break;
                 case 4:
-                    putpixel (buf, NULL, bpp, x + 1 + j, cb, 0);
-                    putpixel (buf, NULL, bpp, x + 2 + j, cb, 0);
-                    putpixel (buf, NULL, bpp, x + 3 + j, cb, 0);
+                    putpixel (buf, NULL, bpp, x + 1 + j, cb);
+                    putpixel (buf, NULL, bpp, x + 2 + j, cb);
+                    putpixel (buf, NULL, bpp, x + 3 + j, cb);
                     break;
             }
         }
@@ -620,7 +620,7 @@ void draw_status_line_single(int monid, uae_u8 *buf, int bpp, int y, int totalwi
 	y /= mult;
 
 	c1 = ledcolor (0x00ffffff, rc, gc, bc, alpha);
-	c2 = ledcolor (0x00000000, rc, gc, bc, alpha);
+	c2 = ledcolor (0x00111111, rc, gc, bc, alpha);
 
 	if (td_numbers_pos & TD_RIGHT)
 		x_start = totalwidth - (td_numbers_padx + VISIBLE_LEDS * td_width) * mult;
@@ -701,42 +701,49 @@ void draw_status_line_single(int monid, uae_u8 *buf, int bpp, int y, int totalwi
 				num2 = -1;
 				num3 = 16;
 				on_rgb = 0xcccccc;
-				off_rgb = 0x000000;
+				off_rgb = 0x111111;
 				am = 2;
 			} else {
 				int fps = (gui_data.fps + 5) / 10;
-				on_rgb = 0x000000;
-				off_rgb = gui_data.fps_color ? 0xcccc00 : 0x000000;
+				on_rgb = 0x111111;
+				off_rgb = gui_data.fps_color == 1 ? 0xcccc00 : (gui_data.fps_color == 2 ? 0x0000cc : 0x111111);
 				am = 3;
-				if (fps > 999) {
-					fps += 50;
-					fps /= 10;
-					if (fps > 999)
-						fps = 999;
-					num1 = fps / 100;
-					num1 %= 10;
-					num2 = 18;
-					num3 = (fps - num1 * 100) / 10;
+				if (gui_data.fps_color >= 2) {
+					num1 = -1;
+					num2 = 15;
+					num3 = 15;
+					am = 2;
 				} else {
-					num1 = fps / 100;
-					num2 = (fps - num1 * 100) / 10;
-					num3 = fps % 10;
-					num1 %= 10;
-					num2 %= 10;
-					if (num1 == 0)
-						am = 2;
+					if (fps > 999) {
+						fps += 50;
+						fps /= 10;
+						if (fps > 999)
+							fps = 999;
+						num1 = fps / 100;
+						num1 %= 10;
+						num2 = 18;
+						num3 = (fps - num1 * 100) / 10;
+					} else {
+						num1 = fps / 100;
+						num2 = (fps - num1 * 100) / 10;
+						num3 = fps % 10;
+						num1 %= 10;
+						num2 %= 10;
+						if (num1 == 0)
+							am = 2;
+					}
 				}
 			}
 		} else if (led == LED_CPU) {
 			int idle = (gui_data.idle + 5) / 10;
 			pos = 1;
 			on_rgb = 0xcc0000;
-			off_rgb = 0x000000;
+			off_rgb = 0x111111;
 			if (gui_data.cpu_halted) {
 				idle = 0;
 				on = 1;
 				if (gui_data.cpu_halted < 0) {
-					on_rgb = 0x000000;
+					on_rgb = 0x111111;
 					num1 = 16; // PPC
 					num2 = 16;
 					num3 = 10;
@@ -771,14 +778,14 @@ void draw_status_line_single(int monid, uae_u8 *buf, int bpp, int y, int totalwi
 				num2 = snd / 10;
 				num3 = snd % 10;
 			}
-			on_rgb = 0x000000;
+			on_rgb = 0x111111;
 			if (on < 0)
 				on_rgb = 0xcccc00; // underflow
 			else if (on == 2)
 				on_rgb = 0xcc0000; // really big overflow
 			else if (on == 1)
 				on_rgb = 0x0000cc; // "normal" overflow
-			off_rgb = 0x000000;
+			off_rgb = 0x111111;
 			am = 3;
 		} else if (led == LED_MD) {
 			// DF3 reused as internal non-volatile ram led (cd32/cdtv)
@@ -804,7 +811,7 @@ void draw_status_line_single(int monid, uae_u8 *buf, int bpp, int y, int totalwi
 					on_rgb |= 0x00cc00;
 				if (on & 2)
 					on_rgb |= 0xcc0000;
-				off_rgb = 0x000000;
+				off_rgb = 0x111111;
 				num1 = -1;
 				num2 = -1;
 				num3 = 17;
@@ -813,8 +820,8 @@ void draw_status_line_single(int monid, uae_u8 *buf, int bpp, int y, int totalwi
 		} else {
 			continue;
 		}
-		on_rgb |= 0x33000000;
-		off_rgb |= 0x33000000;
+		on_rgb |= 0x33111111;
+		off_rgb |= 0x33111111;
 		if (half > 0) {
 			int halfon = y >= TD_TOTAL_HEIGHT / 2;
 			c = ledcolor(on ? (halfon ? on_rgb2 : on_rgb) : off_rgb, rc, gc, bc, alpha);
@@ -838,13 +845,13 @@ void draw_status_line_single(int monid, uae_u8 *buf, int bpp, int y, int totalwi
 		x = x_start + pos * td_width * mult;
 		for (int xx = 0; xx < mult; xx++) {
 			if (!border) {
-				putpixel(buf, NULL, bpp, x - mult + xx, cb, 0);
+				putpixel(buf, NULL, bpp, x - mult + xx, cb);
 			}
 			for (j = 0; j < td_led_width * mult; j += mult) {
-				putpixel(buf, NULL, bpp, x + j + xx, c, 0);
+				putpixel(buf, NULL, bpp, x + j + xx, c);
 			}
 			if (!border) {
-				putpixel(buf, NULL, bpp, x + j + xx, cb, 0);
+				putpixel(buf, NULL, bpp, x + j + xx, cb);
 			}
 		}
 
@@ -957,7 +964,7 @@ void statusline_add_message(int statustype, const TCHAR *format, ...)
 			statusline_data[i].text = my_strdup(buffer);
 			statusline_data[i].type = statustype;
 			if (i == 0)
-				statusline_delay = STATUSLINE_MS * vblank_hz / (1000 * 1);
+				statusline_delay = (int)(STATUSLINE_MS * vblank_hz / 1000.0f);
 			statusline_text_active = statusline_data[0].text;
 			statusline_update_notification();
 			return;
@@ -981,11 +988,11 @@ void statusline_vsync(void)
 	if (!statusline_data[0].text)
 		return;
 	if (statusline_delay == 0)
-		statusline_delay = STATUSLINE_MS * vblank_hz / (1000 * 1);
-	if (statusline_delay > STATUSLINE_MS * vblank_hz / (1000 * 1))
-		statusline_delay = STATUSLINE_MS * vblank_hz / (1000 * 1);
-	if (statusline_delay > STATUSLINE_MS * vblank_hz / (1000 * 3) && statusline_data[1].text)
-		statusline_delay = STATUSLINE_MS * vblank_hz / (1000 * 3);
+		statusline_delay = (int)(STATUSLINE_MS * vblank_hz / (1000.0f * 1.0f));
+	if (statusline_delay > STATUSLINE_MS * vblank_hz / (1000.0f * 1.0f))
+		statusline_delay = (int)(STATUSLINE_MS * vblank_hz / (1000.0f * 1.0f));
+	if (statusline_delay > STATUSLINE_MS * vblank_hz / (1000.0f * 3.0f) && statusline_data[1].text)
+		statusline_delay = (int)(STATUSLINE_MS * vblank_hz / (1000.0f * 3.0f));
 	statusline_delay--;
 	if (statusline_delay)
 		return;

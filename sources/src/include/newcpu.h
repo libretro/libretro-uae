@@ -54,13 +54,17 @@ extern int fpp_movem_next[256];
 
 extern int hardware_bus_error;
 
-typedef uae_u32 REGPARAM3 cpuop_func (uae_u32) REGPARAM;
-typedef void REGPARAM3 cpuop_func_ce (uae_u32) REGPARAM;
+typedef uae_u32 REGPARAM3 cpuop_func(uae_u32) REGPARAM;
+typedef void REGPARAM3 cpuop_func_noret(uae_u32) REGPARAM;
 
 struct cputbl {
 	cpuop_func *handler_ff;
 #ifdef NOFLAGS_SUPPORT_GENCPU
-	cpuop_func *handler_nf;
+	cpuop_func_ret *handler_nf;
+#endif
+	cpuop_func_noret *handler_ff_noret;
+#ifdef NOFLAGS_SUPPORT_GENCPU
+	cpuop_func_ret *handler_nf_noret;
 #endif
 	uae_u16 opcode;
 	uae_s8 length;
@@ -90,8 +94,9 @@ struct comptbl {
 
 extern cpuop_func *loop_mode_table[];
 
-extern uae_u32 REGPARAM3 op_illg (uae_u32) REGPARAM;
-extern void REGPARAM3 op_unimpl (uae_u32) REGPARAM;
+extern uae_u32 REGPARAM3 op_illg(uae_u32) REGPARAM;
+extern void REGPARAM3 op_illg_noret(uae_u32) REGPARAM;
+extern void REGPARAM3 op_unimpl(uae_u32) REGPARAM;
 
 typedef uae_u8 flagtype;
 
@@ -201,15 +206,16 @@ struct regstruct
 	int halted;
 	int exception;
 	int intmask;
-	int ipl, ipl_pin;
+	int ipl[2], ipl_pin, ipl_pin_p;
+	evt_t ipl_pin_change_evt, ipl_pin_change_evt_p;
+	evt_t ipl_evt, ipl_evt_pre;
+	int ipl_evt_pre_mode;
 
 	uae_u32 vbr, sfc, dfc;
 
 #ifdef FPUEMU
 	fpdata fp[8];
-#ifdef JIT
 	fpdata fp_result;
-#endif
 	uae_u32 fpcr, fpsr, fpiar;
 	uae_u32 fpu_state;
 	uae_u32 fpu_exp_state;
@@ -252,14 +258,14 @@ struct regstruct
 
 	uae_u32 prefetch040[CPU_PIPELINE_MAX];
 
-	int ce020endcycle;
-	int ce020startcycle;
-	int ce020prefetchendcycle;
+	evt_t ce020endcycle;
+	evt_t ce020startcycle;
+	evt_t ce020prefetchendcycle;
 
-	int ce020extracycles;
+	evt_t ce020extracycles;
 	bool ce020memcycle_data;
 	int ce020_tail;
-	frame_time_t ce020_tail_cycles;
+	evt_t ce020_tail_cycles;
 	int memory_waitstate_cycles;
 };
 
@@ -271,6 +277,7 @@ struct cputracememory
 	uae_u32 addr;
 	uae_u32 data;
 	int mode;
+	uae_u32 flags;
 };
 
 struct cputracestruct
@@ -293,7 +300,7 @@ struct cputracestruct
 	int pipeline_stop;
 	uae_u16 read_buffer, write_buffer;
 
-	uae_u32 startcycles;
+	evt_t startcycles;
 	int needendcycles;
 	int memoryoffset;
 	int cyclecounter, cyclecounter_pre, cyclecounter_post;
@@ -308,7 +315,7 @@ STATIC_INLINE uae_u32 munge24 (uae_u32 x)
 
 extern int mmu_enabled, mmu_triggered;
 extern int cpu_cycles;
-extern int cpucycleunit;
+extern int cpucycleunit, cpuipldelay2, cpuipldelay4;
 extern int m68k_pc_indirect;
 extern bool m68k_interrupt_delay;
 
@@ -321,7 +328,7 @@ STATIC_INLINE void set_special_exter(uae_u32 x)
 STATIC_INLINE void set_special (uae_u32 x)
 {
 	atomic_or(&regs.spcflags, x);
-	cycles_do_special ();
+	cycles_do_special();
 }
 
 STATIC_INLINE void unset_special (uae_u32 x)
@@ -647,9 +654,9 @@ extern void dfc_nommu_put_byte(uaecptr, uae_u32);
 extern void dfc_nommu_put_word(uaecptr, uae_u32);
 extern void dfc_nommu_put_long(uaecptr, uae_u32);
 
-extern void (*x_do_cycles)(uae_u32);
-extern void (*x_do_cycles_pre)(uae_u32);
-extern void (*x_do_cycles_post)(uae_u32, uae_u32);
+extern void (*x_do_cycles)(int);
+extern void (*x_do_cycles_pre)(int);
+extern void (*x_do_cycles_post)(int, uae_u32);
 
 extern uae_u32 REGPARAM3 x_get_disp_ea_020 (uae_u32 base, int idx) REGPARAM;
 extern uae_u32 REGPARAM3 x_get_disp_ea_ce020 (uae_u32 base, int idx) REGPARAM;
@@ -658,9 +665,10 @@ extern uae_u32 REGPARAM3 x_get_disp_ea_040(uae_u32 base, int idx) REGPARAM;
 extern uae_u32 REGPARAM3 x_get_bitfield (uae_u32 src, uae_u32 bdata[2], uae_s32 offset, int width) REGPARAM;
 extern void REGPARAM3 x_put_bitfield (uae_u32 dst, uae_u32 bdata[2], uae_u32 val, uae_s32 offset, int width) REGPARAM;
 
-extern void m68k_setstopped (void);
-extern void m68k_resumestopped (void);
+extern void m68k_setstopped(int stoptype);
+extern void m68k_resumestopped(void);
 extern void m68k_cancel_idle(void);
+extern void do_cycles_stop(int);
 
 extern uae_u32 REGPARAM3 get_disp_ea_020 (uae_u32 base, int idx) REGPARAM;
 extern uae_u32 REGPARAM3 get_bitfield (uae_u32 src, uae_u32 bdata[2], uae_s32 offset, int width) REGPARAM;
@@ -680,15 +688,21 @@ extern void flush_cpu_caches_040(uae_u16 opcode);
 extern void REGPARAM3 MakeSR (void) REGPARAM;
 extern void REGPARAM3 MakeFromSR(void) REGPARAM;
 extern void REGPARAM3 MakeFromSR_T0(void) REGPARAM;
-extern void REGPARAM3 MakeFromSR_intmask(uae_u16 oldsr, uae_u16 newsr) REGPARAM;
+extern void REGPARAM3 MakeFromSR_STOP(void) REGPARAM;
 extern void REGPARAM3 Exception (int) REGPARAM;
 extern void REGPARAM3 Exception_cpu(int) REGPARAM;
 extern void REGPARAM3 Exception_cpu_oldpc(int, uaecptr) REGPARAM;
 extern void REGPARAM3 ExceptionL (int, uaecptr) REGPARAM;
 extern void NMI (void);
-extern void NMI_delayed (void);
+extern void IRQ_forced(int, int);
 extern void prepare_interrupt (uae_u32);
-extern void doint (void);
+extern void doint(void);
+extern void checkint(void);
+extern void intlev_load(void);
+extern void ipl_fetch_now_pre(void);
+extern void ipl_fetch_next_pre(void);
+extern void ipl_fetch_now(void);
+extern void ipl_fetch_next(void);
 extern void dump_counts (void);
 extern int m68k_move2c (int, uae_u32 *);
 extern int m68k_movec2 (int, uae_u32 *);
@@ -701,11 +715,12 @@ extern int m68k_go (int, int);
 extern void m68k_go (int);
 #endif
 extern void m68k_dumpstate(uaecptr *, uaecptr);
-extern void m68k_dumpcache (bool);
+extern void m68k_dumpcache(bool);
+extern bool m68k_readcache(uaecptr memaddr, bool dc, uae_u32* valp);
 extern int getMulu68kCycles(uae_u16 src);
 extern int getMuls68kCycles(uae_u16 src);
 extern int getDivu68kCycles (uae_u32 dividend, uae_u16 divisor);
-extern int getDivs68kCycles (uae_s32 dividend, uae_s16 divisor);
+extern int getDivs68kCycles (uae_s32 dividend, uae_s16 divisor, int *extra);
 extern void divbyzero_special(bool issigned, uae_s32 dst);
 extern void setdivuflags(uae_u32 dividend, uae_u16 divisor);
 extern void setdivsflags(uae_s32 dividend, uae_s16 divisor);
@@ -763,14 +778,15 @@ extern void exception2_read(uae_u32 opcode, uaecptr addr, int size, int fc);
 extern void exception2_write(uae_u32 opcode, uaecptr addr, int size, uae_u32 val, int fc);
 extern void exception2_fetch_opcode(uae_u32 opcode, int offset, int pcoffset);
 extern void exception2_fetch(uae_u32 opcode, int offset, int pcoffset);
-extern void m68k_reset (void);
-extern bool cpureset (void);
-extern void cpu_halt (int id);
+extern void m68k_reset(void);
+extern bool cpureset(void);
+extern void cpu_halt(int id);
+extern void cpu_inreset(void);
 extern int cpu_sleep_millis(int ms);
 extern void cpu_change(int newmodel);
 extern void cpu_fallback(int mode);
 
-extern void fill_prefetch (void);
+extern void fill_prefetch(void);
 extern void fill_prefetch_020_ntx(void);
 extern void fill_prefetch_030_ntx(void);
 extern void fill_prefetch_030_ntx_continue(void);
@@ -819,7 +835,8 @@ extern const struct cputbl op_smalltbl_55[];
 extern const struct cputbl op_smalltbl_12[]; // prefetch
 extern const struct cputbl op_smalltbl_14[]; // CE
 
-extern cpuop_func *cpufunctbl[65536] ASM_SYM_FOR_FUNC ("cpufunctbl");
+extern cpuop_func_noret *cpufunctbl_noret[65536] ASM_SYM_FOR_FUNC("cpufunctbl_noret");
+extern cpuop_func *cpufunctbl[65536] ASM_SYM_FOR_FUNC("cpufunctbl");
 
 #ifdef JIT
 extern void (*flush_icache)(int);

@@ -1,6 +1,6 @@
 # PUAE LIBRETRO
 
-Based on WinUAE 4910, git commit `1f3cc2b9352d460d998387f5ce0c104d26b9b4fe`
+Based on WinUAE 5.0.0, git commit `975a167c7636d563db1c8b3292f690b6f30e71d2`
 
 ## Default controls
 

@@ -721,15 +721,15 @@ out2:
 #endif
 endofline:
 		/* now, we have a match */
-		if (table68k[opc].mnemo != i_ILLG)
-			;//write_log (_T("Double match: %x: %s\n"), opc, opcstr);
+		//if (table68k[opc].mnemo != i_ILLG)
+		//	write_log (_T("Double match: %x: %s\n"), opc, opcstr);
 		if (find == -1) {
 			for (find = 0;; find++) {
 				if (_tcscmp (mnemonic, lookuptab[find].name) == 0) {
 					table68k[opc].mnemo = lookuptab[find].mnemo;
 					break;
 				}
-				if (_tcslen (lookuptab[find].name) == 0)
+				if (lookuptab[find].name[0] == '\0')
 					abort();
 			}
 		}

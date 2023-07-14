@@ -705,7 +705,7 @@ static void fp_from_pack(fpdata *fp, uae_u32 *wrd, int kfactor)
 			digit = significand % 10;
 			significand /= 10;
 			if (len == 0) {
-				pack_int = digit;
+				pack_int = (uae_u32)digit;
 			} else {
 				pack_frac |= digit << (64 - len * 4);
 			}
@@ -719,7 +719,7 @@ static void fp_from_pack(fpdata *fp, uae_u32 *wrd, int kfactor)
 			digit = exponent % 10;
 			exponent /= 10;
 			if (len == 0) {
-				pack_exp4 = digit;
+				pack_exp4 = (uae_u32)digit;
 			} else {
 				pack_exp |= digit << (12 - len * 4);
 			}

@@ -330,7 +330,7 @@ static bool ne2000_canreceive(NetClientState *nc, const uint8_t *buf)
 static ssize_t ne2000_receive(NetClientState *nc, const uint8_t *buf, size_t size_)
 {
     NE2000State *s = qemu_get_nic_opaque(nc);
-    int size = size_;
+    int size = (int)size_;
     uint8_t *p;
     unsigned int total_len, next, avail, len, index;
     uint8_t buf1[60];
@@ -414,7 +414,7 @@ static ssize_t ne2000_receive(NetClientState *nc, const uint8_t *buf, size_t siz
     s->isr |= ENISR_RX;
     ne2000_update_irq(s);
 
-    return size_;
+    return (ssize_t)size_;
 }
 
 static void ne2000_ioport_write(void *opaque, uint32_t addr, uint32_t val)
@@ -1001,9 +1001,10 @@ static uint64_t ne2000_read(void *opaque, hwaddr addr, unsigned size)
 	return v;
 }
 
-static void ne2000_write(void *opaque, hwaddr addr, uint64_t data, unsigned size)
+static void ne2000_write(void *opaque, hwaddr addr, uint64_t data64, unsigned size)
 {
     NE2000State *s = (NE2000State*)opaque;
+	uint32_t data = (uint32_t)data64;
 
 #if defined(DEBUG_NE2000)
 	write_log(_T("NE2000_WRITE %08x %08x %d\n"), addr, (uae_u32)data, size);
@@ -1208,17 +1209,17 @@ static void REGPARAM2 ne2000_lput(struct pci_board_state *pcibs, uaecptr addr, u
 }
 static uae_u32 REGPARAM2 ne2000_bget(struct pci_board_state *pcibs, uaecptr addr)
 {
-	uae_u32 v = ne2000_read(ncs.ne2000state, addr, 1);
+	uae_u32 v = (uae_u32)ne2000_read(ncs.ne2000state, addr, 1);
 	return v;
 }
 static uae_u32 REGPARAM2 ne2000_wget(struct pci_board_state *pcibs, uaecptr addr)
 {
-	uae_u32 v = ne2000_read(ncs.ne2000state, addr, 2);
+	uae_u32 v = (uae_u32)ne2000_read(ncs.ne2000state, addr, 2);
 	return v;
 }
 static uae_u32 REGPARAM2 ne2000_lget(struct pci_board_state *pcibs, uaecptr addr)
 {
-	uae_u32 v = ne2000_read(ncs.ne2000state, addr, 4);
+	uae_u32 v = (uae_u32)ne2000_read(ncs.ne2000state, addr, 4);
 	return v;
 }
 
@@ -1354,7 +1355,7 @@ static const struct pci_config ne2000_pci_config =
 const struct pci_board ne2000_pci_board =
 {
 	_T("RTL8029"),
-	&ne2000_pci_config, ne2000_init, ne2000_free, ne2000_reset, ne2000_hsync_handler,
+	&ne2000_pci_config, ne2000_init, ne2000_free, ne2000_reset, ne2000_hsync_handler, NULL,
 	{
 		{ ne2000_lget, ne2000_wget, ne2000_bget, ne2000_lput, ne2000_wput, ne2000_bput },
 		{ NULL },
@@ -1369,7 +1370,7 @@ const struct pci_board ne2000_pci_board =
 const struct pci_board ne2000_pci_board_pcmcia =
 {
 	_T("RTL8029"),
-	&ne2000_pci_config, ne2000_init_pcmcia, ne2000_free, ne2000_reset, ne2000_hsync_handler,
+	&ne2000_pci_config, ne2000_init_pcmcia, ne2000_free, ne2000_reset, ne2000_hsync_handler, NULL,
 	{
 		{ ne2000_lget, ne2000_wget, ne2000_bget, ne2000_lput, ne2000_wput, ne2000_bput },
 		{ NULL },
@@ -1385,7 +1386,7 @@ const struct pci_board ne2000_pci_board_pcmcia =
 const struct pci_board ne2000_pci_board_x86 =
 {
 	_T("RTL8029"),
-	&ne2000_pci_config, ne2000_init_x86, ne2000_free, ne2000_reset, ne2000_hsync_handler,
+	&ne2000_pci_config, ne2000_init_x86, ne2000_free, ne2000_reset, ne2000_hsync_handler, NULL,
 	{
 		{ ne2000_lget, ne2000_wget, ne2000_bget, ne2000_lput, ne2000_wput, ne2000_bput },
 		{ NULL },

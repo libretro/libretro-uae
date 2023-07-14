@@ -617,7 +617,6 @@ void blkdev_entergui (void)
 {
 	for (int i = 0; i < MAX_TOTAL_SCSI_DEVICES; i++) {
 		struct blkdevstate *st = &state[i];
-		st->waspaused = 0;
 		struct device_info di;
 		if (sys_command_info (i, &di, 1)) {
 			if (sys_command_cd_pause (i, 1) == 0)
@@ -1931,7 +1930,7 @@ int scsi_cd_emulate (int unitnum, uae_u8 *cmdbuf, int scsi_cmd_len,
 					strack++;
 				}
 				addtocentry (&p2, &maxlen, 0xa2, 0xaa, msf, p, toc);				
-				int tlen = p2 - (p + 2);
+				int tlen = addrdiff(p2, p + 2);
 				p[0] = tlen >> 8;
 				p[1] = tlen >> 0;
 				scsi_len = tlen + 2;
@@ -2454,7 +2453,7 @@ void restore_blkdev_start(void)
 	}
 }
 
-uae_u8 *save_cd (int num, int *len)
+uae_u8 *save_cd (int num, size_t *len)
 {
 	struct blkdevstate *st = &state[num];
 	uae_u8 *dstbak, *dst;

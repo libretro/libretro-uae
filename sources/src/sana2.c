@@ -433,7 +433,7 @@ static uae_u32 REGPARAM2 dev_open_2 (TrapContext *ctx)
 	if (i == MAX_OPEN_DEVICES)
 		return openfail(ctx, ioreq, IOERR_UNITBUSY);
 
-	trap_put_long(ctx, ioreq + 24, pdev - pdevst);
+	trap_put_longt(ctx, ioreq + 24, pdev - pdevst);
 	pdev->unit = unit;
 	pdev->flags = flags;
 	pdev->inuse = 1;
@@ -1687,8 +1687,8 @@ static int uaenet_int_handler2(TrapContext *ctx)
 					}
 					while (p) {
 						if (p->drop_start == 0)
-							p->drop_start = timeframes;
-						p->drop_count = timeframes;
+							p->drop_start = vsync_counter;
+						p->drop_count = vsync_counter;
 						p = p->next;
 					}
 					break;

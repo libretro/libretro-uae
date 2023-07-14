@@ -28,7 +28,9 @@
 #include "a2091.h"
 #include "a2065.h"
 #include "gfxboard.h"
+#ifdef CD32
 #include "cd32_fmv.h"
+#endif
 #include "ncr_scsi.h"
 #include "ncr9x_scsi.h"
 #include "scsi.h"
@@ -406,6 +408,7 @@ static addrbank *expamem_init_last (void)
 	write_log (_T("Memory map after autoconfig:\n"));
 #endif
 	memory_map_dump ();
+	mman_set_barriers(false);
 	return NULL;
 }
 
@@ -2761,6 +2764,115 @@ void free_expansion_bank(addrbank *bank)
 	bank->reserved_size = 0;
 }
 
+struct autoconfig_info *expansion_get_bank_data(struct uae_prefs *p, uaecptr *addrp)
+{
+	uaecptr addr = *addrp;
+	static struct autoconfig_info acid;
+	struct autoconfig_info *aci = NULL;
+
+	if (addr >= 0x01000000 && currprefs.address_space_24) {
+		return NULL;
+	}
+	for (;;) {
+		addrbank *ab = &get_mem_bank(addr);
+		if (ab && ab != &dummy_bank) {
+			aci = expansion_get_autoconfig_by_address(p, addr, 0);
+			if (aci && expansion_get_autoconfig_by_address(p, addr - 1, 0) != aci) {
+				addrbank *ab2 = ab;
+				struct autoconfig_info *aci2;
+				int size = 0;
+				for (;;) {
+					addr += 65536;
+					size += 65536;
+					ab2 = &get_mem_bank(addr);
+					aci2 = expansion_get_autoconfig_by_address(p, addr, 0);
+					if (ab != ab2) {
+						break;
+					}
+					if (aci2 != aci) {
+						break;
+					}
+					if (aci->size > 0 && size >= aci->size) {
+						break;
+					}
+				}
+				*addrp = addr;
+				return aci;
+			}
+			uaecptr addr2 = addr;
+			aci = &acid;
+			memset(aci, 0, sizeof(struct autoconfig_info));
+			aci->autoconfig_bytes[0] = 0xff;
+			if (ab->sub_banks) {
+				uaecptr saddr = addr;
+				uaecptr saddr1 = saddr;
+				uaecptr saddr2 = saddr;
+				addrbank *sab1 = get_sub_bank(&saddr1);
+				for (;;) {
+					saddr2 = saddr1 + 1;
+					addrbank *sab2 = get_sub_bank(&saddr2);
+					if (sab1 != sab2 || (saddr1 & 65535) == 65535) {
+						aci->addrbank = sab1;
+						aci->start = addr;
+						aci->size = saddr2 - addr;
+						if (sab1->name) {
+							_tcscpy(aci->name, sab1->name);
+						}
+						addr = saddr2;
+						*addrp = addr;
+						break;
+					}
+					saddr1++;
+				}
+				if (aci->addrbank == &dummy_bank) {
+					addr = saddr2;
+					continue;
+				}
+				return aci;
+			} else {
+				aci->addrbank = ab;
+				aci->start = addr;
+				aci->size = ab->allocated_size;
+				if (ab->name) {
+					_tcscpy(aci->name, ab->name);
+				}
+				addrbank *ab2 = ab;
+				int size = 0;
+				for (;;) {
+					addr += 65536;
+					size += 65536;
+					ab2 = &get_mem_bank(addr);
+					if (ab != ab2) {
+						break;
+					}
+					if (aci->size > 0 && size >= aci->size) {
+						break;
+					}
+				}
+			}
+			if (aci->size == 0) {
+				aci->size = addr - addr2;
+			}
+			*addrp = addr;
+			return aci;
+		}
+
+		for (;;) {
+			addr += 65536;
+			if (addr >= 0x01000000 && currprefs.address_space_24) {
+				return NULL;
+			}
+			if (addr < 65536) {
+				return NULL;
+			}
+			ab = &get_mem_bank(addr);
+			if (ab != NULL && ab != &dummy_bank) {
+				break;
+			}
+		}
+	}
+}
+
 struct autoconfig_info *expansion_get_autoconfig_data(struct uae_prefs *p, int index)
 {
 	if (index >= cardno)
@@ -2896,7 +3008,7 @@ static int get_order(struct uae_prefs *p, struct card_data *cd)
 		return -1;
 	if (cd->zorro >= 4)
 		return -2;
-	if (cd->rc)
+	if (cd->rc && cd->rc->back)
 		return cd->rc->back->device_order;
 	int devnum = (cd->flags >> 16) & 255;
 	if (!_tcsicmp(cd->name, _T("Z2Fast")))
@@ -2978,7 +3090,7 @@ static void expansion_parse_cards(struct uae_prefs *p, bool log)
 #endif
 				_tcscpy(label, aci->cst->name);
 			}
-			if (cd->rc && !label[0]) {
+			if (cd->rc && !label[0] && cd->rc->back) {
 				const struct expansionromtype *ert = get_device_expansion_rom(cd->rc->back->device_type);
 				if (ert) {
 					_tcscpy(label, ert->friendlyname);
@@ -3678,6 +3790,7 @@ void expamem_reset (int hardreset)
 
 	chipdone = false;
 
+	expamem_init_clear();
 	allocate_expamem ();
 	expamem_bank.name = _T("Autoconfig [reset]");
 
@@ -3857,13 +3970,13 @@ void expansion_clear (void)
 
 /* State save/restore code.  */
 
-uae_u8 *save_fram (int *len, int num)
+uae_u8 *save_fram(size_t *len, int num)
 {
 	*len = fastmem_bank[num].allocated_size;
 	return fastmem_bank[num].baseaddr;
 }
 
-uae_u8 *save_zram (int *len, int num)
+uae_u8 *save_zram(size_t *len, int num)
 {
 	if (num < 0) {
 		*len = z3chipmem_bank.allocated_size;
@@ -3873,19 +3986,19 @@ uae_u8 *save_zram (int *len, int num)
 	return z3fastmem_bank[num].baseaddr;
 }
 
-uae_u8 *save_pram (int *len)
+uae_u8 *save_pram(size_t *len)
 {
 	*len = gfxmem_banks[0]->allocated_size;
 	return gfxmem_banks[0]->baseaddr;
 }
 
-void restore_fram (int len, size_t filepos, int num)
+void restore_fram(int len, size_t filepos, int num)
 {
 	fast_filepos[num] = filepos;
 	changed_prefs.fastmem[num].size = len;
 }
 
-void restore_zram (int len, size_t filepos, int num)
+void restore_zram(int len, size_t filepos, int num)
 {
 	if (num == -1) {
 		z3_fileposchip = filepos;
@@ -3896,13 +4009,13 @@ void restore_zram (int len, size_t filepos, int num)
 	}
 }
 
-void restore_pram (int len, size_t filepos)
+void restore_pram(int len, size_t filepos)
 {
 	p96_filepos = filepos;
 	changed_prefs.rtgboards[0].rtgmem_size = len;
 }
 
-uae_u8 *save_expansion (int *len, uae_u8 *dstptr)
+uae_u8 *save_expansion(size_t *len, uae_u8 *dstptr)
 {
 	uae_u8 *dst, *dstbak;
 	if (dstptr)
@@ -3920,7 +4033,7 @@ uae_u8 *save_expansion (int *len, uae_u8 *dstptr)
 	return dstbak;
 }
 
-uae_u8 *restore_expansion (uae_u8 *src)
+uae_u8 *restore_expansion(uae_u8 *src)
 {
 	fastmem_bank[0].start = restore_u32 ();
 	z3fastmem_bank[0].start = restore_u32 ();
@@ -3934,7 +4047,7 @@ uae_u8 *restore_expansion (uae_u8 *src)
 	return src;
 }
 
-uae_u8 *save_expansion_boards(int *len, uae_u8 *dstptr, int cardnum)
+uae_u8 *save_expansion_boards(size_t *len, uae_u8 *dstptr, int cardnum)
 {
 	uae_u8 *dst, *dstbak;
 	if (cardnum >= cardno)
@@ -4307,7 +4420,7 @@ static const struct expansionsubromtype supra_sub[] = {
 		{ 0xc1, 1, 0x00, 0x00, 0x04, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
 	},
 	{
-		_T("A2000 DMA"), _T("dma"), ROMTYPE_NONE | ROMTYPE_SUPRADMA,
+		_T("2000 DMA"), _T("dma"), ROMTYPE_NONE | ROMTYPE_SUPRA,
 		1056, 2, 0, false, EXPANSIONTYPE_DMA24,
 		{ 0xd1, 3, 0x00, 0x00, 0x04, 0x20, 0x00, 0x00, 0x00, 0x00, 0x40, 0x00 },
 	},
@@ -5265,6 +5378,12 @@ const struct expansionromtype expansionroms[] = {
 		false, EXPANSIONTYPE_SCSI
 	},
 	{
+		_T("csmk1cyberscsi"), _T("CyberSCSI module"), _T("Phase 5"),
+		NULL, NULL, NULL, cpuboard_ncr9x_add_scsi_unit, ROMTYPE_CSMK1SCSI, 0, 0, 0, true,
+		NULL, 0,
+		false, EXPANSIONTYPE_SCSI
+	},
+	{
 		_T("accessx"), _T("AccessX"), _T("Breitfeld Computersysteme"),
 		NULL, accessx_init, NULL, accessx_add_ide_unit, ROMTYPE_ACCESSX, 0, 0, BOARD_AUTOCONFIG_Z2, false,
 		accessx_sub, 0,
@@ -5427,6 +5546,13 @@ const struct expansionromtype expansionroms[] = {
 		2017, 10, 0
 	},
 	{
+		_T("gvpa1208"), _T("GVP A1208"), _T("Great Valley Products"),
+		NULL, gvp_init_a1208, NULL, gvp_a1208_add_scsi_unit, ROMTYPE_GVPA1208 | ROMTYPE_NONE, ROMTYPE_GVPS2, 0, BOARD_AUTOCONFIG_Z2, false,
+		NULL, 0,
+		true, EXPANSIONTYPE_SCSI | EXPANSIONTYPE_DMA24,
+		2017, 9, 0
+	},
+	{
 		_T("dotto"), _T("Dotto"), _T("Hardital"),
 		NULL, dotto_init, NULL, dotto_add_ide_unit, ROMTYPE_DOTTO, 0, 0, BOARD_AUTOCONFIG_Z2, false,
 		NULL, 0,
@@ -5476,7 +5602,7 @@ const struct expansionromtype expansionroms[] = {
 	},
 	{
 		_T("buddha"), _T("Buddha"), _T("Individual Computers"),
-		NULL, buddha_init, NULL, buddha_add_ide_unit, ROMTYPE_BUDDHA, 0, 0, BOARD_AUTOCONFIG_Z2, false,
+		NULL, buddha_init, NULL, buddha_add_ide_unit, ROMTYPE_BUDDHA | ROMTYPE_NONE, 0, 0, BOARD_AUTOCONFIG_Z2, false,
 		NULL, 0,
 		false, EXPANSIONTYPE_IDE,
 		0, 0, 0, false, NULL,
@@ -6367,10 +6493,13 @@ static const struct cpuboardsubtype cyberstormboard_sub[] = {
 	{
 		_T("CyberStorm MK I"),
 		_T("CyberStormMK1"),
-		ROMTYPE_CB_CSMK1, 0, 4,
-		cpuboard_ncr9x_add_scsi_unit, EXPANSIONTYPE_SCSI,
+		ROMTYPE_CB_CSMK1 | ROMTYPE_NONE, 0, 4,
+		NULL, 0,
 		BOARD_MEMORY_HIGHMEM,
-		128 * 1024 * 1024
+		128 * 1024 * 1024,
+		0,
+		NULL, NULL, 0, 0,
+		NULL
 	},
 	{
 		_T("CyberStorm MK II"),

@@ -182,7 +182,7 @@ static struct arcadiarom *is_arcadia (const TCHAR *xpath, int cnt)
 
 	_tcscpy (path, xpath);
 	p = path;
-	for (i = _tcslen (xpath) - 1; i > 0; i--) {
+	for (i = uaetcslen (xpath) - 1; i > 0; i--) {
 		if (path[i] == '\\' || path[i] == '/') {
 			path[i++] = 0;
 			p = path + i;
@@ -548,25 +548,25 @@ uae_u8 arcadia_parport (int port, uae_u8 pra, uae_u8 dra)
 	return v;
 }
 
-struct romdata *scan_arcadia_rom (TCHAR *path, int cnt)
+struct romdata *scan_arcadia_rom(TCHAR *path, int cnt)
 {
 	struct romdata *rd = 0;
 	struct romlist **arc_rl;
 	struct arcadiarom *arcadia_rom;
 	int i;
 
-	arcadia_rom = is_arcadia (path, cnt);
+	arcadia_rom = is_arcadia(path, cnt);
 	if (arcadia_rom) {
-		arc_rl = getarcadiaroms();
+		arc_rl = getarcadiaroms(0);
 		for (i = 0; arc_rl[i]; i++) {
 			if (arc_rl[i]->rd->id == arcadia_rom->romid) {
 				rd = arc_rl[i]->rd;
-				_tcscat (path, FSDB_DIR_SEPARATOR_S);
-				_tcscat (path, arcadia_rom->romid1);
+				_tcscat(path, FSDB_DIR_SEPARATOR_S);
+				_tcscat(path, arcadia_rom->romid1);
 				break;
 			}
 		}
-		xfree (arc_rl);
+		xfree(arc_rl);
 	}
 	return rd;
 }
@@ -1028,6 +1028,22 @@ uae_u8 alg_joystick_buttons(uae_u8 pra, uae_u8 dra, uae_u8 v)
 	return v;
 }
 
+struct romdata *get_alg_rom(const TCHAR *name)
+{
+	struct romdata *rd = getromdatabypath(name);
+	if (!rd) {
+		return NULL;
+	}
+	if (!(rd->type & ROMTYPE_ALG)) {
+		return NULL;
+	}
+	/* find parent node */
+	while (rd[-1].id == rd->id) {
+		rd--;
+	}
+	return rd;
+}
+
 void alg_map_banks(void)
 {
 	alg_flag = 1;
@@ -1035,7 +1051,14 @@ void alg_map_banks(void)
 		alg_nvram_read();
 		algmemory_initialized = 1;
 	}
-	map_banks(&alg_ram_bank, 0xf4, 4, 0);
+	struct romdata *rd = get_alg_rom(currprefs.romextfile);
+	if (rd->id == 198 || rd->id == 301 || rd->id == 302) {
+		map_banks(&alg_ram_bank, 0xf4, 1, 0);
+	} else if (rd->id == 182 || rd->id == 273 || rd->size < 0x40000) {
+		map_banks(&alg_ram_bank, 0xf5, 1, 0);
+	} else {
+		map_banks(&alg_ram_bank, 0xf7, 1, 0);
+	}
 	pausevideograb(1);
 	ld_audio = 0;
 	ld_mode = 0;
@@ -1043,6 +1066,9 @@ void alg_map_banks(void)
 	ld_direction = 0;
 	ser_buf_offset = 0;
 	device_add_vsync_pre(arcadia_vsync);
+	if (!currprefs.genlock) {
+		currprefs.genlock = changed_prefs.genlock = 1;
+	}
 }
 
 static TCHAR cubo_pic_settings[ROMCONFIG_CONFIGTEXT_LEN];
@@ -1098,7 +1124,7 @@ int touch_serial_write(void)
 			sprintf((char*)p, "%03d", y);
 			p += 3;
 			*p++ = 0x0d;
-			touch_write_buf_offset = p - touch_data_w;
+			touch_write_buf_offset = addrdiff(p, touch_data_w);
 
 			cubo_flag |= 0x40000000;
 		}

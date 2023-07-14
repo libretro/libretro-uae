@@ -16799,7 +16799,6 @@ uae_u32 REGPARAM2 op_4848_0_ff(uae_u32 opcode)
 	int count_cycles = 0;
 	uae_u32 real_opcode = opcode;
 	uae_u32 srcreg = (real_opcode & 7);
-	m68k_incpc(2);
 	op_illg(opcode);
 	return (4 * CYCLE_UNIT / 2 + count_cycles) | (((1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4) << 16);
 }
@@ -19098,19 +19097,22 @@ uae_u32 REGPARAM2 op_4e72_0_ff(uae_u32 opcode)
 		Exception(8);
 		return 0;
 	}
-	uae_s16 src = get_diword(2);
-	uae_u16 sr = src;
+	if (!regs.stopped) {
+		uae_s16 src = get_diword(2);
+		regs.ir = src;
+	}
+	uae_u16 sr = regs.ir;
 	if (!(sr & 0x2000)) {
 		Exception(8);
 		return (4 * CYCLE_UNIT / 2 + count_cycles) | (((1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4) << 16);
 	}
 	regs.sr = sr;
-	MakeFromSR();
-	m68k_setstopped();
-	m68k_incpc(4);
+	checkint();
+	MakeFromSR_STOP();
+	do_cycles_stop(4);
+	m68k_setstopped(1);
 	return (4 * CYCLE_UNIT / 2 + count_cycles) | (((1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4) << 16);
 }
-/* 4 0,0   */
 
 /* RTE.L  */
 uae_u32 REGPARAM2 op_4e73_0_ff(uae_u32 opcode)
@@ -19149,7 +19151,6 @@ uae_u32 REGPARAM2 op_4e73_0_ff(uae_u32 opcode)
 		oldsr = newsr;
 		MakeFromSR_T0();
 	}
-	MakeFromSR_intmask(regs.sr, newsr);
 	regs.sr = newsr;
 	MakeFromSR_T0();
 	if (newpc & 1) {
@@ -40730,10 +40731,10 @@ uae_u32 REGPARAM2 op_f800_0_ff(uae_u32 opcode)
 		return (8 * CYCLE_UNIT / 2 + count_cycles) | (((1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4) << 16);
 	}
 	regs.sr = newsr;
-	MakeFromSR();
-	m68k_setstopped();
-	m68k_incpc(6);
-	return (16 * CYCLE_UNIT / 2 + count_cycles) | (((1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4) << 16);
+	checkint();
+	MakeFromSR_STOP();
+	m68k_setstopped(2);
+	return (8 * CYCLE_UNIT / 2 + count_cycles) | (((1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4) << 16);
 }
 
 #endif
@@ -42464,15 +42465,18 @@ uae_u32 REGPARAM2 op_4e72_1_ff(uae_u32 opcode)
 		Exception(8);
 		return 0;
 	}
-	uae_s16 src = get_diword(2);
-	uae_u16 sr = src;
+	if (!regs.stopped) {
+		uae_s16 src = get_diword(2);
+		regs.ir = src;
+	}
+	uae_u16 sr = regs.ir;
 	regs.sr = sr;
-	MakeFromSR();
-	m68k_setstopped();
-	m68k_incpc(4);
+	checkint();
+	MakeFromSR_STOP();
+	do_cycles_stop(4);
+	m68k_setstopped(1);
 	return (4 * CYCLE_UNIT / 2 + count_cycles) | (((1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4) << 16);
 }
-/* 4 0,0   */
 
 /* RTE.L  */
 uae_u32 REGPARAM2 op_4e73_1_ff(uae_u32 opcode)
@@ -42513,7 +42517,6 @@ uae_u32 REGPARAM2 op_4e73_1_ff(uae_u32 opcode)
 		oldsr = newsr;
 		MakeFromSR_T0();
 	}
-	MakeFromSR_intmask(regs.sr, newsr);
 	regs.sr = newsr;
 	MakeFromSR_T0();
 	if (newpc & 1) {
@@ -45288,15 +45291,18 @@ uae_u32 REGPARAM2 op_4e72_2_ff(uae_u32 opcode)
 		Exception(8);
 		return 0;
 	}
-	uae_s16 src = get_diword(2);
-	uae_u16 sr = src;
+	if (!regs.stopped) {
+		uae_s16 src = get_diword(2);
+		regs.ir = src;
+	}
+	uae_u16 sr = regs.ir;
 	regs.sr = sr;
-	MakeFromSR();
-	m68k_setstopped();
-	m68k_incpc(4);
+	checkint();
+	MakeFromSR_STOP();
+	do_cycles_stop(4);
+	m68k_setstopped(1);
 	return (4 * CYCLE_UNIT / 2 + count_cycles) | (((1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4) << 16);
 }
-/* 4 0,0   */
 
 /* RTE.L  */
 uae_u32 REGPARAM2 op_4e73_2_ff(uae_u32 opcode)
@@ -45338,7 +45344,6 @@ uae_u32 REGPARAM2 op_4e73_2_ff(uae_u32 opcode)
 		oldsr = newsr;
 		MakeFromSR_T0();
 	}
-	MakeFromSR_intmask(regs.sr, newsr);
 	regs.sr = newsr;
 	MakeFromSR_T0();
 	if (newpc & 1) {
@@ -47330,15 +47335,18 @@ uae_u32 REGPARAM2 op_4e72_3_ff(uae_u32 opcode)
 		Exception(8);
 		return 0;
 	}
-	uae_s16 src = get_diword(2);
-	uae_u16 sr = src;
+	if (!regs.stopped) {
+		uae_s16 src = get_diword(2);
+		regs.ir = src;
+	}
+	uae_u16 sr = regs.ir;
 	regs.sr = sr;
-	MakeFromSR();
-	m68k_setstopped();
-	m68k_incpc(4);
+	checkint();
+	MakeFromSR_STOP();
+	do_cycles_stop(4);
+	m68k_setstopped(1);
 	return (4 * CYCLE_UNIT / 2 + count_cycles) | (((1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4) << 16);
 }
-/* 4 0,0   */
 
 /* RTE.L  */
 uae_u32 REGPARAM2 op_4e73_3_ff(uae_u32 opcode)
@@ -47379,7 +47387,6 @@ uae_u32 REGPARAM2 op_4e73_3_ff(uae_u32 opcode)
 		oldsr = newsr;
 		MakeFromSR_T0();
 	}
-	MakeFromSR_intmask(regs.sr, newsr);
 	regs.sr = newsr;
 	MakeFromSR_T0();
 	if (newpc & 1) {
@@ -48554,7 +48561,8 @@ uae_u32 REGPARAM2 op_1180_4_ff(uae_u32 opcode)
 	uae_s8 src = m68k_dreg(regs, srcreg);
 	uaecptr dsta;
 	dsta = get_disp_ea_000(m68k_areg(regs, dstreg), get_diword(2));
-	uae_u16 oldflags = regflags.cznv;
+	struct flag_struct oldflags;
+	oldflags.cznv = regflags.cznv;
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
@@ -48762,7 +48770,8 @@ uae_u32 REGPARAM2 op_11bc_4_ff(uae_u32 opcode)
 	uae_s8 src = get_dibyte(2);
 	uaecptr dsta;
 	dsta = get_disp_ea_000(m68k_areg(regs, dstreg), get_diword(4));
-	uae_u16 oldflags = regflags.cznv;
+	struct flag_struct oldflags;
+	oldflags.cznv = regflags.cznv;
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s8)(src)) == 0);
 	SET_NFLG(((uae_s8)(src)) < 0);
@@ -49102,7 +49111,8 @@ uae_u32 REGPARAM2 op_2180_4_ff(uae_u32 opcode)
 	uae_s32 src = m68k_dreg(regs, srcreg);
 	uaecptr dsta;
 	dsta = get_disp_ea_000(m68k_areg(regs, dstreg), get_diword(2));
-	uae_u16 oldflags = regflags.cznv;
+	struct flag_struct oldflags;
+	oldflags.cznv = regflags.cznv;
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
@@ -49122,7 +49132,8 @@ uae_u32 REGPARAM2 op_2188_4_ff(uae_u32 opcode)
 	uae_s32 src = m68k_areg(regs, srcreg);
 	uaecptr dsta;
 	dsta = get_disp_ea_000(m68k_areg(regs, dstreg), get_diword(2));
-	uae_u16 oldflags = regflags.cznv;
+	struct flag_struct oldflags;
+	oldflags.cznv = regflags.cznv;
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
@@ -49331,7 +49342,8 @@ uae_u32 REGPARAM2 op_21bc_4_ff(uae_u32 opcode)
 	src = get_dilong(2);
 	uaecptr dsta;
 	dsta = get_disp_ea_000(m68k_areg(regs, dstreg), get_diword(6));
-	uae_u16 oldflags = regflags.cznv;
+	struct flag_struct oldflags;
+	oldflags.cznv = regflags.cznv;
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s32)(src)) == 0);
 	SET_NFLG(((uae_s32)(src)) < 0);
@@ -49673,7 +49685,8 @@ uae_u32 REGPARAM2 op_3180_4_ff(uae_u32 opcode)
 	uae_s16 src = m68k_dreg(regs, srcreg);
 	uaecptr dsta;
 	dsta = get_disp_ea_000(m68k_areg(regs, dstreg), get_diword(2));
-	uae_u16 oldflags = regflags.cznv;
+	struct flag_struct oldflags;
+	oldflags.cznv = regflags.cznv;
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
@@ -49693,7 +49706,8 @@ uae_u32 REGPARAM2 op_3188_4_ff(uae_u32 opcode)
 	uae_s16 src = m68k_areg(regs, srcreg);
 	uaecptr dsta;
 	dsta = get_disp_ea_000(m68k_areg(regs, dstreg), get_diword(2));
-	uae_u16 oldflags = regflags.cznv;
+	struct flag_struct oldflags;
+	oldflags.cznv = regflags.cznv;
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
@@ -49901,7 +49915,8 @@ uae_u32 REGPARAM2 op_31bc_4_ff(uae_u32 opcode)
 	uae_s16 src = get_diword(2);
 	uaecptr dsta;
 	dsta = get_disp_ea_000(m68k_areg(regs, dstreg), get_diword(4));
-	uae_u16 oldflags = regflags.cznv;
+	struct flag_struct oldflags;
+	oldflags.cznv = regflags.cznv;
 	CLEAR_CZNV();
 	SET_ZFLG(((uae_s16)(src)) == 0);
 	SET_NFLG(((uae_s16)(src)) < 0);
@@ -50170,7 +50185,8 @@ uae_u32 REGPARAM2 op_4230_4_ff(uae_u32 opcode)
 	int count_cycles = 0;
 	uae_u32 real_opcode = opcode;
 	uae_u32 srcreg = (real_opcode & 7);
-	uae_u16 oldflags = regflags.cznv;
+	struct flag_struct oldflags;
+	oldflags.cznv = regflags.cznv;
 	uaecptr srca;
 	srca = get_disp_ea_000(m68k_areg(regs, srcreg), get_diword(2));
 	CLEAR_CZNV();
@@ -50188,7 +50204,8 @@ uae_u32 REGPARAM2 op_4270_4_ff(uae_u32 opcode)
 	int count_cycles = 0;
 	uae_u32 real_opcode = opcode;
 	uae_u32 srcreg = (real_opcode & 7);
-	uae_u16 oldflags = regflags.cznv;
+	struct flag_struct oldflags;
+	oldflags.cznv = regflags.cznv;
 	uaecptr srca;
 	srca = get_disp_ea_000(m68k_areg(regs, srcreg), get_diword(2));
 	CLEAR_CZNV();
@@ -50206,7 +50223,8 @@ uae_u32 REGPARAM2 op_42b0_4_ff(uae_u32 opcode)
 	int count_cycles = 0;
 	uae_u32 real_opcode = opcode;
 	uae_u32 srcreg = (real_opcode & 7);
-	uae_u16 oldflags = regflags.cznv;
+	struct flag_struct oldflags;
+	oldflags.cznv = regflags.cznv;
 	uaecptr srca;
 	srca = get_disp_ea_000(m68k_areg(regs, srcreg), get_diword(2));
 	CLEAR_CZNV();
@@ -51718,15 +51736,18 @@ uae_u32 REGPARAM2 op_4e72_4_ff(uae_u32 opcode)
 		Exception(8);
 		return 0;
 	}
-	uae_s16 src = get_diword(2);
-	uae_u16 sr = src;
+	if (!regs.stopped) {
+		uae_s16 src = get_diword(2);
+		regs.irc = src;
+	}
+	uae_u16 sr = regs.irc;
+	checkint();
 	regs.sr = sr;
-	MakeFromSR();
-	m68k_setstopped();
-	m68k_incpc(4);
+	MakeFromSR_STOP();
+	do_cycles_stop(4);
+	m68k_setstopped(1);
 	return (4 * CYCLE_UNIT / 2 + count_cycles) | (((1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4) << 16);
 }
-/* 4 0,0   */
 
 /* RTE.L  */
 uae_u32 REGPARAM2 op_4e73_4_ff(uae_u32 opcode)
@@ -51766,7 +51787,6 @@ uae_u32 REGPARAM2 op_4e73_4_ff(uae_u32 opcode)
 		oldsr = newsr;
 		MakeFromSR_T0();
 	}
-	MakeFromSR_intmask(regs.sr, newsr);
 	regs.sr = newsr;
 	MakeFromSR_T0();
 	if (newpc & 1) {
@@ -54535,7 +54555,8 @@ uae_u32 REGPARAM2 op_81c0_4_ff(uae_u32 opcode)
 		Exception_cpu(5);
 		return (4 * CYCLE_UNIT / 2 + count_cycles) | (((1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4) << 16);
 	}
-	count_cycles += (getDivs68kCycles((uae_s32)dst, (uae_s16)src)) * CYCLE_UNIT / 2;
+	int extra = 0;
+	count_cycles += (getDivs68kCycles((uae_s32)dst, (uae_s16)src, &extra)) * CYCLE_UNIT / 2;
 	if (dst == 0x80000000 && src == -1) {
 		setdivsflags((uae_s32)dst, (uae_s16)src);
 	} else {
@@ -54574,7 +54595,8 @@ uae_u32 REGPARAM2 op_81d0_4_ff(uae_u32 opcode)
 		Exception_cpu(5);
 		return (8 * CYCLE_UNIT / 2 + count_cycles) | (((1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4) << 16);
 	}
-	count_cycles += (getDivs68kCycles((uae_s32)dst, (uae_s16)src)) * CYCLE_UNIT / 2;
+	int extra = 0;
+	count_cycles += (getDivs68kCycles((uae_s32)dst, (uae_s16)src, &extra)) * CYCLE_UNIT / 2;
 	if (dst == 0x80000000 && src == -1) {
 		setdivsflags((uae_s32)dst, (uae_s16)src);
 	} else {
@@ -54614,7 +54636,8 @@ uae_u32 REGPARAM2 op_81d8_4_ff(uae_u32 opcode)
 		Exception_cpu(5);
 		return (8 * CYCLE_UNIT / 2 + count_cycles) | (((1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4) << 16);
 	}
-	count_cycles += (getDivs68kCycles((uae_s32)dst, (uae_s16)src)) * CYCLE_UNIT / 2;
+	int extra = 0;
+	count_cycles += (getDivs68kCycles((uae_s32)dst, (uae_s16)src, &extra)) * CYCLE_UNIT / 2;
 	if (dst == 0x80000000 && src == -1) {
 		setdivsflags((uae_s32)dst, (uae_s16)src);
 	} else {
@@ -54654,7 +54677,8 @@ uae_u32 REGPARAM2 op_81e0_4_ff(uae_u32 opcode)
 		Exception_cpu(5);
 		return (10 * CYCLE_UNIT / 2 + count_cycles) | (((1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4) << 16);
 	}
-	count_cycles += (getDivs68kCycles((uae_s32)dst, (uae_s16)src)) * CYCLE_UNIT / 2;
+	int extra = 0;
+	count_cycles += (getDivs68kCycles((uae_s32)dst, (uae_s16)src, &extra)) * CYCLE_UNIT / 2;
 	if (dst == 0x80000000 && src == -1) {
 		setdivsflags((uae_s32)dst, (uae_s16)src);
 	} else {
@@ -54693,7 +54717,8 @@ uae_u32 REGPARAM2 op_81e8_4_ff(uae_u32 opcode)
 		Exception_cpu(5);
 		return (12 * CYCLE_UNIT / 2 + count_cycles) | (((1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4) << 16);
 	}
-	count_cycles += (getDivs68kCycles((uae_s32)dst, (uae_s16)src)) * CYCLE_UNIT / 2;
+	int extra = 0;
+	count_cycles += (getDivs68kCycles((uae_s32)dst, (uae_s16)src, &extra)) * CYCLE_UNIT / 2;
 	if (dst == 0x80000000 && src == -1) {
 		setdivsflags((uae_s32)dst, (uae_s16)src);
 	} else {
@@ -54732,7 +54757,8 @@ uae_u32 REGPARAM2 op_81f0_4_ff(uae_u32 opcode)
 		Exception_cpu(5);
 		return (14 * CYCLE_UNIT / 2 + count_cycles) | (((1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4) << 16);
 	}
-	count_cycles += (getDivs68kCycles((uae_s32)dst, (uae_s16)src)) * CYCLE_UNIT / 2;
+	int extra = 0;
+	count_cycles += (getDivs68kCycles((uae_s32)dst, (uae_s16)src, &extra)) * CYCLE_UNIT / 2;
 	if (dst == 0x80000000 && src == -1) {
 		setdivsflags((uae_s32)dst, (uae_s16)src);
 	} else {
@@ -54770,7 +54796,8 @@ uae_u32 REGPARAM2 op_81f8_4_ff(uae_u32 opcode)
 		Exception_cpu(5);
 		return (12 * CYCLE_UNIT / 2 + count_cycles) | (((1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4) << 16);
 	}
-	count_cycles += (getDivs68kCycles((uae_s32)dst, (uae_s16)src)) * CYCLE_UNIT / 2;
+	int extra = 0;
+	count_cycles += (getDivs68kCycles((uae_s32)dst, (uae_s16)src, &extra)) * CYCLE_UNIT / 2;
 	if (dst == 0x80000000 && src == -1) {
 		setdivsflags((uae_s32)dst, (uae_s16)src);
 	} else {
@@ -54808,7 +54835,8 @@ uae_u32 REGPARAM2 op_81f9_4_ff(uae_u32 opcode)
 		Exception_cpu(5);
 		return (16 * CYCLE_UNIT / 2 + count_cycles) | (((1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4) << 16);
 	}
-	count_cycles += (getDivs68kCycles((uae_s32)dst, (uae_s16)src)) * CYCLE_UNIT / 2;
+	int extra = 0;
+	count_cycles += (getDivs68kCycles((uae_s32)dst, (uae_s16)src, &extra)) * CYCLE_UNIT / 2;
 	if (dst == 0x80000000 && src == -1) {
 		setdivsflags((uae_s32)dst, (uae_s16)src);
 	} else {
@@ -54847,7 +54875,8 @@ uae_u32 REGPARAM2 op_81fa_4_ff(uae_u32 opcode)
 		Exception_cpu(5);
 		return (12 * CYCLE_UNIT / 2 + count_cycles) | (((1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4) << 16);
 	}
-	count_cycles += (getDivs68kCycles((uae_s32)dst, (uae_s16)src)) * CYCLE_UNIT / 2;
+	int extra = 0;
+	count_cycles += (getDivs68kCycles((uae_s32)dst, (uae_s16)src, &extra)) * CYCLE_UNIT / 2;
 	if (dst == 0x80000000 && src == -1) {
 		setdivsflags((uae_s32)dst, (uae_s16)src);
 	} else {
@@ -54886,7 +54915,8 @@ uae_u32 REGPARAM2 op_81fb_4_ff(uae_u32 opcode)
 		Exception_cpu(5);
 		return (14 * CYCLE_UNIT / 2 + count_cycles) | (((1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4) << 16);
 	}
-	count_cycles += (getDivs68kCycles((uae_s32)dst, (uae_s16)src)) * CYCLE_UNIT / 2;
+	int extra = 0;
+	count_cycles += (getDivs68kCycles((uae_s32)dst, (uae_s16)src, &extra)) * CYCLE_UNIT / 2;
 	if (dst == 0x80000000 && src == -1) {
 		setdivsflags((uae_s32)dst, (uae_s16)src);
 	} else {
@@ -54922,7 +54952,8 @@ uae_u32 REGPARAM2 op_81fc_4_ff(uae_u32 opcode)
 		Exception_cpu(5);
 		return (8 * CYCLE_UNIT / 2 + count_cycles) | (((1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4) << 16);
 	}
-	count_cycles += (getDivs68kCycles((uae_s32)dst, (uae_s16)src)) * CYCLE_UNIT / 2;
+	int extra = 0;
+	count_cycles += (getDivs68kCycles((uae_s32)dst, (uae_s16)src, &extra)) * CYCLE_UNIT / 2;
 	if (dst == 0x80000000 && src == -1) {
 		setdivsflags((uae_s32)dst, (uae_s16)src);
 	} else {
@@ -60117,15 +60148,18 @@ uae_u32 REGPARAM2 op_4e72_5_ff(uae_u32 opcode)
 		Exception(8);
 		return 0;
 	}
-	uae_s16 src = get_diword(2);
-	uae_u16 sr = src;
+	if (!regs.stopped) {
+		uae_s16 src = get_diword(2);
+		regs.irc = src;
+	}
+	uae_u16 sr = regs.irc;
+	checkint();
 	regs.sr = sr;
-	MakeFromSR();
-	m68k_setstopped();
-	m68k_incpc(4);
+	MakeFromSR_STOP();
+	do_cycles_stop(4);
+	m68k_setstopped(1);
 	return (4 * CYCLE_UNIT / 2 + count_cycles) | (((1 * 4 * CYCLE_UNIT / 2 + count_cycles) * 4) << 16);
 }
-/* 4 0,0   */
 
 /* RTE.L  */
 uae_u32 REGPARAM2 op_4e73_5_ff(uae_u32 opcode)

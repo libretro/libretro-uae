@@ -77,6 +77,15 @@ void png_sig_cmp (void) {}
 struct zfile* png_get_io_ptr = NULL;
 #endif
 
+int uaestrlen(const char* s)
+{
+	return (int)strlen(s);
+}
+int uaetcslen(const TCHAR* s)
+{
+	return (int)_tcslen(s);
+}
+
 static struct uae_shmid_ds shmids[MAX_SHMID];
 uae_u8 *natmem_reserved, *natmem_offset;
 
@@ -629,6 +638,10 @@ void fetch_luapath (TCHAR *out, int size)
 {
 	fetch_path (_T("LuaPath"), out, size);
 }
+void fetch_nvrampath(TCHAR *out, int size)
+{
+	fetch_path(_T("NVRAMPath"), out, size);
+}
 void fetch_screenshotpath (TCHAR *out, int size)
 {
 	fetch_path ("ScreenshotPath", out, size);
@@ -652,6 +665,10 @@ void fetch_datapath (TCHAR *out, int size)
 void fetch_rompath (TCHAR *out, int size)
 {
 	fetch_path (_T("KickstartPath"), out, size);
+}
+void fetch_videopath(TCHAR* out, int size)
+{
+	fetch_path(_T("VideoPath"), out, size);
 }
 
 // convert path to absolute or relative
@@ -1570,58 +1587,9 @@ uae_u32 atomic_bit_test_and_reset(volatile uae_atomic *p, uae_u32 v)
 }
 
 #ifndef NATMEM_OFFSET
-void unprotect_maprom (void)
-{
-#if 0
-	bool protect = false;
-	for (int i = 0; i < MAX_SHMID; i++) {
-		struct uae_shmid_ds *shm = &shmids[i];
-		if (shm->mode != PAGE_READONLY)
-			continue;
-		if (!shm->attached || !shm->rosize)
-			continue;
-		if (shm->maprom <= 0)
-			continue;
-		shm->maprom = -1;
-		DWORD old;
-		if (!VirtualProtect (shm->attached, shm->rosize, protect ? PAGE_READONLY : PAGE_READWRITE, &old)) {
-			write_log (_T("unprotect_maprom VP %08lX - %08lX %x (%dk) failed %d\n"),
-				(uae_u8*)shm->attached - natmem_offset, (uae_u8*)shm->attached - natmem_offset + shm->size,
-				shm->size, shm->size >> 10, GetLastError ());
-		}
-	}
-#endif
-}
-
-void protect_roms (bool protect)
-{
-#if 0
-	if (protect) {
-		// protect only if JIT enabled, always allow unprotect
-		if (!currprefs.cachesize || currprefs.comptrustbyte || currprefs.comptrustword || currprefs.comptrustlong)
-			return;
-	}
-	for (int i = 0; i < MAX_SHMID; i++) {
-		struct uae_shmid_ds *shm = &shmids[i];
-		if (shm->mode != PAGE_READONLY)
-			continue;
-		if (!shm->attached || !shm->rosize)
-			continue;
-		if (shm->maprom < 0 && protect)
-			continue;
-		DWORD old;
-		if (!VirtualProtect (shm->attached, shm->rosize, protect ? PAGE_READONLY : PAGE_READWRITE, &old)) {
-			write_log (_T("protect_roms VP %08lX - %08lX %x (%dk) failed %d\n"),
-				(uae_u8*)shm->attached - natmem_offset, (uae_u8*)shm->attached - natmem_offset + shm->rosize,
-				shm->rosize, shm->rosize >> 10, GetLastError ());
-		} else {
-			write_log(_T("ROM VP %08lX - %08lX %x (%dk) %s\n"),
-				(uae_u8*)shm->attached - natmem_offset, (uae_u8*)shm->attached - natmem_offset + shm->rosize,
-				shm->rosize, shm->rosize >> 10, protect ? _T("WPROT") : _T("UNPROT"));
-		}
-	}
-#endif
-}
+void unprotect_maprom (void) {}
+void protect_roms (bool protect) {}
+void mman_set_barriers(bool disable) {}
 #endif
 
 uae_u8 *save_screenshot(int monid, int *len)
@@ -1710,14 +1678,15 @@ unsigned int def_project_len = 0;
 
 /*void fp_init_softfloat(int fpu_model) {}*/
 /*void fp_init_native(void) {}*/
-void fpux_restore (int *v) {}
+void fpux_restore(int *v) {}
 
-int is_tablet (void) { return 0; }
-int is_touch_lightpen (void) { return 0; }
+int is_tablet(void) { return 0; }
+int is_touch_lightpen(void) { return 0; }
+void release_keys(void) {}
 
 bool inprec_realtime (bool stopstart) { return false; }
 void desktop_coords(int monid, int *dw, int *dh, int *ax, int *ay, int *aw, int *ah) {}
 void update_disassembly(uae_u32 addr) {}
 void update_memdump(uae_u32 addr) {}
-int console_get (TCHAR *out, int maxlen) { return 0; }
-void console_flush (void) {}
+int console_get(TCHAR *out, int maxlen) { return 0; }
+void console_flush(void) {}

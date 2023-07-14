@@ -24,6 +24,7 @@
 #include "rommgr.h"
 #include "debug.h"
 #include "devices.h"
+#include "threaddep/thread.h"
 
 #define DUMPPACKET 0
 
@@ -54,12 +55,13 @@ static int rap;
 static int configured;
 static int romtype;
 static bool AM79C960;
-static int byteswap;
+static int abyteswap;
+static uae_sem_t sync_sem;
 
 static struct netdriverdata *td;
 static void *sysdata;
 
-static int am_initialized;
+static volatile int am_initialized;
 static volatile int transmitnow;
 static uae_u16 am_mode;
 static uae_u64 am_ladrf;
@@ -281,7 +283,7 @@ static void put_ram_word(uae_u32 offset, uae_u16 v)
 	put_ram_byte(offset + 1, (uae_u8)v);
 }
 
-static void gotfunc (void *devv, const uae_u8 *databuf, int len)
+static void gotfunc2(void *devv, const uae_u8 *databuf, int len)
 {
 	int i;
 	int size, insize, first;
@@ -292,11 +294,6 @@ static void gotfunc (void *devv, const uae_u8 *databuf, int len)
 	uae_u8 tmp[MAX_PACKET_SIZE], *data;
 	const uae_u8 *dstmac, *srcmac;
 	struct s2devstruct *dev = (struct s2devstruct*)devv;
-
-	if (!am_initialized)
-		return;
-	if (!am_rdr_rlen)
-		return;
 
 	dstmac = databuf;
 	srcmac = databuf + 6;
@@ -435,7 +432,7 @@ static void gotfunc (void *devv, const uae_u8 *databuf, int len)
 		size = 65536 - rmd2;
 		uae_u8 *pr = boardram + addr;
 		for (i = 0; i < size && insize < len; i++, insize++) {
-			pr[(i ^ byteswap) & RAM_MASK] = data[insize];
+			pr[(i ^ abyteswap) & RAM_MASK] = data[insize];
 		}
 		if (insize >= len) {
 			rmd1 |= RX_ENP;
@@ -451,6 +448,18 @@ static void gotfunc (void *devv, const uae_u8 *databuf, int len)
 
 	csr[0] |= CSR0_RINT;
 	devices_rethink_all(rethink_a2065);
+}
+
+static void gotfunc(void *devv, const uae_u8 *databuf, int len)
+{
+	if (!am_initialized)
+		return;
+	if (!am_rdr_rlen)
+		return;
+
+	uae_sem_wait(&sync_sem);
+	gotfunc2(devv, databuf, len);
+	uae_sem_post(&sync_sem);
 }
 
 static int getfunc (void *devv, uae_u8 *d, int *len)
@@ -525,7 +534,7 @@ static void do_transmit (void)
 				size = MAX_PACKET_SIZE;
 			uae_u8 *pm = boardram + addr;
 			for (i = 0; i < size; i++) {
-				transmitbuffer[outsize++] = pm[(i ^ byteswap) & RAM_MASK];
+				transmitbuffer[outsize++] = pm[(i ^ abyteswap) & RAM_MASK];
 			}
 			if (size < 60 && (csr[4] & 0x0800)) { // APAD_XMT
 				while (size < 60) {
@@ -936,7 +945,7 @@ static uae_u32 REGPARAM2 a2065_bget (uaecptr addr)
 {
 	uae_u32 v;
 	addr &= 65535;
-	v = a2065_bget2 (addr ^ byteswap);
+	v = a2065_bget2 (addr ^ abyteswap);
 	if (log_a2065 > 3 && addr < MEM_MIN)
 		write_log (_T("7990_BGET: %08X -> %02X PC=%08X\n"), addr, v & 0xff, M68K_GETPC);
 	return v;
@@ -1003,7 +1012,7 @@ static void REGPARAM2 a2065_bput (uaecptr addr, uae_u32 b)
 	addr &= 65535;
 	if (log_a2065 > 3 && addr < MEM_MIN)
 		write_log (_T("7990_BPUT: %08X <- %02X PC=%08X\n"), addr, b & 0xff, M68K_GETPC);
-	a2065_bput2 (addr ^ byteswap, b);
+	a2065_bput2 (addr ^ abyteswap, b);
 }
 
 static uae_u32 REGPARAM2 a2065_wgeti (uaecptr addr)
@@ -1022,6 +1031,12 @@ static uae_u32 REGPARAM2 a2065_lgeti (uaecptr addr)
 
 static void a2065_reset(int hardreset)
 {
+	if (!sync_sem) {
+		return;
+	}
+
+	uae_sem_wait(&sync_sem);
+
 	am_initialized = 0;
 
 	ethernet_close(td, sysdata);
@@ -1039,6 +1054,8 @@ static void a2065_reset(int hardreset)
 	xfree(sysdata);
 	sysdata = NULL;
 	td = NULL;
+
+	uae_sem_post(&sync_sem);
 }
 
 static void a2065_free(void)
@@ -1050,8 +1067,13 @@ static bool a2065_config (struct autoconfig_info *aci)
 {
 	uae_u8 maco[3];
 
-	if (!aci)
+	if (!sync_sem) {
+		uae_sem_init(&sync_sem, 0, 1);
+	}
+
+	if (!aci) {
 		return false;
+	}
 
 	device_add_reset(a2065_reset);
 
@@ -1074,7 +1096,7 @@ static bool a2065_config (struct autoconfig_info *aci)
 		addr_rdp = A2065_RDP;
 		rap_mask = 3;
 		AM79C960 = false;
-		byteswap = 0;
+		abyteswap = 0;
 		break;
 		case ROMTYPE_ARIADNE:
 		maco[0] = 0x00;
@@ -1085,7 +1107,7 @@ static bool a2065_config (struct autoconfig_info *aci)
 		addr_rdp = ARIADNE_RDP;
 		rap_mask = 127;
 		AM79C960 = true;
-		byteswap = 1;
+		abyteswap = 1;
 		break;
 		default:
 		return false;
@@ -1136,7 +1158,7 @@ static bool a2065_config (struct autoconfig_info *aci)
 	return true;
 }
 
-uae_u8 *save_a2065 (int *len, uae_u8 *dstptr)
+uae_u8 *save_a2065 (size_t *len, uae_u8 *dstptr)
 {
 	uae_u8 *dstbak,*dst;
 

@@ -14,7 +14,7 @@
 
 #ifdef HAVE_SAMPLER
 
-#include "dxwrap.h"
+#include "render.h"
 
 #include <dsound.h>
 
@@ -105,7 +105,7 @@ static void capture_free (void)
 	samplebuffer = NULL;
 }
 
-static evt oldcycles;
+static evt_t oldcycles;
 static int oldoffset;
 
 uae_u8 sampler_getsample (int channel)
@@ -115,14 +115,14 @@ uae_u8 sampler_getsample (int channel)
 	static int cap_pos;
 	static float diffsample;
 #endif
-	static double doffset_offset;
+	static float doffset_offset;
 	HRESULT hr;
 	DWORD t;
 	void *p1, *p2;
 	DWORD len1, len2;
-	evt cycles;
+	evt_t cycles;
 	int sample, samplecnt;
-	double doffset;
+	float doffset;
 	int offset;
 
 	if (!currprefs.sampler_stereo)
