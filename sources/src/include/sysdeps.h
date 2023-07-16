@@ -77,8 +77,6 @@ using namespace std;
 #define REGPARAM2 JITCALL
 #define REGPARAM3 JITCALL
 
-#include <tchar.h>
-
 #if CPU_64_BIT
 #define addrdiff(a, b) ((int)((a) - (b)))
 #else
@@ -681,6 +679,9 @@ extern bool use_long_double;
 #ifndef _vsntprintf
 #define _vsntprintf vsnprintf
 #endif
+#ifndef _stscanf
+#define _stscanf sscanf
+#endif
 #ifndef max
 #define max(a,b) ((a) > (b) ? (a) : (b))
 #endif
@@ -734,6 +735,16 @@ typedef int64_t off64_t;
 
 #ifndef O_NDELAY
 #define O_NDELAY 0
+#endif
+
+#ifndef MAXUINT
+#define MAXUINT ((unsigned int)~ ((unsigned int)0))
+#endif
+#ifndef MAXINT
+#define MAXINT ((int) (MAXUINT >> 1))
+#endif
+#ifndef MININT
+#define MININT ((int)~MAXINT)
 #endif
 
 /* Types */
