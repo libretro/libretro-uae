@@ -15,7 +15,9 @@
 #ifdef _WIN32
 
 #else
+#ifdef HAVE_MMAN
 #include <sys/mman.h>
+#endif
 #endif
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>

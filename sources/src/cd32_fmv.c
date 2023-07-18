@@ -1634,7 +1634,7 @@ addrbank *cd32_fmv_init (struct autoconfig_info *aci)
 
 #else
 
-void cd32_fmv_set_sync(double svpos, double adjust) {}
-addrbank *cd32_fmv_init (struct autoconfig_info *aci) { return NULL; }
+void cd32_fmv_set_sync(float svpos, float adjust) {}
+addrbank *cd32_fmv_init(struct autoconfig_info *aci) { return NULL; }
 
 #endif /* WITH_MPEG2 */

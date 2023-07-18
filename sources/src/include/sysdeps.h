@@ -36,27 +36,6 @@ using namespace std;
 #include <assert.h>
 #include <limits.h>
 
-#if defined(_M_ARM64) || defined(_M_ARM64EC) 
-#define CPU_arm 1
-#define ARM_ASSEMBLY 1
-#define CPU_64_BIT 1
-#elif defined(__arm__) || defined(_M_ARM)
-#define CPU_arm 1
-#define ARM_ASSEMBLY 1
-#elif defined(__x86_64__) || defined(_M_AMD64)
-#define CPU_x86_64 1
-#define CPU_64_BIT 1
-#define X86_64_ASSEMBLY 1
-#elif defined(__i386__) || defined(_M_IX86)
-#define CPU_i386 1
-#define X86_ASSEMBLY 1
-#define SAHF_SETO_PROFITABLE
-#elif defined(__powerpc__) || defined(_M_PPC)
-#define CPU_powerpc 1
-#else
-#error unrecognized CPU type
-#endif
-
 #ifdef _WIN32
 /* Parameters are passed in ECX, EDX for both x86 and x86-64 (RCX, RDX).
  * For x86-64, __fastcall is the default, so it isn't really required. */
