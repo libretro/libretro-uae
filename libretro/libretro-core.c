@@ -1308,6 +1308,21 @@ static void retro_set_core_options()
          "PAL auto"
       },
       {
+         "puae_video_aspect",
+         "Video > Pixel Aspect Ratio",
+         "Pixel Aspect Ratio",
+         "Hotkey toggling disables this option until core restart.\n- 'PAL': 1/1 = 1.000\n- 'NTSC': 44/52 = 0.846",
+         NULL,
+         "video",
+         {
+            { "auto", "Automatic" },
+            { "PAL", NULL },
+            { "NTSC", NULL },
+            { NULL, NULL },
+         },
+         "auto"
+      },
+      {
          "puae_video_resolution",
          "Video > Resolution",
          "Resolution",
@@ -1334,21 +1349,6 @@ static void retro_set_core_options()
             { "auto", "Automatic" },
             { "single", "Single Line" },
             { "double", "Double Line" },
-            { NULL, NULL },
-         },
-         "auto"
-      },
-      {
-         "puae_video_aspect",
-         "Video > Pixel Aspect Ratio",
-         "Pixel Aspect Ratio",
-         "Hotkey toggling disables this option until core restart.\n- 'PAL': 1/1 = 1.000\n- 'NTSC': 44/52 = 0.846",
-         NULL,
-         "video",
-         {
-            { "auto", "Automatic" },
-            { "PAL", NULL },
-            { "NTSC", NULL },
             { NULL, NULL },
          },
          "auto"
