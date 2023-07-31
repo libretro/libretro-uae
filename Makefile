@@ -325,10 +325,14 @@ CXXFLAGS += -DUAE -MMD
 
 include Makefile.common
 
-OBJECTS += $(SOURCES_C:.c=.o) $(SOURCES_CXX:.cpp=.o) $(SOURCES_ASM:.S=.o)
-OBJECT_DEPS = $(OBJECTS:.o=.d)
+OBJECTS     += $(SOURCES_C:.c=.o) $(SOURCES_CXX:.cpp=.o) $(SOURCES_ASM:.S=.o)
+OBJECT_DEPS  = $(OBJECTS:.o=.d)
 
-INCDIRS := $(EXTRA_INCLUDES) $(INCFLAGS)
+OBJDIR      := build
+OBJECTS     := $(addprefix $(OBJDIR)/,$(OBJECTS))
+OBJECT_DEPS := $(addprefix $(OBJDIR)/,$(OBJECT_DEPS))
+
+INCDIRS     := $(EXTRA_INCLUDES) $(INCFLAGS)
 
 default:
 	$(info CFLAGS: $(PLATFLAGS) $(CFLAGS))
@@ -345,22 +349,29 @@ else
 	$(CC) $(fpic) $(SHARED) $(INCDIRS) -o $@ $(OBJECTS) $(LDFLAGS)
 endif
 
-%.o: %.c
+$(OBJDIR)/%.o: %.c
+	@mkdir -p $(dir $@)
+	@$(if $@, $(shell echo echo CC $<),)
 	$(CC) $(fpic) $(CFLAGS) $(PLATFLAGS) $(INCDIRS) -c -o $@ $<
 
-%.o: %.cpp
+$(OBJDIR)/%.o: %.cpp
+	@mkdir -p $(dir $@)
+	@$(if $@, $(shell echo echo CXX $<),)
 	$(CXX) $(fpic) $(CXXFLAGS) $(PLATFLAGS) $(INCDIRS) -c -o $@ $<
 
-%.o: %.S
+$(OBJDIR)/%.o: %.S
+	@mkdir -p $(dir $@)
+	@$(if $@, $(shell echo echo CC_AS $<),)
 	$(CC_AS) $(CFLAGS) -c $^ -o $@
 
 -include $(OBJECT_DEPS)
 
 clean:
-	rm -f $(OBJECTS) $(OBJECT_DEPS) $(TARGET)
+	rm -rf $(OBJDIR)
+	rm -f $(TARGET)
 
 objectclean:
-	rm -f $(OBJECTS) $(OBJECT_DEPS)
+	rm -rf $(OBJDIR)
 
 targetclean:
 	rm -f $(TARGET)
