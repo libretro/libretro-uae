@@ -2291,6 +2291,16 @@ static void retro_set_core_options()
          "---"
       },
       {
+         "puae_mapper_b",
+         "RetroPad > B",
+         "B",
+         "Unmapped defaults to fire button.\nVKBD: Press selected key.",
+         NULL,
+         "retropad",
+         {{ NULL, NULL }},
+         "---"
+      },
+      {
          "puae_mapper_a",
          "RetroPad > A",
          "A",
@@ -2301,10 +2311,10 @@ static void retro_set_core_options()
          "---"
       },
       {
-         "puae_mapper_b",
-         "RetroPad > B",
-         "B",
-         "Unmapped defaults to fire button.\nVKBD: Press selected key.",
+         "puae_mapper_y",
+         "RetroPad > Y",
+         "Y",
+         "VKBD: Toggle 'CapsLock'. Remapping to non-keyboard keys overrides VKBD function!",
          NULL,
          "retropad",
          {{ NULL, NULL }},
@@ -2319,16 +2329,6 @@ static void retro_set_core_options()
          "retropad",
          {{ NULL, NULL }},
          "RETROK_SPACE"
-      },
-      {
-         "puae_mapper_y",
-         "RetroPad > Y",
-         "Y",
-         "VKBD: Toggle 'CapsLock'. Remapping to non-keyboard keys overrides VKBD function!",
-         NULL,
-         "retropad",
-         {{ NULL, NULL }},
-         "---"
       },
       {
          "puae_mapper_select",
