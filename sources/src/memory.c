@@ -2076,10 +2076,24 @@ bool mapped_malloc (addrbank *ab)
 
 void mapped_free (addrbank *ab)
 {
+#ifdef __LIBRETRO__
+	ab->flags &= ~ABFLAG_MAPPED;
+	if (ab->baseaddr == NULL) {
+		return;
+	}
+
+	if (!(ab->flags & ABFLAG_NOALLOC)) {
+		xfree(ab->baseaddr);
+	}
+
+	ab->allocated_size = 0;
+	ab->baseaddr = NULL;
+#else
 	xfree(ab->baseaddr);
 	ab->flags &= ~ABFLAG_MAPPED;
 	ab->allocated_size = 0;
 	ab->baseaddr = NULL;
+#endif
 }
 
 #else
