@@ -5771,7 +5771,8 @@ static void whdload_kscopy(bool legacy)
 
    for (x = 0; x < KS_NUM; x++)
    {
-      bool valid = false;
+      bool valid        = false;
+      uint8_t key_extra = 0;
 
       snprintf(ks_src, sizeof(ks_src), "%s%s%s",
             retro_system_directory, DIR_SEP_STR, kickstart[x]);
@@ -5798,6 +5799,11 @@ static void whdload_kscopy(bool legacy)
 
          path_join(ks_src, retro_system_directory, uae_kickstarts[i].aforever);
          valid = path_is_valid(ks_src);
+
+         /* Special Amiga Forever encryption bonus */
+         if (valid)
+            key_extra = 11;
+
          if (!valid)
          {
             if (!string_is_empty(uae_kickstarts[i].tosec_mod))
@@ -5820,12 +5826,14 @@ static void whdload_kscopy(bool legacy)
       {
          stat(ks_src, &ks_stat);
 
-         if (ks_stat.st_size != ks_size[x])
+         /* Allow size exception */
+         if (     ks_stat.st_size != ks_size[x]
+               && ks_stat.st_size - key_extra != ks_size[x])
             log_cb(RETRO_LOG_INFO, "WHDLoad not installing Kickstart '%s' due to incorrect size, %d != %d\n", path_basename(ks_src), ks_stat.st_size, ks_size[x]);
          else if (fcopy(ks_src, ks_dst) < 0)
             log_cb(RETRO_LOG_INFO, "WHDLoad failed to install '%s' to '%s'\n", path_basename(ks_src), ks_dst);
          else
-            log_cb(RETRO_LOG_INFO, "WHDLoad found and installed '%s' to '%s'\n", path_basename(ks_src), ks_dst);
+            log_cb(RETRO_LOG_INFO, "WHDLoad installed '%s' to '%s'\n", path_basename(ks_src), ks_dst);
       }
    }
 }
@@ -5835,6 +5843,22 @@ static void whdload_prefs_copy(void)
    char src[RETRO_PATH_MAX] = {0};
    char dst[RETRO_PATH_MAX] = {0};
    char filename[32]        = {0};
+
+   /* rom.key only when not found */
+   snprintf(filename, sizeof(filename), "%s", "rom.key");
+
+   snprintf(src, sizeof(src), "%s%s%s",
+         retro_system_directory, DIR_SEP_STR, filename);
+   snprintf(dst, sizeof(dst), "%s%sWHDLoad%sDevs%sKickstarts%s%s",
+         retro_save_directory, DIR_SEP_STR, DIR_SEP_STR, DIR_SEP_STR, DIR_SEP_STR, filename);
+
+   if (!path_is_valid(dst) && path_is_valid(src))
+   {
+      if (fcopy(src, dst) < 0)
+         log_cb(RETRO_LOG_INFO, "WHDLoad failed to install '%s'\n", filename);
+      else
+         log_cb(RETRO_LOG_INFO, "WHDLoad installed '%s'\n", filename);
+   }
 
    /* WHDLoad.key only when not found */
    snprintf(filename, sizeof(filename), "%s", "WHDLoad.key");
@@ -5847,9 +5871,9 @@ static void whdload_prefs_copy(void)
    if (!path_is_valid(dst) && path_is_valid(src))
    {
       if (fcopy(src, dst) < 0)
-         log_cb(RETRO_LOG_INFO, "%s failed to install\n", filename);
+         log_cb(RETRO_LOG_INFO, "WHDLoad failed to install '%s'\n", filename);
       else
-         log_cb(RETRO_LOG_INFO, "%s installed\n", filename);
+         log_cb(RETRO_LOG_INFO, "WHDLoad installed '%s'\n", filename);
    }
 
    /* WHDLoad.prefs always */
@@ -5872,9 +5896,9 @@ static void whdload_prefs_copy(void)
       }
 
       if (fcopy(src, dst) < 0)
-         log_cb(RETRO_LOG_INFO, "%s failed to update\n", filename);
+         log_cb(RETRO_LOG_INFO, "WHDLoad failed to update '%s'\n", filename);
       else
-         log_cb(RETRO_LOG_INFO, "%s updated\n", filename);
+         log_cb(RETRO_LOG_INFO, "WHDLoad updated '%s'\n", filename);
    }
 }
 

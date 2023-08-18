@@ -72,6 +72,8 @@ The models require matching Kickstart ROMs in RetroArch `system` directory.
 
 Amiga Forever and TOSEC filenames are also accepted.
 
+Encrypted Amiga Forever ROMs require `rom.key` also in `system` directory.
+
 The core has a somewhat compatible built-in AROS Kickstart, which is used as a fallback when the proper Kickstart is not found.
 
 *It is critical to use ROMs with the correct MD5!*
@@ -318,7 +320,7 @@ Libretro LED interface is presented in the following order:
 Pre-installed WHDLoad LHA archives can be launched directly without any kind of manual preparing and downloading.
 
 - WHDLoad helper files (Directory or HDF) will be generated to `saves`, `WHDLoad.prefs` will be generated to `system`
-- `WHDLoad.prefs` & `WHDLoad.key` will be copied from `system` to the helper image
+- `WHDLoad.prefs` & `WHDLoad.key` & `rom.key` will be copied from `system` to the helper image
 - Kickstarts will be copied automatically to the helper image
 - To update `WHDLoad:` simply delete the directory or the HDF
 
