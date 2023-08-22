@@ -265,6 +265,13 @@ static uae_u32 jit_debug_to_uae_u32(uaecptr ptr, const char* macro, const char* 
 #endif
 #endif
 
+#ifdef HAVE_STRDUP
+extern char *x_strdup(const char *str);
+#define my_strdup x_strdup
+#else
+extern char *my_strdup (const char *s);
+#endif
+
 /*
  * Porters to weird systems, look! This is the preferred way to get
  * filesys.c (and other stuff) running on your system. Define the

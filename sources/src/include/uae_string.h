@@ -16,12 +16,6 @@
 #include <string.h>
 #endif
 
-#ifdef HAVE_STRDUP
-#define my_strdup strdup
-#else
-extern char *my_strdup (const char *s);
-#endif
-
 #ifndef HAVE_STRCASECMP
 # ifdef HAVE_STRCMPI
 #  define strcasecmp strcmpi

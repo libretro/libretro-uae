@@ -515,14 +515,22 @@ void fullpath (TCHAR *path, int size)
         /* <drive letter>: is supposed to mean same as <drive letter>:\ */
 }
 
+/* 'startup_update_unit()' can do 'my_strdup()' with null volume,
+ * therefore replace 'my_strdup' with one this which checks for NULL
+ * (done in sysdeps.h) */
+char *x_strdup(const char* str)
+{
+   return str ? strdup(str) : NULL;
+}
+
 char *ua (const TCHAR *s)
 {
-	return strdup(s);
+	return my_strdup(s);
 }
 
 char *ua_fs (const char *s, int defchar)
 {
-	return strdup(s);
+	return my_strdup(s);
 }
 
 char *ua_fs_copy (char *dst, int maxlen, const TCHAR *src, int defchar)
@@ -541,7 +549,7 @@ char *ua_copy (char *dst, int maxlen, const char *src)
 
 TCHAR *au (const char *s)
 {
-	return strdup(s);
+	return my_strdup(s);
 }
 
 TCHAR *au_copy (TCHAR *dst, int maxlen, const char *src)
@@ -612,12 +620,12 @@ void debugger_change (int mode)
 // unicode
 char *uutf8 (const char *s)
 {
-	return strdup(s);
+	return my_strdup(s);
 }
 
 char *utf8u (const char *s)
 {
-	return strdup(s);
+	return my_strdup(s);
 }
 
 // debug_win32
