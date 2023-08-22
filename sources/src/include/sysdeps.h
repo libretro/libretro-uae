@@ -368,6 +368,12 @@ uae_atomic atomic_inc(volatile uae_atomic *p);
 uae_atomic atomic_dec(volatile uae_atomic *p);
 uae_u32 atomic_bit_test_and_reset(volatile uae_atomic *p, uae_u32 v);
 
+#ifdef HAVE_STRDUP
+extern char *x_strdup(const char *str);
+#define my_strdup x_strdup
+#else
+extern char *my_strdup (const char *s);
+#endif
 extern void my_trim (TCHAR*);
 extern TCHAR *my_strdup_trim (const TCHAR*);
 extern void to_lower (TCHAR *s, int len);
@@ -490,6 +496,7 @@ extern void mallocemu_free (void *ptr);
 #include "machdep/machdep.h"
 #endif
 
+#define error_log     write_log
 #define uae_log       write_log
 #define write_dlog    write_log
 #define write_log_err write_log
