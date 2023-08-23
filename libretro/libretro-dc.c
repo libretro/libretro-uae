@@ -254,7 +254,6 @@ bool dc_replace_file(dc_storage* dc, int index, const char* filename)
          int zip_m3u_num = 0;
 
          RDIR *zip_dir;
-         struct dirent *zip_dirp;
          zip_dir = retro_opendir(retro_temp_directory);
          while (retro_readdir(zip_dir))
          {
@@ -264,15 +263,15 @@ bool dc_replace_file(dc_storage* dc, int index, const char* filename)
                continue;
 
             /* Multi file mode, generate playlist */
-            if (dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_FLOPPY)
+            if (dc_get_image_type(name) == DC_IMAGE_TYPE_FLOPPY)
             {
                zip_mode = 1;
                zip_m3u_num++;
                snprintf(zip_m3u_list[zip_m3u_num-1], RETRO_PATH_MAX, "%s", name);
             }
             /* Single file image mode */
-            else if (dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_CD
-                  || dc_get_image_type(zip_dirp->d_name) == DC_IMAGE_TYPE_HD)
+            else if (dc_get_image_type(name) == DC_IMAGE_TYPE_CD
+                  || dc_get_image_type(name) == DC_IMAGE_TYPE_HD)
             {
                 zip_mode = 2;
                 snprintf(full_path_replace, sizeof(full_path_replace), "%s%s%s", retro_temp_directory, DIR_SEP_STR, name);
