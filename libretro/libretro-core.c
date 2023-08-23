@@ -6270,7 +6270,6 @@ static bool retro_create_config(void)
          int zip_m3u_num = 0;
 
          RDIR *zip_dir;
-         struct dirent *zip_dirp;
          zip_dir = retro_opendir(retro_temp_directory);
          char *zip_lastfile = {0};
          while (retro_readdir(zip_dir))
