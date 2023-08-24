@@ -7644,15 +7644,22 @@ static void update_audiovideo(void)
          if (retro_min_diwstart == 0 && retro_max_diwstop == retro_max_diwstop_old)
             retro_diwstartstop_counter = 0;
          /* North & South */
-         else if (retro_min_diwstart == (73 * width_multiplier) && retro_min_diwstart_old == retro_min_diwstart
-               && retro_max_diwstop  == (402 * width_multiplier) && retro_max_diwstop_old == (393 * width_multiplier))
+         else if (retro_min_diwstart == (73  * width_multiplier) && retro_min_diwstart_old == retro_min_diwstart
+               && retro_max_diwstop  == (402 * width_multiplier) && retro_max_diwstop_old  == (393 * width_multiplier))
          {
             retro_max_diwstop = retro_max_diwstop_old;
             retro_diwstartstop_counter = 0;
          }
+         /* Chase HQ WHDLoad*/
+         else if (retro_min_diwstart == (73  * width_multiplier) && retro_min_diwstart_old == (71  * width_multiplier)
+               && retro_max_diwstop  == (393 * width_multiplier) && retro_max_diwstop_old  == (391 * width_multiplier))
+         {
+            retro_diwstartstop_counter = 0;
+            locked_video_horizontal = true;
+         }
          /* Toki */
-         else if (retro_min_diwstart == (89 * width_multiplier) && retro_min_diwstart_old == (57 * width_multiplier)
-               && retro_max_diwstop  == (345 * width_multiplier) && retro_max_diwstop_old == (409 * width_multiplier))
+         else if (retro_min_diwstart == (89  * width_multiplier) && retro_min_diwstart_old == (57  * width_multiplier)
+               && retro_max_diwstop  == (345 * width_multiplier) && retro_max_diwstop_old  == (409 * width_multiplier))
          {
             retro_diwstartstop_counter = 0;
             locked_video_horizontal = true;
