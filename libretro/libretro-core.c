@@ -7721,14 +7721,21 @@ static void update_audiovideo(void)
          /* Game specific hacks: */
          /* North & South */
          if (retro_min_diwstart == (129 * width_multiplier) && retro_min_diwstart_old == retro_min_diwstart
-          && retro_max_diwstop  == (458 * width_multiplier) && retro_max_diwstop_old == (449 * width_multiplier))
+          && retro_max_diwstop  == (458 * width_multiplier) && retro_max_diwstop_old  == (449 * width_multiplier))
          {
             retro_max_diwstop = retro_max_diwstop_old;
             retro_diwstartstop_counter = 0;
          }
+         /* Chase HQ WHDLoad*/
+         else if (retro_min_diwstart == (129 * width_multiplier) && retro_min_diwstart_old == (127 * width_multiplier)
+               && retro_max_diwstop  == (449 * width_multiplier) && retro_max_diwstop_old  == (447 * width_multiplier))
+         {
+            retro_diwstartstop_counter = 0;
+            locked_video_horizontal = true;
+         }
          /* Toki */
          else if (retro_min_diwstart == (145 * width_multiplier) && retro_min_diwstart_old == (113 * width_multiplier)
-               && retro_max_diwstop  == (401 * width_multiplier) && retro_max_diwstop_old == (465 * width_multiplier))
+               && retro_max_diwstop  == (401 * width_multiplier) && retro_max_diwstop_old  == (465 * width_multiplier))
          {
             retro_diwstartstop_counter = 0;
             locked_video_horizontal = true;
