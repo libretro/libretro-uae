@@ -343,7 +343,6 @@ void retro_fastforwarding(bool enabled)
    if (enabled && frontend_ff_enabled)
       return;
 
-   ff_override.ratio          = 10.0f;
    ff_override.fastforward    = enabled;
    ff_override.inhibit_toggle = enabled;
    libretro_ff_enabled        = enabled;
