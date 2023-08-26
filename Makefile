@@ -4,6 +4,7 @@ PLATFLAGS :=
 SOURCES_C :=
 EXEEXT    :=
 TARGET_NAME := puae
+SILENT    := 0
 
 ifeq ($(platform),)
 platform = unix
@@ -351,17 +352,23 @@ endif
 
 $(OBJDIR)/%.o: %.c
 	@mkdir -p $(dir $@)
-	@$(if $@, $(shell echo echo CC $<),)
+	@if [[ $(SILENT) -ne 1 ]]; then\
+		$(if $@, $(shell echo echo CC $<),);\
+	fi
 	$(CC) $(fpic) $(CFLAGS) $(PLATFLAGS) $(INCDIRS) -c -o $@ $<
 
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(dir $@)
-	@$(if $@, $(shell echo echo CXX $<),)
+	@if [[ $(SILENT) -ne 1 ]]; then\
+		$(if $@, $(shell echo echo CXX $<),);\
+	fi
 	$(CXX) $(fpic) $(CXXFLAGS) $(PLATFLAGS) $(INCDIRS) -c -o $@ $<
 
 $(OBJDIR)/%.o: %.S
 	@mkdir -p $(dir $@)
-	@$(if $@, $(shell echo echo CC_AS $<),)
+	@if [[ $(SILENT) -ne 1 ]]; then\
+		$(if $@, $(shell echo echo CC_AS $<),);\
+	fi
 	$(CC_AS) $(CFLAGS) -c $^ -o $@
 
 -include $(OBJECT_DEPS)
