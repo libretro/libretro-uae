@@ -2185,16 +2185,6 @@ static void retro_set_core_options()
          "---"
       },
       {
-         "puae_mapper_reset",
-         "Hotkey > Reset",
-         "Reset",
-         "Press the mapped key to trigger soft reset (Ctrl-Amiga-Amiga).",
-         NULL,
-         "hotkey",
-         {{ NULL, NULL }},
-         "---"
-      },
-      {
          "puae_mapper_aspect_ratio_toggle",
          "Hotkey > Toggle Aspect Ratio",
          "Toggle Aspect Ratio",
@@ -2219,6 +2209,16 @@ static void retro_set_core_options()
          "Hotkey > Toggle Zoom Mode",
          "Toggle Zoom Mode",
          "Hidden placeholder for backwards compatibility.",
+         NULL,
+         "hotkey",
+         {{ NULL, NULL }},
+         "---"
+      },
+      {
+         "puae_mapper_reset",
+         "Hotkey > Reset",
+         "Reset",
+         "Press the mapped key to trigger soft reset (Ctrl-Amiga-Amiga).",
          NULL,
          "hotkey",
          {{ NULL, NULL }},
