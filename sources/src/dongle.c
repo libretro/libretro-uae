@@ -24,15 +24,21 @@
 #define RUGBYCOACH 6
 #define CRICKETCAPTAIN 7
 #define LEVIATHAN 8
+#define MUSICMASTER 9
 #define LOGISTIX 10
+#define SCALA_RED 11
+#define SCALA_GREEN 12
+#define STRIKERMANAGER 13
+#define MPSOCCERMANAGER 14
+#define FOOTBALLDIRECTOR2 15
 
 static int flag;
 static unsigned int cycles;
 
 /* internal prototypes */
 void dongle_reset (void);
-uae_u8 dongle_cia_read (int cia, int reg, uae_u8 val);
-void dongle_cia_write (int cia, int reg, uae_u8 val);
+uae_u8 dongle_cia_read (int cia, int reg, uae_u8 extra, uae_u8 val);
+void dongle_cia_write (int cia, int reg, uae_u8 extra, uae_u8 val);
 void dongle_joytest (uae_u16 val);
 uae_u16 dongle_joydat (int port, uae_u16 val);
 void dongle_potgo (uae_u16 val);
@@ -86,6 +92,36 @@ Logistix/SuperBase
 - POT1Y = 100k
 - POT1X * 10 / POT1Y must be between 12 and 33
 
+Music Master
+- sets joystick port 2 fire button output + low
+- first JOY1DAT AND 0x0303 must be zero.
+- following JOY1DAT AND 0x0303 reads must be nonzero.
+
+Scala MM (Green)
+
+- 470nF Capacitor between fire button and second button pin
+- Drives firebutton high, then low
+- Polls POTGOR second button pin, it must go low between about 30000-150000 DMA cycles.
+
+Scala MM (Red)
+
+- 10uF Capacitor between fire button and second button pin
+- Drives firebutton high, then low
+- Polls POTGOR second button pin, it must go low between about 350000-540000 DMA cycles.
+
+Striker Manager
+
+- Writes 0x0F00 to POTGO few times
+- Reads JOY1DAT, expects AND 0x303 == 0x200 or 0x203
+- Reads JOY1DAT in a loop until AND 0x303 == 0x200 or 0x203 (opposite from previous read)
+- Resets the system if wrong value after 200 000 read attemps.
+
+Multi-Player Soccer Manager
+
+- Writes 0x0F00 to POTGO few times
+- Reads JOY1DAT, expects AND 0x303 == 0x301 or 0x302
+- Reads JOY1DAT in a loop until AND 0x303 == 0x301 or 0x302 (opposite from previous read)
+- Resets the system if wrong value after 200 000 read attemps.
 
 */
 
@@ -97,7 +133,7 @@ void dongle_reset (void)
 	memset (oldcia, 0, sizeof oldcia);
 }
 
-uae_u8 dongle_cia_read (int cia, int reg, uae_u8 val)
+uae_u8 dongle_cia_read (int cia, int reg, uae_u8 extra, uae_u8 val)
 {
 	if (!currprefs.dongle)
 		return val;
@@ -117,12 +153,21 @@ uae_u8 dongle_cia_read (int cia, int reg, uae_u8 val)
 	return val;
 }
 
-void dongle_cia_write (int cia, int reg, uae_u8 val)
+void dongle_cia_write (int cia, int reg, uae_u8 extra, uae_u8 val)
 {
 	if (!currprefs.dongle)
 		return;
 	switch (currprefs.dongle)
 	{
+	case SCALA_GREEN:
+	case SCALA_RED:
+		if (cia == 0 && reg == 0) {
+			if ((val & 0x80) != flag) {
+				flag = val & 0x80;
+				cycles = get_cycles();
+			}
+		}
+		break;
 	case ROBOCOP3:
 		if (cia == 0 && reg == 0 && (val & 0x80))
 			flag ^= 1;
@@ -131,6 +176,15 @@ void dongle_cia_write (int cia, int reg, uae_u8 val)
 		if (cia == 1 && reg == 0 && !(val & 0x80)) {
 			flag = 1;
 			cycles = get_cycles ();
+		}
+		break;
+	case MUSICMASTER:
+		if (cia == 0 && reg == 0) {
+			if (!(val & 0x80) && (extra & 0x80)) {
+				flag = 1;
+			} else {
+				flag = 0;
+			}
 		}
 		break;
 	}
@@ -179,6 +233,52 @@ uae_u16 dongle_joydat (int port, uae_u16 val)
 		}
 		flag ^= 1;
 		break;
+	case MUSICMASTER:
+		if (port == 1 && !flag) {
+			val = 0;
+		} else if (port == 1 && flag == 1) {
+			val = 0;
+			flag++;
+		} else if (port == 1 && flag == 2) {
+			val = 0x0303;
+		}
+		break;
+	case STRIKERMANAGER:
+		if (port == 1) {
+			if (flag >= 4) {
+				val &= ~0x0303;
+				val |= 0x0203;
+				flag--;
+			} else if (flag > 0) {
+				val &= ~0x0303;
+				val |= 0x0200;
+			}
+		}
+		break;
+	case MPSOCCERMANAGER:
+		if (port == 1) {
+			if (flag >= 4) {
+				val &= ~0x0303;
+				val |= 0x0302;
+				flag--;
+			} else if (flag > 0) {
+				val &= ~0x0303;
+				val |= 0x0301;
+			}
+		}
+		break;
+	case FOOTBALLDIRECTOR2:
+		if (port == 1) {
+			if (flag >= 4) {
+				val &= ~0x0303;
+				val |= 0x0300;
+				flag--;
+			} else if (flag > 0) {
+				val &= ~0x0303;
+				val |= 0x0303;
+			}
+		}
+		break;
 	}
 	return val;
 }
@@ -194,6 +294,17 @@ void dongle_potgo (uae_u16 val)
 	case DAMESGRANDMAITRE:
 		flag = (uaerand () & 7) - 3;
 		break;
+	case STRIKERMANAGER:
+	case MPSOCCERMANAGER:
+	case FOOTBALLDIRECTOR2:
+		if ((val & 0x0500) == 0x0500) {
+			flag++;
+		} else {
+			if (flag > 0) {
+				flag--;
+			}
+		}
+		break;
 	}
 
 }
@@ -207,6 +318,20 @@ uae_u16 dongle_potgor (uae_u16 val)
 	case LOGISTIX:
 		val |= 1 << 14;
 		break;
+	case SCALA_RED:
+	case SCALA_GREEN:
+		{
+			uae_u8 mode = 0x80;
+			if ((flag & 1) || get_cycles() >= cycles + CYCLE_UNIT * (currprefs.dongle == SCALA_RED ? 450000 : 80000)) {
+				mode = 0x00;
+				flag |= 1;
+			}
+			if (((flag & 0x80) ^ mode) == 0x80)
+				val |= 1 << 14;
+			else
+				val &= ~(1 << 14);
+			break;
+		}
 	}
 	return val;
 }

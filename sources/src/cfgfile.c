@@ -209,7 +209,9 @@ static const TCHAR *dongles[] =
 {
 	_T("none"),
 	_T("robocop 3"), _T("leaderboard"), _T("b.a.t. ii"), _T("italy'90 soccer"), _T("dames grand maitre"),
-	_T("rugby coach"), _T("cricket captain"), _T("leviathan"),
+	_T("rugby coach"), _T("cricket captain"), _T("leviathan"), _T("musicmaster"),
+	_T("logistics"), _T("scala red"), _T("scala green"),
+	_T("strikermanager"), _T("multi-player soccer manager"), _T("football director 2"),
 	NULL
 };
 static const TCHAR *cdmodes[] = { _T("disabled"), _T(""), _T("image"), _T("ioctl"), _T("spti"), _T("aspi"), 0 };
