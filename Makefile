@@ -327,11 +327,9 @@ CXXFLAGS += -DUAE -MMD
 include Makefile.common
 
 OBJECTS     += $(SOURCES_C:.c=.o) $(SOURCES_CXX:.cpp=.o) $(SOURCES_ASM:.S=.o)
-OBJECT_DEPS  = $(OBJECTS:.o=.d)
 
 OBJDIR      := build
 OBJECTS     := $(addprefix $(OBJDIR)/,$(OBJECTS))
-OBJECT_DEPS := $(addprefix $(OBJDIR)/,$(OBJECT_DEPS))
 
 INCDIRS     := $(EXTRA_INCLUDES) $(INCFLAGS)
 
@@ -342,8 +340,9 @@ default:
 
 all: $(TARGET)
 
-$(TARGET): $(OBJECTS)
+-include $(OBJECTS:.o=.d))
 
+$(TARGET): $(OBJECTS)
 ifeq ($(STATIC_LINKING_LINK),1)
 	$(AR) rcs $@ $(OBJECTS)
 else
@@ -370,8 +369,6 @@ $(OBJDIR)/%.o: %.S
 		$(if $@, $(shell echo echo CC_AS $<),);\
 	fi
 	$(CC_AS) $(CFLAGS) -c $^ -o $@
-
--include $(OBJECT_DEPS)
 
 clean:
 	rm -rf $(OBJDIR)
