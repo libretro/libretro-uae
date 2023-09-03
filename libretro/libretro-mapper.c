@@ -48,6 +48,7 @@ extern bool retro_statusbar;
 extern long vkbd_mapping_active;
 extern unsigned int width_multiplier;
 
+uint8_t retro_input_discard = 0;
 unsigned retro_key_state[RETROK_LAST] = {0};
 unsigned retro_key_state_internal[RETROK_LAST] = {0};
 static unsigned retro_key_event_state[RETROK_LAST] = {0};
@@ -1727,6 +1728,12 @@ void retro_poll_event()
    if (!opt_keyboard_pass_through)
       disable_keys = process_keyboard_pass_through();
    update_input(disable_keys);
+
+   if (retro_input_discard)
+   {
+      retro_input_discard--;
+      return;
+   }
 
    /* retro joypad take control over keyboard joy */
    /* override keydown, but allow keyup, to prevent key sticking during keyboard use, if held down on opening keyboard */
