@@ -1036,7 +1036,7 @@ void toggle_vkbd(void)
    memset(joypad_bits, 0, 2*sizeof(joypad_bits[0]));
    /* Discard all inputs for x frames, thanks to Android
     * input driver doing ghost mouse clicks.. */
-   retro_input_discard = 5;
+   retro_input_discard = 10;
 }
 
 void input_vkbd(void)
