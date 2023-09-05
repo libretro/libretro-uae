@@ -1038,7 +1038,7 @@ void toggle_vkbd(void)
    /* Discard all inputs for x frames, thanks to Android
     * input driver doing ghost mouse clicks.. */
    if (!retro_vkbd)
-      retro_input_discard = 40;
+      retro_input_discard = 60;
 #endif
 }
 
