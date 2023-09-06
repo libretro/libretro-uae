@@ -48,7 +48,7 @@ extern bool retro_statusbar;
 extern long vkbd_mapping_active;
 extern unsigned int width_multiplier;
 
-uint8_t retro_input_discard = 0;
+uint8_t retro_mouse_discard = 0;
 unsigned retro_key_state[RETROK_LAST] = {0};
 unsigned retro_key_state_internal[RETROK_LAST] = {0};
 static unsigned retro_key_event_state[RETROK_LAST] = {0};
@@ -1729,12 +1729,6 @@ void retro_poll_event()
       disable_keys = process_keyboard_pass_through();
    update_input(disable_keys);
 
-   if (retro_input_discard)
-   {
-      retro_input_discard--;
-      return;
-   }
-
    /* retro joypad take control over keyboard joy */
    /* override keydown, but allow keyup, to prevent key sticking during keyboard use, if held down on opening keyboard */
    /* keyup allowing most likely not needed on actual keyboard presses even though they get stuck also */
@@ -1907,6 +1901,12 @@ void retro_poll_event()
          uae_mouse_l[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_LEFT);
          uae_mouse_r[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_RIGHT);
          uae_mouse_m[1] = input_state_cb(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_MIDDLE);
+      }
+
+      if (retro_mouse_discard)
+      {
+         retro_mouse_discard--;
+         uae_mouse_l[0] = 0;
       }
    }
 
