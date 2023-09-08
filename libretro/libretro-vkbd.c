@@ -1034,6 +1034,12 @@ void toggle_vkbd(void)
    retro_vkbd_ready = -2;
    /* Release VKBD controllable joypads */
    memset(joypad_bits, 0, 2*sizeof(joypad_bits[0]));
+#ifdef ANDROID
+   /* Discard mouse input for x frames, thanks to Android
+    * input driver doing ghost mouse clicks.. */
+   if (!retro_vkbd)
+      retro_mouse_discard = 20;
+#endif
 }
 
 void input_vkbd(void)
