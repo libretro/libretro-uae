@@ -141,12 +141,13 @@ bool retro_av_info_is_ntsc = false;
 bool retro_av_info_is_lace = false;
 bool request_reset_drawing = false;
 bool request_reset_soft = false;
-unsigned int request_init_custom_timer = 0;
-unsigned int request_check_prefs_timer = 0;
-unsigned int crop_id = 0;
-unsigned int opt_crop_id = 0;
-unsigned int crop_mode_id = 0;
-unsigned int width_multiplier = 1;
+static unsigned char request_init_custom_timer = 0;
+static unsigned char request_check_prefs_timer = 0;
+unsigned char crop_id = 0;
+unsigned char opt_crop_id = 0;
+unsigned char crop_mode_id = 0;
+static bool crop_delay = true;
+unsigned char width_multiplier = 1;
 
 static int opt_vertical_offset = 0;
 static bool opt_vertical_offset_auto = true;
@@ -1369,6 +1370,20 @@ static void retro_set_core_options()
             { NULL, NULL },
          },
          "disabled"
+      },
+      {
+         "puae_crop_delay",
+         "Video > Automatic Crop Delay",
+         "Automatic Crop Delay",
+         "Patient or instant geometry change.",
+         NULL,
+         "video",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "enabled"
       },
       {
          "puae_zoom_mode",
@@ -3045,6 +3060,10 @@ static void retro_set_options_display(void)
 {
    struct retro_core_option_display option_display;
 
+   option_display.visible = (crop_id == CROP_AUTO);
+   option_display.key = "puae_crop_delay";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
    /* Legacy zoom always hidden */
    option_display.visible = false;
    option_display.key = "puae_zoom_mode";
@@ -3099,6 +3118,8 @@ static void retro_set_options_display(void)
    option_display.key = "puae_crop";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_crop_mode";
+   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+   option_display.key = "puae_crop_delay";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
    option_display.key = "puae_vertical_pos";
    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
@@ -4261,6 +4282,14 @@ static void update_variables(void)
       else if (!strcmp(var.value, "16:10"))      crop_mode_id = CROP_MODE_16_10;
       else if (!strcmp(var.value, "4:3"))        crop_mode_id = CROP_MODE_4_3;
       else if (!strcmp(var.value, "5:4"))        crop_mode_id = CROP_MODE_5_4;
+   }
+
+   var.key = "puae_crop_delay";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (!strcmp(var.value, "disabled")) crop_delay = false;
+      else                                crop_delay = true;
    }
 
    var.key = "puae_vertical_pos";
@@ -7551,6 +7580,10 @@ static void update_audiovideo(void)
          if (retro_thisframe_last_drawn_line_delta > 47 && retro_thisframe_last_drawn_line_delta < 189)
             retro_thisframe_counter++;
 
+         /* Immediate mode */
+         if (!crop_delay)
+            request_update_av_info = true;
+
          retro_thisframe_first_drawn_line_old = retro_thisframe_first_drawn_line;
          retro_thisframe_last_drawn_line_old  = retro_thisframe_last_drawn_line;
       }
@@ -7563,7 +7596,7 @@ static void update_audiovideo(void)
          int counter_max = 4;
          if (abs(retro_thisframe_first_drawn_line_start - retro_thisframe_first_drawn_line) < 2
           || abs(retro_thisframe_last_drawn_line_start - retro_thisframe_last_drawn_line) < 2)
-            counter_max = 8;
+            counter_max *= 2;
 
 #if 0
          printf("frmcnt %d, first:%3d old:%3d start:%3d delta:%3d last:%3d old:%3d start:%3d delta:%3d\n", retro_thisframe_counter,

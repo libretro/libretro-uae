@@ -62,8 +62,8 @@ extern float retro_refresh;
 /* Core options */
 extern unsigned int video_config_aspect;
 extern bool opt_aspect_ratio_locked;
-extern unsigned int crop_id;
-extern unsigned int opt_crop_id;
+extern unsigned char crop_id;
+extern unsigned char opt_crop_id;
 extern int opt_statusbar;
 extern int opt_statusbar_position;
 extern unsigned int opt_analogmouse;
