@@ -41,6 +41,7 @@ unsigned short int defaultw = EMULATOR_DEF_WIDTH / 2;
 unsigned short int defaulth = EMULATOR_DEF_HEIGHT / 2;
 unsigned short int retrow = EMULATOR_DEF_WIDTH / 2;
 unsigned short int retroh = EMULATOR_DEF_HEIGHT / 2;
+unsigned short int retrow_max = EMULATOR_DEF_WIDTH;
 unsigned short int retrow_crop = 0;
 unsigned short int retroh_crop = 0;
 float aspect_ratio = 0;
@@ -5328,8 +5329,8 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
 {
    info->geometry.base_width   = retrow;
    info->geometry.base_height  = retroh;
-   info->geometry.max_width    = EMULATOR_MAX_WIDTH;
-   info->geometry.max_height   = EMULATOR_MAX_HEIGHT;
+   info->geometry.max_width    = retrow_max;
+   info->geometry.max_height   = EMULATOR_DEF_HEIGHT;
    info->geometry.aspect_ratio = retro_get_aspect_ratio(retrow, retroh, false);
 
    if (!retro_refresh)
@@ -8083,6 +8084,13 @@ static bool retro_update_av_info(void)
       retrow_crop *= width_multiplier;
       if (retrow_crop > retrow)
          retrow_crop = retrow;
+   }
+
+   /* Must do full av_info update if max width grows */
+   if (retrow > retrow_max)
+   {
+      retrow_max = retrow;
+      change_timing = true;
    }
 
    /* Fetch default av_info (not current!) */
