@@ -351,21 +351,21 @@ endif
 
 $(OBJDIR)/%.o: %.c
 	@mkdir -p $(dir $@)
-	@if [[ $(SILENT) -ne 1 ]]; then\
+	@if [ $(SILENT) -ne 1 ]; then\
 		$(if $@, $(shell echo echo CC $<),);\
 	fi
 	$(CC) $(fpic) $(CFLAGS) $(PLATFLAGS) $(INCDIRS) -c -o $@ $<
 
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(dir $@)
-	@if [[ $(SILENT) -ne 1 ]]; then\
+	@if [ $(SILENT) -ne 1 ]; then\
 		$(if $@, $(shell echo echo CXX $<),);\
 	fi
 	$(CXX) $(fpic) $(CXXFLAGS) $(PLATFLAGS) $(INCDIRS) -c -o $@ $<
 
 $(OBJDIR)/%.o: %.S
 	@mkdir -p $(dir $@)
-	@if [[ $(SILENT) -ne 1 ]]; then\
+	@if [ $(SILENT) -ne 1 ]; then\
 		$(if $@, $(shell echo echo CC_AS $<),);\
 	fi
 	$(CC_AS) $(CFLAGS) -c $^ -o $@
