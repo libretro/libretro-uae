@@ -62,7 +62,7 @@ extern unsigned char statusbar_text[RETRO_PATH_MAX];
 extern float retro_refresh;
 
 /* Core options */
-extern unsigned int video_config_aspect;
+extern unsigned short int video_config_aspect;
 extern bool opt_aspect_ratio_locked;
 extern unsigned char crop_id;
 extern unsigned char opt_crop_id;
