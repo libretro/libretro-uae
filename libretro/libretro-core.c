@@ -3764,14 +3764,14 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       opt_fpu_model = -1;
-      if (!strstr(var.value, "auto"))
-         opt_fpu_model = atoi(var.value);
-      else if (!strcmp(var.value, "cpu") && opt_cpu_model > 0)
+      if (!strcmp(var.value, "cpu") && opt_cpu_model > 0)
          opt_fpu_model = opt_cpu_model;
+      else if (!strstr(var.value, "auto"))
+         opt_fpu_model = atoi(var.value);
 
       if (opt_fpu_model && opt_cpu_model > 68030)
          opt_fpu_model = opt_cpu_model;
-      else if (opt_fpu_model < 0 && opt_cpu_model > 68020)
+      else if ((opt_fpu_model != 0 && opt_fpu_model != 68881) && opt_cpu_model > 68020)
          opt_fpu_model = 68882;
 
       if (opt_fpu_model > -1)
