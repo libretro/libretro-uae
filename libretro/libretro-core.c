@@ -1654,7 +1654,11 @@ static void retro_set_core_options()
             { "24bit", "24-bit (XRGB8888)" },
             { NULL, NULL },
          },
+#if defined(VITA) || defined(__SWITCH__) || defined(DINGUX) || defined(ANDROID)
+         "16bit"
+#else
          "24bit"
+#endif
       },
       {
          "puae_vkbd_theme",
