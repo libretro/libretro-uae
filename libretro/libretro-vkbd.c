@@ -464,6 +464,8 @@ void print_vkbd(void)
       shifted = true;
    if (vkflag[RETRO_DEVICE_ID_JOYPAD_B] && (vkey_pressed == RETROK_LSHIFT || vkey_pressed == RETROK_RSHIFT))
       shifted = true;
+   if (retro_key_state_internal[RETROK_LSHIFT] || retro_key_state_internal[RETROK_RSHIFT])
+      shifted = true;
 
    /* Key layout */
    for (x = 0; x < VKBDX; x++)
@@ -777,6 +779,10 @@ static void input_vkbd_sticky(void)
 
 static void convert_vkbd_to_mapper(int *vkbd_mapping_key, char **var_value)
 {
+   bool shifted = retro_capslock
+         || retro_key_state_internal[RETROK_LSHIFT]
+         || retro_key_state_internal[RETROK_RSHIFT];
+
    /* Convert VKBD special keys to mapper special keys */
    switch (*vkbd_mapping_key)
    {
@@ -798,7 +804,7 @@ static void convert_vkbd_to_mapper(int *vkbd_mapping_key, char **var_value)
          break;
 
       case VKBD_STATUSBAR_SAVEDISK:
-         if (retro_capslock)
+         if (shifted)
          {
             *var_value = get_variable("puae_mapper_save_disk_toggle");
             *vkbd_mapping_key = 0;
@@ -810,7 +816,7 @@ static void convert_vkbd_to_mapper(int *vkbd_mapping_key, char **var_value)
          }
          break;
       case VKBD_ASPECT_CROP:
-         if (retro_capslock)
+         if (shifted)
          {
             *var_value = get_variable("puae_mapper_crop_toggle");
             *vkbd_mapping_key = 0;
@@ -1205,6 +1211,10 @@ void input_vkbd(void)
 
       if (vkey_pressed != -1 && last_vkey_pressed == -1)
       {
+         bool shifted = retro_capslock
+               || retro_key_state_internal[RETROK_LSHIFT]
+               || retro_key_state_internal[RETROK_RSHIFT];
+
          switch (vkey_pressed)
          {
             case VKBD_NUMPAD:
@@ -1213,7 +1223,7 @@ void input_vkbd(void)
             case VKBD_RESET: /* Reset on release */
                break;
             case VKBD_STATUSBAR_SAVEDISK:
-               if (retro_capslock)
+               if (shifted)
                   emu_function(EMU_SAVE_DISK);
                else
                   emu_function(EMU_STATUSBAR);
@@ -1225,7 +1235,7 @@ void input_vkbd(void)
                emu_function(EMU_TURBO_FIRE);
                break;
             case VKBD_ASPECT_CROP:
-               if (retro_capslock)
+               if (shifted)
                   emu_function(EMU_CROP);
                else
                   emu_function(EMU_ASPECT_RATIO);
