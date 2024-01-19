@@ -4755,6 +4755,10 @@ static int do_specialties (int cycles)
 		if (regs.spcflags & SPCFLAG_COPPER) {
 			do_copper();
 		}
+#ifdef __LIBRETRO__
+		/* FIXME: OCS/ECS hangs on keyboard reset without a forced break.. */
+		set_special(SPCFLAG_BRK);
+#endif
 		if (!(regs.spcflags & SPCFLAG_CPUINRESET) || (regs.spcflags & SPCFLAG_BRK) || (regs.spcflags & SPCFLAG_MODE_CHANGE)) {
 			break;
 		}
