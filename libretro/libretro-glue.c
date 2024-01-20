@@ -46,7 +46,7 @@ extern int retro_ui_get_pointer_state(uint8_t port, int *px, int *py, uint8_t *p
 
 extern unsigned short int defaultw;
 extern unsigned short int defaulth;
-extern uint8_t width_multiplier;
+extern unsigned char width_multiplier;
 extern uint8_t libretro_frame_end;
 
 unsigned short int* pixbuf = NULL;

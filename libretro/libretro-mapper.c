@@ -46,7 +46,7 @@ extern bool request_update_av_info;
 extern void retro_reset_soft();
 extern bool retro_statusbar;
 extern long vkbd_mapping_active;
-extern unsigned int width_multiplier;
+extern unsigned char width_multiplier;
 
 uint8_t retro_mouse_discard = 0;
 unsigned retro_key_state[RETROK_LAST] = {0};
