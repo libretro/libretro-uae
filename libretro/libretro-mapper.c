@@ -43,7 +43,7 @@ static unsigned int mouse_speed[NORMAL_JPORTS] = {0};
 int arcadia_pad_enabled[NORMAL_JPORTS] = {0};
 
 extern bool request_update_av_info;
-extern void retro_reset_soft();
+extern bool request_reset_soft;
 extern bool retro_statusbar;
 extern long vkbd_mapping_active;
 extern unsigned char width_multiplier;
@@ -252,7 +252,7 @@ void emu_function(int function)
                (retro_mousemode) ? "Mouse Mode" : "Joystick Mode");
          break;
       case EMU_RESET:
-         retro_reset_soft();
+         request_reset_soft = true;
          /* Statusbar notification */
          statusbar_message_show(4, "%s", "Reset");
          break;
