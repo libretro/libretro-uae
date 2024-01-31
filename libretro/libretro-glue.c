@@ -50,7 +50,6 @@ extern unsigned char width_multiplier;
 extern uint8_t libretro_frame_end;
 
 unsigned short int* pixbuf = NULL;
-extern unsigned short int retro_bmp[RETRO_BMP_SIZE];
 extern char retro_temp_directory[RETRO_PATH_MAX];
 
 int retro_thisframe_first_drawn_line;
@@ -318,6 +317,7 @@ void print_statusbar(void)
    if (opt_statusbar & STATUSBAR_BASIC && !statusbar_message_timer)
       goto end;
 
+   int BOX_X                = retrox_crop;
    int BOX_Y                = 0;
    int BOX_WIDTH            = 0;
    int BOX_HEIGHT           = 11;
@@ -342,14 +342,14 @@ void print_statusbar(void)
    int FONT_COLOR           = (pix_bytes == 4) ? 0xffffff : 0xffff;;
    int FONT_SLOT            = 34 * FONT_WIDTH;
 
-   int TEXT_X               = 1 * FONT_WIDTH;
+   int TEXT_X               = 1 * FONT_WIDTH + retrox_crop;
    int TEXT_Y               = 0;
    int TEXT_LENGTH          = (video_config & PUAE_VIDEO_DOUBLELINE) ? 128 : 64;
 
    /* Statusbar location */
    /* Top */
    if (opt_statusbar_position < 0)
-      TEXT_Y = BOX_PADDING;
+      TEXT_Y = BOX_PADDING + retroy_crop;
    /* Bottom */
    else
       TEXT_Y = gfxvidinfo->drawbuffer.outheight - opt_statusbar_position - BOX_HEIGHT + BOX_PADDING;
@@ -546,7 +546,7 @@ void print_statusbar(void)
       JOY2_COLOR = joystick_color(jflag[1]);
 
    /* Statusbar output */
-   draw_fbox(0, BOX_Y, BOX_WIDTH, BOX_HEIGHT, 0, GRAPH_ALPHA_100);
+   draw_fbox(BOX_X, BOX_Y, BOX_WIDTH, BOX_HEIGHT, 0, GRAPH_ALPHA_100);
 
    if (statusbar_message_timer)
    {

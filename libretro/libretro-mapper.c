@@ -104,8 +104,8 @@ int retro_ui_get_pointer_state(uint8_t port, int *px, int *py, uint8_t *pb)
       *py = input_state_cb(port, RETRO_DEVICE_LIGHTGUN, 0, RETRO_DEVICE_ID_LIGHTGUN_SCREEN_Y);
    }
 
-   *px = (int)((*px + 0x7fff) * retrow_crop / 0xffff);
-   *py = (int)((*py + 0x7fff) * retroh_crop / 0xffff);
+   *px = (int)((*px + 0x7fff) * retrow_crop / 0xffff + retrox_crop);
+   *py = (int)((*py + 0x7fff) * retroh_crop / 0xffff + retroy_crop);
 
    if (joyport_pointer_color > -1)
    {

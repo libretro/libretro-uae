@@ -270,6 +270,8 @@ extern unsigned short int retrow;
 extern unsigned short int retroh;
 extern unsigned short int retrow_crop;
 extern unsigned short int retroh_crop;
+extern unsigned short int retrox_crop;
+extern unsigned short int retroy_crop;
 extern unsigned short int video_config;
 extern unsigned short int video_config_geometry;
 
