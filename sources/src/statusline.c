@@ -286,6 +286,8 @@ void draw_status_line_single(int monid, uae_u8 *buf, int bpp, int y, int totalwi
     else
         x_start = td_numbers_padx;
 
+    x_start += retrox_crop;
+
     int floppies = 1;
     if (gui_data.hd >= 0 || gui_data.cd >= 0 || gui_data.md >= 0)
     {

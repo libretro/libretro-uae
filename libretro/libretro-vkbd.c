@@ -407,9 +407,9 @@ void print_vkbd(void)
       XKEYSPACING        = 2;
       XOFFSET            = -1;
 
+      /* PUAE_VIDEO_HIRES_DOUBLELINE */
       if (video_config_geometry & PUAE_VIDEO_DOUBLELINE)
       {
-         /* PUAE_VIDEO_HIRES_DOUBLELINE */
          FONT_HEIGHT    *= 2;
          YKEYSPACING    *= 2;
          YPADDING       *= 2;
@@ -424,11 +424,13 @@ void print_vkbd(void)
       }
    }
 
+   XOFFSET      += retrox_crop;
+
    int XSIDE     = (320 * FONT_WIDTH) / VKBDX;
-   int YSIDE     = 21 * FONT_HEIGHT;
+   int YSIDE     = (172 * FONT_HEIGHT) / VKBDY;
 
    XPADDING      = retrow_crop - (XSIDE * VKBDX);
-   YPADDING      = retroh_crop - (YSIDE * VKBDY);
+   YPADDING      = retroh_crop + (retroy_crop * 2) - (YSIDE * VKBDY);
 
    int XBASEKEY  = (XPADDING > 0) ? (XPADDING / 2) : 0;
    int YBASEKEY  = (YPADDING > 0) ? (YPADDING / 2) : 0;
@@ -672,8 +674,10 @@ void print_vkbd(void)
 
    if (VKBDY_GAP_POS)
    {
+      unsigned lores_offset = (retrow_crop < 361 && retrow_crop % 2 == 0);
+
       draw_fbox(vkbd_x_min-FONT_WIDTH, YOFFSET+YBASEKEY+(VKBDY_GAP_POS * YSIDE)+FONT_HEIGHT,
-                vkbd_x_max-vkbd_x_min+FONT_WIDTH+XKEYSPACING+FONT_WIDTH, vkbd_y_gap_pad-FONT_HEIGHT,
+                vkbd_x_max-vkbd_x_min+(FONT_WIDTH * 2)+XKEYSPACING+((lores_offset) ? -XKEYSPACING : 0), vkbd_y_gap_pad-FONT_HEIGHT,
                 0, BRD_ALPHA);
 #if 0
       draw_fbox(XOFFSET+XBASEKEY+(VKBDX_GAP_POS * XSIDE)+vkbd_x_gap_pad, YOFFSET+YBASEKEY+(VKBDY_GAP_POS * YSIDE)+FONT_HEIGHT,
@@ -692,14 +696,14 @@ void print_vkbd(void)
       corner_y_min = 0;
       corner_y_max = vkbd_y_min - YKEYSPACING;
       draw_fbox(0, corner_y_min,
-                retrow_crop, corner_y_max,
+                retrow, corner_y_max,
                 0, BRD_ALPHA);
 
       /* Bottom */
       corner_y_min = vkbd_y_max + YKEYSPACING;
-      corner_y_max = retroh_crop - vkbd_y_max - YKEYSPACING;
+      corner_y_max = retroh - vkbd_y_max - YKEYSPACING;
       draw_fbox(0, corner_y_min,
-                retrow_crop, corner_y_max,
+                retrow, corner_y_max,
                 0, BRD_ALPHA);
 
       /* Left + Right */
@@ -709,7 +713,7 @@ void print_vkbd(void)
                 vkbd_x_min - XKEYSPACING, corner_y_max,
                 0, BRD_ALPHA);
       draw_fbox(vkbd_x_max + (XKEYSPACING * 2) + ((lores_offset) ? -XKEYSPACING : 0), corner_y_min,
-                retrow_crop - vkbd_x_max - (XKEYSPACING * (lores_offset ? 1 : 2)), corner_y_max,
+                retrow - vkbd_x_max - (XKEYSPACING * (lores_offset ? 1 : 2)), corner_y_max,
                 0, BRD_ALPHA);
    }
 
@@ -1078,8 +1082,8 @@ void input_vkbd(void)
 
    if (p_x != 0 && p_y != 0 && (p_x != last_pointer_x || p_y != last_pointer_y))
    {
-      int px = (int)((p_x + 0x7fff) * retrow_crop / 0xffff);
-      int py = (int)((p_y + 0x7fff) * retroh_crop / 0xffff);
+      int px = (int)((p_x + 0x7fff) * retrow_crop / 0xffff + retrox_crop);
+      int py = (int)((p_y + 0x7fff) * retroh_crop / 0xffff + retroy_crop);
 
       last_pointer_x = p_x;
       last_pointer_y = p_y;

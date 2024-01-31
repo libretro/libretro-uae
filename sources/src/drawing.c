@@ -4121,13 +4121,13 @@ static void center_image (void)
 			visible_left_border = (vidinfo->drawbuffer.inxoffset - DISPLAY_LEFT_SHIFT) << currprefs.gfx_resolution;
 		}
 	}
+#endif /* __LIBRETRO__ */
 
 	if (visible_left_border > max_diwlastword - 32)
 		visible_left_border = max_diwlastword - 32;
 	if (visible_left_border < 0)
 		visible_left_border = 0;
 	visible_left_border &= ~((xshift (1, lores_shift)) - 1);
-#endif /* __LIBRETRO__ */
 
 	//write_log (_T("%d %d %d %d %d\n"), max_diwlastword, vidinfo->drawbuffer.inwidth, lores_shift, currprefs.gfx_resolution, visible_left_border);
 
@@ -4168,9 +4168,6 @@ static void center_image (void)
 
 		}
 	}
-#else
-	if (!thisframe_y_adjust)
-		thisframe_y_adjust = minfirstline;
 #endif /* __LIBRETRO__ */
 
 	/* Make sure the value makes sense */
