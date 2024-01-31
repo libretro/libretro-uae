@@ -131,7 +131,8 @@ extern bool inputdevice_finalized;
 uint8_t pix_bytes = 2;
 static bool pix_bytes_initialized = false;
 static bool cpu_cycle_exact_force = false;
-static bool automatic_sound_filter_type_update = true;
+#define SOUND_FILTER_TYPE_UPDATE_TIMER 3
+static unsigned char automatic_sound_filter_type_update_timer = SOUND_FILTER_TYPE_UPDATE_TIMER;
 static bool fake_ntsc = false;
 static bool real_ntsc = false;
 static signed char forced_video = -1;
@@ -143,7 +144,9 @@ bool retro_av_info_is_ntsc = false;
 bool retro_av_info_is_lace = false;
 bool request_reset_drawing = false;
 bool request_reset_soft = false;
+bool request_reset_hard = false;
 static unsigned char request_init_custom_timer = 0;
+static unsigned char startup_init_custom_timer = 80;
 static unsigned char request_check_prefs_timer = 0;
 unsigned char crop_id = 0;
 unsigned char opt_crop_id = 0;
@@ -3883,7 +3886,7 @@ static void update_variables(void)
    {
       if (strcmp(var.value, "auto"))
       {
-         automatic_sound_filter_type_update = false;
+         automatic_sound_filter_type_update_timer = 0;
          strcat(uae_config, "sound_filter_type=");
          strcat(uae_config, var.value);
          strcat(uae_config, "\n");
@@ -3893,7 +3896,7 @@ static void update_variables(void)
       {
          if      (!strcmp(var.value, "standard")) changed_prefs.sound_filter_type = FILTER_SOUND_TYPE_A500;
          else if (!strcmp(var.value, "enhanced")) changed_prefs.sound_filter_type = FILTER_SOUND_TYPE_A1200;
-         else if (!strcmp(var.value, "auto"))     automatic_sound_filter_type_update = true;
+         else if (!strcmp(var.value, "auto"))     automatic_sound_filter_type_update_timer = SOUND_FILTER_TYPE_UPDATE_TIMER;
       }
    }
 
@@ -5250,7 +5253,7 @@ void retro_deinit(void)
    /* 'Reset' troublesome static variables */
    pix_bytes_initialized = false;
    cpu_cycle_exact_force = false;
-   automatic_sound_filter_type_update = true;
+   automatic_sound_filter_type_update_timer = 0;
    fake_ntsc = false;
    real_ntsc = false;
    forced_video = -1;
@@ -5274,8 +5277,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 
       if (port < 2)
       {
-         int uae_port;
-         uae_port = (port == 0) ? 1 : 0;
+         int uae_port = (port == 0) ? 1 : 0;
 
          cd32_pad_enabled[uae_port]    = 0;
          arcadia_pad_enabled[uae_port] = 0;
@@ -7256,6 +7258,13 @@ static bool retro_create_config(void)
 
 void retro_reset(void)
 {
+   request_reset_hard = true;
+}
+
+static void retro_reset_hard(void)
+{
+   request_reset_hard = false;
+
    /* Ensure WHDLoad saves are written with write cache enabled */
    whdload_quitkey();
 
@@ -7267,7 +7276,7 @@ void retro_reset(void)
    uae_restart(0, NULL); /* opengui, cfgfile */
 }
 
-void retro_reset_soft()
+static void retro_reset_soft(void)
 {
    request_reset_soft = false;
    fake_ntsc = false;
@@ -7450,14 +7459,18 @@ static void update_audiovideo(void)
       statusbar_message_timer--;
 
    /* Update audio settings */
-   if (automatic_sound_filter_type_update)
+   if (automatic_sound_filter_type_update_timer > 0)
    {
-      automatic_sound_filter_type_update = false;
-      config_changed = 1;
-      if (currprefs.chipset_mask & CSMASK_AGA)
-         changed_prefs.sound_filter_type = FILTER_SOUND_TYPE_A1200;
-      else
-         changed_prefs.sound_filter_type = FILTER_SOUND_TYPE_A500;
+      automatic_sound_filter_type_update_timer--;
+      if (automatic_sound_filter_type_update_timer == 0)
+      {
+         config_changed = 1;
+
+         if (currprefs.chipset_mask & CSMASK_AGA)
+            changed_prefs.sound_filter_type = FILTER_SOUND_TYPE_A1200;
+         else
+            changed_prefs.sound_filter_type = FILTER_SOUND_TYPE_A500;
+      }
    }
 
    /* Automatic video resolution */
@@ -8288,10 +8301,6 @@ void retro_run(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
       update_variables();
 
-   /* Soft reset requested */
-   if (request_reset_soft)
-      retro_reset_soft();
-
    /* Poll inputs */
    input_poll_cb();
    retro_poll_event();
@@ -8405,6 +8414,11 @@ void retro_run(void)
 upload:
    video_cb(retro_bmp + retro_bmp_offset, retrow_crop, retroh_crop, retrow << (pix_bytes >> 1));
    upload_output_audio_buffer();
+
+   if (request_reset_soft)
+      retro_reset_soft();
+   else if (request_reset_hard)
+      retro_reset_hard();
 }
 
 bool retro_load_game(const struct retro_game_info *info)
