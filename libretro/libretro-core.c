@@ -7367,7 +7367,7 @@ static void retro_reset_soft(void)
 static void update_video_center_vertical(void)
 {
    int retroh_crop_normal     = (video_config & PUAE_VIDEO_DOUBLELINE) ? retroh_crop / 2 : retroh_crop;
-   int thisframe_y_adjust_new = minfirstline;
+   int thisframe_y_adjust_new = thisframe_y_adjust_old;
    int thisframe_y_adjust_cur = thisframe_y_adjust;
 
    /* Always reset default top border */
@@ -7378,7 +7378,8 @@ static void update_video_center_vertical(void)
       thisframe_y_adjust_new = thisframe_y_adjust + opt_vertical_offset;
    else if ( retro_thisframe_first_drawn_line       != retro_thisframe_last_drawn_line
          && (retro_thisframe_first_drawn_line > 0   && retro_thisframe_last_drawn_line > 0)
-         && (retro_thisframe_first_drawn_line < 150 || retro_thisframe_last_drawn_line > 150)
+         && (  (!retro_av_info_is_lace && (retro_thisframe_first_drawn_line < 150 && retro_thisframe_last_drawn_line > 150))
+            || ( retro_av_info_is_lace && (retro_thisframe_first_drawn_line < 150 || retro_thisframe_last_drawn_line > 150)))
       )
       thisframe_y_adjust_new = (retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line - retroh_crop_normal) / 2 + retro_thisframe_first_drawn_line;
    else if (retro_thisframe_first_drawn_line == -1 && retro_thisframe_last_drawn_line == -1 && thisframe_y_adjust_old != 0)
@@ -7462,9 +7463,8 @@ static void update_video_center_horizontal(void)
    /* Remember the previous value */
    visible_left_border_old = visible_left_border;
 
-   /* Corrections if left border has stuff in it, only for actual fullscreen needs */
-   if (     visible_left_border_new < visible_left_border
-         && retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line > 200)
+   /* Essential correction if default left border has stuff left of it */
+   if (visible_left_border_new < visible_left_border && retro_min_diwstart >= 190)
    {
       int diff = visible_left_border - visible_left_border_new;
       visible_left_border     -= diff;
@@ -7698,6 +7698,14 @@ static void update_audiovideo(void)
           || retro_thisframe_last_drawn_line_start  != retro_thisframe_last_drawn_line)
             retro_thisframe_counter = 1;
 
+         /* Immediate mode */
+         if (!crop_delay)
+            request_update_av_info = true;
+
+         /* Hasten the result with big enough difference in last line (last line for CD32 no disc) */
+         if (retro_thisframe_last_drawn_line_delta > 47 && retro_thisframe_last_drawn_line_delta < 189)
+            retro_thisframe_counter++;
+
          /* Do not consider too big first line deltas as necessary changes.
           * Fixes cases like Fantastic Dizzy and Lollypop screen transition */
          if (retro_thisframe_first_drawn_line_delta > 165 && retro_thisframe_last_drawn_line_delta < 2
@@ -7706,14 +7714,6 @@ static void update_audiovideo(void)
             retro_thisframe_counter = 0;
             request_update_av_info  = false;
          }
-
-         /* Hasten the result with big enough difference in last line (last line for CD32 no disc) */
-         if (retro_thisframe_last_drawn_line_delta > 47 && retro_thisframe_last_drawn_line_delta < 189)
-            retro_thisframe_counter++;
-
-         /* Immediate mode */
-         if (!crop_delay)
-            request_update_av_info = true;
 
          retro_thisframe_first_drawn_line_old = retro_thisframe_first_drawn_line;
          retro_thisframe_last_drawn_line_old  = retro_thisframe_last_drawn_line;
@@ -7800,24 +7800,46 @@ static void update_audiovideo(void)
          retro_diwstartstop_counter = 0;
 
 #if 1
-         /* Game specific hacks: */
-         /* North & South PAL */
-         if (retro_thisframe_first_drawn_line == 44 && retro_thisframe_last_drawn_line == 243
+         /* Game specific hacks */
+
+         /* North & South really is an exhausting mess due to the horizontal shift, and as a bonus every single
+          * version behaves differently, and WHDLoad version even differs depending on Cycle-exact and Fast-Forward.. */
+         /* North & South PAL floppy */
+         if (     retro_max_diwstop - retro_min_diwstart == (329 * width_multiplier)
+               && retro_thisframe_first_drawn_line == 44 && retro_thisframe_last_drawn_line == 299
                && retro_min_diwstart == (129 * width_multiplier) && retro_min_diwstart_old == retro_min_diwstart
                && retro_max_diwstop  == (458 * width_multiplier) && retro_max_diwstop_old  == (449 * width_multiplier))
          {
             locked_video_horizontal = true;
-            retro_max_diwstop = retro_max_diwstop_old;
-            log_cb(RETRO_LOG_INFO, "Horizontal centering hack for '%s' active.\n", "North & South PAL");
+            log_cb(RETRO_LOG_INFO, "Horizontal centering hack for '%s' active.\n", "North & South PAL floppy");
          }
-         /* North & South NTSC */
-         else if (retro_thisframe_first_drawn_line == 44 && retro_thisframe_last_drawn_line == 243
-               && retro_min_diwstart == (129 * width_multiplier) && retro_min_diwstart_old == (127 * width_multiplier)
-               && retro_max_diwstop  == (449 * width_multiplier) && retro_max_diwstop_old  == (447 * width_multiplier))
+         /* North & South PAL WHDLoad */
+         else if (retro_max_diwstop - retro_min_diwstart == (329 * width_multiplier)
+               && (retro_thisframe_last_drawn_line == 243 || retro_thisframe_last_drawn_line >= 298)
+               && retro_min_diwstart == (129 * width_multiplier) && retro_min_diwstart_old == retro_min_diwstart
+               && retro_max_diwstop  == (458 * width_multiplier) && retro_max_diwstop_old  == (449 * width_multiplier))
          {
             locked_video_horizontal = true;
-            retro_max_diwstop = retro_max_diwstop_old;
-            log_cb(RETRO_LOG_INFO, "Horizontal centering hack for '%s' active.\n", "North & South NTSC");
+            log_cb(RETRO_LOG_INFO, "Horizontal centering hack for '%s' active.\n", "North & South PAL WHDLoad");
+         }
+         /* North & South NTSC floppy */
+         else if (retro_max_diwstop - retro_min_diwstart == (329 * width_multiplier)
+               && (retro_thisframe_first_drawn_line ==  44 || retro_thisframe_first_drawn_line ==  43)
+               && (retro_thisframe_last_drawn_line  == 243 || retro_thisframe_last_drawn_line  >= 261)
+               && retro_min_diwstart == (129 * width_multiplier) && retro_min_diwstart_old == retro_min_diwstart
+               && retro_max_diwstop  == (458 * width_multiplier) && retro_max_diwstop_old  == (449 * width_multiplier))
+         {
+            locked_video_horizontal = true;
+            log_cb(RETRO_LOG_INFO, "Horizontal centering hack for '%s' active.\n", "North & South NTSC floppy");
+         }
+         /* North & South NTSC WHDLoad */
+         else if (retro_max_diwstop - retro_min_diwstart == (329 * width_multiplier)
+               && (retro_thisframe_last_drawn_line == 243 || retro_thisframe_last_drawn_line >= 261)
+               && retro_min_diwstart == (129 * width_multiplier) && (retro_min_diwstart_old == retro_min_diwstart || retro_min_diwstart_old == (127 * width_multiplier))
+               && (retro_max_diwstop == (449 * width_multiplier) || retro_max_diwstop == (458 * width_multiplier)) && (retro_max_diwstop_old == (447 * width_multiplier) || retro_max_diwstop_old == (449 * width_multiplier)))
+         {
+            locked_video_horizontal = true;
+            log_cb(RETRO_LOG_INFO, "Horizontal centering hack for '%s' active.\n", "North & South NTSC WHDLoad");
          }
          /* Chase HQ WHDLoad */
          else if (retro_thisframe_first_drawn_line == 50 && retro_thisframe_last_drawn_line == 249
@@ -7825,7 +7847,7 @@ static void update_audiovideo(void)
                && retro_max_diwstop  == (457 * width_multiplier) && retro_max_diwstop_old  == (449 * width_multiplier))
          {
             locked_video_horizontal = true;
-            log_cb(RETRO_LOG_INFO, "Horizontal centering hack for '%s' active.\n", "Chase HQ");
+            log_cb(RETRO_LOG_INFO, "Horizontal centering hack for '%s' active.\n", "Chase HQ WHDLoad");
          }
          /* Toki */
          else if (retro_thisframe_first_drawn_line == 60 && retro_thisframe_last_drawn_line == 259
