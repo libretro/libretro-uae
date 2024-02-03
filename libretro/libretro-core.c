@@ -8330,6 +8330,7 @@ static bool retro_update_av_info(void)
    /* Timing or geometry update */
    if (change_timing)
    {
+      set_config_changed();
       new_av_info.timing.fps = retro_refresh = hz;
       environ_cb(RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO, &new_av_info);
    }
