@@ -7397,7 +7397,7 @@ static void update_video_center_vertical(void)
    thisframe_y_adjust_old = thisframe_y_adjust_new;
 
    /* Corrections if top border has stuff in it, only if manually forced */
-   if (thisframe_y_adjust_new < thisframe_y_adjust)
+   if (thisframe_y_adjust_new < thisframe_y_adjust && !opt_vertical_offset_auto)
    {
       int diff = thisframe_y_adjust - thisframe_y_adjust_new;
       thisframe_y_adjust     -= diff;
@@ -7464,11 +7464,14 @@ static void update_video_center_horizontal(void)
    visible_left_border_old = visible_left_border;
 
    /* Essential correction if default left border has stuff left of it */
-   if (visible_left_border_new < visible_left_border && retro_min_diwstart >= 190)
+   if (visible_left_border_new < visible_left_border)
    {
       int diff = visible_left_border - visible_left_border_new;
       visible_left_border     -= diff;
       visible_left_border_new -= diff;
+
+      if (visible_left_border < 93 * width_multiplier)
+         visible_left_border = visible_left_border_new = 93 * width_multiplier;
    }
 
    /* Offset adjustments */
@@ -7848,6 +7851,22 @@ static void update_audiovideo(void)
          {
             locked_video_horizontal = true;
             log_cb(RETRO_LOG_INFO, "Horizontal centering hack for '%s' active.\n", "Chase HQ WHDLoad");
+         }
+         /* Test Drive */
+         else if (retro_thisframe_first_drawn_line ==  44 && retro_thisframe_last_drawn_line  == 243
+               && retro_min_diwstart == (128 * width_multiplier) && retro_min_diwstart_old == (129 * width_multiplier)
+               && retro_max_diwstop  == (448 * width_multiplier) && retro_max_diwstop_old  == (449 * width_multiplier))
+         {
+            locked_video_horizontal = true;
+            log_cb(RETRO_LOG_INFO, "Horizontal centering hack for '%s' active.\n", "Test Drive");
+         }
+         /* Test Drive II */
+         else if (retro_thisframe_first_drawn_line == 160 && retro_thisframe_last_drawn_line  == 243
+               && retro_min_diwstart == (128 * width_multiplier) && retro_min_diwstart_old == (129 * width_multiplier)
+               && retro_max_diwstop  == (448 * width_multiplier) && retro_max_diwstop_old  == (449 * width_multiplier))
+         {
+            locked_video_horizontal = true;
+            log_cb(RETRO_LOG_INFO, "Horizontal centering hack for '%s' active.\n", "Test Drive II");
          }
          /* Toki */
          else if (retro_thisframe_first_drawn_line == 60 && retro_thisframe_last_drawn_line == 259

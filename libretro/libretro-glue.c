@@ -848,6 +848,7 @@ int graphics_init(bool mousecapture)
 
    reset_drawing();
    graphics_setup();
+   display_change_requested = 0;
 
 #ifdef WITH_MPEG2
    allocvidbuffer(0, &gfxvidinfo->tempbuffer, defaultw, defaulth, pix_bytes * 8);
