@@ -197,6 +197,8 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
     else
         x_start = TD_PADX;
 
+	x_start += retrox_crop;
+
     int floppies = 1;
     if (gui_data.hd >= 0 || gui_data.cd >= 0 || gui_data.md >= 0)
     {
