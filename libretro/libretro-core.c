@@ -93,7 +93,7 @@ libretro_graph_alpha_t opt_vkbd_dim_alpha = GRAPH_ALPHA_25;
 bool opt_keyrah_keypad = false;
 bool opt_keyboard_pass_through = false;
 unsigned int opt_physicalmouse = 1;
-unsigned int opt_dpadmouse_speed = 4;
+unsigned int opt_dpadmouse_speed = 6;
 unsigned int opt_analogmouse = 0;
 unsigned int opt_analogmouse_deadzone = 20;
 float opt_analogmouse_speed = 1.0;
@@ -2560,7 +2560,7 @@ static void retro_set_core_options()
          "puae_joyport_order",
          "RetroPad > Joystick Port Order",
          "Joystick Port Order",
-         "Plug RetroPads in different ports. Useful for Arcadia system and games that use the 4-player adapter.",
+         "Plug RetroPads in different ports. Useful for 4-player adapters.",
          NULL,
          "input",
          {
@@ -4257,7 +4257,7 @@ static void update_variables(void)
 
          /* Change requires init_custom() */
          if (changed_prefs.gfx_scandoubler != currprefs.gfx_scandoubler)
-            request_init_custom_timer = 1;
+            request_init_custom_timer = 2;
       }
    }
 
@@ -7474,7 +7474,7 @@ static void update_audiovideo(void)
    }
 
    /* Automatic video resolution */
-   if (opt_video_resolution_auto/* && retro_min_diwstart != MAX_STOP*/)
+   if (opt_video_resolution_auto && retro_min_diwstart != MAX_STOP)
    {
       int current_resolution   = GET_RES_DENISE (bplcon0);
       bool request_init_custom = false;
@@ -7730,7 +7730,7 @@ static void update_audiovideo(void)
             log_cb(RETRO_LOG_INFO, "Horizontal centering hack for '%s' active.\n", "North & South PAL floppy");
          }
          /* North & South PAL WHDLoad */
-         if (     retro_max_diwstop - retro_min_diwstart == (329 * width_multiplier)
+         else if (retro_max_diwstop - retro_min_diwstart == (329 * width_multiplier)
                && retro_thisframe_first_drawn_line == 62 && retro_thisframe_last_drawn_line == 299
                && retro_min_diwstart == ( 73 * width_multiplier) && retro_min_diwstart_old == retro_min_diwstart
                && retro_max_diwstop  == (402 * width_multiplier) && retro_max_diwstop_old  == (393 * width_multiplier))
@@ -7757,7 +7757,7 @@ static void update_audiovideo(void)
             locked_video_horizontal = true;
             log_cb(RETRO_LOG_INFO, "Horizontal centering hack for '%s' active.\n", "North & South NTSC WHDLoad");
          }
-         /* Chase HQ WHDLoad*/
+         /* Chase HQ WHDLoad */
          else if (retro_thisframe_first_drawn_line == 50 && retro_thisframe_last_drawn_line == 249
                && retro_min_diwstart == ( 81 * width_multiplier) && retro_min_diwstart_old == ( 73 * width_multiplier)
                && retro_max_diwstop  == (401 * width_multiplier) && retro_max_diwstop_old  == (393 * width_multiplier))
@@ -8367,11 +8367,7 @@ void retro_run(void)
    {
       request_init_custom_timer--;
       if (request_init_custom_timer == 0)
-      {
-         config_changed = 1;
-         reset_drawing();
          init_custom();
-      }
    }
 
    /* Warning messages */
@@ -8406,9 +8402,9 @@ void retro_run(void)
    if (video_config & PUAE_VIDEO_PAL)
    {
       if (video_config & PUAE_VIDEO_DOUBLELINE)
-         draw_hline(0, 574, retrow_crop, 2, 0);
+         draw_hline(0, 574, retrow, 2, 0);
       else
-         draw_hline(0, 287, retrow_crop, 1, 0);
+         draw_hline(0, 287, retrow, 1, 0);
    }
 
 upload:
