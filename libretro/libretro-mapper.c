@@ -833,14 +833,21 @@ static int adjust_analog_deadzone(int analog_axis, int analog_deadzone)
    return analog_adjusted;
 }
 
-static int process_analogmouse(int analog_axis, int analog_deadzone, int mouse_multiplier)
+static int process_analogmouse(int analog_axis, int analog_deadzone, float mouse_multiplier, float *sub_pixel_remainder)
 {
-   int analog_adjusted = adjust_analog_deadzone(analog_axis, analog_deadzone);
-   int mouse_axis      = 0;
+   int mouse_axis = 0;
 
-   mouse_axis = analog_adjusted * 10 * opt_analogmouse_speed / (32768.0f / mouse_multiplier);
-   if (!mouse_axis && abs(analog_axis) > analog_deadzone)
-      mouse_axis = (analog_axis > 0) ? 1 : -1;
+   if (abs(analog_axis) > 0)
+   {
+      int analog_adjusted = adjust_analog_deadzone(analog_axis, analog_deadzone);
+      float delta = *sub_pixel_remainder + analog_adjusted * 10.0f * opt_analogmouse_speed / (32768.0f / mouse_multiplier);
+      mouse_axis = delta;
+      *sub_pixel_remainder = delta - mouse_axis;
+   }
+   else
+   {
+      *sub_pixel_remainder = 0;
+   }
 
    return mouse_axis;
 }
@@ -1677,6 +1684,12 @@ void retro_poll_event()
    static unsigned int mouse_lmb[2] = {0}, mouse_rmb[2] = {0}, mouse_mmb[2] = {0};
    static int16_t mouse_x[2] = {0}, mouse_y[2] = {0};
 
+   /* keep track of analog mouse motion with high precision, to allow fine-grained speed changes */
+   static float sub_pixel_remainder_leftstick_x[2] = {0, 0};
+   static float sub_pixel_remainder_leftstick_y[2] = {0, 0};
+   static float sub_pixel_remainder_rightstick_x[2] = {0, 0};
+   static float sub_pixel_remainder_rightstick_y[2] = {0, 0};
+
    int analog_stick[2] = {0};
    int analog_deadzone = opt_analogmouse_deadzone * 32768.0f / 100.0f;
 
@@ -1961,11 +1974,8 @@ void retro_poll_event()
             if (mouse_speed[j] & MOUSE_SPEED_SLOWER)
                mouse_multiplier = mouse_multiplier / MOUSE_SPEED_SLOW;
 
-            if (abs(analog_stick[0]) > 0)
-               uae_mouse_x[j] = process_analogmouse(analog_stick[0], analog_deadzone, mouse_multiplier);
-
-            if (abs(analog_stick[1]) > 0)
-               uae_mouse_y[j] = process_analogmouse(analog_stick[1], analog_deadzone, mouse_multiplier);
+            uae_mouse_x[j] = process_analogmouse(analog_stick[0], analog_deadzone, mouse_multiplier, &(sub_pixel_remainder_leftstick_x[j]));
+            uae_mouse_y[j] = process_analogmouse(analog_stick[1], analog_deadzone, mouse_multiplier, &(sub_pixel_remainder_leftstick_y[j]));
          }
       }
    }
@@ -1994,11 +2004,8 @@ void retro_poll_event()
             if (mouse_speed[j] & MOUSE_SPEED_SLOWER)
                mouse_multiplier = mouse_multiplier / MOUSE_SPEED_SLOW;
 
-            if (abs(analog_stick[0]) > 0)
-               uae_mouse_x[j] = process_analogmouse(analog_stick[0], analog_deadzone, mouse_multiplier);
-
-            if (abs(analog_stick[1]) > 0)
-               uae_mouse_y[j] = process_analogmouse(analog_stick[1], analog_deadzone, mouse_multiplier);
+            uae_mouse_x[j] = process_analogmouse(analog_stick[0], analog_deadzone, mouse_multiplier, &(sub_pixel_remainder_rightstick_x[j]));
+            uae_mouse_y[j] = process_analogmouse(analog_stick[1], analog_deadzone, mouse_multiplier, &(sub_pixel_remainder_rightstick_y[j]));
          }
       }
    }
