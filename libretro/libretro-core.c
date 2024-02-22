@@ -5734,7 +5734,7 @@ static void retro_config_harddrives(void)
       {
          /* Detect RDB */
          bool hdf_rdb = false;
-         FILE * hdf_fp;
+         FILE *hdf_fp;
          char filebuf[4];
          if ((hdf_fp = fopen(tmp_str, "r")))
          {
@@ -6033,7 +6033,7 @@ static char* emu_config(int config)
    {
       log_cb(RETRO_LOG_INFO, "Appending model preset: '%s'\n", custom_config_path);
 
-      FILE * custom_config_fp;
+      FILE *custom_config_fp;
       char filebuf[RETRO_PATH_MAX];
       if ((custom_config_fp = fopen(custom_config_path, "r")))
       {
@@ -7057,7 +7057,7 @@ static bool retro_create_config(void)
          dc_reset(dc);
 
          /* Iterate parsed file and append all rows to the temporary config */
-         FILE * configfile_custom;
+         FILE *configfile_custom;
          char filebuf[RETRO_PATH_MAX];
          if ((configfile_custom = fopen(full_path, "r")))
          {
@@ -7196,19 +7196,38 @@ static bool retro_create_config(void)
    }
 
    /* Iterate global config file and append all rows to the temporary config */
-   char configfile_global_path[RETRO_PATH_MAX];
-   path_join(configfile_global_path, retro_save_directory, LIBRETRO_PUAE_PREFIX "_global.uae");
-   if (path_is_valid(configfile_global_path))
+   char configfile_path[RETRO_PATH_MAX];
+   path_join(configfile_path, retro_save_directory, LIBRETRO_PUAE_PREFIX "_global.uae");
+   if (path_is_valid(configfile_path))
    {
-      log_cb(RETRO_LOG_INFO, "Appending global configuration: '%s'\n", configfile_global_path);
+      log_cb(RETRO_LOG_INFO, "Appending global configuration: '%s'\n", configfile_path);
 
-      FILE * configfile_global;
+      FILE *configfile;
       char filebuf[RETRO_PATH_MAX];
-      if ((configfile_global = fopen(configfile_global_path, "r")))
+      if ((configfile = fopen(configfile_path, "r")))
       {
-         while (fgets(filebuf, sizeof(filebuf), configfile_global))
+         while (fgets(filebuf, sizeof(filebuf), configfile))
             retro_config_append(filebuf);
-         fclose(configfile_global);
+         fclose(configfile);
+      }
+   }
+
+   /* Append content-specific config */
+   tmp_str = utf8_to_local_string_alloc(full_path);
+   path_remove_extension(tmp_str);
+   snprintf(configfile_path, sizeof(configfile_path), "%s%s%s%s",
+         retro_save_directory, DIR_SEP_STR, path_basename(tmp_str), ".uae");
+   if (path_is_valid(configfile_path))
+   {
+      log_cb(RETRO_LOG_INFO, "Appending content configuration: '%s'\n", configfile_path);
+
+      FILE *configfile;
+      char filebuf[RETRO_PATH_MAX];
+      if ((configfile = fopen(configfile_path, "r")))
+      {
+         while (fgets(filebuf, sizeof(filebuf), configfile))
+            retro_config_append(filebuf);
+         fclose(configfile);
       }
    }
 

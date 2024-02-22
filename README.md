@@ -411,6 +411,8 @@ If `puae_libretro_[model].uae` exists in RetroArch `saves` it will be appended t
 
 If `puae_libretro_global.uae` exists in RetroArch `saves` it will be appended to the configuration.
 
+If `[content].uae` exists in RetroArch `saves` it will be appended to the configuration.
+
 The final generated configuration output is available in debug level log.
 
 ***Note that the use of configuration files is no longer encouraged or necessary. The core has been modified to always use the core options as a base, so that all custom configurations will be appended to the created configuration, effectively overriding the core options. The problem with this is that changing any core option while the core is running will reset all duplicate configurations. Therefore only add configurations which will require a restart or do not exist in the core options, if you must use a custom uae. If there is an option missing that is a must have, please make an issue about it.***
