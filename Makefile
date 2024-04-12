@@ -325,10 +325,11 @@ OBJECTS     := $(addprefix $(OBJDIR)/,$(OBJECTS))
 
 INCDIRS     := $(EXTRA_INCLUDES) $(INCFLAGS)
 
-default:
+default: info all
+
+info:
 	$(info CFLAGS: $(PLATFLAGS) $(CFLAGS))
 	$(info -------)
-	$(MAKE) $(TARGET)
 
 all: $(TARGET)
 
