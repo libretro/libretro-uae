@@ -4960,7 +4960,8 @@ bool retro_disk_set_eject_state(bool ejected)
       {
          case DC_IMAGE_TYPE_HD:
          case DC_IMAGE_TYPE_WHDLOAD:
-            return false;
+            /* No-op success for hard drives */
+            return true;
          default:
             break;
       }
@@ -5048,7 +5049,19 @@ bool retro_disk_set_image_index(unsigned index)
       {
          dc->index = index;
          display_current_image(dc->labels[dc->index], false);
-         log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF0: '%s'\n", dc->index+1, dc->files[dc->index]);
+
+         switch (dc->types[dc->index])
+         {
+            case DC_IMAGE_TYPE_FLOPPY:
+               log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF0: '%s'\n", dc->index+1, dc->files[dc->index]);
+               break;
+            case DC_IMAGE_TYPE_CD:
+               log_cb(RETRO_LOG_INFO, "CD (%d) inserted in drive CD0: '%s'\n", dc->index+1, dc->files[dc->index]);
+               break;
+            default:
+               break;
+         }
+
          return true;
       }
    }
@@ -5690,7 +5703,7 @@ static void retro_config_kickstart(void)
 static void retro_config_harddrives(void)
 {
    char *tmp_str = NULL;
-   unsigned i    = 0;
+   int8_t i      = 0;
 
    if (!dc->count)
       return;
@@ -5763,6 +5776,14 @@ static void retro_config_harddrives(void)
       if (tmp_str)
          free(tmp_str);
       tmp_str = NULL;
+   }
+
+   for (i = dc->count - 1; i > -1; i--)
+   {
+      /* Remove hard drives from Disc Control list */
+      if (     dc_get_image_type(dc->files[i]) == DC_IMAGE_TYPE_HD
+            || dc_get_image_type(dc->files[i]) == DC_IMAGE_TYPE_WHDLOAD)
+         dc_remove_file(dc, i);
    }
 }
 
@@ -6519,7 +6540,8 @@ static bool retro_create_config(void)
             {
                /* Init first disk */
                dc->index = 0;
-               dc->eject_state = false;
+               /* Don't consider hard drives as "inserted" since they can't be "ejected" */
+               dc->eject_state = true;
                display_current_image(dc->labels[0], true);
             }
 
