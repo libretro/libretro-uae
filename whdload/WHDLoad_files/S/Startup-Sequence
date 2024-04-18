@@ -12,6 +12,9 @@ Assign T: RAM:T >NIL:
 CD DH0:
 
 IF EXISTS DH0:S/Startup-Sequence
+   IF EXISTS DH0:L
+      Assign L: DH0:L ADD
+   ENDIF
    IF EXISTS DH0:Libs
       Assign LIBS: DH0:Libs ADD
    ENDIF
