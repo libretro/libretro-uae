@@ -25,6 +25,7 @@ CoreDumpPath=T:			;path to store coredump files
 ;NoMemReverse			;do not allocate memory reverse
 NoNetwork			;do not connect to the internet
 NoWriteCache			;disable the disk write cache
+;NoWriteInfo			;do not write .info files
 ;NTSC				;force NTSC video mode
 ;PAL				;force PAL video mode
 ;Preload			;try to buffer much data files on startup
