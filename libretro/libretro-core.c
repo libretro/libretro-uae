@@ -96,7 +96,8 @@ unsigned int opt_physicalmouse = 1;
 unsigned int opt_dpadmouse_speed = 6;
 unsigned int opt_analogmouse = 0;
 unsigned int opt_analogmouse_deadzone = 20;
-float opt_analogmouse_speed = 1.0;
+float opt_analogmouse_speed_left = 1.0;
+float opt_analogmouse_speed_right = 1.0;
 unsigned int opt_cd32pad_options = RETROPAD_OPTIONS_DISABLED;
 unsigned int opt_retropad_options = RETROPAD_OPTIONS_DISABLED;
 char opt_joyport_order[5] = "1234";
@@ -1987,51 +1988,29 @@ static void retro_set_core_options()
       },
       {
          "puae_analogmouse_speed",
-         "Input > Analog Stick Mouse Speed",
-         "Analog Stick Mouse Speed",
-         "Mouse movement speed multiplier for analog stick.",
+         "Input > Left Analog Stick Mouse Speed",
+         "Left Analog Stick Mouse Speed",
+         "Mouse speed for left analog stick.",
          NULL,
          "input",
-         {
-            { "0.1", "10%" },
-            { "0.2", "20%" },
-            { "0.3", "30%" },
-            { "0.4", "40%" },
-            { "0.5", "50%" },
-            { "0.6", "60%" },
-            { "0.7", "70%" },
-            { "0.8", "80%" },
-            { "0.9", "90%" },
-            { "1.0", "100%" },
-            { "1.1", "110%" },
-            { "1.2", "120%" },
-            { "1.3", "130%" },
-            { "1.4", "140%" },
-            { "1.5", "150%" },
-            { "1.6", "160%" },
-            { "1.7", "170%" },
-            { "1.8", "180%" },
-            { "1.9", "190%" },
-            { "2.0", "200%" },
-            { "2.1", "210%" },
-            { "2.2", "220%" },
-            { "2.3", "230%" },
-            { "2.4", "240%" },
-            { "2.5", "250%" },
-            { "2.6", "260%" },
-            { "2.7", "270%" },
-            { "2.8", "280%" },
-            { "2.9", "290%" },
-            { "3.0", "300%" },
-            { NULL, NULL },
-         },
+         ANALOG_STICK_SPEED_OPTIONS,
+         "1.0"
+      },
+	  {
+         "puae_analogmouse_speed_right",
+         "Input > Right Analog Stick Mouse Speed",
+         "Right Analog Stick Mouse Speed",
+         "Mouse speed for right analog stick.",
+         NULL,
+         "input",
+         ANALOG_STICK_SPEED_OPTIONS,
          "1.0"
       },
       {
          "puae_dpadmouse_speed",
          "Input > D-Pad Mouse Speed",
          "D-Pad Mouse Speed",
-         "Mouse movement speed multiplier for directional pad.",
+         "Mouse speed for directional pad.",
          NULL,
          "input",
          {
@@ -4417,7 +4396,14 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      opt_analogmouse_speed = atof(var.value);
+      opt_analogmouse_speed_left = atof(var.value);
+   }
+
+   var.key = "puae_analogmouse_speed_right";
+   var.value = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      opt_analogmouse_speed_right = atof(var.value);
    }
 
    var.key = "puae_dpadmouse_speed";
