@@ -835,7 +835,7 @@ static int process_analogmouse(int analog_axis, int analog_deadzone, int analog_
    if (analog_axis)
    {
       int analog_adjusted = adjust_analog_deadzone(analog_axis, analog_deadzone, analog_mag);
-      float delta = analog_adjusted * 8.0f * mouse_speed / (32768.0f / mouse_multiplier);
+      float delta = analog_adjusted * 10.0f * mouse_speed / (32768.0f / mouse_multiplier);
       mouse_axis = delta + *sub_pixel_remainder;
 
       if (fabs(delta) < 0.1f)
