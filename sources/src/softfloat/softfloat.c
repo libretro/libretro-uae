@@ -2883,12 +2883,13 @@ floatx80 floatx80_rem(floatx80 a, floatx80 b, float_status *status)
 
 }
 #else // 09-01-2017: Modified version for Previous
-floatx80 floatx80_rem(floatx80 a, floatx80 b, uint64_t *q, flag *s, float_status *status)
+floatx80 floatx80_rem(floatx80 a, floatx80 b, uae_u64 *q, flag *s, float_status *status)
 {
     flag aSign, bSign, zSign;
     int32_t aExp, bExp, expDiff;
     uint64_t aSig0, aSig1, bSig;
-    uint64_t qTemp, term0, term1, alternateASig0, alternateASig1;
+    uae_u64 qTemp;
+    uint64_t term0, term1, alternateASig0, alternateASig1;
 
     aSig0 = extractFloatx80Frac(a);
     aExp = extractFloatx80Exp(a);
@@ -2991,12 +2992,13 @@ floatx80 floatx80_rem(floatx80 a, floatx80 b, uint64_t *q, flag *s, float_status
  | value `a' with respect to the corresponding value `b'.
  *----------------------------------------------------------------------------*/
 
-floatx80 floatx80_mod(floatx80 a, floatx80 b, uint64_t *q, flag *s, float_status *status)
+floatx80 floatx80_mod(floatx80 a, floatx80 b, uae_u64 *q, flag *s, float_status *status)
 {
     flag aSign, bSign, zSign;
     int32_t aExp, bExp, expDiff;
     uint64_t aSig0, aSig1, bSig;
-    uint64_t qTemp, term0, term1;
+    uae_u64 qTemp;
+    uint64_t term0, term1;
 
     aSig0 = extractFloatx80Frac(a);
     aExp = extractFloatx80Exp(a);
