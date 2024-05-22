@@ -144,7 +144,7 @@ void shmem_serial_delete(void)
 		CloseHandle(sermap_handle);
 #endif
 	sermap_data = NULL;
-	sermap_handle = NULL;
+	sermap_handle = (HANDLE)NULL;
 	sermap1 = sermap2 = NULL;
 }
 
