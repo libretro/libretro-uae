@@ -196,7 +196,7 @@ void uaeser_clearbuffers (void *vsd) {}
 int uaeser_open (void *vsd, void *user, int unit) { return 0; }
 void uaeser_close (void *vsd) {}
 
-static HANDLE hCom = INVALID_HANDLE_VALUE;
+static HANDLE hCom = (HANDLE)INVALID_HANDLE_VALUE;
 static DCB dcb;
 static DWORD fDtrControl = DTR_CONTROL_DISABLE, fRtsControl = RTS_CONTROL_DISABLE;
 #if 0
@@ -469,7 +469,7 @@ void closeser (void)
 #if 0
 		CloseHandle (hCom);
 #endif
-		hCom = INVALID_HANDLE_VALUE;
+		hCom = (HANDLE)INVALID_HANDLE_VALUE;
 	}
 	if (midi_ready) {
 		extern uae_u16 serper;
