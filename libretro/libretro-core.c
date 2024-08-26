@@ -2014,7 +2014,8 @@ static void retro_set_core_options()
          NULL,
          "input",
          {
-            { "1", "0%" },
+            { "0", "disabled" },
+            { "1", "16%" },
             { "2", "33%" },
             { "3", "50%" },
             { "4", "66%" },
