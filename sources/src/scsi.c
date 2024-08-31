@@ -238,6 +238,15 @@ bool scsi_emulate_analyze (struct scsi_data *sd)
 			sd->direction = 0;
 		}
 		return true;
+	case 0x15: // MODE SELECT (6)
+	case 0x55: // MODE SELECT (10)
+		if (cmd_len == 6) {
+			data_len = sd->cmd[4];
+		} else {
+			data_len = (sd->cmd[7] << 8) | sd->cmd[8];
+		}
+		scsi_grow_buffer(sd, data_len);
+	break;
 	}
 	if (data_len < 0) {
 		if (cmd_len == 6) {
@@ -4327,7 +4336,7 @@ static struct soft_scsi *getscsi(struct romconfig *rc)
 {
 	device_add_rethink(ncr80_rethink);
 	device_add_reset(soft_scsi_reset);
-	device_add_exit(soft_scsi_free);
+	device_add_exit(soft_scsi_free, NULL);
 	if (rc->unitdata)
 		return (struct soft_scsi *)rc->unitdata;
 	return NULL;

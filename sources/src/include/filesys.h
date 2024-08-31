@@ -120,8 +120,6 @@ struct hd_hardfiledata {
 #define FILESYS_CD 4
 #define FILESYS_TAPE 5
 
-#define MAX_FILESYSTEM_UNITS 50
-
 struct uaedev_mount_info;
 extern struct uaedev_mount_info options_mountinfo;
 
@@ -132,9 +130,9 @@ extern int hdf_open (struct hardfiledata *hfd);
 extern int hdf_open_2 (struct hardfiledata *hfd, const TCHAR *altname);
 extern int hdf_dup (struct hardfiledata *dhfd, const struct hardfiledata *shfd);
 extern void hdf_close (struct hardfiledata *hfd);
-extern int hdf_read_rdb (struct hardfiledata *hfd, void *buffer, uae_u64 offset, int len);
-extern int hdf_read(struct hardfiledata *hfd, void *buffer, uae_u64 offset, int len);
-extern int hdf_write(struct hardfiledata *hfd, void *buffer, uae_u64 offset, int len);
+extern int hdf_read_rdb (struct hardfiledata *hfd, void *buffer, uae_u64 offset, int len, uae_u32 *error);
+extern int hdf_read(struct hardfiledata *hfd, void *buffer, uae_u64 offset, int len, uae_u32 *error);
+extern int hdf_write(struct hardfiledata *hfd, void *buffer, uae_u64 offset, int len, uae_u32 *error);
 extern int hdf_getnumharddrives (void);
 extern TCHAR *hdf_getnameharddrive (int index, int flags, int *sectorsize, int *dangerousdrive, uae_u32 *outflags);
 extern int get_native_path(TrapContext *ctx, uae_u32 lock, TCHAR *out);
@@ -152,8 +150,8 @@ extern int hdf_init_target (void);
 extern int hdf_open_target (struct hardfiledata *hfd, const TCHAR *name);
 extern int hdf_dup_target (struct hardfiledata *dhfd, const struct hardfiledata *shfd);
 extern void hdf_close_target (struct hardfiledata *hfd);
-extern int hdf_read_target (struct hardfiledata *hfd, void *buffer, uae_u64 offset, int len);
-extern int hdf_write_target (struct hardfiledata *hfd, void *buffer, uae_u64 offset, int len);
+extern int hdf_read_target (struct hardfiledata *hfd, void *buffer, uae_u64 offset, int len, uae_u32 *error);
+extern int hdf_write_target (struct hardfiledata *hfd, void *buffer, uae_u64 offset, int len, uae_u32 *error);
 extern int hdf_resize_target (struct hardfiledata *hfd, uae_u64 newsize);
 
 extern void getchsgeometry (uae_u64 size, int *pcyl, int *phead, int *psectorspertrack);

@@ -149,6 +149,7 @@ extern int isvsync_rtg (void);
 TCHAR config_filename[256] = _T("");
 TCHAR start_path_data[MAX_DPATH];
 int saveimageoriginalpath = 0;
+int key_swap_hack = 0;
 
 int pissoff_value = 15000 * CYCLE_UNIT;
 
@@ -708,6 +709,36 @@ bool target_isrelativemode(void)
 	return relativepaths != 0;
 }
 
+void target_setdefaultstatefilename(const TCHAR *name)
+{
+#ifndef __LIBRETRO__
+	TCHAR path[MAX_DPATH];
+	fetch_path(_T("StatefilePath"), path, sizeof(path) / sizeof(TCHAR));
+	if (!name || !name[0]) {
+		_tcscat(path, _T("default.uss"));
+	} else {
+		const TCHAR *p2 = _tcsrchr(name, '\\');
+		const TCHAR *p3 = _tcsrchr(name, '/');
+		const TCHAR *p1 = NULL;
+		if (p2 >= p3) {
+			p1 = p2;
+		} else if (p3 >= p2) {
+			p1 = p3;
+		}
+		if (p1) {
+			_tcscat(path, p1 + 1);
+		} else {
+			_tcscat(path, name);
+		}
+		const TCHAR *p = _tcsrchr(path, '.');
+		if (p) {
+			path[_tcslen(path) - ((path + _tcslen(path)) - p)] = 0;
+			_tcscat(path, _T(".uss"));
+		}
+	}
+	_tcscpy(savestate_fname, path);
+#endif
+}
 
 /* 'startup_update_unit()' can do 'my_strdup()' with null volume,
  * therefore replace 'my_strdup' with one this which checks for NULL
@@ -1697,3 +1728,45 @@ void update_disassembly(uae_u32 addr) {}
 void update_memdump(uae_u32 addr) {}
 int console_get(TCHAR *out, int maxlen) { return 0; }
 void console_flush(void) {}
+void open_console(void) {}
+
+void setchflagsvideograb(int chflags, bool mute)
+{
+#ifndef __LIBRETRO__
+	if (!audio)
+		return;
+	audio_chflags = chflags;
+	long bal;
+	if (chflags == 1) {
+		bal = -10000;
+	} else if (chflags == 2) {
+		bal = 10000;
+	} else {
+		bal = 0;
+	}
+	if (!currprefs.win32_videograb_balance) {
+		audio->put_Balance(bal);
+	}
+	if (chflags && !mute) {
+		setvolumevideograb(audio_volume);
+	} else if (!chflags || mute) {
+		audio->put_Volume(0);
+	}
+#endif
+}
+
+uae_s64 getdurationvideograb(void)
+{
+#ifdef __LIBRETRO__
+	return 0;
+#else
+	LONGLONG dura;
+	HRESULT hr = mediaSeeking->GetDuration(&dura);
+	if (FAILED(hr)) {
+		return 0;
+	}
+	return dura;
+#endif
+}
+
+void ldp_render(const char *txt, int len, uae_u8 *buf, struct vidbuffer *vd, int dx, int dy, int mx, int my) {}

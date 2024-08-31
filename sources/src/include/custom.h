@@ -85,24 +85,6 @@ STATIC_INLINE int dmaen(unsigned int dmamask)
 	return (dmamask & dmacon) && (dmacon & 0x200);
 }
 
-#define SPCFLAG_CPUINRESET 2
-#define SPCFLAG_COPPER 4
-#define SPCFLAG_INT 8
-#define SPCFLAG_BRK 16
-#define SPCFLAG_UAEINT 32
-#define SPCFLAG_TRACE 64
-#define SPCFLAG_DOTRACE 128
-#define SPCFLAG_DOINT 256 /* arg, JIT fails without this.. */
-#define SPCFLAG_BLTNASTY 512
-#define SPCFLAG_EXEC 1024
-#define SPCFLAG_ACTION_REPLAY 2048
-#define SPCFLAG_TRAP 4096 /* enforcer-hack */
-#define SPCFLAG_MODE_CHANGE 8192
-#ifdef JIT
-#define SPCFLAG_END_COMPILE 16384
-#endif
-#define SPCFLAG_CHECK 32768
-
 extern uae_u16 adkcon;
 
 extern unsigned int joy0dir, joy1dir;
@@ -143,14 +125,15 @@ extern uae_u16 INTREQR(void);
 #define VSYNC_ENDLINE_PAL 5
 #define VSYNC_ENDLINE_NTSC 6
 #define EQU_ENDLINE_PAL 8
-#define EQU_ENDLINE_NTSC 10
+#define EQU_ENDLINE_NTSC 9
 
-#define OCS_DENISE_HBLANK_DISABLE_HPOS 0x2d
+#define OCS_DENISE_HBLANK_DISABLE_HPOS 0x2e
 
 extern int maxhpos, maxhposm0, maxhpos_short;
 extern int maxvpos, maxvpos_nom, maxvpos_display, maxvpos_display_vsync, maxhpos_display;
+extern int maxvsize_display;
 extern int hsyncstartpos_hw, hsyncendpos_hw;
-extern int minfirstline, vblank_endline, numscrlines;
+extern int minfirstline, minfirstline_linear, vblank_endline, numscrlines;
 extern float vblank_hz, fake_vblank_hz;
 extern float hblank_hz;
 extern int vblank_skip, doublescan;
@@ -271,6 +254,7 @@ void custom_cpuchange(void);
 bool bitplane_dma_access(int hpos, int offset);
 void custom_dumpstate(int);
 bool get_ras_cas(uaecptr, int*, int*);
+void get_mode_blanking_limits(int *phbstop, int *phbstrt, int *pvbstop, int *pvbstrt);
 
 #define RGA_PIPELINE_ADJUST 4
 #define MAX_CHIPSETSLOTS 256

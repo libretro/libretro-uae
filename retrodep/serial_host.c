@@ -1000,9 +1000,9 @@ void SERDAT(uae_u16 w)
 	}
 }
 
-void serial_rbf_clear(void)
+void serial_rbf_change(bool set)
 {
-	ovrun = 0;
+	ovrun = set;
 }
 
 void serial_dtr_on(void)

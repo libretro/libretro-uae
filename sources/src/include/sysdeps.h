@@ -518,6 +518,8 @@ extern void log_close (FILE *f);
 extern TCHAR *write_log_get_ts(void);
 extern bool is_console_open(void);
 extern void activate_console (void);
+extern void open_console(void);
+extern void reopen_console(void);
 
 extern bool use_long_double;
 
@@ -677,6 +679,9 @@ extern bool use_long_double;
 #endif
 #ifndef _istalpha
 #define _istalpha iswalpha
+#endif
+#ifndef _istxdigit
+#define _istxdigit isxdigit
 #endif
 
 #ifndef _WIN32

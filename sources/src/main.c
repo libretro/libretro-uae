@@ -84,7 +84,7 @@ static int real_main2 (int argc, TCHAR **argv);
 long int version = 256 * 65536L * UAEMAJOR + 65536L * UAEMINOR + UAESUBREV;
 
 struct uae_prefs currprefs, changed_prefs;
-int config_changed;
+int config_changed, config_changed_flags;
 
 bool no_gui = 0, quit_to_gui = 0;
 bool cloanto_rom = 0;
@@ -98,9 +98,8 @@ TCHAR warning_buffer[256];
 TCHAR optionsfile[256];
 
 static uae_u32 randseed;
-static int oldhcounter;
 
-static uae_u32 xorshiftstate = 1;
+static uae_u32 xorshiftstate;
 static uae_u32 xorshift32(void)
 {
 	uae_u32 x = xorshiftstate;
@@ -111,23 +110,45 @@ static uae_u32 xorshift32(void)
 	return xorshiftstate;
 }
 
-uae_u32 uaesrand(uae_u32 seed)
-{
-	oldhcounter = -1;
-	randseed = seed;
-	return randseed;
-}
 uae_u32 uaerand(void)
 {
-	if (oldhcounter != hsync_counter) {
-		xorshiftstate = (hsync_counter ^ randseed) | 1;
-		oldhcounter = hsync_counter;
+	if (xorshiftstate == 0) {
+		xorshiftstate = randseed;
+		if (!xorshiftstate) {
+			randseed = 1;
+			xorshiftstate = 1;
+		}
 	}
 	uae_u32 r = xorshift32();
 	return r;
 }
+
 uae_u32 uaerandgetseed(void)
 {
+	if (!randseed) {
+		randseed = 1;
+		xorshiftstate = 1;
+	}
+	return randseed;
+}
+
+void uaerandomizeseed(void)
+{
+	if (currprefs.seed == 0) {
+		uae_u32 t = getlocaltime();
+		uaesetrandseed(t);
+	} else {
+		uaesetrandseed(currprefs.seed);
+	}
+}
+
+uae_u32 uaesetrandseed(uae_u32 seed)
+{
+	if (!seed) {
+		seed = 1;
+	}
+	randseed = seed;
+	xorshiftstate = seed;
 	return randseed;
 }
 
@@ -173,6 +194,10 @@ static void fixup_prefs_dim2(int monid, struct wh *wh)
 			error_log (_T("Height (%d) must be at least 128."), wh->height);
 		wh->height = 128;
 	}
+
+	wh->width += 3;
+	wh->width &= ~3;
+
 	if (wh->width > max_uae_width) {
 		if (!monid)
 			error_log (_T("Width (%d) max is %d."), wh->width, max_uae_width);
@@ -408,6 +433,19 @@ void fixup_cpu (struct uae_prefs *p)
 		p->comptrustnaddr = 1;
 	}
 #endif
+
+	// pre-4.4.0 didn't support cpu multiplier in prefetch mode without cycle-exact
+	// set pre-4.4.0 defaults first
+	if (!p->cpu_cycle_exact && p->cpu_compatible && !p->cpu_clock_multiplier && p->config_version) {
+		if (p->cpu_model < 68020) {
+			p->cpu_clock_multiplier = 2 * 256;
+		} else if (p->cpu_model == 68020) {
+			p->cpu_clock_multiplier = 4 * 256;
+		} else {
+			p->cpu_clock_multiplier = 8 * 256;
+		}
+	}
+
 }
 
 void fixup_prefs (struct uae_prefs *p, bool userconfig)
@@ -838,7 +876,7 @@ void uae_quit (void)
 }
 
 /* 0 = normal, 1 = nogui, -1 = disable nogui, -2 = autorestart */
-void uae_restart (int opengui, const TCHAR *cfgfile)
+void uae_restart(struct uae_prefs *p, int opengui, const TCHAR *cfgfile)
 {
 	uae_quit ();
 	restart_program = opengui == -2 ? 4 : (opengui > 0 ? 1 : (opengui == 0 ? 2 : 3));
@@ -921,7 +959,8 @@ static int diskswapper_cb (struct zfile *f, void *vrsd)
 	int *num = (int*)vrsd;
 	if (*num >= MAX_SPARE_DRIVES)
 		return 1;
-	if (zfile_gettype (f) ==  ZFILE_DISKIMAGE) {
+	int type = zfile_gettype(f);
+	if (type == ZFILE_DISKIMAGE || type == ZFILE_EXECUTABLE) {
 		_tcsncpy (currprefs.dfxlist[*num], zfile_getname (f), 255);
 		(*num)++;
 	}
@@ -1073,43 +1112,44 @@ static void parse_cmdline (int argc, TCHAR **argv)
 }
 #endif
 
-static void parse_cmdline_and_init_file (int argc, TCHAR **argv)
+static void parse_cmdline_and_init_file(int argc, TCHAR **argv)
 {
 
 	_tcscpy (optionsfile, _T(""));
 
 #ifdef OPTIONS_IN_HOME
 	{
-		TCHAR *home = getenv ("HOME");
-		if (home != NULL && strlen (home) < 240)
+		TCHAR *home = getenv("HOME");
+		if (home != NULL && strlen(home) < 240)
 		{
-			_tcscpy (optionsfile, home);
-			_tcscat (optionsfile, _T("/"));
+			_tcscpy(optionsfile, home);
+			_tcscat(optionsfile, _T("/"));
 		}
 	}
 #endif
 
 #ifdef __LIBRETRO__
-	_tcscpy (optionsfile, ".");
-	_tcscat (optionsfile, _T("/"));
-	target_cfgfile_load (&currprefs, "", 0, default_config);
+	_tcscpy(optionsfile, ".");
+	_tcscat(optionsfile, _T("/"));
+	target_cfgfile_load(&currprefs, "", 0, default_config);
 #else
-	parse_cmdline_2 (argc, argv);
+	parse_cmdline_2(argc, argv);
 
-	_tcscat (optionsfile, restart_config);
+	_tcscat(optionsfile, restart_config);
 
-	if (! target_cfgfile_load (&currprefs, optionsfile, CONFIG_TYPE_DEFAULT, default_config)) {
-		write_log (_T("failed to load config '%s'\n"), optionsfile);
+	if (! target_cfgfile_load(&currprefs, optionsfile, CONFIG_TYPE_DEFAULT, default_config)) {
+		write_log(_T("failed to load config '%s'\n"), optionsfile);
 #ifdef OPTIONS_IN_HOME
 		/* sam: if not found in $HOME then look in current directory */
-		_tcscpy (optionsfile, restart_config);
-		target_cfgfile_load (&currprefs, optionsfile, CONFIG_TYPE_DEFAULT, default_config);
+		_tcscpy(optionsfile, restart_config);
+		target_cfgfile_load(&currprefs, optionsfile, CONFIG_TYPE_DEFAULT, default_config);
 #endif
 	}
-	fixup_prefs (&currprefs, false);
 #endif /* __LIBRETRO__ */
 
-	parse_cmdline (argc, argv);
+	parse_cmdline(argc, argv);
+
+	fixup_prefs(&currprefs, false);
 }
 
 /* Okay, this stuff looks strange, but it is here to encourage people who
@@ -1251,7 +1291,7 @@ static int real_main2 (int argc, TCHAR **argv)
 #ifdef NATMEM_OFFSET
 	if (!init_shm ()) {
 		if (currprefs.start_gui)
-			uae_restart(-1, NULL);
+			uae_restart(&currprefs, -1, NULL);
 		return 0;
 	}
 #endif
@@ -1270,6 +1310,7 @@ static int real_main2 (int argc, TCHAR **argv)
 #ifdef RETROPLATFORM
 	rp_fixup_options (&currprefs);
 #endif
+	uaerandomizeseed();
 	copy_prefs(&currprefs, &changed_prefs);
 	target_run ();
 	/* force sound settings change */

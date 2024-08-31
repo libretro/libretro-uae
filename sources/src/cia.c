@@ -155,7 +155,7 @@ struct CIA
 static struct CIA cia[2];
 
 static bool oldovl;
-static bool led;
+static int led;
 static int led_old_brightness;
 static evt_t led_cycle;
 static evt_t cia_now_evt;
@@ -192,7 +192,7 @@ void cia_adjust_eclock_phase(int diff)
 	//write_log("CIA E-clock phase %d\n", internaleclockphase);
 }
 
-static void set_eclockphase(void)
+void cia_set_eclockphase(void)
 {
 	if (currprefs.cs_eclocksync == 3) {
 		e_clock_sync = E_CLOCK_SYNC_X;
@@ -228,7 +228,7 @@ static evt_t get_e_cycles(void)
 			currprefs.cs_eclocksync = 1;
 		}
 		changed_prefs.cs_eclocksync = currprefs.cs_eclocksync;
-		set_eclockphase();
+		cia_set_eclockphase();
 		write_log("CIA elock timing mode %d\n", currprefs.cs_eclocksync);
 		blop2 = 0;
 	}
@@ -444,7 +444,7 @@ static uae_u8 cia_inmode_cnt(int num)
 	return icr;
 }
 
-static int process_pipe(struct CIATimer *t, int cc, uae_u8 crmask, int *ovfl)
+static int process_pipe(struct CIATimer *t, int cc, uae_u8 crmask, int *ovfl, int loadednow)
 {
 	int ccout = cc;
 
@@ -455,8 +455,8 @@ static int process_pipe(struct CIATimer *t, int cc, uae_u8 crmask, int *ovfl)
 			t->inputpipe |= CIA_PIPE_INPUT;
 		}
 		// interrupt 1 cycle early if timer is already zero
-		if (t->timer == 0 && (t->inputpipe & CIA_PIPE_OUTPUT)) {
-			*ovfl = 1;
+		if (t->timer == 0 && t->latch == 0 && (t->inputpipe & CIA_PIPE_OUTPUT)) {
+			*ovfl = loadednow ? 1 : 2;
 		}
 		return out;
 	}
@@ -494,7 +494,7 @@ static void CIA_update_check(void)
 	for (int num = 0; num < 2; num++) {
 		struct CIA *c = &cia[num];
 		int ovfl[2], sp;
-		bool loaded[2], loaded2[2];
+		bool loaded[2], loaded2[2], loaded3[3];
 
 		c->icr1 |= c->icr2;
 		c->icr2 = 0;
@@ -509,41 +509,45 @@ static void CIA_update_check(void)
 			
 			loaded[tn] = false;
 			loaded2[tn] = false;
+			loaded3[tn] = false;
 
 			// CIA special cases
 			if (t->loaddelay) {
 				if (ciaclocks > 1) {
 					abort();
 				}
-				if (t->loaddelay & 1) {
+
+				if (t->loaddelay & 0x00000001) {
 					t->timer = t->latch;
 					t->inputpipe &= ~CIA_PIPE_CLR1;
 				}
 
-				if ((t->loaddelay & 0x0100) && t->timer != 0) {
-					loaded2[tn] = true;
+				// timer=0 special cases. TODO: better way to do this..
+				// delayed timer stop and interrupt (timer=0 condition)
+				if ((t->loaddelay & 0x00010000)) {
+					t->cr &= ~CR_START;
+					ovfl[tn] = 2;
 				}
-				if ((t->loaddelay & 0x010000)) {
-					if ((t->timer != 1 || t->latch != 1) && (t->inputpipe & CIA_PIPE_OUTPUT)) {
-						loaded2[tn] = true;
-					}
+				// Do not set START=0 until timer has started (timer==0 special case)
+				if ((t->loaddelay & 0x00000100) && t->timer == 0) {
+					loaded2[tn] = true;
 				}
 				if ((t->loaddelay & 0x01000000)) {
 					loaded[tn] = true;
-					if (t->timer == 0) {
-						ovfl[tn] = true;
-					}
+				}
+				if ((t->loaddelay & 0x10000000)) {
+					loaded3[tn] = true;
 				}
 
 				t->loaddelay >>= 1;
-				t->loaddelay &= 0x7f7f7f7f;
+				t->loaddelay &= 0x77777777;
 			}
 		}
 
 		// Timer A
 		int cc = 0;
 		if ((c->t[0].cr & (CR_INMODE | CR_START)) == CR_START || c->t[0].inputpipe) {
-			cc = process_pipe(&c->t[0], ciaclocks, CR_INMODE | CR_START, &ovfl[0]);
+			cc = process_pipe(&c->t[0], ciaclocks, CR_INMODE | CR_START, &ovfl[0], loaded3[0]);
 		}
 		if (cc > 0) {
 			c->t[0].timer -= cc;
@@ -560,7 +564,7 @@ static void CIA_update_check(void)
 						}
 					}
 				}
-				ovfl[0] = 1;
+				ovfl[0] = 2;
 			}
 		}
 		assert(c->t[0].timer < 0x10000);
@@ -568,21 +572,21 @@ static void CIA_update_check(void)
 		// Timer B
 		cc = 0;
 		if ((c->t[1].cr & (CR_INMODE | CR_INMODE1 | CR_START)) == CR_START || c->t[1].inputpipe) {
-			cc = process_pipe(&c->t[1], ciaclocks, CR_INMODE | CR_INMODE1 | CR_START, &ovfl[1]);
+			cc = process_pipe(&c->t[1], ciaclocks, CR_INMODE | CR_INMODE1 | CR_START, &ovfl[1], loaded3[1]);
 		}
 		if (cc > 0) {
 			if ((c->t[1].timer == 0 && (c->t[1].cr & (CR_INMODE | CR_INMODE1)))) {
-				ovfl[1] = 1;
+				ovfl[1] = 2;
 			} else {
 				c->t[1].timer -= cc;
 				if ((c->t[1].timer == 0 && !(c->t[1].cr & (CR_INMODE | CR_INMODE1)))) {
-					ovfl[1] = 1;
+					ovfl[1] = 2;
 				}
 			}
 		}
 		assert(c->t[1].timer < 0x10000);
 
-		// B INMODE=10 or 11
+		// B INMODE=10 or 11 (B counting A underflows)
 		if (ovfl[0] && ((c->t[1].cr & (CR_INMODE | CR_INMODE1 | CR_START)) == (CR_INMODE1 | CR_START) || (c->t[1].cr & (CR_INMODE | CR_INMODE1 | CR_START)) == (CR_INMODE | CR_INMODE1 | CR_START))) {
 			c->t[1].inputpipe |= CIA_PIPE_INPUT;
 		}
@@ -591,18 +595,22 @@ static void CIA_update_check(void)
 			struct CIATimer *t = &c->t[tn];
 
 			if (ovfl[tn] || t->preovfl) {
-				c->icr2 |= tn ? ICR_B : ICR_A;
-				t->timer = t->latch;
+				if (ovfl[tn]) {
+					if (ovfl[tn] > 1) {
+						c->icr2 |= tn ? ICR_B : ICR_A;
+						icr |= 1 << num;
+					}
+					t->timer = t->latch;
+				}
 				if (!loaded[tn]) {
 					if (t->cr & CR_RUNMODE) {
-						// if oneshot timer expires exactly when
-						// CR is written with START and ONESHOT set:
-						// timer does not stop.
-						if (!loaded2[tn]) {
+						if (loaded2[tn]) {
+							t->loaddelay |= 0x00010000;
+						} else {
 							t->cr &= ~CR_START;
-							if (!acc_mode()) {
-								t->inputpipe = 0;
-							}
+						}
+						if (!acc_mode()) {
+							t->inputpipe = 0;
 						}
 						if (acc_mode()) {
 							t->inputpipe &= ~CIA_PIPE_CLR2;
@@ -613,7 +621,6 @@ static void CIA_update_check(void)
 						}
 					}
 				}
-				icr |= 1 << num;
 				t->preovfl = false;
 			}
 		}
@@ -665,6 +672,7 @@ static void CIA_calctimers(void)
 	for (int num = 0; num < 2; num++) {
 		struct CIA *c = &cia[num];
 		int idx = num * 2;
+		bool counting[2] = { false, false };
 
 		if ((c->t[0].cr & (CR_INMODE | CR_START)) == CR_START) {
 			int pipe = bitstodelay(c->t[0].inputpipe);
@@ -672,6 +680,7 @@ static void CIA_calctimers(void)
 			if (!timevals[idx + 0]) {
 				timevals[idx + 0] = DIV10;
 			}
+			counting[0] = true;
 		}
 
 		if ((c->t[1].cr & (CR_INMODE | CR_INMODE1 | CR_START)) == CR_START) {
@@ -680,6 +689,7 @@ static void CIA_calctimers(void)
 			if (!timevals[idx + 1]) {
 				timevals[idx + 1] = DIV10;
 			}
+			counting[1] = true;
 		}
 
 		for (int tn = 0; tn < 2; tn++) {
@@ -688,7 +698,9 @@ static void CIA_calctimers(void)
 			int tnidx = idx + tn;
 			if (t->cr & CR_START) {
 				if (t->inputpipe != CIA_PIPE_ALL_MASK) {
-					timerspecial = true;
+					if (counting[tn] || t->inputpipe != 0) {
+						timerspecial = true;
+					}
 				}
 			} else {
 				if (t->inputpipe != 0) {
@@ -1083,7 +1095,7 @@ static void CIA_tod_check(int num)
 	struct CIA *c = &cia[num];
 
 	CIA_tod_event_check(num);
-	if (!c->todon || c->tod_event_state > 1 || c->tod_offset < 0)
+	if (!c->todon || c->tod_event_state != 1 || c->tod_offset < 0)
 		return;
 	int hpos = current_hpos();
 	hpos -= c->tod_offset;
@@ -1230,7 +1242,7 @@ static void calc_led(int old_led)
 {
 	evt_t c = get_cycles();
 	int t = (int)((c - led_cycle) / CYCLE_UNIT);
-	if (old_led)
+	if (old_led > 0)
 		led_cycles_on += t;
 	else
 		led_cycles_off += t;
@@ -1240,6 +1252,7 @@ static void calc_led(int old_led)
 static void led_vsync(void)
 {
 	int v;
+	bool ledonoff;
 
 	calc_led(led);
 	if (led_cycles_on && !led_cycles_off)
@@ -1252,6 +1265,7 @@ static void led_vsync(void)
 		v = 255;
 	if (v < 0)
 		v = 0;
+	ledonoff = v > 96;
 	if (currprefs.power_led_dim && v < currprefs.power_led_dim)
 		v = currprefs.power_led_dim;
 	if (v > 255)
@@ -1259,8 +1273,8 @@ static void led_vsync(void)
 	gui_data.powerled_brightness = v;
 	led_cycles_on = 0;
 	led_cycles_off = 0;
-	if (led_old_brightness != gui_data.powerled_brightness) {
-		gui_data.powerled = gui_data.powerled_brightness > 96;
+	if (led_old_brightness != gui_data.powerled_brightness || ledonoff != gui_data.powerled) {
+		gui_data.powerled = ledonoff;
 		gui_led (LED_POWER, gui_data.powerled, gui_data.powerled_brightness);
 		led_filter_audio();
 	}
@@ -1309,7 +1323,7 @@ void CIA_vsync_prehandler(void)
 static void check_led(void)
 {
 	uae_u8 v = cia[0].pra;
-	bool led2;
+	int led2;
 
 	v |= ~cia[0].dra; /* output is high when pin's direction is input */
 	led2 = (v & 2) ? 0 : 1;
@@ -1472,6 +1486,15 @@ static uae_u8 ReadCIAReg(int num, int reg)
 	return 0xff;
 }
 
+static bool CIA_timer_inmode(int num, uae_u8 cr)
+{
+	if (num) {
+		return (cr & (CR_INMODE | CR_INMODE1)) != 0;
+	} else {
+		return (cr & CR_INMODE) != 0;
+	}
+}
+
 static void CIA_thi_write(int num, int tnum, uae_u8 val)
 {
 	struct CIA *c = &cia[num];
@@ -1491,12 +1514,16 @@ static void CIA_thi_write(int num, int tnum, uae_u8 val)
 
 		if (t->cr & CR_RUNMODE) {
 			t->cr |= CR_START;
-			t->inputpipe = CIA_PIPE_ALL_MASK;
+			if (!CIA_timer_inmode(tnum, t->cr)) {
+				t->inputpipe = CIA_PIPE_ALL_MASK;
+			}
 		}
 
 		if (t->cr & CR_START) {
-			if (t->timer <= 1) {
-				t->preovfl = true;
+			if (!CIA_timer_inmode(tnum, t->cr)) {
+				if (t->timer <= 1) {
+					t->preovfl = true;
+				}
 			}
 		}
 
@@ -1504,15 +1531,18 @@ static void CIA_thi_write(int num, int tnum, uae_u8 val)
 		// if accurate mode: handle delays cycle-accurately
 
 		if (!(t->cr & CR_START)) {
-			t->loaddelay |= 1 << 1;
-			t->loaddelay |= 1 << 2;
+			t->loaddelay |= 0x00000001 << 1;
+			t->loaddelay |= 0x00000001 << 2;
 		}
 
 		if (t->cr & CR_RUNMODE) {
 			t->cr |= CR_START;
+			t->loaddelay |= 0x00000001 << 2;
+			// timer=0 special case
 			t->loaddelay |= 0x01000000 << 1;
-			t->loaddelay |= 1 << 2;
+			t->loaddelay |= 0x10000000 << 1;
 		}
+
 	}
 }
 
@@ -1533,9 +1563,11 @@ static void CIA_cr_write(int num, int tnum, uae_u8 val)
 			t->timer = t->latch;
 		}
 		if (val & CR_START) {
-			t->inputpipe = CIA_PIPE_ALL_MASK;
-			if (t->timer <= 1) {
-				t->preovfl = true;
+			if (!CIA_timer_inmode(tnum, val)) {
+				t->inputpipe = CIA_PIPE_ALL_MASK;
+				if (t->timer <= 1) {
+					t->preovfl = true;
+				}
 			}
 		} else {
 			t->inputpipe = 0; 
@@ -1546,15 +1578,14 @@ static void CIA_cr_write(int num, int tnum, uae_u8 val)
 
 		if (val & CR_LOAD) {
 			val &= ~CR_LOAD;
-			t->loaddelay |= 0x0001 << 2;
-			t->loaddelay |= 0x0100 << 0;
+			t->loaddelay |= 0x00000001 << 2;
+			t->loaddelay |= 0x00000100 << 0;
+			t->loaddelay |= 0x00000100 << 1;
 			if (!(t->cr & CR_START)) {
-				t->loaddelay |= 0x0001 << 1;
+				t->loaddelay |= 0x00000001 << 1;
 			}
-		} else {
-			if ((val & CR_START)) {
-				t->loaddelay |= 0x010000 << 0;
-			}
+			// timer=0 special case
+			t->loaddelay |= 0x10000000 << 1;
 		}
 
 		if (!(val & CR_START)) {
@@ -1673,6 +1704,13 @@ static uae_u8 CIA_PBON(struct CIA *c, uae_u8 v)
 	}
 	return v;
 }
+
+#if DONGLE_DEBUG > 0
+static bool notinrom()
+{
+	return true;
+}
+#endif
 
 static uae_u8 ReadCIAA(uae_u32 addr, uae_u32 *flags)
 {
@@ -1910,6 +1948,7 @@ static void WriteCIAA(uae_u16 addr, uae_u8 val, uae_u32 *flags)
 #endif
 		c->prb = val;
 		dongle_cia_write(0, reg, c->drb, val);
+		alg_parallel_port(c->drb, val);
 #ifdef PARALLEL_PORT
 		if (isprinter()) {
 			if (isprinter() > 0) {
@@ -2139,6 +2178,7 @@ void CIA_reset(void)
 	led_cycles_off = 0;
 	led_cycles_on = 0;
 	led_cycle = get_cycles();
+	led = 0;
 
 	if (!savestate_state) {
 		oldovl = true;
@@ -2157,7 +2197,7 @@ void CIA_reset(void)
 		CIA_calctimers();
 		DISK_select_set(cia[1].prb);
 	}
-	set_eclockphase();
+	cia_set_eclockphase();
 	map_overlay(0);
 	check_led();
 #ifdef SERIAL_PORT
@@ -2168,6 +2208,7 @@ void CIA_reset(void)
 		if (currprefs.cs_ciaoverlay) {
 			oldovl = true;
 		}
+		led = -1;
 		bfe001_change();
 		if (!currprefs.cs_ciaoverlay) {
 			map_overlay(oldovl ? 0 : 1);
@@ -2184,11 +2225,13 @@ void dumpcia(void)
 
 	console_out_f(_T("A: CRA %02x CRB %02x ICR %02x IM %02x TA %04x (%04x) TB %04x (%04x)\n"),
 		a->t[0].cr, a->t[1].cr, a->icr1, a->imask, a->t[0].timer - a->t[0].passed, a->t[0].latch, a->t[1].timer - a->t[1].passed, a->t[1].latch);
-	console_out_f(_T("TOD %06x (%06x) ALARM %06x %c%c CYC=%016llX\n"),
+	console_out_f(_T("   PRA %02x PRB %02x DDRA %02x DDRB %02x\n"), a->pra, a->prb, a->dra, a->drb);
+	console_out_f(_T("   TOD %06x (%06x) ALARM %06x %c%c CYC=%016llX\n"),
 		a->tod, a->tol, a->alarm, a->tlatch ? 'L' : '-', a->todon ? '-' : 'S', get_cycles());
 	console_out_f(_T("B: CRA %02x CRB %02x ICR %02x IM %02x TA %04x (%04x) TB %04x (%04x)\n"),
 		b->t[0].cr, b->t[1].cr, b->icr1, b->imask, b->t[0].timer - b->t[0].passed, b->t[0].latch, b->t[1].timer - b->t[1].passed, b->t[1].latch);
-	console_out_f(_T("TOD %06x (%06x) ALARM %06x %c%c\n"),
+	console_out_f(_T("   PRA %02x PRB %02x DDRA %02x DDRB %02x\n"), b->pra, b->prb, b->dra, b->drb);
+	console_out_f(_T("   TOD %06x (%06x) ALARM %06x %c%c\n"),
 		b->tod, b->tol, b->alarm, b->tlatch ? 'L' : '-', b->todon ? '-' : 'S');
 }
 

@@ -41,7 +41,7 @@
 #include "uae/ppc.h"
 #include "devices.h"
 #include "inputdevice.h"
-#include "casablanca.h"
+#include "draco.h"
 
 #ifdef __LIBRETRO__
 extern bool retro_message;
@@ -303,6 +303,9 @@ static bool gary_nonrange(uaecptr addr)
 		return false;
 	if (addr >= 0xe80000 && addr < 0xf80000)
 		return false;
+	if (expansion_get_autoconfig_by_address(&currprefs, addr, 0)) {
+		return false;
+	}
 	return true;
 }
 
@@ -1679,7 +1682,7 @@ static bool load_extendedkickstart (const TCHAR *romextfile, int type)
 		extendedkickmem_type = EXTENDED_ROM_ARCADIA;
 		return false;
 	}
-	f = read_rom_name (romextfile);
+	f = read_rom_name (romextfile, false);
 	if (!f) {
 		notify_user (NUMSG_NOEXTROM);
 		return false;
@@ -1876,7 +1879,7 @@ static struct zfile *get_kickstart_filehandle(struct uae_prefs *p)
 	struct zfile *f;
 	TCHAR tmprom[MAX_DPATH], tmprom2[MAX_DPATH];
 
-	f = read_rom_name(p->romfile);
+	f = read_rom_name(p->romfile, false);
 	_tcscpy(tmprom, p->romfile);
 	_tcscpy(tmprom2, p->romfile);
 	if (f == NULL) {
@@ -2211,7 +2214,6 @@ bool mapped_malloc (addrbank *ab)
 {
 	int id;
 	void *answer;
-	shmpiece *x;
 	bool rtgmem = (ab->flags & ABFLAG_RTG) != 0;
 	static int recurse;
 
@@ -2283,16 +2285,29 @@ bool mapped_malloc (addrbank *ab)
 		answer = ab->baseaddr;
 	}
 	if (answer != (void *) -1) {
-		x = xmalloc (shmpiece, 1);
+		shmpiece *xx = shm_start;
+		shmpiece *x = NULL;
+		// if we already have shmpiece for this address space: reuse it
+		while (xx) {
+			if (answer == xx->native_address) {
+				x = xx;
+				break;
+			}
+			xx = xx->next;
+		}
+		if (!x) {
+			// no old shmpice: allocate new
+			x = xcalloc(shmpiece, 1);
+			x->next = shm_start;
+			x->prev = NULL;
+			if (x->next)
+				x->next->prev = x;
+			shm_start = x;
+		}
 		x->native_address = (uae_u8*)answer;
 		x->id = id;
 		x->size = ab->reserved_size;
 		x->name = ab->label;
-		x->next = shm_start;
-		x->prev = NULL;
-		if (x->next)
-			x->next->prev = x;
-		shm_start = x;
 		ab->baseaddr = x->native_address;
 		if (ab->baseaddr) {
 			if (md.hasbarrier) {
@@ -2453,10 +2468,21 @@ static void allocate_memory (void)
 	}
 
 	if (currprefs.cs_agnussize > AGNUSSIZE_AUTO) {
-		if (currprefs.cs_agnussize <= AGNUSSIZE_512) {
-			chipmem_full_mask = 0x80000 - 1;
-		} else if (currprefs.cs_agnussize == AGNUSSIZE_1M && chipmem_full_mask > 0x100000) {
-			chipmem_full_mask = 0x100000 - 1;
+		if (currprefs.chipset_mask & CSMASK_ECS_AGNUS) {
+			// if ECS: allow smaller than select chip RAM size DMA range
+			if (currprefs.cs_agnussize <= AGNUSSIZE_512) {
+				chipmem_full_mask = 0x80000 - 1;
+			} else if (currprefs.cs_agnussize == AGNUSSIZE_1M && chipmem_full_mask > 0x100000) {
+				chipmem_full_mask = 0x100000 - 1;
+			}
+		} else {
+			// if OCS: allow larger than 512k DMA range
+			if (currprefs.cs_agnussize == AGNUSSIZE_1M && chipmem_bank.allocated_size >= 0x100000) {
+				chipmem_full_mask = 0x100000 - 1;
+			}
+			if (currprefs.cs_agnussize == AGNUSSIZE_2M && chipmem_bank.allocated_size >= 0x180000) {
+				chipmem_full_mask = 0x200000 - 1;
+			}
 		}
 	}
 
@@ -2531,7 +2557,11 @@ static void allocate_memory (void)
 
 		a3000hmem_bank.reserved_size = currprefs.mbresmem_high.size;
 		a3000hmem_bank.mask = a3000hmem_bank.reserved_size - 1;
-		a3000hmem_bank.start = 0x08000000;
+		if (currprefs.cs_compatible == CP_DRACO || currprefs.cs_compatible == CP_CASABLANCA) {
+			a3000hmem_bank.start = 0x40000000;
+		} else {
+			a3000hmem_bank.start = 0x08000000;
+		}
 		if (a3000hmem_bank.reserved_size) {
 			if (!mapped_malloc (&a3000hmem_bank)) {
 				write_log (_T("Out of memory for a3000highmem.\n"));
@@ -2563,6 +2593,8 @@ static void allocate_memory (void)
 			restore_ram (a3000lmem_filepos, a3000lmem_bank.baseaddr);
 		if (a3000hmem_bank.allocated_size > 0)
 			restore_ram (a3000hmem_filepos, a3000hmem_bank.baseaddr);
+	} else {
+		alg_flag = 0;
 	}
 #ifdef AGA
 	chipmem_bank_ce2.baseaddr = chipmem_bank.baseaddr;
@@ -2591,6 +2623,13 @@ static void setmemorywidth(struct ramboard *mb, addrbank *ab)
 		for (int i = (ab->start >> 16); i < ((ab->start + ab->allocated_size) >> 16); i++) {
 			ce_banktype[i] = ce_banktype[0];
 		}
+	}
+	if (mb->fault) {
+		ab->baseaddr_direct_w = NULL;
+		ab->baseaddr_direct_r = NULL;
+		ab->lput = &dummy_lput;
+		ab->wput = &dummy_wput;
+		ab->bput = &dummy_bput;
 	}
 }
 
@@ -2663,7 +2702,7 @@ static void fill_ce_banks (void)
 	}
 
 	if (currprefs.address_space_24) {
-		for (i = 1; i < 256; i++)
+		for (i = 1; i < MEMORY_BANKS_24; i++)
 			memcpy(&ce_banktype[i * 256], &ce_banktype[0], 256);
 	}
 
@@ -2681,6 +2720,9 @@ void map_overlay (int chip)
 
 	if (currprefs.cs_compatible == CP_CASABLANCA) {
 		casablanca_map_overlay();
+		return;
+	} else if (currprefs.cs_compatible == CP_DRACO) {
+		draco_map_overlay();
 		return;
 	}
 
@@ -2862,17 +2904,17 @@ static void restore_roms(void)
 			write_log (_T("Known ROM '%s' loaded\n"), rd->name);
 #if 1
 			if ((rd->cpu & 8) && changed_prefs.cpu_model < 68030) {
-				notify_user (NUMSG_KS68030PLUS);
-				uae_restart (-1, NULL);
+				notify_user(NUMSG_KS68030PLUS);
+				uae_restart(&currprefs, -1, NULL);
 			} else if ((rd->cpu & 3) == 3 && changed_prefs.cpu_model != 68030) {
-				notify_user (NUMSG_KS68030);
-				uae_restart (-1, NULL);
+				notify_user(NUMSG_KS68030);
+				uae_restart(&currprefs, -1, NULL);
 			} else if ((rd->cpu & 3) == 1 && changed_prefs.cpu_model < 68020) {
-				notify_user (NUMSG_KS68EC020);
-				uae_restart (-1, NULL);
+				notify_user(NUMSG_KS68EC020);
+				uae_restart(&currprefs, -1, NULL);
 			} else if ((rd->cpu & 3) == 2 && (changed_prefs.cpu_model < 68020 || changed_prefs.address_space_24)) {
-				notify_user (NUMSG_KS68020);
-				uae_restart (-1, NULL);
+				notify_user(NUMSG_KS68020);
+				uae_restart(&currprefs, -1, NULL);
 			}
 #endif
 			if (rd->cloanto)
@@ -2933,13 +2975,23 @@ void memory_restore(void)
 	map_banks_set(&kickmem_bank, 0xF8, 8, 0);
 }
 
+static void kickmem_init(void)
+{
+	if (!kickmem_bank.baseaddr) {
+		kickmem_bank.reserved_size = ROM_SIZE_512;
+		mapped_malloc(&kickmem_bank);
+		if (kickmem_bank.baseaddr) {
+			memset(kickmem_bank.baseaddr, 0, ROM_SIZE_512);
+		}
+	}
+}
+
 void memory_reset (void)
 {
 	int bnk, bnk_end;
 	bool gayleorfatgary;
 
 	highest_ram = 0;
-	alg_flag = 0;
 	need_hardreset = false;
 	rom_write_enabled = true;
 #ifdef JIT
@@ -2950,8 +3002,10 @@ void memory_reset (void)
 		need_hardreset = true;
 	last_address_space_24 = changed_prefs.address_space_24;
 
-	if (mem_hardreset > 2)
-		memory_init ();
+	if (mem_hardreset > 2) {
+		memory_init();
+	}
+	kickmem_init();
 
 	memset(ce_cachable, CACHE_ENABLE_INS, sizeof ce_cachable);
 
@@ -3199,7 +3253,6 @@ void memory_reset (void)
 #endif
 }
 
-
 void memory_init (void)
 {
 	init_mem_banks ();
@@ -3207,7 +3260,6 @@ void memory_init (void)
 
 	chipmem_bank.reserved_size = 0;
 	bogomem_bank.reserved_size = 0;
-	kickmem_bank.baseaddr = NULL;
 	extendedkickmem_bank.baseaddr = NULL;
 	extendedkickmem_bank.reserved_size = 0;
 	extendedkickmem2a_bank.baseaddr = NULL;
@@ -3224,11 +3276,8 @@ void memory_init (void)
 	custmem1_bank.baseaddr = NULL;
 	custmem2_bank.baseaddr = NULL;
 
-	kickmem_bank.reserved_size = ROM_SIZE_512;
-	mapped_malloc (&kickmem_bank);
-	if (kickmem_bank.baseaddr) {
-		memset(kickmem_bank.baseaddr, 0, ROM_SIZE_512);
-	}
+	mapped_free(&kickmem_bank);
+	kickmem_init();
 	_tcscpy (currprefs.romfile, _T("<none>"));
 	currprefs.romextfile[0] = 0;
 	cpuboard_reset(1);
@@ -3250,21 +3299,18 @@ void memory_cleanup (void)
 	mapped_free(&a3000hmem_bank);
 	mapped_free(&bogomem_bank);
 	mapped_free(&kickmem_bank);
+	mapped_free(&kickram_bank);
+	mapped_free(&extendedkickmem_bank);
+	mapped_free(&extendedkickmem2a_bank);
+	mapped_free(&extendedkickmem2b_bank);
 	xfree(a1000_bootrom);
 	mapped_free(&chipmem_bank);
 	mapped_free(&custmem1_bank);
 	mapped_free(&custmem2_bank);
 	mapped_free(&fakeuaebootrom_bank);
 
-	bogomem_bank.baseaddr = NULL;
-	kickmem_bank.baseaddr = NULL;
-	mem25bit_bank.baseaddr = NULL;
-	a3000lmem_bank.baseaddr = a3000hmem_bank.baseaddr = NULL;
 	a1000_bootrom = NULL;
 	a1000_kickstart_mode = 0;
-	chipmem_bank.baseaddr = NULL;
-	custmem1_bank.baseaddr = NULL;
-	custmem2_bank.baseaddr = NULL;
 
 	cpuboard_cleanup();
 #ifdef ACTION_REPLAY
@@ -3441,7 +3487,7 @@ static void map_banks2 (addrbank *bank, int start, int size, int realsize, int q
 	}
 
 #ifndef ADDRESS_SPACE_24BIT
-	if (start >= 0x100) {
+	if (start >= MEMORY_BANKS_24) {
 		int real_left = 0;
 		for (bnr = start; bnr < start + size; bnr++) {
 			if (!real_left) {
@@ -3546,10 +3592,22 @@ void restore_banks(void)
 	}
 }
 
+static void map_banks_draco(addrbank *bank, int start, int size, int realsize)
+{
+	// draco has Z2 space mapped at 0x03e80000-0x03fffff
+	if (start >= 0xe8 && start < 0xf0) {
+		map_banks(bank, 0x0300 + start, size, realsize);
+	}
+}
+
 void map_banks (addrbank *bank, int start, int size, int realsize)
 {
 	if (start == 0xffffffff)
 		return;
+
+	if (currprefs.cs_compatible == CP_DRACO) {
+		map_banks_draco(bank, start, size, realsize);
+	}
 
 #ifdef JIT
 	if ((bank->jit_read_flag | bank->jit_write_flag) & S_N_ADDR) {
@@ -3557,7 +3615,7 @@ void map_banks (addrbank *bank, int start, int size, int realsize)
 	}
 #endif
 
-	if (start >= 0x100) {
+	if (start >= MEMORY_BANKS_24) {
 		int real_left = 0;
 		for (int bnr = start; bnr < start + size; bnr++) {
 			highram_temp_bank[bnr - 0x100] = bank;

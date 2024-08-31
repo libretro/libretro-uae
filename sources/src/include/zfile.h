@@ -59,6 +59,7 @@ extern uae_u8 *zfile_load_data(const TCHAR *name, const uae_u8 *data,int datalen
 extern uae_u8 *zfile_load_file(const TCHAR *name, int *outlen);
 extern struct zfile *zfile_fopen_parent(struct zfile*, const TCHAR*, uae_u64 offset, uae_u64 size);
 extern uae_u8 *zfile_get_data_pointer(struct zfile *z, size_t *len);
+extern const TCHAR *zfile_get_ext(const TCHAR *);
 
 extern int zfile_exists(const TCHAR *name);
 extern void zfile_fclose(struct zfile *z);
@@ -126,6 +127,7 @@ extern int zfile_truncate(struct zfile *z, uae_s64 size);
 #define ZFILE_NVR 7
 #define ZFILE_HDFRDB 8
 #define ZFILE_CDIMAGE 9
+#define ZFILE_EXECUTABLE 10
 
 extern const TCHAR *uae_archive_extensions[];
 extern const TCHAR *uae_ignoreextensions[];

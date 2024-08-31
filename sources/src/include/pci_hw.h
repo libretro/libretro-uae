@@ -27,7 +27,7 @@ typedef struct pci_addrbank
 	pci_put_func lput, wput, bput;
 } pci_addrbank;
 
-typedef int(*pci_slot_index)(uaecptr);
+typedef int(*pci_slot_index)(uaecptr, bool, uae_u32*);
 
 struct pci_config
 {
@@ -97,6 +97,7 @@ struct pci_bridge
 	bool amigapicdma;
 	uae_u8 intena;
 	uae_u8 irq;
+	uae_u8 reset;
 	uae_u16 intreq_mask;
 	pci_slot_index get_index;
 	struct pci_board_state boards[MAX_PCI_BOARDS];

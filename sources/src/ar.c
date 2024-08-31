@@ -1661,7 +1661,7 @@ int action_replay_load (void)
 		if (rd->type & ROMTYPE_CD32CART)
 			return 0;
 	}
-	f = read_rom_name (currprefs.cartfile);
+	f = read_rom_name(currprefs.cartfile, false);
 	if (!f) {
 		write_log (_T("failed to load '%s' cartridge ROM\n"), currprefs.cartfile);
 		return 0;
@@ -1814,7 +1814,7 @@ int hrtmon_load (void)
 	if (!isinternal) {
 		if (currprefs.cartfile[0] == '\0')
 			return 0;
-		f = read_rom_name (currprefs.cartfile);
+		f = read_rom_name(currprefs.cartfile, false);
 		if(!f) {
 			write_log (_T("failed to load '%s' cartridge ROM\n"), currprefs.cartfile);
 			return 0;

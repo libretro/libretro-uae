@@ -44,7 +44,6 @@ SOURCES_C += \
 	$(EMU)/calc.c \
 	$(EMU)/caps/caps.c \
 	$(EMU)/caps/uae_dlopen.c \
-	$(EMU)/casablanca.c \
 	$(EMU)/cd32_fmv.c \
 	$(EMU)/cd32_fmv_genlock.c \
 	$(EMU)/cda_play.c \
@@ -82,6 +81,7 @@ SOURCES_C += \
 	$(EMU)/disk.c \
 	$(EMU)/diskutil.c \
 	$(EMU)/dongle.c \
+	$(EMU)/draco.c \
 	$(EMU)/drawing.c \
 	$(EMU)/driveclick.c \
 	$(EMU)/ethernet.c \
@@ -144,6 +144,8 @@ SOURCES_C += \
 	$(EMU)/x86.c \
 	$(EMU)/zfile.c \
 	$(EMU)/zfile_archive.c \
+	$(EMU)/dsp3210/dsp_glue.c \
+	$(EMU)/dsp3210/DSP3210_emulation.c \
 	$(EMU)/softfloat/softfloat.c \
 	$(EMU)/softfloat/softfloat_decimal.c \
 	$(EMU)/softfloat/softfloat_fpsp.c
