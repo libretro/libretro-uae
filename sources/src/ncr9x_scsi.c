@@ -1931,7 +1931,7 @@ static void ncr9x_reset_board(struct ncr9x_state *ncr)
 
 	device_add_rethink(ncr9x_rethink);
 	device_add_reset(ncr9x_reset);
-	device_add_exit(ncr9x_free);
+	device_add_exit(ncr9x_free, NULL);
 }
 
 void ncr_squirrel_init(struct romconfig *rc, uaecptr baseaddress)
@@ -2001,7 +2001,7 @@ bool ncr_multievolution_init(struct autoconfig_info *aci)
 
 bool ncr_fastlane_autoconfig_init(struct autoconfig_info *aci)
 {
-	struct zfile *z = read_device_from_romconfig(aci->rc, ROMTYPE_FASTLANE);
+	struct zfile *z = read_device_from_romconfig_2(aci->rc, ROMTYPE_FASTLANE);
 	uae_u8 *rom = xcalloc(uae_u8, FASTLANE_ROM_SIZE * 4);
 	if (z) {
 		// memory board at offset 0x100
@@ -2091,7 +2091,7 @@ bool ncr_oktagon_autoconfig_init(struct autoconfig_info *aci)
 	ncr9x_reset_board(ncr);
 
 	if (!aci->rc->autoboot_disabled) {
-		struct zfile *z = read_device_from_romconfig(aci->rc, ROMTYPE_OKTAGON);
+		struct zfile *z = read_device_from_romconfig_2(aci->rc, ROMTYPE_OKTAGON);
 		if (z) {
 			// memory board at offset 0x100
 			memset(ncr->rom, 0xff, OKTAGON_ROM_SIZE * 4);
@@ -2127,7 +2127,7 @@ static const uae_u8 alf3_autoconfig[16] = {
 
 bool ncr_alf3_autoconfig_init(struct autoconfig_info *aci)
 {
-	struct zfile *z = read_device_from_romconfig(aci->rc, ROMTYPE_ALF3);
+	struct zfile *z = read_device_from_romconfig_2(aci->rc, ROMTYPE_ALF3);
 	if (z) {
 		zfile_fread(aci->autoconfig_raw, 128, 1, z);
 		zfile_fclose(z);
@@ -2166,7 +2166,7 @@ bool ncr_alf3_autoconfig_init(struct autoconfig_info *aci)
 
 	ncr9x_reset_board(ncr);
 
-	z = read_device_from_romconfig(aci->rc, ROMTYPE_ALF3);
+	z = read_device_from_romconfig_2(aci->rc, ROMTYPE_ALF3);
 	if (z) {
 		zfile_fread(ncr->rom, 32768, 1, z);
 		zfile_fclose(z);

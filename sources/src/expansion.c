@@ -50,6 +50,7 @@
 #include "sana2.h"
 #include "arcadia.h"
 #include "devices.h"
+#include "dsp3210/dsp_glue.h"
 
 struct hd_hardfiledata;
 
@@ -591,6 +592,7 @@ void expamem_shutup(addrbank *mapped)
 		mapped->start = 0xffffffff;
 		boardmessage(mapped, false);
 	}
+	expamem_next(mapped, NULL);
 }
 
 void expamem_next(addrbank *mapped, addrbank *next)
@@ -1433,7 +1435,7 @@ static bool set_params_filesys(struct uae_prefs *prefs, struct expansion_params 
 
 static void add_rtarea_pointer(struct autoconfig_info *aci)
 {
-	if (aci->doinit) {
+	if (aci && aci->doinit) {
 		uaecptr addr = 0;
 		if (aci->prefs->uaeboard > 1) {
 			addr = aci->start + 0x10000;
@@ -1955,7 +1957,7 @@ void create_68060_nofpu(void)
 
 static bool expamem_init_filesys(struct autoconfig_info *aci)
 {
-	struct uae_prefs *p = aci->prefs;
+	struct uae_prefs *p = aci ? aci->prefs : &currprefs;
 	bool ks12 = ks12orolder();
 	bool hide = p->uae_hide_autoconfig;
 	bool rom = !(ks12 || !do_mount || p->uaeboard_nodiag);
@@ -2401,6 +2403,10 @@ static uaecptr check_boot_rom (struct uae_prefs *p, int *boot_rom_type)
 		return b;
 	if (nr_directory_units (p))
 		return b;
+#ifdef WIN32
+	if (p->win32_automount_drives || p->win32_automount_cddrives || p->win32_automount_netdrives || p->win32_automount_removable)
+		return b;
+#endif
 	if (p->socket_emu)
 		return b;
 	if (p->uaeserial)
@@ -2887,7 +2893,7 @@ struct autoconfig_info *expansion_get_autoconfig_by_address(struct uae_prefs *p,
 		return NULL;
 	for (int i = index; i < cardno; i++) {
 		struct card_data *cd = cards[i];
-		if (addr >= cd->base && addr < cd->base + cd->size)
+		if (cd && addr >= cd->base && addr < cd->base + cd->size)
 			return &cd->aci;
 	}
 	return NULL;
@@ -3615,6 +3621,17 @@ static void expansion_add_autoconfig(struct uae_prefs *p)
 		cards_set[cardno++].map = NULL;
 	}
 
+	for (int i = 0; i < MAX_RTG_BOARDS; i++) {
+		struct rtgboardconfig *rbc = &p->rtgboards[i];
+		int type = gfxboard_get_configtype(rbc);
+		if (rbc->rtgmem_size && rbc->rtgmem_type >= GFXBOARD_HARDWARE && type == BOARD_NONAUTOCONFIG_BEFORE) {
+			cards_set[cardno].flags = 4 | (i << 16);
+			cards_set[cardno].name = _T("MainBoardRTG");
+			cards_set[cardno].zorro = BOARD_NONAUTOCONFIG_BEFORE;
+			cards_set[cardno++].initnum = gfxboard_init_memory;
+		}
+	}
+
 	// add possible non-autoconfig boards
 	add_cpu_expansions(p, BOARD_NONAUTOCONFIG_BEFORE, NULL);
 	add_expansions(p, BOARD_NONAUTOCONFIG_BEFORE, NULL, 0);
@@ -3678,7 +3695,8 @@ static void expansion_add_autoconfig(struct uae_prefs *p)
 #ifdef GFXBOARD
 	for (int i = 0; i < MAX_RTG_BOARDS; i++) {
 		struct rtgboardconfig *rbc = &p->rtgboards[i];
-		if (rbc->rtgmem_size && rbc->rtgmem_type >= GFXBOARD_HARDWARE && gfxboard_get_configtype(rbc) <= 2) {
+		int type = gfxboard_get_configtype(rbc);
+		if (rbc->rtgmem_size && rbc->rtgmem_type >= GFXBOARD_HARDWARE && type <= 2) {
 			cards_set[cardno].flags = 4 | (i << 16);
 			if (gfxboard_get_func(rbc)) {
 				cards_set[cardno].name = _T("Z2RTG");
@@ -3940,7 +3958,7 @@ void expansion_map(void)
 		mapped_free(&filesys_bank);
 		mapped_malloc(&filesys_bank);
 		map_banks_z2(&filesys_bank, filesys_bank.start >> 16, 1);
-		expamem_init_filesys(0);
+		expamem_init_filesys(NULL);
 		expamem_map_filesys_update();
 	}
 }
@@ -4266,6 +4284,16 @@ static const struct expansionsubromtype a2090_sub[] = {
 };
 #endif
 
+static const struct expansionboardsettings merlin_settings[] = {
+	{
+		_T("Serial number\0"),
+		_T("serial\0"),
+		2, false, 0
+	},
+	{
+		NULL
+	}
+};
 static const struct expansionboardsettings voodoo_settings[] = {
 	{
 		_T("Direct VRAM access in little endian modes"), _T("directvram")
@@ -4728,6 +4756,17 @@ static const struct expansionboardsettings harlequin_settings[] = {
 	}
 };
 
+static const struct expansionboardsettings rainbow2_settings[] = {
+	{
+		_T("Mode\0") _T("NTSC\0") _T("PAL\0"),
+		_T("mode\0") _T("ntsc\0") _T("pal\0"),
+		true
+	},
+	{
+		NULL
+	}
+};
+
 static const struct expansionboardsettings cubo_settings[] = {
 	{
 		_T("DIP1 #1"),
@@ -4997,7 +5036,7 @@ void ethernet_updateselection(void)
 
 static void fastlane_memory_callback(struct romconfig *rc, uae_u8 *ac, int size)
 {
-	struct zfile *z = read_device_from_romconfig(rc, 0/*NULL*/);
+	struct zfile *z = read_device_from_romconfig(rc, 0/*NULL*/, false);
 	if (z) {
 		// load autoconfig data from rom file
 		uae_u8 act[16] = { 0 };
@@ -5078,8 +5117,8 @@ static const struct expansionboardsettings nexus_settings[] = {
 };
 static const struct expansionboardsettings buddha_settings[] = {
 	{
-		_T("Model\0") _T("Buddha\0") _T("Catweasel Z2\0"),
-		_T("model\0") _T("buddha\0") _T("cwz2\0"),
+		_T("Model\0") _T("Buddha\0") _T("Buddha plus one\0") _T("Catweasel Z2\0"),
+		_T("model\0") _T("buddha\0") _T("buddhaplusone\0") _T("cwz2\0"),
 		true, false, 0
 	},
 	{
@@ -5302,6 +5341,14 @@ const struct expansionromtype expansionroms[] = {
 		NULL, 0,
 		false, EXPANSIONTYPE_INTERNAL
 	},
+#ifdef WITH_DSP
+	{
+		_T("dsp3210"), _T("DSP3210"), _T("AT&T"),
+		NULL, dsp_init, NULL, NULL, ROMTYPE_DSP3210 | ROMTYPE_NOT, 0, 0, BOARD_NONAUTOCONFIG_BEFORE, true,
+		NULL, 0,
+		false, EXPANSIONTYPE_INTERNAL
+	},
+#endif
 
 	/* PCI Bridgeboards */
 
@@ -5322,6 +5369,14 @@ const struct expansionromtype expansionroms[] = {
 	{
 		_T("prometheus"), _T("Prometheus"), _T("Matay"),
 		NULL, prometheus_init, NULL, NULL, ROMTYPE_PROMETHEUS | ROMTYPE_NOT, 0, 0, BOARD_AUTOCONFIG_Z3, false,
+		NULL, 0,
+		false, EXPANSIONTYPE_PCI_BRIDGE,
+		0, 0, 0, false, NULL,
+		false, 0, bridge_settings
+	},
+	{
+		_T("prometheusfirestorm"), _T("Prometheus FireStorm"), _T("E3B"),
+		NULL, prometheusfs_init, NULL, NULL, ROMTYPE_PROMETHEUSFS | ROMTYPE_NOT, 0, 0, BOARD_AUTOCONFIG_Z3, false,
 		NULL, 0,
 		false, EXPANSIONTYPE_PCI_BRIDGE,
 		0, 0, 0, false, NULL,
@@ -6016,6 +6071,14 @@ const struct expansionromtype expansionroms[] = {
 		false, EXPANSIONTYPE_RTG
 	},
 	{
+		_T("merlin"), _T("Merlin"), _T("X-Pert Computer Services"),
+		NULL, NULL, NULL, NULL, ROMTYPE_MERLIN | ROMTYPE_NOT, 0, 0, BOARD_IGNORE, true,
+		NULL, 0,
+		false, EXPANSIONTYPE_RTG,
+		0, 0, 0, false, NULL,
+		false, 0, merlin_settings
+	},
+	{
 		_T("vooodoo3_3k"), _T("Voodoo 3 3000"), _T("3dfx"),
 		NULL, NULL, NULL, NULL, ROMTYPE_VOODOO3 | ROMTYPE_NONE, 0, 0, BOARD_IGNORE, false,
 		NULL, 0,
@@ -6040,6 +6103,12 @@ const struct expansionromtype expansionroms[] = {
 		false, EXPANSIONTYPE_RTG
 	},
 	{
+		_T("xvision"), _T("CyberVision/BlizzardVision PPC"), _T("DCE"),
+		NULL, NULL, NULL, NULL, ROMTYPE_NONE, 0, 0, BOARD_IGNORE, false,
+		NULL, 0,
+		false, EXPANSIONTYPE_RTG
+	},
+	{
 		_T("x86vga"), _T("x86 VGA"), NULL,
 		NULL, NULL, NULL, NULL, ROMTYPE_x86_VGA | ROMTYPE_NONE, 0, 0, BOARD_IGNORE, true,
 		NULL, 0,
@@ -6054,6 +6123,14 @@ const struct expansionromtype expansionroms[] = {
 		false, EXPANSIONTYPE_RTG,
 		0, 0, 0, false, NULL,
 		false, 0, harlequin_settings
+	},
+	{
+		_T("rainbowii"), _T("Rainbow II"), _T("Ingenieurburo Helfrich"),
+		NULL, NULL, NULL, NULL, ROMTYPE_RAINBOWII | ROMTYPE_NOT, 0, 0, BOARD_IGNORE, false,
+		NULL, 0,
+		false, EXPANSIONTYPE_RTG,
+		0, 0, 0, false, NULL,
+		false, 0, rainbow2_settings
 	},
 
 	/* Sound Cards */
@@ -6529,6 +6606,35 @@ static const struct cpuboardsubtype cyberstormboard_sub[] = {
 		NULL
 	}
 };
+static const struct expansionboardsettings draco_settings[] = {
+	{
+		// 0/1
+		_T("Revision\0") _T("3\0") _T("4\0"),
+		_T("hwrev\0") _T("3\0") _T("4\0"),
+		true, false, 0
+	},
+	{
+		// 2
+		_T("CIA-A (Rev3 always includes CIA-A)"),
+		_T("ciaa"),
+		false, false, 1
+	},
+	{
+		// 3
+		_T("CIA-B (Optional)"),
+		_T("ciab"),
+		false, false, 0
+	},
+	{
+		// 4
+		_T("PC keyboard connected"),
+		_T("pckbd"),
+		false, false, 0
+	},
+	{
+		NULL
+	}
+};
 static const struct cpuboardsubtype macrosystem_sub[] = {
 	{
 		_T("Warp Engine A4000"),
@@ -6548,6 +6654,27 @@ static const struct cpuboardsubtype macrosystem_sub[] = {
 		0/*NULL*/, 0,
 		0,
 		128 * 1024 * 1024,
+	},
+	{
+		_T("DraCo"),
+		_T("draco"),
+		ROMTYPE_CB_DRACO | ROMTYPE_NONE, 0, 4,
+		draco_add_scsi_unit, EXPANSIONTYPE_SCSI,
+		BOARD_MEMORY_HIGHMEM,
+		128 * 1024 * 1024,
+		0,
+		ncr710_draco_init, NULL, BOARD_NONAUTOCONFIG_BEFORE, 1,
+		draco_settings
+	},
+	{
+		_T("Casablanca"),
+		_T("casablanca"),
+		ROMTYPE_CB_CASAB | ROMTYPE_NONE, 0, 4,
+		draco_add_scsi_unit, EXPANSIONTYPE_SCSI,
+		BOARD_MEMORY_HIGHMEM,
+		128 * 1024 * 1024,
+		0,
+		NULL, NULL, BOARD_NONAUTOCONFIG_BEFORE, 1,
 	},
 	{
 		NULL
@@ -6787,11 +6914,20 @@ static const struct cpuboardsubtype csa_sub[] = {
 	}
 };
 
-static const struct expansionboardsettings apollo_settings[] = {
+static const struct expansionboardsettings apollo12xx_settings[] = {
 	{
 		_T("SCSI module installed"),
 		_T("scsi")
 	},
+	{
+		_T("Memory disable"),
+		_T("memory")
+	},
+	{
+		NULL
+	}
+};
+static const struct expansionboardsettings apollo630_settings[] = {
 	{
 		_T("Memory disable"),
 		_T("memory")
@@ -6805,13 +6941,24 @@ static const struct cpuboardsubtype apollo_sub[] = {
 	{
 		_T("Apollo 1240/1260"),
 		_T("Apollo"),
-		ROMTYPE_CB_APOLLO, 0, 4,
+		ROMTYPE_CB_APOLLO_12xx, 0, 4,
 		apollo_add_scsi_unit, EXPANSIONTYPE_SCSI,
 		BOARD_MEMORY_CUSTOM_32,
 		64 * 1024 * 1024,
 		0,
-		apollo_init_cpu, NULL, 2, 0,
-		apollo_settings
+		apollo_init_cpu_12xx, NULL, 2, 0,
+		apollo12xx_settings
+	},
+	{
+		_T("Apollo 630"),
+		_T("Apollo630"),
+		ROMTYPE_CB_APOLLO_630, 0, 4,
+		NULL, 0,
+		BOARD_MEMORY_CUSTOM_32,
+		128 * 1024 * 1024,
+		0,
+		NULL, NULL, 0, 0,
+		apollo630_settings
 	},
 	{
 		NULL
@@ -6837,7 +6984,7 @@ static const struct cpuboardsubtype dceboard_sub[] = {
 		ROMTYPE_CB_SX32PRO, 0, 3,
 		NULL, 0,
 		BOARD_MEMORY_CUSTOM_32,
-		64 * 1024 * 1024
+		128 * 1024 * 1024
 	},
 	{
 		_T("Typhoon MK2"),

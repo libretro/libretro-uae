@@ -57,6 +57,8 @@ extern bool retro_av_info_is_ntsc;
 extern bool retro_av_info_is_lace;
 #endif
 
+#define BPL_ERASE_TEST 0
+
 #define FRAMEWAIT_MIN_MS 2
 #define FRAMEWAIT_SPLIT 4
 
@@ -78,6 +80,7 @@ extern bool retro_av_info_is_lace;
 #define DMAL_FIRST_HPOS 11
 #define SPR_FIRST_HPOS 25
 #define COPPER_CYCLE_POLARITY 0
+#define HARDWIRED_DMA_TRIGGER_HPOS 1
 
 #define REF_RAS_ADD_AGA 0x000
 #define REF_RAS_ADD_ECS 0x200
@@ -140,7 +143,9 @@ int lof_display; // what display device thinks
 int scandoubled_line;
 static bool lof_lastline, lof_prev_lastline;
 static int lol, lol_prev;
+static bool linetoggle;
 static int next_lineno;
+static int linear_vpos;
 static enum nln_how nextline_how;
 static int lof_changed = 0, lof_changing = 0, interlace_changed = 0;
 static int lof_changed_previous_field;
@@ -159,11 +164,13 @@ static bool toscr_scanline_complex_bplcon1, toscr_scanline_complex_bplcon1_off;
 static int toscr_hend;
 static int nosignal_cnt, nosignal_status;
 static bool nosignal_trigger;
+static int issyncstopped_count;
 int display_reset;
 static evt_t line_start_cycles;
 static bool initial_frame;
 static evt_t custom_color_write_cycle;
 static int color_writes_num;
+static bool line_equ_freerun;
 
 #define LOF_TOGGLES_NEEDED 3
 //#define NLACE_CNT_NEEDED 50
@@ -315,7 +322,9 @@ int maxvpos = MAXVPOS_PAL;
 int maxvpos_nom = MAXVPOS_PAL; // nominal value (same as maxvpos but "faked" maxvpos in fake 60hz modes)
 int maxvpos_display = MAXVPOS_PAL; // value used for display size
 int maxhpos_display = AMIGA_WIDTH_MAX;
+int maxvsize_display = AMIGA_HEIGHT_MAX;
 int maxvpos_display_vsync; // extra lines from top visible in bottom
+static bool maxvpos_display_vsync_next;
 static int vblank_extraline;
 static int maxhposm1;
 int maxhposm0 = MAXHPOS_PAL;
@@ -331,6 +340,7 @@ int hsyncendpos_hw;
 int denisehtotal;
 static int maxvpos_total = 511;
 int minfirstline = VBLANK_ENDLINE_PAL;
+int minfirstline_linear = VBLANK_ENDLINE_PAL;
 static int firstblankedline;
 static int equ_vblank_endline = EQU_ENDLINE_PAL;
 static bool equ_vblank_toggle = true;
@@ -348,7 +358,10 @@ uae_u16 bemcon0_hsync_mask, bemcon0_vsync_mask;
 static uae_u16 beamcon0_saved;
 static uae_u16 bplcon0_saved, bplcon1_saved, bplcon2_saved;
 static uae_u16 bplcon3_saved, bplcon4_saved;
-static int varsync_changed;
+static int varsync_changed, varsync_maybe_changed[2];
+static int varhblank_lines, varhblank_val[2];
+static int exthblank_lines[2];
+static uae_u16 vt_old, ht_old, hs_old, vs_old;
 uae_u16 vtotal, htotal;
 static int maxvpos_stored, maxhpos_stored;
 uae_u16 hsstop, hsstrt;
@@ -358,7 +371,7 @@ static uae_u16 vsstop, vsstrt;
 static uae_u16 vbstop, vbstrt;
 static uae_u16 hcenter, hcenter_v2, hcenter_v2_end, hcenter_sync_v2;
 static bool hcenter_active;
-static uae_u16 hbstop_v, hbstrt_v, hbstop_v2, hbstrt_v2, hbstop_sync_v2, hbstrt_sync_v2;
+static uae_u16 hbstop_v, hbstrt_v, hbstop_v2, hbstrt_v2, hbstop_sync_v2, hbstrt_sync_v2, hbstop_reg, hbstrt_reg;
 static uae_u16 hsstrt_v2, hsstop_v2;
 static int vsstrt_m, vsstop_m, vbstrt_m, vbstop_m;
 static bool vb_state, vb_end_line;
@@ -372,15 +385,15 @@ static int hhbpl, hhspr;
 static int ciavsyncmode;
 static int diw_hstrt, diw_hstop;
 static int hdiw_counter;
-static uae_u16 hdiw_counter_sconflict, hdiw_counter_sconflict_mask;
-static uae_u16 hdiw_counter_conflict;
 static int hstrobe_hdiw_min;
 static uae_u32 ref_ras_add;
 static uaecptr refptr, refptr_p;
 static uae_u32 refmask;
 static int refresh_handled_slot;
 static bool refptr_preupdated;
-static bool hstrobe_conflict, hstrobe_conflict2;
+static bool hstrobe_conflict;
+static uae_u16 strobe_vblank;
+static bool vhposw_modified;
 static int line_disabled;
 static bool custom_disabled;
 
@@ -417,9 +430,10 @@ int sprite_0_width, sprite_0_height, sprite_0_doubled;
 uae_u32 sprite_0_colors[4];
 static uae_u8 magic_sprite_mask = 0xff;
 
-static int hardwired_vbstop;
+static int hardwired_vbstrt, hardwired_vbstop;
 
-static int last_sprite_point, nr_armed;
+static int last_sprite_point, last_sprite_point_abs;
+static int nr_armed;
 static int sprite_width, sprres;
 static int sprite_sprctlmask;
 int sprite_buffer_res;
@@ -446,11 +460,11 @@ static int ddfstrt_hpos, ddfstop_hpos;
 static int line_cyclebased, diw_change;
 static int bpl_shifter;
 
-#define SET_LINE_CYCLEBASED line_cyclebased = 1;
+static void SET_LINE_CYCLEBASED(int hpos);
 
 /* The display and data fetch windows */
 
-#ifdef __LIBRETRO__
+#ifndef __cplusplus
 enum diw_states
 {
 	DIW_waiting_start, DIW_waiting_stop
@@ -467,7 +481,7 @@ int plffirstline_total, plflastline_total;
 int vblank_firstline_hw;
 static int autoscale_bordercolors;
 static int plfstrt, plfstop;
-static int sprite_minx, sprite_maxx;
+static int sprite_minx;
 static int first_bpl_vpos;
 static int last_decide_line_hpos;
 static int last_fetch_hpos, last_decide_sprite_hpos;
@@ -475,15 +489,16 @@ static int diwfirstword, diwlastword;
 static int last_diwlastword;
 static int hb_last_diwlastword;
 static int last_hdiw;
-#ifdef __LIBRETRO__
-static enum diw_states vdiwstate, hdiwstate, hdiwstate_conflict;
+#ifndef __cplusplus
+static enum diw_states vdiwstate, hdiwstate, hdiwstate_blank;
 #else
-static diw_states vdiwstate, hdiwstate, hdiwstate_conflict;
+static diw_states vdiwstate, hdiwstate, hdiwstate_blank;
 #endif
+static int hdiwbplstart;
 static int bpl_hstart;
-static bool exthblank, exthblank_state, hcenterblank_state;
+static bool exthblank, exthblank_prev, exthblank_state, hcenterblank_state;
 static int hsyncdebug;
-static int last_diw_hpos, last_diw_hpos2;
+static int last_diw_hpos;
 static int last_recorded_diw_hpos;
 static int last_hblank_start;
 static int collision_hpos;
@@ -565,6 +580,7 @@ frame_time_t lastframetime;
 uae_u32 hsync_counter, vsync_counter;
 frame_time_t idletime;
 int bogusframe;
+static int display_vsync_counter;
 
 /* Recording of custom chip register changes.  */
 static int current_change_set;
@@ -630,7 +646,7 @@ struct custom_store custom_storage[256];
 static int out_nbits, out_offs;
 static uae_u32 todisplay[MAX_PLANES], todisplay2[MAX_PLANES];
 static uae_u32 outword[MAX_PLANES];
-static uae_u64 outword64[MAX_PLANES];
+static uae_u64 outword64[MAX_PLANES], outword64_extra[MAX_PLANES];
 static uae_u16 fetched[MAX_PLANES];
 static uae_u16 todisplay_fetched;
 #ifdef AGA
@@ -653,7 +669,7 @@ static int toscr_delay_adjusted[2], toscr_delay_sh[2];
 static bool shdelay_disabled;
 static int delay_cycles, delay_cycles2;
 static int delay_lastcycle[2], delay_hsynccycle;
-static int vhposr_delay_offset, vhposr_sprite_offset;
+static int vhposr_delay_offset;
 static bool bplcon1_written;
 static bool bplcon0_planes_changed;
 static bool sprites_enabled_this_line;
@@ -669,7 +685,7 @@ static bool dmal_ce;
 static void update_copper(int until_hpos);
 static void decide_sprites_fetch(int endhpos);
 static void decide_line(int endhpos);
-static void decide_sprites_3(int hpos, bool usepointx, bool quick);
+static void decide_sprites_3(int hpos, bool quick, bool halfcycle);
 static void decide_sprites(int hpos);
 
 /* The number of bits left from the last fetched words.
@@ -703,15 +719,16 @@ static void check_nocustom(void)
 	}
 }
 
-STATIC_INLINE int ecsshres(void)
+STATIC_INLINE bool ecsshres(void)
 {
 	return bplcon0_res == RES_SUPERHIRES && ecs_denise && !aga_mode;
 }
 
-STATIC_INLINE int nodraw(void)
+STATIC_INLINE bool nodraw(void)
 {
 	struct amigadisplay *ad = &adisplays[0];
-	return !currprefs.cpu_memory_cycle_exact && ad->framecnt != 0;
+	bool nd = !currprefs.cpu_memory_cycle_exact && ad->framecnt != 0;
+	return nd;
 }
 
 STATIC_INLINE int diw_to_hpos(int diw)
@@ -905,6 +922,17 @@ static int expand_sprres(uae_u16 con0, uae_u16 con3)
 	return res;
 }
 
+static int islinetoggle(void)
+{
+	int linetoggle = 0;
+	if (!(new_beamcon0 & BEAMCON0_LOLDIS) && !(new_beamcon0 & BEAMCON0_PAL) && ecs_agnus) {
+		linetoggle = 1; // NTSC and !LOLDIS -> LOL toggles every line
+	} else if (!ecs_agnus && currprefs.ntscmode) {
+		linetoggle = 1; // hardwired NTSC Agnus
+	}
+	return linetoggle;
+}
+
 STATIC_INLINE uae_u8 *pfield_xlateptr(uaecptr plpt, int bytecount)
 {
 	if (!chipmem_check_indirect(plpt, bytecount)) {
@@ -924,16 +952,12 @@ static void docols(struct color_entry *colentry)
 	if (aga_mode) {
 		for (int i = 0; i < 256; i++) {
 			int v = color_reg_get(colentry, i);
-			if (v < 0 || v > 16777215)
-				continue;
 			colentry->acolors[i] = getxcolor(v);
 		}
 	} else {
 #endif
 		for (int i = 0; i < 32; i++) {
 			int v = color_reg_get(colentry, i);
-			if (v < 0 || v > 4095)
-				continue;
 			colentry->acolors[i] = getxcolor(v);
 		}
 #ifdef AGA
@@ -986,10 +1010,23 @@ static void remember_ctable_for_border(void)
 	remember_ctable();
 }
 
-// This does not need start line check because only OCS Denise modes use this.
 static int get_equ_vblank_endline(void)
 {
-	return equ_vblank_endline + (equ_vblank_toggle ? (lof_store ? 1 : 0) : 0);
+	if (new_beamcon0 & (BEAMCON0_BLANKEN | BEAMCON0_VARCSYEN)) {
+		return -1;
+	}
+	return equ_vblank_endline + (equ_vblank_toggle ? (lof_store ? 1 : 0) : 0) + (agnusa1000 ? 1 : 0);
+}
+static int get_equ_vblank_startline(void)
+{
+	if (new_beamcon0 & (BEAMCON0_BLANKEN | BEAMCON0_VARCSYEN)) {
+		return 30000;
+	}
+	if (agnusa1000) {
+		return 1;
+	} else {
+		return 0;
+	}
 }
 
 static int output_res(int res)
@@ -1012,7 +1049,7 @@ static void reset_bpl_vars()
 
 STATIC_INLINE bool line_hidden(void)
 {
-	return vpos >= maxvpos_display_vsync && vpos < minfirstline - 1 && currprefs.gfx_overscanmode < OVERSCANMODE_ULTRA;
+	return linear_vpos >= maxvpos_display_vsync && linear_vpos < minfirstline - 1 && currprefs.gfx_overscanmode < OVERSCANMODE_ULTRA;
 }
 
 // hblank start = enable border (bitplane not visible until next BPL1DAT)..
@@ -1261,7 +1298,7 @@ static void syncdebugmarkers(int chpos)
 	}
 }
 #endif
- 
+
 static void record_color_change2(int hpos, int regno, uae_u32 value)
 {
 	if (line_disabled) {
@@ -1436,9 +1473,9 @@ static void sync_color_changes(int hpos)
 	record_color_change2(hpos, 0xffff, 0);
 }
 
-static void insert_actborder(int diw, bool onoff)
+static void insert_actborder(int diw, bool onoff, bool blank)
 {
-	if (line_hidden() || custom_disabled) {
+	if (custom_disabled) {
 		return;
 	}
 
@@ -1447,7 +1484,7 @@ static void insert_actborder(int diw, bool onoff)
 	for (i = last_color_change; i < next_color_change; i++) {
 		struct color_change *cc = &curr_color_changes[i];
 		if (cc->linepos == diw && cc->regno == 0 && (cc->value & COLOR_CHANGE_MASK) == COLOR_CHANGE_ACTBORDER) {
-			cc->value = COLOR_CHANGE_ACTBORDER | (onoff ? 1 : 0);
+			cc->value = COLOR_CHANGE_ACTBORDER | (onoff ? 1 : 0) | (blank ? 2 : 0);
 			return;
 		}
 	}
@@ -1466,19 +1503,20 @@ static void insert_actborder(int diw, bool onoff)
 	struct color_change *cc = &curr_color_changes[i];
 	cc->linepos = diw;
 	cc->regno = 0;
-	cc->value = COLOR_CHANGE_ACTBORDER | (onoff ? 1 : 0);
+	cc->value = COLOR_CHANGE_ACTBORDER | (onoff ? 1 : 0) | (blank ? 2 : 0);
 	next_color_change++;
 }
 
 // hdiw opened again in same scanline
 // erase (color0 or bblank) area between previous end and new start
-static void hdiw_restart(int diw_last, int diw_current)
+static void hdiw_restart(int diw_last, int diw_current, bool blank)
 {
 	if (diw_last >= diw_current || line_hidden() || custom_disabled) {
 		return;
 	}
 	// update state
 	diw_current = adjust_hr(diw_current);
+	diw_last = adjust_hr(diw_last);
 	record_color_change2(-diw_current, 0xffff, 0);
 
 	// find slot to insert into
@@ -1497,110 +1535,83 @@ static void hdiw_restart(int diw_last, int diw_current)
 	struct color_change *cc = &curr_color_changes[i];
 	cc->linepos = diw_last;
 	cc->regno = 0;
-	cc->value = COLOR_CHANGE_ACTBORDER | 1;
+	cc->value = COLOR_CHANGE_ACTBORDER | 1 | (blank ? 2 : 0);
 	next_color_change++;
 
 	record_color_change2(-diw_current, 0, COLOR_CHANGE_ACTBORDER | 0);
-}
-
-static void decide_hstrobe_hdiw(int hpos)
-{
-	int off = hdiw_counter_conflict;
-
-	hpos += hpos_hsync_extra;
-	if (hpos <= hstrobe_hdiw_min) {
-		return;
-	}
-
-	int max = (hpos * 2 + 1) << 2;
-	int min = (hstrobe_hdiw_min * 2 + 1) << 2;
-
-	int hdiw1 = (diw_hstrt - off) & ((512 << 2) - 1);
-	int hdiw2 = (diw_hstop - off) & ((512 << 2) - 1);
-
-	hdiw1 = adjust_hr(hdiw1);
-	hdiw2 = adjust_hr(hdiw2);
-
-	max = adjust_hr(max);
-	min = adjust_hr(min);
-
-	if (hdiw1 < min) {
-		hdiw1 = min;
-	}
-	if (hdiw2 < min) {
-		hdiw2 = min;
-	}
-	if (hdiw1 > max) {
-		hdiw1 = max;
-	}
-	if (hdiw2 > max) {
-		hdiw2 = max;
-	}
-
-	if (hdiw1 < hdiw2) {
-#ifdef __LIBRETRO__
-		if (hdiw1 > min && hdiwstate_conflict == DIW_waiting_start) {
-#else
-		if (hdiw1 > min && hdiwstate_conflict == diw_states::DIW_waiting_start) {
-#endif
-			insert_actborder(min, true);
-			insert_actborder(hdiw1, false);
-#ifdef __LIBRETRO__
-			hdiwstate_conflict = DIW_waiting_stop;
-#else
-			hdiwstate_conflict = diw_states::DIW_waiting_stop;
-#endif
-		}
-#ifdef __LIBRETRO__
-		if (hdiw2 < max && hdiwstate_conflict == DIW_waiting_stop) {
-#else
-		if (hdiw2 < max && hdiwstate_conflict == diw_states::DIW_waiting_stop) {
-#endif
-			insert_actborder(hdiw2, true);
-			insert_actborder(max, false);
-		}
-	} else if (hdiw1 > hdiw2) {
-		insert_actborder(hdiw2, true);
-		insert_actborder(hdiw1, false);
-#ifdef __LIBRETRO__
-		hdiwstate_conflict = DIW_waiting_stop;
-#else
-		hdiwstate_conflict = diw_states::DIW_waiting_stop;
-#endif
-	}
-
-	hstrobe_hdiw_min = hpos;
-}
-
-static void decide_conflict_hdiw(int hpos)
-{
-	if (hstrobe_conflict) {
-		decide_hstrobe_hdiw(hpos);
-	}
 }
 
 /* Called to determine the state of the horizontal display window state
 * machine at the current position. It might have changed since we last
 * checked.  */
 
-static void decide_hdiw_check_start(int start_diw_hpos, int end_diw_hpos, int extrahpos)
+static int hdiw_denisecounter, hdiw_denisecounter_abs, hdiw_denisecounter_reset;
+
+// hblank start
+static void decide_hdiw_blank_check_start(int hpos, int start_diw_hpos, int end_diw_hpos)
 {
-#ifdef __LIBRETRO__
+#ifndef __cplusplus
+	if (hdiwstate_blank == DIW_waiting_start) {
+#else
+	if (hdiwstate_blank == diw_states::DIW_waiting_start) {
+#endif
+		if (hbstrt_reg >= start_diw_hpos && hbstrt_reg < end_diw_hpos) {
+			int val = hdiw_denisecounter_abs + (hbstrt_reg - start_diw_hpos);
+			insert_actborder(val, true, true);
+			MARK_LINE_CHANGED;
+#ifndef __cplusplus
+			hdiwstate_blank = DIW_waiting_stop;
+#else
+			hdiwstate_blank = diw_states::DIW_waiting_stop;
+#endif
+		}
+	}
+}
+// hblank end
+static void decide_hdiw_blank_check_stop(int hpos, int start_diw_hpos, int end_diw_hpos)
+{
+#ifndef __cplusplus
+	if (hdiwstate_blank == DIW_waiting_stop) {
+#else
+	if (hdiwstate_blank == diw_states::DIW_waiting_stop) {
+#endif
+		if (hbstop_reg >= start_diw_hpos && hbstop_reg < end_diw_hpos) {
+			int val = hdiw_denisecounter_abs + (hbstop_reg - start_diw_hpos);
+			insert_actborder(val, false, true);
+			MARK_LINE_CHANGED;
+#ifndef __cplusplus
+			hdiwstate_blank = DIW_waiting_start;
+#else
+			hdiwstate_blank = diw_states::DIW_waiting_start;
+#endif
+		}
+	}
+}
+// hdiw open
+static void decide_hdiw_check_start(int start_diw_hpos, int end_diw_hpos)
+{
+#ifndef __cplusplus
 	if (hdiwstate == DIW_waiting_start) {
 #else
 	if (hdiwstate == diw_states::DIW_waiting_start) {
 #endif
-		if (diw_hstrt > start_diw_hpos && diw_hstrt < end_diw_hpos && !hstrobe_conflict) {
-			int first = diwfirstword + extrahpos;
+		if (diw_hstrt >= start_diw_hpos && diw_hstrt < end_diw_hpos) {
+			int val = hdiw_denisecounter_abs + (diw_hstrt - start_diw_hpos);
+			int first = coord_diw_shres_to_window_x(val);
 			if (last_diwlastword >= 0) {
-				int first2 = first * 2;
-				first2 = adjust_hr(first2);
-				// was closed previously in same line: blank closed part.
-				hdiw_restart(last_diwlastword, first2);
+				// was closed previously in same line: fill closed part using color0.
+				if (denisea1000) {
+					last_diwlastword += 4 << shres_shift;
+					if (last_diwlastword < val) {
+						hdiw_restart(last_diwlastword, val, false);
+					}
+				} else {
+					hdiw_restart(last_diwlastword, val, false);
+				}
 				last_diwlastword = -1;
 #ifdef DEBUGGER
 				if (debug_dma) {
-					record_dma_event(DMA_EVENT_HDIWS, diw_to_hpos(first2), vpos);
+					record_dma_event(DMA_EVENT_HDIWS, diw_to_hpos(val), vpos);
 				}
 #endif
 			}
@@ -1616,7 +1627,7 @@ static void decide_hdiw_check_start(int start_diw_hpos, int end_diw_hpos, int ex
 				}
 #endif
 			}
-#ifdef __LIBRETRO__
+#ifndef __cplusplus
 			hdiwstate = DIW_waiting_stop;
 #else
 			hdiwstate = diw_states::DIW_waiting_stop;
@@ -1624,27 +1635,28 @@ static void decide_hdiw_check_start(int start_diw_hpos, int end_diw_hpos, int ex
 		}
 	}
 }
-static void decide_hdiw_check_stop(int start_diw_hpos, int end_diw_hpos, int extrahpos)
+// hdiw close
+static void decide_hdiw_check_stop(int start_diw_hpos, int end_diw_hpos)
 {
-#ifdef __LIBRETRO__
+#ifndef __cplusplus
 	if (hdiwstate == DIW_waiting_stop) {
 #else
 	if (hdiwstate == diw_states::DIW_waiting_stop) {
 #endif
-		if (diw_hstop > start_diw_hpos && diw_hstop <= end_diw_hpos && !hstrobe_conflict) {
-			int last = diwlastword + extrahpos;
+		if (diw_hstop >= start_diw_hpos && diw_hstop < end_diw_hpos) {
+			int val = hdiw_denisecounter_abs + (diw_hstop - start_diw_hpos);
+			int last = coord_diw_shres_to_window_x(val);
 			if (last > thisline_decision.diwlastword) {
 				thisline_decision.diwlastword = adjust_hr2(last);
 				// if HDIW opens again in same line
-				int v = thisline_decision.diwlastword * 2;
-				last_diwlastword = adjust_hr(v);
+				last_diwlastword = val;
 #ifdef DEBUGGER
 				if (debug_dma) {
 					record_dma_event(DMA_EVENT_HDIWE, diw_to_hpos(last), vpos);
 				}
 #endif
 			}
-#ifdef __LIBRETRO__
+#ifndef __cplusplus
 			hdiwstate = DIW_waiting_start;
 #else
 			hdiwstate = diw_states::DIW_waiting_start;
@@ -1653,52 +1665,113 @@ static void decide_hdiw_check_stop(int start_diw_hpos, int end_diw_hpos, int ext
 	}
 }
 
-static void decide_hdiw_check(int start_diw_hpos, int end_diw_hpos, int extrahpos)
+static void decide_hdiw_check(int hpos, int start_diw_hpos, int end_diw_hpos)
 {
-	if (diw_hstrt < diw_hstop) {
-		decide_hdiw_check_start(start_diw_hpos, end_diw_hpos, extrahpos);
-		decide_hdiw_check_stop(start_diw_hpos, end_diw_hpos, extrahpos);
-	} else {
-		decide_hdiw_check_stop(start_diw_hpos, end_diw_hpos, extrahpos);
-		decide_hdiw_check_start(start_diw_hpos, end_diw_hpos, extrahpos);
-	}
-}
-
-static void decide_hdiw(int hpos)
-{
-	/* Last hpos = hpos + 0.5, eg. normal PAL end hpos is 227.5 * 2 = 455
-	   OCS Denise: 9 bit hdiw counter does not reset during lines 0 to 9
-	   (PAL) or lines 0 to 10 (NTSC). A1000 PAL: 1 to 9, NTSC: 1 to 10.
-	   ECS Denise and AGA: no above "features"
-	*/
-
-	int hpos2 = hpos + (hpos_hsync_extra ? 0 : hsyncstartpos_start_cycles);
-	if (hpos2 <= last_diw_hpos2) {
-		return;
-	}
-	int start_diw_hpos = ((last_diw_hpos * 2 - DDF_OFFSET + 1) << 2) + 3;
-	int end_diw_hpos = ((hpos * 2 + 1) << 2) + 3;
-	// should handle wrap around..
-	if (start_diw_hpos < ((1 << 2) + 3)) {
-		start_diw_hpos = (1 << 2) + 3;
-	}
-	int extrahpos = coord_diw_shres_to_window_x(hpos_hsync_extra << CCK_SHRES_SHIFT);
-
-	if (!ecs_denise && vpos <= get_equ_vblank_endline()) {
-		// free running horizontal counter
-		start_diw_hpos = (hdiw_counter & 511) << 2;
-		end_diw_hpos = start_diw_hpos + end_diw_hpos;
-		decide_hdiw_check(start_diw_hpos, end_diw_hpos, extrahpos);
-		if (end_diw_hpos >= (512 << 2)) {
-			start_diw_hpos = -1;
-			end_diw_hpos -= (512 << 2);
-			decide_hdiw_check(start_diw_hpos, end_diw_hpos, extrahpos);
+	if ((diw_hstrt >= start_diw_hpos && diw_hstrt < end_diw_hpos) &&
+		(diw_hstop >= start_diw_hpos && diw_hstop < end_diw_hpos)) {
+		if (diw_hstrt > diw_hstop) {
+			decide_hdiw_check_stop(start_diw_hpos, end_diw_hpos);
+			decide_hdiw_check_start(start_diw_hpos, end_diw_hpos);
+		} else {
+			decide_hdiw_check_start(start_diw_hpos, end_diw_hpos);
+			decide_hdiw_check_stop(start_diw_hpos, end_diw_hpos);
 		}
 	} else {
-		decide_hdiw_check(start_diw_hpos, end_diw_hpos, extrahpos);
+		decide_hdiw_check_start(start_diw_hpos, end_diw_hpos);
+		decide_hdiw_check_stop(start_diw_hpos, end_diw_hpos);
 	}
-	last_diw_hpos = hpos;
-	last_diw_hpos2 = hpos2;
+	// check also hblank if there is chance it has been moved to visible area
+	if (hstrobe_conflict || vhposw_modified) {
+		decide_hdiw_blank_check_start(hpos, start_diw_hpos, end_diw_hpos);
+	}
+#ifndef __cplusplus
+	if (hdiwstate_blank == DIW_waiting_stop) {
+#else
+	if (hdiwstate_blank == diw_states::DIW_waiting_stop) {
+#endif
+		decide_hdiw_blank_check_stop(hpos, start_diw_hpos, end_diw_hpos);
+	}
+	hdiw_denisecounter_abs += end_diw_hpos - start_diw_hpos;
+}
+
+static void decide_hdiw2(int hpos, bool halfcycle)
+{
+	int hp = (hpos << 1) + halfcycle; // cck->lores
+	int c = (hp - last_diw_hpos) << (CCK_SHRES_SHIFT - 1); // ->shres
+	if (c <= 0) {
+		return;
+	}
+	if (last_diw_hpos < (HARDWIRED_DMA_TRIGGER_HPOS << 1) && hp >= (HARDWIRED_DMA_TRIGGER_HPOS << 1)) {
+		hdiw_denisecounter_reset = (REFRESH_FIRST_HPOS - HARDWIRED_DMA_TRIGGER_HPOS + 3) << CCK_SHRES_SHIFT;
+		//hdiw_denisecounter_reset += 1 << (CCK_SHRES_SHIFT - 1);
+	}
+
+	int start = hdiw_denisecounter;
+	int max = 512 << (CCK_SHRES_SHIFT - 1);
+
+	if (hdiw_denisecounter_reset > 0 && c >= hdiw_denisecounter_reset && !line_equ_freerun && !hstrobe_conflict) {
+		// strobe crossed?
+		hdiw_denisecounter += hdiw_denisecounter_reset;
+		decide_hdiw_check(hpos, start, hdiw_denisecounter);
+		hdiw_denisecounter = 2 << LORES_TO_SHRES_SHIFT;
+		start = hdiw_denisecounter;
+		hdiw_denisecounter += c - hdiw_denisecounter_reset;
+		decide_hdiw_check(hpos, start, hdiw_denisecounter);
+		hdiw_denisecounter_reset = -1;
+	} else {
+		hdiw_denisecounter += c;
+		// wrap around?
+		if (hdiw_denisecounter >= max) {
+			decide_hdiw_check(hpos, start, max);
+			hdiw_denisecounter &= max - 1;
+			if (hdiw_denisecounter > 0) {
+				decide_hdiw_check(hpos, 0, hdiw_denisecounter);
+			}
+		} else {
+			decide_hdiw_check(hpos, start, hdiw_denisecounter);
+		}
+		if (hdiw_denisecounter_reset >= 0) {
+			hdiw_denisecounter_reset -= c;
+		}
+	}
+
+	last_diw_hpos = hp;
+}
+
+#ifndef __cplusplus
+static void decide_hdiw(int hpos)
+{
+	bool halfcycle = false;
+#else
+static void decide_hdiw(int hpos, bool halfcycle = false)
+{
+#endif
+#ifdef DEBUGGER
+	if (!debug_dma) {
+		decide_hdiw2(hpos, halfcycle);
+	} else {
+		for (int i = (last_diw_hpos >> 1); i <= hpos; i++) {
+			decide_hdiw2(i, halfcycle);
+			halfcycle = false;
+			record_dma_denise(i, hdiw_denisecounter >> 2);
+		}
+	}
+#else
+	decide_hdiw2(hpos, halfcycle);
+#endif
+}
+
+static void decide_hdiw_2(int hpos, bool halfcycle)
+{
+	decide_hdiw(hpos);
+}
+
+static void sync_changes(int hpos)
+{
+	decide_hdiw(hpos);
+	decide_sprites(hpos);
+	record_color_change2(hpos, 0xffff, 0);
+
 }
 
 static int fetchmode, fetchmode_size, fetchmode_mask, fetchmode_bytes;
@@ -1921,6 +1994,7 @@ static uae_s8 estimated_cycles_empty[MAX_CHIPSETSLOTS + MAX_CHIPSETSLOTS_EXTRA];
 static int estimate_cycles_empty_index = -1;
 static uae_u16 estimated_bplcon0, estimated_fm, estimated_plfstrt, estimated_plfstop;
 static uae_s8 *estimated_cycles = estimated_cycles_empty;
+static uae_s8 *estimated_cycles_next = estimated_cycles_empty;
 static bool estimated_empty;
 static int estimated_maxhpos[2];
 
@@ -1938,16 +2012,39 @@ static void end_estimate_last_fetch_cycle(int hpos)
 	}
 	if (estimated_cycles_empty != estimated_cycles) {
 		estimated_cycles = estimated_cycles_empty;
+		estimated_cycles_next = estimated_cycles_empty;
 		estimate_cycles_empty_index = hpos;
-		uae_s8 *est = NULL;
-		if (maxhpos == estimated_maxhpos[0]) {
-			est = estimated_cycles_buf0;
-		} else if (maxhpos == estimated_maxhpos[1]) {
-			est = estimated_cycles_buf1;
-		}
-		if (est) {
+		if (linetoggle) {
+			uae_s8 *est = maxhposeven ? estimated_cycles_buf1 : estimated_cycles_buf0;
+			uae_s8 *est_n = maxhposeven ? estimated_cycles_buf0 : estimated_cycles_buf1;
+			if (maxhpos == estimated_maxhpos[0]) {
+				est = estimated_cycles_buf0;
+				est_n = estimated_cycles_buf1;
+			} else if (maxhpos == estimated_maxhpos[1]) {
+				est = estimated_cycles_buf1;
+				est_n = estimated_cycles_buf0;
+			}
 			for (int i = 0; i < RGA_PIPELINE_ADJUST; i++) {
-				int pos = (hpos + i) % maxhpos;
+				int pos = hpos + i;
+				if (pos >= maxhpos) {
+					pos -= maxhpos;
+					estimated_cycles_empty[pos] = est_n[pos];
+				} else {
+					estimated_cycles_empty[pos] = est[pos];
+				}
+			}
+		} else {
+			uae_s8 *est = maxhposeven ? estimated_cycles_buf1 : estimated_cycles_buf0;
+			if (maxhpos == estimated_maxhpos[0]) {
+				est = estimated_cycles_buf0;
+			} else if (maxhpos == estimated_maxhpos[1]) {
+				est = estimated_cycles_buf1;
+			}
+			for (int i = 0; i < RGA_PIPELINE_ADJUST; i++) {
+				int pos = hpos + i;
+				if (pos >= maxhpos) {
+					pos -= maxhpos;
+				}
 				estimated_cycles_empty[pos] = est[pos];
 			}
 		}
@@ -1974,14 +2071,29 @@ static void estimate_last_fetch_cycle(int hpos)
 	} else {
 
 #if OPTIMIZED_ESTIMATE
-		if (estimated_bplcon0 == bplcon0 && plfstrt == hpos && estimated_plfstrt == plfstrt && estimated_plfstop == plfstop && estimated_fm == fetchmode) {
-			if (maxhpos == estimated_maxhpos[0]) {
-				estimated_cycles = estimated_cycles_buf0;
-				return;
-			}
-			if (maxhpos == estimated_maxhpos[1]) {
-				estimated_cycles = estimated_cycles_buf1;
-				return;
+		if (estimated_bplcon0 == bplcon0 && bpl_hstart == hpos && estimated_plfstrt == bpl_hstart && estimated_plfstop == plfstop && estimated_fm == fetchmode) {
+			if (linetoggle) {
+				if (maxhpos == estimated_maxhpos[0]) {
+					estimated_cycles = estimated_cycles_buf0;
+					estimated_cycles_next = estimated_cycles_buf1;
+					return;
+				}
+				if (maxhpos == estimated_maxhpos[1]) {
+					estimated_cycles = estimated_cycles_buf1;
+					estimated_cycles_next = estimated_cycles_buf0;
+					return;
+				}
+			} else {
+				if (maxhpos == estimated_maxhpos[0]) {
+					estimated_cycles = estimated_cycles_buf0;
+					estimated_cycles_next = estimated_cycles;
+					return;
+				}
+				if (maxhpos == estimated_maxhpos[1]) {
+					estimated_cycles = estimated_cycles_buf1;
+					estimated_cycles_next = estimated_cycles;
+					return;
+				}
 			}
 		} else {
 			estimated_maxhpos[0] = estimated_maxhpos[1] = -1;
@@ -2047,15 +2159,22 @@ static void estimate_last_fetch_cycle(int hpos)
 
 #if OPTIMIZED_ESTIMATE
 		estimated_cycles = maxhposeven ? estimated_cycles_buf1 : estimated_cycles_buf0;
+		if (linetoggle) {
+			estimated_cycles_next = maxhposeven ? estimated_cycles_buf0 : estimated_cycles_buf1;
+		} else {
+			estimated_cycles_next = estimated_cycles;
+		}
 #else
 		estimated_cycles = estimated_cycles_buf0;
+		estimated_cycles_next = estimated_cycles;
 #endif
+		uae_s8 *ecycs = estimated_cycles;
 		// bitplane DMA end can wrap around, even in non-overrun cases
 		int start_pos = (hpos + RGA_PIPELINE_ADJUST) % maxhpos;
 		int start_pos2 = start_pos;
 		int end_pos = (hpos + RGA_PIPELINE_ADJUST + estimated_cycle_count) % maxhpos;
 		int off = (start_pos - (bpl_hstart + RGA_PIPELINE_ADJUST)) & (fetchunit - 1);
-		while (start_pos != end_pos) {
+		while (start_pos != end_pos && end_pos >= 0) {
 			int off2 = off & fetchstart_mask;
 
 #if 0
@@ -2067,13 +2186,16 @@ static void estimate_last_fetch_cycle(int hpos)
 #endif
 
 			if (!off2 && start_pos + fetchstart <= end_pos) {
-				memcpy(estimated_cycles + start_pos, curr_diagram, fetchstart);
+				memcpy(ecycs + start_pos, curr_diagram, fetchstart);
 				start_pos += fetchstart;
 			} else {
-				estimated_cycles[start_pos] = curr_diagram[off2];
+				ecycs[start_pos] = curr_diagram[off2];
 				start_pos++;
-				if (start_pos == maxhpos) {
+				if (start_pos >= maxhpos) {
 					start_pos = 0;
+					if (linetoggle) {
+						ecycs = estimated_cycles_next;
+					}
 				}
 				if (start_pos == REFRESH_FIRST_HPOS) {
 					// bpl sequencer repeated this cycle
@@ -2084,19 +2206,19 @@ static void estimate_last_fetch_cycle(int hpos)
 			}
 		}
 #if OPTIMIZED_ESTIMATE
-		if (estimated_empty && plfstrt == hpos && !ddf_stopping) {
+		if (estimated_empty && bpl_hstart == hpos && !ddf_stopping) {
 			estimated_empty = false;
 			// zero rest of buffer
 			if (end_pos != start_pos2) {
 				if (end_pos > start_pos2) {
-					memset(estimated_cycles + end_pos, 0, maxhpos - end_pos);
-					memset(estimated_cycles, 0, start_pos2);
+					memset(ecycs + end_pos, 0, maxhpos - end_pos);
+					memset(ecycs, 0, start_pos2);
 				} else {
-					memset(estimated_cycles + end_pos, 0, start_pos2 - end_pos);
+					memset(ecycs + end_pos, 0, start_pos2 - end_pos);
 				}
 			}
 			estimated_bplcon0 = bplcon0;
-			estimated_plfstrt = plfstrt;
+			estimated_plfstrt = bpl_hstart;
 			estimated_plfstop = plfstop;
 			estimated_fm = fetchmode;
 			estimated_maxhpos[maxhposeven] = maxhpos;
@@ -2239,7 +2361,6 @@ static void set_chipset_mode(void)
 			refmask >>= 1;
 		}
 	}
-	hdiw_counter_sconflict_mask = (512 << sprite_buffer_res) - 1;
 	calcdiw();
 }
 
@@ -2249,6 +2370,10 @@ static void update_mirrors(void)
 	ecs_agnus = (currprefs.chipset_mask & CSMASK_ECS_AGNUS) != 0;
 	ecs_denise = (currprefs.chipset_mask & CSMASK_ECS_DENISE) != 0;
 	agnusa1000 = currprefs.cs_agnusmodel == AGNUSMODEL_A1000 || currprefs.cs_agnusmodel == AGNUSMODEL_VELVET;
+	if (agnusa1000) {
+		ecs_agnus = false;
+		aga_mode = false;
+	}
 	denisea1000_noehb = currprefs.cs_denisemodel == DENISEMODEL_VELVET || currprefs.cs_denisemodel == DENISEMODEL_A1000NOEHB;
 	denisea1000 = currprefs.cs_denisemodel == DENISEMODEL_VELVET || currprefs.cs_denisemodel == DENISEMODEL_A1000NOEHB || currprefs.cs_denisemodel == DENISEMODEL_A1000;
 	direct_rgb = aga_mode;
@@ -2323,17 +2448,6 @@ int get_bitplane_dma_rel(int hpos, int off)
 	return 0;
 }
 
-static int islinetoggle(void)
-{
-	int linetoggle = 0;
-	if (!(new_beamcon0 & BEAMCON0_LOLDIS) && !(new_beamcon0 & BEAMCON0_PAL) && ecs_agnus) {
-		linetoggle = 1; // NTSC and !LOLDIS -> LOL toggles every line
-	} else if (!ecs_agnus && currprefs.ntscmode) {
-		linetoggle = 1; // hardwired NTSC Agnus
-	}
-	return linetoggle;
-}
-
 static void compute_shifter_mask(void)
 {
 	int shifter_size = 16 << (fetchmode + LORES_TO_SHRES_SHIFT - toscr_res);
@@ -2393,7 +2507,7 @@ static void set_delay_lastcycle(void)
 {
 	delay_lastcycle[0] = (((maxhpos + 0) * 2) + 2) << LORES_TO_SHRES_SHIFT;
 	delay_lastcycle[1] = delay_lastcycle[0];
-	if (islinetoggle()) {
+	if (linetoggle) {
 		delay_lastcycle[1] += 1 << LORES_TO_SHRES_SHIFT;
 	}
 	delay_hsynccycle = (((maxhpos + hsyncstartpos_start_cycles) * 2) - DDF_OFFSET) << LORES_TO_SHRES_SHIFT;
@@ -2450,7 +2564,7 @@ static void setup_fmodes(int hpos, uae_u16 con0)
 		break;
 	}
 	if (GET_RES_AGNUS(con0) != GET_RES_DENISE(con0)) {
-		SET_LINE_CYCLEBASED
+		SET_LINE_CYCLEBASED(hpos);
 	}
 	bplcon0_res = GET_RES_AGNUS(con0);
 	toscr_res_old = -1;
@@ -2497,7 +2611,7 @@ static void setup_fmodes(int hpos, uae_u16 con0)
 	if (isocs7planes()) {
 		toscr_nr_planes_agnus = 6;
 	}
-	SET_LINE_CYCLEBASED;
+	SET_LINE_CYCLEBASED(hpos);
 }
 
 static int REGPARAM2 custom_wput_1(int hpos, uaecptr addr, uae_u32 value, int noget);
@@ -2507,9 +2621,16 @@ static uae_u16 get_strobe_reg(int slot)
 	uae_u16 strobe = 0x1fe;
 	if (slot == 0) {
 		strobe = 0x3c;
-		if (vb_state && vpos < equ_vblank_endline) {
+		if (vb_start_line > 1 && vpos < get_equ_vblank_endline() && vpos >= get_equ_vblank_startline()) {
 			strobe = 0x38;
-		} else if (vb_state) {
+			if (vpos == 0) {
+				if (agnusa1000) {
+					strobe = 0x3c;
+				} else if (!ecs_agnus) {
+					strobe = 0x3a;
+				}
+			}
+		} else if (vb_start_line > 1 || vb_end_line || vb_end_next_line) {
 			strobe = 0x3a;
 		}
 	} else if (slot == 1 && ecs_agnus && lol) {
@@ -2814,25 +2935,11 @@ static void fetch_strobe_conflict(int nr, int fm, int hpos, bool addmodulo)
 	}
 
 	// decide sprites before sprite offset change
-	decide_sprites(hpos + 1);
+	decide_sprites_3(hpos + 1, true, false);
 
-	if (!hstrobe_conflict) {
-		hdiwstate_conflict = hdiwstate;
-	}
-
-	hdiw_counter_sconflict += (512 - ((maxhpos * 2 + 1) - 1)) << sprite_buffer_res;
-	hdiw_counter_sconflict &= hdiw_counter_sconflict_mask;
-
-	if (hstrobe_conflict) {
-		hdiw_counter_conflict += ((maxhpos * 2 + 1) - 1) << 2;
-	}
-	hdiw_counter_conflict &= (512 << 2) - 1;
-
-	hstrobe_conflict2 = true;
 	hstrobe_conflict = true;
 
-
-	SET_LINE_CYCLEBASED;
+	SET_LINE_CYCLEBASED(hpos);
 }
 
 // refresh only slot conflict
@@ -2883,7 +2990,7 @@ static void fetch_refresh_conflict(int nr, int fm, int hpos, bool addmodulo)
 		warned1--;
 	}
 
-	SET_LINE_CYCLEBASED;
+	SET_LINE_CYCLEBASED(hpos);
 
 #ifdef DEBUGGER
 	if (debug_dma) {
@@ -3287,18 +3394,11 @@ static void pull_toscr_output_bits(int nbits, int planes, uae_u32 *ptrs)
 		return;
 	}
 	int tbits = nbits - out_nbits;
-	uae_u64 tmask = (1 << tbits) - 1;
 	uae_u64 nmask = (1 << out_nbits) - 1;
-	uae_u8 *dataptr = line_data[next_lineno] + (out_offs - 2) * 4;
 	for (int i = 0; i < planes; i++) {
 		ptrs[i] = 0;
-		if (out_offs >= 2) {
-			uae_u64 *dataptr64 = (uae_u64*)dataptr;
-			uae_u64 vv = *dataptr64;
-			uae_u64 v = (vv >> 32) | (vv << 32);
-			ptrs[i] = (uae_u32)((v << out_nbits) & mask);
-			dataptr += MAX_WORDS_PER_LINE * 2;
-		}
+		uae_u64 v = outword64_extra[i];
+		ptrs[i] = (uae_u32)((v << out_nbits) & mask);
 		ptrs[i] |= outword64[i] & nmask;
 	}
 }
@@ -3316,21 +3416,13 @@ static void push_toscr_output_bits(int nbits, int planes, uae_u32 *ptrs)
 	int tbits = nbits - out_nbits;
 	uae_u64 tmask = (1 << tbits) - 1;
 	uae_u64 nmask = (1 << out_nbits) - 1;
-	uae_u8 *dataptr = line_data[next_lineno] + (out_offs - 2) * 4;
 	for (int i = 0; i < planes; i++) {
-		if (out_offs >= 2) {
-			uae_u64 *dataptr64 = (uae_u64*)dataptr;
-			uae_u64 vv = *dataptr64;
-			uae_u64 v = (vv >> 32) | (vv << 32);
-			v &= ~tmask;
-			v |= (ptrs[i] >> out_nbits) & tmask;
-			vv = (v >> 32) | (v << 32);
-			*dataptr64 = vv;
-			dataptr += MAX_WORDS_PER_LINE * 2;
-		}
+		uae_u64 v = outword64_extra[i];
+		v &= ~tmask;
+		v |= (ptrs[i] >> out_nbits) & tmask;
+		outword64_extra[i] = v;
 		outword64[i] &= ~nmask;
 		outword64[i] |= ptrs[i] & nmask;
-		thisline_changed = 1;
 	}
 }
 
@@ -3340,7 +3432,10 @@ STATIC_INLINE void toscr_1_hr_nbits(void)
 		uae_u8 *dataptr = line_data[next_lineno] + out_offs * 4;
 		for (int i = 0; i < toscr_nr_planes2; i++) {
 			uae_u64 *dataptr64 = (uae_u64 *)dataptr;
-			uae_u64 v = (outword64[i] >> 32) | (outword64[i] << 32);
+			uae_u64 v = outword64[i];
+//			uae_u64 v = outword64_extra[i];
+//			outword64_extra[i] = outword64[i];
+			v = (v >> 32) | (v << 32);
 			if (thisline_changed || *dataptr64 != v) {
 				thisline_changed = 1;
 				*dataptr64 = v;
@@ -4258,7 +4353,7 @@ static void hbstrt_bordercheck(int hpos, bool early)
 	}
 	pos -= 2; // 1 hires pixel early
 	pos = adjust_hr(pos);
-	hdiw_restart(hb_last_diwlastword, pos);
+	hdiw_restart(hb_last_diwlastword, pos, false);
 	hb_last_diwlastword = -1;
 }
 
@@ -4275,7 +4370,7 @@ static void beginning_of_plane_block_early(int hpos)
 	bpl_shifter = 1;
 	int left = hpos + hpos_hsync_extra;
 	thisline_decision.plfleft = left * 2;
-#ifdef __LIBRETRO__
+#ifndef __cplusplus
 	if (hdiwstate == DIW_waiting_stop && thisline_decision.diwfirstword < 0) {
 #else
 	if (hdiwstate == diw_states::DIW_waiting_stop && thisline_decision.diwfirstword < 0) {
@@ -4292,11 +4387,13 @@ static void beginning_of_plane_block_early(int hpos)
 
 static void start_noborder(int hpos)
 {
-	bpl_shifter = 1;
-	reset_bpl_vars();
+	if (bpl_shifter <= 0) {
+		bpl_shifter = 1;
+		reset_bpl_vars();
+	}
 	if (thisline_decision.plfleft < 0) {
 		thisline_decision.plfleft = hpos * 2;
-#ifdef __LIBRETRO__
+#ifndef __cplusplus
 		if (hdiwstate == DIW_waiting_stop && thisline_decision.diwfirstword < 0) {
 #else
 		if (hdiwstate == diw_states::DIW_waiting_stop && thisline_decision.diwfirstword < 0) {
@@ -4334,13 +4431,45 @@ static void beginning_of_plane_block(int hpos)
 	}
 
 	// do not mistake end of bitplane as start of low value hblank programmed mode
-	if (bpl_shifter <= 0 && hpos > REFRESH_FIRST_HPOS) {
-#ifdef __LIBRETRO__
-		if (ecs_denise || hpos >= OCS_DENISE_HBLANK_DISABLE_HPOS + 1 || hdiwstate == DIW_waiting_stop) {
+	if (hpos > REFRESH_FIRST_HPOS) {
+		if (ecs_denise && bpl_shifter <= 0) {
+			bpl_shifter = 1;
+			reset_bpl_vars();
+			thisline_decision.plfleft = hpos * 2;
+#ifndef __cplusplus
+			if (hdiwstate == DIW_waiting_stop && thisline_decision.diwfirstword < 0) {
 #else
-		if (ecs_denise || hpos >= OCS_DENISE_HBLANK_DISABLE_HPOS + 1 || hdiwstate == diw_states::DIW_waiting_stop) {
+			if (hdiwstate == diw_states::DIW_waiting_stop && thisline_decision.diwfirstword < 0) {
 #endif
-			start_noborder(hpos + hpos_hsync_extra);
+				thisline_decision.diwfirstword = min_diwlastword;
+			}
+		} else if (!ecs_denise && hdiwbplstart < 0) {
+			// if OCS Denise and first BPL1DAT is earlier than OCS_DENISE_HBLANK_DISABLE_HPOS:
+			// -> bitplane shifter works normally but HDIW won't open.
+			if (bpl_shifter <= 0) {
+				bpl_shifter = 1;
+				reset_bpl_vars();
+				thisline_decision.plfleft = hpos * 2;
+				if (hpos >= OCS_DENISE_HBLANK_DISABLE_HPOS) {
+#ifndef __cplusplus
+					if (hdiwstate == DIW_waiting_stop && thisline_decision.diwfirstword < 0) {
+#else
+					if (hdiwstate == diw_states::DIW_waiting_stop && thisline_decision.diwfirstword < 0) {
+#endif
+						thisline_decision.diwfirstword = min_diwlastword;
+					}
+					hdiwbplstart = min_diwlastword;
+				} else {
+					hdiwbplstart = -1;
+				}
+			}
+			// HDIW only opens when next BPL1DAT position is >= OCS_DENISE_HBLANK_DISABLE_HPOS
+			if (hdiwbplstart < 0 && hpos >= OCS_DENISE_HBLANK_DISABLE_HPOS) {
+				int v = hpos_to_diwx(hpos);
+				v -= 4; // 1 lores pixel
+				v = coord_diw_shres_to_window_x(v);
+				hdiwbplstart = v;
+			}
 		}
 	}
 
@@ -4903,8 +5032,8 @@ STATIC_INLINE void one_fetch_cycle_0(int hpos, int fm)
 	if (datreg & CYCLE_PIPE_BITPLANE) {
 		plane0 = fetch((datreg - 1) & 7, fm, hpos, (datreg & CYCLE_PIPE_MODULO) != 0);
 	} else if (datreg & CYCLE_PIPE_COPPER) {
-		do_copper_fetch(hpos, datreg);
 		cycle_line_pipe[hpos] = 0;
+		do_copper_fetch(hpos, datreg);
 	}
 
 	if (plane0p_enabled) {
@@ -4912,7 +5041,7 @@ STATIC_INLINE void one_fetch_cycle_0(int hpos, int fm)
 		uae_u16 d = cycle_line_pipe[offset];
 		if ((d & CYCLE_PIPE_BITPLANE) && (d & 7) == 1) {
 			decide_hdiw(hpos);
-#ifdef __LIBRETRO__
+#ifndef __cplusplus
 			if (hdiwstate == DIW_waiting_stop || plane0p_forced) {
 #else
 			if (hdiwstate == diw_states::DIW_waiting_stop || plane0p_forced) {
@@ -5146,7 +5275,7 @@ static void vdiw_change(uae_u32 v)
 }
 
 /* Take care of the vertical DIW.  */
-static void decide_vline(void)
+static void decide_vline(int hpos)
 {
 	bool forceoff = (vb_start_line == 1 && !harddis_v);
 	bool start = vpos == plffirstline && !forceoff;
@@ -5154,33 +5283,33 @@ static void decide_vline(void)
 	bool end = vpos == plflastline || forceoff;
 
 	if (start && !end) {
-#ifdef __LIBRETRO__
+#ifndef __cplusplus
 		if (vdiwstate != DIW_waiting_stop) {
 #else
 		if (vdiwstate != diw_states::DIW_waiting_stop) {
 #endif
 			event2_newevent_xx(-1, CYCLE_UNIT, 1, vdiw_change);
 		}
-#ifdef __LIBRETRO__
+#ifndef __cplusplus
 		vdiwstate = DIW_waiting_stop;
 #else
 		vdiwstate = diw_states::DIW_waiting_stop;
 #endif
-		SET_LINE_CYCLEBASED;
+		SET_LINE_CYCLEBASED(hpos);
 	} else if (end) {
-#ifdef __LIBRETRO__
+#ifndef __cplusplus
 		if (vdiwstate != DIW_waiting_start) {
 #else
 		if (vdiwstate != diw_states::DIW_waiting_start) {
 #endif
 			event2_newevent_xx(-1, CYCLE_UNIT, 0, vdiw_change);
 		}
-#ifdef __LIBRETRO__
+#ifndef __cplusplus
 		vdiwstate = DIW_waiting_start;
 #else
 		vdiwstate = diw_states::DIW_waiting_start;
 #endif
-		SET_LINE_CYCLEBASED;
+		SET_LINE_CYCLEBASED(hpos);
 	}
 }
 
@@ -5218,11 +5347,13 @@ static void record_color_change(int hpos, int regno, uae_u32 value)
 {
 	if (regno < RECORDED_REGISTER_CHANGE_OFFSET && nodraw())
 		return;
+
+	decide_hdiw(hpos);
+
 	/* vsync period don't appear on-screen. */
 	if (line_hidden())
 		return;
 
-	decide_hdiw(hpos);
 	decide_line(hpos);
 
 	if (thisline_decision.ctable < 0) {
@@ -5710,17 +5841,11 @@ static void record_sprite(int num, int sprxp, uae_u16 *data, uae_u16 *datb, unsi
 	low order bit records whether the attach bit was set for this pair.  */
 	if (attachment) {
 		uae_u32 state = 0x01010101 << (num & ~1);
-		uae_u8 *stb1 = spixstate.stb + word_offs;
+		uae_u32 *stb1 = (uae_u32*)(spixstate.stb + word_offs);
 		for (int i = 0; i < width; i += 8) {
 			stb1[0] |= state;
 			stb1[1] |= state;
-			stb1[2] |= state;
-			stb1[3] |= state;
-			stb1[4] |= state;
-			stb1[5] |= state;
-			stb1[6] |= state;
-			stb1[7] |= state;
-			stb1 += 8;
+			stb1 += 2;
 		}
 		e->has_attached = 1;
 	}
@@ -5764,18 +5889,15 @@ static void add_sprite(int *countp, int num, int sprxp, int posns[], int nrs[])
 	nrs[j] = num;
 	count++;
 	*countp = count;
+
 	sprites_enabled_this_line = true;
 }
 
 static void calcsprite(void)
 {
 	sprite_minx = 0;
-	sprite_maxx = -1;
 	if (thisline_decision.diwfirstword >= 0) {
 		sprite_minx = tospritexdiw(thisline_decision.diwfirstword);
-	}
-	if (thisline_decision.diwlastword >= 0) {
-		sprite_maxx = tospritexdiw(thisline_decision.diwlastword);
 	}
 	if (thisline_decision.plfleft >= 0) {
 		int min = tospritexddf(thisline_decision.plfleft);
@@ -5791,42 +5913,25 @@ static void calcsprite(void)
 	}
 }
 
-static void decide_sprites_3(int hpos, bool usepointx, bool quick)
+static int last_sprite_hpos, last_sprite_hpos_reset;
+
+static void decide_sprites2(int start, int end, int *countp, int *nrs, int *posns)
 {
-	int nrs[MAX_SPRITES * 2], posns[MAX_SPRITES * 2];
-	int count;
-	int point;
+	int count = *countp;
 	int sscanmask = 0x100 << sprite_buffer_res;
-	int gotdata = 0;
-	int extrahpos = hsyncstartpos_start_cycles * 2; // hpos 0 to this value is visible in right border
 
-	point = (hpos + hpos_hsync_extra) * 2 - DDF_OFFSET;
-
-	if (point <= last_sprite_point) {
+	if (nodraw()) {
 		return;
 	}
 
-	if (nodraw() || nr_armed == 0) {
-		last_sprite_point = point;
-		return;
-	}
-
-	if (!quick) {
-		decide_hdiw(hpos);
-		decide_line(hpos);
-		calcsprite();
-	}
-
-	count = 0;
 	for (int i = 0; i < MAX_SPRITES; i++) {
 		struct sprite *s = &spr[i];
-		int xpos = (spr[i].xpos + hdiw_counter_sconflict + vhposr_sprite_offset) & hdiw_counter_sconflict_mask;
+		int xpos = spr[i].xpos;
 		int sprxp = (fmode & 0x8000) ? (xpos & ~sscanmask) : xpos;
 		int hw_xp = sprxp >> sprite_buffer_res;
-		int pointx = usepointx && (s->ctl & sprite_sprctlmask) ? 0 : 1;
 
 		// Sprite does not start if X=0 but SSCAN2 sprite does. Don't do X == 0 check here.
-		if (sprxp < 0 || hw_xp > maxhpos * 2 + 1) {
+		if (sprxp < 0) {
 			continue;
 		}
 
@@ -5849,78 +5954,159 @@ static void decide_sprites_3(int hpos, bool usepointx, bool quick)
 			hw_xp = sprxp >> sprite_buffer_res;
 		}
 
-		if ((hw_xp > 0 || hdiw_counter_sconflict) && hw_xp > last_sprite_point && hw_xp <= point + pointx) {
-			add_sprite(&count, i, sprxp, posns, nrs);
+		if (hw_xp >= start && hw_xp < end) {
+			int xdiff = hw_xp - start;
+			int sprxp_abs = (last_sprite_point_abs + xdiff) << sprite_buffer_res;
+			// add hires/shres back
+			sprxp_abs |= xpos & (3 >> (RES_MAX - sprite_buffer_res));
+			add_sprite(&count, i, sprxp_abs, posns, nrs);
 		}
 
 		/* SSCAN2-bit is fun.. */
-		if ((fmode & 0x8000) && !(sprxp & sscanmask)) {
+		if (1 && (fmode & 0x8000) && !(sprxp & sscanmask)) {
 			sprxp |= sscanmask;
 			hw_xp = sprxp >> sprite_buffer_res;
-			if (hw_xp > last_sprite_point && hw_xp <= point + pointx) {
-				add_sprite(&count, MAX_SPRITES + i, sprxp, posns, nrs);
+			if (hw_xp >= start && hw_xp < end) {
+				int xdiff = hw_xp - start;
+				int sprxp_abs = (last_sprite_point_abs + xdiff) << sprite_buffer_res;
+				sprxp_abs |= xpos & (3 >> (RES_MAX - sprite_buffer_res));
+				add_sprite(&count, MAX_SPRITES + i, sprxp_abs, posns, nrs);
 			}
-		} else if (xpos >= (2 << sprite_buffer_res) && xpos <= (extrahpos << sprite_buffer_res)) {
-			// right border wrap around. SPRxCTL horizontal bits do not matter.
-			sprxp += (maxhpos * 2) << sprite_buffer_res;
-			hw_xp = sprxp >> sprite_buffer_res;
-			if (hw_xp > last_sprite_point && hw_xp <= point + pointx) {
-				add_sprite(&count, MAX_SPRITES + i, sprxp, posns, nrs);
-			}
-			// (not really mutually exclusive of SSCAN2-bit but not worth the trouble)
 		}
 	}
+	*countp = count;
 
-	for (int i = 0; i < count; i++) {
-		int nr = nrs[i] & (MAX_SPRITES - 1);
-		struct sprite *s = &spr[nr];
-		if (s->ecs_denise_hires && !(bplcon0d & 0x40)) {
-			s->data[0] &= 0x7fff;
-			s->datb[0] &= 0x7fff;
+
+}
+
+static void decide_sprites_3(int hpos, bool quick, bool halfcycle/* = false*/)
+{
+	int count = 0;
+	int gotdata = 0;
+	int nrs[MAX_SPRITES * 2], posns[MAX_SPRITES * 2];
+	int hp = (hpos << 1) + halfcycle;
+
+	// don't bother with sprites during vblank lines
+	if (vb_start_line > 1) {
+		last_sprite_hpos = hp;
+		return;
+	}
+
+	int c = hp - last_sprite_hpos;
+	if (c <= 0) {
+		return;
+	}
+
+	if (!quick) {
+		decide_hdiw(hpos);
+		decide_line(hpos);
+	}
+
+	if (last_sprite_hpos < (HARDWIRED_DMA_TRIGGER_HPOS << 1) && hp >= (HARDWIRED_DMA_TRIGGER_HPOS << 1)) {
+		last_sprite_hpos_reset = (REFRESH_FIRST_HPOS - HARDWIRED_DMA_TRIGGER_HPOS + 2) << 1;
+		last_sprite_hpos_reset += 1;
+	}
+
+	int start = last_sprite_point;
+	int max = 512;
+
+	if (last_sprite_hpos_reset > 0 && c >= last_sprite_hpos_reset && !line_equ_freerun && !hstrobe_conflict) {
+		// strobe crossed?
+		last_sprite_point += last_sprite_hpos_reset + 0;
+		if (nr_armed) {
+			decide_sprites2(start, last_sprite_point, &count, nrs, posns);
 		}
-		record_sprite(nr, posns[i], s->data, s->datb, s->ctl);
+		last_sprite_point_abs += last_sprite_point - start;
+		last_sprite_point = 2;
+		start = last_sprite_point;
+		last_sprite_point += c - last_sprite_hpos_reset;
+		if (nr_armed) {
+			decide_sprites2(start, last_sprite_point, &count, nrs, posns);
+		}
+		last_sprite_point_abs += last_sprite_point - start;
+		last_sprite_hpos_reset = -1;
+	} else {
+		last_sprite_point += c;
+		// wrap around?
+		if (last_sprite_point >= max) {
+			if (nr_armed) {
+				decide_sprites2(start, max, &count, nrs, posns);
+			}
+			last_sprite_point_abs += max - start;
+			last_sprite_point &= max - 1;
+			if (last_sprite_point > 0) {
+				if (nr_armed) {
+					decide_sprites2(0, last_sprite_point, &count, nrs, posns);
+				}
+				last_sprite_point_abs += last_sprite_point - 0;
+			}
+		} else {
+			if (nr_armed) {
+				decide_sprites2(start, last_sprite_point, &count, nrs, posns);
+			}
+			last_sprite_point_abs += last_sprite_point - start;
+		}
+		if (last_sprite_hpos_reset >= 0) {
+			last_sprite_hpos_reset -= c;
+		}
+	}
+	last_sprite_hpos = hp;
 
-		/* get left and right sprite edge if brdsprt enabled */
+	if (count > 0) {
+		calcsprite();
+
+		for (int i = 0; i < count; i++) {
+			int nr = nrs[i] & (MAX_SPRITES - 1);
+			struct sprite *s = &spr[nr];
+
+			// ECS Denise weird behavior in shres
+			if (s->ecs_denise_hires && !(bplcon0d & 0x40)) {
+				s->data[0] &= 0x7fff;
+				s->datb[0] &= 0x7fff;
+			}
+
+			record_sprite(nr, posns[i], s->data, s->datb, s->ctl);
+
+			/* get left and right sprite edge if brdsprt enabled */
 #if AUTOSCALE_SPRITES
-		if (dmaen (DMA_SPRITE) && brdspractive() && !(bplcon3 & 0x20) && nr > 0) {
-			int j, jj;
-			for (j = 0, jj = 0; j < sprite_width; j+= 16, jj++) {
-				int nx = fromspritexdiw(posns[i] + j);
-				if (s->data[jj] || s->datb[jj]) {
-					if (diwfirstword_total > nx && nx >= (48 << currprefs.gfx_resolution)) {
-						diwfirstword_total = nx;
-					}
-					if (diwlastword_total < nx + 16 && nx <= (448 << currprefs.gfx_resolution)) {
-						diwlastword_total = nx + 16;
+			if (dmaen(DMA_SPRITE) && brdspractive() && !(bplcon3 & 0x20) && nr > 0) {
+				int j, jj;
+				for (j = 0, jj = 0; j < sprite_width; j += 16, jj++) {
+					int nx = fromspritexdiw(posns[i] + j);
+					if (s->data[jj] || s->datb[jj]) {
+						if (diwfirstword_total > nx && nx >= (48 << currprefs.gfx_resolution)) {
+							diwfirstword_total = nx;
+						}
+						if (diwlastword_total < nx + 16 && nx <= (448 << currprefs.gfx_resolution)) {
+							diwlastword_total = nx + 16;
+						}
 					}
 				}
+				gotdata = 1;
 			}
-			gotdata = 1;
-		}
 #endif
-
-	}
-
-	last_sprite_point = point;
+		}
 
 #if AUTOSCALE_SPRITES
-	/* get upper and lower sprite position if brdsprt enabled */
-	if (gotdata) {
-		if (vpos < first_planes_vpos) {
-			first_planes_vpos = vpos;
+		/* get upper and lower sprite position if brdsprt enabled */
+		if (gotdata) {
+			if (vpos < first_planes_vpos) {
+				first_planes_vpos = vpos;
+			}
+			if (vpos < plffirstline_total) {
+				plffirstline_total = vpos;
+			}
+			if (vpos > last_planes_vpos) {
+				last_planes_vpos = vpos;
+			}
+			if (vpos > plflastline_total) {
+				plflastline_total = vpos;
+			}
 		}
-		if (vpos < plffirstline_total) {
-			plffirstline_total = vpos;
-		}
-		if (vpos > last_planes_vpos) {
-			last_planes_vpos = vpos;
-		}
-		if (vpos > plflastline_total) {
-			plflastline_total = vpos;
-		}
-	}
 #endif
+	}
 }
+
 static void decide_sprites(int hpos)
 {
 	decide_sprites_3(hpos, false, false);
@@ -6001,23 +6187,16 @@ static void hstrobe_conflict_check(uae_u32 v)
 	int hpos = current_hpos();
 	finish_partial_decision(hpos);
 
-	SET_LINE_CYCLEBASED;
+	SET_LINE_CYCLEBASED(hpos);
 	uae_u16 datreg = cycle_line_pipe[hpos];
 	// not conflict?
 	if (!(datreg & CYCLE_PIPE_BITPLANE)) {
 		hstrobe_conflict = false;
-		hdiw_counter_conflict += ((maxhpos * 2 + 1) - 1) << 2;
-		hdiw_counter_conflict &= (512 << 2) - 1;
-		decide_hstrobe_hdiw(hpos);
-		hdiwstate = hdiwstate_conflict;
-		decide_hdiw(hpos);
-		hdiw_counter_sconflict = 0;
-		hdiw_counter_conflict = 0;
-		flush_display(fetchmode);
-		delay_cycles = (2 + 2) << LORES_TO_SHRES_SHIFT;
+		int pos = hpos_to_diwx(hpos);
+		addcc(pos, 0, COLOR_CHANGE_ACTBORDER | 2);
+		MARK_LINE_CHANGED;
 	}
 }
-
 
 static void finish_decisions(int hpos)
 {
@@ -6037,11 +6216,21 @@ static void finish_decisions(int hpos)
 		thisline_decision.plflinelen = 0;
 		thisline_decision.bplres = output_res(RES_LORES);
 	}
+	if (!ecs_denise) {
+		if (thisline_decision.diwfirstword < hdiwbplstart) {
+			thisline_decision.diwfirstword = hdiwbplstart;
+		} else if (hdiwbplstart < 0) {
+			thisline_decision.diwfirstword = -1;
+			thisline_decision.diwlastword = -1;
+		}
+	}
 
+#if 0
 	if (hstrobe_conflict) {
 		sync_color_changes(hpos + DDF_OFFSET / 2 + 1);
 		decide_hstrobe_hdiw(hpos);
 	}
+#endif
 
 	// Add DDF_OFFSET to detect blanking changes past hpos max
 	sync_color_changes(hpos + DDF_OFFSET / 2 + 1);
@@ -6049,15 +6238,13 @@ static void finish_decisions(int hpos)
 	/* Large DIWSTOP values can cause the stop position never to be
 	* reached, so the state machine always stays in the same state and
 	* there's a more-or-less full-screen DIW. */
-#ifdef __LIBRETRO__
+#ifndef __cplusplus
 	if ((hdiwstate == DIW_waiting_stop && thisline_decision.diwfirstword >= 0) || hstrobe_conflict) {
 #else
 	if ((hdiwstate == diw_states::DIW_waiting_stop && thisline_decision.diwfirstword >= 0) || hstrobe_conflict) {
 #endif
 		thisline_decision.diwlastword = max_diwlastword;
 	}
-
-	last_diwlastword = -1;
 
 	if (thisline_decision.diwfirstword != line_decisions[next_lineno].diwfirstword) {
 		MARK_LINE_CHANGED;
@@ -6125,6 +6312,22 @@ static void finish_decisions(int hpos)
 	}
 }
 
+static void set_ocs_denise_blank(uae_u32 v)
+{
+	int hpos = current_hpos();
+	sync_color_changes(hpos);
+	int pos = hpos_to_diwx(hpos) + 2; // +1 hires
+	record_color_change2(-pos, 0, COLOR_CHANGE_BLANK | 1);
+}
+static void reset_ocs_denise_blank(uae_u32 v)
+{
+	int hpos = current_hpos();
+	sync_color_changes(hpos);
+	int pos = hpos_to_diwx(hpos) + 2; // +1 hires
+	record_color_change2(-pos, 0, COLOR_CHANGE_BLANK | 0);
+}
+
+
 /* Set the state of all decisions to "undecided" for a new scanline. */
 static void reset_decisions_scanline_start(void)
 {
@@ -6132,7 +6335,6 @@ static void reset_decisions_scanline_start(void)
 		return;
 
 	if (hstrobe_conflict) {
-		hstrobe_conflict2 = false;
 		event2_newevent_xx(-1, REFRESH_FIRST_HPOS * CYCLE_UNIT, 0, hstrobe_conflict_check);
 	}
 
@@ -6143,7 +6345,8 @@ static void reset_decisions_scanline_start(void)
 	ddfstrt_hpos = -1;
 	ddfstop_hpos = -1;
 	last_diw_hpos = 0;
-	last_diw_hpos2 = 0;
+	last_sprite_hpos = 0;
+	last_sprite_hpos_reset = 0;
 	blt_info.finishhpos = -1;
 
 	/* Default to no bitplane DMA overriding sprite DMA */
@@ -6160,18 +6363,18 @@ static void reset_decisions_scanline_start(void)
 		}
 	}
 
-	if (!ecs_denise) {
+	if (!ecs_denise && currprefs.gfx_overscanmode > OVERSCANMODE_OVERSCAN) {
 		if (!ecs_agnus) {
 			if (vb_start_line == 2 + vblank_extraline) {
-				record_color_change2(0, 0, COLOR_CHANGE_BLANK | 1);
+				event2_newevent_xx(-1, 2 * CYCLE_UNIT, 0, set_ocs_denise_blank);
 			}
 		} else {
 			if (vb_start_line == 1 + vblank_extraline) {
-				record_color_change2(0, 0, COLOR_CHANGE_BLANK | 1);
+				event2_newevent_xx(-1, 2 * CYCLE_UNIT, 0, set_ocs_denise_blank);
 			}
 		}
 		if (vb_end_next_line2) {
-			record_color_change2(0, 0, COLOR_CHANGE_BLANK | 0);
+			event2_newevent_xx(-1, 2 * CYCLE_UNIT, 0, reset_ocs_denise_blank);
 		}
 	}
 
@@ -6204,16 +6407,28 @@ static uae_u16 BPLCON0_Denise_mask(uae_u16 v)
 	return v;
 }
 
+static uae_u16 BPLCON0_Agnus_mask(uae_u16 v)
+{
+	if (!ecs_agnus) {
+		v &= 0xff0f;
+	} else if (!aga_mode) {
+		v &= 0xffcf;
+	}
+	return v;
+}
+
 static void reset_decisions_hsync_start(void)
 {
 	if (nodraw()) {
 		return;
 	}
 
+	int hpos = current_hpos();
+
 	thisline_decision.diwfirstword = -1;
 	thisline_decision.diwlastword = -1;
 	// hdiw already open?
-#ifdef __LIBRETRO__
+#ifndef __cplusplus
 	if (hdiwstate == DIW_waiting_stop) {
 #else
 	if (hdiwstate == diw_states::DIW_waiting_stop) {
@@ -6223,6 +6438,7 @@ static void reset_decisions_hsync_start(void)
 			MARK_LINE_CHANGED;
 		}
 	}
+	hdiwbplstart = -1;
 
 	thisline_decision.ctable = -1;
 	thisline_changed = 0;
@@ -6231,8 +6447,9 @@ static void reset_decisions_hsync_start(void)
 	last_color_change = next_color_change;
 	curr_drawinfo[next_lineno].first_sprite_entry = next_sprite_entry;
 	next_sprite_forced = 1;
+	last_sprite_point_abs = ((1 + (hpos - REFRESH_FIRST_HPOS - 2)) << 1) + 1;
+	hdiw_denisecounter_abs = ((1 + (hpos - REFRESH_FIRST_HPOS - 2)) << CCK_SHRES_SHIFT) + 0;
 
-	last_sprite_point = 0;
 	sprites_enabled_this_line = false;
 	bpl1mod_hpos = -1;
 	bpl2mod_hpos = -1;
@@ -6240,7 +6457,7 @@ static void reset_decisions_hsync_start(void)
 	collision_hpos = 0;
 
 	vhposr_delay_offset = 0;
-	vhposr_sprite_offset = 0;
+	vhposw_modified = false;
 
 	compute_toscr_delay(bplcon1);
 
@@ -6286,18 +6503,27 @@ static void reset_decisions_hsync_start(void)
 	thisline_decision.fmode = fmode;
 
 	if (!aga_mode && ecs_denise && exthblank) {
-		// ECS Denise + EXTBLANK: VBLANK blanking is different
-		thisline_decision.vb = VB_NOVB;
+		// ECS Denise + EXTBLANK: VBLANK blanking is different.
 		if (new_beamcon0 & BEAMCON0_BLANKEN) {
-			// blanking working same as AGA
-			thisline_decision.vb = vb_start_line >= 1 + vblank_extraline || vb_end_next_line ? 0 : VB_NOVB;
+			// Follow Agnus VBLANK state directly via CSYNC connection. Ignore strobe vblank state.
+			thisline_decision.vb = vb_state || vb_end_line ? VB_PRGVB : VB_NOVB;
+		} else {
+			// CSYNC: follow CSYNC state
+			thisline_decision.vb = vs_state_on ? VB_PRGVB : VB_NOVB;
 		}
 	} else if (ecs_agnus) {
 		// Visible vblank end is delayed by 1 line
-		thisline_decision.vb = vb_start_line >= 1 + vblank_extraline || vb_end_next_line ? 0 : VB_NOVB;
+		thisline_decision.vb = vb_start_line >= 2 + vblank_extraline || vb_end_next_line ? 0 : VB_NOVB;
+		if (hstrobe_conflict && strobe_vblank && thisline_decision.vb) {
+			thisline_decision.vb = VB_XBLANK;
+		}
 	} else {
 		thisline_decision.vb = vb_start_line >= 2 + vblank_extraline || vb_end_next_line ? 0 : VB_NOVB;
+		if (hstrobe_conflict && strobe_vblank && thisline_decision.vb) {
+			thisline_decision.vb = VB_XBLANK;
+		}
 	}
+
 	// if programmed vblank
 	if ((new_beamcon0 & BEAMCON0_VARVBEN) && ecs_agnus) {
 		if (!thisline_decision.vb) {
@@ -6362,7 +6588,6 @@ static void reset_decisions_hsync_start(void)
 	thisline_decision.max_planes = toscr_nr_planes2 > toscr_nr_planes_agnus ? toscr_nr_planes2 : toscr_nr_planes_agnus;
 
 	hpos_hsync_extra = 0;
-	int hpos = current_hpos();
 	bool normalstart = true;
 	plane0p_enabled = ecs_denise && (bplcon0 & 1) && (bplcon3 & 0x20);
 	plane0p_forced = false;
@@ -6387,7 +6612,7 @@ static void reset_decisions_hsync_start(void)
 		}
 		if (bprun != 0 || todisplay_fetched || plane0 || plane0p || toshift) {
 			normalstart = false;
-			SET_LINE_CYCLEBASED;
+			SET_LINE_CYCLEBASED(hpos);
 			if (toscr_hend == 2) {
 				for (int i = 0; i < MAX_PLANES; i++) {
 					todisplay[i] = todisplay_saved[i];
@@ -6467,6 +6692,7 @@ static void reset_decisions_hsync_start(void)
 			//memset(todisplay_aga, 0, sizeof todisplay_aga);
 			memset(todisplay2_aga, 0, sizeof todisplay2_aga);
 			memset(outword64, 0, sizeof outword64);
+			memset(outword64_extra, 0, sizeof outword64_extra);
 		}
 #endif
 	}
@@ -6485,7 +6711,7 @@ static void reset_decisions_hsync_start(void)
 	hcenterblank_state = false;
 	hstrobe_hdiw_min = hsyncstartpos_start_cycles;
 	if (hstrobe_conflict) {
-		SET_LINE_CYCLEBASED;
+		SET_LINE_CYCLEBASED(hpos);
 	}
 }
 
@@ -6532,7 +6758,7 @@ void compute_vsynctime(void)
 #endif /* __LIBRETRO__ */
 	vsynctimebase_orig = vsynctimebase;
 
-	if (islinetoggle()) {
+	if (linetoggle) {
 		shpos += 0.5f;
 	}
 	if (interlace_seen) {
@@ -6551,7 +6777,7 @@ void compute_vsynctime(void)
 void getsyncregisters(uae_u16 *phsstrt, uae_u16 *phsstop, uae_u16 *pvsstrt, uae_u16 *pvsstop)
 {
 	*phsstrt = hsstrt;
-	*phsstop = hsstop_detect * 2;
+	*phsstop = hsstop_detect2 / 2;
 	*pvsstrt = vsstrt;
 	*pvsstop = vsstop;
 }
@@ -6563,13 +6789,18 @@ static void dumpsync(void)
 		return;
 	}
 	cnt--;
-	write_log(_T("BEAMCON0=%04X VTOTAL=%03d HTOTAL=%03d (%03X)\n"), new_beamcon0, vtotal, htotal, htotal);
-	write_log(_T(" HS=%04X-%04X HB=%04X-%04X HC=%04X\n"), hsstrt, hsstop, hbstrt, hbstop, hcenter);
-	write_log(_T(" VS=%04d-%04d VB=%04d-%04d\n"), vsstrt, vsstop, vbstrt, vbstop);
-	write_log(_T(" HSYNCSTART=%04X.%d HSYNCEND=%04X.%d\n"),
+	write_log(_T("BEAMCON0=%04X VTOTAL=%04X (%03d) HTOTAL=%04X (%03d)\n"), new_beamcon0, vtotal, vtotal, htotal, htotal);
+	write_log(_T(" HS=%04X-%04X (%d-%d) HB=%04X-%04X (%d-%d) HC=%04X (%d)\n"),
+		hsstrt, hsstop, hsstrt, hsstop, hbstrt, hbstop, hbstrt, hbstop, hcenter, hcenter);
+	write_log(_T(" VS=%04X-%04X (%d-%d) VB=%04X-%04X (%d-%d)\n"),
+		vsstrt, vsstop, vsstrt, vsstop, vbstrt, vbstop, vbstrt, vbstop);
+	write_log(_T(" HSYNCSTART=%04X.%X (%d.%d) HSYNCEND=%04X.%X (%d.%d)\n"),
 		hsyncstartpos >> CCK_SHRES_SHIFT, hsyncstartpos & ((1 << CCK_SHRES_SHIFT) - 1),
-		hsyncendpos >> CCK_SHRES_SHIFT, hsyncendpos & ((1 << CCK_SHRES_SHIFT) - 1));
-	write_log(_T(" Lines=%d-%d\n"),
+		hsyncstartpos >> CCK_SHRES_SHIFT, hsyncstartpos & ((1 << CCK_SHRES_SHIFT) - 1),
+		hsyncendpos >> CCK_SHRES_SHIFT, hsyncendpos & ((1 << CCK_SHRES_SHIFT) - 1),
+		hsyncendpos >> CCK_SHRES_SHIFT, hsyncendpos &((1 << CCK_SHRES_SHIFT) - 1));
+	write_log(_T(" Lines=%04X-%04X (%d-%d)\n"),
+		minfirstline, maxvpos_display + maxvpos_display_vsync,
 		minfirstline, maxvpos_display + maxvpos_display_vsync);
 	write_log(_T("PC=%08x COP=%08x\n"), M68K_GETPC, cop_state.ip);
 }
@@ -6664,11 +6895,11 @@ static void updateextblk(void)
 		// hblank has 1 lores pixel offset
 		hbstrt_v2 = hbstrt_v - 4;
 		if (hbstrt_v >= (1 << CCK_SHRES_SHIFT) && hbstrt_v2 < (1 << CCK_SHRES_SHIFT)) {
-			hbstrt_v2 += maxhpos << CCK_SHRES_SHIFT;
+			hbstrt_v2 += maxhpos_short << CCK_SHRES_SHIFT;
 		}
 		hbstop_v2 = hbstop_v - 4;
 		if (hbstop_v >= (1 << CCK_SHRES_SHIFT) && hbstop_v2 < (1 << CCK_SHRES_SHIFT)) {
-			hbstop_v2 += maxhpos << CCK_SHRES_SHIFT;
+			hbstop_v2 += maxhpos_short << CCK_SHRES_SHIFT;
 		}
 		exthblank = (bplcon0 & 1) && (bplcon3 & 1);
 	} else {
@@ -6697,40 +6928,47 @@ static void updateextblk(void)
 		hbstrt_v2 -= 4;
 		hbstop_v2 -= 4;
 		if (hbstrt_v >= (1 << CCK_SHRES_SHIFT) && hbstrt_v2 < (1 << CCK_SHRES_SHIFT)) {
-			hbstrt_v2 += maxhpos << CCK_SHRES_SHIFT;
+			hbstrt_v2 += maxhpos_short << CCK_SHRES_SHIFT;
 		}
 		if (hbstop_v >= (1 << CCK_SHRES_SHIFT) && hbstop_v2 < (1 << CCK_SHRES_SHIFT)) {
-			hbstop_v2 += maxhpos << CCK_SHRES_SHIFT;
+			hbstop_v2 += maxhpos_short << CCK_SHRES_SHIFT;
 		}
 		exthblank = (bplcon0 & 1) && (bplcon3 & 1);
 	}
 
 	if (!exthblank) {
 		hbstrt_v2 = (8 << CCK_SHRES_SHIFT) - 3;
+		if (!ecs_denise) {
+			hbstrt_v2 -= 4;
+		}
 		hbstop_v2 = (47 << CCK_SHRES_SHIFT) - 7;
 		hbstrt_v2 = adjust_hr(hbstrt_v2);
 		hbstop_v2 = adjust_hr(hbstop_v2);
 	}
 
-	if (new_beamcon0 & bemcon0_hsync_mask) {
+	hbstrt_reg = hbstrt_v2;
+	hbstop_reg = hbstop_v2;
+
+	if ((new_beamcon0 & bemcon0_hsync_mask) && (!currprefs.monitoremu || currprefs.cs_hvcsync > 0)) {
 
 		hsyncstartpos = hsstrt + 2;
-		if (hsyncstartpos >= maxhpos) {
-			hsyncstartpos -= maxhpos;
+
+		if (hsyncstartpos >= maxhpos_short) {
+			hsyncstartpos -= maxhpos_short;
 		}
 		hsyncendpos = hsstop;
 
 		hsstop_detect2 = (hsstrt + 21) * 2;
-		if (hsstop_detect2 >= maxhpos * 2) {
-			hsstop_detect2 -= maxhpos * 2;
+		if (hsstop_detect2 >= maxhpos_short * 2) {
+			hsstop_detect2 -= maxhpos_short * 2;
 		}
 
 		hsyncstartpos_start = hsyncstartpos;
-		if (hsyncstartpos < maxhpos / 2) {
+		if (hsyncstartpos < maxhpos_short / 2) {
 			hsyncstartpos = maxhpos_short + hsyncstartpos_start;
 			denisehtotal = hsyncstartpos;
 		} else {
-			denisehtotal = maxhpos + hsyncstartpos;
+			denisehtotal = maxhpos_short + hsyncstartpos;
 		}
 		// make sure possible BPL DMA cycles before first refresh slot are processed before hsync
 		if (hsyncstartpos_start < REFRESH_FIRST_HPOS + 1) {
@@ -6744,16 +6982,18 @@ static void updateextblk(void)
 
 		hsyncstartpos_start = hsyncstartpos_start_hw;
 		hsyncstartpos = hsyncstartpos_hw;
-		denisehtotal = 227 + 7;
+		denisehtotal = maxhpos_short + 7;
 		hsstop_detect2 = (35 + 9) * 2;
 
 		hsstrt_v2 = 18 << CCK_SHRES_SHIFT;
 		hsstop_v2 = 35 << CCK_SHRES_SHIFT;
 		hsyncendpos = hsyncendpos_hw;
+
 	}
 
 	hsstrt_v2 = adjust_hr(hsstrt_v2);
 	hsstop_v2 = adjust_hr(hsstop_v2);
+
 
 	// Out of range left. Denise/Lisa hcounter starts from 2 (skips first 2 lores pixels)
 	if (hbstrt_v2 < (1 << CCK_SHRES_SHIFT)) {
@@ -6763,22 +7003,22 @@ static void updateextblk(void)
 		hbstop_v2 = 0xffff;
 	}
 	// Out of range right
-	if (hbstrt_v2 >= (maxhpos << CCK_SHRES_SHIFT) + (1 << CCK_SHRES_SHIFT)) {
+	if (hbstrt_v2 >= (maxhpos_short << CCK_SHRES_SHIFT) + (1 << CCK_SHRES_SHIFT)) {
 		hbstrt_v2 = 0xffff;
 	}
-	if (hbstop_v2 >= (maxhpos << CCK_SHRES_SHIFT) + (1 << CCK_SHRES_SHIFT)) {
+	if (hbstop_v2 >= (maxhpos_short << CCK_SHRES_SHIFT) + (1 << CCK_SHRES_SHIFT)) {
 		hbstop_v2 = 0xffff;
 	}
 	// hsync start offset adjustment
 	if (hbstrt_v2 <= (hsyncstartpos_start << CCK_SHRES_SHIFT)) {
-		hbstrt_v2 += maxhpos << CCK_SHRES_SHIFT;
-		if (hbstrt_v2 > (maxhpos + hsyncstartpos_start_cycles) << CCK_SHRES_SHIFT) {
+		hbstrt_v2 += maxhpos_short << CCK_SHRES_SHIFT;
+		if (hbstrt_v2 > (maxhpos_short + hsyncstartpos_start_cycles) << CCK_SHRES_SHIFT) {
 			hbstrt_v2 = 1 << CCK_SHRES_SHIFT;
 		}
 	}
 	if (hbstop_v2 <= (hsyncstartpos_start << CCK_SHRES_SHIFT)) {
-		hbstop_v2 += maxhpos << CCK_SHRES_SHIFT;
-		if (hbstop_v2 > (maxhpos + hsyncstartpos_start_cycles) << CCK_SHRES_SHIFT) {
+		hbstop_v2 += maxhpos_short << CCK_SHRES_SHIFT;
+		if (hbstop_v2 > (maxhpos_short + hsyncstartpos_start_cycles) << CCK_SHRES_SHIFT) {
 			hbstop_v2 = 1 << CCK_SHRES_SHIFT;
 		}
 	}
@@ -6792,12 +7032,12 @@ static void updateextblk(void)
 		int add = currprefs.chipset_hr ? (1 << currprefs.gfx_resolution) : 4;
 		if (strt < stop) {
 			hbstop_v2 += add;
-			if (hbstop_v2 >= (maxhpos << CCK_SHRES_SHIFT) + (1 << CCK_SHRES_SHIFT)) {
+			if (hbstop_v2 >= (maxhpos_short << CCK_SHRES_SHIFT) + (1 << CCK_SHRES_SHIFT)) {
 				hbstop_v2 = 0;
 			}
 		} else if (strt > stop) {
 			hbstrt_v2 += add;
-			if (hbstrt_v2 >= (maxhpos << CCK_SHRES_SHIFT) + (1 << CCK_SHRES_SHIFT)) {
+			if (hbstrt_v2 >= (maxhpos_short << CCK_SHRES_SHIFT) + (1 << CCK_SHRES_SHIFT)) {
 				hbstrt_v2 = 0;
 			}
 		}
@@ -6816,9 +7056,7 @@ static void updateextblk(void)
 	denisehtotal <<= CCK_SHRES_SHIFT;
 
 	// ECS Denise has 1 extra lores pixel in right border
-	if (currprefs.gfx_overscanmode >= OVERSCANMODE_ULTRA) {
-		denisehtotal += 2 << (CCK_SHRES_SHIFT - 1);
-	} else if (ecs_denise) {
+	if (ecs_denise) {
 		denisehtotal += 1 << (CCK_SHRES_SHIFT - 1);
 	}
 
@@ -7005,7 +7243,7 @@ void compute_framesync(void)
 	if (vidinfo->drawbuffer.extrawidth == -2 && ((new_beamcon0 & (BEAMCON0_VARVBEN | bemcon0_vsync_mask)) || currprefs.gfx_overscanmode >= OVERSCANMODE_EXTREME)) {
 		vidinfo->drawbuffer.extrawidth = -1;
 	}
-	vidinfo->drawbuffer.inheight = (maxvpos_display + maxvpos_display_vsync - minfirstline) << vres2;
+	vidinfo->drawbuffer.inheight = maxvsize_display << vres2;
 	vidinfo->drawbuffer.inheight2 = vidinfo->drawbuffer.inheight;
 	vidinfo->drawbuffer.inxoffset = 0;
 
@@ -7049,7 +7287,7 @@ void compute_framesync(void)
 
 	compute_vsynctime();
 
-	hblank_hz = (currprefs.ntscmode ? CHIPSET_CLOCK_NTSC : CHIPSET_CLOCK_PAL) / (maxhpos + (islinetoggle() ? 0.5f : 0.0f));
+	hblank_hz = (currprefs.ntscmode ? CHIPSET_CLOCK_NTSC : CHIPSET_CLOCK_PAL) / (maxhpos + (linetoggle ? 0.5f : 0.0f));
 
 	write_log(_T("%s mode%s%s V=%.4fHz H=%0.4fHz (%dx%d+%d) IDX=%d (%s) D=%d RTG=%d/%d\n"),
 		isntsc ? _T("NTSC") : _T("PAL"),
@@ -7066,9 +7304,9 @@ void compute_framesync(void)
 	set_config_changed();
 
 	if (currprefs.monitoremu_mon != 0) {
-		target_graphics_buffer_update(currprefs.monitoremu_mon);
+		target_graphics_buffer_update(currprefs.monitoremu_mon, false);
 	}
-	if (target_graphics_buffer_update(0)) {
+	if (target_graphics_buffer_update(0, false)) {
 		reset_drawing();
 	}
 
@@ -7082,34 +7320,20 @@ void compute_framesync(void)
 }
 
 /* set PAL/NTSC or custom timing variables */
-static void init_hz(bool checkvposw)
+static void init_beamcon0(bool fakehz)
 {
 	int isntsc, islace;
-	int odbl = doublescan;
-	double ovblank = vblank_hz;
-	int hzc = 0;
-	int omaxhpos = maxhpos;
-	int omaxvpos = maxvpos;
-
-	if (!checkvposw) {
-		vpos_count = 0;
-	}
-
-	vpos_count_diff = vpos_count;
-
-	doublescan = 0;
-	programmedmode = 0;
-	if ((beamcon0 & (BEAMCON0_VARBEAMEN | BEAMCON0_PAL)) != (new_beamcon0 & (BEAMCON0_VARBEAMEN | BEAMCON0_PAL))) {
-		hzc = 1;
-	}
-	if (beamcon0 != new_beamcon0) {
-		vpos_count_diff = vpos_count = 0;
-	}
-	if ((beamcon0 & (BEAMCON0_VARVBEN | BEAMCON0_VARVSYEN | BEAMCON0_VARCSYEN)) != (new_beamcon0 & (BEAMCON0_VARVBEN | BEAMCON0_VARVSYEN | BEAMCON0_VARCSYEN))) {
-		hzc = 1;
-	}
+	int hpos = current_hpos();
+	int oldmaxhpos = maxhpos;
 
 	beamcon0 = new_beamcon0;
+
+	isntsc = (beamcon0 & BEAMCON0_PAL) ? 0 : 1;
+	islace = (interlace_seen) ? 1 : 0;
+	if (!ecs_agnus) {
+		isntsc = currprefs.ntscmode ? 1 : 0;
+	}
+
 	if (currprefs.cs_hvcsync == 0) {
 		bemcon0_hsync_mask = BEAMCON0_VARHSYEN | BEAMCON0_VARCSYEN;
 		bemcon0_vsync_mask = BEAMCON0_VARVSYEN | BEAMCON0_VARCSYEN;
@@ -7121,22 +7345,19 @@ static void init_hz(bool checkvposw)
 		bemcon0_vsync_mask = BEAMCON0_VARVSYEN;
 	}
 
-	isntsc = (beamcon0 & BEAMCON0_PAL) ? 0 : 1;
-	islace = (interlace_seen) ? 1 : 0;
-	if (!ecs_agnus) {
-		isntsc = currprefs.ntscmode ? 1 : 0;
-	}
 #ifdef __LIBRETRO__
 	float clk = (float)(isntsc ? CHIPSET_CLOCK_NTSC : CHIPSET_CLOCK_PAL);
 #else
 	float clk = (float)(currprefs.ntscmode ? CHIPSET_CLOCK_NTSC : CHIPSET_CLOCK_PAL);
 #endif
+	int hardwired_vsstrt = 0;
 	if (!isntsc) {
 		maxvpos = MAXVPOS_PAL;
 		maxhpos = MAXHPOS_PAL;
 		minfirstline = VBLANK_ENDLINE_PAL;
 		vblank_hz_nom = vblank_hz = VBLANK_HZ_PAL;
 		hardwired_vbstop = VBLANK_STOP_PAL;
+		hardwired_vbstrt = maxvpos;
 		equ_vblank_endline = EQU_ENDLINE_PAL;
 		equ_vblank_toggle = true;
 		vblank_hz_shf = clk / ((maxvpos + 0.0f) * maxhpos);
@@ -7148,11 +7369,13 @@ static void init_hz(bool checkvposw)
 		minfirstline = VBLANK_ENDLINE_NTSC;
 		vblank_hz_nom = vblank_hz = VBLANK_HZ_NTSC;
 		hardwired_vbstop = VBLANK_STOP_NTSC;
+		hardwired_vbstrt = maxvpos;
 		equ_vblank_endline = EQU_ENDLINE_NTSC;
 		equ_vblank_toggle = false;
-		vblank_hz_shf = clk / ((maxvpos + 0.0f) * (maxhpos + 0.5f));
-		vblank_hz_lof = clk / ((maxvpos + 1.0f) * (maxhpos + 0.5f));
-		vblank_hz_lace = clk / ((maxvpos + 0.5f) * (maxhpos + 0.5f));
+		float half = (beamcon0 & BEAMCON0_LOLDIS) ? 0 : 0.5f;
+		vblank_hz_shf = clk / ((maxvpos + 0.0f) * (maxhpos + half));
+		vblank_hz_lof = clk / ((maxvpos + 1.0f) * (maxhpos + half));
+		vblank_hz_lace = clk / ((maxvpos + 0.5f) * (maxhpos + half));
 	}
 
 	dmal_htotal_mask = 0xffff;
@@ -7187,8 +7410,12 @@ static void init_hz(bool checkvposw)
 	maxvpos_nom = maxvpos;
 	maxvpos_display = maxvpos;
 	maxvpos_display_vsync = 1;
-	// A1000 Agnus VBSTRT=first line, OCS and later: VBSTRT=last line
 	if (agnusa1000) {
+		// A1000 Agnus VBSTRT=first line, OCS and later: VBSTRT=last line
+		maxvpos_display_vsync++;
+		hardwired_vsstrt++;
+	} else if (!ecs_agnus && !ecs_denise) {
+		// OCS Agnus + OCS Denise: line 0 is visible
 		maxvpos_display_vsync++;
 	}
 
@@ -7198,7 +7425,7 @@ static void init_hz(bool checkvposw)
 	if (beamcon0 & BEAMCON0_VARBEAMEN) {
 		// assume VGA-like monitor if VARBEAMEN
 		if (currprefs.gfx_overscanmode >= OVERSCANMODE_ULTRA) {
-			maxhpos_display = maxhpos;
+			maxhpos_display = maxhpos + 7;
 			hsstop_detect = hsstrt * 2;
 			if (hsstop_detect > maxhpos / 2 * 2 || hsstop_detect < 4 * 2) {
 				hsstop_detect = 4 * 2;
@@ -7208,7 +7435,7 @@ static void init_hz(bool checkvposw)
 			int hp2 = maxhpos * 2;
 			if (exthblank) {
 
-				int hb = 0;
+				int hb = 1;
 				int hbstrtx = (hbstrt & 0xff) * 2;
 				int hbstopx = (hbstop & 0xff) * 2;
 				if (aga_mode) {
@@ -7229,8 +7456,8 @@ static void init_hz(bool checkvposw)
 				if (hbstopx > hp2 / 2) {
 					hbstopx = 0;
 				}
-				if (hb < 0) {
-					hb = 0;
+				if (hb < 1) {
+					hb = 1;
 				}
 
 #if 0
@@ -7244,8 +7471,8 @@ static void init_hz(bool checkvposw)
 					hsz = hsstop - hsstrt;
 				}
 #endif
-				maxhpos_display = maxhpos - (hb / 2);
-				hsstop_detect = hbstopx;
+				maxhpos_display = maxhpos - ((hb + 1) / 2);
+				hsstop_detect = hbstopx - 1;
 
 			} else {
 
@@ -7315,7 +7542,6 @@ static void init_hz(bool checkvposw)
 			minfirstline--;
 			hsstop_detect -= 1;
 		}
-
 	}
 
 	if (currprefs.gfx_extrawidth > 0) {
@@ -7344,7 +7570,7 @@ static void init_hz(bool checkvposw)
 		minfirstline_hw = 0;
 	}
 
-	if (vpos_count > 0) {
+	if (fakehz && vpos_count > maxvpos_display_vsync) {
 		// we come here if vpos_count != maxvpos and beamcon0 didn't change
 		// (someone poked VPOSW)
 		if (vpos_count < 10) {
@@ -7391,12 +7617,29 @@ static void init_hz(bool checkvposw)
 		if (vsstrt > 0 && vsstrt < maxvpos / 2) {
 			maxvpos_display_vsync += vsstrt - 1;
 		}
+		// if (weird mode where) vblank starts after vsync start+3: minfirstline = vsstrt+3
+		if (currprefs.gfx_overscanmode >= OVERSCANMODE_EXTREME && firstblankedline >= vsstrt + 3 && minfirstline > vsstrt + 3 && firstblankedline < minfirstline) {
+			minfirstline = vsstrt + 3;
+			if (minfirstline_hw > minfirstline) {
+				minfirstline_hw = minfirstline;
+			}
+		}
 	} else if (beamcon0 & bemcon0_vsync_mask) {
 		firstblankedline = maxvpos + 1;
 	} else if (beamcon0 & BEAMCON0_VARVBEN) {
+		if (minfirstline > vbstop) {
+			minfirstline = vbstop;
+			if (minfirstline < 3) {
+				minfirstline = 3;
+			}
+		}
 		firstblankedline = vbstrt;
-		if (vsstrt > 0 && vsstrt < maxvpos / 2) {
-			maxvpos_display_vsync += vsstrt - 1;
+		// if (weird mode where) vblank starts after vsync start+3: minfirstline = vsstrt+3
+		if (currprefs.gfx_overscanmode >= OVERSCANMODE_EXTREME && firstblankedline >= hardwired_vsstrt + 3 && minfirstline > hardwired_vsstrt + 3 && firstblankedline < minfirstline) {
+			minfirstline = hardwired_vsstrt + 3;
+			if (minfirstline_hw > minfirstline) {
+				minfirstline_hw = minfirstline;
+			}
 		}
 	} else {
 		firstblankedline = maxvpos + 1;
@@ -7446,10 +7689,11 @@ static void init_hz(bool checkvposw)
 	}
 
 	if (beamcon0 & BEAMCON0_VARBEAMEN) {
-		vblank_hz_nom = vblank_hz = clk / (maxvpos * maxhpos);
+		float half = (beamcon0 & BEAMCON0_PAL) ? 0: ((beamcon0 & BEAMCON0_LOLDIS) ? 0 : 0.5f);
+		vblank_hz_nom = vblank_hz = clk / (maxvpos * (maxhpos + half));
 		vblank_hz_shf = vblank_hz;
-		vblank_hz_lof = clk / ((maxvpos + 1.0f) * maxhpos);
-		vblank_hz_lace = clk / ((maxvpos + 0.5f) * maxhpos);
+		vblank_hz_lof = clk / ((maxvpos + 1.0f) * (maxhpos + half));
+		vblank_hz_lace = clk / ((maxvpos + 0.5f) * (maxhpos + half));
 
 		maxvpos_nom = maxvpos;
 		maxvpos_display = maxvpos;
@@ -7464,10 +7708,8 @@ static void init_hz(bool checkvposw)
 			programmedmode = 1;
 		}
 
-		varsync_changed = 1;
 		vpos_count = maxvpos_nom;
 		vpos_count_diff = maxvpos_nom;
-		hzc = 1;
 	}
 
 	// exclude possible extra lines that are inside vertical blank
@@ -7494,9 +7736,6 @@ static void init_hz(bool checkvposw)
 	if (currprefs.gfx_scandoubler && doublescan == 0) {
 		doublescan = -1;
 	}
-	if (doublescan != odbl || maxvpos != omaxvpos) {
-		hzc = 1;
-	}
 	/* limit to sane values */
 	if (vblank_hz < 10) {
 		vblank_hz = 10;
@@ -7505,19 +7744,77 @@ static void init_hz(bool checkvposw)
 		vblank_hz = 300;
 	}
 	maxhpos_short = maxhpos;
+	minfirstline_linear = minfirstline;
 	set_delay_lastcycle();
 	updateextblk();
+	maxvpos_total = ecs_agnus ? (MAXVPOS_LINES_ECS - 1) : (MAXVPOS_LINES_OCS - 1);
+	if (maxvpos_total > MAXVPOS) {
+		maxvpos_total = MAXVPOS;
+	}
+	set_maxhpos(maxhpos);
+	estimated_fm = 0xffff;
+	maxvsize_display = maxvpos_display + maxvpos_display_vsync - minfirstline;
+
+	if ((currprefs.m68k_speed == 0 || copper_access) && maxhpos != oldmaxhpos) {
+		if (hpos >= maxhpos) {
+			// count until 255 -> 0 wrap around
+			eventtab[ev_hsync].evtime = line_start_cycles + 256 * CYCLE_UNIT;
+			// mark current line lenght = 0x100
+			set_maxhpos(0x100);
+		} else {
+			// adjust current scanline length to match new maxhpos
+			eventtab[ev_hsync].evtime = line_start_cycles + maxhpos * CYCLE_UNIT;
+		}
+		current_hpos();
+		events_schedule();
+	}
+}
+
+static void init_hz(bool checkvposw)
+{
+	int isntsc, islace;
+	int odbl = doublescan;
+	double ovblank = vblank_hz;
+	int hzc = 0;
+	int omaxhpos = maxhpos;
+	int omaxvpos = maxvpos;
+
+	if (!checkvposw) {
+		vpos_count = 0;
+	}
+
+	isntsc = (new_beamcon0 & BEAMCON0_PAL) ? 0 : 1;
+	islace = (interlace_seen) ? 1 : 0;
+	if (!ecs_agnus) {
+		isntsc = currprefs.ntscmode ? 1 : 0;
+	}
+
+	vpos_count_diff = vpos_count;
+
+	doublescan = 0;
+	programmedmode = 0;
+	if ((beamcon0 & (BEAMCON0_VARBEAMEN | BEAMCON0_PAL)) != (new_beamcon0 & (BEAMCON0_VARBEAMEN | BEAMCON0_PAL))) {
+		hzc = 1;
+	}
+	if (beamcon0 != new_beamcon0) {
+		vpos_count_diff = vpos_count = 0;
+	}
+	if ((beamcon0 & (BEAMCON0_VARVBEN | BEAMCON0_VARVSYEN | BEAMCON0_VARCSYEN)) != (new_beamcon0 & (BEAMCON0_VARVBEN | BEAMCON0_VARVSYEN | BEAMCON0_VARCSYEN))) {
+		hzc = 1;
+	}
+
+	init_beamcon0(checkvposw);
+
+	if (doublescan != odbl || maxvpos != omaxvpos) {
+		hzc = 1;
+	}
+
 	eventtab[ev_hsync].oldcycles = get_cycles();
 	eventtab[ev_hsync].evtime = get_cycles() + HSYNCTIME;
 	events_schedule();
 	if (hzc) {
 		interlace_seen = islace;
 		reset_drawing();
-	}
-
-	maxvpos_total = ecs_agnus ? (MAXVPOS_LINES_ECS - 1) : (MAXVPOS_LINES_OCS - 1);
-	if (maxvpos_total > MAXVPOS) {
-		maxvpos_total = MAXVPOS;
 	}
 
 	if (maxvpos != omaxvpos || maxhpos != omaxhpos) {
@@ -7534,9 +7831,6 @@ static void init_hz(bool checkvposw)
 
 	compute_framesync();
 	devices_syncchange();
-	set_maxhpos(maxhpos);
-	display_reset = 2;
-	estimated_fm = 0xffff;
 
 #ifdef PICASSO96
 	init_hz_p96(0);
@@ -7601,20 +7895,20 @@ static void calcdiw(void)
 
 	diwfirstword = coord_diw_shres_to_window_x(hstrt);
 	diwlastword = coord_diw_shres_to_window_x(hstop);
-	if (diwfirstword < min_diwlastword) {
-		diwfirstword = min_diwlastword;
-	}
-	if (diwlastword < min_diwlastword) {
-		diwlastword = min_diwlastword;
+	int mindiw = min_diwlastword;
+	if (diwfirstword < mindiw) {
+		diwfirstword = mindiw;
 	}
 
-#ifdef __LIBRETRO__
+	int hpos = current_hpos();
+
+#ifndef __cplusplus
 	if (vstrt == vpos && vstop != vpos && vdiwstate == DIW_waiting_start) {
 #else
 	if (vstrt == vpos && vstop != vpos && vdiwstate == diw_states::DIW_waiting_start) {
 #endif
 		// This may start BPL DMA immediately.
-		SET_LINE_CYCLEBASED;
+		SET_LINE_CYCLEBASED(hpos);
 	}
 
 	plffirstline = vstrt;
@@ -7629,7 +7923,7 @@ static void calcdiw(void)
 
 	diw_change = 2;
 
-	decide_vline();
+	decide_vline(hpos);
 }
 
 /* display mode changed (lores, doubling etc..), recalculate everything */
@@ -7738,15 +8032,15 @@ STATIC_INLINE uae_u16 DMACONR(int hpos)
 }
 STATIC_INLINE uae_u16 INTENAR(void)
 {
-	return intena;
+	return intena & 0x7fff;
 }
 uae_u16 INTREQR(void)
 {
-	return intreq;
+	return intreq & 0x7fff;
 }
 STATIC_INLINE uae_u16 ADKCONR(void)
 {
-	return adkcon;
+	return adkcon & 0x7fff;
 }
 
 STATIC_INLINE int islightpentriggered(void)
@@ -7793,6 +8087,21 @@ static void check_line_enabled(void)
 	line_disabled |= custom_disabled ? 2 : 0;
 }
 
+void get_mode_blanking_limits(int *phbstop, int *phbstrt, int *pvbstop, int *pvbstrt)
+{
+	if (new_beamcon0 & BEAMCON0_VARVBEN) {
+		*pvbstop = vbstop;
+		*pvbstrt = vbstrt;
+		*phbstop = hbstop_v;
+		*phbstrt = hbstrt_v;
+	} else {
+		*pvbstop = hardwired_vbstop;
+		*pvbstrt = hardwired_vbstrt;
+		*phbstop = (47 << CCK_SHRES_SHIFT) - 7;
+		*phbstrt = ((maxhpos_short + 8) << CCK_SHRES_SHIFT) - 3;
+	}
+}
+
 static void vb_check(void)
 {
 	check_line_enabled();
@@ -7804,7 +8113,7 @@ static void vb_check(void)
 			vb_state = true;
 		}
 	} else {
-		if (vpos == maxvpos + lof_store - 1) {
+		if (vpos == hardwired_vbstrt + lof_store - 1) {
 			vb_start_line = 1;
 			vb_state = true;
 		}
@@ -7812,6 +8121,12 @@ static void vb_check(void)
 	if (vpos == hardwired_vbstop - 1) {
 		vb_end_line = true;
 		vb_state = false;
+	}
+	if (vpos == hardwired_vbstop) {
+		vb_end_line = false;
+		vb_state = false;
+		vb_start_line = 0;
+		vb_end_next_line = true;
 	}
 }
 
@@ -7848,7 +8163,7 @@ static uae_u16 VPOSR(void)
 				lofr = lofr ? 0 : 1;
 			}
 		}
-		if (islinetoggle()) {
+		if (linetoggle) {
 			lolr = lolr ? 0 : 1;
 		}
 	}
@@ -7886,7 +8201,7 @@ static uae_u16 VPOSR(void)
 	return vp;
 }
 
-static void VPOSW(uae_u16 v)
+static void VPOSW(int hpos, uae_u16 v)
 {
 	int oldvpos = vpos;
 	int newvpos = vpos;
@@ -7918,15 +8233,14 @@ static void VPOSW(uae_u16 v)
 	newvpos |= v << 8;
 
 	if (newvpos != oldvpos) {
+		decide_line(hpos);
+		decide_fetch_safe(hpos);
 		cia_adjust_eclock_phase((newvpos - oldvpos) * maxhpos);
 		vposw_change++;
-
-		if (newvpos < oldvpos && oldvpos <= maxvpos) {
-			newvpos = oldvpos;
-		}
 		vpos = newvpos;
-
 		vb_check();
+		decide_vline(hpos);
+		SET_LINE_CYCLEBASED(hpos);
 	}
 }
 
@@ -7934,17 +8248,28 @@ static void VHPOSW_delayed(uae_u32 v)
 {
 	int oldvpos = vpos;
 	int newvpos = vpos;
-	int hpos_org = -1;
+	int hpos_org = current_hpos();
+	int hnew = hpos_org;
+	bool enabled = false;
+
+	decide_vline(hpos_org);
+	decide_hdiw(hpos_org);
+	decide_line(hpos_org);
+	decide_fetch_safe(hpos_org);
+	decide_sprites(hpos_org);
+	flush_display(fetchmode);
 
 #if 0
 	if (M68K_GETPC < 0xf00000 || 1)
 		write_log (_T("VHPOSW %04X PC=%08x\n"), v, M68K_GETPC);
 #endif
 
-	if ((currprefs.m68k_speed >= 0 && !currprefs.cachesize) || copper_access) {
-		hpos_org = current_hpos();
+	bool cpu_accurate = currprefs.m68k_speed >= 0 && !currprefs.cachesize && currprefs.cpu_memory_cycle_exact;
+
+	if (cpu_accurate || copper_access) {
+		enabled = true;
 		int hpos = hpos_org;
-		int hnew = (v & 0xff);
+		hnew = (v & 0xff);
 		int hnew_org = hnew;
 		bool newinc = false;
 		if (hpos == 0 || hpos == 1) {
@@ -7966,11 +8291,10 @@ static void VHPOSW_delayed(uae_u32 v)
 		}
 
 		if (hdiff) {
-			delay_cycles += ((-hdiff * 8 - 2) & 7) << LORES_TO_SHRES_SHIFT;
+			bool fail = false;
 			if (hdiff & 1) {
 				vhposr_delay_offset = 1;
 			}
-			vhposr_sprite_offset += (hdiff * 4 - 2) << sprite_buffer_res;
 
 			evt_t hsync_evtime = eventtab[ev_hsync].evtime;
 			evt_t hsync_oldcycles = eventtab[ev_hsync].oldcycles;
@@ -7980,6 +8304,8 @@ static void VHPOSW_delayed(uae_u32 v)
 			set_maxhpos(maxhpos);
 			if (newinc && hnew == maxhpos + 1) {
 				// 0000 -> 0001 (0 and 1 are part of previous line, vpos increases when hpos=1). No need to do anything
+			} else if (hnew_org == 0 && hpos_org > 1) {
+				fail = true;
 			} else if (hpos < maxhpos && hnew >= maxhpos) {
 				// maxhpos check skip: counter counts until it wraps around 0xFF->0x00
 				int hdiff2 = (0x100 - hnew) - (maxhpos - hpos);
@@ -8000,7 +8326,7 @@ static void VHPOSW_delayed(uae_u32 v)
 			}
 
 			int hpos2 = current_hpos_safe();
-			if (hpos2 < 0 || hpos2 > 255) {
+			if (hpos2 < 0 || hpos2 > 255 || fail) {
 				eventtab[ev_hsync].evtime = hsync_evtime;
 				eventtab[ev_hsync].oldcycles = hsync_oldcycles;
 				eventtab[ev_hsynch].evtime = hsynch_evtime;
@@ -8035,43 +8361,69 @@ static void VHPOSW_delayed(uae_u32 v)
 						memset(blitter_pipe, 0, t * sizeof(uae_u16));
 					}
 				}
-				set_blitter_last(hnew + 1);
-				last_copper_hpos = hnew + 1;
+				int nhp = hnew + 1;
+				set_blitter_last(nhp);
+				last_copper_hpos = nhp;
+				last_fetch_hpos = nhp;
+				last_decide_line_hpos = nhp;
+				last_decide_sprite_hpos = nhp;
 			}
 		}
+
+		delay_cycles = ((hnew + 0) & 0xff) << CCK_SHRES_SHIFT;
+
+		last_diw_hpos = hnew << 1;
+		hdiw_denisecounter = ((hnew + 0) & 0xff) << CCK_SHRES_SHIFT;
 	}
 
-	v >>= 8;
 	newvpos &= 0xff00;
-	newvpos |= v;
-	if (newvpos != oldvpos) {
-		vposw_change++;
+	newvpos |= v >> 8;
+	if (enabled && (hpos_org == 0 || hpos_org == 1)) {
+		newvpos++;
+	}
+	if (newvpos > vpos || (newvpos <= maxvpos && vpos > maxvpos) || cpu_accurate || copper_access) {
+		if (newvpos != oldvpos) {
+			vposw_change++;
 #ifdef DEBUGGER
-		if (hpos_org >= 0) {
-			record_dma_hsync(hpos_org);
-			if (debug_dma) {
-				int vp = vpos;
-				vpos = newvpos;
-				record_dma_hsync(maxhpos);
-				vpos = vp;
+			if (hpos_org >= 0) {
+				record_dma_hsync(hpos_org);
+				if (debug_dma) {
+					int vp = vpos;
+					vpos = newvpos;
+					record_dma_hsync(maxhpos);
+					vpos = vp;
+				}
 			}
-		}
 #endif
+		}
+		vpos = newvpos;
+#ifdef DEBUGGER
+		record_dma_denise(hnew, hdiw_denisecounter >> 2);
+#endif
+		vb_check();
+		decide_vline(hnew);
+		vhposw_modified = true;
 	}
-	// don't allow backwards vpos (at least for now)
-	// allow backwards if old vpos was out of range
-	if (newvpos < oldvpos && oldvpos <= maxvpos) {
-		newvpos = oldvpos;
-	} else if (newvpos < minfirstline && oldvpos < minfirstline) {
-		newvpos = oldvpos;
-	}
-	vpos = newvpos;
-	vb_check();
-} 
+}
+
+static void VHPOSW_delayed1(uae_u32 v)
+{
+	int hpos = current_hpos();
+	decide_hdiw(hpos);
+	decide_line(hpos);
+	decide_fetch_safe(hpos);
+	decide_sprites_3(hpos, false, true);
+
+	int hnew = v & 0xff;
+	last_sprite_hpos = (hnew << 1) - 1;
+	last_sprite_point = (((hnew + 0) & 0xff) << 1) + 0;
+
+	event2_newevent_xx(-1, 1 * CYCLE_UNIT, v, VHPOSW_delayed);
+}
 
 static void VHPOSW(uae_u16 v)
 {
-	event2_newevent_xx(-1, 2 * CYCLE_UNIT, v, VHPOSW_delayed);
+	event2_newevent_xx(-1, 1 * CYCLE_UNIT, v, VHPOSW_delayed1);
 }
 
 static uae_u16 VHPOSR(void)
@@ -8466,7 +8818,7 @@ static void COPJMP(int num, int vblank)
 			cop_state.state = COP_strobe_delay2;
 			switch (cop_state.state_prev)
 			{
-#ifdef __LIBRETRO__
+#ifndef __cplusplus
 				case COP_read1:
 #else
 				case copper_states::COP_read1:
@@ -8474,7 +8826,7 @@ static void COPJMP(int num, int vblank)
 					// Wake up is delayed by 1 copper cycle if copper is currently loading words
 					cop_state.state = COP_strobe_delay3;
 					break;
-#ifdef __LIBRETRO__
+#ifndef __cplusplus
 				case COP_read2:
 #else
 				case copper_states::COP_read2:
@@ -8556,16 +8908,17 @@ static void DMACON(int hpos, uae_u16 v)
 	if (!oldcop && newcop) {
 		bootwarpmode();
 	}
-	if (oldcop != newcop && (copper_access || safecpu())) {
-		copper_dma_change_cycle = get_cycles();
-	}
 	if (newcop && !oldcop) {
-		if (copper_dma_change_cycle == get_cycles()) {
+		if (copper_access || safecpu()) {
+			copper_dma_change_cycle = get_cycles();
 			event2_newevent_xx(-1, CYCLE_UNIT, 0, compute_spcflag_copper_delayed);
 		} else {
 			compute_spcflag_copper();
 		}
 	} else if (!newcop && oldcop) {
+		if (copper_access || safecpu()) {
+			copper_dma_change_cycle = get_cycles();
+		}
 		compute_spcflag_copper();
 	}
 
@@ -8622,8 +8975,14 @@ static void DMACON(int hpos, uae_u16 v)
 	}
 
 	if (changed & (DMA_MASTER | DMA_BITPLANE)) {
-		event2_newevent_xx(-1, CYCLE_UNIT, dmacon, bitplane_dma_change);
-		SET_LINE_CYCLEBASED;
+		// if ECS, DDFSTRT has already passed but DMA was off and DMA gets turned on: BPRUN actvates 1 cycle earlier
+		bool bpl = (dmacon & DMA_BITPLANE) && (dmacon & DMA_MASTER);
+		if (ecs_agnus && bpl && !dmacon_bpl && ddf_enable_on > 0) {
+			dmacon_bpl = true;
+		} else {
+			event2_newevent_xx(-1, CYCLE_UNIT, dmacon, bitplane_dma_change);
+		}
+		SET_LINE_CYCLEBASED(hpos);
 	}
 }
 
@@ -8667,7 +9026,7 @@ int intlev(void)
 	}
 	uae_u16 imask = intreq2 & intena2;
 	if (!(imask && (intena2 & 0x4000)))
-		return -1;
+		return 0;
 	if (imask & (0x4000 | 0x2000))						// 13 14
 		return 6;
 	if (imask & (0x1000 | 0x0800))						// 11 12
@@ -8680,7 +9039,7 @@ int intlev(void)
 		return 2;
 	if (imask & (0x0001 | 0x0002 | 0x0004))				// 0 1 2
 		return 1;
-	return -1;
+	return 0;
 }
 
 void rethink_uae_int(void)
@@ -8722,8 +9081,8 @@ static void rethink_intreq(void)
 
 static void intreq_checks(uae_u16 oldreq, uae_u16 newreq)
 {
-	if ((oldreq & 0x0800) && !(newreq & 0x0800)) {
-		serial_rbf_clear();
+	if ((oldreq & 0x0800) != (newreq & 0x0800)) {
+		serial_rbf_change((newreq & 0x0800) ? 1 : 0);
 	}
 }
 
@@ -8732,17 +9091,12 @@ static void event_doint_delay_do_ext(uae_u32 v)
 	uae_u16 old = intreq2;
 	setclr(&intreq, (1 << v) | 0x8000);
 	setclr(&intreq2, (1 << v) | 0x8000);
-	intreq_checks(old, intreq2);
 
 	doint();
 }
 
 static void event_send_interrupt_do_ext(uae_u32 v)
 {
-	//uae_u16 old = intreq;
-	//setclr(&intreq, (1 << v) | 0x8000);
-	//intreq_checks(old);
-
 	event2_newevent_xx(-1, 1 * CYCLE_UNIT, v, event_doint_delay_do_ext);
 }
 
@@ -8763,7 +9117,6 @@ static void event_doint_delay_do_intreq(uae_u32 v)
 {
 	uae_u16 old = intreq2;
 	setclr(&intreq2, v);
-	intreq_checks(old, intreq2);
 
 	doint();
 }
@@ -8832,6 +9185,7 @@ bool INTREQ_0(uae_u16 v)
 
 	if (old != intreq) {
 		doint_delay_intreq(v);
+		intreq_checks(old, intreq);
 	}
 	return true;
 }
@@ -8851,6 +9205,7 @@ static void ADKCON(int hpos, uae_u16 v)
 	DISK_update(hpos);
 	DISK_update_adkcon(hpos, v);
 	setclr(&adkcon, v);
+	DISK_update_predict();
 	audio_update_adkmasks();
 #ifdef SERIAL_PORT
 	if ((v >> 11) & 1) {
@@ -8870,23 +9225,30 @@ static void check_harddis(void)
 static void BEAMCON0(int hpos, uae_u16 v)
 {
 	if (ecs_agnus) {
+		bool beamcon0_changed = false;
 		if (v != new_beamcon0) {
-			sync_color_changes(hpos);
+			sync_changes(hpos);
 			new_beamcon0 = v;
 			write_log(_T("BEAMCON0 = %04X, PC=%08X\n"), v, M68K_GETPC);
 			// not LPENDIS, LOLDIS, PAL, BLANKEN, SYNC INVERT
 			if (v & ~(BEAMCON0_LPENDIS | BEAMCON0_LOLDIS | BEAMCON0_PAL | BEAMCON0_BLANKEN | BEAMCON0_CSYTRUE | BEAMCON0_VSYTRUE | BEAMCON0_HSYTRUE)) {
 				dumpsync();
 			}
+			beamcon0_changed = true;
+			beamcon0_saved = v;
+			record_register_change(hpos, 0x1dc, new_beamcon0);
+			check_harddis();
+			calcdiw();
+			vb_check();
+			decide_vline(hpos);
 		}
-		beamcon0_saved = v;
-		record_register_change(hpos, 0x1dc, new_beamcon0);
-		check_harddis();
-		calcdiw();
+		if (beamcon0_changed) {
+			init_beamcon0(false);
+		}
 	}
 }
 
-static void varsync(int reg, bool resync)
+static void varsync(int reg, bool resync, int oldval)
 {
 	struct amigadisplay *ad = &adisplays[0];
 	if (!ecs_agnus) {
@@ -8900,9 +9262,25 @@ static void varsync(int reg, bool resync)
 #endif
 	thisline_changed = 1;
 	updateextblk();
+
+	// VB
+	if ((reg == 0x1cc || reg == 0x1ce) && (beamcon0 & BEAMCON0_VARVBEN)) {
+		// check for >1 because of interlace modes
+		if ((reg == 0x1cc && abs(vbstrt - oldval) > 1) || (reg == 0x1ce && abs(vbstop - oldval) > 1)) {
+			// check VB changes only if there are not many changes per frame
+			varsync_maybe_changed[reg == 0x1cc ? 0 : 1]++;
+		}
+	}
+	// HB
+	if ((reg == 0x1c4 || reg == 0x1c6) && exthblank) {
+		// only do resync if HB value has been valid at least 66% of field
+		varhblank_lines = (maxvpos / 3) * 2;
+	}
+
 	if (!resync) {
 		return;
 	}
+
 	// TOTAL
 	if ((reg == 0x1c0 || reg == 0x1c8) && (beamcon0 & BEAMCON0_VARBEAMEN)) {
 		varsync_changed = 1;
@@ -8920,6 +9298,15 @@ static void varsync(int reg, bool resync)
 	// HS
 	if ((reg == 0x1de || reg == 0x1c2) && (beamcon0 & bemcon0_hsync_mask)) {
 		varsync_changed = 1;
+	}
+
+	if (varsync_changed) {
+		varsync_maybe_changed[0] = 0;
+		varsync_maybe_changed[1] = 0;
+	}
+
+	if (varsync_changed) {
+		init_beamcon0(false);
 	}
 }
 
@@ -8955,7 +9342,7 @@ static void BPLxPTH(int hpos, uae_u16 v, int num)
 	if (copper_access) {
 		int n = get_bitplane_dma_rel(hpos, 1);
 		if (n == num + 1) {
-			SET_LINE_CYCLEBASED;
+			SET_LINE_CYCLEBASED(hpos);
 			return;
 		}
 	}
@@ -8973,7 +9360,7 @@ static void BPLxPTL(int hpos, uae_u16 v, int num)
 	if (copper_access) {
 		int n = get_bitplane_dma_rel(hpos, 1);
 		if (n == num + 1) {
-			SET_LINE_CYCLEBASED;
+			SET_LINE_CYCLEBASED(hpos);
 			return;
 		}
 	}
@@ -9071,10 +9458,8 @@ static void bplcon0_denise_change_early(int hpos, uae_u16 con0)
 		bplcon0_planes_changed = true;
 	}
 	
-	SET_LINE_CYCLEBASED;
 	decide_hdiw(hpos);
-	decide_line(hpos);
-	decide_fetch_safe(hpos);
+	SET_LINE_CYCLEBASED(hpos);
 
 	if (aga_mode) {
 		int e1 = isehb(dcon0, bplcon2);
@@ -9111,12 +9496,7 @@ static void BPLCON0(int hpos, uae_u16 v)
 {
 	uae_u16 old = bplcon0;
 	bplcon0_saved = v;
-	if (!ecs_denise) {
-		v &= ~0x00F1;
-	} else if (!aga_mode) {
-		v &= ~0x00B0;
-	}
-	v &= ~0x0080;
+	v = BPLCON0_Agnus_mask(v);
 
 #if SPRBORDER
 	v |= 1;
@@ -9125,10 +9505,8 @@ static void BPLCON0(int hpos, uae_u16 v)
 		return;
 	}
 
-	SET_LINE_CYCLEBASED;
 	decide_hdiw(hpos);
-	decide_line(hpos);
-	decide_fetch_safe(hpos);
+	SET_LINE_CYCLEBASED(hpos);
 
 	if ((v & 1) != (bplcon0 & 1)) {
 		sync_color_changes(hpos);
@@ -9179,9 +9557,7 @@ static void BPLCON1(int hpos, uae_u16 v)
 	if (bplcon1 == v) {
 		return;
 	}
-	SET_LINE_CYCLEBASED;
-	decide_line(hpos);
-	decide_fetch_safe(hpos);
+	SET_LINE_CYCLEBASED(hpos);
 	bplcon1_written = true;
 	bplcon1 = v;
 	hack_shres_delay(hpos);
@@ -9305,7 +9681,7 @@ static void BPLxDAT_next(uae_u32 vv)
 
 	if (num == 0) {
 		// ECS/AGA: HSYNC start - 1: $0C is first possible.
-		if ((ecs_denise && hpos != hsyncstartpos_start_cycles - 1) || (!ecs_denise && hpos >= OCS_DENISE_HBLANK_DISABLE_HPOS)) {
+		if (hpos != hsyncstartpos_start_cycles - 1) {
 			beginning_of_plane_block(hpos);
 			bprun_pipeline_flush_delay = maxhpos;
 			if (bplcon0_planes_changed) {
@@ -9321,44 +9697,55 @@ static void BPLxDAT(int hpos, int num, uae_u16 data)
 {
 	uae_u32 vv = (num << 16) | data;
 	if (!num) {
-		SET_LINE_CYCLEBASED;
+		SET_LINE_CYCLEBASED(hpos);
 	}
-	event2_newevent_xx(-1, 1 * CYCLE_UNIT, vv, BPLxDAT_next);
+	event2_newevent_xx_ce(1 * CYCLE_UNIT, vv, BPLxDAT_next);
 }
 
-static void DIWSTRT(int hpos, uae_u16 v)
+static void DIWSTRT_next(uae_u32 v)
 {
-	if (diwstrt == v && !diwhigh_written) {
-		return;
-	}
-	// if hpos matches previous hstart: it gets ignored.
-	if ((diw_hstrt >> 2) + DDF_OFFSET >= hpos * 2 - 2 && (diw_hstrt >> 2) + DDF_OFFSET <= hpos * 2 + 2) {
-		diw_hstrt = max_diwlastword << 2;
-	}
+	int hpos = current_hpos();
 	decide_hdiw(hpos);
-	decide_conflict_hdiw(hpos);
 	decide_line(hpos);
 	diwhigh_written = 0;
 	diwstrt = v;
 	calcdiw();
 }
-
-static void DIWSTOP(int hpos, uae_u16 v)
+static void DIWSTRT(int hpos, uae_u16 v)
 {
-	if (diwstop == v && !diwhigh_written) {
+	if (diwstrt == v && !diwhigh_written) {
 		return;
 	}
-	if ((diw_hstop >> 2) + DDF_OFFSET >= hpos * 2 - 2 && (diw_hstop >> 2) + DDF_OFFSET <= hpos * 2 + 2) {
-		diw_hstop = min_diwlastword << 2;
-	}
+	event2_newevent_xx_ce(1 * CYCLE_UNIT, v, DIWSTRT_next);
+}
+
+static void DIWSTOP_next(uae_u32 v)
+{
+	int hpos = current_hpos();
 	decide_hdiw(hpos);
-	decide_conflict_hdiw(hpos);
 	decide_line(hpos);
 	diwhigh_written = 0;
 	diwstop = v;
 	calcdiw();
 }
+static void DIWSTOP(int hpos, uae_u16 v)
+{
+	if (diwstop == v && !diwhigh_written) {
+		return;
+	}
+	event2_newevent_xx_ce(1 * CYCLE_UNIT, v, DIWSTOP_next);
+}
 
+static void DIWHIGH_next(uae_u32 v)
+{
+	int hpos = current_hpos();
+	// DIWHIGH has 1.5CCK delay
+	decide_hdiw_2(hpos, true);
+	decide_line(hpos);
+	diwhigh_written = 1;
+	diwhigh = v;
+	calcdiw();
+}
 static void DIWHIGH(int hpos, uae_u16 v)
 {
 	if (!ecs_agnus && !ecs_denise) {
@@ -9371,12 +9758,7 @@ static void DIWHIGH(int hpos, uae_u16 v)
 	if (diwhigh_written && diwhigh == v) {
 		return;
 	}
-	decide_hdiw(hpos);
-	decide_conflict_hdiw(hpos);
-	decide_line(hpos);
-	diwhigh_written = 1;
-	diwhigh = v;
-	calcdiw();
+	event2_newevent_xx_ce(1 * CYCLE_UNIT, v, DIWHIGH_next);
 }
 
 static void DDFSTRT(int hpos, uae_u16 v)
@@ -9385,9 +9767,7 @@ static void DDFSTRT(int hpos, uae_u16 v)
 	if (!ecs_agnus) {
 		v &= 0xfc;
 	}
-	decide_line(hpos);
-	decide_fetch_safe(hpos);
-	SET_LINE_CYCLEBASED;
+	SET_LINE_CYCLEBASED(hpos);
 	ddfstrt = v;
 	calcdiw();
 	// DDFSTRT modified when DDFSTRT==hpos: neither value matches
@@ -9400,9 +9780,7 @@ static void DDFSTOP(int hpos, uae_u16 v)
 	if (!ecs_agnus) {
 		v &= 0xfc;
 	}
-	decide_line(hpos);
-	decide_fetch_safe(hpos);
-	SET_LINE_CYCLEBASED;
+	SET_LINE_CYCLEBASED(hpos);
 	plfstop_prev = plfstop;
 	ddfstop = v;
 	calcdiw();
@@ -9417,16 +9795,17 @@ static void FMODE(int hpos, uae_u16 v)
 		if (currprefs.monitoremu) {
 			specialmonitor_store_fmode(vpos, hpos, v);
 		}
+		fmode_saved = v;
 		v = 0;
 	}
 	v &= 0xC00F;
 	if (fmode == v) {
 		return;
 	}
-	decide_line(hpos);
-	decide_fetch_safe(hpos);
-	SET_LINE_CYCLEBASED;
-	fmode_saved = v;
+	SET_LINE_CYCLEBASED(hpos);
+	if (aga_mode) {
+		fmode_saved = v;
+	}
 	set_chipset_mode();
 	bpldmainit(hpos, bplcon0);
 	record_register_change(hpos, 0x1fc, fmode);
@@ -9502,7 +9881,7 @@ static void BLTCON0L(int hpos, uae_u16 v)
 	if (!ecs_agnus)
 		return; // ei voittoa.
 	maybe_blit(hpos, 2); bltcon0 = (bltcon0 & 0xFF00) | (v & 0xFF);
-	reset_blit(1);
+	reset_blit(0);
 }
 static void BLTCON1(int hpos, uae_u16 v) {
 	maybe_blit(hpos, 2);
@@ -9817,7 +10196,7 @@ static void sprite_get_bpl_data(int hpos, struct sprite *s, uae_u16 *dat)
 static void SPRxDATA(int hpos, uae_u16 v, int num)
 {
 	struct sprite *s = &spr[num];
-	decide_sprites_3(hpos, true, false);
+	decide_sprites_3(hpos, false, false);
 	SPRxDATA_1(v, num, hpos);
 	// if 32 (16-bit double CAS only) or 64 pixel wide sprite and SPRxDATx write:
 	// - first 16 pixel part: previous chipset bus data
@@ -9830,10 +10209,11 @@ static void SPRxDATA(int hpos, uae_u16 v, int num)
 		}
 	}
 }
+
 static void SPRxDATB(int hpos, uae_u16 v, int num)
 {
 	struct sprite *s = &spr[num];
-	decide_sprites_3(hpos, true, false);
+	decide_sprites_3(hpos, false, false);
 	SPRxDATB_1(v, num, hpos);
 	// See above
 	if (fmode & 8) {
@@ -9845,8 +10225,15 @@ static void SPRxDATB(int hpos, uae_u16 v, int num)
 	}
 }
 
-static void SPRxCTL(int hpos, uae_u16 v, int num)
+static void SPRxCTL_2(uae_u32 vv)
 {
+	int hpos = current_hpos();
+	if (!currprefs.cpu_memory_cycle_exact) {
+		// current_hpos() assumes cycle-by-cycle emulation which does not happen in non-CE modes. FIXME!
+		hpos = ((vv >> 24) + 1) % maxhposm0;
+	}
+	uae_u16 v = vv >> 8;
+	int num = vv & 7;
 #if SPRITE_DEBUG > 0
 	if (vpos >= SPRITE_DEBUG_MINY && vpos <= SPRITE_DEBUG_MAXY && (SPRITE_DEBUG & (1 << num))) {
 		write_log(_T("%d:%d:SPR%dCTLC %06X\n"), vpos, hpos, num, spr[num].pt);
@@ -9856,8 +10243,20 @@ static void SPRxCTL(int hpos, uae_u16 v, int num)
 	decide_sprites(hpos);
 	SPRxCTL_1(v, num, hpos);
 }
-static void SPRxPOS(int hpos, uae_u16 v, int num)
+static void SPRxCTL(int hpos, uae_u16 v, int num)
 {
+	uae_u32 vv = (hpos << 24) | (v << 8) | num;
+	event2_newevent_xx_ce(1 * CYCLE_UNIT, vv, SPRxCTL_2);
+}
+
+static void SPRxPOS_2(uae_u32 vv)
+{
+	int hpos = current_hpos();
+	if (!currprefs.cpu_memory_cycle_exact) {
+		hpos = ((vv >> 24) + 1) % maxhposm0;
+	}
+	uae_u16 v = vv >> 8;
+	int num = vv & 7;
 	struct sprite *s = &spr[num];
 #if SPRITE_DEBUG > 0
 	if (vpos >= SPRITE_DEBUG_MINY && vpos <= SPRITE_DEBUG_MAXY && (SPRITE_DEBUG & (1 << num))) {
@@ -9866,6 +10265,11 @@ static void SPRxPOS(int hpos, uae_u16 v, int num)
 #endif
 	decide_sprites(hpos);
 	SPRxPOS_1(v, num, hpos);
+}
+static void SPRxPOS(int hpos, uae_u16 v, int num)
+{
+	uae_u32 vv = (hpos << 24) | (v << 8) | num;
+	event2_newevent_xx_ce(1 * CYCLE_UNIT, vv, SPRxPOS_2);
 }
 
 static void SPRxPTH(int hpos, uae_u16 v, int num)
@@ -10012,10 +10416,12 @@ static void checkautoscalecol0(void)
 
 bool get_custom_color_reg(int colreg, uae_u8 *r, uae_u8 *g, uae_u8 *b)
 {
+	if (colreg < 0)
+		return false;
 	if (colreg >= 32 && !aga_mode) {
 		return false;
 	}
-	if (colreg >= 256 || colreg < 0) {
+	if (colreg >= 256) {
 		return false;
 	}
 	if (aga_mode) {
@@ -10035,7 +10441,6 @@ bool get_custom_color_reg(int colreg, uae_u8 *r, uae_u8 *g, uae_u8 *b)
 
 static void COLOR_WRITE(int hpos, uae_u16 v, int num)
 {
-	bool colzero = false;
 	bool samecycle = false;
 
 	// skip color register write color change state update if COLOR0 register was already written in same cycle
@@ -10080,14 +10485,11 @@ static void COLOR_WRITE(int hpos, uae_u16 v, int num)
 			cb = b + (b << 4);
 			color_regs_genlock[colreg] = v >> 15;
 		}
-		cval = (cr << 16) | (cg << 8) | cb | (color_regs_genlock[colreg] ? 0x80000000 : 0);
-		if (cval && colreg == 0)
-			colzero = true;
-
-		if (cval == current_colors.color_regs_aga[colreg])
+		cval = (cr << 16) | (cg << 8) | cb | (color_regs_genlock[colreg] ? COLOR_CHANGE_GENLOCK : 0);
+		if (cval == current_colors.color_regs_aga[colreg]) {
 			return;
-
-		if (colreg == 0) {
+		}
+		if ((cval & 0xffffff) && colreg == 0) {
 			checkautoscalecol0();
 		}
 
@@ -10101,18 +10503,14 @@ static void COLOR_WRITE(int hpos, uae_u16 v, int num)
 
 	} else {
 #endif
-		v &= 0x8fff;
 		if (!ecs_denise) {
 			v &= 0xfff;
 		}
 		color_regs_genlock[num] = v >> 15;
-		if (num && v == 0) {
-			colzero = true;
-		}
 		if (current_colors.color_regs_ecs[num] == v) {
 			return;
 		}
-		if (num == 0) {
+		if ((v & 0xfff) && num == 0) {
 			checkautoscalecol0();
 		}
 
@@ -10129,14 +10527,25 @@ static void COLOR_WRITE(int hpos, uae_u16 v, int num)
 }
 
 #if ESTIMATED_FETCH_MODE
-bool bitplane_dma_access(int hpos, int offset)
+bool bitplane_dma_access(int hpos, int coffset)
 {
-	hpos += offset;
-	if (hpos >= maxhpos) {
-		hpos -= maxhpos;
-	}
-	if (estimated_cycles[hpos] > 0) {
-		return true;
+	if (line_cyclebased) {
+		int offset = get_rga_pipeline(hpos, coffset);
+		if (cycle_line_pipe[offset] & CYCLE_PIPE_BITPLANE) {
+			return true;
+		}
+	} else {
+		hpos += coffset;
+		if (hpos >= maxhpos) {
+			hpos -= maxhpos;
+			if (estimated_cycles_next[hpos] > 0) {
+				return true;
+			}
+		} else {
+			if (estimated_cycles[hpos] > 0) {
+				return true;
+			}
+		}
 	}
 	return false;
 }
@@ -10233,7 +10642,9 @@ static bool copper_cant_read(int hpos, uae_u16 alloc)
 		int offset = get_rga_pipeline(hpos, coffset);
 		if (alloc && !bitplane_dma_access(hpos, coffset) && !cycle_line_pipe[offset]) {
 			cycle_line_pipe[offset] = CYCLE_PIPE_NONE | CYCLE_PIPE_COPPER;
-			blitter_pipe[offset] = CYCLE_PIPE_COPPER;
+			if (currprefs.blitter_cycle_exact) {
+				blitter_pipe[offset] = CYCLE_PIPE_COPPER;
+			}
 #ifdef DEBUGGER
 			int dvpos = vpos + 1;
 			if (is_last_line()) {
@@ -10278,7 +10689,9 @@ static bool copper_cant_read(int hpos, uae_u16 alloc)
 		// Keep copper cycles, without it blitter would
 		// think copper cycles are free cycles because they
 		// are cleared after copper has processed them
-		blitter_pipe[offset] = CYCLE_PIPE_COPPER;
+		if (currprefs.blitter_cycle_exact) {
+			blitter_pipe[offset] = CYCLE_PIPE_COPPER;
+		}
 	}
 
 	return false;
@@ -10325,8 +10738,8 @@ static void decide_line(int endhpos)
 		}
 		uae_u16 datreg = cycle_line_pipe[hpos];
 		if (datreg & CYCLE_PIPE_COPPER) {
-			do_copper_fetch(hpos, datreg);
 			cycle_line_pipe[hpos] = 0;
+			do_copper_fetch(hpos, datreg);
 		}
 
 		bool dma = dmacon_bpl;
@@ -10436,7 +10849,7 @@ static void decide_line(int endhpos)
 					bprun_start(hpos);
 					if (ddf_stopping) {
 						bprun_pipeline_flush_delay = maxhpos;
-						SET_LINE_CYCLEBASED;
+						SET_LINE_CYCLEBASED(hpos);
 					}
 #ifdef DEBUGGER
 					if (debug_dma) {
@@ -10468,7 +10881,7 @@ static void decide_line(int endhpos)
 					ddf_stopping = 2;
 					bprun = 3;
 				}
-				SET_LINE_CYCLEBASED;
+				SET_LINE_CYCLEBASED(hpos);
 			}
 
 		} else {
@@ -10542,7 +10955,7 @@ static void decide_line(int endhpos)
 				bprun_start(hpos);
 				if (ddf_stopping) {
 					bprun_pipeline_flush_delay = maxhpos;
-					SET_LINE_CYCLEBASED;
+					SET_LINE_CYCLEBASED(hpos);
 				}
 #ifdef DEBUGGER
 				if (debug_dma) {
@@ -10568,7 +10981,7 @@ static void decide_line(int endhpos)
 					ddf_stopping = 2;
 					bprun = 3;
 				}
-				SET_LINE_CYCLEBASED;
+				SET_LINE_CYCLEBASED(hpos);
 			}
 
 		}
@@ -10964,8 +11377,8 @@ static void update_copper(int until_hpos)
 		bool copper_dma = (cycle_line_pipe[hpos] & CYCLE_PIPE_COPPER) != 0;
 		if (copper_dma) {
 			uae_u16 v = cycle_line_pipe[hpos];
-			do_copper_fetch(hpos, v);
 			cycle_line_pipe[hpos] = 0;
+			do_copper_fetch(hpos, v);
 		}
 
 		if (!copper_enabled_thisline) {
@@ -11083,7 +11496,7 @@ static void update_copper(int until_hpos)
 				int comp = coppercomp(hpos, true);
 				if (comp < 0) {
 					// If we need to wait for later scanline or blitter: no need to emulate copper cycle-by-cycle
-					if (cop_state.ir[0] == 0xFFFF && cop_state.ir[1] == 0xFFFE) {
+					if (cop_state.ir[0] == 0xFFFF && cop_state.ir[1] == 0xFFFE && maxhpos < 250) {
 						cop_state.state = COP_waitforever;
 					}
 					copper_enabled_thisline = 0;
@@ -11185,17 +11598,19 @@ static void compute_spcflag_copper(void)
 {
 	copper_enabled_thisline = 0;
 	unset_special(SPCFLAG_COPPER);
-	if (!is_copper_dma(false) || cop_state.state == COP_stop || cop_state.state == COP_waitforever || cop_state.state == COP_bltwait || cop_state.state == COP_bltwait2 || custom_disabled)
+	if (!is_copper_dma(true) || cop_state.state == COP_stop || cop_state.state == COP_waitforever || cop_state.state == COP_bltwait || cop_state.state == COP_bltwait2 || custom_disabled)
 		return;
-	if (cop_state.state == COP_wait1) {
+	if (cop_state.state == COP_wait1 && is_copper_dma(false)) {
 		int vp = vpos & (((cop_state.ir[1] >> 8) & 0x7F) | 0x80);
 		if (vp < cop_state.vcmp) {
 			return;
 		}
 	}
 	last_copper_hpos = current_hpos();
-	copper_enabled_thisline = 1;
-	set_special(SPCFLAG_COPPER);
+	if (issyncstopped_count <= 2) {
+		copper_enabled_thisline = 1;
+		set_special(SPCFLAG_COPPER);
+	}
 }
 
 static void blitter_done_notify_wakeup(uae_u32 temp)
@@ -11245,22 +11660,26 @@ static void cursorsprite(void)
 	if (!dmaen(DMA_SPRITE) || first_planes_vpos == 0) {
 		return;
 	}
-	sprite_0 = spr[0].pt;
-	sprite_0_height = spr[0].vstop - spr[0].vstart;
+	struct sprite *s = &spr[0];
+	sprite_0 = s->pt;
+	sprite_0_height = s->vstop - s->vstart;
 	sprite_0_colors[0] = 0;
 	sprite_0_doubled = 0;
 	if (sprres == 0) {
 		sprite_0_doubled = 1;
 	}
+	if (spr[0].dblscan) {
+		sprite_0_height /= 2;
+	}
 	if (aga_mode) {
 		int sbasecol = ((bplcon4 >> 4) & 15) << 4;
-		sprite_0_colors[1] = current_colors.color_regs_aga[sbasecol + 1];
-		sprite_0_colors[2] = current_colors.color_regs_aga[sbasecol + 2];
-		sprite_0_colors[3] = current_colors.color_regs_aga[sbasecol + 3];
+		sprite_0_colors[1] = current_colors.color_regs_aga[sbasecol + 1] & 0xffffff;
+		sprite_0_colors[2] = current_colors.color_regs_aga[sbasecol + 2] & 0xffffff;
+		sprite_0_colors[3] = current_colors.color_regs_aga[sbasecol + 3] & 0xffffff;
 	} else {
-		sprite_0_colors[1] = xcolors[current_colors.color_regs_ecs[17]];
-		sprite_0_colors[2] = xcolors[current_colors.color_regs_ecs[18]];
-		sprite_0_colors[3] = xcolors[current_colors.color_regs_ecs[19]];
+		sprite_0_colors[1] = xcolors[current_colors.color_regs_ecs[17] & 0xfff];
+		sprite_0_colors[2] = xcolors[current_colors.color_regs_ecs[18] & 0xfff];
+		sprite_0_colors[3] = xcolors[current_colors.color_regs_ecs[19] & 0xfff];
 	}
 	sprite_0_width = sprite_width;
 	if (currprefs.input_tablet && (currprefs.input_mouse_untrap & MOUSEUNTRAP_MAGIC)) {
@@ -11392,7 +11811,7 @@ static void do_sprite_fetch(int hpos, uae_u16 dat)
 	bool dmastate = (dat & 0x10) != 0;
 
 	// render sprites first
-	decide_sprites_3(hpos, false, true);
+	decide_sprites_3(hpos, true, false);
 
 	sprite_fetch_full(s, hpos, slot, dmastate, &data, &data321, &data322);
 
@@ -11496,7 +11915,7 @@ static void decide_sprites_fetch(int endhpos)
 							s->dmacycle = 1;
 						}
 					}
-					if (dmaen(DMA_SPRITE) && s->dmacycle && !vb_end_line) {
+					if (dmaen(DMA_SPRITE) && s->dmacycle && !vb_start_line && !vb_end_line) {
 						bool dodma = false;
 
 						decide_bpl_fetch(hpos + 1);
@@ -11529,7 +11948,7 @@ static void decide_sprites_fetch(int endhpos)
 								sprbplconflict2 = 0x140 + num * 8 + slot + (s->dmacycle ? 4 : 0);
 								sprbplconflict_hpos = sprbplconflict_hpos2 = hpos + RGA_PIPELINE_OFFSET_SPRITE;
 								sprbplconflict_dat = dat & ~CYCLE_PIPE_SPRITE;
-							} else if (bprun_end == hpos) {
+							} else if (bprun_end == hpos || (cycle_line_pipe[offset] & CYCLE_PIPE_BITPLANE)) {
 								// last bitplane cycle is available for sprites (if bitplane ends before all sprites)
 								sprbplconflict = 0x140 + num * 8 + slot + (s->dmacycle ? 4 : 0);
 								sprbplconflict_hpos = hpos + RGA_PIPELINE_OFFSET_SPRITE;
@@ -11595,7 +12014,7 @@ static void init_sprites(void)
 static void init_hardware_frame(void)
 {
 	if (!harddis_v) {
-#ifdef __LIBRETRO__
+#ifndef __cplusplus
 		vdiwstate = DIW_waiting_start;
 #else
 		vdiwstate = diw_states::DIW_waiting_start;
@@ -11616,7 +12035,7 @@ static int calculate_lineno(int vp)
 		lineno++;
 	} else if (!interlace_seen && doublescan <= 0 && currprefs.gfx_vresolution && currprefs.gfx_pscanlines > 1) {
 		lineno *= 2;
-		if (vsync_counter & 1) {
+		if (display_vsync_counter & 1) {
 			lineno++;
 			nextline_how = currprefs.gfx_pscanlines == 3 ? nln_lower_black_always : nln_lower_black;
 		} else {
@@ -11671,7 +12090,8 @@ void init_hardware_for_drawing_frame(void)
 	end_sprite_entry = MAX_SPRITE_ENTRIES - 2;
 	spixels_max = sizeof(spixels) / sizeof(*spixels) - MAX_PIXELS_PER_LINE;
 
-	next_lineno = calculate_lineno(vpos);
+	linear_vpos = vpos;
+	next_lineno = calculate_lineno(linear_vpos);
 	last_color_change = 0;
 	next_color_change = 0;
 	next_color_entry = 0;
@@ -12100,6 +12520,9 @@ static void vsync_handler_render(void)
 		frameskiptime += end - start;
 	}
 
+	linear_vpos = vpos;
+	next_lineno = calculate_lineno(linear_vpos);
+
 	bool frameok = framewait();
 	
 	if (!ad->picasso_on) {
@@ -12167,9 +12590,11 @@ static void vsync_display_render(void)
 
 static void vsync_check_vsyncmode(void)
 {
-	if (varsync_changed == 1) {
+	if (varsync_maybe_changed[0] == 1 || varsync_maybe_changed[1] == 1 || varhblank_lines == -1) {
 		init_hz_normal();
-	} else if (vpos_count > 0 && abs(vpos_count - vpos_count_diff) > 1 && vposw_change < 4) {
+	} else if (varsync_changed == 1 || ((beamcon0 & BEAMCON0_VARBEAMEN) && exthblank_prev != exthblank && (abs(exthblank_lines[0] - exthblank_lines[1]) > maxvpos * 3 / 4))) {
+		init_hz_normal();
+	} else if (vpos_count > 0 && abs(vpos_count - vpos_count_diff) > 1 && vposw_change && vposw_change < 4) {
 		init_hz_vposw();
 	} else if (interlace_changed || changed_chipset_refresh() || lof_changed) {
 		compute_framesync();
@@ -12178,6 +12603,49 @@ static void vsync_check_vsyncmode(void)
 	if (varsync_changed > 0) {
 		varsync_changed--;
 	}
+	varsync_maybe_changed[0] = 0;
+	varsync_maybe_changed[1] = 0;
+	varhblank_lines = 0;
+	exthblank_lines[0] = exthblank_lines[1] = 0;
+	exthblank_prev = exthblank;
+}
+
+static void check_display_mode_change(void)
+{
+	struct amigadisplay *ad = &adisplays[0];
+	int vt, ht, hs, vs;
+
+	if (new_beamcon0 & BEAMCON0_VARBEAMEN) {
+		vt = vtotal;
+		ht = htotal;
+	} else {
+		vt = maxvpos;
+		ht = maxhpos;
+	}
+	if (new_beamcon0 & (BEAMCON0_VARHSYEN | BEAMCON0_VARCSYEN)) {
+		hs = hsstrt;
+	} else {
+		hs = 18;
+	}
+	if (new_beamcon0 & (BEAMCON0_VARVSYEN | BEAMCON0_VARCSYEN)) {
+		vs = vsstrt;
+	} else {
+		vs = (new_beamcon0 & BEAMCON0_PAL) ? 2 : 3;
+	}
+
+	// recalculate display if vtotal, htotal, hsync start or vsync start changed > 1
+	if ((abs(vt - vt_old) > 1 || abs(ht - ht_old) > 1 || abs(hs - hs_old) > 1 || abs(vs - vs_old) > 1)  && vt_old && ht_old) {
+		varsync_changed = 1;
+		if (!ad->picasso_on) {
+			nosignal_trigger = true;
+			display_reset = 2;
+		}
+	}
+
+	vt_old = vt;
+	ht_old = ht;
+	vs_old = vs;
+	hs_old = hs;
 }
 
 // emulated hardware vsync
@@ -12208,7 +12676,7 @@ static void vsync_handler_post(void)
 		genlockvtoggle = lof_store ? 1 : 0;
 	}
 
-	if ((bplcon0 & 2) && (!currprefs.genlock || currprefs.genlock_effects)) {
+	if (issyncstopped()) {
 		nosignal_trigger = true;
 	}
 	// Inverted CSYNC
@@ -12346,20 +12814,7 @@ static void vsync_handler_post(void)
 
 	devices_vsync_post();
 
-	if ((beamcon0 & (BEAMCON0_VARCSYEN | BEAMCON0_PAL | BEAMCON0_VARBEAMEN | BEAMCON0_VARHSYEN | BEAMCON0_VARVSYEN | BEAMCON0_VARVBEN | BEAMCON0_HARDDIS)) !=
-		(new_beamcon0 & (BEAMCON0_VARCSYEN | BEAMCON0_PAL | BEAMCON0_VARBEAMEN | BEAMCON0_VARHSYEN | BEAMCON0_VARVSYEN | BEAMCON0_VARVBEN | BEAMCON0_HARDDIS))) {
-		if (!varsync_changed) {
-			varsync_changed = 2;
-		}
-		if ((beamcon0 ^ new_beamcon0) & BEAMCON0_PAL) {
-			nosignal_trigger = true;
-		}
-		if ((beamcon0 ^ new_beamcon0) & BEAMCON0_VARBEAMEN) {
-			if (vtotal != maxvpos || htotal != maxhpos) {
-				nosignal_trigger = true;
-			}
-		}
-	}
+	check_display_mode_change();
 
 	vsync_check_vsyncmode();
 
@@ -12377,16 +12832,19 @@ static void vsync_handler_post(void)
 		}
 	}
 	if (nosignal_trigger) {
+		struct amigadisplay *ad = &adisplays[0];
 		nosignal_trigger = false;
-		if (currprefs.gfx_monitorblankdelay > 0) {
-			nosignal_status = 1;
-			nosignal_cnt = (int)(currprefs.gfx_monitorblankdelay / (1000.0f / vblank_hz));
-			if (nosignal_cnt <= 0) {
-				nosignal_cnt = 1;
+		if (!ad->specialmonitoron) {
+			if (currprefs.gfx_monitorblankdelay > 0) {
+				nosignal_status = 1;
+				nosignal_cnt = (int)(currprefs.gfx_monitorblankdelay / (1000.0f / vblank_hz));
+				if (nosignal_cnt <= 0) {
+					nosignal_cnt = 1;
+				}
+			} else {
+				nosignal_status = 2;
+				nosignal_cnt = (int)(vblank_hz / 2);
 			}
-		} else {
-			nosignal_status = 2;
-			nosignal_cnt = (int)(vblank_hz / 2);
 		}
 	}
 
@@ -12425,12 +12883,15 @@ static void reset_scandoubler_sync(int hpos)
 	last_fetch_hpos = hpos;
 	last_copper_hpos = hpos;
 	last_diw_hpos = hpos;
-	last_diw_hpos2 = hpos;
+	last_sprite_hpos = hpos;
 	sprites_enabled_this_line = false;
 	plfstrt_sprite = 0x100;
 	bprun = 0;
 	bprun_cycle = 0;
 	ddf_stopping = 0;
+	int hnew = hpos - (REFRESH_FIRST_HPOS - HARDWIRED_DMA_TRIGGER_HPOS + 2);
+	hdiw_denisecounter = ((hnew + 0) & 0xff) << CCK_SHRES_SHIFT;
+	last_sprite_hpos = last_sprite_point = (((hnew + 0) & 0xff) << 1) + 1;
 }
 
 
@@ -12579,6 +13040,7 @@ static void dmal_emu(uae_u32 val)
 		AUDxDAT_addr(nr, dat, pt);
 	} else if (dmalpos >= 0 && dmalpos < 6) {
 		uae_u16 dat = 0;
+		int s = (dmalpos / 2);
 		int w = (dmalbits & 3) == 3;
 		// disk_fifostatus() needed in >100% disk speed modes
 		if (w) {
@@ -12613,7 +13075,7 @@ static void dmal_emu(uae_u32 val)
 			// read from disk
 			if (disk_fifostatus() >= 0) {
 				uaecptr pt = disk_getpt();
-				dat = DSKDATR();
+				dat = DSKDATR(s);
 				if (dmal_ce) {
 #ifdef DEBUGGER
 					if (debug_dma) {
@@ -12806,8 +13268,16 @@ static void hautoscale_check(int vp)
 	}
 	if (diw_change == 0) {
 		if (vp_start >= first_planes_vpos && vp_end <= last_planes_vpos) {
-			int diwlastword_lores = diwlastword;
 			int diwfirstword_lores = diwfirstword;
+			int diwlastword_lores = diwlastword;
+			// >0x1c7? Calculate "real" right edge for scaling modes
+			if (diwlastword_lores < min_diwlastword && diwfirstword_lores >= 2) {
+				if (diwlastword_lores < diwfirstword_lores) {
+					diwlastword_lores = max_diwlastword + (diwlastword_lores - 2);
+				} else {
+					diwlastword_lores = min_diwlastword;
+				}
+			}
 			if (diwlastword_lores > diwlastword_total) {
 				diwlastword_total = diwlastword_lores;
 				if (diwlastword_total > coord_diw_shres_to_window_x(hsyncstartpos)) {
@@ -12822,7 +13292,7 @@ static void hautoscale_check(int vp)
 				firstword_bplcon1 = bplcon1;
 			}
 		}
-#ifdef __LIBRETRO__
+#ifndef __cplusplus
 		if (vdiwstate == DIW_waiting_stop) {
 #else
 		if (vdiwstate == diw_states::DIW_waiting_stop) {
@@ -12872,18 +13342,21 @@ static void hsync_handlerh_1(bool onvsync)
 
 		hautoscale_check(vposh);
 
-		int lineno = calculate_lineno(vposh);
-		next_lineno = lineno;
+		next_lineno = calculate_lineno(linear_vpos);
 		reset_decisions_hsync_start();
 	}
 
+	linear_vpos++;
+	if (vpos >= minfirstline && minfirstline_linear == minfirstline) {
+		minfirstline_linear = linear_vpos;
+	}
 	vposh++;
 
 	hpos_hsync_extra = 0;
 	estimate_last_fetch_cycle(hpos);
 
-	if (vb_end_next_line && !ecs_denise) {
-		record_color_change2(hpos, 0, COLOR_CHANGE_BLANK | 1);
+	if (vb_end_next_line && !ecs_denise && currprefs.gfx_overscanmode > OVERSCANMODE_OVERSCAN) {
+		event2_newevent_xx(-1, 2 * CYCLE_UNIT, 0, set_ocs_denise_blank);
 	}
 
 	eventtab[ev_hsynch].evtime = get_cycles() + HSYNCTIME;
@@ -12937,6 +13410,7 @@ static void hsync_handler_pre(bool onvsync)
 
 		hdiw_counter += maxhpos * 2;
 		if (!hstrobe_conflict) {
+			// OCS Denise freerunning horizontal counter
 			if (!ecs_denise && vpos == get_equ_vblank_endline() - 1) {
 				hdiw_counter++;
 			}
@@ -12975,6 +13449,9 @@ static void hsync_handler_pre(bool onvsync)
 	if (vpos >= maxvpos_total) {
 		vpos = 0;
 	}
+
+	line_equ_freerun = !ecs_denise && vpos >= get_equ_vblank_startline() && vpos <= get_equ_vblank_endline();
+
 	if (onvsync) {
 #ifdef DEBUGGER
 		if (debug_dma) {
@@ -12989,10 +13466,22 @@ static void hsync_handler_pre(bool onvsync)
 	hpos_hsync_extra = maxhpos;
 
 	lol_prev = lol;
-	if (islinetoggle())
+	if (islinetoggle()) {
 		lol = lol ? 0 : 1;
-	else
+		estimated_cycles_next = estimated_cycles;
+		if (maxhpos == estimated_maxhpos[0]) {
+			estimated_cycles = estimated_cycles_buf0;
+			estimated_cycles_next = estimated_cycles_buf1;
+		} else if (maxhpos == estimated_maxhpos[1]) {
+			estimated_cycles = estimated_cycles_buf1;
+			estimated_cycles_next = estimated_cycles_buf0;
+		}
+		linetoggle = true;
+	} else {
 		lol = 0;
+		linetoggle = false;
+	}
+	memset(cycle_line_slot, 0, maxhposm1 + 1);
 
 	// to record decisions correctly between end of scanline and start of hsync
 	if (!eventtab[ev_hsynch].active) {
@@ -13717,8 +14206,6 @@ static void delayed_framestart(uae_u32 v)
 // this prepares for new line
 static void hsync_handler_post(bool onvsync)
 {
-	memset(cycle_line_slot, 0, maxhposm1 + 1);
-
 	// genlock active:
 	// vertical: interlaced = toggles every other field, non-interlaced = both fields (normal)
 	// horizontal: PAL = every line, NTSC = every other line
@@ -13767,7 +14254,7 @@ static void hsync_handler_post(bool onvsync)
 		if (cia_hsync < maxhpos) {
 			int newcount;
 			CIAA_tod_handler(cia_hsync);
-			newcount = (int)((vblank_hz * (2 * maxvpos + (interlace_seen ? 1 : 0)) * (2 * maxhpos + (islinetoggle () ? 1 : 0))) / ((currprefs.cs_ciaatod == 2 ? 60 : 50) * 4));
+			newcount = (int)((vblank_hz * (2 * maxvpos + (interlace_seen ? 1 : 0)) * (2 * maxhpos + (linetoggle ? 1 : 0))) / ((currprefs.cs_ciaatod == 2 ? 60 : 50) * 4));
 			cia_hsync += newcount;
 		} else {
 			cia_hsync -= maxhpos;
@@ -13788,7 +14275,7 @@ static void hsync_handler_post(bool onvsync)
 	}
 
 	if (!custom_disabled) {
-#ifdef __LIBRETRO__
+#ifndef __cplusplus
 		if (!currprefs.blitter_cycle_exact && blt_info.blit_main && dmaen (DMA_BITPLANE) && vdiwstate == DIW_waiting_stop) {
 #else
 		if (!currprefs.blitter_cycle_exact && blt_info.blit_main && dmaen (DMA_BITPLANE) && vdiwstate == diw_states::DIW_waiting_stop) {
@@ -13877,6 +14364,9 @@ static void hsync_handler_post(bool onvsync)
 				vbstop_m = vpos;
 				vb_end_line = true;
 				vb_state = false;
+				if (vbstrt == vpos) {
+					vb_start_line = 0;
+				}
 			}
 		}
 
@@ -13939,12 +14429,43 @@ static void hsync_handler_post(bool onvsync)
 		vb_check();
 	}
 
-	decide_vline();
+	exthblank_lines[exthblank ? 1 : 0]++;
+
+	if (varhblank_lines > 0) {
+		varhblank_lines--;
+		if (!varhblank_lines) {
+			if (varhblank_val[0] != hbstrt || varhblank_val[1] != hbstop) {
+				varhblank_lines = -1;
+				varhblank_val[0] = hbstrt;
+				varhblank_val[1] = hbstop;
+			}
+		}
+	}
+
+	decide_vline(0);
+
+	if (issyncstopped()) {
+		issyncstopped_count++;
+	} else {
+		issyncstopped_count = 0;
+	}
+
 
 	int hp = REFRESH_FIRST_HPOS;
 	refptr_p = refptr;
 	for (int i = 0; i < 4; i++) {
 		uae_u16 strobe = get_strobe_reg(i);
+		if (i == 0) {
+			if (!hstrobe_conflict) {
+				if (strobe == 0x38 || (strobe == 0x3a && ecs_denise)) {
+					// OCS: only STREQU enables vblank. STREQU and STRVBL if ECS Denise.
+					strobe_vblank = 1;
+				} else if (strobe == 0x3c) {
+					// STRHOR disables vblank
+					strobe_vblank = 0;
+				}
+			}
+		}
 		alloc_cycle(hp, strobe != 0x1fe ? CYCLE_STROBE : CYCLE_REFRESH);
 		// assume refresh pointer not changed or conflicted
 #ifdef DEBUGGER
@@ -13967,7 +14488,7 @@ static void hsync_handler_post(bool onvsync)
 		if (vb_start_line) {
 			record_dma_event(DMA_EVENT_VB, REFRESH_FIRST_HPOS, vpos);
 		}
-#ifdef __LIBRETRO__
+#ifndef __cplusplus
 		if (vdiwstate == DIW_waiting_stop) {
 #else
 		if (vdiwstate == diw_states::DIW_waiting_stop) {
@@ -14194,16 +14715,20 @@ static void hsync_handler(void)
 		events_schedule();
 
 	}
-	if (vpos == maxvpos_display_vsync) {
+	if (vpos == maxvpos_display_vsync + 1 && !maxvpos_display_vsync_next) {
+		hsync_record_line_state_last(next_lineno, nextline_how, 0);
 		inputdevice_read_msg(true);
 		vsync_display_render();
 		vsync_display_rendered = false;
 		lof_display = lof_store;
 		hstrobe_conflict = false;
-		hstrobe_conflict2 = false;
-		hdiw_counter_conflict = 0;
-		hdiw_counter_sconflict = 0;
+		minfirstline_linear = minfirstline;
 		reset_autoscale();
+		display_vsync_counter++;
+		maxvpos_display_vsync_next = true;
+	} else if (vpos != maxvpos_display_vsync + 1 && maxvpos_display_vsync_next) {
+		// protect against weird VPOSW writes causing continuous vblanks
+		maxvpos_display_vsync_next = false;
 	}
 	vsync_line = vs;
 	hsync_handler_post(vs);
@@ -14325,6 +14850,16 @@ void custom_reset(bool hardreset, bool keyboardreset)
 	blitter_dma_change_cycle = -1;
 	sprite_dma_change_cycle_on = -1;
 	custom_color_write_cycle = -1;
+	vt_old = 0;
+	ht_old = 0;
+#ifndef __cplusplus
+	hdiwstate_blank = DIW_waiting_start;
+#else
+	hdiwstate_blank = diw_states::DIW_waiting_start;
+#endif
+	maxvpos_display_vsync_next = false;
+	hstrobe_conflict = false;
+	strobe_vblank = 0;
 
 	irq_forced_delay = 0;
 	irq_forced = 0;
@@ -14342,6 +14877,7 @@ void custom_reset(bool hardreset, bool keyboardreset)
 		extra_cycle = 0;
 		hsync_counter = 0;
 		vsync_counter = 0;
+		display_vsync_counter = 0;
 		currprefs.chipset_mask = changed_prefs.chipset_mask;
 		update_mirrors();
 		blitter_reset();
@@ -14420,7 +14956,7 @@ void custom_reset(bool hardreset, bool keyboardreset)
 
 		diwhigh = 0;
 		diwhigh_written = 0;
-#ifdef __LIBRETRO__
+#ifndef __cplusplus
 		hdiwstate = DIW_waiting_start; // this does not reset at vblank
 #else
 		hdiwstate = diw_states::DIW_waiting_start; // this does not reset at vblank
@@ -14446,6 +14982,11 @@ void custom_reset(bool hardreset, bool keyboardreset)
 		maxhpos = ntsc ? MAXHPOS_NTSC : MAXHPOS_PAL;
 		maxhpos_short = maxhpos;
 		updateextblk();
+
+		if (currprefs.cs_compatible == CP_DRACO || currprefs.cs_compatible == CP_CASABLANCA) {
+			// fake draco interrupts
+			INTENA(0x8000 | 0x4000 | 0x1000 | 0x2000 | 0x0080 | 0x0010 | 0x0008 | 0x0001);
+		}
 	}
 
 	specialmonitor_reset();
@@ -14470,7 +15011,7 @@ void custom_reset(bool hardreset, bool keyboardreset)
 	toscr_delay_sh[0] = 0;
 	toscr_delay_sh[1] = 0;
 
-#ifdef __LIBRETRO__
+#ifndef __cplusplus
 	vdiwstate = DIW_waiting_start;
 #else
 	vdiwstate = diw_states::DIW_waiting_start;
@@ -14622,7 +15163,7 @@ void dumpcustom(void)
 	console_out_f(_T("BPLCON 0: $%04x 1: $%04x 2: $%04x 3: $%04x 4: $%04x LOF=%d/%d HDIW=%d VDIW=%d\n"),
 		bplcon0, bplcon1, bplcon2, bplcon3, bplcon4,
 		lof_display, lof_store,
-#ifdef __LIBRETRO__
+#ifndef __cplusplus
 		hdiwstate == DIW_waiting_start ? 0 : 1, vdiwstate == DIW_waiting_start ? 0 : 1);
 #else
 		hdiwstate == diw_states::DIW_waiting_start ? 0 : 1, vdiwstate == diw_states::DIW_waiting_start ? 0 : 1);
@@ -14722,13 +15263,13 @@ addrbank custom_bank = {
 
 static uae_u32 REGPARAM2 custom_wgeti (uaecptr addr)
 {
-	if (currprefs.cpu_model >= 68020)
+	if (currprefs.cpu_model >= 68020 && !currprefs.cpu_compatible)
 		return dummy_wgeti (addr);
 	return custom_wget (addr);
 }
 static uae_u32 REGPARAM2 custom_lgeti (uaecptr addr)
 {
-	if (currprefs.cpu_model >= 68020)
+	if (currprefs.cpu_model >= 68020 && !currprefs.cpu_compatible)
 		return dummy_lgeti (addr);
 	return custom_lget (addr);
 }
@@ -14808,7 +15349,7 @@ writeonly:
 		* Remembers old regs.chipset_latch_rw
 		*/
 		v = regs.chipset_latch_rw;
-		SET_LINE_CYCLEBASED;
+		SET_LINE_CYCLEBASED(hpos);
 		if (!noput) {
 			int r, c, bmdma;
 			uae_u16 l;
@@ -14955,7 +15496,7 @@ static int REGPARAM2 custom_wput_1 (int hpos, uaecptr addr, uae_u32 value, int n
 	case 0x024: DSKLEN(value, hpos); break;
 	case 0x026: /* DSKDAT(value). Writing to DMA write registers won't do anything */; break;
 	case 0x028: REFPTR(hpos, value); break;
-	case 0x02A: VPOSW(value); break;
+	case 0x02A: VPOSW(hpos, value); break;
 	case 0x02C: VHPOSW(value); break;
 	case 0x02E: COPCON(value); break;
 #ifdef SERIAL_PORT
@@ -14966,6 +15507,18 @@ static int REGPARAM2 custom_wput_1 (int hpos, uaecptr addr, uae_u32 value, int n
 	case 0x032: break;
 #endif
 	case 0x034: POTGO(value); break;
+
+	case 0x038:
+		strobe_vblank = 1;
+		break;
+	case 0x03a:
+		if (ecs_denise) {
+			strobe_vblank = 1;
+		}
+		break;
+	case 0x03c:
+		strobe_vblank = 0;
+		break;
 
 	case 0x040: BLTCON0(hpos, value); break;
 	case 0x042: BLTCON1(hpos, value); break;
@@ -15087,7 +15640,7 @@ static int REGPARAM2 custom_wput_1 (int hpos, uaecptr addr, uae_u32 value, int n
 	case 0x1A4: case 0x1A6: case 0x1A8: case 0x1AA: case 0x1AC: case 0x1AE:
 	case 0x1B0: case 0x1B2: case 0x1B4: case 0x1B6: case 0x1B8: case 0x1BA:
 	case 0x1BC: case 0x1BE:
-		COLOR_WRITE(hpos, value & 0xFFF, (addr & 0x3E) / 2);
+		COLOR_WRITE(hpos, value & 0x8FFF, (addr & 0x3E) / 2);
 		break;
 	case 0x120: case 0x124: case 0x128: case 0x12C:
 	case 0x130: case 0x134: case 0x138: case 0x13C:
@@ -15126,78 +15679,80 @@ static int REGPARAM2 custom_wput_1 (int hpos, uaecptr addr, uae_u32 value, int n
 	case 0x1DC: BEAMCON0(hpos, value); break;
 	case 0x1C0:
 		if (htotal != value) {
-			sync_color_changes(hpos);
+			sync_changes(hpos);
 			htotal = value & (MAXHPOS_ROWS - 1);
-			varsync(addr, 1);
+			varsync(addr, 1, -1);
 		}
 		break;
 	case 0x1C2:
 		if (hsstop != value) {
-			sync_color_changes(hpos);
+			sync_changes(hpos);
 			hsstop = value & (MAXHPOS_ROWS - 1);
-			varsync(addr, 1);
+			varsync(addr, 1, -1);
 		}
 		break;
 	case 0x1C4:
 		if (hbstrt != value) {
-			sync_color_changes(hpos);
+			sync_changes(hpos);
 			hbstrt = value & 0x7ff;
-			varsync(addr, 0);
+			varsync(addr, 0, -1);
 		}
 		break;
 	case 0x1C6:
 		if (hbstop != value) {
-			sync_color_changes(hpos);
+			sync_changes(hpos);
 			hbstop = value & 0x7ff;
-			varsync(addr, 0);
+			varsync(addr, 0, -1);
 		}
 		break;
 	case 0x1C8:
 		if (vtotal != value) {
 			vtotal = value & (MAXVPOS_LINES_ECS - 1);
-			varsync(addr, 1);
+			varsync(addr, 1, -1);
 		}
 		break;
 	case 0x1CA:
 		if (vsstop != value) {
-			sync_color_changes(hpos);
+			sync_changes(hpos);
 			vsstop = value & (MAXVPOS_LINES_ECS - 1);
-			varsync(addr, 1);
+			varsync(addr, 1, -1);
 		}
 		break;
 	case 0x1CC:
 		if (vbstrt != value) {
-			sync_color_changes(hpos);
+			sync_changes(hpos);
+			uae_u16 old = vbstrt;
 			vbstrt = value & (MAXVPOS_LINES_ECS - 1);
-			varsync(addr, 0);
+			varsync(addr, 0, old);
 		}
 		break;
 	case 0x1CE:
 		if (vbstop != value) {
-			sync_color_changes(hpos);
+			sync_changes(hpos);
+			uae_u16 old = vbstop;
 			vbstop = value & (MAXVPOS_LINES_ECS - 1);
-			varsync(addr, 0);
+			varsync(addr, 0, old);
 		}
 		break;
 	case 0x1DE:
 		if (hsstrt != value) {
-			sync_color_changes(hpos);
+			sync_changes(hpos);
 			hsstrt = value & (MAXHPOS_ROWS - 1);
-			varsync(addr, 1);
+			varsync(addr, 1, -1);
 		}
 		break;
 	case 0x1E0:
 		if (vsstrt != value) {
-			sync_color_changes(hpos);
+			sync_changes(hpos);
 			vsstrt = value & (MAXVPOS_LINES_ECS - 1);
-			varsync(addr, 1);
+			varsync(addr, 1, -1);
 		}
 		break;
 	case 0x1E2:
 		if (hcenter != value) {
-			sync_color_changes(hpos);
+			sync_changes(hpos);
 			hcenter = value & (MAXHPOS_ROWS - 1);
-			varsync(addr, 0);
+			varsync(addr, 0, -1);
 		}
 		break;
 
@@ -15264,7 +15819,7 @@ static void REGPARAM2 custom_bput (uaecptr addr, uae_u32 value)
 		if (addr & 1) {
 			rval = value & 0xff;
 		} else {
-			rval = (value << 8) | (value & 0xFF);
+			rval = (value << 8) | (value & 0xff);
 		}
 	} else {
 		rval = (value << 8) | (value & 0xff);
@@ -15272,11 +15827,11 @@ static void REGPARAM2 custom_bput (uaecptr addr, uae_u32 value)
 
 	if (currprefs.cs_bytecustomwritebug) {
 		if (addr & 1)
-			custom_wput (addr & ~1, rval);
+			custom_wput(addr & ~1, rval | (rval << 8));
 		else
-			custom_wput (addr, value << 8);
+			custom_wput(addr, value << 8);
 	} else {
-		custom_wput (addr & ~1, rval);
+		custom_wput(addr & ~1, rval);
 	}
 }
 
@@ -15450,7 +16005,7 @@ uae_u8 *restore_custom(uae_u8 *src)
 	hcenter = RW;			/* 1E2 HCENTER */
 	diwhigh = RW;			/* 1E4 DIWHIGH */
 	diwhigh_written = (diwhigh & 0x8000) ? 1 : 0;
-#ifdef __LIBRETRO__
+#ifndef __cplusplus
 	hdiwstate = (diwhigh & 0x4000) ? DIW_waiting_stop : DIW_waiting_start;
 	vdiwstate = (diwhigh & 0x0080) ? DIW_waiting_start : DIW_waiting_stop;
 #else
@@ -15486,7 +16041,7 @@ uae_u8 *restore_custom(uae_u8 *src)
 	bplcon0d = bplcon0;
 	bplcon0d_old = 0;
 	bitplane_dma_change(dmacon);
-#ifdef __LIBRETRO__
+#ifndef __cplusplus
 	vdiw_change(vdiwstate == DIW_waiting_stop);
 #else
 	vdiw_change(vdiwstate == diw_states::DIW_waiting_stop);
@@ -15682,7 +16237,7 @@ uae_u8 *save_custom(size_t *len, uae_u8 *dstptr, int full)
 	SW(hsstrt);			/* 1DE HSSTRT */
 	SW(vsstrt);			/* 1E0 VSSTRT */
 	SW(hcenter);		/* 1E2 HCENTER */
-#ifdef __LIBRETRO__
+#ifndef __cplusplus
 	SW(diwhigh | (diwhigh_written ? 0x8000 : 0) | (hdiwstate == DIW_waiting_stop ? 0x4000 : 0) | (vdiwstate == DIW_waiting_start ? 0x0080 : 0)); /* 1E4 DIWHIGH */
 #else
 	SW(diwhigh | (diwhigh_written ? 0x8000 : 0) | (hdiwstate == diw_states::DIW_waiting_stop ? 0x4000 : 0) | (vdiwstate == diw_states::DIW_waiting_start ? 0x0080 : 0)); /* 1E4 DIWHIGH */
@@ -15718,10 +16273,11 @@ uae_u8 *restore_custom_agacolors(uae_u8 *src)
 #ifdef AGA
 		uae_u32 v = RL;
 		color_regs_genlock[i] = 0;
-		if (v & 0x80000000)
+		if (v & 0x80000000) {
 			color_regs_genlock[i] = 1;
-		v &= 0x80ffffff;
-		current_colors.color_regs_aga[i] = v;
+		}
+		v &= 0xffffff;
+		current_colors.color_regs_aga[i] = v | (color_regs_genlock[i] ? COLOR_CHANGE_GENLOCK : 0);
 #else
 		RL;
 #endif
@@ -15749,7 +16305,7 @@ uae_u8 *save_custom_agacolors(size_t *len, uae_u8 *dstptr)
 		dstbak = dst = xmalloc (uae_u8, 256 * 4);
 	for (int i = 0; i < 256; i++)
 #ifdef AGA
-		SL (current_colors.color_regs_aga[i] | (color_regs_genlock[i] ? 0x80000000 : 0));
+		SL ((current_colors.color_regs_aga[i] & 0xffffff) | (color_regs_genlock[i] ? 0x80000000 : 0));
 #else
 		SL (0);
 #endif
@@ -16188,8 +16744,6 @@ void check_prefs_changed_custom(void)
 	currprefs.cs_deniserev = changed_prefs.cs_deniserev;
 	currprefs.cs_mbdmac = changed_prefs.cs_mbdmac;
 	currprefs.cs_df0idhw = changed_prefs.cs_df0idhw;
-	currprefs.cs_denisemodel = changed_prefs.cs_denisemodel;
-	currprefs.cs_agnusmodel = changed_prefs.cs_agnusmodel;
 	currprefs.cs_agnussize = changed_prefs.cs_agnussize;
 	currprefs.cs_z3autoconfig = changed_prefs.cs_z3autoconfig;
 	currprefs.cs_bytecustomwritebug = changed_prefs.cs_bytecustomwritebug;
@@ -16206,6 +16760,8 @@ void check_prefs_changed_custom(void)
 	if (currprefs.chipset_mask != changed_prefs.chipset_mask ||
 		currprefs.picasso96_nocustom != changed_prefs.picasso96_nocustom ||
 		currprefs.ntscmode != changed_prefs.ntscmode ||
+		currprefs.cs_agnusmodel != changed_prefs.cs_agnusmodel ||
+		currprefs.cs_denisemodel != changed_prefs.cs_denisemodel ||
 		currprefs.cs_hvcsync != changed_prefs.cs_hvcsync
 		) {
 			currprefs.picasso96_nocustom = changed_prefs.picasso96_nocustom;
@@ -16229,7 +16785,6 @@ void check_prefs_changed_custom(void)
 			}
 			currprefs.chipset_mask = changed_prefs.chipset_mask;
 			currprefs.cs_agnusmodel = changed_prefs.cs_agnusmodel;
-			currprefs.cs_agnussize = changed_prefs.cs_agnussize;
 			currprefs.cs_denisemodel = changed_prefs.cs_denisemodel;
 			currprefs.cs_hvcsync = changed_prefs.cs_hvcsync;
 			init_custom();
@@ -16239,6 +16794,7 @@ void check_prefs_changed_custom(void)
 		currprefs.chipset_hr = changed_prefs.chipset_hr;
 		init_custom();
 	}
+	cia_set_eclockphase();
 	if (syncchange) {
 		varsync_changed = 2;
 	}
@@ -16640,4 +17196,11 @@ bool ispal(int *lines)
 		return currprefs.ntscmode == 0;
 	}
 	return maxvpos_display >= MAXVPOS_NTSC + (MAXVPOS_PAL - MAXVPOS_NTSC) / 2;
+}
+
+static void SET_LINE_CYCLEBASED(int hpos)
+{
+	line_cyclebased = 1;
+	decide_line(hpos);
+	decide_fetch_safe(hpos);
 }

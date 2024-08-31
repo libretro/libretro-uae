@@ -604,8 +604,6 @@ static const TCHAR *fp_print(fpdata *fpd, int mode)
 	} else if(isnan(fpd->fp)) {
 		_stprintf(fsout, _T("%c%s"), n ? '-' : '+', _T("nan"));
 	} else {
-		if(n)
-			fpd->fp *= -1.0;
 #ifdef USE_LONG_DOUBLE
 		_stprintf(fsout, _T("#%Le"), fpd->fp);
 #else
@@ -912,7 +910,7 @@ static void fp_log2(fpdata *a, fpdata *b)
 static void fp_abs(fpdata *a, fpdata *b, int prec)
 {
 	fp_set_prec(prec);
-	a->fp = b->fp < 0.0 ? -b->fp : b->fp;
+	a->fp = fabsl(b->fp);
 	fp_reset_prec(a);
 }
 static void fp_cosh(fpdata *a, fpdata *b)

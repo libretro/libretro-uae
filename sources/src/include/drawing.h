@@ -28,7 +28,9 @@ extern int detected_screen_resolution;
 extern int hsync_end_left_border, denisehtotal;
 
 #define AMIGA_WIDTH_MAX (754 / 2)
-#define AMIGA_HEIGHT_MAX (576 / 2)
+#define AMIGA_HEIGHT_MAX_PAL (576 / 2)
+#define AMIGA_HEIGHT_MAX_NTSC (486 / 2)
+#define AMIGA_HEIGHT_MAX (AMIGA_HEIGHT_MAX_PAL)
 
 // Cycles * 2 from start of scanline to first refresh slot (hsync strobe slot)
 #define DDF_OFFSET (2 * 4)
@@ -89,7 +91,7 @@ STATIC_INLINE int PIXEL_XPOS(int xx)
 	return x;
 }
 
-#define min_diwlastword (0)
+#define min_diwlastword (PIXEL_XPOS(hsyncstartpos_start_cycles << CCK_SHRES_SHIFT))
 #define max_diwlastword (PIXEL_XPOS(denisehtotal))
 
 STATIC_INLINE int coord_window_to_hw_x(int x)
@@ -181,7 +183,7 @@ STATIC_INLINE xcolnr getxcolor(int c)
 		return CONVERT_RGB(c);
 	else
 #endif
-		return xcolors[c];
+		return xcolors[c & 0xfff];
 }
 
 /* functions for reading, writing, copying and comparing struct color_entry */
@@ -244,6 +246,7 @@ STATIC_INLINE void color_reg_cpy (struct color_entry *dst, struct color_entry *s
 #define COLOR_CHANGE_BLANK 0x20000000
 #define COLOR_CHANGE_ACTBORDER (COLOR_CHANGE_BLANK | COLOR_CHANGE_BRDBLANK)
 #define COLOR_CHANGE_MASK 0xf0000000
+#define COLOR_CHANGE_GENLOCK 0x01000000
 struct color_change {
 	int linepos;
 	int regno;
@@ -357,7 +360,8 @@ enum nln_how {
 	nln_lower_black_always
 };
 
-extern void hsync_record_line_state (int lineno, enum nln_how, int changed);
+extern void hsync_record_line_state(int lineno, enum nln_how, int changed);
+extern void hsync_record_line_state_last(int lineno, enum nln_how, int changed);
 extern void vsync_handle_redraw (int long_field, int lof_changed, uae_u16, uae_u16, bool drawlines, bool initial);
 extern bool vsync_handle_check (void);
 extern void draw_lines(int end, int section);
@@ -382,6 +386,7 @@ extern void allocvidbuffer(int monid, struct vidbuffer *buf, int width, int heig
 extern void freevidbuffer(int monid, struct vidbuffer *buf);
 extern void check_prefs_picasso(void);
 extern int get_vertical_visible_height(bool);
+extern void get_screen_blanking_limits(int*, int*, int*, int*);
 
 /* Finally, stuff that shouldn't really be shared.  */
 

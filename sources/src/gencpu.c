@@ -33,6 +33,9 @@
 // instruction is considered completed, generate short bus error stack frame.
 #define MMU68030_LAST_WRITE 1
 
+// Not useful
+#define WAITSTATUS_020_EXTRA 0
+
 static FILE *headerfile;
 static FILE *stblfile;
 
@@ -2650,7 +2653,7 @@ static void addop_ce020 (struct instr *curi, int subhead, int flags)
 		int h = curi->head;
 		int t = curi->tail;
 		int c = curi->clocks;
-	#if 0
+	#if WAITSTATUS_020_EXTRA
 		if ((((curi->sduse & 2) && !isreg (curi->smode)) || (((curi->sduse >> 4) & 2) && !isreg (curi->dmode))) && using_waitstates) {
 			t += using_waitstates;
 			c += using_waitstates;
@@ -2711,6 +2714,11 @@ static void addcycles_ea_ce020_4 (const char *ea, int h, int t, int c)
 
 #define SETCE020(h2,t2,c2) { h = h2; t = t2; c = c2; }
 #define SETCE020H(h2,t2,c2) { h = h2; oph = curi ? curi->head : 0; t = t2; c = c2; }
+#if WAITSTATUS_020_EXTRA
+#define SETCE020WS(h2,t2,c2,ws2) { h = h2; t = t2; c = c2; ws = ws2; }
+#else
+#define SETCE020WS(h2,t2,c2,ws2) { h = h2; t = t2; c = c2; }
+#endif
 
 static int gence020cycles_fiea (struct instr *curi, wordsizes ssize, amodes dmode)
 {
@@ -2840,45 +2848,42 @@ static int gence020cycles_ciea (struct instr *curi, wordsizes ssize, amodes dmod
 
 static int gence020cycles_fea (amodes mode)
 {
-	int h = 0, t = 0, c = 0, ws = 0;
+	int h = 0, t = 0, c = 0;
+#if WAITSTATUS_020_EXTRA
+	int ws = 0;
+#endif
+
 	switch (mode)
 	{
 	case Dreg:
 	case Areg:
-		SETCE020(0, 0, 0)
+		SETCE020WS(0, 0, 0, 0)
 		break;
 	case Aind: // (An)
-		ws++;
-		SETCE020(1, 1, 3)
+		SETCE020WS(1, 1, 3, 1)
 		break;
 	case Aipi: // (An)+
-		ws++;
-		SETCE020(0, 1, 3)
+		SETCE020WS(0, 1, 3, 1)
 		break;
 	case Apdi: // -(An)
-		ws++;
-		SETCE020(2, 2, 4)
+		SETCE020WS(2, 2, 4, 1)
 		break;
 	case Ad8r: // (d8,An,Xn)
 	case PC8r: // (d8,PC,Xn)
-		ws++;
-		SETCE020(4, 2, 6)
+		SETCE020WS(4, 2, 6, 1)
 		break;
 	case Ad16: // (d16,An)
 	case PC16: // (d16,PC)
-		ws++;
-		SETCE020(2, 2, 4)
+		SETCE020WS(2, 2, 4, 1)
 		break;
 	case absw:
-		ws++;
-		SETCE020(2, 2, 4)
+		SETCE020WS(2, 2, 4, 1)
 		break;
 	case absl:
-		ws++;
-		SETCE020(1, 0, 4)
+		SETCE020WS(1, 0, 4, 1)
 		break;
 	}
-#if 0
+#if WAITSTATUS_020_EXTRA
 	if (using_waitstates) {
 		t += ws * using_waitstates;
 		c += ws * using_waitstates;
@@ -4326,11 +4331,11 @@ static void movem_mmu060 (const char *code, int size, bool put, bool aipi, bool 
 			out("%cmask = movem_next[%cmask];\n", reg, reg);
 			out("}\n");
 		}
-		if (aipi || apdi)
-			out("m68k_areg(regs, dstreg) = srca;\n");
 		out("while (--idx >= 0) {\n");
 		out("regs.regs[tmpreg[idx]] = tmp[idx];\n");
 		out("}\n");
+		if (aipi || apdi)
+			out("m68k_areg(regs, dstreg) = srca;\n");
 	} else {
 		for (int i = 0; i < 2; i++) {
 			char reg;
@@ -4342,9 +4347,14 @@ static void movem_mmu060 (const char *code, int size, bool put, bool aipi, bool 
 			if (apdi)
 				out("srca -= %d;\n", size);
 			if (put) {
-				out("%s, m68k_%creg (regs, %s[%cmask]));\n", code, reg, index, reg);
+				if (apdi && !i) {
+					out("int predec = movem_index2[amask] != dstreg ? 0 : %d;\n", size);
+					out("%s, m68k_%creg(regs, %s[%cmask]) - predec);\n", code, reg, index, reg);
+				} else {
+					out("%s, m68k_%creg(regs, %s[%cmask]));\n", code, reg, index, reg);
+				}
 			} else {
-				out("m68k_%creg (regs, %s[%cmask]) = %s;\n", reg, index, reg, code);
+				out("m68k_%creg(regs, %s[%cmask]) = %s;\n", reg, index, reg, code);
 			}
 			if (!apdi)
 				out("srca += %d;\n", size);
@@ -4390,9 +4400,14 @@ static void movem_mmu040 (const char *code, int size, bool put, bool aipi, bool 
 		if (apdi)
 			out("srca -= %d;\n", size);
 		if (put) {
-			out("%s, m68k_%creg (regs, %s[%cmask]));\n", code, reg, index, reg);
+			if (apdi && !i) {
+				out("int predec = movem_index2[amask] != dstreg ? 0 : %d;\n", size);
+				out("%s, m68k_%creg(regs, %s[%cmask]) - predec);\n", code, reg, index, reg);
+			} else {
+				out("%s, m68k_%creg(regs, %s[%cmask]));\n", code, reg, index, reg);
+			}
 		} else {
-			out("m68k_%creg (regs, %s[%cmask]) = %s;\n", reg, index, reg, code);
+			out("m68k_%creg(regs, %s[%cmask]) = %s;\n", reg, index, reg, code);
 		}
 		if (!apdi)
 			out("srca += %d;\n", size);
@@ -4447,7 +4462,12 @@ static void movem_mmu030 (const char *code, int size, bool put, bool aipi, bool 
 			out("val = %smmu030_data_buffer_out;\n", size == 2 ? "(uae_s32)(uae_s16)" : "");
 		out("} else {\n");
 		if (put) {
-			out("mmu030_data_buffer_out = m68k_%creg(regs, %s[%cmask]);\n", reg, index, reg);
+			if (apdi && !i) {
+				out("int predec = movem_index2[amask] != dstreg ? 0 : %d;\n", size);
+			} else {
+				out("int predec = 0;\n");
+			}
+			out("mmu030_data_buffer_out = m68k_%creg(regs, %s[%cmask]) - predec;\n", reg, index, reg);
 			if (MMU68030_LAST_WRITE) {
 				// last write?
 				if (dphase == i)
@@ -4469,7 +4489,7 @@ static void movem_mmu030 (const char *code, int size, bool put, bool aipi, bool 
 		}
 		out("}\n");
 		if (!put) {
-			out("m68k_%creg (regs, %s[%cmask]) = val;\n", reg, index, reg);
+			out("m68k_%creg(regs, %s[%cmask]) = val;\n", reg, index, reg);
 		}
 		out("mmu030_state[0]++;\n");
 		out("}\n");
@@ -4742,9 +4762,7 @@ static void genmovemle(uae_u16 opcode)
 		if (table68k[opcode].dmode == Apdi) {
 			out("uae_u16 amask = mask & 0xff, dmask = (mask >> 8) & 0xff;\n");
 			movem_ex3(1);
-			if (!using_mmu) {
-				out("int type = %d;\n", cpu_level > 1);
-			}
+			out("int type = %d;\n", cpu_level > 1);
 			out("while (amask) {\n");
 			out("srca -= %d;\n", size);
 
@@ -7027,7 +7045,9 @@ static void gen_opcode (unsigned int opcode)
 				out("opcode |= 0x20000;\n");
 			}
 			if (using_debugmem) {
+				out("#ifdef DEBUGGER\n");
 				out("branch_stack_pop_rte(oldpc);\n");
+				out("#endif\n");
 			}
 		} else if (cpu_level == 1 && using_prefetch) {
 			// 68010
@@ -7075,7 +7095,9 @@ static void gen_opcode (unsigned int opcode)
 			out("newsr = sr; newpc = pc;\n");
 			setpc ("newpc");
 			if (using_debugmem) {
+				out("#ifdef DEBUGGER\n");
 				out("branch_stack_pop_rte(oldpc);\n");
+				out("#endif\n");
 			}
 		} else {
 			out("uaecptr oldpc = %s;\n", getpc);
@@ -7189,14 +7211,17 @@ static void gen_opcode (unsigned int opcode)
 			out("}\n");
 		    setpc ("newpc");
 			if (using_debugmem) {
+				out("#ifdef DEBUGGER\n");
 				out("branch_stack_pop_rte(oldpc);\n");
+				out("#endif\n");
 			}
 		}
 		/* PC is set and prefetch filled. */
 		clear_m68k_offset();
 		tail_ce020_done = true;
 		if (using_ce || using_prefetch) {
-			fill_prefetch_full_000_special(2, NULL);
+			out("int pcadjust = oldpc - m68k_getpci() + 2;\n");
+			fill_prefetch_full_000_special(-1, NULL);
 		} else {
 			fill_prefetch_full_ntx(0);
 		}
@@ -7345,9 +7370,11 @@ static void gen_opcode (unsigned int opcode)
 			count_readl++;
 		}
 		if (using_debugmem) {
+			out("#ifdef DEBUGGER\n");
 			out("if (debugmem_trace) {\n");
 			out("branch_stack_pop_rts(oldpc);\n");
 			out("}\n");
+			out("#endif\n");
 		}
 	    out("if (%s & 1) {\n", getpc);
 		out("uaecptr faultpc = %s;\n", getpc);
@@ -7363,7 +7390,8 @@ static void gen_opcode (unsigned int opcode)
 		out("}\n");
 		clear_m68k_offset();
 		if (using_prefetch || using_ce) {
-			fill_prefetch_full_000_special(2, NULL);
+			out("int pcadjust = oldpc - m68k_getpci() + 2;\n");
+			fill_prefetch_full_000_special(-1, NULL);
 		} else {
 			fill_prefetch_full(0);
 		}
@@ -7476,7 +7504,8 @@ static void gen_opcode (unsigned int opcode)
 		}
 		clear_m68k_offset();
 		if (using_prefetch || using_ce) {
-			fill_prefetch_full_000_special(2, NULL);
+			out("int pcadjust = oldpc - m68k_getpci() + 2;\n");
+			fill_prefetch_full_000_special(-1, NULL);
 		} else {
 			fill_prefetch_full(0);
 		}
@@ -7542,7 +7571,17 @@ static void gen_opcode (unsigned int opcode)
 					write_return_cycles(0);
 					out("}\n");
 				}
+
+				if (curi->smode == absl) {
+					sprintf(bus_error_code, "pcoffset = (oldpc - srca) + 6;\n");
+				} else if (curi->smode == Ad8r || curi->smode == PC8r || curi->smode == Ad16 || curi->smode == PC16 || curi->smode == absw) {
+					sprintf(bus_error_code, "pcoffset = (oldpc - srca) + 4;\n");
+				} else {
+					sprintf(bus_error_code, "pcoffset = (oldpc - srca) + 2;\n");
+				}
 				fill_prefetch_1(0);
+				bus_error_code[0] = 0;
+
 				if (cpu_level < 2) {
 					out("m68k_areg(regs, 7) -= 4;\n");
 				}
@@ -7582,9 +7621,11 @@ static void gen_opcode (unsigned int opcode)
 				if (cpu_level >= 4)
 					out("m68k_areg(regs, 7) -= 4;\n");
 				if (using_debugmem) {
+					out("#ifdef DEBUGGER\n");
 					out("if (debugmem_trace) {\n");
 					out("branch_stack_push(oldpc, nextpc);\n");
 					out("}\n");
+					out("#endif\n");
 				}
 			}
 			fill_prefetch_full_020();
@@ -7596,7 +7637,8 @@ static void gen_opcode (unsigned int opcode)
 					out("if(regs.t1) opcode |= 0x10000;\n");
 				out("%s(%d);\n", prefetch_word, 2);
 				count_readw++;
-				check_prefetch_bus_error(-2, 0, sp);
+				check_prefetch_bus_error(2, 0, 0);
+
 				did_prefetch = 1;
 				ir2irc = 0;
 			} else {
@@ -7610,6 +7652,7 @@ static void gen_opcode (unsigned int opcode)
 	case i_JMP:
 		no_prefetch_ce020 = true;
 		genamode(curi, curi->smode, "srcreg", curi->size, "src", 0, 0, GF_AA|GF_NOREFILL);
+		out("uaecptr oldpc = %s;\n", getpc);
 		if (using_exception_3) {
 			push_ins_cnt();
 			out("if (srca & 1) {\n");
@@ -7636,7 +7679,9 @@ static void gen_opcode (unsigned int opcode)
 		if (using_prefetch || using_ce) {
 			out("%s(%d);\n", prefetch_word, 0);
 			count_readw++;
-			check_prefetch_bus_error(-1, 0, 0);
+			sprintf(bus_error_code, "pcoffset = (oldpc - srca) + 2;\n");
+			check_prefetch_bus_error(-1, -1, 0);
+			bus_error_code[0] = 0;
 			irc2ir();
 			set_last_access_ipl();
 			out("%s(%d);\n", prefetch_word, 2);
@@ -7645,7 +7690,7 @@ static void gen_opcode (unsigned int opcode)
 			if (sp < 0 && cpu_level == 0)
 				out("if(regs.t1) opcode |= 0x10000;\n");
 			count_readw++;
-			check_prefetch_bus_error(-2, 0, sp);
+			check_prefetch_bus_error(2, 0, 0);
 			did_prefetch = 1;
 			ir2irc = 0;
 		} else {
@@ -7739,9 +7784,11 @@ static void gen_opcode (unsigned int opcode)
 			out("}\n");
 		}
 		if (using_debugmem) {
+			out("#ifdef DEBUGGER\n");
 			out("if (debugmem_trace) {\n");
 			out("branch_stack_push(oldpc, nextpc);\n");
 			out("}\n");
+			out("#endif\n");
 		}
 		clear_m68k_offset();
 		if (using_prefetch || using_ce) {
@@ -7807,7 +7854,8 @@ static void gen_opcode (unsigned int opcode)
 		push_ins_cnt();
 		if (using_prefetch) {
 			incpc("(uae_s32)src + 2");
-			fill_prefetch_full_000_special(2, NULL);
+			out("int pcadjust = oldpc - m68k_getpci() + 2;\n");
+			fill_prefetch_full_000_special(-1, NULL);
 			if (using_ce)
 				out("return;\n");
 			else
@@ -8761,7 +8809,7 @@ bccl_not68020:
 		case sz_long: out("uae_u32 val = data;\n"); break;
 		default: term();
 		}
-		fill_prefetch_next_noopcodecopy("CLEAR_CZNV();\nSET_CFLG(val & 0x8000);\nSET_ZFLG(!((val & 0x7fff) | GET_XFLG()));\nSET_NFLG(val & 0x4000);\nSET_XFLG(GET_CFLG());\n", cmask(curi->size));
+		fill_prefetch_next_noopcodecopy("CLEAR_CZNV();\nSET_CFLG(val & 0x8000);\nSET_ZFLG(!((val & 0x7fff) | GET_XFLG()));\nSET_NFLG(val & 0x4000);\nSET_XFLG(GET_CFLG());\n");
 		out("uae_u32 carry = val & %s;\n", cmask (curi->size));
 		out("val <<= 1;\n");
 		out("if (GET_XFLG()) val |= 1;\n");
@@ -8779,7 +8827,7 @@ bccl_not68020:
 		case sz_long: out("uae_u32 val = data;\n"); break;
 		default: term();
 		}
-		fill_prefetch_next_noopcodecopy("CLEAR_CZNV();SET_CFLG(val & 1);\nSET_ZFLG(!((val &0x7ffe) | GET_XFLG()))\n;SET_NFLG(GET_XFLG())\n;SET_XFLG(GET_CFLG());\n", cmask(curi->size));
+		fill_prefetch_next_noopcodecopy("CLEAR_CZNV();SET_CFLG(val & 1);\nSET_ZFLG(!((val &0x7ffe) | GET_XFLG()))\n;SET_NFLG(GET_XFLG())\n;SET_XFLG(GET_CFLG());\n");
 		out("uae_u32 carry = val & 1;\n");
 		out("val >>= 1;\n");
 		out("if (GET_XFLG()) val |= %s;\n", cmask (curi->size));

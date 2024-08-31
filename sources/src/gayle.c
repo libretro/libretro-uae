@@ -36,6 +36,7 @@
 #include "autoconf.h"
 #include "rommgr.h"
 #include "devices.h"
+#include "dsp3210/dsp_glue.h"
 
 #define PCMCIA_SRAM 1
 #define PCMCIA_IDE 2
@@ -475,6 +476,14 @@ static int gayle_read (uaecptr addr)
 	uaecptr oaddr = addr;
 	uae_u32 v = 0;
 	int got = 0;
+
+	if (is_dsp_installed) {
+		uaecptr daddr = addr & 0xffff;
+		if (daddr == 0x5f || daddr == 0x80) {
+			v = dsp_read();
+			return v;
+		}
+	}
 	if (currprefs.cs_ide == IDE_A600A1200) {
 		if ((addr & 0xA0000) != 0xA0000)
 			return 0;
@@ -513,9 +522,17 @@ static void gayle_write (uaecptr addr, int val)
 {
 	uaecptr oaddr = addr;
 	int got = 0;
+
+	if (is_dsp_installed) {
+		uaecptr daddr = addr & 0xffff;
+		if (daddr  == 0x5f || daddr == 0x80) {
+			dsp_write(val);
+		}
+	}
 	if (currprefs.cs_ide == IDE_A600A1200) {
-		if ((addr & 0xA0000) != 0xA0000)
+		if ((addr & 0xA0000) != 0xA0000) {
 			return;
+		}
 	}
 	addr &= 0xffff;
 	if (currprefs.cs_pcmcia) {
@@ -540,7 +557,6 @@ static void gayle_write (uaecptr addr, int val)
 				write_log (_T("PCMCIA CONFIG WRITE %08X=%02X PC=%08X\n"), oaddr, (uae_u32)val & 0xff, M68K_GETPC);
 		}
 	}
-
 	if (GAYLE_LOG)
 		write_log (_T("GAYLE_WRITE %08X=%02X PC=%08X\n"), oaddr, (uae_u32)val & 0xff, M68K_GETPC);
 	if (!got)
@@ -1425,8 +1441,9 @@ static void check_sram_flush (int addr)
 			int start = pcmcia_write_min & mask;
 			int end = (pcmcia_write_max + blocksize - 1) & mask;
 			int len = end - start;
+			uae_u32 error = 0;
 			if (len > 0) {
-				hdf_write (&pcmcia_disk->hfd, pcmcia_common + start, start, len);
+				hdf_write (&pcmcia_disk->hfd, pcmcia_common + start, start, len, &error);
 				pcmcia_write_min = -1;
 				pcmcia_write_max = -1;
 			}
@@ -1511,6 +1528,7 @@ static int initpcmcia (const TCHAR *path, int readonly, int type, int reset, str
 
 		if (!pcmcia_disk->hfd.drive_empty) {
 			int extrasize = 0;
+			uae_u32 error = 0;
 			pcmcia_common_size = (int)pcmcia_disk->hfd.virtsize;
 			if (pcmcia_disk->hfd.virtsize > 4 * 1024 * 1024) {
 				write_log (_T("PCMCIA SRAM: too large device, %llu bytes\n"), pcmcia_disk->hfd.virtsize);
@@ -1521,10 +1539,10 @@ static int initpcmcia (const TCHAR *path, int readonly, int type, int reset, str
 				pcmcia_common_size = 4 * 1024 * 1024;
 			}
 			pcmcia_common = xcalloc (uae_u8, pcmcia_common_size);
-			hdf_read (&pcmcia_disk->hfd, pcmcia_common, 0, pcmcia_common_size);
+			hdf_read (&pcmcia_disk->hfd, pcmcia_common, 0, pcmcia_common_size, &error);
 			pcmcia_card = 1;
 			if (extrasize >= 512 && extrasize < 1 * 1024 * 1024) {
-				hdf_read(&pcmcia_disk->hfd, pcmcia_attrs, pcmcia_common_size, extrasize);
+				hdf_read(&pcmcia_disk->hfd, pcmcia_attrs, pcmcia_common_size, extrasize, &error);
 				write_log(_T("PCMCIA SRAM: Attribute data read %ld bytes\n"), extrasize);
 				pcmcia_attrs_full = 1;
 			} else {
@@ -1541,7 +1559,10 @@ static int initpcmcia (const TCHAR *path, int readonly, int type, int reset, str
 		ide_initialize(idedrive, PCMCIA_IDE_ID);
 
 		pcmcia_common_size = 0;
-		pcmcia_readonly = uci->readonly;
+		pcmcia_readonly = false;
+		if (uci) {
+			pcmcia_readonly = uci->readonly;
+		}
 		pcmcia_attrs_size = 0x40000;
 		pcmcia_attrs = xcalloc (uae_u8, pcmcia_attrs_size);
 		pcmcia_type = type;
@@ -2205,7 +2226,7 @@ static void gayle_init(void)
 	device_add_check_config(check_prefs_changed_gayle);
 	device_add_rethink(rethink_gayle);
 	device_add_hsync(gayle_hsync);
-	device_add_exit(gayle_free);
+	device_add_exit(gayle_free, NULL);
 }
 
 uae_u8 *save_gayle(size_t *len, uae_u8 *dstptr)

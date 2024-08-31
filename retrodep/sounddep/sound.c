@@ -24,6 +24,7 @@ uae_u16 *paula_sndbufpt;
 int paula_sndbufsize;
 int sound_initialized = 0;
 int soundcheck = 0;
+int active_sound_stereo;
 unsigned int have_sound = 0;
 unsigned int obtainedfreq;
 float scaled_sample_evtime_orig;

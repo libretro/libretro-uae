@@ -79,6 +79,7 @@ struct inputevent {
 	int unit;
 	int data;
 	int portid;
+    int data2;
 };
 
 #define MAX_INPUT_QUALIFIERS (8 + 5)
@@ -205,12 +206,14 @@ extern void release_keys(void);
 
 extern int input_get_default_mouse (struct uae_input_device *uid, int num, int port, int af, bool gp, bool wheel, bool joymouseswap);
 extern int input_get_default_lightpen (struct uae_input_device *uid, int num, int port, int af, bool gp, bool joymouseswap, int submode);
-extern int input_get_default_joystick (struct uae_input_device *uid, int num, int port, int af, int mode, bool gp, bool joymouseswap);
-extern int input_get_default_joystick_analog (struct uae_input_device *uid, int num, int port, int af, bool gp, bool joymouseswap);
+extern int input_get_default_joystick (struct uae_input_device *uid, int num, int port, int af, int mode, bool gp, bool joymouseswap, bool default_osk);
+extern int input_get_default_joystick_analog (struct uae_input_device *uid, int num, int port, int af, bool gp, bool joymouseswap, bool default_osk);
 extern int input_get_default_keyboard (int num);
 
 #define DEFEVENT(A, B, C, D, E, F) INPUTEVENT_ ## A,
 #define DEFEVENT2(A, B, B2, C, D, E, F, G) INPUTEVENT_ ## A,
+#define DEFEVENTKB(A, B, C, F, PC) INPUTEVENT_ ## A,
+
 enum inputevents {
 INPUTEVENT_ZERO,
 #include "../inputevents.def"
@@ -218,6 +221,7 @@ INPUTEVENT_END
 };
 #undef DEFEVENT
 #undef DEFEVENT2
+#undef DEFEVENTKB
 
 extern void handle_cd32_joystick_cia (uae_u8, uae_u8);
 extern uae_u8 handle_parport_joystick (int port, uae_u8 data);
@@ -371,12 +375,19 @@ extern int inputdevice_istest (void);
 extern void inputdevice_settest (int);
 extern int inputdevice_testread_count (void);
 
-extern bool target_can_autoswitchdevice(void);
+bool target_can_autoswitchdevice(void);
+void target_inputdevice_acquire(void);
+void target_inputdevice_unacquire(bool);
 
 bool key_specialpressed(void);
 bool key_shiftpressed(void);
 bool key_altpressed(void);
 bool key_ctrlpressed(void);
+
+void osk_setup(int, int);
+bool osk_status(void);
+
+void inputdevice_draco_key(int kc);
 
 extern int key_swap_hack, key_swap_hack2;
 

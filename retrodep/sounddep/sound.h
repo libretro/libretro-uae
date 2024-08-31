@@ -22,6 +22,7 @@ extern int paula_sndbufsize;
 extern void driveclick_mix (uae_s16*, int, int);
 
 extern int soundcheck;
+extern int active_sound_stereo;
 
 static __inline__ void flush_sound_buffers(int32_t min_bytes_required)
 {
@@ -89,5 +90,6 @@ extern void master_sound_volume (int);
 
 #define FILTER_SOUND_TYPE_A500 0
 #define FILTER_SOUND_TYPE_A1200 1
+#define FILTER_SOUND_TYPE_A500_FIXEDONLY 2
 
 #endif

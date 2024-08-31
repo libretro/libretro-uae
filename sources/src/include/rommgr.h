@@ -22,7 +22,7 @@ extern int decode_cloanto_rom_do(uae_u8 *mem, int size, int real_size);
 
 #define ROMTYPE_CPUBOARD	0x00040000
 #define ROMTYPE_CB_A3001S1	0x00040001
-#define ROMTYPE_CB_APOLLO	0x00040002
+#define ROMTYPE_CB_APOLLO_12xx	0x00040002
 #define ROMTYPE_CB_FUSION	0x00040003
 #define ROMTYPE_CB_DKB		0x00040004
 #define ROMTYPE_CB_WENGINE	0x00040005
@@ -54,6 +54,9 @@ extern int decode_cloanto_rom_do(uae_u8 *mem, int size, int real_size);
 #define ROMTYPE_CB_12GAUGE	0x0004001f
 #define ROMTYPE_CB_HARMS3KP	0x00040020
 #define ROMTYPE_CB_A1230S1	0x00040021
+#define ROMTYPE_CB_DRACO	0x00040022
+#define ROMTYPE_CB_CASAB	0x00040023
+#define ROMTYPE_CB_APOLLO_630 0x00040024
 
 #define ROMTYPE_FREEZER		0x00080000
 #define ROMTYPE_AR			0x00080001
@@ -206,6 +209,11 @@ extern int decode_cloanto_rom_do(uae_u8 *mem, int size, int real_size);
 #define ROMTYPE_DEVHD		0x0010008c
 #define ROMTYPE_CSMK1SCSI	0x0010008d
 #define ROMTYPE_GVPA1208	0x0010008e
+#define ROMTYPE_DSP3210		0x0010008f
+#define ROMTYPE_ALTAIS		0x00100090
+#define ROMTYPE_PROMETHEUSFS 0x00100091
+#define ROMTYPE_RAINBOWII	0x00100092
+#define ROMTYPE_MERLIN		0x00100093
 
 #define ROMTYPE_NOT			0x00800000
 #define ROMTYPE_QUAD		0x01000000
@@ -273,9 +281,10 @@ extern struct romlist *getromlistbyromdata (const struct romdata *rd);
 extern void romlist_add (const TCHAR *path, struct romdata *rd);
 extern TCHAR *romlist_get (const struct romdata *rd);
 extern void romlist_clear (void);
-extern struct zfile *read_rom (struct romdata *rd);
-extern struct zfile *read_rom_name (const TCHAR *filename);
-extern struct zfile *read_device_from_romconfig(struct romconfig *rc, uae_u32 romtype);
+extern struct zfile *read_rom(struct romdata *rd, bool rw/* = false*/);
+extern struct zfile *read_rom_name(const TCHAR *filename, bool rw/* = false*/);
+extern struct zfile *read_device_from_romconfig(struct romconfig *rc, uae_u32 romtype, bool rw/* = false*/);
+extern struct zfile *read_device_from_romconfig_2(struct romconfig *rc, uae_u32 romtype);
 
 extern int load_keyring (struct uae_prefs *p, const TCHAR *path);
 extern uae_u8 *target_load_keyfile (struct uae_prefs *p, const TCHAR *path, int *size, TCHAR *name);
@@ -313,6 +322,7 @@ void board_prefs_changed(int romtype, int devnum);
 #define LOADROM_ZEROFILL 8
 #define LOADROM_ODDFILL(x) ((x << 16) | LOADROM_EVENONLY)
 bool load_rom_rc(struct romconfig *rc, uae_u32 romtype, int maxfilesize, int fileoffset, uae_u8 *rom, int maxromsize, int flags);
+struct zfile *load_rom_rc_zfile(struct romconfig *rc, uae_u32 romtype, int maxfilesize, int fileoffset, uae_u8 *rom, int maxromsize, int flags);
 struct zfile *flashromfile_open(const TCHAR *name);
 
 #define EXPANSION_ORDER_MAX 10000

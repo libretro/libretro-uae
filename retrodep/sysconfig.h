@@ -81,7 +81,11 @@
 //#define WITH_PCI
 //#define WITH_X86
 #define WITH_THREADED_CPU
+//#define WITH_SOFTFLOAT
 //#define FLOPPYBRIDGE
+//#define WITH_MIDIEMU
+//#define WITH_DSP
+//#define WITH_DRACO
 
 //#define WITH_CHD
 #define A_ZIP
@@ -390,7 +394,7 @@
 #define HAVE__BOOL 1
 
 /* Version number of package */
-#define VERSION "5.0.0"
+#define VERSION "5.3.0"
 
 /* Name of package */
 #define PACKAGE "puae"

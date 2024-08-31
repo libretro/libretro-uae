@@ -30,6 +30,7 @@ extern const TCHAR *gfxboard_get_configname(int);
 extern struct gfxboard_func *gfxboard_get_func(struct rtgboardconfig *rbc);
 extern int gfxboard_get_index_from_id(int);
 extern int gfxboard_get_id_from_index(int);
+extern bool gfxboard_switch_away(int monid);
 
 extern bool gfxboard_allocate_slot(int, int);
 extern void gfxboard_free_slot(int);
@@ -45,6 +46,7 @@ bool gfxboard_isgfxboardscreen(int monid);
 
 extern struct gfxboard_func a2410_func;
 extern struct gfxboard_func harlequin_func;
+extern struct gfxboard_func rainbowii_func;
 
 extern void vga_io_put(int board, int portnum, uae_u8 v);
 extern uae_u8 vga_io_get(int board, int portnum);
@@ -83,7 +85,28 @@ int pcem_getvramsize(void);
 #define GFXBOARD_ID_VOODOO3_PCI 18
 #define GFXBOARD_ID_S3VIRGE_PCI 19
 #define GFXBOARD_ID_PIXEL64 20
-#define GFXBOARD_ID_VOODOO5_PCI 21
+#define GFXBOARD_ID_RETINA_Z2 21
+#define GFXBOARD_ID_RETINA_Z3 22
+#define GFXBOARD_ID_ALTAIS_Z3 23
+#define GFXBOARD_ID_S3TRIO64_PCI 24
+#define GFXBOARD_ID_PERMEDIA2_PCI 25
+#define GFXBOARD_ID_RAINBOWIII 26
+#define GFXBOARD_ID_VISIONA 27
+#define GFXBOARD_ID_EGS_110_24 28
+#define GFXBOARD_ID_DOMINO 29
+#define GFXBOARD_ID_MERLIN_Z2 30
+#define GFXBOARD_ID_MERLIN_Z3 31
+#define GFXBOARD_ID_OMNIBUS_ET4000 32
+#define GFXBOARD_ID_OMNIBUS_ET4000W32 33
+#define GFXBOARD_ID_GRAFFITY_Z2 34
+#define GFXBOARD_ID_GRAFFITY_Z3 35
+#define GFXBOARD_ID_RAINBOWII 36
+#define GFXBOARD_ID_GD5446_PCI 37
+#define GFXBOARD_ID_VOODOO5_PCI 38
+
+#define GFXBOARD_BUSTYPE_Z 0
+#define GFXBOARD_BUSTYPE_PCI 1
+#define GFXBOARD_BUSTYPE_DRACO 2
 
 struct gfxboard_mode
 {
@@ -101,6 +124,7 @@ typedef void(*GFXBOARD_HSYNC)(void*);
 typedef bool(*GFXBOARD_VSYNC)(void*, struct gfxboard_mode*);
 typedef bool(*GFXBOARD_TOGGLE)(void*, int);
 typedef void(*GFXBOARD_CONFIGURED)(void*, uae_u32);
+typedef void(*GFXBOARD_REFRESH)(void*);
 
 struct gfxboard_func
 {
@@ -109,9 +133,9 @@ struct gfxboard_func
 	GFXBOARD_RESET reset;
 	GFXBOARD_HSYNC hsync;
 	GFXBOARD_VSYNC vsync;
+	GFXBOARD_REFRESH refresh;
 	GFXBOARD_TOGGLE toggle;
 	GFXBOARD_CONFIGURED configured;
 };
-
 
 #endif /* UAE_GFXBOARD_H */
