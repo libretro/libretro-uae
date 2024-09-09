@@ -52,7 +52,6 @@
 #include "devices.h"
 #include "dsp3210/dsp_glue.h"
 
-struct hd_hardfiledata;
 
 #define CARD_FLAG_CAN_Z3 1
 #define CARD_FLAG_CHILD 8
@@ -4048,6 +4047,9 @@ uae_u8 *save_expansion(size_t *len, uae_u8 *dstptr)
 	save_u32 (rtarea_base);
 	save_u32 (fastmem_bank[1].start);
 	*len = 4 + 4 + 4 + 4 + 4;
+#ifndef PICASSO96
+	*len -= 4;
+#endif
 	return dstbak;
 }
 

@@ -14,12 +14,6 @@
 /* warning: 'struct uae_prefs' declared inside parameter list will not be visible outside of this definition or declaration */
 #include "options.h"
 
-#ifdef __LIBRETRO__
-extern void libretro_do_restart (int argc, TCHAR **argv);
-extern uint8_t libretro_runloop_active;
-extern uint8_t libretro_frame_end;
-#endif
-
 extern void do_start_program (void);
 extern void start_program (void);
 extern void leave_program (void);

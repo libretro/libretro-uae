@@ -7313,7 +7313,6 @@ void compute_framesync(void)
 #ifdef __LIBRETRO__
 	request_update_av_info      = true;
 	retro_av_info_change_timing = true;
-
 	retro_av_info_is_ntsc       = isntsc;
 	retro_av_info_is_lace       = islace;
 #endif
@@ -7600,10 +7599,7 @@ static void init_beamcon0(bool fakehz)
 		reset_drawing();
 	} else if (vpos_count == 0) {
 		// mode reset
-#ifndef __LIBRETRO__
-		/* Interlace toggle gets stuck in a loop if this is allowed (?!) */
 		vpos_count = maxvpos;
-#endif
 		vpos_count_diff = maxvpos;
 	}
 
@@ -8219,10 +8215,6 @@ static void VPOSW(int hpos, uae_u16 v)
 		lol = 0;
 	}
 	if (lof_changing) {
-#ifdef __LIBRETRO__
-		/* SNDRATE is wrong at startup without this, requiring extra `init_custom()` (?!) */
-		lof_display = lof_store;
-#endif
 		return;
 	}
 	newvpos &= 0x00ff;

@@ -34,6 +34,9 @@ extern int retro_thisframe_last_drawn_line;
 extern int retro_min_diwstart;
 extern int retro_max_diwstop;
 extern bool retro_av_info_is_lace;
+extern bool libretro_frame_end;
+extern bool libretro_runloop_active;
+extern void libretro_do_restart(int argc, TCHAR **argv);
 
 /* File helpers functions */
 #define RETRO_PATH_MAX 512

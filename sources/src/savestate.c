@@ -108,7 +108,7 @@ static struct staterecord **staterecords;
 bool is_savestate_incompatible(void)
 {
 #ifdef __LIBRETRO__
-    return false;
+	return false;
 #endif
 	int dowarn = 0;
 
@@ -602,6 +602,7 @@ static void restore_header (uae_u8 *src)
 }
 
 /* restore all subsystems */
+
 #ifdef __LIBRETRO__
 void restore_state (void)
 #else
@@ -885,7 +886,7 @@ error:
 #ifdef __LIBRETRO__
 	if (retro_deserialize_file)
 	{
-		zfile_fclose (retro_deserialize_file);
+		zfile_fclose(retro_deserialize_file);
 		retro_deserialize_file = NULL;
 	}
 #else
@@ -1382,16 +1383,16 @@ int save_state (const TCHAR *filename, const TCHAR *description)
 	}
 	int v = save_state_internal (f, description, comp, true);
 #ifdef __LIBRETRO__
-	if (v)
 #if OPEN_LOG > 0
+	if (v)
 		write_log (_T("STATESAVE libretro serialization complete\n"));
 #endif
-	savestate_state = 0;
 	zfile_fseek (f, 0, SEEK_SET);
+	savestate_state = 0;
 	return f;
 #else
-	if (v)
 #if OPEN_LOG > 0
+	if (v)
 		write_log (_T("Save of '%s' complete\n"), filename);
 #endif
 	zfile_fclose (f);
@@ -1470,6 +1471,7 @@ void savestate_rewind (void) {}
 void savestate_memorysave (void) {}
 #else
 static int rewindmode;
+
 
 static struct staterecord *canrewind (int pos)
 {
@@ -2095,6 +2097,7 @@ void statefile_save_recording (const TCHAR *filename)
 }
 
 #endif /* __LIBRETRO__ */
+
 /*
 
 My (Toni Wilen <twilen@arabuusimiehet.com>)

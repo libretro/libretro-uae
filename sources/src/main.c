@@ -56,7 +56,6 @@
 
 #ifdef __LIBRETRO__
 static int8_t real_main2_ret = 0;
-uint8_t libretro_frame_end = 0;
 static void hr (void)
 {
 	write_log (_T("--------------------------------------------------------------------------------\n"));
@@ -76,10 +75,7 @@ static void show_version_full (void)
 	show_version ();
 	hr ();
 }
-
-static int real_main2 (int argc, TCHAR **argv);
-
-#endif
+#endif /* __LIBRETRO__ */
 
 long int version = 256 * 65536L * UAEMAJOR + 65536L * UAEMINOR + UAESUBREV;
 
@@ -889,48 +885,6 @@ void uae_restart(struct uae_prefs *p, int opengui, const TCHAR *cfgfile)
 	target_restart ();
 }
 
-#ifdef __LIBRETRO__
-extern void libretro_do_restart (int argc, TCHAR **argv)
-{
-	// This is used inside libretro.c to recreate the
-	// behaviour of the standard real_main() function
-	// - i.e. normally it would do this:
-	//    while (restart_program) {
-	//      int ret;
-	//      changed_prefs = currprefs;
-	//      ret = real_main2 (argc, argv);
-	//      if (ret == 0 && quit_to_gui)
-	//         restart_program = 1;
-	//      leave_program ();
-	//      quit_program = 0;
-	//      }
-	// ...whereas the libretro implementation does this:
-	//    if (restart_program)
-	//    {
-	//       changed_prefs = currprefs;
-	//       real_main2_ret = real_main2 (argc, argv);
-	//    }
-	// Consequently, whenever the m68k_go() function returns
-	// without detecting a libretro 'frame end' (this basically
-	// only happens after calling uae_restart()), we have to
-	// 'manually insert' the extra steps (execution order wraps
-	// around from real_main2()).
-	// Note that after calling libretro_do_restart(), we must
-	// emulate a 'first pass' frame - i.e. set firstpass to 1
-	// inside libretro.c.
-	if (real_main2_ret == 0 && quit_to_gui) // This will never be true, but include for consistency
-		restart_program = 1;
-
-	do_leave_program ();
-	quit_program = 0;
-
-	if (restart_program)
-	{
-		changed_prefs = currprefs;
-		real_main2_ret = real_main2 (argc, argv);
-	}
-}
-#endif
 
 #ifndef DONT_PARSE_CMDLINE
 
@@ -1384,7 +1338,7 @@ void real_main (int argc, TCHAR **argv)
 #ifdef __LIBRETRO__
 	if (restart_program)
 	{
-		changed_prefs = currprefs;
+		copy_prefs(&currprefs, &changed_prefs);
 		real_main2_ret = real_main2 (argc, argv);
 	}
 #else
@@ -1416,4 +1370,47 @@ int main (int argc, TCHAR **argv)
 #ifdef SINGLEFILE
 uae_u8 singlefile_config[50000] = { "_CONFIG_STARTS_HERE" };
 uae_u8 singlefile_data[1500000] = { "_DATA_STARTS_HERE" };
+#endif
+
+#ifdef __LIBRETRO__
+extern void libretro_do_restart (int argc, TCHAR **argv)
+{
+	// This is used inside libretro.c to recreate the
+	// behaviour of the standard real_main() function
+	// - i.e. normally it would do this:
+	//    while (restart_program) {
+	//      int ret;
+	//      changed_prefs = currprefs;
+	//      ret = real_main2 (argc, argv);
+	//      if (ret == 0 && quit_to_gui)
+	//         restart_program = 1;
+	//      leave_program ();
+	//      quit_program = 0;
+	//      }
+	// ...whereas the libretro implementation does this:
+	//    if (restart_program)
+	//    {
+	//       changed_prefs = currprefs;
+	//       real_main2_ret = real_main2 (argc, argv);
+	//    }
+	// Consequently, whenever the m68k_go() function returns
+	// without detecting a libretro 'frame end' (this basically
+	// only happens after calling uae_restart()), we have to
+	// 'manually insert' the extra steps (execution order wraps
+	// around from real_main2()).
+	// Note that after calling libretro_do_restart(), we must
+	// emulate a 'first pass' frame - i.e. set firstpass to 1
+	// inside libretro.c.
+	if (real_main2_ret == 0 && quit_to_gui) // This will never be true, but include for consistency
+		restart_program = 1;
+
+	do_leave_program ();
+	quit_program = 0;
+
+	if (restart_program)
+	{
+		copy_prefs(&currprefs, &changed_prefs);
+		real_main2_ret = real_main2 (argc, argv);
+	}
+}
 #endif

@@ -47,7 +47,6 @@ extern int retro_ui_get_pointer_state(uint8_t port, int *px, int *py, uint8_t *p
 extern unsigned short int defaultw;
 extern unsigned short int defaulth;
 extern unsigned char width_multiplier;
-extern uint8_t libretro_frame_end;
 
 unsigned short int* pixbuf = NULL;
 extern char retro_temp_directory[RETRO_PATH_MAX];
@@ -805,8 +804,8 @@ void unlockscr(struct vidbuffer *vb, int y_start, int y_end)
       retro_thisframe_last_drawn_line = -1;
 
    /* Flag that we should end the frame, return out of retro_run */
-   libretro_frame_end = 1;
-   set_special(SPCFLAG_CHECK);
+   libretro_frame_end = true;
+   set_special(1);
 
    if (lightpen_enabled)
       retro_lightpen_update();
