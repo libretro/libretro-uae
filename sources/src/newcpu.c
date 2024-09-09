@@ -20,6 +20,10 @@
 #include "sysconfig.h"
 #include "sysdeps.h"
 
+#ifdef __LIBRETRO__
+extern bool libretro_frame_end;
+#endif
+
 #include "options.h"
 #include "events.h"
 #include "uae.h"
@@ -2110,9 +2114,12 @@ static void build_cpufunctbl (void)
 			currprefs.address_space_24 = false;
 	}
 	m68k_interrupt_delay = false;
+	m68k_accurate_ipl = false;
 	if (currprefs.cpu_cycle_exact) {
 		if (tbl == op_smalltbl_14 || tbl == op_smalltbl_13 || tbl == op_smalltbl_21 || tbl == op_smalltbl_23)
 			m68k_interrupt_delay = true;
+		if (tbl == op_smalltbl_14 || tbl == op_smalltbl_13)
+			m68k_accurate_ipl = true;
 	} else if (currprefs.cpu_compatible) {
 		if (currprefs.cpu_model <= 68010 && currprefs.m68k_speed == 0) {
 			m68k_interrupt_delay = true;
@@ -4512,15 +4519,15 @@ static bool haltloop(void)
 			if (regs.spcflags & SPCFLAG_COPPER)
 				do_copper();
 
+#ifdef __LIBRETRO__
+			if (libretro_frame_end)
+				set_special(SPCFLAG_BRK);
+#endif
+
 			if (regs.spcflags) {
 				if ((regs.spcflags & (SPCFLAG_BRK | SPCFLAG_MODE_CHANGE)))
 					return true;
 			}
-
-#ifdef __LIBRETRO__
-			if (libretro_frame_end)
-				return true;
-#endif
 		}
 #ifdef WITH_PPC
 	}
@@ -4767,8 +4774,9 @@ static int do_specialties (int cycles)
 	}
 #endif
 
-	if (spcflags & SPCFLAG_COPPER)
+	if (spcflags & SPCFLAG_COPPER) {
 		do_copper();
+	}
 
 #ifdef JIT
 	if (spcflags & SPCFLAG_END_COMPILE) {
@@ -4776,16 +4784,18 @@ static int do_specialties (int cycles)
 	}
 #endif
 
-	while ((spcflags & SPCFLAG_CPUINRESET)) {
+	while (spcflags & SPCFLAG_CPUINRESET) {
 		x_do_cycles(4 * CYCLE_UNIT);
-		spcflags = regs.spcflags;		
+		spcflags = regs.spcflags;
 		if (spcflags & SPCFLAG_COPPER) {
 			do_copper();
 		}
+
 #ifdef __LIBRETRO__
-		/* FIXME: OCS/ECS hangs on keyboard reset without a forced break.. */
-		set_special(SPCFLAG_BRK);
+		if (libretro_frame_end)
+			set_special(SPCFLAG_BRK);
 #endif
+
 		if (!(spcflags & SPCFLAG_CPUINRESET) || (spcflags & SPCFLAG_BRK) || (spcflags & SPCFLAG_MODE_CHANGE)) {
 			break;
 		}
@@ -4876,8 +4886,9 @@ static int do_specialties (int cycles)
 
 #ifdef __LIBRETRO__
 	if (libretro_frame_end)
-	   return 1;
+		return 1;
 #endif
+
 	return 0;
 }
 
@@ -6603,7 +6614,7 @@ void m68k_go (int may_quit)
 	if (resume == 0)
 	{
 		hardboot = 1;
-		libretro_frame_end = 0;
+		libretro_frame_end = false;
 
 		/* Don't need to check in_m68k_go here:
 		 * libretro calls m68k_go() once per frame,
@@ -6865,10 +6876,11 @@ void m68k_go (int may_quit)
 		}
 		if (quit_program == UAE_QUIT)
 			break;
+
 #ifdef __LIBRETRO__
 		if (libretro_frame_end)
 		{
-			libretro_frame_end = 0;
+			libretro_frame_end = false;
 			return 0;
 		}
 #endif
