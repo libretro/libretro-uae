@@ -1344,7 +1344,7 @@ int input_get_default_joystick_analog (struct uae_input_device *uid, int num, in
    return 0;
 }
 
-void target_inputdevice_unacquire(bool) {}
+void target_inputdevice_unacquire(bool full) {}
 void target_inputdevice_acquire(void) {}
 
 /***************************************************************
