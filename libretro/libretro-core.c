@@ -5297,16 +5297,14 @@ void retro_init(void)
 
 void retro_deinit(void)
 {
+   leave_program();
+
    /* Clean the M3U storage */
    if (dc)
       dc_free(dc);
 
    /* Clean dynamic cartridge info */
    free_puae_carts();
-
-   /* Clean ZIP temp */
-   if (!string_is_empty(retro_temp_directory) && path_is_directory(retro_temp_directory))
-      remove_recurse(retro_temp_directory);
 
    /* Free buffers used by libretro-graph */
    libretro_graph_free();
@@ -5316,13 +5314,6 @@ void retro_deinit(void)
 
    /* 'Reset' troublesome static variables */
    pix_bytes_initialized = false;
-   cpu_cycle_exact_force = false;
-   automatic_sound_filter_type_update_timer = 0;
-   fake_ntsc = false;
-   real_ntsc = false;
-   forced_video = -1;
-   locked_video_horizontal = false;
-   opt_aspect_ratio_locked = false;
    libretro_supports_bitmasks = false;
    libretro_supports_ff_override = false;
    libretro_supports_option_categories = false;
@@ -8635,6 +8626,10 @@ void retro_unload_game(void)
    /* Close redirected save disks */
    floppy_close_redirect(-1);
 
+   /* Clean ZIP temp */
+   if (!string_is_empty(retro_temp_directory) && path_is_directory(retro_temp_directory))
+      remove_recurse(retro_temp_directory);
+
    /* Ensure save state de-serialization file
     * is closed/NULL
     * Note: Have to do this here (not in retro_deinit())
@@ -8645,9 +8640,13 @@ void retro_unload_game(void)
       retro_deserialize_file = NULL;
    }
 
-   leave_program();
-
-   libretro_runloop_active = false;
+   cpu_cycle_exact_force = false;
+   automatic_sound_filter_type_update_timer = 0;
+   fake_ntsc = false;
+   real_ntsc = false;
+   forced_video = -1;
+   locked_video_horizontal = false;
+   opt_aspect_ratio_locked = false;
 }
 
 unsigned retro_get_region(void)
