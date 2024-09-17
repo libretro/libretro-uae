@@ -8215,6 +8215,10 @@ static void VPOSW(int hpos, uae_u16 v)
 		lol = 0;
 	}
 	if (lof_changing) {
+#ifdef __LIBRETRO__
+		/* SNDRATE is wrong at startup without this, requiring extra `init_custom()` (?!) */
+		lof_display = lof_store;
+#endif
 		return;
 	}
 	newvpos &= 0x00ff;
