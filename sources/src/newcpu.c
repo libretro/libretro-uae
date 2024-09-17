@@ -16,6 +16,10 @@
 #include "sysconfig.h"
 #include "sysdeps.h"
 
+#ifdef __LIBRETRO__
+extern bool libretro_frame_end;
+#endif
+
 #include "options.h"
 #include "events.h"
 #include "uae.h"
@@ -4909,11 +4913,11 @@ void m68k_go (int may_quit)
 #endif
 {
 #ifdef __LIBRETRO__
-	if ( resume == 0 )
+	if (resume == 0)
 	{
 		hardboot = 1;
 		startup = 1;
-		libretro_frame_end = 0;
+		libretro_frame_end = false;
 
 		// Don't need to check in_m68k_go here:
 		// libretro calls m68k_go() once per frame,
@@ -5109,9 +5113,9 @@ void m68k_go (int may_quit)
 		unset_special (SPCFLAG_BRK | SPCFLAG_MODE_CHANGE);
 
 #ifdef __LIBRETRO__
-		if ( libretro_frame_end )
+		if (libretro_frame_end)
 		{
-			libretro_frame_end = 0;
+			libretro_frame_end = false;
 			return 0;
 		}
 #endif

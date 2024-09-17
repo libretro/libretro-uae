@@ -35,7 +35,8 @@
 #define utf8_to_local_string_alloc strdup
 #endif
 
-uint8_t libretro_runloop_active = 0;
+bool libretro_runloop_active = false;
+bool libretro_frame_end = false;
 unsigned short int retro_bmp[RETRO_BMP_SIZE] = {0};
 unsigned int retro_bmp_offset = 0;
 unsigned short int defaultw = EMULATOR_DEF_WIDTH / 2;
@@ -147,8 +148,6 @@ bool request_reset_drawing = false;
 bool request_reset_soft = false;
 bool request_reset_hard = false;
 static unsigned char request_init_custom_timer = 0;
-static unsigned char startup_init_custom_timer = 80;
-static unsigned char request_check_prefs_timer = 0;
 unsigned char crop_id = 0;
 unsigned char opt_crop_id = 0;
 unsigned char crop_mode_id = 0;
@@ -5227,7 +5226,7 @@ void retro_init(void)
    memset(retro_bmp, 0, sizeof(retro_bmp));
    init_output_audio_buffer(2048);
 
-   libretro_runloop_active = 0;
+   libretro_runloop_active = false;
    update_variables();
 }
 
@@ -5942,7 +5941,7 @@ static void whdload_quitkey(void)
       return;
 
    log_cb(RETRO_LOG_INFO, "WHDLoad QuitKey triggered..\n");
-   libretro_runloop_active = 0;
+   libretro_runloop_active = false;
 
    retro_key_down(RETROK_KP_MINUS);
    for (i = 0; i < 2; i++)
@@ -5952,7 +5951,7 @@ static void whdload_quitkey(void)
    for (i = 0; i < retro_refresh * 2; i++)
       m68k_go(1, 1);
 
-   libretro_runloop_active = 1;
+   libretro_runloop_active = true;
 }
 
 static char* emu_config_string(char *mode, int config)
@@ -8333,22 +8332,6 @@ void retro_run(void)
    input_poll_cb();
    retro_poll_event();
 
-
-   /* Refresh CPU prefs */
-   if (request_check_prefs_timer > 0)
-   {
-      request_check_prefs_timer--;
-      if (request_check_prefs_timer == 0)
-      {
-         update_variables();
-         config_changed = 1;
-         check_prefs_changed_audio();
-         check_prefs_changed_custom();
-         check_prefs_changed_cpu();
-         config_changed = 0;
-      }
-   }
-
    /* Prevent serialize on startup frames */
    if (save_state_grace > 0)
       save_state_grace--;
@@ -8496,7 +8479,7 @@ bool retro_load_game(const struct retro_game_info *info)
    /* Run emulation first pass */
    restart_pending = m68k_go(1, 0);
    /* > We are now ready to enter the run loop */
-   libretro_runloop_active = 1;
+   libretro_runloop_active = true;
 
    /* Force check for redirected save disks */
    floppy_open_redirect(-1);
@@ -8575,7 +8558,7 @@ void retro_unload_game(void)
 
    leave_program();
 
-   libretro_runloop_active = 0;
+   libretro_runloop_active = false;
 }
 
 unsigned retro_get_region(void)
@@ -8642,11 +8625,6 @@ bool retro_unserialize(const void *data_, size_t size)
     *   unknown error */
    if (!savestate_state)
    {
-#if 0
-      /* Savestates also save CPU prefs, therefore force core options, but skip it for now */
-      request_check_prefs_timer = 4;
-#endif
-
       if (retro_deserialize_file)
       {
          zfile_fclose(retro_deserialize_file);
@@ -8682,7 +8660,7 @@ bool retro_unserialize(const void *data_, size_t size)
              *   us call m68k_go() without accessing frontend
              *   features - specifically, it disables the audio
              *   callback functionality */
-            libretro_runloop_active = 0;
+            libretro_runloop_active = false;
             while (savestate_state && (frame_counter < max_frames))
             {
                /* Note that retro_deserialize_file will be
@@ -8691,7 +8669,7 @@ bool retro_unserialize(const void *data_, size_t size)
                restart_pending = m68k_go(1, 1);
                frame_counter++;
             }
-            libretro_runloop_active = 1;
+            libretro_runloop_active = true;
 
             /* If the above while loop times out, then
              * everything is completely broken. We cannot

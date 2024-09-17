@@ -3340,7 +3340,6 @@ void compute_framesync (void)
 #ifdef __LIBRETRO__
 	request_update_av_info      = true;
 	retro_av_info_change_timing = true;
-
 	retro_av_info_is_ntsc       = isntsc;
 	retro_av_info_is_lace       = islace;
 #endif

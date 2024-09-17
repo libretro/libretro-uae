@@ -29,7 +29,6 @@ bool inputdevice_finalized = false;
 extern unsigned short int defaultw;
 extern unsigned short int defaulth;
 extern uint8_t width_multiplier;
-extern uint8_t libretro_frame_end;
 
 unsigned short int* pixbuf = NULL;
 extern char retro_temp_directory[RETRO_PATH_MAX];
@@ -699,8 +698,8 @@ void retro_flush_screen (struct vidbuf_description *gfxinfo, int ystart, int yen
       retro_thisframe_last_drawn_line++;
 
    /* Flag that we should end the frame, return out of retro_run */
-   libretro_frame_end = 1;
-   set_special(SPCFLAG_CHECK);
+   libretro_frame_end = true;
+   set_special(1);
 }
 
 void retro_flush_block (struct vidbuf_description *gfxinfo, int ystart, int yend)

@@ -516,6 +516,7 @@ static void restore_header (uae_u8 *src)
 }
 
 /* restore all subsystems */
+
 #ifdef __LIBRETRO__
 void restore_state (void)
 #else
@@ -782,12 +783,12 @@ error:
 #ifdef __LIBRETRO__
 	if (retro_deserialize_file)
 	{
-		zfile_fclose (retro_deserialize_file);
+		zfile_fclose(retro_deserialize_file);
 		retro_deserialize_file = NULL;
 	}
 #else
 	if (f)
-		zfile_fclose (f);
+		zfile_fclose(f);
 #endif
 }
 
@@ -1197,16 +1198,16 @@ int save_state (const TCHAR *filename, const TCHAR *description)
 	}
 	int v = save_state_internal (f, description, comp, true);
 #ifdef __LIBRETRO__
-	if (v)
 #if OPEN_LOG > 0
+	if (v)
 		write_log (_T("STATESAVE libretro serialization complete\n"));
 #endif
 	savestate_state = 0;
 	zfile_fseek (f, 0, SEEK_SET);
 	return f;
 #else
-	if (v)
 #if OPEN_LOG > 0
+	if (v)
 		write_log (_T("Save of '%s' complete\n"), filename);
 #endif
 	zfile_fclose (f);
