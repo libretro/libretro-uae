@@ -8143,40 +8143,6 @@ static bool retro_update_av_info(void)
          && video_config_aspect == PUAE_VIDEO_NTSC)
       opt_statusbar_position_offset += (PUAE_VIDEO_HEIGHT_PAL - PUAE_VIDEO_HEIGHT_NTSC) / ((video_config_geometry & PUAE_VIDEO_DOUBLELINE) ? 1 : 2);
 
-   /* Compensate for interlace, aargh */
-   if (opt_statusbar_position >= 0 && !real_ntsc && !fake_ntsc)
-   {
-      if (video_config_geometry & PUAE_VIDEO_DOUBLELINE)
-      {
-         if (video_config_geometry & PUAE_VIDEO_PAL)
-         {
-            opt_statusbar_position -= 0 - (1 * islace);
-            opt_statusbar_position_offset += 2 + (1 * islace);
-         }
-         else
-         {
-            opt_statusbar_position -= 2 + (1 * islace);
-            opt_statusbar_position_offset += 2 + (1 * islace);
-         }
-      }
-      else
-      {
-         if (video_config_geometry & PUAE_VIDEO_PAL)
-         {
-            opt_statusbar_position = 0;
-            opt_statusbar_position_offset += 1 + islace;
-         }
-         else
-         {
-            opt_statusbar_position -= 1 + islace;
-            opt_statusbar_position_offset += 1 + islace;
-         }
-      }
-
-      if (opt_statusbar_position < 0)
-         opt_statusbar_position = 0;
-   }
-
 #if 0
    printf("statusbar:%3d old:%3d offset:%3d, defaulth:%d retroh:%d\n", opt_statusbar_position, opt_statusbar_position_old, opt_statusbar_position_offset, defaulth, retroh);
 #endif
@@ -8487,17 +8453,6 @@ void retro_run(void)
    /* Forced statusbar messages */
    if ((!retro_statusbar && opt_statusbar & STATUSBAR_MESSAGES && statusbar_message_timer) || retro_statusbar)
       print_statusbar();
-
-   /* Maximum 288p/576p PAL shenanigans:
-    * Mask the last line(s), since UAE does not refresh the last line,
-    * and even internal OSD leaves trails */
-   if (video_config & PUAE_VIDEO_PAL)
-   {
-      if (video_config & PUAE_VIDEO_DOUBLELINE)
-         draw_hline(0, 574, retrow, 2, 0);
-      else
-         draw_hline(0, 287, retrow, 1, 0);
-   }
 
 upload:
    video_cb(retro_bmp + retro_bmp_offset, retrow_crop, retroh_crop, retrow << (pix_bytes >> 1));
