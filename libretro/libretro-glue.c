@@ -2403,7 +2403,7 @@ cdrom_file *cdrom_open(chd_file *chd)
 		return NULL;
 
 	/* allocate memory for the CD-ROM file */
-	file = xmalloc(cdrom_file, 1);
+	file = xmalloc(cdrom_file, sizeof(cdrom_file));
 	if (file == NULL)
 		return NULL;
 

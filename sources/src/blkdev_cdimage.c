@@ -1473,14 +1473,19 @@ static int parsechd (struct cdunit *cdu, struct zfile *zcue, const TCHAR *img)
 		chd_close(cdu->chd_f);
 #endif
 
+#ifdef __LIBRETRO__
 	chd_file *cf;
-	cf = xmalloc(chd_file, 1);
+	cf = xmalloc(chd_file, sizeof(chd_file));
 	err = chd_open(img, CHD_OPEN_READ, NULL, &cf);
+#else
+	chd_file *cf = new chd_file();
+	err = cf->open(*f, false, NULL);
 	if (err != CHDERR_NONE) {
 		write_log (_T("CHD '%s' err=%d\n"), zfile_getname (zcue), err);
 		zfile_fclose (f);
 		return 0;
 	}
+#endif
 	if (!(cdf = cdrom_open (cf))) {
 		write_log (_T("Couldn't open CHD '%s' as CD\n"), zfile_getname (zcue));
 		chd_close(cf);
