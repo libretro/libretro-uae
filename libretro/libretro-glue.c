@@ -615,6 +615,14 @@ void target_fixup_options (struct uae_prefs *p)
 {
    p->gfx_iscanlines = 1;
    p->gfx_pscanlines = 0;
+
+   /* Allow only full Cycle-exact with 68000 */
+   if (p->cpu_memory_cycle_exact && !p->cpu_cycle_exact && p->cpu_model < 68020)
+      p->cpu_cycle_exact = true;
+
+   /* Slow down 68020 memory Cycle-exact default clock */
+   if (!p->cpu_cycle_exact && p->cpu_memory_cycle_exact && !p->cpu_clock_multiplier && p->cpu_model == 68020)
+      p->cpu_clock_multiplier = 2 * 256;
 }
 
 /*** Input ***/

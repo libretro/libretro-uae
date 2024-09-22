@@ -1040,7 +1040,7 @@ static void retro_set_core_options()
          "puae_cpu_compatibility",
          "System > CPU Compatibility",
          "CPU Compatibility",
-         "Some games have graphic and/or speed issues without 'Cycle-exact'. 'Cycle-exact' can be forced with '(CE)' file path tag.",
+         "Some games have graphic and/or speed issues without 'Cycle-exact'. 'Cycle-exact' can be forced with '(CE)' file path tag. (DMA/Memory) is forced to (Full) with 68000.",
          NULL,
          "system",
          {
@@ -4906,6 +4906,7 @@ static void update_variables(void)
    request_update_av_info = true;
 
    /* Always trigger changed prefs */
+   target_fixup_options(&changed_prefs);
    set_config_changed();
    device_check_config();
 
