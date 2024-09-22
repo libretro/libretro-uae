@@ -1106,6 +1106,8 @@ static int deskhz;
 float target_adjust_vblank_hz(int monid, float hz)
 {
 #if 1
+	/* Reset this so that `compute_vsynctime()` produces correct sound clock */
+	lof_display = 1;
 	return hz;
 #else
 	struct AmigaMonitor *mon = &AMonitors[monid];

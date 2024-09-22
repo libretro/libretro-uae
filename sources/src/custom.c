@@ -7575,20 +7575,9 @@ static void init_beamcon0(bool fakehz)
 		if (vpos_count < 10) {
 			vpos_count = 10;
 		}
-#ifdef __LIBRETRO__
-		/* Fake NTSC fails without limits */
-		if (vpos_count > 10 && vpos_count < 300 && maxvpos == MAXVPOS_PAL)
-		{
-			vblank_hz = (isntsc ? 15734.0f : 15625.0f) / vpos_count;
-			vblank_hz_nom = vblank_hz_shf = vblank_hz_lof = vblank_hz_lace = (float)vblank_hz;
-			/* SNDRATE will be wrong at interlace toggle if this is allowed (?!) */
-			maxvpos_nom = vpos_count - (lof_store ? 1 : 0);
-		}
-#else
 		vblank_hz = (isntsc ? 15734.0f : 15625.0f) / vpos_count;
 		vblank_hz_nom = vblank_hz_shf = vblank_hz_lof = vblank_hz_lace = (float)vblank_hz;
 		maxvpos_nom = vpos_count - (lof_store ? 1 : 0);
-#endif
 		if ((maxvpos_nom >= 256 && maxvpos_nom <= 313) || (beamcon0 & BEAMCON0_VARBEAMEN)) {
 			maxvpos_display = maxvpos_nom;
 		} else if (maxvpos_nom < 256) {
@@ -8215,10 +8204,6 @@ static void VPOSW(int hpos, uae_u16 v)
 		lol = 0;
 	}
 	if (lof_changing) {
-#ifdef __LIBRETRO__
-		/* SNDRATE is wrong at startup without this, requiring extra `init_custom()` (?!) */
-		lof_display = lof_store;
-#endif
 		return;
 	}
 	newvpos &= 0x00ff;
