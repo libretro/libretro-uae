@@ -109,7 +109,7 @@ These parameters control the output resolution of the core (default bolded):
 | Video Standard       | **PAL 50Hz**, NTSC 60Hz                 |
 | Video Resolution     | **Automatic**, Low, High, Super-High    |
 | Video Line Mode      | **Automatic**, Single Line, Double Line |
-| Aspect Ratio         | **Automatic**, PAL, NTSC                |
+| Aspect Ratio         | **Automatic**, PAL, NTSC, 1:1           |
 
 With these settings all the standard resolutions are available:
 

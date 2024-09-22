@@ -1311,13 +1311,14 @@ static void retro_set_core_options()
          "puae_video_aspect",
          "Video > Pixel Aspect Ratio",
          "Pixel Aspect Ratio",
-         "Hotkey toggling disables this option until core restart.\n- 'PAL': 1/1 = 1.000\n- 'NTSC': 44/52 = 0.846",
+         "Hotkey toggling disables this option until core restart.\n- 'PAL': 26/25 = 1.04\n- 'NTSC': 43/50 = 0.86",
          NULL,
          "video",
          {
             { "auto", "Automatic" },
             { "PAL", NULL },
             { "NTSC", NULL },
+            { "1:1", NULL },
             { NULL, NULL },
          },
          "auto"
@@ -3402,6 +3403,7 @@ static void update_variables(void)
 
       if      (!strcmp(var.value, "PAL"))  video_config_aspect = PUAE_VIDEO_PAL;
       else if (!strcmp(var.value, "NTSC")) video_config_aspect = PUAE_VIDEO_NTSC;
+      else if (!strcmp(var.value, "1:1"))  video_config_aspect = PUAE_VIDEO_1x1;
       else                                 video_config_aspect = 0;
 
       /* Revert if aspect ratio is locked */
@@ -5312,26 +5314,32 @@ void retro_get_system_info(struct retro_system_info *info)
 
 float retro_get_aspect_ratio(unsigned int width, unsigned int height, bool pixel_aspect)
 {
-   float ar  = 1;
-   float par = 1;
+   double ar  = 1;
+   double par = 1;
 
    if (video_config_geometry & PUAE_VIDEO_NTSC || video_config_aspect == PUAE_VIDEO_NTSC)
-      par = (float)44.0 / (float)52.0;
-   ar = ((float)width / (float)height) * par;
+      par = 28512.0f / 33173.0f; /* 43:50 */
+   else if (video_config_geometry & PUAE_VIDEO_PAL || video_config_aspect == PUAE_VIDEO_PAL)
+      par = 9600000.0f / 9221927.0f; /* 26:25 */
+
+   if (video_config_aspect == PUAE_VIDEO_1x1)
+      par = 1;
+
+   ar = ((double)width / (double)height) * par;
 
    if (video_config_geometry & PUAE_VIDEO_DOUBLELINE)
    {
       if (video_config_geometry & PUAE_VIDEO_HIRES)
          ;
       else if (video_config_geometry & PUAE_VIDEO_SUPERHIRES)
-         ar /= 2;
+         ar /= 2.0f;
    }
    else
    {
       if (video_config_geometry & PUAE_VIDEO_HIRES)
-         ar /= 2;
+         ar /= 2.0f;
       else if (video_config_geometry & PUAE_VIDEO_SUPERHIRES)
-         ar /= 4;
+         ar /= 4.0f;
    }
 
    if (pixel_aspect)
