@@ -14,6 +14,7 @@ extern struct vidbuf_description *gfxvidinfo;
 #ifdef WITH_CHD
 /*** CHD ***/
 #include "deps/libz/zlib.h"
+#include "deps/zstd/lib/zstd.h"
 #include "deps/7zip/LzmaDec.h"
 
 #include "libchdr/chd.h"
@@ -89,17 +90,30 @@ struct _codec_interface
 typedef struct _map_entry map_entry;
 struct _map_entry
 {
-	UINT64					offset;			/* offset within the file of the data */
-	UINT32					crc;			/* 32-bit CRC of the data */
-	UINT32					length;			/* length of the data */
-	UINT8					flags;			/* misc flags */
+	uint64_t            offset;         /* offset within the file of the data */
+	uint32_t            crc;            /* 32-bit CRC of the data */
+	uint32_t            length;         /* length of the data */
+	uint8_t             flags;          /* misc flags */
+};
+
+/* a single metadata entry */
+typedef struct _metadata_entry metadata_entry;
+struct _metadata_entry
+{
+	uint64_t            offset;         /* offset within the file of the header */
+	uint64_t            next;           /* offset within the file of the next header */
+	uint64_t            prev;           /* offset within the file of the previous header */
+	uint32_t            length;         /* length of the metadata */
+	uint32_t            metatag;        /* metadata tag */
+	uint8_t             flags;          /* flag bits */
 };
 
 /* codec-private data for the ZLIB codec */
 typedef struct _zlib_allocator zlib_allocator;
 struct _zlib_allocator
 {
-	UINT32 *				allocptr[MAX_ZLIB_ALLOCS];
+	uint32_t *				allocptr[MAX_ZLIB_ALLOCS];
+	uint32_t *				allocptr2[MAX_ZLIB_ALLOCS];
 };
 
 typedef struct _zlib_codec_data zlib_codec_data;
@@ -117,6 +131,7 @@ struct _lzma_allocator
  	void (*Free)(void *p, void *address); /* address can be 0 */
 	void (*FreeSz)(void *p, void *address, size_t size); /* address can be 0 */
 	uint32_t*	allocptr[MAX_LZMA_ALLOCS];
+	uint32_t*	allocptr2[MAX_LZMA_ALLOCS];
 };
 
 typedef struct _lzma_codec_data lzma_codec_data;
@@ -124,6 +139,18 @@ struct _lzma_codec_data
 {
 	CLzmaDec		decoder;
 	lzma_allocator	allocator;
+};
+
+typedef struct _huff_codec_data huff_codec_data;
+struct _huff_codec_data
+{
+	struct huffman_decoder* decoder;
+};
+
+typedef struct _zstd_codec_data zstd_codec_data;
+struct _zstd_codec_data
+{
+	ZSTD_DStream *dstream;
 };
 
 /* codec-private data for the CDZL codec */
@@ -148,6 +175,14 @@ struct _cdlz_codec_data {
 	uint8_t*			buffer;
 };
 
+/* codec-private data for the FLAC codec */
+typedef struct _flac_codec_data flac_codec_data;
+struct _flac_codec_data {
+	/* internal state */
+	int		native_endian;
+	flac_decoder	decoder;
+};
+
 /* codec-private data for the CDFL codec */
 typedef struct _cdfl_codec_data cdfl_codec_data;
 struct _cdfl_codec_data {
@@ -160,50 +195,54 @@ struct _cdfl_codec_data {
 	uint8_t*	buffer;
 };
 
+typedef struct _cdzs_codec_data cdzs_codec_data;
+struct _cdzs_codec_data
+{
+	zstd_codec_data base_decompressor;
+#ifdef WANT_SUBCODE
+	zstd_codec_data subcode_decompressor;
+#endif
+	uint8_t*				buffer;
+};
+
 /* internal representation of an open CHD file */
 struct _chd_file
 {
-	UINT32					cookie;			/* cookie, should equal COOKIE_VALUE */
+	uint32_t                cookie;			/* cookie, should equal COOKIE_VALUE */
 
-	core_file *				file;			/* handle to the open core file */
-	UINT8					owns_file;		/* flag indicating if this file should be closed on chd_close() */
-	chd_header				header;			/* header, extracted from file */
+	core_file *             file;			/* handle to the open core file */
+	chd_header              header;			/* header, extracted from file */
 
-	chd_file *				parent;			/* pointer to parent file, or NULL */
+	chd_file *              parent;			/* pointer to parent file, or NULL */
 
-	map_entry *				map;			/* array of map entries */
-
-#ifdef NEED_CACHE_HUNK
-	UINT8 *					cache;			/* hunk cache pointer */
-	UINT32					cachehunk;		/* index of currently cached hunk */
-
-	UINT8 *					compare;		/* hunk compare pointer */
-	UINT32					comparehunk;	/* index of current compare data */
-#endif
-
-	UINT8 *					compressed;		/* pointer to buffer for compressed data */
-	const codec_interface *	codecintf[4];	/* interface to the codec */
-
-	zlib_codec_data			zlib_codec_data;		/* zlib codec data */
-	cdzl_codec_data			cdzl_codec_data;		/* cdzl codec data */
-	cdlz_codec_data			cdlz_codec_data;		/* cdlz codec data */
-	cdfl_codec_data			cdfl_codec_data;		/* cdfl codec data */
+	map_entry *             map;			/* array of map entries */
 
 #ifdef NEED_CACHE_HUNK
-	UINT32					maxhunk;		/* maximum hunk accessed */
-#endif
-};
+	uint8_t *               cache;			/* hunk cache pointer */
+	uint32_t                cachehunk;		/* index of currently cached hunk */
 
-/* a single metadata entry */
-typedef struct _metadata_entry metadata_entry;
-struct _metadata_entry
-{
-	UINT64					offset;			/* offset within the file of the header */
-	UINT64					next;			/* offset within the file of the next header */
-	UINT64					prev;			/* offset within the file of the previous header */
-	UINT32					length;			/* length of the metadata */
-	UINT32					metatag;		/* metadata tag */
-	UINT8					flags;			/* flag bits */
+	uint8_t *               compare;		/* hunk compare pointer */
+	uint32_t                comparehunk;	/* index of current compare data */
+#endif
+
+	uint8_t *               compressed;		/* pointer to buffer for compressed data */
+	const codec_interface * codecintf[4];	/* interface to the codec */
+
+	zlib_codec_data         zlib_codec_data;		/* zlib codec data */
+	lzma_codec_data         lzma_codec_data;		/* lzma codec data */
+	huff_codec_data         huff_codec_data;		/* huff codec data */
+	flac_codec_data         flac_codec_data;		/* flac codec data */
+	zstd_codec_data         zstd_codec_data;		/* zstd codec data */
+	cdzl_codec_data         cdzl_codec_data;		/* cdzl codec data */
+	cdlz_codec_data         cdlz_codec_data;		/* cdlz codec data */
+	cdfl_codec_data         cdfl_codec_data;		/* cdfl codec data */
+	cdzs_codec_data         cdzs_codec_data;		/* cdzs codec data */
+
+#ifdef NEED_CACHE_HUNK
+	uint32_t                maxhunk;		/* maximum hunk accessed */
+#endif
+
+	uint8_t *               file_cache;		/* cache of underlying file */
 };
 
 chd_error chd_hunk_info(chd_file *chd, UINT32 hunknum, chd_codec_type *compressor, UINT32 *compbytes);
