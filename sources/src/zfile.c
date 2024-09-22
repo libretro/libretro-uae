@@ -43,6 +43,22 @@ static struct zvolume *zvolume_list = NULL;
 
 #define MAX_CACHE_ENTRIES 10
 
+const TCHAR *zfile_get_ext(const TCHAR *name)
+{
+	const TCHAR *sep = _tcsrchr(name, '\\');
+	if (!sep) {
+		sep = _tcsrchr(name, '/');
+	}
+	const TCHAR *ext = _tcsrchr(name, '.');
+	if (!ext) {
+		return NULL;
+	}
+	if (sep && ext < sep) {
+		return NULL;
+	}
+	return ext;
+}
+
 struct zdisktrack
 {
 	void *data;
@@ -2973,7 +2989,16 @@ struct zvolume *zfile_fopen_archive_flags (const TCHAR *filename, int flags)
 
 struct zvolume *zfile_fopen_archive (const TCHAR *filename)
 {
+#ifdef __LIBRETRO__
+	int flags = ZFD_ALL;
+	const TCHAR *ext = zfile_get_ext(filename);
+	/* Do not recurse LHA archives */
+	if (!strcasecmp (ext, _T(".lha")) || !strcasecmp (ext, _T(".lzh")))
+	   flags |= ZFD_NORECURSE;
+	return zfile_fopen_archive_flags (filename, flags);
+#else
 	return zfile_fopen_archive_flags (filename, ZFD_ALL);
+#endif
 }
 
 struct zvolume *zfile_fopen_archive_root (const TCHAR *filename, int flags)
