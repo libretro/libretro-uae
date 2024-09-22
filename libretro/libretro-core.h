@@ -241,6 +241,7 @@ struct puae_cart_info
 #define PUAE_VIDEO_HIRES        0x04
 #define PUAE_VIDEO_SUPERHIRES   0x08
 #define PUAE_VIDEO_DOUBLELINE   0x10
+#define PUAE_VIDEO_1x1          0x20
 
 #define PUAE_VIDEO_PAL_LO       PUAE_VIDEO_PAL
 #define PUAE_VIDEO_PAL_HI       PUAE_VIDEO_PAL|PUAE_VIDEO_HIRES
