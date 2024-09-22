@@ -3248,7 +3248,16 @@ struct zvolume *zfile_fopen_archive_flags (const TCHAR *filename, int flags)
 }
 struct zvolume *zfile_fopen_archive (const TCHAR *filename)
 {
+#ifdef __LIBRETRO__
+	int flags = ZFD_ALL;
+	const TCHAR *ext = zfile_get_ext(filename);
+	/* Do not recurse LHA archives */
+	if (!strcasecmp (ext, _T(".lha")) || !strcasecmp (ext, _T(".lzh")))
+	   flags |= ZFD_NORECURSE;
+	struct zvolume *zv = zfile_fopen_archive_flags (filename, flags);
+#else
 	struct zvolume *zv = zfile_fopen_archive_flags (filename, ZFD_ALL);
+#endif
 	if (zv) {
 		zv->autofree = true;
 	}
