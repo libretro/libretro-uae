@@ -837,6 +837,8 @@ int check_prefs_changed_gfx (void)
 
       gfxvidinfo.width_allocated  = defaultw;
       gfxvidinfo.height_allocated = defaulth;
+      gfxvidinfo.outwidth         = defaultw;
+      gfxvidinfo.outheight        = defaulth;
       gfxvidinfo.rowbytes         = gfxvidinfo.width_allocated * gfxvidinfo.pixbytes;
 
 #if 0
