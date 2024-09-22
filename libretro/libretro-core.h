@@ -279,6 +279,11 @@ extern unsigned short int retroy_crop;
 extern unsigned short int video_config;
 extern unsigned short int video_config_geometry;
 
+#define RESOLUTION_AUTO_NONE       0
+#define RESOLUTION_AUTO_LORES      1
+#define RESOLUTION_AUTO_HIRES      2
+#define RESOLUTION_AUTO_SUPERHIRES 3
+
 #define CROP_NONE            0
 #define CROP_MINIMUM         1
 #define CROP_SMALLER         2

@@ -71,9 +71,9 @@ static int opt_fastmem_size = -1;
 static int opt_z3mem_size = -1;
 static int opt_cpu_model = -1;
 static int opt_fpu_model = -1;
-bool opt_region_auto = true;
-bool opt_video_resolution_auto = false;
-bool opt_video_vresolution_auto = false;
+static bool opt_region_auto = true;
+static char opt_video_resolution_auto = RESOLUTION_AUTO_NONE;
+static bool opt_video_vresolution_auto = false;
 bool opt_floppy_sound_empty_mute = false;
 bool opt_floppy_multidrive = false;
 bool opt_floppy_write_redirect = false;
@@ -1331,11 +1331,13 @@ static void retro_set_core_options()
          "puae_video_resolution",
          "Video > Resolution",
          "Resolution",
-         "Output width:\n- 'Automatic' defaults to 'High' and switches to 'Super-High' when needed.",
+         "Output width:\n- 'Automatic' uses 'High' at minimum.\n- 'Automatic (Low)' allows 'Low'.\n- 'Automatic (Super-High)' sets max size already at startup.",
          NULL,
          "video",
          {
             { "auto", "Automatic" },
+            { "auto-lores", "Automatic (Low)" },
+            { "auto-superhires", "Automatic (Super-High)" },
             { "lores", "Low 360px" },
             { "hires", "High 720px" },
             { "superhires", "Super-High 1440px" },
@@ -3466,7 +3468,7 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      opt_video_resolution_auto = false;
+      opt_video_resolution_auto = RESOLUTION_AUTO_NONE;
 
       if (!strcmp(var.value, "lores"))
       {
@@ -3495,9 +3497,13 @@ static void update_variables(void)
          if (libretro_runloop_active)
             changed_prefs.gfx_resolution = RES_SUPERHIRES;
       }
-      else if (!strcmp(var.value, "auto"))
+      else if (!strcmp(var.value, "auto") || !strcmp(var.value, "auto-lores") || !strcmp(var.value, "auto-superhires"))
       {
-         opt_video_resolution_auto = true;
+         opt_video_resolution_auto = RESOLUTION_AUTO_HIRES;
+         if (!strcmp(var.value, "auto-lores"))
+            opt_video_resolution_auto = RESOLUTION_AUTO_LORES;
+         else if (!strcmp(var.value, "auto-superhires"))
+            opt_video_resolution_auto = RESOLUTION_AUTO_SUPERHIRES;
 
          if (video_config_old & PUAE_VIDEO_SUPERHIRES)
          {
@@ -5429,6 +5435,10 @@ static float retro_default_refresh(void)
 
 void retro_get_system_av_info(struct retro_system_av_info *info)
 {
+   /* Prevent video reinits on geometry increase */
+   if (opt_video_resolution_auto == RESOLUTION_AUTO_SUPERHIRES)
+      retrow_max = EMULATOR_DEF_WIDTH * 2;
+
    info->geometry.base_width   = retrow;
    info->geometry.base_height  = retroh;
    info->geometry.max_width    = retrow_max;
@@ -7586,21 +7596,35 @@ static void update_audiovideo(void)
       int current_resolution   = GET_RES_DENISE (bplcon0);
       bool request_init_custom = false;
 #if 0
-      printf("BPLCON0: %x, %d, %d-%d, %d-%d\n", bplcon0, current_resolution, diwfirstword_total, diwlastword_total, retro_min_diwstart, retro_max_diwstop);
+      printf("BPLCON0: %x, %d=%d, %d-%d, %d-%d\n", bplcon0, current_resolution,GET_RES_AGNUS (bplcon0), diwfirstword_total, diwlastword_total, retro_min_diwstart, retro_max_diwstop);
 #endif
+      if (opt_video_resolution_auto == RESOLUTION_AUTO_SUPERHIRES)
+         opt_video_resolution_auto = RESOLUTION_AUTO_HIRES;
 
       /* Super Skidmarks force to SuperHires */
-      if (current_resolution == 1 && bplcon0 == 0xC201
+      if (current_resolution == RES_HIRES && bplcon0 == 0xC201
             && (retro_min_diwstart == 322 || retro_min_diwstart == 644)
             && (diwlastword_total == 898 || diwlastword_total == 1796))
-         current_resolution = 2;
-      /* Lores force to Hires */
-      else if (current_resolution == 0)
-         current_resolution = 1;
+         current_resolution = RES_SUPERHIRES;
+      /* Lores force to Hires in 'auto' */
+      else if (opt_video_resolution_auto == RESOLUTION_AUTO_HIRES && current_resolution == 0)
+         current_resolution = RES_HIRES;
+
+      /* Ignore Lores spikes in Lemmings */
+      if (     opt_video_resolution_auto == RESOLUTION_AUTO_LORES
+            && changed_prefs.gfx_resolution == RES_HIRES
+            && current_resolution == RES_LORES
+            && bplcon0 == (BEAMCON0_HARDDIS | BEAMCON0_VARVSYEN)
+         )
+         current_resolution = -1;
+
+      /* Ignore always */
+      if (!bplcon0 || bplcon0 & BEAMCON0_CSCBEN)
+         current_resolution = -1;
 
       switch (current_resolution)
       {
-         case 1:
+         case RES_HIRES:
             if (!(video_config & PUAE_VIDEO_HIRES))
             {
                changed_prefs.gfx_resolution = RES_HIRES;
@@ -7611,7 +7635,7 @@ static void update_audiovideo(void)
                request_init_custom = true;
             }
             break;
-         case 2:
+         case RES_SUPERHIRES:
             if (!(video_config & PUAE_VIDEO_SUPERHIRES))
             {
                changed_prefs.gfx_resolution = RES_SUPERHIRES;
@@ -7619,6 +7643,17 @@ static void update_audiovideo(void)
                video_config &= ~PUAE_VIDEO_HIRES;
                defaultw = retrow = PUAE_VIDEO_WIDTH * 2;
                retro_max_diwlastword = retro_max_diwlastword_hires * 2;
+               request_init_custom = true;
+            }
+            break;
+         case RES_LORES:
+            if ((video_config & PUAE_VIDEO_HIRES) || (video_config & PUAE_VIDEO_SUPERHIRES))
+            {
+               changed_prefs.gfx_resolution = RES_LORES;
+               video_config &= ~PUAE_VIDEO_HIRES;
+               video_config &= ~PUAE_VIDEO_SUPERHIRES;
+               defaultw = retrow = PUAE_VIDEO_WIDTH / 2;
+               retro_max_diwlastword = retro_max_diwlastword_hires / 2;
                request_init_custom = true;
             }
             break;
@@ -7728,8 +7763,8 @@ static void update_audiovideo(void)
           || retro_thisframe_last_drawn_line_start  != retro_thisframe_last_drawn_line)
             retro_thisframe_counter = 1;
 
-         /* Immediate mode */
-         if (!crop_delay)
+         /* Immediate mode, but not when interlaced */
+         if (!crop_delay && !retro_av_info_is_lace)
             request_update_av_info = true;
 
          /* Hasten the result with big enough difference in last line (last line for CD32 no disc) */
@@ -8289,6 +8324,8 @@ static bool retro_update_av_info(void)
          retroh_crop = retroh;
 
       retrow_crop = (retrow_crop < 320) ? 320 : retrow_crop;
+      /* Even widths only */
+      retrow_crop = (int)(retrow_crop / 2) * 2;
       retrow_crop *= width_multiplier;
       if (retrow_crop > retrow)
          retrow_crop = retrow;
