@@ -827,7 +827,6 @@ void unlockscr(struct vidbuffer *vb, int y_start, int y_end)
    {
       retro_thisframe_first_drawn_line = thisframe_first_drawn_line = minfirstline;
       retro_thisframe_last_drawn_line  = thisframe_last_drawn_line  = minfirstline + (retroh / 2);
-      retro_max_diwstop                = max_diwstop = (min_diwstart + (352 * width_multiplier));
       gui_flicker_led(LED_CD, 0, 1);
    }
 #endif
