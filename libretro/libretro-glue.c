@@ -945,6 +945,8 @@ int check_prefs_changed_gfx (void)
 
       gfxvidinfo->drawbuffer.width_allocated  = defaultw;
       gfxvidinfo->drawbuffer.height_allocated = defaulth;
+      gfxvidinfo->drawbuffer.outwidth         = defaultw;
+      gfxvidinfo->drawbuffer.outheight        = defaulth;
       gfxvidinfo->drawbuffer.rowbytes         = gfxvidinfo->drawbuffer.width_allocated * gfxvidinfo->drawbuffer.pixbytes;
 
 #if 0
