@@ -258,9 +258,10 @@ SOURCES_C += \
 endif
 
 ifeq ($(HAVE_CHD), 1)
-	CFLAGS += -DWITH_CHD
+	CFLAGS += -DWITH_CHD -DZSTD_DISABLE_ASM
 	INCFLAGS += \
-		-I$(DEPS_DIR)/libchdr/include
+		-I$(DEPS_DIR)/libchdr/include \
+		-I$(DEPS_DIR)/zstd/lib \
 
 	SOURCES_C += \
 		$(DEPS_DIR)/7zip/LzFind.c \
