@@ -7541,12 +7541,12 @@ static void update_audiovideo(void)
       if (     opt_video_resolution_auto == RESOLUTION_AUTO_LORES
             && changed_prefs.gfx_resolution == RES_HIRES
             && current_resolution == RES_LORES
-            && bplcon0 == (BEAMCON0_HARDDIS | BEAMCON0_VARVSYEN)
+            && bplcon0 == (0x4000 | 0x0200)
          )
          current_resolution = -1;
 
       /* Ignore always */
-      if (!bplcon0 || bplcon0 & BEAMCON0_CSCBEN)
+      if (!bplcon0 || bplcon0 & 0x0400)
          current_resolution = -1;
 
       switch (current_resolution)

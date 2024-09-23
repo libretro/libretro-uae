@@ -544,15 +544,37 @@ typedef int64_t off64_t;
 #define O_NDELAY 0
 #endif
 
+#ifndef MAXUINT
+#define MAXUINT ((unsigned int)~ ((unsigned int)0))
+#endif
+#ifndef MAXINT
+#define MAXINT ((int) (MAXUINT >> 1))
+#endif
+#ifndef MININT
+#define MININT ((int)~MAXINT)
+#endif
+
 /* Types */
 #define UINT16 uint16_t
 #define UINT32 uint32_t
 typedef uint32_t uint32;
 typedef uint8_t uint8;
 
+typedef uint64_t UINT64;
+typedef uint32_t UINT32;
+typedef uint16_t UINT16;
+typedef uint8_t UINT8;
+
+typedef int64_t INT64;
+typedef int32_t INT32;
+typedef int16_t INT16;
+typedef int8_t INT8;
+
 #ifndef _WIN32
 #define TCHAR char
 #endif
+
+#include "misc.h"
 
 #ifdef VITA
 #include <psp2/types.h>
