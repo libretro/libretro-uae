@@ -51,6 +51,7 @@ unsigned short int retroy_crop = 0;
 float aspect_ratio = 0;
 
 extern int bplcon0;
+extern int detected_screen_resolution;
 extern int diwlastword_total;
 extern int diwfirstword_total;
 extern int m68k_go(int may_quit, int resume);
@@ -7521,10 +7522,10 @@ static void update_audiovideo(void)
    /* Automatic video resolution */
    if (opt_video_resolution_auto && retro_min_diwstart != MAX_STOP)
    {
-      int current_resolution   = GET_RES_DENISE (bplcon0);
+      int current_resolution   = detected_screen_resolution;
       bool request_init_custom = false;
 #if 0
-      printf("BPLCON0: %x, %d=%d, %d-%d, %d-%d\n", bplcon0, current_resolution,GET_RES_AGNUS (bplcon0), diwfirstword_total, diwlastword_total, retro_min_diwstart, retro_max_diwstop);
+      printf("BPLCON0: %x, %d, %d-%d, %d-%d\n", bplcon0, current_resolution, diwfirstword_total, diwlastword_total, retro_min_diwstart, retro_max_diwstop);
 #endif
       if (opt_video_resolution_auto == RESOLUTION_AUTO_SUPERHIRES)
          opt_video_resolution_auto = RESOLUTION_AUTO_HIRES;

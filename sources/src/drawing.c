@@ -95,8 +95,11 @@ static int res_shift;
 static int linedbl, linedbld;
 
 int interlace_seen = 0;
+int detected_screen_resolution;
+
 #define AUTO_LORES_FRAMES 10
 static int can_use_lores = 0, frame_res, frame_res_lace, last_max_ypos;
+static int resolution_count[RES_MAX + 1], lines_count;
 static bool center_reset;
 
 /* Lookup tables for dual playfields.  The dblpf_*1 versions are for the case
@@ -2781,6 +2784,11 @@ static void pfield_draw_line (int lineno, int gfx_ypos, int follow_ypos)
 	dp_for_drawing = line_decisions + lineno;
 	dip_for_drawing = curr_drawinfo + lineno;
 
+	if (dp_for_drawing->plfleft >= 0) {
+		lines_count++;
+		resolution_count[dp_for_drawing->bplres]++;
+	}
+
 	switch (linestate[lineno])
 	{
 	case LINE_REMEMBERED_AS_PREVIOUS:
@@ -3071,8 +3079,22 @@ static int frame_res_cnt;
 static void init_drawing_frame (void)
 {
 	int i, maxline;
-#if 1
 	static int frame_res_old;
+
+	int largest_res = 0;
+	int largest_count = 0;
+	int largest_count_res = 0;
+	for (int i = 0; i <= RES_MAX; i++) {
+		if (resolution_count[i])
+			largest_res = i;
+		if (resolution_count[i] >= largest_count) {
+			largest_count = resolution_count[i];
+			largest_count_res = i;
+		}
+	}
+	if (currprefs.gfx_resolution == changed_prefs.gfx_resolution && lines_count > 0) {
+		detected_screen_resolution = largest_res;
+	}
 
 	if (currprefs.gfx_autoresolution && frame_res >= 0 && frame_res_lace >= 0) {
 		if (frame_res_cnt > 0 && frame_res_old == frame_res * 2 + frame_res_lace) {
@@ -3134,6 +3156,9 @@ static void init_drawing_frame (void)
 				frame_res_cnt = 1;
 		}
 	}
+	for (int i = 0; i <= RES_MAX; i++)
+		resolution_count[i] = 0;
+	lines_count = 0;
 	frame_res = -1;
 	frame_res_lace = 0;
 
@@ -3144,7 +3169,6 @@ static void init_drawing_frame (void)
 		can_use_lores++;
 		lores_reset ();
 	}
-#endif
 
 	init_hardware_for_drawing_frame ();
 
