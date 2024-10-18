@@ -244,6 +244,7 @@ else ifneq (,$(findstring ios,$(platform)))
    endif
    COMMONFLAGS += $(MINVERSION)
    CFLAGS += $(COMMONFLAGS)
+   LDFLAGS += $(MINVERSION)
 
 else ifeq ($(platform), tvos-arm64)
    TARGET := $(TARGET_NAME)_libretro_tvos.dylib
@@ -259,6 +260,10 @@ else ifeq ($(platform), tvos-arm64)
    endif
    CC = cc -arch arm64 -isysroot $(IOSSDK)
    CXX = c++ -arch arm64 -isysroot $(IOSSDK)
+   MINVERSION = -mappletvos-version-min=11.0
+   COMMONFLAGS += $(MINVERSION)
+   CFLAGS += $(COMMONFLAGS)
+   LDFLAGS += $(MINVERSION)
 
 # ARM
 else ifneq (,$(findstring armv,$(platform)))
