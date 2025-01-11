@@ -1,7 +1,7 @@
-/* Copyright  (C) 2010-2020 The RetroArch team
+/* Copyright  (C) 2010-2023 The RetroArch team
  *
  * ---------------------------------------------------------------------------------------
- * The following license statement only applies to this file (retro_common.h).
+ * The following license statement only applies to this file (mono_to_stereo.c).
  * ---------------------------------------------------------------------------------------
  *
  * Permission is hereby granted, free of charge,
@@ -19,18 +19,26 @@
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+#include <stdint.h>
+#include <stddef.h>
 
-#ifndef _LIBRETRO_COMMON_RETRO_COMMON_H
-#define _LIBRETRO_COMMON_RETRO_COMMON_H
+#include <audio/conversion/dual_mono.h>
 
-/*!
- * @internal This file is designed to normalize the libretro-common compiling environment.
- * It is not to be used in public API headers, as they should be designed as leanly as possible.
- * Nonetheless.. in the meantime, if you do something like use ssize_t, which is not fully portable,
- * in a public API, you may need this.
- */
+/* TODO: Use SIMD instructions to make this faster (or show that it's not needed) */
+void convert_to_dual_mono_float(float *out, const float *in, size_t frames)
+{
+   unsigned i = 0;
 
-/* conditional compilation is handled inside here */
-#include <compat/msvc.h>
+   if (!out || !in || !frames)
+      return;
 
-#endif
+   for (; i < frames; i++)
+   {
+      out[i * 2] = in[i];
+      out[i * 2 + 1] = in[i];
+   }
+}
+
+/* Why is there no equivalent for int16_t samples?
+ * No inherent reason, I just didn't need one.
+ * If you do, open a pull request. */

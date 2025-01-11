@@ -68,7 +68,7 @@ void path_linked_list_free(struct path_linked_list *in_path_linked_list);
 
 /**
  * Add a node to the linked list with this path
- * If the first node's path if it's not yet set, 
+ * If the first node's path if it's not yet set,
  * set this instead
 **/
 void path_linked_list_add_path(struct path_linked_list *in_path_linked_list, char *path);
@@ -167,7 +167,6 @@ char *path_remove_extension(char *path);
  *
  * Hidden non-leaf function cost:
  * - Calls path_get_archive_delim()
- *   - can call find_last_slash() once if it returns NULL
  *
  * @return basename from path.
  **/
@@ -180,9 +179,6 @@ const char *path_basename(const char *path);
  * Specialized version of path_basename().
  * Get basename from @path.
  *
- * Hidden non-leaf function cost:
- * - Calls find_last_slash()
- *
  * @return basename from path.
  **/
 const char *path_basename_nocompression(const char *path);
@@ -194,7 +190,7 @@ const char *path_basename_nocompression(const char *path);
  * Extracts base directory by mutating path.
  * Keeps trailing '/'.
  **/
-void path_basedir(char *path);
+size_t path_basedir(char *path);
 
 /**
  * path_parent_dir:
@@ -205,7 +201,7 @@ void path_basedir(char *path);
  * Assumes that path is a directory. Keeps trailing '/'.
  * If the path was already at the root directory, returns empty string
  **/
-void path_parent_dir(char *path, size_t len);
+size_t path_parent_dir(char *path, size_t len);
 
 /**
  * path_resolve_realpath:
@@ -222,7 +218,7 @@ void path_parent_dir(char *path, size_t len);
  * Note: Symlinks are only resolved on Unix-likes
  * Note: The current working dir might not be what you expect,
  *       e.g. on Android it is "/"
- *       Use of fill_pathname_resolve_relative() should be prefered
+ *       Use of fill_pathname_resolve_relative() should be preferred
  **/
 char *path_resolve_realpath(char *buf, size_t size, bool resolve_symlinks);
 
@@ -323,10 +319,10 @@ size_t fill_dated_filename(char *out_filename,
  * Hidden non-leaf function cost:
  * - Calls time
  * - Calls rtime_localtime()
- * - Calls strlcpy
+ * - Calls strlcpy 2x
  * - Calls string_is_empty()
  * - Calls strftime
- * - Calls strlcat at least 2x
+ * - Calls strlcat
  *
  * @return Length of the string copied into @out_path
  **/
@@ -342,7 +338,7 @@ size_t fill_str_dated_filename(char *out_filename,
  * a backslash on Windows too which takes precedence
  * over regular slash.
 
- * Hidden non-leaf function cost: 
+ * Hidden non-leaf function cost:
  * - calls strrchr
  *
  * @return pointer to last slash/backslash found in @str.
@@ -369,7 +365,7 @@ char *find_last_slash(const char *str);
  * Hidden non-leaf function cost:
  * - Calls fill_pathname_slash()
  * - Calls path_basename()
- * - Calls strlcat 2x
+ * - Calls strlcpy 2x
  **/
 size_t fill_pathname_dir(char *in_dir, const char *in_basename,
       const char *replace, size_t size);
@@ -404,26 +400,25 @@ size_t fill_pathname_base(char *out_path, const char *in_path, size_t size);
  * - Calls strlcpy
  * - Calls path_basedir()
  **/
-void fill_pathname_basedir(char *out_path, const char *in_path, size_t size);
+size_t fill_pathname_basedir(char *out_path, const char *in_path, size_t size);
 
 /**
  * fill_pathname_parent_dir_name:
- * @out_dir            : output directory
+ * @s                  : output string
  * @in_dir             : input directory
- * @size               : size of output directory
+ * @len                : size of @s
  *
  * Copies only the parent directory name of @in_dir into @out_dir.
  * The two buffers must not overlap. Removes trailing '/'.
  *
  * Hidden non-leaf function cost:
  * - Calls strdup
- * - Calls find_last_slash() x times
  * - Can call strlcpy
  *
- * @return true on success, false if a slash was not found in the path.
+ * @return Length of the string copied into @s
  **/
-bool fill_pathname_parent_dir_name(char *out_dir,
-      const char *in_dir, size_t size);
+size_t fill_pathname_parent_dir_name(char *s,
+      const char *in_dir, size_t len);
 
 /**
  * fill_pathname_parent_dir:
@@ -468,11 +463,10 @@ void fill_pathname_resolve_relative(char *out_path, const char *in_refpath,
  * Joins a directory (@dir) and path (@path) together.
  * Makes sure not to get two consecutive slashes
  * between directory and path.
- * 
- * Hidden non-leaf function cost: 
- * - calls strlcpy
+ *
+ * Hidden non-leaf function cost:
+ * - calls strlcpy at least once
  * - calls fill_pathname_slash()
- * - calls strlcat
  *
  * Deprecated. Use fill_pathname_join_special() instead
  * if you can ensure @dir != @out_path
@@ -498,10 +492,8 @@ size_t fill_pathname_join(char *out_path, const char *dir,
  * Makes sure not to get two consecutive slashes
  * between directory and path.
  *
- * Hidden non-leaf function cost: 
- * - calls strlcpy
- * - calls find_last_slash()
- * - calls strlcat
+ * Hidden non-leaf function cost:
+ * - calls strlcpy 2x
  *
  * @return Length of the string copied into @out_path
  **/
@@ -524,7 +516,7 @@ size_t fill_pathname_join_special_ext(char *out_path,
  * Joins a directory (@dir) and path (@path) together
  * using the given delimiter (@delim).
  *
- * Hidden non-leaf function cost: 
+ * Hidden non-leaf function cost:
  * - can call strlen
  * - can call strlcpy
  * - can call strlcat
@@ -541,9 +533,9 @@ size_t fill_pathname_abbreviate_special(char *out_path,
 /**
  * fill_pathname_abbreviated_or_relative:
  *
- * Fills the supplied path with either the abbreviated path or 
+ * Fills the supplied path with either the abbreviated path or
  * the relative path, which ever one has less depth / number of slashes
- * 
+ *
  * If lengths of abbreviated and relative paths are the same,
  * the relative path will be used
  * @in_path can be an absolute, relative or abbreviated path
@@ -554,13 +546,27 @@ size_t fill_pathname_abbreviated_or_relative(char *out_path,
 		const char *in_refpath, const char *in_path, size_t size);
 
 /**
+ * sanitize_path_part:
+ *
+ * @path_part          : directory or filename
+ * @size               : length of path_part
+ *
+ * Takes single part of a path eg. single filename
+ * or directory, and removes any special chars that are
+ * unavailable.
+ *
+ * @returns new string that has been sanitized
+ **/
+const char *sanitize_path_part(const char *path_part, size_t size);
+
+/**
  * pathname_conform_slashes_to_os:
  *
  * @path               : path
- * 
+ *
  * Leaf function.
  *
- * Changes the slashes to the correct kind for the os 
+ * Changes the slashes to the correct kind for the os
  * So forward slash on linux and backslash on Windows
  **/
 void pathname_conform_slashes_to_os(char *path);
@@ -571,7 +577,7 @@ void pathname_conform_slashes_to_os(char *path);
  *
  * Leaf function.
  *
- * Change all slashes to forward so they are more 
+ * Change all slashes to forward so they are more
  * portable between Windows and Linux
  **/
 void pathname_make_slashes_portable(char *path);
@@ -622,17 +628,16 @@ void path_basedir_wrapper(char *path);
  * Assumes path is a directory. Appends a slash
  * if not already there.
 
- * Hidden non-leaf function cost: 
- * - calls find_last_slash()
- *   - can call strlcat once if it returns false
+ * Hidden non-leaf function cost:
+ * - can call strlcat once if it returns false
  * - calls strlen
  **/
-void fill_pathname_slash(char *path, size_t size);
+size_t fill_pathname_slash(char *path, size_t size);
 
 #if !defined(RARCH_CONSOLE) && defined(RARCH_INTERNAL)
-void fill_pathname_application_path(char *buf, size_t size);
+size_t fill_pathname_application_path(char *buf, size_t size);
 void fill_pathname_application_dir(char *buf, size_t size);
-void fill_pathname_home_dir(char *buf, size_t size);
+size_t fill_pathname_home_dir(char *buf, size_t size);
 #endif
 
 /**
@@ -663,6 +668,13 @@ bool path_mkdir(const char *dir);
  * @return true if path is a directory, otherwise false.
  */
 bool path_is_directory(const char *path);
+
+/* Time format strings with AM-PM designation require special
+ * handling due to platform dependence
+ * @return Length of the string written to @s
+ */
+size_t strftime_am_pm(char *s, size_t len, const char* format,
+      const void* timeptr);
 
 bool path_is_character_special(const char *path);
 

@@ -463,7 +463,7 @@ static char *nname_to_aname(const char *nname, int noconvert)
     free(cresult);
 
 #ifdef __LIBRETRO__
-    result = string_replace_substring(result, UAEFSDB_BEGINS, strlen(UAEFSDB_BEGINS), "", strlen(""));
+    result = string_replace_substring(result, strlen(result), UAEFSDB_BEGINS, strlen(UAEFSDB_BEGINS), "", strlen(""));
 #endif
 #if 0
     write_log("nname_to_aname %s => %s\n", nname, result);
