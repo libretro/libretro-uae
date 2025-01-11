@@ -5515,7 +5515,7 @@ static void retro_config_boot_hd(void)
       }
       if (path_is_valid(boothd_hdf))
       {
-         tmp_str = string_replace_substring(boothd_hdf, "\\", strlen("\\"), "\\\\", strlen("\\\\"));
+         tmp_str = string_replace_substring(boothd_hdf, strlen(boothd_hdf), "\\", strlen("\\"), "\\\\", strlen("\\\\"));
          retro_config_append("hardfile2=rw,%s:\"%s\",32,1,2,512,0,,uae0\n", volume, tmp_str);
       }
    }
@@ -5532,7 +5532,7 @@ static void retro_config_boot_hd(void)
       }
       if (path_is_directory(boothd_path))
       {
-         tmp_str = string_replace_substring(boothd_path, "\\", strlen("\\"), "\\\\", strlen("\\\\"));
+         tmp_str = string_replace_substring(boothd_path, strlen(boothd_path), "\\", strlen("\\"), "\\\\", strlen("\\\\"));
          retro_config_append("filesystem2=rw,%s:%s:\"%s\",0\n", volume, label, tmp_str);
       }
       else
@@ -5738,7 +5738,7 @@ static void retro_config_harddrives(void)
       }
 
 #ifdef WIN32
-      tmp_str = string_replace_substring(tmp_str, "\\", strlen("\\"), "\\\\", strlen("\\\\"));
+      tmp_str = string_replace_substring(tmp_str, strlen(tmp_str), "\\", strlen("\\"), "\\\\", strlen("\\\\"));
 #endif
 
       /* LHAs read-only */
@@ -6710,7 +6710,7 @@ static bool retro_create_config(void)
                   if (path_is_directory(whdload_path) && path_is_directory(whdload_c_path))
                   {
 #ifdef WIN32
-                     tmp_str = string_replace_substring(whdload_path, "\\", strlen("\\"), "\\\\", strlen("\\\\"));
+                     tmp_str = string_replace_substring(whdload_path, strlen(whdload_path), "\\", strlen("\\"), "\\\\", strlen("\\\\"));
 #else
                      size_t str_len = strlen(whdload_path);
                      tmp_str = calloc((str_len + 2), sizeof(char));
@@ -6783,7 +6783,7 @@ static bool retro_create_config(void)
                   if (path_is_directory(whdsaves_path))
                   {
 #ifdef WIN32
-                     tmp_str = string_replace_substring(whdsaves_path, "\\", strlen("\\"), "\\\\", strlen("\\\\"));
+                     tmp_str = string_replace_substring(whdsaves_path, strlen(whdsaves_path), "\\", strlen("\\"), "\\\\", strlen("\\\\"));
 #else
                      size_t str_len = strlen(whdsaves_path);
                      tmp_str = calloc((str_len + 2), sizeof(char));
@@ -6830,7 +6830,7 @@ static bool retro_create_config(void)
                   /* Attach HDF */
                   if (path_is_valid(whdload_hdf_path))
                   {
-                     tmp_str = string_replace_substring(whdload_hdf_path, "\\", strlen("\\"), "\\\\", strlen("\\\\"));
+                     tmp_str = string_replace_substring(whdload_hdf_path, strlen(whdload_hdf_path), "\\", strlen("\\"), "\\\\", strlen("\\\\"));
                      retro_config_append("hardfile2=rw,WHDLoad:\"%s\",32,1,2,512,0,,uae0\n", tmp_str);
                      free(tmp_str);
                      tmp_str = NULL;
@@ -6863,7 +6863,7 @@ static bool retro_create_config(void)
                   /* Attach HDF */
                   if (path_is_valid(whdsaves_hdf_path))
                   {
-                     tmp_str = string_replace_substring(whdsaves_hdf_path, "\\", strlen("\\"), "\\\\", strlen("\\\\"));
+                     tmp_str = string_replace_substring(whdsaves_hdf_path, strlen(whdsaves_hdf_path), "\\", strlen("\\"), "\\\\", strlen("\\\\"));
                      retro_config_append("hardfile2=rw,WHDSaves:\"%s\",32,1,2,512,0,,uae0\n", tmp_str);
                      free(tmp_str);
                      tmp_str = NULL;
@@ -6871,7 +6871,7 @@ static bool retro_create_config(void)
 
                   /* Attach retro_system_directory as a read only hard drive for WHDLoad kickstarts/prefs/key */
 #ifdef WIN32
-                  tmp_str = string_replace_substring(retro_system_directory, "\\", strlen("\\"), "\\\\", strlen("\\\\"));
+                  tmp_str = string_replace_substring(retro_system_directory, strlen(retro_system_directory), "\\", strlen("\\"), "\\\\", strlen("\\\\"));
 #else
                   size_t str_len = strlen(retro_system_directory);
                   tmp_str = calloc((str_len + 2), sizeof(char));
