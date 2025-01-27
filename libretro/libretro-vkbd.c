@@ -73,7 +73,7 @@ static const retro_vkeys vkeys[VKBDX * VKBDY * 2] =
    { "TRBF","TRBF",VKBD_TURBOFIRE },
    { "ASPR","CROP",VKBD_ASPECT_CROP },
    { "STBR","SVDS",VKBD_STATUSBAR_SAVEDISK },
-   { {17}  ,{17}  ,VKBD_RESET },
+   { {17}  ,"WHDQ",VKBD_RESET },
 
    /* 0 PG1 */
    { "Esc" ,"Esc" ,RETROK_ESCAPE },
@@ -179,7 +179,7 @@ static const retro_vkeys vkeys[VKBDX * VKBDY * 2] =
    { "TRBF","TRBF",VKBD_TURBOFIRE },
    { "ASPR","CROP",VKBD_ASPECT_CROP },
    { "STBR","SVDS",VKBD_STATUSBAR_SAVEDISK },
-   { {17}  ,{17}  ,VKBD_RESET },
+   { {17}  ,"WHDQ",VKBD_RESET },
 
    /* 0 PG2 */
    { "Esc" ,"Esc" ,RETROK_ESCAPE },
@@ -605,7 +605,7 @@ void print_vkbd(void)
                     : vkeys[current_key_pos].shift);
 
    /* Reset key */
-   if (current_key_val == VKBD_RESET)
+   if (current_key_val == VKBD_RESET && !shifted)
    {
       signed char reset_counter = 0;
       if (last_vkey_pressed_time < now && last_vkey_pressed != -1)
@@ -840,8 +840,17 @@ static void convert_vkbd_to_mapper(int *vkbd_mapping_key, char **var_value)
          *vkbd_mapping_key = 0;
          break;
       case VKBD_RESET:
-         *var_value = get_variable("puae_mapper_reset");
-         *vkbd_mapping_key = 0;
+         if (shifted)
+         {
+            /* WHDLoad QuitKey in AK_NUMBERSIGN */
+            *var_value = strdup("RETROK_HASH");
+            *vkbd_mapping_key = RETROK_HASH;
+         }
+         else
+         {
+            *var_value = get_variable("puae_mapper_reset");
+            *vkbd_mapping_key = 0;
+         }
          break;
       case VKBD_CAPSLOCK:
          *var_value = strdup("RETROK_CAPSLOCK");
@@ -1224,7 +1233,10 @@ void input_vkbd(void)
             case VKBD_NUMPAD:
                retro_vkbd_page = !retro_vkbd_page;
                break;
-            case VKBD_RESET: /* Reset on release */
+            case VKBD_RESET:
+               /* Reset on release, press WHDLoad QuitKey when shifted */
+               if (shifted)
+                  retro_key_down(RETROK_HASH);
                break;
             case VKBD_STATUSBAR_SAVEDISK:
                if (shifted)
@@ -1330,12 +1342,22 @@ void input_vkbd(void)
       }
       else if (last_vkey_pressed == VKBD_RESET)
       {
-         /* Reset on long press */
-         if (now - last_vkey_pressed_time > VKBD_STICKY_HOLDING_TIME)
-            emu_function(EMU_RESET);
-         /* Freeze on short press */
+         bool shifted = retro_capslock
+               || retro_key_state_internal[RETROK_LSHIFT]
+               || retro_key_state_internal[RETROK_RSHIFT];
+
+         /* Release WHDLoad QuitKey when shifted */
+         if (shifted)
+            retro_key_up(RETROK_HASH);
          else
-            emu_function(EMU_FREEZE);
+         {
+            /* Reset on long press */
+            if (now - last_vkey_pressed_time > VKBD_STICKY_HOLDING_TIME)
+               emu_function(EMU_RESET);
+            /* Freeze on short press */
+            else
+               emu_function(EMU_FREEZE);
+         }
       }
    }
    else

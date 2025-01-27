@@ -1224,7 +1224,7 @@ static void retro_set_core_options()
          "puae_use_whdload_nowritecache",
          "Media > WHDLoad NoWriteCache",
          "WHDLoad NoWriteCache",
-         "Write save data immediately or on WHDLoad quit. Write cache enabled runs the core a few frames after frontend quit in order to trigger WHDLoad quit and flush the cache.\nCore restart required.",
+         "Write cache requires running the core a few frames after closing content to trigger WHDLoad quit and flush cache to disk.\nQuitKey = '$2b' = '#' = 'LCtrl + Backslash'.\nCore restart required.",
          NULL,
          "media",
          {
@@ -6034,11 +6034,11 @@ static void whdload_quitkey(void)
    log_cb(RETRO_LOG_INFO, "WHDLoad QuitKey triggered..\n");
    libretro_runloop_active = false;
 
-   retro_key_down(RETROK_KP_MINUS);
+   retro_key_down(RETROK_HASH);
    for (i = 0; i < 2; i++)
       m68k_go(1, 1);
 
-   retro_key_up(RETROK_KP_MINUS);
+   retro_key_up(RETROK_HASH);
    for (i = 0; i < retro_refresh * 2; i++)
       m68k_go(1, 1);
 
@@ -6684,7 +6684,7 @@ static bool retro_create_config(void)
                {
                   bool whdload_prefs_changes  = false;
                   bool whdload_quitkey_set    = false;
-                  const char *whdload_quitkey = "$4a";
+                  const char *whdload_quitkey = "$2b"; /* AK_NUMBERSIGN = RETROK_HASH */
 
                   while (fgets(whdload_buf, sizeof(whdload_buf), whdload_prefs_fp))
                   {
@@ -6716,7 +6716,7 @@ static bool retro_create_config(void)
                      strlcat(whdload_buf_new, whdload_buf_row, sizeof(whdload_buf_new));
                   }
 
-                  /* retro_unload triggers QuitKey (Numpad -) and runs a few frames so that data gets saved */
+                  /* retro_unload triggers QuitKey (RETROK_HASH) and runs a few frames so that data gets saved */
                   if (!opt_use_whdload_nowritecache && !whdload_quitkey_set)
                   {
                      snprintf(whdload_buf_row, sizeof(whdload_buf_row), "QuitKey=%s\n", whdload_quitkey);

@@ -330,6 +330,10 @@ Pre-installed WHDLoad LHA archives can be launched directly without any kind of 
 - Kickstarts will be copied automatically to the helper image
 - To update `WHDLoad:` simply delete the directory or the HDF
 
+- WHDLoad quit key is hardcoded to unused `$2B` = `AK_NUMBERSIGN` = `RETROK_HASH` which does not exist in modern keyboards.
+    - Keyboard shortcut: LCtrl + Backslash
+    - Virtual keyboard shortcut: Shifted RESET button
+
 #### Overrides at startup
 
 - **(Red)** Hold fire button for launch selector

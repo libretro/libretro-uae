@@ -119,6 +119,7 @@ static retro_keymap retro_keys[RETROK_LAST] =
    {JOYSTICK_RIGHT,     "JOYSTICK_RIGHT",      "Joystick Right"},
    {JOYSTICK_FIRE,      "JOYSTICK_FIRE",       "Joystick Fire"},
    {JOYSTICK_2ND_FIRE,  "JOYSTICK_2ND_FIRE",   "Joystick Fire 2"},
+   {RETROK_HASH,        "RETROK_HASH",         "WHDLoad QuitKey"},
    {RETROK_BACKSPACE,   "RETROK_BACKSPACE",    "Keyboard Backspace"},
    {RETROK_TAB,         "RETROK_TAB",          "Keyboard Tab"},
 /* {RETROK_CLEAR,       "RETROK_CLEAR",        "Keyboard Clear"}, */

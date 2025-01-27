@@ -939,6 +939,24 @@ static void process_key(unsigned disable_keys)
          else if (!retro_key_event_state[i] && retro_key_state[i])
             retro_key_state[i] = 0;
       }
+      /* Special RETROK_HASH faker in LCtrl + Backslash = AK_NUMBERSIGN */
+      if (i == RETROK_BACKSLASH && (retro_key_state[RETROK_LCTRL] || retro_key_state[RETROK_HASH]))
+      {
+         if (retro_key_event_state[RETROK_BACKSLASH] && !retro_key_event_state[RETROK_HASH] && !retro_key_state[RETROK_HASH])
+         {
+            retro_key_down(RETROK_HASH);
+            retro_key_state[RETROK_HASH] = 1;
+            retro_key_event_state[RETROK_HASH] = 1;
+            retro_key_up(RETROK_BACKSLASH);
+            retro_key_state[RETROK_BACKSLASH] = 0;
+         }
+         else if (!retro_key_event_state[RETROK_BACKSLASH] && retro_key_event_state[RETROK_HASH] && retro_key_state[RETROK_HASH])
+         {
+            retro_key_up(RETROK_HASH);
+            retro_key_state[RETROK_HASH] = 0;
+            retro_key_event_state[RETROK_HASH] = 0;
+         }
+      }
       else if (keyboard_translation[i] != -1)
       {
          /* Override cursor keys if used as a RetroPad */
