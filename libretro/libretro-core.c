@@ -635,6 +635,23 @@ static void floppy_close_redirect(int8_t drive)
    }
 }
 
+static bool is_hdf_rdb(const char *path)
+{
+   /* Detect RDB */
+   bool hdf_rdb = false;
+   FILE *hdf_fp;
+   char filebuf[4];
+   if ((hdf_fp = fopen(path, "r")))
+   {
+      fgets(filebuf, sizeof(filebuf), hdf_fp);
+      fclose(hdf_fp);
+
+      if (!strcmp(filebuf, "RDS"))
+         hdf_rdb = true;
+   }
+   return hdf_rdb;
+}
+
 static void retro_set_paths(void)
 {
    const char *system_dir = NULL;
@@ -5508,7 +5525,21 @@ static void retro_config_boot_hd(void)
       if (path_is_valid(boothd_hdf))
       {
          tmp_str = string_replace_substring(boothd_hdf, strlen(boothd_hdf), "\\", strlen("\\"), "\\\\", strlen("\\\\"));
-         retro_config_append("hardfile2=rw,%s:\"%s\",32,1,2,512,0,,uae0\n", volume, tmp_str);
+
+         /* Detect RDB */
+         bool hdf_rdb = is_hdf_rdb(tmp_str);
+
+         if (hdf_rdb)
+            retro_config_append("hardfile2=rw,%s:\"%s\",0,0,0,512,0,,uae0\n", volume, tmp_str);
+         else
+         {
+            /* Guesstimate surfaces */
+            unsigned surfaces = 1;
+            if ((fsize(tmp_str) / 1024) >= (1024 * 1024))
+               surfaces = 16;
+
+            retro_config_append("hardfile2=rw,%s:\"%s\",32,%d,2,512,0,,uae0\n", volume, tmp_str, surfaces);
+         }
       }
    }
    /* Directory mode */
@@ -5748,17 +5779,7 @@ static void retro_config_harddrives(void)
       else if (dc_get_image_type(dc->files[i]) == DC_IMAGE_TYPE_HD)
       {
          /* Detect RDB */
-         bool hdf_rdb = false;
-         FILE *hdf_fp;
-         char filebuf[4];
-         if ((hdf_fp = fopen(tmp_str, "r")))
-         {
-            fgets(filebuf, sizeof(filebuf), hdf_fp);
-            fclose(hdf_fp);
-
-            if (!strcmp(filebuf, "RDS"))
-               hdf_rdb = true;
-         }
+         bool hdf_rdb = is_hdf_rdb(tmp_str);
 
          if (hdf_rdb)
             retro_config_append("hardfile2=rw,DH%d:\"%s\",0,0,0,512,0,,uae0\n", unit, tmp_str);
