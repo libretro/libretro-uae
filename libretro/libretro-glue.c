@@ -364,14 +364,8 @@ void print_statusbar(void)
    snprintf(RESOLUTION, sizeof(RESOLUTION), "%4dx%3d", retrow_crop, retroh_crop);
 
    /* Model & memory */
-   int TEXT_X_MODEL  = TEXT_X + (FONT_SLOT*6) + (FONT_WIDTH*35) - CROP_WIDTH_OFFSET;
-   int TEXT_X_MEMORY = TEXT_X + (FONT_SLOT*6) + (FONT_WIDTH*3) - CROP_WIDTH_OFFSET;
-   /* Sacrifice memory slot if there is not enough width */
-   if (!(video_config & PUAE_VIDEO_DOUBLELINE))
-   {
-      if (TEXT_X_MEMORY < (TEXT_X_RESOLUTION + FONT_SLOT + (FONT_WIDTH*14)))
-         TEXT_X_MEMORY = -1;
-   }
+   int TEXT_X_MODEL  = TEXT_X + (FONT_SLOT*6) + (FONT_WIDTH*42) - CROP_WIDTH_OFFSET;
+   int TEXT_X_MEMORY = TEXT_X + (FONT_SLOT*6) + (FONT_WIDTH*16) - CROP_WIDTH_OFFSET;
 
    unsigned char MODEL[10] = {0};
    unsigned char MEMORY[5] = {0};
