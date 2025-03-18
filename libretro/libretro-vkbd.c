@@ -404,22 +404,28 @@ void print_vkbd(void)
 
    memset(graphed, 0, sizeof(graphed));
 
-   if (video_config_geometry & PUAE_VIDEO_HIRES || video_config_geometry & PUAE_VIDEO_SUPERHIRES)
+   if (video_config & PUAE_VIDEO_HIRES || video_config & PUAE_VIDEO_SUPERHIRES)
    {
-      FONT_WIDTH         = 2;
-      XKEYSPACING        = 2;
-      XOFFSET            = -1;
+      if (retrow != PUAE_VIDEO_WIDTH_S72)
+      {
+         FONT_WIDTH         = 2;
+         XKEYSPACING        = 2;
+         XOFFSET            = -1;
+      }
 
       /* PUAE_VIDEO_HIRES_DOUBLELINE */
-      if (video_config_geometry & PUAE_VIDEO_DOUBLELINE)
+      if (video_config & PUAE_VIDEO_DOUBLELINE)
       {
-         FONT_HEIGHT    *= 2;
-         YKEYSPACING    *= 2;
-         YPADDING       *= 2;
+         char multip = 2;
+         if (video_config_geometry & PUAE_VIDEO_QUADLINE && retroh != PUAE_VIDEO_HEIGHT_S72 * 2)
+            multip = 4;
+
+         FONT_HEIGHT    *= multip;
+         YKEYSPACING    *= multip;
       }
 
       /* PUAE_VIDEO_SUPERHIRES */
-      if (video_config_geometry & PUAE_VIDEO_SUPERHIRES)
+      if (video_config & PUAE_VIDEO_SUPERHIRES && (retrow != PUAE_VIDEO_WIDTH_S72 && retrow != PUAE_VIDEO_WIDTH_S72 * 2))
       {
          FONT_WIDTH     *= 2;
          XKEYSPACING    *= 2;
@@ -430,7 +436,7 @@ void print_vkbd(void)
    XOFFSET      += retrox_crop;
 
    int XSIDE     = (320 * FONT_WIDTH) / VKBDX;
-   int YSIDE     = (172 * FONT_HEIGHT) / VKBDY;
+   int YSIDE     = (170 * FONT_HEIGHT) / VKBDY;
 
    XPADDING      = retrow_crop - (XSIDE * VKBDX);
    YPADDING      = retroh_crop + (retroy_crop * 2) - (YSIDE * VKBDY);
@@ -687,7 +693,7 @@ void print_vkbd(void)
 
    if (VKBDY_GAP_POS)
    {
-      unsigned lores_offset = (retrow_crop < 361 && retrow_crop % 2 == 0);
+      unsigned lores_offset = (retrow_crop < 401 && retrow_crop % 2 == 0);
 
       draw_fbox(vkbd_x_min-FONT_WIDTH, YOFFSET+YBASEKEY+(VKBDY_GAP_POS * YSIDE)+FONT_HEIGHT,
                 vkbd_x_max-vkbd_x_min+(FONT_WIDTH * 2)+XKEYSPACING+((lores_offset) ? -XKEYSPACING : 0), vkbd_y_gap_pad-FONT_HEIGHT,
@@ -703,7 +709,7 @@ void print_vkbd(void)
    {
       unsigned corner_y_min = 0;
       unsigned corner_y_max = 0;
-      unsigned lores_offset = (retrow_crop < 361 && retrow_crop % 2 == 0);
+      unsigned lores_offset = (retrow_crop < 401 && retrow_crop % 2 == 0);
 
       /* Top */
       corner_y_min = 0;

@@ -3457,11 +3457,12 @@ bool draw_frame (struct vidbuf_description *vb)
 #ifdef __LIBRETRO__
 extern void draw_frame_extras(void)
 {
-	int i;
 	if (currprefs.leds_on_screen) {
+		int i;
 		int slx, sly;
+		int mult = (video_config & PUAE_VIDEO_QUADLINE) ? 2 : 1;
 		statusline_getpos (&slx, &sly, gfxvidinfo.outwidth, gfxvidinfo.outheight);
-		for (i = 0; i < TD_TOTAL_HEIGHT; i++) {
+		for (i = 0; i < TD_TOTAL_HEIGHT * mult; i++) {
 			int line = sly + i;
 			draw_status_line (line, i);
 			do_flush_line (line);

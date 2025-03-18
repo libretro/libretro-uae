@@ -33,6 +33,7 @@ extern int retro_thisframe_first_drawn_line;
 extern int retro_thisframe_last_drawn_line;
 extern int retro_min_diwstart;
 extern int retro_max_diwstop;
+extern bool video_productivity;
 extern bool retro_av_info_is_lace;
 extern bool libretro_frame_end;
 extern bool libretro_runloop_active;
@@ -244,8 +245,9 @@ struct puae_cart_info
 #define PUAE_VIDEO_NTSC         0x02
 #define PUAE_VIDEO_HIRES        0x04
 #define PUAE_VIDEO_SUPERHIRES   0x08
-#define PUAE_VIDEO_DOUBLELINE   0x10
-#define PUAE_VIDEO_1x1          0x20
+#define PUAE_VIDEO_1x1          0x10
+#define PUAE_VIDEO_DOUBLELINE   0x20
+#define PUAE_VIDEO_QUADLINE     0x40
 
 #define PUAE_VIDEO_PAL_LO       PUAE_VIDEO_PAL
 #define PUAE_VIDEO_PAL_HI       PUAE_VIDEO_PAL|PUAE_VIDEO_HIRES
@@ -264,13 +266,16 @@ struct puae_cart_info
 #define PUAE_VIDEO_WIDTH        720
 #define PUAE_VIDEO_HEIGHT_PAL   574
 #define PUAE_VIDEO_HEIGHT_NTSC  484
+#define PUAE_VIDEO_WIDTH_PROD   640
+#define PUAE_VIDEO_WIDTH_S72    400
+#define PUAE_VIDEO_HEIGHT_S72   300
 
 /* Libretro video */
 #define EMULATOR_DEF_WIDTH      PUAE_VIDEO_WIDTH
 #define EMULATOR_DEF_HEIGHT     PUAE_VIDEO_HEIGHT_PAL
-#define EMULATOR_MAX_WIDTH      (EMULATOR_DEF_WIDTH * 2)
+#define EMULATOR_MAX_WIDTH      EMULATOR_DEF_WIDTH * 2
 #define EMULATOR_MAX_HEIGHT     EMULATOR_DEF_HEIGHT
-#define RETRO_BMP_SIZE          (EMULATOR_DEF_WIDTH * EMULATOR_DEF_HEIGHT * 4) /* 4x is big enough for 24-bit SuperHires double line */
+#define RETRO_BMP_SIZE          EMULATOR_MAX_WIDTH * EMULATOR_MAX_HEIGHT * 4 /* 4x is big enough for 24-bit SuperHires double line */
 
 extern unsigned short int retro_bmp[RETRO_BMP_SIZE];
 extern uint8_t pix_bytes;

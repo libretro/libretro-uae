@@ -27,9 +27,12 @@ static int num_multip = 1;
 
 void statusline_getpos (int *x, int *y, int width, int height)
 {
+	int mx = 1;
+	int total_height = TD_TOTAL_HEIGHT * mx;
 #ifdef __LIBRETRO__
-	currprefs.osd_pos.x=0;
-	currprefs.osd_pos.y=(opt_statusbar_position == -1) ? 30000 : opt_statusbar_position; /* Have to fake -1 to get -0 as top position */
+	total_height = TD_TOTAL_HEIGHT * ((video_config_geometry & PUAE_VIDEO_QUADLINE) ? 2 : 1);
+	currprefs.osd_pos.x = 0;
+	currprefs.osd_pos.y = (opt_statusbar_position == -1) ? 30000 : opt_statusbar_position; /* Have to fake -1 to get -0 as top position */
 #endif
 	if (currprefs.osd_pos.x >= 20000) {
 		if (currprefs.osd_pos.x >= 30000)
@@ -44,12 +47,12 @@ void statusline_getpos (int *x, int *y, int width, int height)
 	}
 	if (currprefs.osd_pos.y >= 20000) {
 		if (currprefs.osd_pos.y >= 30000)
-			*y = (height - TD_TOTAL_HEIGHT) * (currprefs.osd_pos.y - 30000) / 1000;
+			*y = (height - total_height) * (currprefs.osd_pos.y - 30000) / 1000;
 		else
-			*y = (height - TD_TOTAL_HEIGHT) - ((height - TD_TOTAL_HEIGHT) * (30000 - currprefs.osd_pos.y) / 1000);
+			*y = (height - total_height) - ((height - total_height) * (30000 - currprefs.osd_pos.y) / 1000);
 	} else {
 		if (currprefs.osd_pos.y >= 0)
-			*y = height - TD_TOTAL_HEIGHT - currprefs.osd_pos.y;
+			*y = height - total_height - currprefs.osd_pos.y;
 		else
 			*y = -currprefs.osd_pos.y + 1;
 	}
@@ -166,12 +169,22 @@ static void write_tdnumber (uae_u8 *buf, int bpp, int x, int y, int num, uae_u32
 
 void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u32 *rc, uae_u32 *gc, uae_u32 *bc, uae_u32 *alpha)
 {
+	int mult = (video_config & PUAE_VIDEO_QUADLINE) ? 2 : 1;
+
+	if (!mult)
+		return;
+
+	y /= mult;
+
     if (!retro_statusbar)
         return;
 
     totalwidth = retrow_crop;
     num_multip = 1;
-    if (currprefs.gfx_resolution == RES_HIRES && currprefs.gfx_vresolution == VRES_NONDOUBLE)
+
+    if (doublescan || (retrow == PUAE_VIDEO_WIDTH_S72 || retrow == PUAE_VIDEO_WIDTH_S72 * 2))
+        num_multip = (retrow == PUAE_VIDEO_WIDTH_S72 * 2 && retroh == PUAE_VIDEO_HEIGHT_S72) ? 2 : 1;
+    else if (currprefs.gfx_resolution == RES_HIRES && currprefs.gfx_vresolution == VRES_NONDOUBLE)
         num_multip = 2;
     else if (currprefs.gfx_resolution == RES_SUPERHIRES)
     {
@@ -183,7 +196,8 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
 
     int LED_WIDTH = 16;
     int TD_WIDTH = (LED_WIDTH * num_multip);
-    int TD_LED_WIDTH = TD_WIDTH;
+    int td_led_width = TD_WIDTH;
+    int td_num_width = TD_NUM_WIDTH;
 
     int x_start, j, led, border;
     uae_u32 c1, c2, cb;
@@ -479,7 +493,7 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
             }
         }
         x = x + (num_multip);
-        for (j = 0; j < TD_LED_WIDTH - num_multip; j++)
+        for (j = 0; j < td_led_width - num_multip; j++)
             putpixel (buf, bpp, x + j, c, 0);
         if (!border)
         {
@@ -499,7 +513,7 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
 
         if (y >= TD_PADY && y - TD_PADY < TD_NUM_HEIGHT) {
             if (num3 >= 0) {
-                x += (TD_LED_WIDTH - am * TD_NUM_WIDTH * num_multip) / 2;
+                x += (td_led_width - am * td_num_width * num_multip) / 2;
                 if (num1 > 0) {
                     write_tdnumber (buf, bpp, x, y - TD_PADY, num1, pen_rgb, c2);
                     x += TD_NUM_WIDTH * num_multip;
