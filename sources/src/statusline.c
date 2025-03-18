@@ -34,6 +34,7 @@ void statusline_getpos(int monid, int *x, int *y, int width, int height)
 	int mx = td_custom ? 1 : statusline_get_multiplier(monid) / 100;
 	int total_height = TD_TOTAL_HEIGHT * mx;
 #ifdef __LIBRETRO__
+	total_height = TD_TOTAL_HEIGHT * ((video_config_geometry & PUAE_VIDEO_QUADLINE) ? 2 : 1);
 	currprefs.osd_pos.x = 0;
 	currprefs.osd_pos.y = (opt_statusbar_position == -1) ? 30000 : opt_statusbar_position; /* Have to fake -1 to get -0 as top position */
 #endif
@@ -251,7 +252,7 @@ void draw_status_line_single(int monid, uae_u8 *buf, int bpp, int y, int totalwi
 	struct amigadisplay *ad = &adisplays[monid];
 	int x_start, j, led, border;
 	uae_u32 c1, c2, cb;
-	int mult = 1;
+	int mult = (video_config & PUAE_VIDEO_QUADLINE) ? 2 : 1;
 
 	if (!mult)
 		return;
@@ -263,7 +264,10 @@ void draw_status_line_single(int monid, uae_u8 *buf, int bpp, int y, int totalwi
 
     totalwidth = retrow_crop;
     num_multip = 1;
-    if (currprefs.gfx_resolution == RES_HIRES && currprefs.gfx_vresolution == VRES_NONDOUBLE)
+
+    if (doublescan || (retrow == PUAE_VIDEO_WIDTH_S72 || retrow == PUAE_VIDEO_WIDTH_S72 * 2))
+        num_multip = (retrow == PUAE_VIDEO_WIDTH_S72 * 2 && retroh == PUAE_VIDEO_HEIGHT_S72) ? 2 : 1;
+    else if (currprefs.gfx_resolution == RES_HIRES && currprefs.gfx_vresolution == VRES_NONDOUBLE)
         num_multip = 2;
     else if (currprefs.gfx_resolution == RES_SUPERHIRES)
     {
@@ -275,7 +279,7 @@ void draw_status_line_single(int monid, uae_u8 *buf, int bpp, int y, int totalwi
 
     int LED_WIDTH = 16;
     int TD_WIDTH = (LED_WIDTH * num_multip);
-    int TD_LED_WIDTH = TD_WIDTH;
+    td_led_width = TD_WIDTH;
 
     c1 = ledcolor (0x00ffffff, rc, gc, bc, alpha);
     c2 = ledcolor (0x00000000, rc, gc, bc, alpha);
@@ -570,7 +574,7 @@ void draw_status_line_single(int monid, uae_u8 *buf, int bpp, int y, int totalwi
             }
         }
         x = x + (num_multip);
-        for (j = 0; j < TD_LED_WIDTH - num_multip; j++)
+        for (j = 0; j < td_led_width - num_multip; j++)
             putpixel (buf, NULL, bpp, x + j, c);
         if (!border)
         {
@@ -590,7 +594,7 @@ void draw_status_line_single(int monid, uae_u8 *buf, int bpp, int y, int totalwi
 
         if (y >= td_numbers_pady && y - td_numbers_pady < td_numbers_height) {
             if (num3 >= 0) {
-                x += (TD_LED_WIDTH - am * td_numbers_width * num_multip) / 2;
+                x += (td_led_width - am * td_numbers_width * num_multip) / 2;
                 if (num1 > 0) {
                     write_tdnumber (buf, bpp, x, y - td_numbers_pady, num1, pen_rgb, c2, mult);
                     x += td_numbers_width * num_multip;

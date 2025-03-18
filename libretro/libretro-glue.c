@@ -31,7 +31,7 @@ float vsync_vblank, vsync_hblank;
 int busywait;
 int vsync_activeheight, vsync_totalheight;
 int max_uae_width = EMULATOR_MAX_WIDTH;
-int max_uae_height = EMULATOR_MAX_HEIGHT;
+int max_uae_height = EMULATOR_MAX_HEIGHT * 2;
 int pause_emulation;
 bool gfx_hdr;
 addrbank *gfxmem_banks[MAX_RTG_BOARDS];
@@ -57,6 +57,7 @@ int retro_min_diwstart;
 int retro_max_diwstop;
 extern int min_diwstart;
 extern int max_diwstop;
+extern bool video_productivity;
 
 extern int opt_statusbar;
 extern int opt_statusbar_position;
@@ -303,7 +304,7 @@ static void retro_draw_frame_extras(void)
    struct vidbuffer *vb = &vidinfo->drawbuffer;
 
    int slx, sly;
-   int mult = 1;
+   int mult = (video_config & PUAE_VIDEO_QUADLINE) ? 2 : 1;
    statusline_getpos(vb->monitor_id, &slx, &sly, vb->outwidth, vb->outheight);
    for (int i = 0; i < TD_TOTAL_HEIGHT * mult; i++) {
       int line = sly + i;
@@ -316,14 +317,18 @@ void print_statusbar(void)
    if (opt_statusbar & STATUSBAR_BASIC && !statusbar_message_timer)
       goto end;
 
-   int BOX_X                = retrox_crop;
-   int BOX_Y                = 0;
-   int BOX_WIDTH            = 0;
-   int BOX_HEIGHT           = 11;
-   int BOX_PADDING          = 2;
-
    int FONT_WIDTH           = 1;
-   if (video_config & PUAE_VIDEO_HIRES)
+   int FONT_HEIGHT          = (video_config & PUAE_VIDEO_QUADLINE) ? 2 : 1;
+
+   if (doublescan || (retrow == PUAE_VIDEO_WIDTH_S72 || retrow == PUAE_VIDEO_WIDTH_S72 * 2))
+   {
+      if (retrow == PUAE_VIDEO_WIDTH_S72 * 2 && !retro_av_info_is_lace)
+         FONT_WIDTH = 2;
+
+      if (retrow == PUAE_VIDEO_WIDTH_S72 && retro_av_info_is_lace)
+         FONT_HEIGHT = 2;
+   }
+   else if (video_config & PUAE_VIDEO_HIRES)
    {
       if (video_config & PUAE_VIDEO_DOUBLELINE)
          FONT_WIDTH         = 1;
@@ -337,9 +342,15 @@ void print_statusbar(void)
       else
          FONT_WIDTH         = 4;
    }
-   int FONT_HEIGHT          = 1;
+
    int FONT_COLOR           = (pix_bytes == 4) ? 0xffffff : 0xffff;;
    int FONT_SLOT            = 34 * FONT_WIDTH;
+
+   int BOX_X                = retrox_crop;
+   int BOX_Y                = 0;
+   int BOX_WIDTH            = 0;
+   int BOX_HEIGHT           = 11 * FONT_HEIGHT;
+   int BOX_PADDING          = 2 * FONT_HEIGHT;
 
    int TEXT_X               = 1 * FONT_WIDTH + retrox_crop;
    int TEXT_Y               = 0;
@@ -357,6 +368,13 @@ void print_statusbar(void)
    /* Statusbar size */
    BOX_WIDTH = retrow_crop;
    int CROP_WIDTH_OFFSET = retrow - retrow_crop;
+
+   if (doublescan)
+      CROP_WIDTH_OFFSET = PUAE_VIDEO_WIDTH - PUAE_VIDEO_WIDTH_PROD;
+   else if (retrow == PUAE_VIDEO_WIDTH_S72 * 2)
+      CROP_WIDTH_OFFSET = PUAE_VIDEO_WIDTH - retrow;
+   else if (retrow == PUAE_VIDEO_WIDTH_S72)
+      CROP_WIDTH_OFFSET = (PUAE_VIDEO_WIDTH / 2) - retrow;
 
    /* Video resolution */
    int TEXT_X_RESOLUTION = TEXT_X + (FONT_SLOT*4) + (FONT_WIDTH*16) - (CROP_WIDTH_OFFSET/2);
@@ -380,13 +398,13 @@ void print_statusbar(void)
    switch (currprefs.cs_compatible)
    {
       case CP_A500:
-         snprintf(MODEL, sizeof(MODEL), "%s", "A500");
+         snprintf(MODEL, sizeof(MODEL), "%s", " A500");
          break;
       case CP_A500P:
          snprintf(MODEL, sizeof(MODEL), "%s", "A500+");
          break;
       case CP_A600:
-         snprintf(MODEL, sizeof(MODEL), "%s", "A600");
+         snprintf(MODEL, sizeof(MODEL), "%s", " A600");
          break;
       case CP_A1200:
          snprintf(MODEL, sizeof(MODEL), "%s", "A1200");
@@ -398,15 +416,15 @@ void print_statusbar(void)
          snprintf(MODEL, sizeof(MODEL), "%s", "A4000");
          break;
       case CP_CDTV:
-         snprintf(MODEL, sizeof(MODEL), "%s", "CDTV");
+         snprintf(MODEL, sizeof(MODEL), "%s", " CDTV");
          break;
       case CP_CD32:
-         snprintf(MODEL, sizeof(MODEL), "%s", "CD32");
+         snprintf(MODEL, sizeof(MODEL), "%s", " CD32");
          break;
    }
 
    /* Double line positions */
-   if (video_config & PUAE_VIDEO_DOUBLELINE)
+   if (video_config & PUAE_VIDEO_DOUBLELINE && retrow != PUAE_VIDEO_WIDTH_S72)
    {
       TEXT_X_RESOLUTION = TEXT_X + (FONT_SLOT*9)  + (FONT_WIDTH*25) - (CROP_WIDTH_OFFSET/2);
       TEXT_X_MODEL      = TEXT_X + (FONT_SLOT*17) + (FONT_WIDTH*20) - CROP_WIDTH_OFFSET;
@@ -949,6 +967,8 @@ int check_prefs_changed_gfx (void)
       gfxvidinfo->drawbuffer.outwidth         = defaultw;
       gfxvidinfo->drawbuffer.outheight        = defaulth;
       gfxvidinfo->drawbuffer.rowbytes         = gfxvidinfo->drawbuffer.width_allocated * gfxvidinfo->drawbuffer.pixbytes;
+
+      init_hz_normal();
 
 #if 0
    printf("%s: %dx%d, res=%d vres=%d\n", __func__,
