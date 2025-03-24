@@ -465,6 +465,11 @@ void print_vkbd(void)
    vkbd_x_max += vkbd_x_gap_pad;
    vkbd_y_max += vkbd_y_gap_pad;
 
+   vkbd_x_min = (vkbd_x_min < XKEYSPACING) ? XKEYSPACING : vkbd_x_min;
+   vkbd_y_min = (vkbd_y_min < YKEYSPACING) ? YKEYSPACING : vkbd_y_min;
+   vkbd_x_max = (vkbd_x_max > retrow) ? retrow : vkbd_x_max;
+   vkbd_y_max = (vkbd_y_max > retroh) ? retroh : vkbd_y_max;
+
    /* Opacity */
    BKG_ALPHA = (retro_vkbd_transparent) ? ALPHA : GRAPH_ALPHA_100;
 
@@ -555,6 +560,9 @@ void print_vkbd(void)
          XTEXT = x_gap + XOFFSET + XBASETEXT + BKG_PADDING_X + (x * XSIDE);
          YKEY  = y_gap + YOFFSET + YBASEKEY + (y * YSIDE);
          YTEXT = y_gap + YOFFSET + YBASETEXT + BKG_PADDING_Y + (y * YSIDE);
+
+         XKEY  = (XKEY < 0) ? 0 : XKEY;
+         YKEY  = (YKEY < 0) ? 0 : YKEY;
 
          /* Empty key */
          if (vkeys[(y * VKBDX) + x].value == -1)
