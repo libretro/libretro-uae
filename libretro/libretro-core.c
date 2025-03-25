@@ -3322,51 +3322,64 @@ char* get_variable(const char* key)
    return NULL;
 }
 
-static void retro_set_geometry(unsigned video_config)
+static void retro_set_geometry(unsigned video_config, bool init)
 {
+   unsigned w, h;
+
    switch (video_config)
    {
       case PUAE_VIDEO_PAL_LO:
-         retrow = PUAE_VIDEO_WIDTH / 2;
-         retroh = PUAE_VIDEO_HEIGHT_PAL / 2;
+         w = PUAE_VIDEO_WIDTH / 2;
+         h = PUAE_VIDEO_HEIGHT_PAL / 2;
          break;
       case PUAE_VIDEO_PAL_HI:
-         retrow = PUAE_VIDEO_WIDTH;
-         retroh = PUAE_VIDEO_HEIGHT_PAL / 2;
+         w = PUAE_VIDEO_WIDTH;
+         h = PUAE_VIDEO_HEIGHT_PAL / 2;
          break;
       case PUAE_VIDEO_PAL_HI_DL:
-         retrow = PUAE_VIDEO_WIDTH;
-         retroh = PUAE_VIDEO_HEIGHT_PAL;
+         w = PUAE_VIDEO_WIDTH;
+         h = PUAE_VIDEO_HEIGHT_PAL;
          break;
       case PUAE_VIDEO_PAL_SUHI:
-         retrow = PUAE_VIDEO_WIDTH * 2;
-         retroh = PUAE_VIDEO_HEIGHT_PAL / 2;
+         w = PUAE_VIDEO_WIDTH * 2;
+         h = PUAE_VIDEO_HEIGHT_PAL / 2;
          break;
       case PUAE_VIDEO_PAL_SUHI_DL:
-         retrow = PUAE_VIDEO_WIDTH * 2;
-         retroh = PUAE_VIDEO_HEIGHT_PAL;
+         w = PUAE_VIDEO_WIDTH * 2;
+         h = PUAE_VIDEO_HEIGHT_PAL;
          break;
 
       case PUAE_VIDEO_NTSC_LO:
-         retrow = PUAE_VIDEO_WIDTH / 2;
-         retroh = PUAE_VIDEO_HEIGHT_NTSC / 2;
+         w = PUAE_VIDEO_WIDTH / 2;
+         h = PUAE_VIDEO_HEIGHT_NTSC / 2;
          break;
       case PUAE_VIDEO_NTSC_HI:
-         retrow = PUAE_VIDEO_WIDTH;
-         retroh = PUAE_VIDEO_HEIGHT_NTSC / 2;
+         w = PUAE_VIDEO_WIDTH;
+         h = PUAE_VIDEO_HEIGHT_NTSC / 2;
          break;
       case PUAE_VIDEO_NTSC_HI_DL:
-         retrow = PUAE_VIDEO_WIDTH;
-         retroh = PUAE_VIDEO_HEIGHT_NTSC;
+         w = PUAE_VIDEO_WIDTH;
+         h = PUAE_VIDEO_HEIGHT_NTSC;
          break;
       case PUAE_VIDEO_NTSC_SUHI:
-         retrow = PUAE_VIDEO_WIDTH * 2;
-         retroh = PUAE_VIDEO_HEIGHT_NTSC / 2;
+         w = PUAE_VIDEO_WIDTH * 2;
+         h = PUAE_VIDEO_HEIGHT_NTSC / 2;
          break;
       case PUAE_VIDEO_NTSC_SUHI_DL:
-         retrow = PUAE_VIDEO_WIDTH * 2;
-         retroh = PUAE_VIDEO_HEIGHT_NTSC;
+         w = PUAE_VIDEO_WIDTH * 2;
+         h = PUAE_VIDEO_HEIGHT_NTSC;
          break;
+   }
+
+   if (init)
+   {
+      defaultw = w;
+      defaulth = h;
+   }
+   else
+   {
+      retrow = w;
+      retroh = h;
    }
 }
 
@@ -4894,12 +4907,10 @@ static void update_variables(void)
          break;
    }
 
-   retro_set_geometry(video_config);
    if (!libretro_runloop_active || request_init_custom_timer)
-   {
-      defaultw = retrow;
-      defaulth = retroh;
-   }
+      retro_set_geometry(video_config, true);
+   else
+      retro_set_geometry(video_config, false);
 
    /* Always update av_info geometry */
    request_update_av_info = true;
@@ -8170,7 +8181,7 @@ static bool retro_update_av_info(void)
    }
 
    /* Geometry dimensions */
-   retro_set_geometry(video_config_geometry);
+   retro_set_geometry(video_config_geometry, false);
 
    /* Interlace detector */
    if (opt_video_vresolution_auto)
