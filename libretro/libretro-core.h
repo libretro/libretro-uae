@@ -33,6 +33,7 @@ extern int retro_thisframe_first_drawn_line;
 extern int retro_thisframe_last_drawn_line;
 extern int retro_min_diwstart;
 extern int retro_max_diwstop;
+extern int retro_doublescan;
 extern bool video_productivity;
 extern bool retro_av_info_is_lace;
 extern bool libretro_frame_end;

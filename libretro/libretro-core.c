@@ -55,7 +55,6 @@ float aspect_ratio = 0;
 
 extern int bplcon0;
 extern int detected_screen_resolution;
-extern int doublescan;
 extern int diwlastword_total;
 extern int diwfirstword_total;
 extern int m68k_go(int may_quit, int resume);
@@ -5396,7 +5395,7 @@ float retro_get_aspect_ratio(unsigned int width, unsigned int height, bool pixel
       if (retro_av_info_is_lace)
          ar *= 2.0f;
 
-      if (doublescan || (retrow == PUAE_VIDEO_WIDTH_S72 || retrow == PUAE_VIDEO_WIDTH_S72 * 2))
+      if (retro_doublescan || (retrow == PUAE_VIDEO_WIDTH_S72 || retrow == PUAE_VIDEO_WIDTH_S72 * 2))
          ar *= 2.0f;
 
       if (video_config_geometry & PUAE_VIDEO_HIRES)
@@ -7449,7 +7448,7 @@ static void retro_reset_soft(void)
 /* Vertical centering */
 static void update_video_center_vertical(void)
 {
-   int retroh_crop_normal     = (video_config & PUAE_VIDEO_DOUBLELINE) && !doublescan ? retroh_crop / 2 : retroh_crop;
+   int retroh_crop_normal     = (video_config & PUAE_VIDEO_DOUBLELINE) && !retro_doublescan ? retroh_crop / 2 : retroh_crop;
    int thisframe_y_adjust_new = thisframe_y_adjust_old;
    int thisframe_y_adjust_cur = thisframe_y_adjust;
    int first_drawn_limit      = 150;
@@ -7493,7 +7492,7 @@ static void update_video_center_vertical(void)
    thisframe_y_adjust_new = (thisframe_y_adjust_new < 0) ? 0 : thisframe_y_adjust_new;
 
    /* Change value always due to the possible change of interlace */
-   retroy_crop = thisframe_y_adjust_new * ((video_config & PUAE_VIDEO_DOUBLELINE) && !doublescan ? 2 : 1);
+   retroy_crop = thisframe_y_adjust_new * ((video_config & PUAE_VIDEO_DOUBLELINE) && !retro_doublescan ? 2 : 1);
 
 #if 0
    printf("FIRSTDRAWN:%6d LASTDRAWN:%6d   yadjust:%3d old:%3d cur:%3d croph:%d cropy:%d\n", retro_thisframe_first_drawn_line, retro_thisframe_last_drawn_line, thisframe_y_adjust, thisframe_y_adjust_old, thisframe_y_adjust_cur, retroh_crop, retroy_crop);
@@ -7587,7 +7586,7 @@ static void update_video_center_horizontal(void)
 
 static bool update_vresolution(bool update)
 {
-   int tmp_interlace_seen = retro_av_info_is_lace || doublescan;
+   int tmp_interlace_seen = retro_av_info_is_lace || retro_doublescan;
 
    /* Lores force to single line */
    if (!(video_config & PUAE_VIDEO_HIRES) && !(video_config & PUAE_VIDEO_SUPERHIRES))
@@ -7608,7 +7607,7 @@ static bool update_vresolution(bool update)
          }
          else if (update)
          {
-            if (doublescan && retro_av_info_is_lace)
+            if (retro_doublescan && retro_av_info_is_lace)
                video_config |= PUAE_VIDEO_QUADLINE;
          }
          break;
@@ -7663,7 +7662,7 @@ static void update_audiovideo(void)
       if (opt_video_resolution_auto == RESOLUTION_AUTO_SUPERHIRES)
          opt_video_resolution_auto = RESOLUTION_AUTO_HIRES;
 
-      if (current_resolution == RES_SUPERHIRES && doublescan)
+      if (current_resolution == RES_SUPERHIRES && retro_doublescan)
          current_resolution = RES_HIRES;
 
       /* Super Skidmarks force SuperHires */
@@ -8194,11 +8193,10 @@ static bool retro_update_av_info(void)
       }
    }
 
-   
-   if (doublescan || hz > 70)
+   if (retro_doublescan || hz > 70)
    {
       video_productivity = true;
-      if (doublescan)
+      if (retro_doublescan)
          retrow = PUAE_VIDEO_WIDTH_PROD;
       else if (hz > 70.7f && hz < 72) /* Aargh SUPER72, FIXME: laced keeps toggling off by itself */
          retrow = retro_max_diwstop - retro_min_diwstart;
@@ -8341,11 +8339,11 @@ static bool retro_update_av_info(void)
          retroh_crop = (retroh_crop < 200) ? 200 : retroh_crop;
 
          /* Allow full PAL height with NTSC PAR */
-         if (defaulth > retroh && retroh_crop > retroh * (video_config & PUAE_VIDEO_DOUBLELINE) && !doublescan ? 2 : 1)
+         if (defaulth > retroh && retroh_crop > retroh * (video_config & PUAE_VIDEO_DOUBLELINE) && !retro_doublescan ? 2 : 1)
             retroh = defaulth;
 
          /* Laced doublescan crop limit */
-         if (doublescan && islace)
+         if (retro_doublescan && islace)
             retroh_crop = retroh;
          break;
       default:
@@ -8410,7 +8408,7 @@ static bool retro_update_av_info(void)
          retroh_crop /= 2;
 
       retroh_crop = (retroh_crop < 200) ? 200 : retroh_crop;
-      retroh_crop *= (video_config & PUAE_VIDEO_DOUBLELINE) && !doublescan ? 2 : 1;
+      retroh_crop *= (video_config & PUAE_VIDEO_DOUBLELINE) && !retro_doublescan ? 2 : 1;
       if (retroh_crop > retroh)
          retroh_crop = retroh;
 

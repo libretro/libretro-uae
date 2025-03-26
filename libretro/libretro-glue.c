@@ -37,8 +37,10 @@ int retro_thisframe_first_drawn_line;
 int retro_thisframe_last_drawn_line;
 int retro_min_diwstart;
 int retro_max_diwstop;
+int retro_doublescan;
 extern int min_diwstart;
 extern int max_diwstop;
+extern int doublescan;
 extern bool video_productivity;
 
 extern int opt_statusbar;
@@ -291,7 +293,7 @@ void print_statusbar(void)
    int FONT_WIDTH           = 1;
    int FONT_HEIGHT          = (video_config & PUAE_VIDEO_QUADLINE) ? 2 : 1;
 
-   if (doublescan || (retrow == PUAE_VIDEO_WIDTH_S72 || retrow == PUAE_VIDEO_WIDTH_S72 * 2))
+   if (retro_doublescan || (retrow == PUAE_VIDEO_WIDTH_S72 || retrow == PUAE_VIDEO_WIDTH_S72 * 2))
    {
       if (retrow == PUAE_VIDEO_WIDTH_S72 * 2 && !retro_av_info_is_lace)
          FONT_WIDTH = 2;
@@ -340,7 +342,7 @@ void print_statusbar(void)
    BOX_WIDTH = retrow_crop;
    int CROP_WIDTH_OFFSET = retrow - retrow_crop;
 
-   if (doublescan)
+   if (retro_doublescan)
       CROP_WIDTH_OFFSET = PUAE_VIDEO_WIDTH - PUAE_VIDEO_WIDTH_PROD;
    else if (retrow == PUAE_VIDEO_WIDTH_S72 * 2)
       CROP_WIDTH_OFFSET = PUAE_VIDEO_WIDTH - retrow;
@@ -706,6 +708,7 @@ void retro_flush_screen (struct vidbuf_description *gfxinfo, int ystart, int yen
    retro_thisframe_last_drawn_line  = thisframe_last_drawn_line;
    retro_min_diwstart               = min_diwstart;
    retro_max_diwstop                = max_diwstop;
+   retro_doublescan                 = doublescan > 0;
 
    /* Align the resulting Automatic Crop screen height to even number */
    if (!retro_av_info_is_lace && (retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line + 1) % 2)

@@ -182,7 +182,7 @@ void draw_status_line_single (uae_u8 *buf, int bpp, int y, int totalwidth, uae_u
     totalwidth = retrow_crop;
     num_multip = 1;
 
-    if (doublescan || (retrow == PUAE_VIDEO_WIDTH_S72 || retrow == PUAE_VIDEO_WIDTH_S72 * 2))
+    if (retro_doublescan || (retrow == PUAE_VIDEO_WIDTH_S72 || retrow == PUAE_VIDEO_WIDTH_S72 * 2))
         num_multip = (retrow == PUAE_VIDEO_WIDTH_S72 * 2 && retroh == PUAE_VIDEO_HEIGHT_S72) ? 2 : 1;
     else if (currprefs.gfx_resolution == RES_HIRES && currprefs.gfx_vresolution == VRES_NONDOUBLE)
         num_multip = 2;
