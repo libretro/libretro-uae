@@ -7818,7 +7818,8 @@ static void update_audiovideo(void)
          && retro_thisframe_first_drawn_line != -1
          && retro_thisframe_last_drawn_line  != -1
          && retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line > min_height
-         && (retro_thisframe_first_drawn_line_delta > (video_config & PUAE_VIDEO_DOUBLELINE) ? 1 : 0 || retro_thisframe_last_drawn_line_delta > (video_config & PUAE_VIDEO_DOUBLELINE) ? 1 : 0)
+         && (retro_thisframe_first_drawn_line_delta > ((video_config & PUAE_VIDEO_DOUBLELINE) && retro_av_info_is_lace) ? 1 : 0
+          || retro_thisframe_last_drawn_line_delta  > ((video_config & PUAE_VIDEO_DOUBLELINE) && retro_av_info_is_lace) ? 1 : 0)
       )
       {
 #if 0
@@ -7837,9 +7838,9 @@ static void update_audiovideo(void)
 
          if (!retro_thisframe_counter)
          {
-            if (retro_thisframe_first_drawn_line_delta > (video_config & PUAE_VIDEO_DOUBLELINE) ? 1 : 0)
+            if (retro_thisframe_first_drawn_line_delta > ((video_config & PUAE_VIDEO_DOUBLELINE) && retro_av_info_is_lace) ? 1 : 0)
                retro_thisframe_first_drawn_line_start = (retro_thisframe_first_drawn_line_old > 0) ? retro_thisframe_first_drawn_line_old : retro_thisframe_first_drawn_line;
-            if (retro_thisframe_last_drawn_line_delta > (video_config & PUAE_VIDEO_DOUBLELINE) ? 1 : 0)
+            if (retro_thisframe_last_drawn_line_delta > ((video_config & PUAE_VIDEO_DOUBLELINE) && retro_av_info_is_lace) ? 1 : 0)
                retro_thisframe_last_drawn_line_start  = (retro_thisframe_last_drawn_line_old > 0) ? retro_thisframe_last_drawn_line_old : retro_thisframe_last_drawn_line;
          }
 
