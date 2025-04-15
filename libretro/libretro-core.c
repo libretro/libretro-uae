@@ -69,12 +69,21 @@ char opt_model_fd[10] = {0};
 char opt_model_hd[10] = {0};
 char opt_model_cd[10] = {0};
 char opt_kickstart[20] = {0};
-static int opt_chipmem_size = -1;
-static int opt_bogomem_size = -1;
-static int opt_fastmem_size = -1;
-static int opt_z3mem_size = -1;
-static int opt_cpu_model = -1;
-static int opt_fpu_model = -1;
+
+struct preset_options
+{
+   int cpu_model;
+   int fpu_model;
+   int mmu_model;
+   int chipmem_size;
+   int bogomem_size;
+   int fastmem_size;
+   int z3mem_size;
+};
+
+static struct preset_options override_opt;
+static struct preset_options preset_opt;
+
 static bool opt_region_auto = true;
 static char opt_video_resolution_auto = RESOLUTION_AUTO_NONE;
 static bool opt_video_vresolution_auto = false;
@@ -235,13 +244,13 @@ dc_storage *dc = NULL;
 
 /* Configs */
 #define UAE_CONFIG_SIZE 32768
-static char uae_model[1024] = {0};
 static char uae_preset[20] = {0};
 static char uae_kickstart[RETRO_PATH_MAX] = {0};
 static char uae_kickstart_ext[RETRO_PATH_MAX] = {0};
 static char uae_config[4096] = {0};
-static char uae_custom_config[2048] = {0};
+static char uae_model_config[1024] = {0};
 static char uae_preset_config[2048] = {0};
+static char uae_custom_config[2048] = {0};
 char uae_full_config[UAE_CONFIG_SIZE] = {0};
 
 char *retro_get_uae_full_config(void)
@@ -3319,8 +3328,8 @@ static void update_variables(void)
 {
    struct retro_variable var = {0};
 
-   uae_model[0]  = '\0';
-   uae_config[0] = '\0';
+   uae_model_config[0] = '\0';
+   uae_config[0]       = '\0';
 
    var.key = "puae_model";
    var.value = NULL;
@@ -3355,6 +3364,14 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       strlcpy(opt_kickstart, var.value, sizeof(opt_kickstart));
+
+      if (libretro_runloop_active)
+      {
+         if (!strcmp(opt_kickstart, "aros"))
+            strcpy(changed_prefs.romfile, "");
+         else
+            strcpy(changed_prefs.romfile, uae_kickstart);
+      }
    }
 
    var.key = "puae_cart_file";
@@ -3669,14 +3686,23 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      opt_chipmem_size = -1;
+      override_opt.chipmem_size = -1;
+      if (!strstr(var.value, "auto"))
+         override_opt.chipmem_size = atoi(var.value);
+
       if (!strstr(var.value, "auto"))
       {
-         opt_chipmem_size = atoi(var.value);
-
          strcat(uae_config, "chipmem_size=");
          strcat(uae_config, var.value);
          strcat(uae_config, "\n");
+      }
+
+      if (libretro_runloop_active)
+      {
+         if (!strstr(var.value, "auto"))
+            changed_prefs.chipmem_size = override_opt.chipmem_size * 0x80000;
+         else
+            changed_prefs.chipmem_size = preset_opt.chipmem_size * 0x80000;
       }
    }
 
@@ -3684,14 +3710,23 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      opt_bogomem_size = -1;
+      override_opt.bogomem_size = -1;
+      if (!strstr(var.value, "auto"))
+         override_opt.bogomem_size = atoi(var.value);
+
       if (!strstr(var.value, "auto"))
       {
-         opt_bogomem_size = atoi(var.value);
-
          strcat(uae_config, "bogomem_size=");
          strcat(uae_config, var.value);
          strcat(uae_config, "\n");
+      }
+
+      if (libretro_runloop_active)
+      {
+         if (!strstr(var.value, "auto"))
+            changed_prefs.bogomem_size = override_opt.bogomem_size * 0x40000;
+         else
+            changed_prefs.bogomem_size = preset_opt.bogomem_size * 0x40000;
       }
    }
 
@@ -3699,14 +3734,23 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      opt_fastmem_size = -1;
+      override_opt.fastmem_size = -1;
+      if (!strstr(var.value, "auto"))
+         override_opt.fastmem_size = atoi(var.value);
+
       if (!strstr(var.value, "auto"))
       {
-         opt_fastmem_size = atoi(var.value);
-
          strcat(uae_config, "fastmem_size=");
          strcat(uae_config, var.value);
          strcat(uae_config, "\n");
+      }
+
+      if (libretro_runloop_active)
+      {
+         if (!strstr(var.value, "auto"))
+            changed_prefs.fastmem_size = override_opt.fastmem_size * 1024 * 1024;
+         else
+            changed_prefs.fastmem_size = preset_opt.fastmem_size * 1024 * 1024;
       }
    }
 
@@ -3714,16 +3758,31 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      opt_z3mem_size = -1;
+      override_opt.z3mem_size = -1;
+      if (!strstr(var.value, "auto"))
+         override_opt.z3mem_size = atoi(var.value);
+
       if (!strstr(var.value, "auto"))
       {
-         opt_z3mem_size = atoi(var.value);
-
-         strcat(uae_config, "cpu_24bit_addressing=false\n");
-
          strcat(uae_config, "z3mem_size=");
          strcat(uae_config, var.value);
          strcat(uae_config, "\n");
+
+         strcat(uae_config, "cpu_24bit_addressing=false\n");
+      }
+
+      if (libretro_runloop_active)
+      {
+         if (!strstr(var.value, "auto"))
+         {
+            changed_prefs.z3fastmem_size = override_opt.z3mem_size * 1024 * 1024;
+            changed_prefs.address_space_24  = false;
+         }
+         else
+         {
+            changed_prefs.z3fastmem_size = preset_opt.z3mem_size * 1024 * 1024;
+            changed_prefs.address_space_24  = true;
+         }
       }
    }
 
@@ -3731,28 +3790,42 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      opt_cpu_model = -1;
+      override_opt.cpu_model = -1;
+      if (!strstr(var.value, "auto"))
+         override_opt.cpu_model = atoi(var.value);
+
       if (!strstr(var.value, "auto"))
       {
-         opt_cpu_model = atoi(var.value);
-
          strcat(uae_config, "cpu_model=");
          strcat(uae_config, var.value);
          strcat(uae_config, "\n");
 
-         if (opt_cpu_model > 68020)
+         if (override_opt.cpu_model >= 68030)
          {
-            char valbuf[8];
-            if (opt_cpu_model > 68040)
-               snprintf(valbuf, sizeof(valbuf), "%d", 68040);
-            else
-               snprintf(valbuf, sizeof(valbuf), "%d", opt_cpu_model);
-
             strcat(uae_config, "mmu_model=");
-            strcat(uae_config, valbuf);
+            strcat(uae_config, var.value);
             strcat(uae_config, "\n");
 
             strcat(uae_config, "cpu_24bit_addressing=false\n");
+         }
+      }
+
+      if (libretro_runloop_active)
+      {
+         if (!strstr(var.value, "auto"))
+            changed_prefs.cpu_model = override_opt.cpu_model;
+         else
+            changed_prefs.cpu_model = preset_opt.cpu_model;
+
+         if (changed_prefs.cpu_model >= 68030)
+         {
+            changed_prefs.mmu_model = changed_prefs.cpu_model;
+            changed_prefs.address_space_24 = false;
+         }
+         else
+         {
+            changed_prefs.mmu_model = 0;
+            changed_prefs.address_space_24 = (changed_prefs.cpu_model < 68020) ? true : false;
          }
       }
    }
@@ -3761,25 +3834,34 @@ static void update_variables(void)
    var.value = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      opt_fpu_model = -1;
-      if (!strcmp(var.value, "cpu") && opt_cpu_model > 0)
-         opt_fpu_model = opt_cpu_model;
+      override_opt.fpu_model = -1;
+      if (!strcmp(var.value, "cpu") && override_opt.cpu_model >= 68030)
+         override_opt.fpu_model = override_opt.cpu_model;
       else if (!strstr(var.value, "auto"))
-         opt_fpu_model = atoi(var.value);
+         override_opt.fpu_model = atoi(var.value);
 
-      if (opt_fpu_model && opt_cpu_model > 68030)
-         opt_fpu_model = opt_cpu_model;
-      else if ((opt_fpu_model != 0 && opt_fpu_model != 68881) && opt_cpu_model > 68020)
-         opt_fpu_model = 68882;
+      /* CPU internal FPU force */
+      if (override_opt.fpu_model && override_opt.cpu_model >= 68040)
+         override_opt.fpu_model = override_opt.cpu_model;
+      else if (override_opt.fpu_model && override_opt.fpu_model != 68881 && override_opt.cpu_model == 68030)
+         override_opt.fpu_model = 68882;
 
-      if (opt_fpu_model > -1)
+      if (override_opt.fpu_model > -1)
       {
          char valbuf[8];
-         snprintf(valbuf, sizeof(valbuf), "%d", opt_fpu_model);
+         snprintf(valbuf, sizeof(valbuf), "%d", override_opt.fpu_model);
 
          strcat(uae_config, "fpu_model=");
          strcat(uae_config, valbuf);
          strcat(uae_config, "\n");
+      }
+
+      if (libretro_runloop_active)
+      {
+         if (!strstr(var.value, "auto"))
+            changed_prefs.fpu_model = override_opt.fpu_model;
+         else
+            changed_prefs.fpu_model = preset_opt.fpu_model;
       }
    }
 
@@ -4845,6 +4927,10 @@ static void update_variables(void)
    /* Always update av_info geometry */
    request_update_av_info = true;
 
+   /* Only fix invalid combinations when running */
+   if (libretro_runloop_active)
+      fixup_prefs(&changed_prefs);
+
    /* Always trigger changed prefs */
    config_changed = 1;
    check_prefs_changed_audio();
@@ -5537,6 +5623,10 @@ static void retro_config_kickstart(void)
       }
    }
 
+   /* Fallback to original filename */
+   if (!valid)
+      strlcpy(kickstart, uae_kickstart, sizeof(kickstart));
+
    /* Final append + logging */
    if (valid)
    {
@@ -5546,11 +5636,13 @@ static void retro_config_kickstart(void)
    }
    else
    {
-      log_cb(RETRO_LOG_ERROR, "Kickstart ROM '%s' not found!\n", uae_kickstart);
-      snprintf(retro_message_msg, sizeof(retro_message_msg),
-               "Kickstart ROM '%s' not found!", uae_kickstart);
+      log_cb(RETRO_LOG_ERROR, "Kickstart ROM '%s' not found!\n", path_basename(kickstart));
+      snprintf(retro_message_msg, sizeof(retro_message_msg), "Kickstart ROM '%s' not found!", path_basename(kickstart));
       retro_message = true;
    }
+
+   /* Replace full path for override */
+   strlcpy(uae_kickstart, kickstart, sizeof(uae_kickstart));
 
    /* Extended KS + NVRAM */
    if (!string_is_empty(uae_kickstart_ext))
@@ -5597,6 +5689,10 @@ static void retro_config_kickstart(void)
             }
          }
 
+         /* Fallback to original filename */
+         if (!valid)
+            strlcpy(kickstart_ext, uae_kickstart_ext, sizeof(kickstart_ext));
+
          /* Final append + logging */
          if (valid)
          {
@@ -5605,9 +5701,8 @@ static void retro_config_kickstart(void)
          }
          else
          {
-            log_cb(RETRO_LOG_ERROR, "Kickstart extended ROM '%s' not found!\n", uae_kickstart_ext);
-            snprintf(retro_message_msg, sizeof(retro_message_msg),
-                     "Kickstart extended ROM '%s' not found!", uae_kickstart_ext);
+            log_cb(RETRO_LOG_ERROR, "Kickstart extended ROM '%s' not found!\n", path_basename(kickstart_ext));
+            snprintf(retro_message_msg, sizeof(retro_message_msg), "Kickstart extended ROM '%s' not found!", path_basename(kickstart_ext));
             retro_message = true;
          }
       }
@@ -5901,7 +5996,7 @@ static void whdload_quitkey(void)
    libretro_runloop_active = true;
 }
 
-static char* emu_config_string(char *mode, int config)
+static char* emu_config_string(const char *mode, int config)
 {
    if (!strcmp(mode, "model"))
    {
@@ -5954,7 +6049,7 @@ static char* emu_config_string(char *mode, int config)
    return "";
 }
 
-static int emu_config_int(char *model)
+static int emu_config_int(const char *model)
 {
    if      (!strcmp(model, "A500"))      return EMU_CONFIG_A500;
    else if (!strcmp(model, "A500OG"))    return EMU_CONFIG_A500OG;
@@ -5976,6 +6071,7 @@ static char* emu_config(int config)
 {
    char custom_config_path[RETRO_PATH_MAX] = {0};
    char custom_config_file[RETRO_PATH_MAX] = {0};
+   char temp[255];
 
    /* Reset Kickstart */
    uae_kickstart[0] = '\0';
@@ -6014,172 +6110,217 @@ static char* emu_config(int config)
     * fastmem_size (default 0): 1 = 1.0MB, ...
     */
    uae_preset_config[0] = '\0';
+
+   preset_opt.cpu_model    = 68000;
+   preset_opt.fpu_model    = 0;
+   preset_opt.mmu_model    = 0;
+   preset_opt.chipmem_size = 1;
+   preset_opt.bogomem_size = 0;
+   preset_opt.fastmem_size = 0;
+   preset_opt.z3mem_size   = 0;
+
    switch (config)
    {
+      default:
       case EMU_CONFIG_A500:
+         preset_opt.chipmem_size = 1;
+         preset_opt.bogomem_size = 2;
+         preset_opt.fastmem_size = 0;
+
          strcat(uae_preset_config,
-         "cpu_model=68000\n"
          "chipset=ocs\n"
          "chipset_compatible=A500\n"
-         "chipmem_size=1\n"
-         "bogomem_size=2\n"
-         "fastmem_size=0\n"
          );
          break;
 
       case EMU_CONFIG_A500OG:
+         preset_opt.chipmem_size = 1;
+         preset_opt.bogomem_size = 0;
+         preset_opt.fastmem_size = 0;
+
          strcat(uae_preset_config,
-         "cpu_model=68000\n"
          "chipset=ocs\n"
          "chipset_compatible=A500\n"
-         "chipmem_size=1\n"
-         "bogomem_size=0\n"
-         "fastmem_size=0\n"
          );
          break;
 
       case EMU_CONFIG_A500PLUS:
+         preset_opt.chipmem_size = 2;
+         preset_opt.bogomem_size = 0;
+         preset_opt.fastmem_size = 0;
+
          strcat(uae_preset_config,
-         "cpu_model=68000\n"
          "chipset=ecs\n"
          "chipset_compatible=A500+\n"
-         "chipmem_size=2\n"
-         "bogomem_size=0\n"
-         "fastmem_size=0\n"
          );
          break;
 
       case EMU_CONFIG_A600:
+         preset_opt.chipmem_size = 4;
+         preset_opt.bogomem_size = 0;
+         preset_opt.fastmem_size = 8;
+
          strcat(uae_preset_config,
-         "cpu_model=68000\n"
          "chipset=ecs\n"
          "chipset_compatible=A600\n"
-         "chipmem_size=4\n"
-         "bogomem_size=0\n"
-         "fastmem_size=8\n"
          );
          break;
 
       case EMU_CONFIG_A1200:
+         preset_opt.cpu_model    = 68020;
+         preset_opt.chipmem_size = 4;
+         preset_opt.bogomem_size = 0;
+         preset_opt.fastmem_size = 8;
+
          strcat(uae_preset_config,
-         "cpu_model=68020\n"
          "chipset=aga\n"
          "chipset_compatible=A1200\n"
-         "chipmem_size=4\n"
-         "bogomem_size=0\n"
-         "fastmem_size=8\n"
          );
          break;
 
       case EMU_CONFIG_A1200OG:
+         preset_opt.cpu_model    = 68020;
+         preset_opt.chipmem_size = 4;
+         preset_opt.bogomem_size = 0;
+         preset_opt.fastmem_size = 0;
+
          strcat(uae_preset_config,
-         "cpu_model=68020\n"
          "chipset=aga\n"
          "chipset_compatible=A1200\n"
-         "chipmem_size=4\n"
-         "bogomem_size=0\n"
-         "fastmem_size=0\n"
          );
          break;
 
       case EMU_CONFIG_A2000:
+         preset_opt.chipmem_size = 2;
+         preset_opt.bogomem_size = 0;
+         preset_opt.fastmem_size = 0;
+
          strcat(uae_preset_config,
-         "cpu_model=68000\n"
          "chipset=ecs_agnus\n"
          "chipset_compatible=A2000\n"
-         "chipmem_size=2\n"
-         "bogomem_size=0\n"
-         "fastmem_size=0\n"
          );
          break;
 
       case EMU_CONFIG_A2000OG:
+         preset_opt.chipmem_size = 1;
+         preset_opt.bogomem_size = 2;
+         preset_opt.fastmem_size = 0;
+
          strcat(uae_preset_config,
-         "cpu_model=68000\n"
          "chipset=ocs\n"
          "chipset_compatible=A2000\n"
-         "chipmem_size=1\n"
-         "bogomem_size=2\n"
-         "fastmem_size=0\n"
          );
          break;
 
       case EMU_CONFIG_A4030:
+         preset_opt.cpu_model    = 68030;
+         preset_opt.fpu_model    = 68882;
+         preset_opt.mmu_model    = 68030;
+         preset_opt.chipmem_size = 4;
+         preset_opt.bogomem_size = 0;
+         preset_opt.fastmem_size = 8;
+
          strcat(uae_preset_config,
-         "cpu_model=68030\n"
-         "fpu_model=68882\n"
-         "mmu_model=68030\n"
          "cpu_24bit_addressing=false\n"
          "chipset=aga\n"
          "chipset_compatible=A4000\n"
-         "chipmem_size=4\n"
-         "bogomem_size=0\n"
-         "fastmem_size=8\n"
          );
          break;
 
       case EMU_CONFIG_A4040:
+         preset_opt.cpu_model    = 68040;
+         preset_opt.fpu_model    = 68040;
+         preset_opt.mmu_model    = 68040;
+         preset_opt.chipmem_size = 4;
+         preset_opt.bogomem_size = 0;
+         preset_opt.fastmem_size = 8;
+
          strcat(uae_preset_config,
-         "cpu_model=68040\n"
-         "fpu_model=68040\n"
-         "mmu_model=68040\n"
+         "cpu_24bit_addressing=false\n"
          "chipset=aga\n"
          "chipset_compatible=A4000\n"
-         "chipmem_size=4\n"
-         "bogomem_size=0\n"
-         "fastmem_size=8\n"
          );
          break;
 
       case EMU_CONFIG_CDTV:
+         preset_opt.chipmem_size = 2;
+         preset_opt.bogomem_size = 0;
+         preset_opt.fastmem_size = 0;
+
          strcat(uae_preset_config,
-         "cpu_model=68000\n"
          "chipset=ecs_agnus\n"
          "chipset_compatible=CDTV\n"
-         "chipmem_size=2\n"
-         "bogomem_size=0\n"
-         "fastmem_size=0\n"
          "floppy0type=-1\n"
          );
          break;
 
       case EMU_CONFIG_CD32:
+         preset_opt.cpu_model    = 68020;
+         preset_opt.chipmem_size = 4;
+         preset_opt.bogomem_size = 0;
+         preset_opt.fastmem_size = 0;
+
          strcat(uae_preset_config,
-         "cpu_model=68020\n"
          "chipset=aga\n"
          "chipset_compatible=CD32\n"
-         "chipmem_size=4\n"
-         "bogomem_size=0\n"
-         "fastmem_size=0\n"
          "floppy0type=-1\n"
          );
          break;
 
       case EMU_CONFIG_CD32FR:
+         preset_opt.cpu_model    = 68020;
+         preset_opt.chipmem_size = 4;
+         preset_opt.bogomem_size = 0;
+         preset_opt.fastmem_size = 8;
+
          strcat(uae_preset_config,
-         "cpu_model=68020\n"
          "chipset=aga\n"
          "chipset_compatible=CD32\n"
-         "chipmem_size=4\n"
-         "bogomem_size=0\n"
-         "fastmem_size=8\n"
          "floppy0type=-1\n"
          );
          break;
-
-      default:
-         break;
    }
+
+   snprintf(temp, sizeof(temp), "%d", preset_opt.cpu_model);
+   strcat(uae_preset_config, "cpu_model=");
+   strcat(uae_preset_config, temp);
+   strcat(uae_preset_config, "\n");
+
+   snprintf(temp, sizeof(temp), "%d", preset_opt.fpu_model);
+   strcat(uae_preset_config, "fpu_model=");
+   strcat(uae_preset_config, temp);
+   strcat(uae_preset_config, "\n");
+
+   snprintf(temp, sizeof(temp), "%d", preset_opt.mmu_model);
+   strcat(uae_preset_config, "mmu_model=");
+   strcat(uae_preset_config, temp);
+   strcat(uae_preset_config, "\n");
+
+   snprintf(temp, sizeof(temp), "%d", preset_opt.chipmem_size);
+   strcat(uae_preset_config, "chipmem_size=");
+   strcat(uae_preset_config, temp);
+   strcat(uae_preset_config, "\n");
+
+   snprintf(temp, sizeof(temp), "%d", preset_opt.bogomem_size);
+   strcat(uae_preset_config, "bogomem_size=");
+   strcat(uae_preset_config, temp);
+   strcat(uae_preset_config, "\n");
+
+   snprintf(temp, sizeof(temp), "%d", preset_opt.fastmem_size);
+   strcat(uae_preset_config, "fastmem_size=");
+   strcat(uae_preset_config, temp);
+   strcat(uae_preset_config, "\n");
 
    strlcat(uae_preset_config, uae_custom_config, sizeof(uae_preset_config));
    return uae_preset_config;
 }
 
-static void retro_config_preset(char *model)
+static void retro_config_preset(const char *model)
 {
    int model_int = emu_config_int(model);
-   strlcpy(uae_model, emu_config(model_int), sizeof(uae_model));
+   strlcpy(uae_model_config, emu_config(model_int), sizeof(uae_model_config));
    strlcpy(uae_preset, emu_config_string("model", model_int), sizeof(uae_preset));
+
    /* Allow Kickstart overrides in custom presets */
    if (string_is_empty(uae_kickstart))
    {
@@ -6362,9 +6503,9 @@ static bool retro_create_config(void)
                log_cb(RETRO_LOG_INFO, "Found '(A1200OG)' or '(A1200NF)' in: '%s'\n", full_path);
                retro_config_preset("A1200OG");
             }
-            else if (strstr(full_path, "(A1200)") || strstr(full_path, "CD32"))
+            else if (strstr(full_path, "(A1200)"))
             {
-               log_cb(RETRO_LOG_INFO, "Found '(A1200)' or 'CD32' in: '%s'\n", full_path);
+               log_cb(RETRO_LOG_INFO, "Found '(A1200)' in: '%s'\n", full_path);
                retro_config_preset("A1200");
             }
             else if (strstr(full_path, "(A600)"))
@@ -6387,11 +6528,13 @@ static bool retro_create_config(void)
                log_cb(RETRO_LOG_INFO, "Found '(A500)' in: '%s'\n", full_path);
                retro_config_preset("A500");
             }
-            else if (strstr(full_path, "AGA") || strstr(full_path, "AmigaCD"))
+            else if (strstr(full_path, "AGA") || strstr(full_path, "AmigaCD") || strstr(full_path, "CD32"))
             {
-               log_cb(RETRO_LOG_INFO, "Found 'AGA' or 'AmigaCD' in: '%s'\n", full_path);
-               /* Change to A1200 only if not already with AGA */
-               if (!strstr(uae_preset, "A1200") && !strstr(uae_preset, "A40"))
+               log_cb(RETRO_LOG_INFO, "Found 'AGA' or 'AmigaCD' or 'CD32' in: '%s'\n", full_path);
+               /* Change to A1200 only if not already with AGA, and prevent overriding non-fast RAM preset */
+               if (strstr(opt_model_hd, "A1200"))
+                  retro_config_preset(opt_model_hd);
+               else if (!strstr(uae_preset, "A1200") && !strstr(uae_preset, "A40"))
                   retro_config_preset("A1200");
             }
             else if (strstr(full_path, "ECS"))
@@ -6425,7 +6568,7 @@ static bool retro_create_config(void)
          }
 
          /* Write model preset */
-         retro_config_append(uae_model);
+         retro_config_append(uae_model_config);
 
          /* Verify and write Kickstart */
          retro_config_kickstart();
@@ -6977,7 +7120,7 @@ static bool retro_create_config(void)
          }
 
          /* Write model preset */
-         retro_config_append(uae_model);
+         retro_config_append(uae_model_config);
 
          /* Verify and write Kickstart */
          retro_config_kickstart();
@@ -7038,7 +7181,7 @@ static bool retro_create_config(void)
          char disk_image[RETRO_PATH_MAX] = {0};
 
          /* Write model preset */
-         retro_config_append(uae_model);
+         retro_config_append(uae_model_config);
 
          /* Write common config */
          retro_config_append(uae_config);
@@ -7084,17 +7227,17 @@ static bool retro_create_config(void)
                }
 
                /* Skip overrides always */
-               if (opt_cpu_model > -1 && strstr(filebuf, "cpu_model=") && filebuf[0] == 'c')
+               if (override_opt.cpu_model > -1 && strstr(filebuf, "cpu_model=") && filebuf[0] == 'c')
                   continue;
-               if (opt_fpu_model > -1 && strstr(filebuf, "fpu_model=") && filebuf[0] == 'f')
+               if (override_opt.fpu_model > -1 && strstr(filebuf, "fpu_model=") && filebuf[0] == 'f')
                   continue;
-               if (opt_chipmem_size > -1 && strstr(filebuf, "chipmem_size=") && filebuf[0] == 'c')
+               if (override_opt.chipmem_size > -1 && strstr(filebuf, "chipmem_size=") && filebuf[0] == 'c')
                   continue;
-               if (opt_bogomem_size > -1 && strstr(filebuf, "bogomem_size=") && filebuf[0] == 'b')
+               if (override_opt.bogomem_size > -1 && strstr(filebuf, "bogomem_size=") && filebuf[0] == 'b')
                   continue;
-               if (opt_fastmem_size > -1 && strstr(filebuf, "fastmem_size=") && filebuf[0] == 'f')
+               if (override_opt.fastmem_size > -1 && strstr(filebuf, "fastmem_size=") && filebuf[0] == 'f')
                   continue;
-               if (opt_z3mem_size > -1 && strstr(filebuf, "z3mem_size=") && filebuf[0] == 'z')
+               if (override_opt.z3mem_size > -1 && strstr(filebuf, "z3mem_size=") && filebuf[0] == 'z')
                   continue;
 
                /* Append */
@@ -7133,6 +7276,69 @@ static bool retro_create_config(void)
                      dc_add_file(dc, disk_image, disk_image_label);
                   }
                }
+
+               /* Parse and replace presets */
+               {
+                  if (strstr(filebuf, "chipmem_size=") && filebuf[0] == 'c')
+                  {
+                     char *token = strtok(filebuf, "=");
+                     while (token != NULL)
+                     {
+                        preset_opt.chipmem_size = atoi(token);
+                        token = strtok(NULL, "=");
+                     }
+                  }
+
+                  if (strstr(filebuf, "bogomem_size=") && filebuf[0] == 'b')
+                  {
+                     char *token = strtok(filebuf, "=");
+                     while (token != NULL)
+                     {
+                        preset_opt.bogomem_size = atoi(token);
+                        token = strtok(NULL, "=");
+                     }
+                  }
+
+                  if (strstr(filebuf, "fastmem_size=") && filebuf[0] == 'f')
+                  {
+                     char *token = strtok(filebuf, "=");
+                     while (token != NULL)
+                     {
+                        preset_opt.fastmem_size = atoi(token);
+                        token = strtok(NULL, "=");
+                     }
+                  }
+
+                  if (strstr(filebuf, "z3mem_size=") && filebuf[0] == 'z')
+                  {
+                     char *token = strtok(filebuf, "=");
+                     while (token != NULL)
+                     {
+                        preset_opt.z3mem_size = atoi(token);
+                        token = strtok(NULL, "=");
+                     }
+                  }
+
+                  if (strstr(filebuf, "cpu_model=") && filebuf[0] == 'c')
+                  {
+                     char *token = strtok(filebuf, "=");
+                     while (token != NULL)
+                     {
+                        preset_opt.cpu_model = atoi(token);
+                        token = strtok(NULL, "=");
+                     }
+                  }
+
+                  if (strstr(filebuf, "fpu_model=") && filebuf[0] == 'f')
+                  {
+                     char *token = strtok(filebuf, "=");
+                     while (token != NULL)
+                     {
+                        preset_opt.fpu_model = atoi(token);
+                        token = strtok(NULL, "=");
+                     }
+                  }
+               }
             }
             
             fclose(configfile_custom);
@@ -7155,7 +7361,7 @@ static bool retro_create_config(void)
       else
       {
          /* Write model preset */
-         retro_config_append(uae_model);
+         retro_config_append(uae_model_config);
 
          /* Verify and write Kickstart */
          retro_config_kickstart();
@@ -7173,7 +7379,7 @@ static bool retro_create_config(void)
    else
    {
       /* Write model preset */
-      retro_config_append(uae_model);
+      retro_config_append(uae_model_config);
 
       /* Verify and write Kickstart */
       retro_config_kickstart();
@@ -7282,8 +7488,14 @@ static void retro_reset_hard(void)
    video_config_old = (forced_video < 0) ? 0 : video_config_old;
    fake_ntsc = false;
    locked_video_horizontal = false;
+
+   /* Preset override circle:
+    * - config preset models require core options
+    * - core option overrides require config presets */
    update_variables();
    retro_create_config();
+   update_variables();
+
    uae_reset(1, 0); /* hardreset, keyboardreset */
 }
 
