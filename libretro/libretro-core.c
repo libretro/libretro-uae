@@ -5243,7 +5243,11 @@ void retro_deinit(void)
 {
    leave_program();
 
-   /* Clean the M3U storage */
+   /* Clean ZIP temp */
+   if (!string_is_empty(retro_temp_directory) && path_is_directory(retro_temp_directory))
+      remove_recurse(retro_temp_directory);
+
+   /* Clean Disc Control context */
    if (dc)
       dc_free(dc);
 
@@ -8766,10 +8770,6 @@ void retro_unload_game(void)
    /* Close redirected save disks */
    floppy_close_redirect(-1);
 
-   /* Clean ZIP temp */
-   if (!string_is_empty(retro_temp_directory) && path_is_directory(retro_temp_directory))
-      remove_recurse(retro_temp_directory);
-
    /* Ensure save state de-serialization file
     * is closed/NULL
     * Note: Have to do this here (not in retro_deinit())
@@ -8779,6 +8779,9 @@ void retro_unload_game(void)
       zfile_fclose(retro_deserialize_file);
       retro_deserialize_file = NULL;
    }
+
+   if (dc)
+      dc_reset(dc);
 
    cpu_cycle_exact_force = false;
    automatic_sound_filter_type_update_timer = 0;
