@@ -406,25 +406,23 @@ void print_vkbd(void)
 
    if (video_config & PUAE_VIDEO_HIRES || video_config & PUAE_VIDEO_SUPERHIRES)
    {
-      if (retrow != PUAE_VIDEO_WIDTH_S72)
+      if (retrow > PUAE_VIDEO_WIDTH_S72)
       {
-         FONT_WIDTH         = 2;
-         XKEYSPACING        = 2;
-         XOFFSET            = -1;
+         FONT_WIDTH      = 2;
+         XKEYSPACING     = 2;
+         XOFFSET         = -1;
       }
 
-      /* PUAE_VIDEO_HIRES_DOUBLELINE */
-      if (video_config & PUAE_VIDEO_DOUBLELINE)
+      if (video_config & PUAE_VIDEO_DOUBLELINE || retro_doublescan)
       {
          char multip = 2;
-         if (video_config_geometry & PUAE_VIDEO_QUADLINE && retroh != PUAE_VIDEO_HEIGHT_S72 * 2)
+         if (retroh > PUAE_VIDEO_HEIGHT_PAL && (retrow != PUAE_VIDEO_WIDTH_S72 && retrow != PUAE_VIDEO_WIDTH_S72 * 2))
             multip = 4;
 
          FONT_HEIGHT    *= multip;
          YKEYSPACING    *= multip;
       }
 
-      /* PUAE_VIDEO_SUPERHIRES */
       if (video_config & PUAE_VIDEO_SUPERHIRES && (retrow != PUAE_VIDEO_WIDTH_S72 && retrow != PUAE_VIDEO_WIDTH_S72 * 2))
       {
          FONT_WIDTH     *= 2;

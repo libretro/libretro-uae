@@ -3464,6 +3464,8 @@ extern void draw_frame_extras(void)
 		statusline_getpos (&slx, &sly, gfxvidinfo.outwidth, gfxvidinfo.outheight);
 		for (i = 0; i < TD_TOTAL_HEIGHT * mult; i++) {
 			int line = sly + i;
+			if (line < 0)
+				continue;
 			draw_status_line (line, i);
 			do_flush_line (line);
 		}

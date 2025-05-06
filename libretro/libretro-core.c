@@ -3265,7 +3265,8 @@ char* get_variable(const char* key)
 
 static void retro_set_geometry(unsigned video_config, bool init)
 {
-   unsigned w, h;
+   unsigned w = PUAE_VIDEO_WIDTH;
+   unsigned h = PUAE_VIDEO_HEIGHT_PAL;
 
    switch (video_config)
    {
@@ -5331,7 +5332,13 @@ float retro_get_aspect_ratio(unsigned int width, unsigned int height, bool pixel
 
    if (video_productivity)
    {
-      if (retro_av_info_is_lace)
+      if (retro_av_info_is_lace && !retro_doublescan)
+         ar *= 2.0f;
+
+      if (!retro_av_info_is_lace && !retro_doublescan && (video_config_geometry & PUAE_VIDEO_DOUBLELINE))
+         ar *= 2.0f;
+
+      if (retro_av_info_is_lace && retro_doublescan && (video_config_geometry & PUAE_VIDEO_QUADLINE))
          ar *= 2.0f;
 
       if (retro_doublescan || (retrow == PUAE_VIDEO_WIDTH_S72 || retrow == PUAE_VIDEO_WIDTH_S72 * 2))
@@ -5341,6 +5348,13 @@ float retro_get_aspect_ratio(unsigned int width, unsigned int height, bool pixel
          ar /= 2.0f;
       else if (video_config_geometry & PUAE_VIDEO_SUPERHIRES)
          ar /= 4.0f;
+
+      /* Set productivity modes to 4:3 if not forced to 1:1 */
+      if (video_config_aspect != PUAE_VIDEO_1x1)
+      {
+         par = (4.0f / 3.0f);
+         ar  = par;
+      }
    }
    else if (video_config_geometry & PUAE_VIDEO_DOUBLELINE)
    {
@@ -7670,11 +7684,6 @@ static bool update_vresolution(bool update)
             defaulth = retroh = (video_config & PUAE_VIDEO_NTSC) ? PUAE_VIDEO_HEIGHT_NTSC : PUAE_VIDEO_HEIGHT_PAL;
             return true;
          }
-         else if (update)
-         {
-            if (retro_doublescan && retro_av_info_is_lace)
-               video_config |= PUAE_VIDEO_QUADLINE;
-         }
          break;
       case 0:
          if ((video_config & PUAE_VIDEO_DOUBLELINE))
@@ -7683,7 +7692,6 @@ static bool update_vresolution(bool update)
                return true;
 
             video_config &= ~PUAE_VIDEO_DOUBLELINE;
-            video_config &= ~PUAE_VIDEO_QUADLINE;
             changed_prefs.gfx_vresolution = VRES_NONDOUBLE;
             defaulth = retroh = ((video_config & PUAE_VIDEO_NTSC) ? PUAE_VIDEO_HEIGHT_NTSC : PUAE_VIDEO_HEIGHT_PAL) / 2;
             return true;
@@ -8247,6 +8255,7 @@ static bool retro_update_av_info(void)
 
    /* Geometry dimensions */
    retro_set_geometry(video_config_geometry, false);
+   video_config &= ~PUAE_VIDEO_QUADLINE;
 
    /* Interlace detector */
    if (opt_video_vresolution_auto)
@@ -8264,7 +8273,7 @@ static bool retro_update_av_info(void)
       video_productivity = true;
       if (retro_doublescan)
          retrow = PUAE_VIDEO_WIDTH_PROD;
-      else if (hz > 70.7f && hz < 72) /* Aargh SUPER72, FIXME: laced keeps toggling off by itself */
+      if (hz > 70) /* EURO36 & SUPER72 FIXME: laced keeps toggling off by itself */
          retrow = retro_max_diwstop - retro_min_diwstart;
 
       switch (maxvpos)
@@ -8280,15 +8289,32 @@ static bool retro_update_av_info(void)
          case 493: retroh = 400; break;
       }
 
-      if (islace)
+      /* Forced doubleline and productivity non-doublescan.. */
+      if (!opt_video_vresolution_auto && (video_config & PUAE_VIDEO_DOUBLELINE))
+      {
+         if ((video_config & PUAE_VIDEO_SUPERHIRES) && retrow < PUAE_VIDEO_WIDTH_PROD * 2 && retrow != PUAE_VIDEO_WIDTH_S72 && retrow != PUAE_VIDEO_WIDTH_S72 * 2)
+            retrow *= 2;
+         if (!retro_doublescan && retroh < PUAE_VIDEO_WIDTH_S72)
+            retroh *= 2;
+         else if (retro_doublescan && islace)
+         {
+            retroh *= 2;
+            video_config |= PUAE_VIDEO_QUADLINE;
+         }
+      }
+      else if (islace && (video_config & PUAE_VIDEO_DOUBLELINE))
+      {
          retroh *= 2;
-      
+         if (retro_doublescan)
+            video_config |= PUAE_VIDEO_QUADLINE;
+      }
+
       if (retrow == PUAE_VIDEO_WIDTH_S72 && retroh == PUAE_VIDEO_HEIGHT_S72 * 2)
          video_config |= PUAE_VIDEO_QUADLINE;
 
       /* Always set actual dimension */
-      defaultw = retrow;
-      defaulth = retroh;
+      defaultw = retrow_crop = retrow;
+      defaulth = retroh_crop = retroh;
 
       /* Make sure init_custom() is ready */
       if (request_init_custom_timer && change_timing)
@@ -8296,6 +8322,11 @@ static bool retro_update_av_info(void)
    }
    else
       video_productivity = false;
+
+   /* SUPER72 switch from SuperHigh-laced to High-nonlaced breaks if init_custom() is pending,
+      and DBL switch breaks if returned early.. */
+   if (request_init_custom_timer && !retro_doublescan)
+      return false;
 
    /* Width multiplier */
    if (video_config & PUAE_VIDEO_SUPERHIRES)

@@ -291,14 +291,17 @@ void print_statusbar(void)
       goto end;
 
    int FONT_WIDTH           = 1;
-   int FONT_HEIGHT          = (video_config & PUAE_VIDEO_QUADLINE) ? 2 : 1;
+   int FONT_HEIGHT          = 1;
 
    if (retro_doublescan || (retrow == PUAE_VIDEO_WIDTH_S72 || retrow == PUAE_VIDEO_WIDTH_S72 * 2))
    {
-      if (retrow == PUAE_VIDEO_WIDTH_S72 * 2 && !retro_av_info_is_lace)
+      if (retrow == PUAE_VIDEO_WIDTH_S72 * 2)
          FONT_WIDTH = 2;
 
-      if (retrow == PUAE_VIDEO_WIDTH_S72 && retro_av_info_is_lace)
+      if (video_config & PUAE_VIDEO_DOUBLELINE)
+         FONT_WIDTH = 1;
+
+      if (video_config & PUAE_VIDEO_QUADLINE)
          FONT_HEIGHT = 2;
    }
    else if (video_config & PUAE_VIDEO_HIRES)
@@ -316,18 +319,21 @@ void print_statusbar(void)
          FONT_WIDTH         = 4;
    }
 
-   int FONT_COLOR           = (pix_bytes == 4) ? 0xffffff : 0xffff;;
+   int FONT_COLOR           = (pix_bytes == 4) ? 0xffffff : 0xffff;
    int FONT_SLOT            = 34 * FONT_WIDTH;
 
    int BOX_X                = retrox_crop;
    int BOX_Y                = 0;
    int BOX_WIDTH            = 0;
-   int BOX_HEIGHT           = 11 * FONT_HEIGHT;
-   int BOX_PADDING          = 2 * FONT_HEIGHT;
+   int BOX_HEIGHT           = FONT_HEIGHT * 11;
+   int BOX_PADDING          = FONT_HEIGHT * 2;
 
-   int TEXT_X               = 1 * FONT_WIDTH + retrox_crop;
+   int TEXT_X               = FONT_WIDTH + retrox_crop;
    int TEXT_Y               = 0;
-   int TEXT_LENGTH          = (video_config & PUAE_VIDEO_DOUBLELINE) ? 128 : 64;
+   int TEXT_LENGTH_NARROW   = 64;
+   int TEXT_LENGTH_WIDE     = 128;
+   int TEXT_LENGTH          = (((video_config & PUAE_VIDEO_DOUBLELINE) || retro_doublescan) && retrow > PUAE_VIDEO_WIDTH_S72)
+         ? TEXT_LENGTH_WIDE : TEXT_LENGTH_NARROW;
 
    /* Statusbar location */
    /* Top */
@@ -336,18 +342,29 @@ void print_statusbar(void)
    /* Bottom */
    else
       TEXT_Y = gfxvidinfo.outheight - opt_statusbar_position - BOX_HEIGHT + BOX_PADDING;
+
    BOX_Y = TEXT_Y - BOX_PADDING;
+
+   /* No negatives */
+   BOX_X  = (BOX_X  < 0) ? 0 : BOX_X;
+   BOX_Y  = (BOX_Y  < 0) ? 0 : BOX_Y;
+   TEXT_X = (TEXT_X < 0) ? 0 : TEXT_X;
+   TEXT_Y = (TEXT_Y < 0) ? 0 : TEXT_Y;
 
    /* Statusbar size */
    BOX_WIDTH = retrow_crop;
    int CROP_WIDTH_OFFSET = retrow - retrow_crop;
 
-   if (retro_doublescan)
-      CROP_WIDTH_OFFSET = PUAE_VIDEO_WIDTH - PUAE_VIDEO_WIDTH_PROD;
-   else if (retrow == PUAE_VIDEO_WIDTH_S72 * 2)
+   if (retrow == PUAE_VIDEO_WIDTH_S72 * 2)
       CROP_WIDTH_OFFSET = PUAE_VIDEO_WIDTH - retrow;
    else if (retrow == PUAE_VIDEO_WIDTH_S72)
       CROP_WIDTH_OFFSET = (PUAE_VIDEO_WIDTH / 2) - retrow;
+   else if (retro_doublescan || video_productivity)
+   {
+      CROP_WIDTH_OFFSET = PUAE_VIDEO_WIDTH - PUAE_VIDEO_WIDTH_PROD;
+      if (video_config & PUAE_VIDEO_SUPERHIRES)
+         CROP_WIDTH_OFFSET *= 2;
+   }
 
    /* Video resolution */
    int TEXT_X_RESOLUTION = TEXT_X + (FONT_SLOT*4) + (FONT_WIDTH*16) - (CROP_WIDTH_OFFSET/2);
@@ -397,7 +414,7 @@ void print_statusbar(void)
    }
 
    /* Double line positions */
-   if (video_config & PUAE_VIDEO_DOUBLELINE && retrow != PUAE_VIDEO_WIDTH_S72)
+   if (TEXT_LENGTH == TEXT_LENGTH_WIDE)
    {
       TEXT_X_RESOLUTION = TEXT_X + (FONT_SLOT*9)  + (FONT_WIDTH*25) - (CROP_WIDTH_OFFSET/2);
       TEXT_X_MODEL      = TEXT_X + (FONT_SLOT*17) + (FONT_WIDTH*20) - CROP_WIDTH_OFFSET;

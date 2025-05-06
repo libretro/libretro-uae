@@ -30,7 +30,7 @@ void statusline_getpos (int *x, int *y, int width, int height)
 	int mx = 1;
 	int total_height = TD_TOTAL_HEIGHT * mx;
 #ifdef __LIBRETRO__
-	total_height = TD_TOTAL_HEIGHT * ((video_config_geometry & PUAE_VIDEO_QUADLINE) ? 2 : 1);
+	total_height = TD_TOTAL_HEIGHT * ((video_config & PUAE_VIDEO_QUADLINE) ? 2 : 1);
 	currprefs.osd_pos.x = 0;
 	currprefs.osd_pos.y = (opt_statusbar_position == -1) ? 30000 : opt_statusbar_position; /* Have to fake -1 to get -0 as top position */
 #endif
