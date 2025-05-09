@@ -79,6 +79,9 @@ struct preset_options
    int bogomem_size;
    int fastmem_size;
    int z3mem_size;
+   int chipset;
+   int cs_compatible;
+   int address_space_24;
 };
 
 static struct preset_options override_opt;
@@ -3337,6 +3340,20 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       strlcpy(opt_model, var.value, sizeof(opt_model));
+
+      if (libretro_runloop_active)
+      {
+         changed_prefs.chipset_mask = (preset_opt.chipset == 0 ? 0
+            : preset_opt.chipset == 1 ? CSMASK_ECS_AGNUS
+            : preset_opt.chipset == 2 ? CSMASK_ECS_DENISE
+            : preset_opt.chipset == 3 ? CSMASK_ECS_DENISE | CSMASK_ECS_AGNUS
+            : CSMASK_AGA | CSMASK_ECS_DENISE | CSMASK_ECS_AGNUS);
+
+         changed_prefs.cs_compatible = currprefs.cs_compatible = preset_opt.cs_compatible;
+         built_in_chipset_prefs(&changed_prefs);
+
+         changed_prefs.address_space_24 = preset_opt.address_space_24;
+      }
    }
 
    var.key = "puae_model_fd";
@@ -6129,171 +6146,144 @@ static char* emu_config(int config)
     */
    uae_preset_config[0] = '\0';
 
-   preset_opt.cpu_model    = 68000;
-   preset_opt.fpu_model    = 0;
-   preset_opt.mmu_model    = 0;
-   preset_opt.chipmem_size = 1;
-   preset_opt.bogomem_size = 0;
-   preset_opt.fastmem_size = 0;
-   preset_opt.z3mem_size   = 0;
+   preset_opt.cpu_model     = 68000;
+   preset_opt.fpu_model     = 0;
+   preset_opt.mmu_model     = 0;
+   preset_opt.chipmem_size  = 1;
+   preset_opt.bogomem_size  = 0;
+   preset_opt.fastmem_size  = 0;
+   preset_opt.z3mem_size    = 0;
+   preset_opt.chipset       = 0;
+   preset_opt.cs_compatible = CP_A500;
+   preset_opt.address_space_24 = 1;
 
    switch (config)
    {
       default:
       case EMU_CONFIG_A500:
-         preset_opt.chipmem_size = 1;
-         preset_opt.bogomem_size = 2;
-         preset_opt.fastmem_size = 0;
-
-         strcat(uae_preset_config,
-         "chipset=ocs\n"
-         "chipset_compatible=A500\n"
-         );
+         preset_opt.chipmem_size  = 1;
+         preset_opt.bogomem_size  = 2;
+         preset_opt.fastmem_size  = 0;
+         preset_opt.chipset       = 0;
+         preset_opt.cs_compatible = CP_A500;
          break;
 
       case EMU_CONFIG_A500OG:
-         preset_opt.chipmem_size = 1;
-         preset_opt.bogomem_size = 0;
-         preset_opt.fastmem_size = 0;
-
-         strcat(uae_preset_config,
-         "chipset=ocs\n"
-         "chipset_compatible=A500\n"
-         );
+         preset_opt.chipmem_size  = 1;
+         preset_opt.bogomem_size  = 0;
+         preset_opt.fastmem_size  = 0;
+         preset_opt.chipset       = 0;
+         preset_opt.cs_compatible = CP_A500;
          break;
 
       case EMU_CONFIG_A500PLUS:
-         preset_opt.chipmem_size = 2;
-         preset_opt.bogomem_size = 0;
-         preset_opt.fastmem_size = 0;
-
-         strcat(uae_preset_config,
-         "chipset=ecs\n"
-         "chipset_compatible=A500+\n"
-         );
+         preset_opt.chipmem_size  = 2;
+         preset_opt.bogomem_size  = 0;
+         preset_opt.fastmem_size  = 0;
+         preset_opt.chipset       = 3;
+         preset_opt.cs_compatible = CP_A500P;
          break;
 
       case EMU_CONFIG_A600:
-         preset_opt.chipmem_size = 4;
-         preset_opt.bogomem_size = 0;
-         preset_opt.fastmem_size = 8;
-
-         strcat(uae_preset_config,
-         "chipset=ecs\n"
-         "chipset_compatible=A600\n"
-         );
+         preset_opt.chipmem_size  = 4;
+         preset_opt.bogomem_size  = 0;
+         preset_opt.fastmem_size  = 8;
+         preset_opt.chipset       = 3;
+         preset_opt.cs_compatible = CP_A600;
          break;
 
       case EMU_CONFIG_A1200:
-         preset_opt.cpu_model    = 68020;
-         preset_opt.chipmem_size = 4;
-         preset_opt.bogomem_size = 0;
-         preset_opt.fastmem_size = 8;
-
-         strcat(uae_preset_config,
-         "chipset=aga\n"
-         "chipset_compatible=A1200\n"
-         );
+         preset_opt.cpu_model     = 68020;
+         preset_opt.chipmem_size  = 4;
+         preset_opt.bogomem_size  = 0;
+         preset_opt.fastmem_size  = 8;
+         preset_opt.chipset       = 4;
+         preset_opt.cs_compatible = CP_A1200;
          break;
 
       case EMU_CONFIG_A1200OG:
-         preset_opt.cpu_model    = 68020;
-         preset_opt.chipmem_size = 4;
-         preset_opt.bogomem_size = 0;
-         preset_opt.fastmem_size = 0;
-
-         strcat(uae_preset_config,
-         "chipset=aga\n"
-         "chipset_compatible=A1200\n"
-         );
+         preset_opt.cpu_model     = 68020;
+         preset_opt.chipmem_size  = 4;
+         preset_opt.bogomem_size  = 0;
+         preset_opt.fastmem_size  = 0;
+         preset_opt.chipset       = 4;
+         preset_opt.cs_compatible = CP_A1200;
          break;
 
       case EMU_CONFIG_A2000:
-         preset_opt.chipmem_size = 2;
-         preset_opt.bogomem_size = 0;
-         preset_opt.fastmem_size = 0;
-
-         strcat(uae_preset_config,
-         "chipset=ecs_agnus\n"
-         "chipset_compatible=A2000\n"
-         );
+         preset_opt.chipmem_size  = 2;
+         preset_opt.bogomem_size  = 0;
+         preset_opt.fastmem_size  = 0;
+         preset_opt.chipset       = 1;
+         preset_opt.cs_compatible = CP_A2000;
          break;
 
       case EMU_CONFIG_A2000OG:
-         preset_opt.chipmem_size = 1;
-         preset_opt.bogomem_size = 2;
-         preset_opt.fastmem_size = 0;
-
-         strcat(uae_preset_config,
-         "chipset=ocs\n"
-         "chipset_compatible=A2000\n"
-         );
+         preset_opt.chipmem_size  = 1;
+         preset_opt.bogomem_size  = 2;
+         preset_opt.fastmem_size  = 0;
+         preset_opt.chipset       = 0;
+         preset_opt.cs_compatible = CP_A2000;
          break;
 
       case EMU_CONFIG_A4030:
-         preset_opt.cpu_model    = 68030;
-         preset_opt.fpu_model    = 68882;
-         preset_opt.mmu_model    = 68030;
-         preset_opt.chipmem_size = 4;
-         preset_opt.bogomem_size = 0;
-         preset_opt.fastmem_size = 8;
-
-         strcat(uae_preset_config,
-         "cpu_24bit_addressing=false\n"
-         "chipset=aga\n"
-         "chipset_compatible=A4000\n"
-         );
+         preset_opt.cpu_model     = 68030;
+         preset_opt.fpu_model     = 68882;
+         preset_opt.mmu_model     = 68030;
+         preset_opt.chipmem_size  = 4;
+         preset_opt.bogomem_size  = 0;
+         preset_opt.fastmem_size  = 8;
+         preset_opt.chipset       = 4;
+         preset_opt.cs_compatible = CP_A4000;
+         preset_opt.address_space_24 = 0;
          break;
 
       case EMU_CONFIG_A4040:
-         preset_opt.cpu_model    = 68040;
-         preset_opt.fpu_model    = 68040;
-         preset_opt.mmu_model    = 68040;
-         preset_opt.chipmem_size = 4;
-         preset_opt.bogomem_size = 0;
-         preset_opt.fastmem_size = 8;
-
-         strcat(uae_preset_config,
-         "cpu_24bit_addressing=false\n"
-         "chipset=aga\n"
-         "chipset_compatible=A4000\n"
-         );
+         preset_opt.cpu_model     = 68040;
+         preset_opt.fpu_model     = 68040;
+         preset_opt.mmu_model     = 68040;
+         preset_opt.chipmem_size  = 4;
+         preset_opt.bogomem_size  = 0;
+         preset_opt.fastmem_size  = 8;
+         preset_opt.chipset       = 4;
+         preset_opt.cs_compatible = CP_A4000;
+         preset_opt.address_space_24 = 0;
          break;
 
       case EMU_CONFIG_CDTV:
-         preset_opt.chipmem_size = 2;
-         preset_opt.bogomem_size = 0;
-         preset_opt.fastmem_size = 0;
+         preset_opt.chipmem_size  = 2;
+         preset_opt.bogomem_size  = 0;
+         preset_opt.fastmem_size  = 0;
+         preset_opt.chipset       = 1;
+         preset_opt.cs_compatible = CP_CDTV;
 
          strcat(uae_preset_config,
-         "chipset=ecs_agnus\n"
-         "chipset_compatible=CDTV\n"
          "floppy0type=-1\n"
          );
          break;
 
       case EMU_CONFIG_CD32:
-         preset_opt.cpu_model    = 68020;
-         preset_opt.chipmem_size = 4;
-         preset_opt.bogomem_size = 0;
-         preset_opt.fastmem_size = 0;
+         preset_opt.cpu_model     = 68020;
+         preset_opt.chipmem_size  = 4;
+         preset_opt.bogomem_size  = 0;
+         preset_opt.fastmem_size  = 0;
+         preset_opt.chipset       = 4;
+         preset_opt.cs_compatible = CP_CD32;
 
          strcat(uae_preset_config,
-         "chipset=aga\n"
-         "chipset_compatible=CD32\n"
          "floppy0type=-1\n"
          );
          break;
 
       case EMU_CONFIG_CD32FR:
-         preset_opt.cpu_model    = 68020;
-         preset_opt.chipmem_size = 4;
-         preset_opt.bogomem_size = 0;
-         preset_opt.fastmem_size = 8;
+         preset_opt.cpu_model     = 68020;
+         preset_opt.chipmem_size  = 4;
+         preset_opt.bogomem_size  = 0;
+         preset_opt.fastmem_size  = 8;
+         preset_opt.chipset       = 4;
+         preset_opt.cs_compatible = CP_CD32;
 
          strcat(uae_preset_config,
-         "chipset=aga\n"
-         "chipset_compatible=CD32\n"
          "floppy0type=-1\n"
          );
          break;
@@ -6326,6 +6316,29 @@ static char* emu_config(int config)
 
    snprintf(temp, sizeof(temp), "%d", preset_opt.fastmem_size);
    strcat(uae_preset_config, "fastmem_size=");
+   strcat(uae_preset_config, temp);
+   strcat(uae_preset_config, "\n");
+
+   strcat(uae_preset_config, "cpu_24bit_addressing=");
+   strcat(uae_preset_config, (preset_opt.address_space_24 ? "true" : "false"));
+   strcat(uae_preset_config, "\n");
+
+   const TCHAR *csmode[] = { _T("ocs"), _T("ecs_agnus"), _T("ecs_denise"), _T("ecs"), _T("aga"), 0 };
+
+   snprintf(temp, sizeof(temp), "%s", csmode[preset_opt.chipset]);
+   strcat(uae_preset_config, "chipset=");
+   strcat(uae_preset_config, temp);
+   strcat(uae_preset_config, "\n");
+
+   const TCHAR *cscompa[] = {
+       _T("-"), _T("Generic"), _T("CDTV"), _T("CDTV-CR"), _T("CD32"), _T("A500"), _T("A500+"), _T("A600"),
+       _T("A1000"), _T("A1200"), _T("A2000"), _T("A3000"), _T("A3000T"), _T("A4000"), _T("A4000T"),
+       _T("Velvet"), _T("Casablanca"), _T("DraCo"),
+       NULL
+   };
+
+   snprintf(temp, sizeof(temp), "%s", cscompa[preset_opt.cs_compatible]);
+   strcat(uae_preset_config, "chipset_compatible=");
    strcat(uae_preset_config, temp);
    strcat(uae_preset_config, "\n");
 
