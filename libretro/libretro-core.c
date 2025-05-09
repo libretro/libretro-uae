@@ -2097,7 +2097,7 @@ static void retro_set_core_options()
          "puae_physical_keyboard_pass_through",
          "Input > Keyboard Pass-through",
          "Keyboard Pass-through",
-         "'ON' passes all physical keyboard events to the core. 'OFF' prevents RetroPad keys from generating keyboard events.",
+         "'ON' passes all physical keyboard events to the core. 'OFF' prevents RetroPad keys from generating keyboard events.\nNOTE: This is a legacy option for old frontends that do not block keyboard events when using RetroPad, so it does nothing with current RetroArch.",
          NULL,
          "input",
          {
