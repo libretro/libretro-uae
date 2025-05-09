@@ -7441,6 +7441,10 @@ static void update_video_center_horizontal(void)
       visible_left_border_new = 0;
    }
 
+   /* Special DBL modes */
+   if (retro_doublescan)
+      visible_left_border = retro_min_diwstart;
+
    /* Offset adjustments */
    visible_left_border_new -= visible_left_border;
    visible_left_border_new = (visible_left_border_new < 0) ? 0 : visible_left_border_new;
@@ -8073,18 +8077,21 @@ static bool retro_update_av_info(void)
          retrow = PUAE_VIDEO_WIDTH_PROD;
       if (hz > 70) /* EURO36 & SUPER72 FIXME: laced keeps toggling off by itself */
          retrow = retro_max_diwstop - retro_min_diwstart;
+      /* SUPER72 overscan */
+      if (retrow == 448)
+         retrow = 400;
 
       switch (maxvpos)
       {
          /* MULTISCAN */
-         case 525: retroh = 480; break;
-         case 450: retroh = 400; break;
-         case 343: retroh = 300; break;
-         case 216: retroh = 200; break;
+         case 525: case 506: retroh = 480; break;
+         case 450: case 426: retroh = 400; break;
+         case 343: case 328: retroh = 300; break;
+         case 216: case 217: retroh = 200; break;
 
          /* AGA DBL */
-         case 590: retroh = 512; break;
-         case 493: retroh = 400; break;
+         case 590: case 574: retroh = 512; break;
+         case 493: case 478: retroh = 400; break;
       }
 
       /* Forced doubleline and productivity non-doublescan.. */
@@ -8123,7 +8130,7 @@ static bool retro_update_av_info(void)
 
    /* SUPER72 switch from SuperHigh-laced to High-nonlaced breaks if init_custom() is pending,
       and DBL switch breaks if returned early.. */
-   if (request_init_custom_timer && !retro_doublescan)
+   if (request_init_custom_timer > 1 && !retro_doublescan)
       return false;
 
    /* Width multiplier */
@@ -8299,7 +8306,7 @@ static bool retro_update_av_info(void)
       }
 
       /* If previous crop height was in double line */
-      if (retroh_crop > retroh)
+      if (!video_productivity && retroh_crop > retroh)
          retroh_crop /= 2;
 
       retroh_crop = (retroh_crop < 200) ? 200 : retroh_crop;
