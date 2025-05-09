@@ -3328,6 +3328,11 @@ static void retro_set_geometry(unsigned video_config, bool init)
    }
 }
 
+#define GET_VAR(x) \
+   var.key   = "puae_" x; \
+   var.value = NULL; \
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+
 static void update_variables(void)
 {
    struct retro_variable var = {0};
@@ -3335,9 +3340,7 @@ static void update_variables(void)
    uae_model_config[0] = '\0';
    uae_config[0]       = '\0';
 
-   var.key = "puae_model";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("model")
    {
       strlcpy(opt_model, var.value, sizeof(opt_model));
 
@@ -3356,30 +3359,22 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_model_fd";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("model_fd")
    {
       strlcpy(opt_model_fd, var.value, sizeof(opt_model_fd));
    }
 
-   var.key = "puae_model_hd";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("model_hd")
    {
       strlcpy(opt_model_hd, var.value, sizeof(opt_model_hd));
    }
 
-   var.key = "puae_model_cd";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("model_cd")
    {
       strlcpy(opt_model_cd, var.value, sizeof(opt_model_cd));
    }
 
-   var.key = "puae_kickstart";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("kickstart")
    {
       strlcpy(opt_kickstart, var.value, sizeof(opt_kickstart));
 
@@ -3392,9 +3387,7 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_cart_file";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("cart_file")
    {
       char cart_full[RETRO_PATH_MAX] = {0};
 
@@ -3412,9 +3405,7 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_video_standard";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("video_standard")
    {
       if (strstr(var.value, "auto")) opt_region_auto = true;
       else                           opt_region_auto = false;
@@ -3451,9 +3442,7 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_video_aspect";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("video_aspect")
    {
       int video_config_aspect_prev = video_config_aspect;
 
@@ -3467,9 +3456,7 @@ static void update_variables(void)
          video_config_aspect = video_config_aspect_prev;
    }
 
-   var.key = "puae_video_allow_hz_change";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("video_allow_hz_change")
    {
       if      (!strcmp(var.value, "disabled")) video_config_allow_hz_change = 0;
       else if (!strcmp(var.value, "enabled"))  video_config_allow_hz_change = 1;
@@ -3489,9 +3476,7 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_video_resolution";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("video_resolution")
    {
       opt_video_resolution_auto = RESOLUTION_AUTO_NONE;
 
@@ -3569,9 +3554,7 @@ static void update_variables(void)
          request_init_custom_timer = 2;
    }
 
-   var.key = "puae_video_vresolution";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("video_vresolution")
    {
       opt_video_vresolution_auto = false;
 
@@ -3618,9 +3601,7 @@ static void update_variables(void)
          request_init_custom_timer = 2;
    }
 
-   var.key = "puae_statusbar";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("statusbar")
    {
       opt_statusbar = 0;
 
@@ -3644,9 +3625,7 @@ static void update_variables(void)
       opt_statusbar_position_old = opt_statusbar_position;
    }
 
-   var.key = "puae_statusbar_startup";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("statusbar_startup")
    {
       if (!libretro_runloop_active)
       {
@@ -3657,17 +3636,13 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_statusbar_messages";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("statusbar_messages")
    {
       if (!strcmp(var.value, "enabled"))
          opt_statusbar |= STATUSBAR_MESSAGES;
    }
 
-   var.key = "puae_vkbd_theme";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("vkbd_theme")
    {
       if      (strstr(var.value, "auto"))    opt_vkbd_theme = 0;
       else if (strstr(var.value, "beige"))   opt_vkbd_theme = 1;
@@ -3678,9 +3653,7 @@ static void update_variables(void)
       if      (strstr(var.value, "outline")) opt_vkbd_theme |= 0x80;
    }
 
-   var.key = "puae_vkbd_transparency";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("vkbd_transparency")
    {
       if      (!strcmp(var.value, "0%"))   opt_vkbd_alpha = GRAPH_ALPHA_100;
       else if (!strcmp(var.value, "25%"))  opt_vkbd_alpha = GRAPH_ALPHA_75;
@@ -3689,9 +3662,7 @@ static void update_variables(void)
       else if (!strcmp(var.value, "100%")) opt_vkbd_alpha = GRAPH_ALPHA_0;
    }
 
-   var.key = "puae_vkbd_dimming";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("vkbd_dimming")
    {
       if      (!strcmp(var.value, "0%"))   opt_vkbd_dim_alpha = GRAPH_ALPHA_0;
       else if (!strcmp(var.value, "25%"))  opt_vkbd_dim_alpha = GRAPH_ALPHA_25;
@@ -3700,9 +3671,7 @@ static void update_variables(void)
       else if (!strcmp(var.value, "100%")) opt_vkbd_dim_alpha = GRAPH_ALPHA_100;
    }
 
-   var.key = "puae_chipmem_size";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("chipmem_size")
    {
       override_opt.chipmem_size = -1;
       if (!strstr(var.value, "auto"))
@@ -3724,9 +3693,7 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_bogomem_size";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("bogomem_size")
    {
       override_opt.bogomem_size = -1;
       if (!strstr(var.value, "auto"))
@@ -3748,9 +3715,7 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_fastmem_size";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("fastmem_size")
    {
       override_opt.fastmem_size = -1;
       if (!strstr(var.value, "auto"))
@@ -3772,9 +3737,7 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_z3mem_size";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("z3mem_size")
    {
       override_opt.z3mem_size = -1;
       if (!strstr(var.value, "auto"))
@@ -3804,9 +3767,7 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_cpu_model";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("cpu_model")
    {
       override_opt.cpu_model = -1;
       if (!strstr(var.value, "auto"))
@@ -3848,9 +3809,7 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_fpu_model";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("fpu_model")
    {
       override_opt.fpu_model = -1;
       if (!strcmp(var.value, "cpu") && override_opt.cpu_model >= 68030)
@@ -3883,9 +3842,7 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_cpu_compatibility";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("cpu_compatibility")
    {
       if (!strcmp(var.value, "normal"))
       {
@@ -3926,9 +3883,7 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_cpu_throttle";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("cpu_throttle")
    {
       strcat(uae_config, "cpu_throttle=");
       strcat(uae_config, var.value);
@@ -3938,9 +3893,7 @@ static void update_variables(void)
          changed_prefs.m68k_speed_throttle = atof(var.value);
    }
 
-   var.key = "puae_cpu_multiplier";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("cpu_multiplier")
    {
       strcat(uae_config, "cpu_multiplier=");
       strcat(uae_config, var.value);
@@ -3950,9 +3903,7 @@ static void update_variables(void)
          changed_prefs.cpu_clock_multiplier = atoi(var.value) * 256;
    }
 
-   var.key = "puae_sound_stereo_separation";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("sound_stereo_separation")
    {
       unsigned char val = atoi(var.value) / 10;
       char valbuf[4];
@@ -3966,9 +3917,7 @@ static void update_variables(void)
          changed_prefs.sound_stereo_separation = val;
    }
 
-   var.key = "puae_sound_interpol";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("sound_interpol")
    {
       strcat(uae_config, "sound_interpol=");
       strcat(uae_config, var.value);
@@ -3984,9 +3933,7 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_sound_filter";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("sound_filter")
    {
       strcat(uae_config, "sound_filter=");
       strcat(uae_config, var.value);
@@ -4000,9 +3947,7 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_sound_filter_type";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("sound_filter_type")
    {
       if (strcmp(var.value, "auto"))
       {
@@ -4020,9 +3965,7 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_sound_volume_cd";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("sound_volume_cd")
    {
       /* 100 is mute, 0 is max */
       int val = 100 - atoi(var.value);
@@ -4037,9 +3980,7 @@ static void update_variables(void)
          changed_prefs.sound_volume_cd = val;
    }
 
-   var.key = "puae_autoloadfastforward";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("autoloadfastforward")
    {
       if      (!strcmp(var.value, "disabled")) opt_autoloadfastforward = 0;
       else if (!strcmp(var.value, "fd"))       opt_autoloadfastforward = AUTOLOADFASTFORWARD_FD;
@@ -4050,9 +3991,7 @@ static void update_variables(void)
                                                                          AUTOLOADFASTFORWARD_CD;
    }
 
-   var.key = "puae_cd_speed";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("cd_speed")
    {
       strcat(uae_config, "cd_speed=");
       strcat(uae_config, var.value);
@@ -4062,9 +4001,7 @@ static void update_variables(void)
          changed_prefs.cd_speed = atoi(var.value);
    }
 
-   var.key = "puae_floppy_speed";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("floppy_speed")
    {
       strcat(uae_config, "floppy_speed=");
       strcat(uae_config, var.value);
@@ -4074,17 +4011,13 @@ static void update_variables(void)
          changed_prefs.floppy_speed = atoi(var.value);
    }
 
-   var.key = "puae_floppy_multidrive";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("floppy_multidrive")
    {
       if (!strcmp(var.value, "disabled")) opt_floppy_multidrive = false;
       else                                opt_floppy_multidrive = true;
    }
 
-   var.key = "puae_floppy_write_protection";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("floppy_write_protection")
    {
       int val = 0;
 
@@ -4115,9 +4048,7 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_floppy_write_redirect";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("floppy_write_redirect")
    {
       bool opt_floppy_write_redirect_prev = opt_floppy_write_redirect;
 
@@ -4153,9 +4084,7 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_floppy_sound";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("floppy_sound")
    {
       char val[4];
       strlcpy(val, var.value, sizeof(val));
@@ -4175,17 +4104,13 @@ static void update_variables(void)
          changed_prefs.dfxclickvolume = atoi(val);
    }
 
-   var.key = "puae_floppy_sound_empty_mute";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("floppy_sound_empty_mute")
    {
       if (!strcmp(var.value, "disabled")) opt_floppy_sound_empty_mute = false;
       else                                opt_floppy_sound_empty_mute = true;
    }
 
-   var.key = "puae_floppy_sound_type";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("floppy_sound_type")
    {
       if (!strcmp(var.value, "internal"))
       {
@@ -4232,9 +4157,7 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_mouse_speed";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mouse_speed")
    {
       strcat(uae_config, "input.mouse_speed=");
       strcat(uae_config, var.value);
@@ -4248,9 +4171,7 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_immediate_blits";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("immediate_blits")
    {
       if (!strcmp(var.value, "false"))
       {
@@ -4288,9 +4209,7 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_collision_level";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("collision_level")
    {
       strcat(uae_config, "collision_level=");
       strcat(uae_config, var.value);
@@ -4305,9 +4224,7 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_gfx_framerate";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("gfx_framerate")
    {
       int val = 0;
       if      (!strcmp(var.value, "disabled")) val = 1;
@@ -4327,9 +4244,7 @@ static void update_variables(void)
          changed_prefs.gfx_framerate = val;
    }
 
-   var.key = "puae_gfx_colors";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("gfx_colors")
    {
       /* Only allow screenmode change after restart */
       if (!pix_bytes_initialized)
@@ -4339,9 +4254,7 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_gfx_gamma";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("gfx_gamma")
    {
       int val = atoi(var.value);
 
@@ -4361,9 +4274,7 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_gfx_flickerfixer";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("gfx_flickerfixer")
    {
       if (!strcmp(var.value, "disabled"))
          strcat(uae_config, "gfx_flickerfixer=false\n");
@@ -4381,9 +4292,7 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_crop";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("crop")
    {
       if      (!strcmp(var.value, "disabled")) crop_id = CROP_NONE;
       else if (!strcmp(var.value, "minimum"))  crop_id = CROP_MINIMUM;
@@ -4398,9 +4307,7 @@ static void update_variables(void)
       opt_crop_id = crop_id;
    }
 
-   var.key = "puae_crop_mode";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("crop_mode")
    {
       if      (!strcmp(var.value, "both"))       crop_mode_id = CROP_MODE_BOTH;
       else if (!strcmp(var.value, "vertical"))   crop_mode_id = CROP_MODE_VERTICAL;
@@ -4411,17 +4318,13 @@ static void update_variables(void)
       else if (!strcmp(var.value, "5:4"))        crop_mode_id = CROP_MODE_5_4;
    }
 
-   var.key = "puae_crop_delay";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("crop_delay")
    {
       if (!strcmp(var.value, "disabled")) crop_delay = false;
       else                                crop_delay = true;
    }
 
-   var.key = "puae_vertical_pos";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("vertical_pos")
    {
       opt_vertical_offset = 0;
       if (!strcmp(var.value, "auto"))
@@ -4435,9 +4338,7 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_horizontal_pos";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("horizontal_pos")
    {
       opt_horizontal_offset = 0;
       if (!strcmp(var.value, "auto"))
@@ -4451,26 +4352,20 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_use_whdload";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("use_whdload")
    {
       if      (!strcmp(var.value, "disabled")) opt_use_whdload = 0;
       else if (!strcmp(var.value, "files"))    opt_use_whdload = 1;
       else if (!strcmp(var.value, "hdfs"))     opt_use_whdload = 2;
    }
 
-   var.key = "puae_use_whdload_theme";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("use_whdload_theme")
    {
       if      (!strcmp(var.value, "default"))  opt_use_whdload_theme = 0;
       else if (!strcmp(var.value, "native"))   opt_use_whdload_theme = 1;
    }
 
-   var.key = "puae_use_whdload_prefs";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("use_whdload_prefs")
    {
       if      (!strcmp(var.value, "disabled")) opt_use_whdload_prefs = 0;
       else if (!strcmp(var.value, "config"))   opt_use_whdload_prefs = 1;
@@ -4478,33 +4373,25 @@ static void update_variables(void)
       else if (!strcmp(var.value, "both"))     opt_use_whdload_prefs = 3;
    }
 
-   var.key = "puae_use_whdload_nowritecache";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("use_whdload_nowritecache")
    {
       if (!strcmp(var.value, "disabled")) opt_use_whdload_nowritecache = false;
       else                                opt_use_whdload_nowritecache = true;
    }
 
-   var.key = "puae_cd_startup_delayed_insert";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("cd_startup_delayed_insert")
    {
       if (!strcmp(var.value, "disabled")) opt_cd_startup_delayed_insert = false;
       else                                opt_cd_startup_delayed_insert = true;
    }
 
-   var.key = "puae_shared_nvram";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("shared_nvram")
    {
       if (!strcmp(var.value, "disabled")) opt_shared_nvram = false;
       else                                opt_shared_nvram = true;
    }
 
-   var.key = "puae_use_boot_hd";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("use_boot_hd")
    {
       if      (!strcmp(var.value, "disabled")) opt_use_boot_hd = 0;
       else if (!strcmp(var.value, "files"))    opt_use_boot_hd = 1;
@@ -4516,9 +4403,7 @@ static void update_variables(void)
       else if (!strcmp(var.value, "hdf512"))   opt_use_boot_hd = 7;
    }
 
-   var.key = "puae_analogmouse";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("analogmouse")
    {
       if      (!strcmp(var.value, "disabled")) opt_analogmouse = 0;
       else if (!strcmp(var.value, "left"))     opt_analogmouse = 1;
@@ -4526,94 +4411,70 @@ static void update_variables(void)
       else if (!strcmp(var.value, "both"))     opt_analogmouse = 3;
    }
 
-   var.key = "puae_analogmouse_deadzone";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("analogmouse_deadzone")
    {
       opt_analogmouse_deadzone = atoi(var.value);
    }
 
-   var.key = "puae_analogmouse_speed";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("analogmouse_speed")
    {
       opt_analogmouse_speed_left = atof(var.value);
    }
 
-   var.key = "puae_analogmouse_speed_right";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("analogmouse_speed_right")
    {
       opt_analogmouse_speed_right = atof(var.value);
    }
 
-   var.key = "puae_dpadmouse_speed";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("dpadmouse_speed")
    {
       opt_dpadmouse_speed = atoi(var.value);
    }
 
-   var.key = "puae_physicalmouse";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("physicalmouse")
    {
       if      (!strcmp(var.value, "disabled")) opt_physicalmouse = 0;
       else if (!strcmp(var.value, "enabled"))  opt_physicalmouse = 1;
       else if (!strcmp(var.value, "double"))   opt_physicalmouse = 2;
    }
 
-   var.key = "puae_keyrah_keypad_mappings";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("keyrah_keypad_mappings")
    {
       if (!strcmp(var.value, "disabled")) opt_keyrah_keypad = false;
       else                                opt_keyrah_keypad = true;
    }
 
-   var.key = "puae_physical_keyboard_pass_through";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("physical_keyboard_pass_through")
    {
       if (!strcmp(var.value, "disabled")) opt_keyboard_pass_through = false;
       else                                opt_keyboard_pass_through = true;
    }
 
-   var.key = "puae_model_options_display";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("model_options_display")
    {
       if (!strcmp(var.value, "disabled")) opt_model_options_display = 0;
       else                                opt_model_options_display = 1;
    }
 
-   var.key = "puae_mapping_options_display";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapping_options_display")
    {
       if (!strcmp(var.value, "disabled")) opt_mapping_options_display = 0;
       else                                opt_mapping_options_display = 1;
    }
 
-   var.key = "puae_video_options_display";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("video_options_display")
    {
       if (!strcmp(var.value, "disabled")) opt_video_options_display = 0;
       else                                opt_video_options_display = 1;
    }
 
-   var.key = "puae_audio_options_display";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("audio_options_display")
    {
       if (!strcmp(var.value, "disabled")) opt_audio_options_display = 0;
       else                                opt_audio_options_display = 1;
    }
 
-   var.key = "puae_joyport";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("joyport")
    {
       if (!mousemode_locked)
       {
@@ -4622,16 +4483,12 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_joyport_order";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("joyport_order")
    {
       snprintf(opt_joyport_order, sizeof(opt_joyport_order), "%s", var.value);
    }
 
-   var.key = "puae_retropad_options";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("retropad_options")
    {
       if      (!strcmp(var.value, "disabled"))    opt_retropad_options = RETROPAD_OPTIONS_DISABLED;
       else if (!strcmp(var.value, "rotate"))      opt_retropad_options = RETROPAD_OPTIONS_ROTATE;
@@ -4639,9 +4496,7 @@ static void update_variables(void)
       else if (!strcmp(var.value, "rotate_jump")) opt_retropad_options = RETROPAD_OPTIONS_ROTATE_JUMP;
    }
 
-   var.key = "puae_cd32pad_options";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("cd32pad_options")
    {
       if      (!strcmp(var.value, "disabled"))    opt_cd32pad_options = RETROPAD_OPTIONS_DISABLED;
       else if (!strcmp(var.value, "rotate"))      opt_cd32pad_options = RETROPAD_OPTIONS_ROTATE;
@@ -4649,9 +4504,7 @@ static void update_variables(void)
       else if (!strcmp(var.value, "rotate_jump")) opt_cd32pad_options = RETROPAD_OPTIONS_ROTATE_JUMP;
    }
 
-   var.key = "puae_turbo_fire";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("turbo_fire")
    {
       if (!turbo_fire_locked)
       {
@@ -4660,9 +4513,7 @@ static void update_variables(void)
       }
    }
 
-   var.key = "puae_turbo_fire_button";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("turbo_fire_button")
    {
       if      (!strcmp(var.value, "B"))  turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_B;
       else if (!strcmp(var.value, "A"))  turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_A;
@@ -4674,235 +4525,169 @@ static void update_variables(void)
       else if (!strcmp(var.value, "R2")) turbo_fire_button = RETRO_DEVICE_ID_JOYPAD_R2;
    }
 
-   var.key = "puae_turbo_pulse";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("turbo_pulse")
    {
       turbo_pulse = atoi(var.value);
    }
 
    /* Mapper */
-   var.key = "puae_mapper_up";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_up")
    {
       mapper_keys[RETRO_DEVICE_ID_JOYPAD_UP] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_down";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_down")
    {
       mapper_keys[RETRO_DEVICE_ID_JOYPAD_DOWN] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_left";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_left")
    {
       mapper_keys[RETRO_DEVICE_ID_JOYPAD_LEFT] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_right";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_right")
    {
       mapper_keys[RETRO_DEVICE_ID_JOYPAD_RIGHT] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_select";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_select")
    {
       mapper_keys[RETRO_DEVICE_ID_JOYPAD_SELECT] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_start";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_start")
    {
       mapper_keys[RETRO_DEVICE_ID_JOYPAD_START] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_b";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_b")
    {
       mapper_keys[RETRO_DEVICE_ID_JOYPAD_B] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_a";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_a")
    {
       mapper_keys[RETRO_DEVICE_ID_JOYPAD_A] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_y";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_y")
    {
       mapper_keys[RETRO_DEVICE_ID_JOYPAD_Y] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_x";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_x")
    {
       mapper_keys[RETRO_DEVICE_ID_JOYPAD_X] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_l";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_l")
    {
       mapper_keys[RETRO_DEVICE_ID_JOYPAD_L] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_r";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_r")
    {
       mapper_keys[RETRO_DEVICE_ID_JOYPAD_R] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_l2";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_l2")
    {
       mapper_keys[RETRO_DEVICE_ID_JOYPAD_L2] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_r2";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_r2")
    {
       mapper_keys[RETRO_DEVICE_ID_JOYPAD_R2] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_l3";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_l3")
    {
       mapper_keys[RETRO_DEVICE_ID_JOYPAD_L3] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_r3";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_r3")
    {
       mapper_keys[RETRO_DEVICE_ID_JOYPAD_R3] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_lr";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_lr")
    {
       mapper_keys[RETRO_DEVICE_ID_JOYPAD_LR] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_ll";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_ll")
    {
       mapper_keys[RETRO_DEVICE_ID_JOYPAD_LL] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_ld";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_ld")
    {
       mapper_keys[RETRO_DEVICE_ID_JOYPAD_LD] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_lu";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_lu")
    {
       mapper_keys[RETRO_DEVICE_ID_JOYPAD_LU] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_rr";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_rr")
    {
       mapper_keys[RETRO_DEVICE_ID_JOYPAD_RR] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_rl";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_rl")
    {
       mapper_keys[RETRO_DEVICE_ID_JOYPAD_RL] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_rd";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_rd")
    {
       mapper_keys[RETRO_DEVICE_ID_JOYPAD_RD] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_ru";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_ru")
    {
       mapper_keys[RETRO_DEVICE_ID_JOYPAD_RU] = retro_keymap_id(var.value);
    }
 
    /* Mapper hotkeys */
-   var.key = "puae_mapper_vkbd";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_vkbd")
    {
       mapper_keys[RETRO_MAPPER_VKBD] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_statusbar";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_statusbar")
    {
       mapper_keys[RETRO_MAPPER_STATUSBAR] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_mouse_toggle";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_mouse_toggle")
    {
       mapper_keys[RETRO_MAPPER_JOYMOUSE] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_reset";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_reset")
    {
       mapper_keys[RETRO_MAPPER_RESET] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_aspect_ratio_toggle";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_aspect_ratio_toggle")
    {
       mapper_keys[RETRO_MAPPER_ASPECT_RATIO] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_crop_toggle";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_crop_toggle")
    {
       mapper_keys[RETRO_MAPPER_CROP] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_turbo_fire_toggle";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_turbo_fire_toggle")
    {
       mapper_keys[RETRO_MAPPER_TURBO_FIRE] = retro_keymap_id(var.value);
    }
 
-   var.key = "puae_mapper_save_disk_toggle";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   GET_VAR("mapper_save_disk_toggle")
    {
       mapper_keys[RETRO_MAPPER_SAVE_DISK] = retro_keymap_id(var.value);
    }
