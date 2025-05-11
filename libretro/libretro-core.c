@@ -6116,10 +6116,8 @@ static char* emu_config(int config)
    strcat(uae_preset_config, "\n");
 
    const TCHAR *cscompa[] = {
-       _T("-"), _T("Generic"), _T("CDTV"), _T("CDTV-CR"), _T("CD32"), _T("A500"), _T("A500+"), _T("A600"),
-       _T("A1000"), _T("A1200"), _T("A2000"), _T("A3000"), _T("A3000T"), _T("A4000"), _T("A4000T"),
-       _T("Velvet"), _T("Casablanca"), _T("DraCo"),
-       NULL
+      _T("-"), _T("Generic"), _T("CDTV"), _T("CD32"), _T("A500"), _T("A500+"), _T("A600"),
+      _T("A1000"), _T("A1200"), _T("A2000"), _T("A3000"), _T("A3000T"), _T("A4000"), _T("A4000T"), 0
    };
 
    snprintf(temp, sizeof(temp), "%s", cscompa[preset_opt.cs_compatible]);
