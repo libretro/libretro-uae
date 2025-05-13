@@ -32,6 +32,13 @@
 #define BEAMCON0_VARVSYEN   0x0200
 #define BEAMCON0_HSYTRUE    0x0001
 
+/* Config parse copypasta from cfgfile.c */
+static const TCHAR *cscompa[] = {
+   _T("-"), _T("Generic"), _T("CDTV"), _T("CD32"), _T("A500"), _T("A500+"), _T("A600"),
+   _T("A1000"), _T("A1200"), _T("A2000"), _T("A3000"), _T("A3000T"), _T("A4000"), _T("A4000T"), 0
+};
+static const TCHAR *csmode[] = { _T("ocs"), _T("ecs_agnus"), _T("ecs_denise"), _T("ecs"), _T("aga"), 0 };
+
 #ifdef USE_LIBRETRO_VFS
 #undef utf8_to_local_string_alloc
 #define utf8_to_local_string_alloc strdup
@@ -6108,17 +6115,10 @@ static char* emu_config(int config)
    strcat(uae_preset_config, (preset_opt.address_space_24 ? "true" : "false"));
    strcat(uae_preset_config, "\n");
 
-   const TCHAR *csmode[] = { _T("ocs"), _T("ecs_agnus"), _T("ecs_denise"), _T("ecs"), _T("aga"), 0 };
-
    snprintf(temp, sizeof(temp), "%s", csmode[preset_opt.chipset]);
    strcat(uae_preset_config, "chipset=");
    strcat(uae_preset_config, temp);
    strcat(uae_preset_config, "\n");
-
-   const TCHAR *cscompa[] = {
-      _T("-"), _T("Generic"), _T("CDTV"), _T("CD32"), _T("A500"), _T("A500+"), _T("A600"),
-      _T("A1000"), _T("A1200"), _T("A2000"), _T("A3000"), _T("A3000T"), _T("A4000"), _T("A4000T"), 0
-   };
 
    snprintf(temp, sizeof(temp), "%s", cscompa[preset_opt.cs_compatible]);
    strcat(uae_preset_config, "chipset_compatible=");
@@ -7151,6 +7151,30 @@ static bool retro_create_config(void)
                         preset_opt.fpu_model = atoi(token);
                         token = strtok(NULL, "=");
                      }
+                  }
+
+                  if (strstr(filebuf, "chipset=") && filebuf[0] == 'c')
+                  {
+                     char value[255];
+                     char *token = strtok(filebuf, "=");
+                     while (token != NULL)
+                     {
+                        snprintf(value, sizeof(value), "%s", trimwhitespace(token));
+                        token = strtok(NULL, "=");
+                     }
+                     cfgfile_strval ("chipset", value, _T("chipset"), &preset_opt.chipset, csmode, 0);
+                  }
+
+                  if (strstr(filebuf, "chipset_compatible=") && filebuf[0] == 'c')
+                  {
+                     char value[255];
+                     char *token = strtok(filebuf, "=");
+                     while (token != NULL)
+                     {
+                        snprintf(value, sizeof(value), "%s", trimwhitespace(token));
+                        token = strtok(NULL, "=");
+                     }
+                     cfgfile_strval ("chipset_compatible", value, _T("chipset_compatible"), &preset_opt.cs_compatible, cscompa, 0);
                   }
                }
             }
