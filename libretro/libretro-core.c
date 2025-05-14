@@ -901,6 +901,8 @@ static void retro_set_core_options()
          {
             { "auto", "Automatic" },
             { "aros", "AROS" },
+            { "kick31034.A1000", "v1.1 rev 31.034 (A1000 NTSC)" },
+            { "kick32034.A1000", "v1.1 rev 32.034 (A1000 PAL)" },
             { "kick33180.A500", "v1.2 rev 33.180 (A500-A2000)" },
             { "kick34005.A500", "v1.3 rev 34.005 (A500-A1000-A2000-CDTV)" },
             { "kick37175.A500", "v2.04 rev 37.175 (A500+)" },

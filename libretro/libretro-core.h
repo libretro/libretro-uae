@@ -140,7 +140,9 @@ enum EMU_CONFIG
 /* Kickstarts */
 enum retro_kickstart_ids
 {
-   A500_KS12_ROM = 0,
+   A1000_KS11_NTSC_ROM = 0,
+   A1000_KS11_PAL_ROM,
+   A500_KS12_ROM,
    A500_KS13_ROM,
    A500_KS204_ROM,
    A600_KS205_ROM,
@@ -165,6 +167,17 @@ typedef struct
 
 static retro_kickstarts uae_kickstarts[15] =
 {
+   {A1000_KS11_NTSC_ROM,
+         "kick31034.A1000",
+         "amiga-os-110-ntsc.rom",
+         "",
+         "Kickstart v1.1 rev 31.34 (1985)(Commodore)(A1000)(NTSC).rom"},
+   {A1000_KS11_PAL_ROM,
+         "kick32034.A1000",
+         "amiga-os-110-pal.rom",
+         "",
+         "Kickstart v1.1 rev 32.34 (1986)(Commodore)(A1000)(PAL).rom"},
+
    {A500_KS12_ROM,
          "kick33180.A500",
          "amiga-os-120.rom",
