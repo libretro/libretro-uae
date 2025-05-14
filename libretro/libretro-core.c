@@ -8152,7 +8152,7 @@ static bool retro_update_av_info(void)
 
    /* SUPER72 switch from SuperHigh-laced to High-nonlaced breaks if init_custom() is pending,
       and DBL switch breaks if returned early.. */
-   if (request_init_custom_timer > 1 && !retro_doublescan)
+   if (video_productivity && !retro_doublescan && request_init_custom_timer > 1)
       return false;
 
    /* Width multiplier */
