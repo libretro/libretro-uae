@@ -80,6 +80,8 @@ The core has a somewhat compatible built-in AROS Kickstart, which is used as a f
 
 | System     | Version                       | Filename               | Amiga Forever                 | Size      | MD5                              |
 |------------|-------------------------------|------------------------|-------------------------------|----------:|----------------------------------|
+| A1000      | KS v1.1 rev 31.034 NTSC       | **kick31034.A1000**    | **amiga-os-110-ntsc.rom**     |   262 144 | 0b8442c311caa54fb12ec88eaaa9facf |
+| A1000      | KS v1.1 rev 32.034 PAL        | **kick32034.A1000**    | **amiga-os-110-pal.rom**      |   262 144 | 1fa1f93d3d7b51271dd1356b8b2b45a9 |
 | A500-A2000 | KS v1.2 rev 33.180            | **kick33180.A500**     | **amiga-os-120.rom**          |   262 144 | 85ad74194e87c08904327de1a9443b7a |
 | A500-A2000 | KS v1.3 rev 34.005            | **kick34005.A500**     | **amiga-os-130.rom**          |   262 144 | 82a21c1890cae844b3df741f2762d48d |
 | A500+      | KS v2.04 rev 37.175           | **kick37175.A500**     | **amiga-os-204.rom**          |   524 288 | dc10d7bdd1b6f450773dfb558477c230 |
