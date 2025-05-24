@@ -4,24 +4,24 @@ IF EXISTS DH0:custom
 ELSE
 
 IF EXISTS $CUSTOMPATH
-   RequestChoice MkCustom "Current WHDLoad options: `type $CUSTOMPATH`" Cancel Edit Remove >ENV:CustomChoice
+   C:RequestChoice MkCustom "Current WHDLoad options: `type $CUSTOMPATH`" Cancel Edit Remove >ENV:CustomChoice
 ELSE
-   RequestChoice MkCustom "Custom WHDLoad options not set" Cancel Set Remove >ENV:CustomChoice
+   C:RequestChoice MkCustom "Custom WHDLoad options not set" Cancel Set Remove >ENV:CustomChoice
 ENDIF
 
 IF $CustomChoice EQ 0
-   Delete $CUSTOMPATH >NIL:
+   C:Delete $CUSTOMPATH >NIL:
 ENDIF
 
 IF $CustomChoice EQ 2
    IF EXISTS $CUSTOMPATH
-      RequestString MkCustom "Edit options" default="`type $CUSTOMPATH`" >RAM:custom_new
+      C:RequestString MkCustom "Edit options" default="`type $CUSTOMPATH`" >RAM:custom_new
    ELSE
-      RequestString MkCustom "Set options" >RAM:custom_new
+      C:RequestString MkCustom "Set options" >RAM:custom_new
    ENDIF
 
    IF EXISTS RAM:custom_new
-      Delete $CUSTOMPATH >NIL:
-      Copy RAM:custom_new WHDSaves:custom_$SLAVE >NIL:
+      C:Delete $CUSTOMPATH >NIL:
+      C:Copy RAM:custom_new WHDSaves:custom_$SLAVE >NIL:
    ENDIF
 ENDIF

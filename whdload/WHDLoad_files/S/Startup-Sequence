@@ -1,54 +1,55 @@
-FAILAT 420
-ClickNot
+FAILAT 21
+C:SetPatch QUIET
+C:ClickNot
 
 IF NOT EXISTS DH0: >NIL:
-   Echo "No DH0:!"
+   ECHO "No DH0:!"
    QUIT
 ENDIF
 
-MakeDir RAM:ENV RAM:T >NIL:
-Assign ENV: RAM:ENV >NIL:
-Assign T: RAM:T >NIL:
+C:MakeDir RAM:ENV RAM:T >NIL:
+C:Assign ENV: RAM:ENV >NIL:
+C:Assign T: RAM:T >NIL:
 CD DH0:
 
 IF EXISTS DH0:S/Startup-Sequence
    IF EXISTS DH0:L
-      Assign L: DH0:L ADD
+      C:Assign L: DH0:L ADD
    ENDIF
    IF EXISTS DH0:Libs
-      Assign LIBS: DH0:Libs ADD
+      C:Assign LIBS: DH0:Libs ADD
    ENDIF
    IF EXISTS DH0:Fonts
-      Assign FONTS: DH0:Fonts ADD
+      C:Assign FONTS: DH0:Fonts ADD
    ENDIF
    IF EXISTS DH0:Devs
-      Assign DEVS: DH0:Devs
+      C:Assign DEVS: DH0:Devs
       IF EXISTS DH0:Devs/Keymaps
-         Assign KEYMAPS: DH0:Devs/Keymaps
+         C:Assign KEYMAPS: DH0:Devs/Keymaps
       ENDIF
    ENDIF
    IF EXISTS DH0:C
       PATH DH0:C ADD 
-      Assign C: DH0:C ADD
+      C:Assign C: DH0:C ADD
    ENDIF
-   Assign S: DH0:S ADD
-   Assign SYS: DH0:
-   Execute DH0:S/Startup-Sequence
+   C:Assign S: DH0:S ADD
+   C:Assign SYS: DH0:
+   C:Execute DH0:S/Startup-Sequence
    QUIT
 ENDIF
 
-Assign EXISTS RASystem: >NIL:
+C:Assign EXISTS RASystem: >NIL:
 IF NOT WARN
-   Execute S:KSCopy
+   C:Execute S:KSCopy
 
    IF NOT EXISTS WHDLoad:L/WHDLoad.key
       IF EXISTS RASystem:WHDLoad.key
-         Copy RASystem:WHDLoad.key WHDLoad:L/
+         C:Copy RASystem:WHDLoad.key WHDLoad:L/
       ENDIF
    ENDIF
 
    IF EXISTS RASystem:WHDLoad.prefs
-      Copy RASystem:WHDLoad.prefs WHDLoad:S/
+      C:Copy RASystem:WHDLoad.prefs WHDLoad:S/
    ENDIF
 ENDIF
 
@@ -58,18 +59,18 @@ Devs:Monitors/NTSC
 Devs:Monitors/PAL
 
 IF EXISTS DH0:load
-   Execute DH0:load
+   C:Execute DH0:load
 ELSE
-   List #?.slav#? QUICK NOHEAD TO ENV:SLAVE
+   C:List #?.slav#? QUICK NOHEAD TO ENV:SLAVE
    IF "$SLAVE" EQ ""
-      List #?.info QUICK NOHEAD TO ENV:INFO
-      List #? DIRS QUICK NOHEAD TO ENV:SLAVEDIR
+      C:List #?.info QUICK NOHEAD TO ENV:INFO
+      C:List #? DIRS QUICK NOHEAD TO ENV:SLAVEDIR
       IF "$INFO" EQ ""
          CD "$SLAVEDIR" >NIL:
-         List #? DIRS QUICK NOHEAD TO ENV:SLAVEDIR
+         C:List #? DIRS QUICK NOHEAD TO ENV:SLAVEDIR
       ENDIF
 
-      List #?.slav#? QUICK NOHEAD TO ENV:SLAVE
+      C:List #?.slav#? QUICK NOHEAD TO ENV:SLAVE
       IF "$SLAVE" EQ ""
          IF NOT "$SLAVEDIR" EQ ""
             CD "$SLAVEDIR" >NIL:
@@ -86,30 +87,30 @@ ELSE
       SETENV WBSEL ""
    ENDIF
 
-   Assign EXISTS WHDSaves: >NIL:
+   C:Assign EXISTS WHDSaves: >NIL:
    IF WARN
-      Assign WHDSaves: WHDLoad:WHDSaves
+      C:Assign WHDSaves: WHDLoad:WHDSaves
    ENDIF
 
    IF "$WBSEL" EQ 1
-      Execute S:WBSelect
+      C:Execute S:WBSelect
       SKIP End
    ENDIF
 
-   JoyPad RED BLUE PORT 1 QUIET >NIL:
+   C:JoyPad RED BLUE PORT 1 QUIET >NIL:
    IF WARN
       IF EXISTS ReadMe
-         MultiView ReadMe
+         C:MultiView ReadMe
       ENDIF
       IF NOT "$SLAVE" EQ ""
-         Execute S:MkCustom
+         C:Execute S:MkCustom
       ENDIF
    ENDIF
 
-   JoyPad RED PORT 1 QUIET >NIL:
+   C:JoyPad RED PORT 1 QUIET >NIL:
    IF WARN
       SETENV WBSEL 1
-      Execute S:WBSelect
+      C:Execute S:WBSelect
    ELSE
       IF EXISTS DH0:custom
          SETENV CUSTOM `type DH0:custom`
@@ -121,67 +122,67 @@ ELSE
          ENDIF
       ENDIF
 
-      JoyPad BLUE PORT 1 QUIET >NIL:
+      C:JoyPad BLUE PORT 1 QUIET >NIL:
       IF WARN
-         Echo "ConfigDelay=-1" >>S:WHDLoad.prefs
+         ECHO "ConfigDelay=-1" >>S:WHDLoad.prefs
       ENDIF
 
-      JoyPad RED PORT 0 QUIET >NIL:
+      C:JoyPad RED PORT 0 QUIET >NIL:
       IF WARN
-         Echo "SplashDelay=150" >>S:WHDLoad.prefs
+         ECHO "SplashDelay=150" >>S:WHDLoad.prefs
       ENDIF
 
-      JoyPad BLUE PORT 0 QUIET >NIL:
+      C:JoyPad BLUE PORT 0 QUIET >NIL:
       IF WARN
-         Echo "ConfigDelay=-1" >>S:WHDLoad.prefs
-         Echo "SplashDelay=-1" >>S:WHDLoad.prefs
+         ECHO "ConfigDelay=-1" >>S:WHDLoad.prefs
+         ECHO "SplashDelay=-1" >>S:WHDLoad.prefs
       ENDIF
 
       IF "$CUSTOM" EQ ""
          IF NOT "$SLAVE" EQ ""
-            List $SLAVE QUICK NOHEAD LFORMAT %M TO ENV:WBRUN
+            C:List $SLAVE QUICK NOHEAD LFORMAT %M TO ENV:WBRUN
          ELSE
             SETENV WBRUN notfound
          ENDIF
 
          IF EXISTS $WBRUN.info
-            List $WBRUN.info QUICK NOHEAD LFORMAT %M TO ENV:WBRUN
-            WBRun "$WBRUN" SYNC
+            C:List $WBRUN.info QUICK NOHEAD LFORMAT %M TO ENV:WBRUN
+            C:WBRun "$WBRUN" SYNC
          ELSE
             IF EXISTS game.slave
                IF EXISTS data
-                  WHDLoad Preload game.slave Data=data $CUSTOM
+                  C:WHDLoad Preload game.slave Data=data $CUSTOM
                ELSE
-                  WHDLoad Preload game.slave $CUSTOM
+                  C:WHDLoad Preload game.slave $CUSTOM
                ENDIF
             ELSE
                IF EXISTS "Workbench31 4 MB.info"
                   SETENV WBSEL ""
                   SETENV SLAVE ""
-                  WBRun "Workbench31 4 MB" SYNC
+                  C:WBRun "Workbench31 4 MB" SYNC
                   SKIP End
                ENDIF
                IF EXISTS "Workbench31_4.info"
                   SETENV WBSEL ""
                   SETENV SLAVE ""
-                  WBRun "Workbench31_4" SYNC
+                  C:WBRun "Workbench31_4" SYNC
                   SKIP End
                ENDIF
 
                IF EXISTS "$SLAVEDIR.info"
                   SETENV WBRUN $SLAVEDIR
-                  WBRun "$WBRUN" SYNC
+                  C:WBRun "$WBRUN" SYNC
                ELSE
                   SETENV WBSEL 1
-                  Execute S:WBSelect
+                  C:Execute S:WBSelect
                ENDIF
             ENDIF
          ENDIF
       ELSE
          IF EXISTS data
-            WHDLoad Preload $SLAVE Data=data $CUSTOM
+            C:WHDLoad Preload $SLAVE Data=data $CUSTOM
          ELSE
-            WHDLoad Preload $SLAVE $CUSTOM
+            C:WHDLoad Preload $SLAVE $CUSTOM
          ENDIF
       ENDIF
    ENDIF
@@ -189,23 +190,22 @@ ELSE
    LAB End
    IF NOT "$WBSEL" EQ ""
       IF NOT "$WBRUN" EQ ""
-         List $WBRUN QUICK NOHEAD LFORMAT %M TO ENV:WBREADME
+         C:List $WBRUN QUICK NOHEAD LFORMAT %M TO ENV:WBREADME
          IF "$WBREADME" EQ "Readme"
             IF NOT "$SLAVE" EQ ""
-               Execute S:MkCustom
+               C:Execute S:MkCustom
             ENDIF
          ENDIF
       ENDIF
    ELSE
       IF EXISTS "ReadMe"
-         MultiView ReadMe
+         C:MultiView ReadMe
       ENDIF
       IF NOT "$SLAVE" EQ ""
-         Execute S:MkCustom
+         C:Execute S:MkCustom
       ENDIF
    ENDIF
 ENDIF
 
-MemClear >NIL:
-RUN >NIL: C:JoyMouse OFF
-Execute S:Startup-Sequence
+C:MemClear >NIL:
+C:Execute S:Startup-Sequence

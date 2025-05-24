@@ -327,10 +327,11 @@ Libretro LED interface is presented in the following order:
 
 Pre-installed WHDLoad LHA archives can be launched directly without any kind of manual preparing and downloading.
 
-- WHDLoad helper files (Directory or HDF) will be generated to `saves`, `WHDLoad.prefs` will be generated to `system`
-- `WHDLoad.prefs` & `WHDLoad.key` & `rom.key` will be copied from `system` to the helper image
-- Kickstarts will be copied automatically to the helper image
-- To update `WHDLoad:` simply delete the directory or the HDF
+- WHDLoad helper files (Directory or HDF) will be generated to `saves`, `WHDLoad.prefs` will be generated to `system`.
+- `WHDLoad.prefs` & `WHDLoad.key` & `rom.key` will be copied from `system` to the helper image.
+- Kickstarts will be copied automatically to the helper image.
+- Saves are redirected to `WHDSaves:`.
+- To update `WHDLoad:` simply delete the directory or the HDF.
 
 - WHDLoad quit key is hardcoded to unused `$2B` = `AK_NUMBERSIGN` = `RETROK_HASH` which does not exist in modern keyboards.
     - Keyboard shortcut: LCtrl + Backslash
@@ -361,17 +362,16 @@ Pre-installed WHDLoad LHA archives can be launched directly without any kind of 
 - `WHDLoad.key` will be copied from `system` if it does not exist in the helper image.
 - `WHDLoad.prefs` will be copied from `system` on every run.
 - Supports a file named `custom` in the root of the game.hdf for passing specific WHDLoad parameters when the slave does not support the config screen or when it should be the default, for example `Custom1=1`. It always overrides `WHDLoad.prefs`.
-    - ~~The easiest way to create `custom` is to quit WHDLoad (default Numpad*), type `echo custom1=1 >custom`, press enter and reboot the Amiga.~~
-    - Script called `MkCustom` for simplest `custom` file handling. Launches after quitting WHDLoad.
+    - Use `MkCustom` script for simplest `custom` file handling. Launches after quitting WHDLoad.
     - `MkCustom` will create a slave-based `custom_$SLAVE` in `WHDSaves:`. Essential with readonly images.
 - Supports a file named `load` in the root of the game.hdf which overrides the whole launch command, aimed at non-WHDLoad installs.
 - If `.slave` is not in the root of the HDF, it will also be searched under the first found directory.
-- Saves will be redirected to a separate `WHDSaves.hdf`. Repo provides an empty 4MiB HDF.
+- Saves will be redirected to `WHDSaves.hdf` when using legacy HDF mode.
 
 #### Minor changes
 
 - Both HDF-files (`WHDLoad.hdf` & `WHDSaves.hdf`) can be located in either RA `system` or `saves`.
-- "WHDLoad Support" core option does not need to be disabled when launching a non-WHDLoad HDF which has `S/startup-sequence`.
+- "WHDLoad Support" core option does not need to be disabled when launching a non-WHDLoad HDF which has `S/Startup-Sequence`.
 - `NTSC` parameter can be used with WHDLoad.
 - Included `ClickNot` for suppressing drive clicking when drive sound emulation is enabled.
 - Included `MEmacs` for file editing (`custom` & `load`).
@@ -382,6 +382,7 @@ Pre-installed WHDLoad LHA archives can be launched directly without any kind of 
 
 #### Latest changes
 
+- Included `SetPatch` for better compatibility.
 - Updated WHDLoad to 19.1 (2024-12-07).
 - Updated WHDLoad to 18.9 (2023-05-04).
 - Downgraded WHDLoad to 18.6 due to a save related bug in 18.7.
