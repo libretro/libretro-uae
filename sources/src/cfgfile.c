@@ -40,6 +40,7 @@
 
 #ifdef __LIBRETRO__
 extern char *retro_get_uae_full_config(void);
+#include <file/file_path.h>
 #endif
 
 static int config_newfilesystem;
@@ -391,6 +392,20 @@ TCHAR *cfgfile_subst_path (const TCHAR *path, const TCHAR *subst, const TCHAR *f
 static TCHAR *cfgfile_get_multipath2 (struct multipath *mp, const TCHAR *path, const TCHAR *file, bool dir)
 {
 	for (int i = 0; i < MAX_PATHS; i++) {
+#ifdef __LIBRETRO__
+		/* Hacky fix for relative LHA paths, but HDFs work without.. */
+		if (!path_is_absolute(file) && path_is_valid(file))
+		{
+			TCHAR *s = NULL;
+			char cwd_str[PATH_MAX];
+			char tmp_str[PATH_MAX];
+
+			getcwd(cwd_str, sizeof(cwd_str));
+			fill_pathname_join(tmp_str, cwd_str, file, sizeof(tmp_str));
+			s = my_strdup(tmp_str);
+			return s;
+		}
+#endif
 		if (mp->path[i][0] && _tcscmp (mp->path[i], _T(".\\")) != 0 && _tcscmp (mp->path[i], _T("./")) != 0 && (file[0] != '/' && file[0] != '\\' && !_tcschr(file, ':'))) {
 			TCHAR *s = NULL;
 			if (path)
