@@ -1577,7 +1577,7 @@ int fcopy(const char *src, const char *dst)
 close:
    if (fp_src)
       fclose(fp_src);
-   if (fp_dst);
+   if (fp_dst)
       fclose(fp_dst);
 
 #if 0
@@ -1613,7 +1613,7 @@ int fcmp(const char *src, const char *dst)
 close:
    if (fp_src)
       fclose(fp_src);
-   if (fp_dst);
+   if (fp_dst)
       fclose(fp_dst);
 
 #if 0
