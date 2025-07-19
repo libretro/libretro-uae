@@ -105,6 +105,7 @@ uint8_t opt_use_whdload = 1;
 uint8_t opt_use_whdload_theme = 0;
 uint8_t opt_use_whdload_prefs = 0;
 bool opt_use_whdload_nowritecache = false;
+bool opt_use_whdload_buttonwait = true;
 uint8_t opt_use_boot_hd = 0;
 bool opt_shared_nvram = false;
 bool opt_cd_startup_delayed_insert = false;
@@ -1262,6 +1263,20 @@ static void retro_set_core_options()
             { NULL, NULL },
          },
          "disabled"
+      },
+      {
+         "puae_use_whdload_buttonwait",
+         "Media > WHDLoad ButtonWait",
+         "WHDLoad ButtonWait",
+         "Wait for a button press on internal loading sections if the slave supports it.\nCore restart required.",
+         NULL,
+         "media",
+         {
+            { "disabled", NULL },
+            { "enabled", NULL },
+            { NULL, NULL },
+         },
+         "enabled"
       },
       {
          "puae_use_whdload_nowritecache",
@@ -4382,6 +4397,12 @@ static void update_variables(void)
       else if (!strcmp(var.value, "both"))     opt_use_whdload_prefs = 3;
    }
 
+   GET_VAR("use_whdload_buttonwait")
+   {
+      if (!strcmp(var.value, "disabled")) opt_use_whdload_buttonwait = false;
+      else                                opt_use_whdload_buttonwait = true;
+   }
+
    GET_VAR("use_whdload_nowritecache")
    {
       if (!strcmp(var.value, "disabled")) opt_use_whdload_nowritecache = false;
@@ -6504,7 +6525,13 @@ static bool retro_create_config(void)
 
                   while (fgets(whdload_buf, sizeof(whdload_buf), whdload_prefs_fp))
                   {
-                     if (opt_use_whdload_nowritecache
+                     if (opt_use_whdload_buttonwait
+                           && strstr(whdload_buf, "ButtonWait") && whdload_buf[0] == ';')
+                        snprintf(whdload_buf_row, sizeof(whdload_buf_row), "%s", whdload_buf + 1);
+                     else if (!opt_use_whdload_buttonwait
+                           && strstr(whdload_buf, "ButtonWait") && whdload_buf[0] == 'B')
+                        snprintf(whdload_buf_row, sizeof(whdload_buf_row), ";%s", whdload_buf);
+                     else if (opt_use_whdload_nowritecache
                            && strstr(whdload_buf, "NoWriteCache") && whdload_buf[0] == ';')
                         snprintf(whdload_buf_row, sizeof(whdload_buf_row), "%s", whdload_buf + 1);
                      else if (!opt_use_whdload_nowritecache
