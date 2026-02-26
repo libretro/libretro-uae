@@ -395,7 +395,7 @@ static TCHAR *cfgfile_get_multipath2 (struct multipath *mp, const TCHAR *path, c
 #ifdef __LIBRETRO__
 		/* Hacky fix for relative LHA paths, but HDFs work without.. */
 		bool has_scheme = false;
-		for (TCHAR *ptr = file; *ptr != 0 && *ptr != '/' && *ptr != '\\'; ++ptr)
+		for (const TCHAR *ptr = file; *ptr != 0 && *ptr != '/' && *ptr != '\\'; ++ptr)
 			if (*ptr == ':')
 			{
 				has_scheme = true;
