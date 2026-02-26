@@ -5286,6 +5286,130 @@ static void retro_config_append(const char *row, ...)
    va_end(ap);
 
    strlcat(uae_full_config, output, sizeof(uae_full_config));
+
+   /* Cycle-exact force */
+   if (strstr(output, "cycle_exact=true") && output[0] == 'c')
+      cpu_cycle_exact_force = true;
+
+   /* Parse Kickstart for alternate namings */
+   if (strstr(output, "kickstart_rom_file=") && output[0] == 'k')
+   {
+      char *token = strtok(output, "=");
+      while (token != NULL)
+      {
+         snprintf(uae_kickstart, sizeof(uae_kickstart), "%s", trimwhitespace(token));
+         token = strtok(NULL, "=");
+      }
+   }
+
+   /* Parse diskimage & floppy rows */
+   if ((strstr(output, "diskimage") && output[0] == 'd') ||
+       (strstr(output, "floppy") && output[0] == 'f'))
+   {
+      char disk_image[RETRO_PATH_MAX] = {0};
+      char disk_image_label[RETRO_PATH_MAX] = {0};
+
+      char *token = strtok(output, "=");
+      while (token != NULL)
+      {
+         snprintf(disk_image, sizeof(disk_image), "%s", token);
+         token = strtok(NULL, "=");
+      }
+      strtok(disk_image, "\n");
+      if (!string_is_empty(disk_image) && path_is_valid(disk_image))
+      {
+         /* Add the file to Disk Control */
+         fill_pathname(disk_image_label, path_basename(disk_image), "", sizeof(disk_image_label));
+         dc_add_file(dc, disk_image, disk_image_label);
+      }
+   }
+
+   /* Parse and replace presets */
+   {
+      if (strstr(output, "chipmem_size=") && output[0] == 'c')
+      {
+         char *token = strtok(output, "=");
+         while (token != NULL)
+         {
+            preset_opt.chipmem_size = atoi(token);
+            token = strtok(NULL, "=");
+         }
+      }
+
+      if (strstr(output, "bogomem_size=") && output[0] == 'b')
+      {
+         char *token = strtok(output, "=");
+         while (token != NULL)
+         {
+            preset_opt.bogomem_size = atoi(token);
+            token = strtok(NULL, "=");
+         }
+      }
+
+      if (strstr(output, "fastmem_size=") && output[0] == 'f')
+      {
+         char *token = strtok(output, "=");
+         while (token != NULL)
+         {
+            preset_opt.fastmem_size = atoi(token);
+            token = strtok(NULL, "=");
+         }
+      }
+
+      if (strstr(output, "z3mem_size=") && output[0] == 'z')
+      {
+         char *token = strtok(output, "=");
+         while (token != NULL)
+         {
+            preset_opt.z3mem_size = atoi(token);
+            token = strtok(NULL, "=");
+         }
+      }
+
+      if (strstr(output, "cpu_model=") && output[0] == 'c')
+      {
+         char *token = strtok(output, "=");
+         while (token != NULL)
+         {
+            preset_opt.cpu_model = atoi(token);
+            token = strtok(NULL, "=");
+         }
+      }
+
+      if (strstr(output, "fpu_model=") && output[0] == 'f')
+      {
+         char *token = strtok(output, "=");
+         while (token != NULL)
+         {
+            preset_opt.fpu_model = atoi(token);
+            token = strtok(NULL, "=");
+         }
+      }
+
+      if (strstr(output, "chipset=") && output[0] == 'c')
+      {
+         char value[255];
+         char *token = strtok(output, "=");
+         while (token != NULL)
+         {
+            snprintf(value, sizeof(value), "%s", trimwhitespace(token));
+            token = strtok(NULL, "=");
+         }
+         cfgfile_strval ("chipset", value, _T("chipset"), &preset_opt.chipset, csmode, 0);
+      }
+
+      if (strstr(output, "chipset_compatible=") && output[0] == 'c')
+      {
+         char value[255];
+         char *token = strtok(output, "=");
+         while (token != NULL)
+         {
+            snprintf(value, sizeof(value), "%s", trimwhitespace(token));
+            token = strtok(NULL, "=");
+         }
+         cfgfile_strval ("chipset_compatible", value, _T("chipset_compatible"), &preset_opt.cs_compatible, cscompa, 0);
+      }
+   }
 }
 
 static void retro_config_force_region(void)
@@ -7010,8 +7134,6 @@ static bool retro_create_config(void)
       /* UAE config file */
       else if (strendswith(full_path, "uae"))
       {
-         char disk_image[RETRO_PATH_MAX] = {0};
-
          /* Write model preset */
          retro_config_append(uae_model_config);
 
@@ -7028,9 +7150,6 @@ static bool retro_create_config(void)
          char filebuf[RETRO_PATH_MAX];
          if ((configfile_custom = fopen(full_path, "r")))
          {
-            char disk_image_label[RETRO_PATH_MAX];
-            disk_image_label[0] = '\0';
-
             while (fgets(filebuf, sizeof(filebuf), configfile_custom))
             {
                /* Skip input rows */
@@ -7074,134 +7193,13 @@ static bool retro_create_config(void)
 
                /* Append */
                retro_config_append(filebuf);
-
-               /* Cycle-exact force */
-               if (strstr(filebuf, "cycle_exact=true") && filebuf[0] == 'c')
-                  cpu_cycle_exact_force = true;
-
-               /* Parse Kickstart for alternate namings */
-               if (strstr(filebuf, "kickstart_rom_file=") && filebuf[0] == 'k')
-               {
-                  char *token = strtok(filebuf, "=");
-                  while (token != NULL)
-                  {
-                     snprintf(uae_kickstart, sizeof(uae_kickstart), "%s", trimwhitespace(token));
-                     token = strtok(NULL, "=");
-                  }
-               }
-
-               /* Parse diskimage & floppy rows */
-               if ((strstr(filebuf, "diskimage") && filebuf[0] == 'd') ||
-                   (strstr(filebuf, "floppy") && filebuf[0] == 'f'))
-               {
-                  char *token = strtok(filebuf, "=");
-                  while (token != NULL)
-                  {
-                     snprintf(disk_image, sizeof(disk_image), "%s", token);
-                     token = strtok(NULL, "=");
-                  }
-                  strtok(disk_image, "\n");
-                  if (!string_is_empty(disk_image) && path_is_valid(disk_image))
-                  {
-                     /* Add the file to Disk Control */
-                     fill_pathname(disk_image_label, path_basename(disk_image), "", sizeof(disk_image_label));
-                     dc_add_file(dc, disk_image, disk_image_label);
-                  }
-               }
-
-               /* Parse and replace presets */
-               {
-                  if (strstr(filebuf, "chipmem_size=") && filebuf[0] == 'c')
-                  {
-                     char *token = strtok(filebuf, "=");
-                     while (token != NULL)
-                     {
-                        preset_opt.chipmem_size = atoi(token);
-                        token = strtok(NULL, "=");
-                     }
-                  }
-
-                  if (strstr(filebuf, "bogomem_size=") && filebuf[0] == 'b')
-                  {
-                     char *token = strtok(filebuf, "=");
-                     while (token != NULL)
-                     {
-                        preset_opt.bogomem_size = atoi(token);
-                        token = strtok(NULL, "=");
-                     }
-                  }
-
-                  if (strstr(filebuf, "fastmem_size=") && filebuf[0] == 'f')
-                  {
-                     char *token = strtok(filebuf, "=");
-                     while (token != NULL)
-                     {
-                        preset_opt.fastmem_size = atoi(token);
-                        token = strtok(NULL, "=");
-                     }
-                  }
-
-                  if (strstr(filebuf, "z3mem_size=") && filebuf[0] == 'z')
-                  {
-                     char *token = strtok(filebuf, "=");
-                     while (token != NULL)
-                     {
-                        preset_opt.z3mem_size = atoi(token);
-                        token = strtok(NULL, "=");
-                     }
-                  }
-
-                  if (strstr(filebuf, "cpu_model=") && filebuf[0] == 'c')
-                  {
-                     char *token = strtok(filebuf, "=");
-                     while (token != NULL)
-                     {
-                        preset_opt.cpu_model = atoi(token);
-                        token = strtok(NULL, "=");
-                     }
-                  }
-
-                  if (strstr(filebuf, "fpu_model=") && filebuf[0] == 'f')
-                  {
-                     char *token = strtok(filebuf, "=");
-                     while (token != NULL)
-                     {
-                        preset_opt.fpu_model = atoi(token);
-                        token = strtok(NULL, "=");
-                     }
-                  }
-
-                  if (strstr(filebuf, "chipset=") && filebuf[0] == 'c')
-                  {
-                     char value[255];
-                     char *token = strtok(filebuf, "=");
-                     while (token != NULL)
-                     {
-                        snprintf(value, sizeof(value), "%s", trimwhitespace(token));
-                        token = strtok(NULL, "=");
-                     }
-                     cfgfile_strval ("chipset", value, _T("chipset"), &preset_opt.chipset, csmode, 0);
-                  }
-
-                  if (strstr(filebuf, "chipset_compatible=") && filebuf[0] == 'c')
-                  {
-                     char value[255];
-                     char *token = strtok(filebuf, "=");
-                     while (token != NULL)
-                     {
-                        snprintf(value, sizeof(value), "%s", trimwhitespace(token));
-                        token = strtok(NULL, "=");
-                     }
-                     cfgfile_strval ("chipset_compatible", value, _T("chipset_compatible"), &preset_opt.cs_compatible, cscompa, 0);
-                  }
-               }
             }
             
             fclose(configfile_custom);
          }
 
          /* Init only existing disks */
-         if (!string_is_empty(disk_image) && dc->count)
+         if (dc->count)
          {
             /* Init first disk */
             dc->index = 0;
@@ -7263,6 +7261,9 @@ static bool retro_create_config(void)
          while (fgets(filebuf, sizeof(filebuf), configfile))
             retro_config_append(filebuf);
          fclose(configfile);
+
+         /* Verify and write Kickstart */
+         retro_config_kickstart();
       }
    }
 
@@ -7282,6 +7283,9 @@ static bool retro_create_config(void)
          while (fgets(filebuf, sizeof(filebuf), configfile))
             retro_config_append(filebuf);
          fclose(configfile);
+
+         /* Verify and write Kickstart */
+         retro_config_kickstart();
       }
    }
 
