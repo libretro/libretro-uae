@@ -75,7 +75,7 @@ char opt_model[10] = {0};
 char opt_model_fd[10] = {0};
 char opt_model_hd[10] = {0};
 char opt_model_cd[10] = {0};
-char opt_kickstart[20] = {0};
+char opt_kickstart[64] = {0};
 
 struct preset_options
 {
@@ -136,7 +136,8 @@ extern uae_u32 natmem_size;
 char full_path[RETRO_PATH_MAX] = {0};
 static char *uae_argv[] = { "puae" };
 static int restart_pending = 0;
-static struct puae_cart_info puae_carts[RETRO_NUM_CORE_OPTION_VALUES_MAX] = {0};
+static struct puae_core_option_info puae_carts[RETRO_NUM_CORE_OPTION_VALUES_MAX] = {0};
+static struct puae_core_option_info puae_kickstarts[RETRO_NUM_CORE_OPTION_VALUES_MAX] = {0};
 
 static long retro_now = 0;
 float retro_refresh = 0;
@@ -729,21 +730,22 @@ static void retro_set_paths(void)
             retro_system_directory, DIR_SEP_STR, "uae");
 }
 
-static void free_puae_carts(void)
+static void free_puae_core_options(void)
 {
    size_t i;
    for (i = 0; i < RETRO_NUM_CORE_OPTION_VALUES_MAX; i++)
    {
-      if (puae_carts[i].value)
-      {
-         free(puae_carts[i].value);
-         puae_carts[i].value = NULL;
-      }
-      if (puae_carts[i].label)
-      {
-         free(puae_carts[i].label);
-         puae_carts[i].label = NULL;
-      }
+      free(puae_carts[i].value);
+      puae_carts[i].value = NULL;
+
+      free(puae_carts[i].label);
+      puae_carts[i].label = NULL;
+
+      free(puae_kickstarts[i].value);
+      puae_kickstarts[i].value = NULL;
+
+      free(puae_kickstarts[i].label);
+      puae_kickstarts[i].label = NULL;
    }
 }
 
@@ -893,30 +895,18 @@ static void retro_set_core_options()
          },
          "CD32"
       },
+      /* Sublabel and options filled dynamically in retro_set_environment() */
       {
          "puae_kickstart",
          "System > Kickstart ROM",
          "Kickstart ROM",
-         "'Automatic' defaults to the most compatible version for the model. 'AROS' is a built-in replacement with fair compatibility.\nCore restart required.",
+         "",
          NULL,
          "system",
          {
-            { "auto", "Automatic" },
-            { "aros", "AROS" },
-            { "kick31034.A1000", "v1.1 rev 31.034 (A1000 NTSC)" },
-            { "kick32034.A1000", "v1.1 rev 32.034 (A1000 PAL)" },
-            { "kick33180.A500", "v1.2 rev 33.180 (A500-A2000)" },
-            { "kick34005.A500", "v1.3 rev 34.005 (A500-A1000-A2000-CDTV)" },
-            { "kick37175.A500", "v2.04 rev 37.175 (A500+)" },
-            { "kick37350.A600", "v2.05 rev 37.350 (A600)" },
-            { "kick40063.A600", "v3.1 rev 40.063 (A500-A600-A2000)" },
-            { "kick39106.A1200", "v3.0 rev 39.106 (A1200)" },
-            { "kick40068.A1200", "v3.1 rev 40.068 (A1200)" },
-            { "kick39106.A4000", "v3.0 rev 39.106 (A4000)" },
-            { "kick40068.A4000", "v3.1 rev 40.068 (A4000)" },
             { NULL, NULL },
          },
-         "auto"
+         NULL
       },
       {
          "puae_chipmem_size",
@@ -2600,7 +2590,7 @@ static void retro_set_core_options()
       { NULL, NULL, NULL, NULL, NULL, NULL, {{0}}, NULL },
    };
 
-   free_puae_carts();
+   free_puae_core_options();
 
    /* Fill in the values for all the mappers */
    int i = 0;
@@ -2661,6 +2651,54 @@ static void retro_set_core_options()
          option_defs_us[i].values[j].value = NULL;
          option_defs_us[i].values[j].label = NULL;
       }
+      else if (!strcmp(option_defs_us[i].key, "puae_kickstart"))
+      {
+         j = 0;
+         option_defs_us[i].values[j].value = "auto";
+         option_defs_us[i].values[j].label = "Automatic";
+         ++j;
+
+         option_defs_us[i].values[j].value = "aros";
+         option_defs_us[i].values[j].label = "AROS";
+         ++j;
+
+         /* Scan system directory for Kickstarts */
+         if (path_is_directory(retro_system_directory))
+         {
+            DIR *dir;
+            struct dirent *dirp;
+
+            dir = opendir(retro_system_directory);
+            while ((dirp = readdir(dir)) != NULL && j < RETRO_NUM_CORE_OPTION_VALUES_MAX - 1)
+            {
+               if (  strstartswith(dirp->d_name, "kick")
+                  || strstartswith(dirp->d_name, "amiga-os")
+                  || strstartswith(dirp->d_name, "KS ROM")
+                  )
+               {
+                  char value[RETRO_PATH_MAX] = {0};
+                  snprintf(value, sizeof(value), "%s", dirp->d_name);
+
+                  puae_kickstarts[j].value = strdup(value);
+
+                  option_defs_us[i].values[j].value = puae_kickstarts[j].value;
+                  ++j;
+               }
+
+               puae_kickstarts[j].value = NULL;
+               puae_kickstarts[j].label = NULL;
+            }
+            closedir(dir);
+         }
+
+         option_defs_us[i].values[j].value = NULL;
+         option_defs_us[i].values[j].label = NULL;
+
+         /* Info sublabel */
+         char info[128] = {0};
+         snprintf(info, sizeof(info), "Kickstart ROMs are searched from 'system'.\nCore restart required.");
+         option_defs_us[i].info = strdup(info);
+      }
       else if (!strcmp(option_defs_us[i].key, "puae_cart_file"))
       {
          j = 0;
@@ -2671,21 +2709,21 @@ static void retro_set_core_options()
          /* Scan system data directory for cartridges */
          if (path_is_directory(retro_system_data_directory))
          {
-            DIR *cart_dir;
-            struct dirent *cart_dirp;
+            DIR *dir;
+            struct dirent *dirp;
 
-            cart_dir = opendir(retro_system_data_directory);
-            while ((cart_dirp = readdir(cart_dir)) != NULL && j < RETRO_NUM_CORE_OPTION_VALUES_MAX - 1)
+            dir = opendir(retro_system_data_directory);
+            while ((dirp = readdir(dir)) != NULL && j < RETRO_NUM_CORE_OPTION_VALUES_MAX - 1)
             {
-               if (strendswith(cart_dirp->d_name, "rom"))
+               if (strendswith(dirp->d_name, "rom"))
                {
-                  char cart_value[RETRO_PATH_MAX] = {0};
-                  char cart_label[128]            = {0};
-                  snprintf(cart_value, sizeof(cart_value), "%s", cart_dirp->d_name);
-                  snprintf(cart_label, sizeof(cart_label), "%s", path_remove_extension(cart_dirp->d_name));
+                  char value[RETRO_PATH_MAX] = {0};
+                  char label[128]            = {0};
+                  snprintf(value, sizeof(value), "%s", dirp->d_name);
+                  snprintf(label, sizeof(label), "%s", path_remove_extension(dirp->d_name));
 
-                  puae_carts[j].value = strdup(cart_value);
-                  puae_carts[j].label = strdup(cart_label);
+                  puae_carts[j].value = strdup(value);
+                  puae_carts[j].label = strdup(label);
 
                   option_defs_us[i].values[j].value = puae_carts[j].value;
                   option_defs_us[i].values[j].label = puae_carts[j].label;
@@ -2695,7 +2733,7 @@ static void retro_set_core_options()
                puae_carts[j].value = NULL;
                puae_carts[j].label = NULL;
             }
-            closedir(cart_dir);
+            closedir(dir);
          }
 
          option_defs_us[i].values[j].value = NULL;
@@ -5088,8 +5126,8 @@ void retro_deinit(void)
    if (dc)
       dc_free(dc);
 
-   /* Clean dynamic cartridge info */
-   free_puae_carts();
+   /* Clean dynamic core option info */
+   free_puae_core_options();
 
    /* Free buffers used by libretro-graph */
    libretro_graph_free();

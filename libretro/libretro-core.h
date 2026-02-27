@@ -244,8 +244,8 @@ static retro_kickstarts uae_kickstarts[15] =
          "CD32 Extended-ROM rev 40.60 (1993)(Commodore)(CD32).rom"},
 };
 
-/* Dynamic cartridge core option info */
-struct puae_cart_info
+/* Dynamic core option info */
+struct puae_core_option_info
 {
    char *value;
    char *label;
