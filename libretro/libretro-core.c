@@ -44,6 +44,20 @@ static const TCHAR *csmode[] = { _T("ocs"), _T("ecs_agnus"), _T("ecs_denise"), _
 #define utf8_to_local_string_alloc strdup
 #endif
 
+#define CORE_OPTION_VALUE_RANGE(min, max) \
+{ \
+   int value = min; \
+   while (value <= max) \
+   { \
+      char str[4]; \
+      snprintf(str, sizeof(str), "%d", value); \
+      if (!option_defs_us[i].values[j].value) \
+         option_defs_us[i].values[j].value = strdup(str); \
+      ++value; \
+      ++j; \
+   } \
+} \
+
 bool libretro_runloop_active = false;
 bool libretro_frame_end = false;
 unsigned short int retro_bmp[RETRO_BMP_SIZE] = {0};
@@ -895,15 +909,15 @@ static void retro_set_core_options()
          },
          "CD32"
       },
-      /* Sublabel and options filled dynamically in retro_set_environment() */
       {
          "puae_kickstart",
          "System > Kickstart ROM",
          "Kickstart ROM",
-         "",
+         "Kickstart ROMs are searched from 'system'.\nCore restart required.",
          NULL,
          "system",
          {
+            /* Options filled dynamically in retro_set_environment() */
             { NULL, NULL },
          },
          NULL
@@ -1302,15 +1316,15 @@ static void retro_set_core_options()
          },
          "disabled"
       },
-      /* Sublabel and options filled dynamically in retro_set_environment() */
       {
          "puae_cart_file",
          "Media > Cartridge",
          "Cartridge",
-         "",
+         "Cartridge images go in 'system/uae/' or 'system/uae_data/'.\nCore restart required.",
          NULL,
          "media",
          {
+            /* Options filled dynamically in retro_set_environment() */
             { NULL, NULL },
          },
          NULL
@@ -1471,53 +1485,7 @@ static void retro_set_core_options()
          NULL,
          "video",
          {
-            { "auto", "Automatic" },
-            { "0", "Default" },
-            { "2", NULL },
-            { "4", NULL },
-            { "6", NULL },
-            { "8", NULL },
-            { "10", NULL },
-            { "12", NULL },
-            { "14", NULL },
-            { "16", NULL },
-            { "18", NULL },
-            { "20", NULL },
-            { "22", NULL },
-            { "24", NULL },
-            { "26", NULL },
-            { "28", NULL },
-            { "30", NULL },
-            { "32", NULL },
-            { "34", NULL },
-            { "36", NULL },
-            { "38", NULL },
-            { "40", NULL },
-            { "42", NULL },
-            { "44", NULL },
-            { "46", NULL },
-            { "48", NULL },
-            { "50", NULL },
-            { "52", NULL },
-            { "54", NULL },
-            { "56", NULL },
-            { "58", NULL },
-            { "60", NULL },
-            { "62", NULL },
-            { "64", NULL },
-            { "66", NULL },
-            { "68", NULL },
-            { "70", NULL },
-            { "-20", NULL },
-            { "-18", NULL },
-            { "-16", NULL },
-            { "-14", NULL },
-            { "-12", NULL },
-            { "-10", NULL },
-            { "-8", NULL },
-            { "-6", NULL },
-            { "-4", NULL },
-            { "-2", NULL },
+            /* Options filled dynamically in retro_set_environment() */
             { NULL, NULL },
          },
          "auto"
@@ -1530,48 +1498,7 @@ static void retro_set_core_options()
          NULL,
          "video",
          {
-            { "auto", "Automatic" },
-            { "0", "Default" },
-            { "2", NULL },
-            { "4", NULL },
-            { "6", NULL },
-            { "8", NULL },
-            { "10", NULL },
-            { "12", NULL },
-            { "14", NULL },
-            { "16", NULL },
-            { "18", NULL },
-            { "20", NULL },
-            { "22", NULL },
-            { "24", NULL },
-            { "26", NULL },
-            { "28", NULL },
-            { "30", NULL },
-            { "32", NULL },
-            { "34", NULL },
-            { "36", NULL },
-            { "38", NULL },
-            { "40", NULL },
-            { "-40", NULL },
-            { "-38", NULL },
-            { "-36", NULL },
-            { "-34", NULL },
-            { "-32", NULL },
-            { "-30", NULL },
-            { "-28", NULL },
-            { "-26", NULL },
-            { "-24", NULL },
-            { "-22", NULL },
-            { "-20", NULL },
-            { "-18", NULL },
-            { "-16", NULL },
-            { "-14", NULL },
-            { "-12", NULL },
-            { "-10", NULL },
-            { "-8", NULL },
-            { "-6", NULL },
-            { "-4", NULL },
-            { "-2", NULL },
+            /* Options filled dynamically in retro_set_environment() */
             { NULL, NULL },
          },
          "auto"
@@ -2651,6 +2578,42 @@ static void retro_set_core_options()
          option_defs_us[i].values[j].value = NULL;
          option_defs_us[i].values[j].label = NULL;
       }
+      else if (!strcmp(option_defs_us[i].key, "puae_vertical_pos"))
+      {
+         j = 0;
+
+         option_defs_us[i].values[j].value = "auto";
+         option_defs_us[i].values[j].label = "Automatic";
+         ++j;
+
+         option_defs_us[i].values[j].value = "0";
+         option_defs_us[i].values[j].label = "Default";
+         ++j;
+
+         CORE_OPTION_VALUE_RANGE(1, 70);
+         CORE_OPTION_VALUE_RANGE(-20, -1);
+
+         option_defs_us[i].values[j].value = NULL;
+         option_defs_us[i].values[j].label = NULL;
+      }
+      else if (!strcmp(option_defs_us[i].key, "puae_horizontal_pos"))
+      {
+         j = 0;
+
+         option_defs_us[i].values[j].value = "auto";
+         option_defs_us[i].values[j].label = "Automatic";
+         ++j;
+
+         option_defs_us[i].values[j].value = "0";
+         option_defs_us[i].values[j].label = "Default";
+         ++j;
+
+         CORE_OPTION_VALUE_RANGE(1, 40);
+         CORE_OPTION_VALUE_RANGE(-40, -1);
+
+         option_defs_us[i].values[j].value = NULL;
+         option_defs_us[i].values[j].label = NULL;
+      }
       else if (!strcmp(option_defs_us[i].key, "puae_kickstart"))
       {
          j = 0;
@@ -2693,11 +2656,6 @@ static void retro_set_core_options()
 
          option_defs_us[i].values[j].value = NULL;
          option_defs_us[i].values[j].label = NULL;
-
-         /* Info sublabel */
-         char info[128] = {0};
-         snprintf(info, sizeof(info), "Kickstart ROMs are searched from 'system'.\nCore restart required.");
-         option_defs_us[i].info = strdup(info);
       }
       else if (!strcmp(option_defs_us[i].key, "puae_cart_file"))
       {
@@ -2738,11 +2696,6 @@ static void retro_set_core_options()
 
          option_defs_us[i].values[j].value = NULL;
          option_defs_us[i].values[j].label = NULL;
-
-         /* Info sublabel */
-         char info[128] = {0};
-         snprintf(info, sizeof(info), "Cartridge images go in 'system/uae/' or 'system/uae_data/'.\nCore restart required.");
-         option_defs_us[i].info = strdup(info);
       }
       ++i;
    }
