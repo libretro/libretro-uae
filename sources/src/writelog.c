@@ -23,16 +23,21 @@ void write_log (const char *fmt, ...)
 {
     char text[512];
     va_list ap;
+    int n;
 
     if (fmt == NULL)
        return;
 
     va_start (ap, fmt);
-    vsprintf (text, fmt, ap);
+    n = vsnprintf (text, sizeof(text), fmt, ap);
     va_end (ap);
 
-    if (text[strlen(text)-1] == '\n')
-       text[strlen(text)-1] = '\0';
+    if (n < 0)
+        return;
+
+    size_t len = strlen(text);
+    if (len > 0 && text[len - 1] == '\n')
+        text[len - 1] = '\0';
 
     log_cb(RETRO_LOG_INFO, "%s\n", text);
 }
