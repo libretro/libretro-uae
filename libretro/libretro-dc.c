@@ -404,9 +404,9 @@ void dc_save_disk_compress(dc_storage* dc)
 {
    if (dc)
    {
-      char save_disk_label[64] = {0};
-      unsigned save_disk_index = 0;
-      unsigned index           = 0;
+      char save_disk_label[64]    = {0};
+      signed char save_disk_index = -1;
+      unsigned char index         = 0;
 
       snprintf(save_disk_label, 64, "%s %u",
             M3U_SAVEDISK_LABEL, 0);
@@ -417,7 +417,7 @@ void dc_save_disk_compress(dc_storage* dc)
             save_disk_index = index;
       }
 
-      if (save_disk_index)
+      if (save_disk_index > -1)
       {
          char gz_saveimagepath[RETRO_PATH_MAX];
          snprintf(gz_saveimagepath, sizeof(gz_saveimagepath), "%s%s",
@@ -433,7 +433,7 @@ void dc_save_disk_compress(dc_storage* dc)
    }
 }
 
-bool dc_add_m3u_save_disk(
+static bool dc_add_m3u_save_disk(
       dc_storage* dc,
       const char* m3u_file, const char* save_dir,
       const char* disk_name, unsigned int index,
@@ -450,7 +450,7 @@ bool dc_add_m3u_save_disk(
    if (dc == NULL)
       return false;
 
-   if (m3u_file == NULL)
+   if (m3u_file == NULL || !*m3u_file)
       return false;
 
    if (save_dir == NULL)
@@ -504,18 +504,18 @@ bool dc_add_m3u_save_disk(
        *   no volume name is set */
       if (disk_name && (*disk_name != '\0'))
       {
-        if (strncasecmp(disk_name, "empty", strlen("empty")))
-        {
-          char *scrub_pointer = NULL;
+         if (strncasecmp(disk_name, "empty", strlen("empty")))
+         {
+            char *scrub_pointer = NULL;
 
-          /* Ensure volume name is valid
-            * > Must be <= 30 characters
-            * > Cannot contain '/' or ':' */
-          strncpy(volume_name, disk_name, sizeof(volume_name) - 1);
+            /* Ensure volume name is valid
+             * > Must be <= 30 characters
+             * > Cannot contain '/' or ':' */
+            strncpy(volume_name, disk_name, sizeof(volume_name) - 1);
 
-          while ((scrub_pointer = strpbrk(volume_name, "/:")))
-             *scrub_pointer = '_';
-        }
+            while ((scrub_pointer = strpbrk(volume_name, "/:")))
+               *scrub_pointer = '_';
+         }
       }
 
       /* Set empty disk label as visible label */
@@ -548,7 +548,7 @@ bool dc_add_m3u_save_disk(
 
 bool dc_save_disk_toggle(dc_storage* dc, bool file_check, bool select)
 {
-   if (!dc)
+   if (!dc || !*full_path)
       return false;
 
    if (file_check)
@@ -587,7 +587,8 @@ bool dc_save_disk_toggle(dc_storage* dc, bool file_check, bool select)
       /* Widget notification */
       snprintf(retro_message_msg, sizeof(retro_message_msg),
                "%d/%d - %s",
-               dc->index+1, dc->count, path_basename(dc->labels[dc->index]));
+               dc->index+1, dc->count,
+               (dc->labels[dc->index]) ? path_basename(dc->labels[dc->index]) : save_disk_label);
       retro_message = true;
    }
    else
