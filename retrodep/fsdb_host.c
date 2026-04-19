@@ -341,6 +341,9 @@ int my_truncate(const TCHAR *name, uae_u64 len) {
 }
 
 uae_s64 my_fsize(struct my_openfile_s* mos) {
+#ifdef USE_LIBRETRO_VFS
+	return filestream_get_size(mos->fp);
+#else
 #ifdef FD_OPEN
 	struct stat sonuc;
 	if (fstat(mos->fd, &sonuc) == -1) {
@@ -365,6 +368,7 @@ uae_s64 my_fsize(struct my_openfile_s* mos) {
 
 	fseek(mos->fp, current, SEEK_SET);
 	return size;
+#endif
 #endif
 }
 
