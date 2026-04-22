@@ -299,7 +299,7 @@ struct my_openfile_s *my_open(const TCHAR *name, int flags)
 		open_flags = open_flags | RETRO_VFS_FILE_ACCESS_WRITE;
 
 	fp = filestream_open(name_utf8, open_flags, RETRO_VFS_FILE_ACCESS_HINT_NONE);
-#elifdef FD_OPEN
+#elif defined(FD_OPEN)
 	int open_flags = O_BINARY;
 	if (flags & O_TRUNC)
 		open_flags = open_flags | O_TRUNC;
@@ -354,7 +354,7 @@ void my_close(struct my_openfile_s* mos)
 		write_log("my_close '%s'\n", mos->path);
 #ifdef USE_LIBRETRO_VFS
 	int result = filestream_close(mos->fp);
-#elifdef FD_OPEN
+#elif defined(FD_OPEN)
 	int result = close(mos->fd);
 #else
 	int result = fclose(mos->fp);
@@ -370,7 +370,7 @@ uae_s64 my_lseek(struct my_openfile_s *mos, uae_s64 offset, int whence)
 #ifdef USE_LIBRETRO_VFS
 	off_t result = filestream_seek(mos->fp, offset, whence);
 	result = (result == 0) ? filestream_tell(mos->fp) : (result < 0) ? -1 : result;
-#elifdef FD_OPEN
+#elif defined(FD_OPEN)
 	off_t result = lseek(mos->fd, offset, whence);
 #else
 	off_t result = fseek(mos->fp, offset, whence);
@@ -393,7 +393,7 @@ int my_truncate(const TCHAR *name, uae_u64 len) {
 	}
 	int result = filestream_truncate(mos->fp, int_len);
 	my_close(mos);
-#elifdef FD_OPEN
+#elif defined(FD_OPEN)
 	struct my_openfile_s *mos = my_open(name, O_WRONLY);
 	if (mos == NULL) {
 		write_log("WARNING: opening file for truncation failed\n");
@@ -415,7 +415,7 @@ uae_s64 my_fsize(struct my_openfile_s* mos) {
 	if (log_filesys)
 		write_log("my_fsize '%s' size=%d\n", mos->path, size);
 	return size;
-#elifdef FD_OPEN
+#elif defined(FD_OPEN)
 	struct stat sonuc;
 	if (fstat(mos->fd, &sonuc) == -1) {
 		write_log("my_fsize: fstat on file '%s' failed\n", mos->path);
@@ -445,7 +445,7 @@ uae_s64 my_fsize(struct my_openfile_s* mos) {
 unsigned int my_read(struct my_openfile_s *mos, void *b, unsigned int size) {
 #ifdef USE_LIBRETRO_VFS
 	ssize_t bytes_read = filestream_read(mos->fp, b, size);
-#elifdef FD_OPEN
+#elif defined(FD_OPEN)
 	ssize_t bytes_read = read(mos->fd, b, size);
 #else
 	ssize_t bytes_read = fread(b, 1, size, mos->fp);
@@ -458,7 +458,7 @@ unsigned int my_read(struct my_openfile_s *mos, void *b, unsigned int size) {
 unsigned int my_write(struct my_openfile_s *mos, void *b, unsigned int size) {
 #ifdef USE_LIBRETRO_VFS
 	ssize_t bytes_written = filestream_write(mos->fp, b, size);
-#elifdef FD_OPEN
+#elif defined(FD_OPEN)
 	ssize_t bytes_written = write(mos->fd, b, size);
 #else
 	ssize_t bytes_written = fwrite(b, 1, size, mos->fp);
