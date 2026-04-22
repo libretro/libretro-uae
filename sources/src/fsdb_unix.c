@@ -147,15 +147,6 @@ static int fsdb_name_invalid_2 (const TCHAR *n, int dir)
             return 2;
     }
 
-#ifdef __LIBRETRO__
-    /* Also illegal chars */
-    for (i = 0; i < l; i++)
-    {
-        if (n[i] < 0)
-            return 2;
-    }
-#endif
-
     return 0; /* the filename passed all checks, now it should be ok */
 }
 

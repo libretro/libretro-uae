@@ -6,22 +6,21 @@
 
 #include "libretro-core.h"
 
-#ifdef USE_LIBRETRO_VFS
-#undef local_to_utf8_string_alloc
-#define local_to_utf8_string_alloc my_strdup
-#endif
-
 extern int log_filesys;
 
 bool my_stat (const TCHAR *name, struct mystat *ms) {
 	struct stat sonuc;
+#ifdef USE_LIBRETRO_VFS
+	if (stat(utf8_to_local_string_alloc(name), &sonuc) == -1) {
+#else
 	if (stat(name, &sonuc) == -1) {
+#endif
 		if (log_filesys)
-			write_log("my_stat: stat on file '%s' failed\n", name);
+			write_log("my_stat '%s' failed\n", name);
 		return false;
 	}
 	if (log_filesys)
-		write_log("stat returned size %9jd: %s\n", sonuc.st_size, name);
+		write_log("my_stat '%s' size=%d\n", name, sonuc.st_size);
 	ms->size = sonuc.st_size;
 	ms->mode = 0;
 	if (sonuc.st_mode & S_IRUSR) {
@@ -45,7 +44,7 @@ bool my_chmod (const TCHAR *name, uae_u32 mode)
     if (mode & FILEFLAG_WRITE)
         attr |=     (S_IWUSR | S_IWGRP | S_IWOTH);
 
-        return chmod (name, attr);
+	return chmod (name, attr);
 }
 
 static int setfiletime (const TCHAR *name, int days, int minute, int tick, int tolocal)
@@ -81,23 +80,30 @@ int my_existstype(const char *name, int mode)
 {
 	int ret = 0;
 
-	const char *utf8 = local_to_utf8_string_alloc(name);
+#ifdef USE_LIBRETRO_VFS
+	const char *name_utf8 = strdup(name);
+#else
+	const char *name_utf8 = local_to_utf8_string_alloc(name);
+#endif
 
-	if (path_is_valid(utf8))
+	if (path_is_valid(name_utf8))
 	{
 		switch (mode)
 		{
 			case 0: /* Dir */
-				ret = path_is_directory(utf8) ? 1 : 0;
+				ret = path_is_directory(name_utf8) ? 1 : 0;
 				break;
 			case 1: /* File */
-				ret = path_is_directory(utf8) ? 0 : 1;
+				ret = path_is_directory(name_utf8) ? 0 : 1;
 				break;
 			case 2: /* Dir/File */
-				ret = path_is_directory(utf8) ? 2 : 1;
+				ret = path_is_directory(name_utf8) ? 2 : 1;
 				break;
 		}
 	}
+
+	if (log_filesys)
+		write_log("my_existstype '%s' '%s' mode=%d ret=%d\n", name, name_utf8, mode, ret);
 
 	return ret;
 }
@@ -117,6 +123,9 @@ int my_getvolumeinfo(const char *root)
 	struct stat sonuc;
 	int ret = 0;
 
+	if (log_filesys)
+		write_log("my_getvolumeinfo '%s'\n", root);
+
 #ifdef USE_LIBRETRO_VFS
 	if (stat(utf8_to_local_string_alloc(root), &sonuc) == -1)
 #else
@@ -132,6 +141,13 @@ int my_getvolumeinfo(const char *root)
 
 FILE *my_opentext(const TCHAR *name)
 {
+#ifdef USE_LIBRETRO_VFS
+	int open_flags = RETRO_VFS_FILE_ACCESS_UPDATE_EXISTING;
+
+	open_flags = open_flags | RETRO_VFS_FILE_ACCESS_READ;
+
+	return filestream_open(name, open_flags, RETRO_VFS_FILE_ACCESS_HINT_NONE);
+#else
 	FILE *f;
 	uae_u8 tmp[4];
 	int v;
@@ -148,6 +164,7 @@ FILE *my_opentext(const TCHAR *name)
 			return fopen (name, "r, ccs=UTF-16LE");
 	}
 	return fopen(name, "r");
+#endif
 }
 
 struct my_opendir_s *my_opendir(const TCHAR *name, const TCHAR *mask)
@@ -172,11 +189,11 @@ struct my_opendir_s *my_opendir(const TCHAR *name, const TCHAR *mask)
 
 void my_closedir(struct my_opendir_s *mod)
 {
-	if (mod)
-	{
-		retro_closedir(mod->dh);
-		xfree(mod);
-	}
+	if (!mod)
+		return;
+
+	retro_closedir(mod->dh);
+	xfree(mod);
 }
 
 int my_readdir(struct my_opendir_s* mod, TCHAR* name)
@@ -184,23 +201,35 @@ int my_readdir(struct my_opendir_s* mod, TCHAR* name)
 	mod->dp = retro_readdir(mod->dh);
 	if (!mod->dp)
 		return 0;
-	_tcscpy (name, retro_dirent_get_name(mod->dh));
+	_tcscpy (name, utf8_to_local_string_alloc(retro_dirent_get_name(mod->dh)));
+#if 0
 	if (log_filesys)
-		write_log("my_readdir => '%s'\n", name);
+		write_log("my_readdir '%s'\n", name);
+#endif
 	return 1;
 }
 
 int my_mkdir(const TCHAR *name)
 {
+#ifdef USE_LIBRETRO_FS
+	return retro_vfs_mkdir_impl(name);
+#else
 #ifdef __WIN32__
 	return mkdir(name);
 #else
 	return mkdir(name, 0777);
 #endif
+#endif
 }
 
 int my_rmdir(const TCHAR *name)
 {
+	if (log_filesys)
+		write_log("my_rmdir '%s'\n", name);
+
+#ifdef USE_LIBRETRO_VFS
+	return my_unlink(name);
+#else
 	struct my_opendir_s *od;
 	int cnt;
 	TCHAR tname[MAX_DPATH];
@@ -222,16 +251,31 @@ int my_rmdir(const TCHAR *name)
 		return -1;
 
 	return rmdir(name);
+#endif
 }
 
 int my_unlink(const TCHAR *name)
 {
+	if (log_filesys)
+		write_log("my_unlink '%s'\n", name);
+
+#ifdef USE_LIBRETRO_VFS
+	return filestream_delete(local_to_utf8_string_alloc(name));
+#else
 	return unlink(name);
+#endif
 }
 
 int my_rename(const TCHAR *oldname, const TCHAR *newname)
 {
+	if (log_filesys)
+		write_log("my_rename '%s' => '%s'\n", oldname, newname);
+
+#ifdef USE_LIBRETRO_VFS
+	return filestream_rename(local_to_utf8_string_alloc(oldname), local_to_utf8_string_alloc(newname));
+#else
 	return rename(oldname, newname);
+#endif
 }
 
 struct my_openfile_s *my_open(const TCHAR *name, int flags)
@@ -241,7 +285,21 @@ struct my_openfile_s *my_open(const TCHAR *name, int flags)
 	if (log_filesys)
 		write_log("my_open '%s' flags=%x\n", name, flags);
 
-#ifdef FD_OPEN
+#ifdef USE_LIBRETRO_VFS
+	RFILE *fp = NULL;
+	int open_flags = RETRO_VFS_FILE_ACCESS_UPDATE_EXISTING;
+	if (flags & O_TRUNC || flags & O_CREAT)
+		open_flags = RETRO_VFS_FILE_ACCESS_READ_WRITE;
+
+	if (flags & O_RDWR)
+		open_flags = open_flags | RETRO_VFS_FILE_ACCESS_READ_WRITE;
+	else if (flags & O_RDONLY)
+		open_flags = open_flags | RETRO_VFS_FILE_ACCESS_READ;
+	else if (flags & O_WRONLY)
+		open_flags = open_flags | RETRO_VFS_FILE_ACCESS_WRITE;
+
+	fp = filestream_open(name_utf8, open_flags, RETRO_VFS_FILE_ACCESS_HINT_NONE);
+#elifdef FD_OPEN
 	int open_flags = O_BINARY;
 	if (flags & O_TRUNC)
 		open_flags = open_flags | O_TRUNC;
@@ -294,7 +352,9 @@ void my_close(struct my_openfile_s* mos)
 {
 	if (log_filesys)
 		write_log("my_close '%s'\n", mos->path);
-#ifdef FD_OPEN
+#ifdef USE_LIBRETRO_VFS
+	int result = filestream_close(mos->fp);
+#elifdef FD_OPEN
 	int result = close(mos->fd);
 #else
 	int result = fclose(mos->fp);
@@ -307,24 +367,33 @@ void my_close(struct my_openfile_s* mos)
 
 uae_s64 my_lseek(struct my_openfile_s *mos, uae_s64 offset, int whence)
 {
-	if (log_filesys)
-		write_log("my_lseek '%s' %lld %d\n", mos->path, offset, whence);
-#ifdef FD_OPEN
+#ifdef USE_LIBRETRO_VFS
+	off_t result = filestream_seek(mos->fp, offset, whence);
+	result = (result == 0) ? filestream_tell(mos->fp) : (result < 0) ? -1 : result;
+#elifdef FD_OPEN
 	off_t result = lseek(mos->fd, offset, whence);
 #else
 	off_t result = fseek(mos->fp, offset, whence);
 	result = (result == 0) ? ftell(mos->fp) : -1;
 #endif
 	if (log_filesys)
-		write_log("my_lseek result %jd\n", result);
+		write_log("my_lseek '%s' offset=%lld whence=%d res=0\n", mos->path, offset, whence, result);
 	return result;
 }
 
 int my_truncate(const TCHAR *name, uae_u64 len) {
-	int int_len = (int) len;
+	int int_len = (int)len;
 	if (log_filesys)
 		write_log("my_truncate '%s' len = %d\n", name, int_len);
-#ifdef FD_OPEN
+#ifdef USE_LIBRETRO_VFS
+	struct my_openfile_s *mos = my_open(name, O_WRONLY);
+	if (mos == NULL) {
+		write_log("WARNING: opening file for truncation failed\n");
+		return -1;
+	}
+	int result = filestream_truncate(mos->fp, int_len);
+	my_close(mos);
+#elifdef FD_OPEN
 	struct my_openfile_s *mos = my_open(name, O_WRONLY);
 	if (mos == NULL) {
 		write_log("WARNING: opening file for truncation failed\n");
@@ -342,16 +411,18 @@ int my_truncate(const TCHAR *name, uae_u64 len) {
 
 uae_s64 my_fsize(struct my_openfile_s* mos) {
 #ifdef USE_LIBRETRO_VFS
-	return filestream_get_size(mos->fp);
-#else
-#ifdef FD_OPEN
+	size_t size = filestream_get_size(mos->fp);
+	if (log_filesys)
+		write_log("my_fsize '%s' size=%d\n", mos->path, size);
+	return size;
+#elifdef FD_OPEN
 	struct stat sonuc;
 	if (fstat(mos->fd, &sonuc) == -1) {
 		write_log("my_fsize: fstat on file '%s' failed\n", mos->path);
 		return -1;
 	}
 	else if (log_filesys)
-		write_log("my_fsize '%s' %d\n", mos->path, sonuc.st_size);
+		write_log("my_fsize '%s' size=%d\n", mos->path, sonuc.st_size);
 
 	return sonuc.st_size;
 #else
@@ -364,33 +435,36 @@ uae_s64 my_fsize(struct my_openfile_s* mos) {
 
 	size = ftell(mos->fp);
 	if (log_filesys)
-		write_log("my_fsize '%s' %d\n", mos->path, size);
+		write_log("my_fsize '%s' size=%d\n", mos->path, size);
 
 	fseek(mos->fp, current, SEEK_SET);
 	return size;
 #endif
-#endif
 }
 
 unsigned int my_read(struct my_openfile_s *mos, void *b, unsigned int size) {
-#ifdef FD_OPEN
+#ifdef USE_LIBRETRO_VFS
+	ssize_t bytes_read = filestream_read(mos->fp, b, size);
+#elifdef FD_OPEN
 	ssize_t bytes_read = read(mos->fd, b, size);
 #else
 	ssize_t bytes_read = fread(b, 1, size, mos->fp);
 #endif
 	if (log_filesys)
-		write_log("my_read size=%d => %zd\n", size, bytes_read);
+		write_log("my_read '%s' size=%d read=%d\n", mos->path, size, bytes_read);
 	return (unsigned int) bytes_read;
 }
 
 unsigned int my_write(struct my_openfile_s *mos, void *b, unsigned int size) {
-#ifdef FD_OPEN
+#ifdef USE_LIBRETRO_VFS
+	ssize_t bytes_written = filestream_write(mos->fp, b, size);
+#elifdef FD_OPEN
 	ssize_t bytes_written = write(mos->fd, b, size);
 #else
 	ssize_t bytes_written = fwrite(b, 1, size, mos->fp);
 #endif
 	if (log_filesys)
-		write_log("my_write buffer=%p size=%d => %zd\n", b, size, bytes_written);
+		write_log("my_write '%s' buffer=%p size=%d written=%d\n", mos->path, b, size, bytes_written);
 	return (unsigned int) bytes_written;
 }
 
@@ -451,9 +525,6 @@ int my_setcurrentdir(const TCHAR *curdir, TCHAR *oldcur)
 		namep = curdir;
 		ret = chdir (namep);
 	}
-#if 0
-	write_log("curdir=\"%s\" oldcur=\"%s\" ret=%d\n", curdir, oldcur, ret);
-#endif
 	return ret;
 #endif
 }

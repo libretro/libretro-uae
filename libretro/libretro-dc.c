@@ -677,8 +677,13 @@ static bool dc_add_m3u_disk(
    }
 
    /* Add the file to the list */
+#ifdef USE_LIBRETRO_VFS
    if (path_is_valid(file_path))
       return dc_add_file(dc, file_path, file_label);
+#else
+   if (path_is_valid(local_to_utf8_string_alloc(file_path)))
+      return dc_add_file(dc, local_to_utf8_string_alloc(file_path), file_label);
+#endif
 
    return false;
 }

@@ -102,8 +102,8 @@ int64_t rfseek(RFILE* stream, int64_t offset, int origin)
          seek_position = RETRO_VFS_SEEK_POSITION_END;
          break;
    }
-
-   return filestream_seek(stream, offset, seek_position);
+   /* Must enforce fseek behavior instead of lseek */
+   return filestream_seek(stream, offset, seek_position) < 0 ? -1 : 0;
 }
 
 int64_t rfread(void* buffer,
