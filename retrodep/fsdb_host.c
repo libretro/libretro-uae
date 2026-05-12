@@ -428,7 +428,7 @@ uae_s64 my_fsize(struct my_openfile_s* mos) {
 #else
 	size_t size = 0;
 	int current = ftell(mos->fp);
-	if (fseek(mos->fp, 0, SEEK_END)) {
+	if (fseek(mos->fp, 0, SEEK_END) < 0) {
 		write_log("my_fsize: fseek on file '%s' failed\n", mos->path);
 		return -1;
 	}
