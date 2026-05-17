@@ -129,7 +129,9 @@ void uae_sem_init (uae_sem_t *sem, int pshared, unsigned int value);
 
 STATIC_INLINE void uae_sem_destroy (uae_sem_t *sem)
 {
-    sem_destroy (sem->sem);
+    if(sem && sem->sem) {
+        sem_destroy (sem->sem);
+    }
 }
 
 STATIC_INLINE void uae_sem_post (uae_sem_t *sem)
