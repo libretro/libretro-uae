@@ -5317,6 +5317,7 @@ static void retro_config_append(const char *row, ...)
    }
 
    /* Parse and replace presets */
+   if (string_count_occurrences_single_character(output, '\n') == 1)
    {
       if (strstr(output, "chipmem_size=") && output[0] == 'c')
       {
