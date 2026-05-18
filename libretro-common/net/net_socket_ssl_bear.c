@@ -46,12 +46,17 @@ static size_t current_vdn_size;
 static uint8_t* blobdup(const void * src, size_t len)
 {
    uint8_t * ret = malloc(len);
+   if (!ret)
+      return NULL;
    memcpy(ret, src, len);
    return ret;
 }
 static void vdn_append(void* dest_ctx, const void * src, size_t len)
 {
-   current_vdn = realloc(current_vdn, current_vdn_size + len);
+   uint8_t *tmp = realloc(current_vdn, current_vdn_size + len);
+   if (!tmp)
+      return;
+   current_vdn = tmp;
    memcpy(current_vdn+current_vdn_size, src, len);
    current_vdn_size += len;
 }
