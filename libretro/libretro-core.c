@@ -7450,7 +7450,7 @@ static void update_video_center_horizontal(void)
       visible_left_border_new = visible_left_border;
 
    /* CD32 boot special */
-   if (retro_max_diwstop < retro_min_diwstart)
+   if (opt_horizontal_offset_auto && retro_max_diwstop < retro_min_diwstart)
       visible_left_border_new = default_left_border;
 
    /* Sensible limits */
