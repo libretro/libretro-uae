@@ -289,6 +289,8 @@ struct puae_core_option_info
 #define EMULATOR_DEF_HEIGHT     PUAE_VIDEO_HEIGHT_PAL
 #define EMULATOR_MAX_WIDTH      EMULATOR_DEF_WIDTH * 2
 #define EMULATOR_MAX_HEIGHT     EMULATOR_DEF_HEIGHT
+#define EMULATOR_MIN_WIDTH      320
+#define EMULATOR_MIN_HEIGHT     200
 #define RETRO_BMP_SIZE          EMULATOR_MAX_WIDTH * EMULATOR_MAX_HEIGHT * 4 /* 4x is big enough for 24-bit SuperHires double line */
 
 extern unsigned short int retro_bmp[RETRO_BMP_SIZE];
