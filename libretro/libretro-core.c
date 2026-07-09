@@ -7466,17 +7466,36 @@ static void update_video_center_vertical(void)
    /* Remember the previous value */
    thisframe_y_adjust_old = thisframe_y_adjust_new;
 
-   /* Corrections if top border has stuff in it, only if manually forced */
-   if (thisframe_y_adjust_new < thisframe_y_adjust && !opt_vertical_offset_auto)
+   /* Corrections if top border has stuff in it.
+    * Allow centering of all cropped sizes and also
+    * prevent centering in Agony intro.. */
+   if (     opt_vertical_offset_auto
+         && thisframe_y_adjust_new < thisframe_y_adjust && thisframe_y_adjust_new > 0)
    {
       int diff = thisframe_y_adjust - thisframe_y_adjust_new;
+      if (retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line < first_drawn_limit)
+         diff = 0;
+
       thisframe_y_adjust     -= diff;
       thisframe_y_adjust_new -= diff;
    }
+   else if (opt_vertical_offset_auto
+         && thisframe_y_adjust_new > thisframe_y_adjust
+         && retro_thisframe_first_drawn_line > retroh_crop_normal / 2
+         && retroh_crop_normal > EMULATOR_MIN_HEIGHT)
+      thisframe_y_adjust_new = retro_thisframe_last_drawn_line - retroh_crop_normal + thisframe_y_adjust;
 
    /* Disallow centering if trying to crop NTSC aspect in full PAL mode */
    if (retroh == retroh_crop && !video_productivity)
       thisframe_y_adjust = thisframe_y_adjust_new = minfirstline;
+
+   /* Manual offset override */
+   if (!opt_vertical_offset_auto)
+   {
+      thisframe_y_adjust += opt_vertical_offset;
+      if (thisframe_y_adjust < minfirstline)
+         thisframe_y_adjust_new += thisframe_y_adjust - minfirstline;
+   }
 
    /* Offset adjustments */
    thisframe_y_adjust_new -= thisframe_y_adjust;
@@ -8307,32 +8326,32 @@ static bool retro_update_av_info(void)
    switch (crop_id)
    {
       case CROP_MINIMUM:
-         retrow_crop = 360;
+         retrow_crop = EMULATOR_MIN_WIDTH;
          retroh_crop = (video_config_geometry & PUAE_VIDEO_NTSC) ? 240 : 270;
          break;
       case CROP_SMALLER:
-         retrow_crop = 348;
+         retrow_crop = EMULATOR_MIN_WIDTH;
          retroh_crop = (video_config_geometry & PUAE_VIDEO_NTSC) ? 240 : 264;
          break;
       case CROP_SMALL:
-         retrow_crop = 336;
+         retrow_crop = EMULATOR_MIN_WIDTH;
          retroh_crop = (video_config_geometry & PUAE_VIDEO_NTSC) ? 240 : 256;
          break;
       case CROP_MEDIUM:
-         retrow_crop = 320;
+         retrow_crop = EMULATOR_MIN_WIDTH;
          retroh_crop = 240;
          break;
       case CROP_LARGE:
-         retrow_crop = 320;
+         retrow_crop = EMULATOR_MIN_WIDTH;
          retroh_crop = 224;
          break;
       case CROP_LARGER:
-         retrow_crop = 320;
+         retrow_crop = EMULATOR_MIN_WIDTH;
          retroh_crop = 216;
          break;
       case CROP_MAXIMUM:
-         retrow_crop = 320;
-         retroh_crop = 200;
+         retrow_crop = EMULATOR_MIN_WIDTH;
+         retroh_crop = EMULATOR_MIN_HEIGHT;
          break;
       case CROP_AUTO:
          /* Automatic width sense fooling */
@@ -8349,17 +8368,17 @@ static bool retro_update_av_info(void)
          /* Normalize previous width */
          retrow_crop /= width_multiplier;
 
-         if (retro_min_diwstart != retro_max_diwstop
-          && retro_min_diwstart > 0
-          && retro_max_diwstop > 0)
+         if (     retro_min_diwstart != retro_max_diwstop
+               && retro_min_diwstart > 0
+               && retro_max_diwstop > 0)
             retrow_crop = (retro_max_diwstop / width_multiplier) - (retro_min_diwstart / width_multiplier);
-         retrow_crop = (retrow_crop < 320) ? 320 : retrow_crop;
+         retrow_crop = (retrow_crop < EMULATOR_MIN_WIDTH) ? EMULATOR_MIN_WIDTH : retrow_crop;
 
-         if (retro_thisframe_first_drawn_line != retro_thisframe_last_drawn_line
-          && retro_thisframe_first_drawn_line > 0
-          && retro_thisframe_last_drawn_line > 0)
+         if (     retro_thisframe_first_drawn_line != retro_thisframe_last_drawn_line
+               && retro_thisframe_first_drawn_line > 0
+               && retro_thisframe_last_drawn_line > 0)
             retroh_crop = retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line + 1;
-         retroh_crop = (retroh_crop < 200) ? 200 : retroh_crop;
+         retroh_crop = (retroh_crop < EMULATOR_MIN_HEIGHT) ? EMULATOR_MIN_HEIGHT : retroh_crop;
 
          /* Allow full PAL height with NTSC PAR */
          if (defaulth > retroh && retroh_crop > retroh * (video_config & PUAE_VIDEO_DOUBLELINE) && !retro_doublescan ? 2 : 1)
@@ -8380,62 +8399,65 @@ static bool retro_update_av_info(void)
    {
       float crop_dar    = 0;
       float crop_par    = retro_get_aspect_ratio(0, 0, true);
-      int retroh_crop_o = retroh_crop;
 
       switch (crop_mode_id)
       {
          case CROP_MODE_BOTH:
             break;
-         case CROP_MODE_VERTICAL: /* Vertical disables horizontal crop */
+         /* Vertical disables horizontal crop */
+         case CROP_MODE_VERTICAL:
             retrow_crop = retrow;
             break;
-         case CROP_MODE_HORIZONTAL: /* Horizontal disables vertical crop */
+         /* Horizontal disables vertical crop and uses height chunks for width */
+         case CROP_MODE_HORIZONTAL:
+            retrow_crop = (retrow / width_multiplier) - (retroh - retroh_crop) / 2;
             retroh_crop = retroh;
             break;
+         /* Wide modes prioritize height crop and calculate new width when height runs out */
          case CROP_MODE_16_9:
             crop_dar    = (float)16/9;
             retrow_crop = retrow;
-            if (retroh_crop < (int)(retrow_crop * width_multiplier / crop_dar * crop_par))
-               retrow_crop = (int)(retroh_crop * crop_dar / crop_par);
             break;
          case CROP_MODE_16_10:
             crop_dar    = (float)16/10;
             retrow_crop = retrow;
-            if (retroh_crop < (int)(retrow_crop * width_multiplier / crop_dar * crop_par))
-               retrow_crop = (int)(retroh_crop * crop_dar / crop_par);
             break;
+         /* Narrow modes prioritize width crop and calculate new height when width runs out */
          case CROP_MODE_4_3:
             crop_dar    = (float)4/3;
-            if (retroh_crop < (int)(retrow_crop * width_multiplier / crop_dar * crop_par))
-            {
-               retroh_crop = (int)(retrow_crop / crop_dar * crop_par);
-               if (retroh_crop < retroh_crop_o)
-                  retroh_crop = retroh_crop_o;
-               retrow_crop = (int)(retroh_crop * crop_dar / crop_par);
-            }
+            retrow_crop = (int)(retroh_crop * crop_dar / crop_par);
             break;
          case CROP_MODE_5_4:
-            crop_dar = (float)5/4;
-            if (retroh_crop < (int)(retrow_crop * width_multiplier / crop_dar * crop_par))
-            {
-               retroh_crop = (int)(retrow_crop / crop_dar * crop_par);
-               if (retroh_crop < retroh_crop_o)
-                  retroh_crop = retroh_crop_o;
-               retrow_crop = (int)(retroh_crop * crop_dar / crop_par);
-            }
+            crop_dar    = (float)5/4;
+            retrow_crop = (int)(retroh_crop * crop_dar / crop_par);
             break;
+      }
+
+      /* Aspect limits */
+      if (crop_dar > 0)
+      {
+         /* New height with minimum width when width is limited */
+         if (retrow_crop < EMULATOR_MIN_WIDTH)
+         {
+            retrow_crop = EMULATOR_MIN_WIDTH;
+            retroh_crop = (int)(retrow_crop / crop_dar * crop_par);
+         }
+
+         /* New width when height is limited */
+         if (retroh_crop < (int)(retrow_crop / crop_dar * crop_par))
+            retrow_crop = (int)(retroh_crop * crop_dar / crop_par);
       }
 
       /* If previous crop height was in double line */
       if (!video_productivity && retroh_crop > retroh)
          retroh_crop /= 2;
 
-      retroh_crop = (retroh_crop < 200) ? 200 : retroh_crop;
+      retroh_crop = (retroh_crop < EMULATOR_MIN_HEIGHT) ? EMULATOR_MIN_HEIGHT : retroh_crop;
       retroh_crop *= (video_config & PUAE_VIDEO_DOUBLELINE) && !retro_doublescan ? 2 : 1;
       if (retroh_crop > retroh)
          retroh_crop = retroh;
 
-      retrow_crop = (retrow_crop < 320) ? 320 : retrow_crop;
+      retrow_crop = (retrow_crop < EMULATOR_MIN_WIDTH) ? EMULATOR_MIN_WIDTH : retrow_crop;
       /* Even widths only */
       retrow_crop = (int)(retrow_crop / 2) * 2;
       retrow_crop *= width_multiplier;
