@@ -8403,6 +8403,8 @@ static bool retro_update_av_info(void)
       switch (crop_mode_id)
       {
          case CROP_MODE_BOTH:
+            /* Calculate width in height chunks */
+            retrow_crop = (retrow / width_multiplier) - (retroh - retroh_crop) / 2;
             break;
          /* Vertical disables horizontal crop */
          case CROP_MODE_VERTICAL:
