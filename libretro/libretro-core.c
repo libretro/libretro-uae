@@ -7464,7 +7464,7 @@ static void update_video_center_horizontal(void)
          && retro_max_diwstop  > 0
          && retro_min_diwstart < min_diwstart_limit
          && retro_max_diwstop  > max_diwstop_limit
-         && (retro_max_diwstop - retro_min_diwstart) <= (retrow_crop + (4 * width_multiplier)))
+         && (retro_max_diwstop - retro_min_diwstart) <= (retrow + (4 * width_multiplier)))
       visible_left_border_new = (retro_max_diwstop - retro_min_diwstart - retrow_crop) / 2 + retro_min_diwstart;
    else if (retro_min_diwstart == MAX_STOP && retro_max_diwstop == 0 && visible_left_border != 0)
       visible_left_border_new = visible_left_border;
@@ -7486,9 +7486,6 @@ static void update_video_center_horizontal(void)
       int diff = visible_left_border - visible_left_border_new;
       visible_left_border     -= diff;
       visible_left_border_new -= diff;
-
-      if (visible_left_border < 37 * width_multiplier)
-         visible_left_border = visible_left_border_new = 37 * width_multiplier;
    }
 
    /* Special productivity modes */
@@ -8242,6 +8239,18 @@ static bool retro_update_av_info(void)
    if (locked_video_horizontal)
       retro_max_diwstop = retro_max_diwstop_old;
 
+   /* Auto horizontal center corrections */
+   if (opt_horizontal_offset_auto)
+   {
+      /* Automatic width sense fooling */
+      /* Walker */
+      if (retro_min_diwstart == (89 * width_multiplier) && retro_max_diwstop == (425 * width_multiplier))
+         retro_max_diwstop -= (16 * width_multiplier);
+      /* AfterBurner */
+      else if (retro_min_diwstart == (41 * width_multiplier) && retro_max_diwstop == (393 * width_multiplier))
+         retro_min_diwstart += (32 * width_multiplier);
+   }
+
    /* Apply crop mode */
    switch (crop_id)
    {
@@ -8274,14 +8283,6 @@ static bool retro_update_av_info(void)
          retroh_crop = EMULATOR_MIN_HEIGHT;
          break;
       case CROP_AUTO:
-         /* Automatic width sense fooling */
-         /* Walker */
-         if (retro_min_diwstart == (89 * width_multiplier) && retro_max_diwstop == (425 * width_multiplier))
-            retro_max_diwstop -= (16 * width_multiplier);
-         /* AfterBurner */
-         else if (retro_min_diwstart == (41 * width_multiplier) && retro_max_diwstop == (393 * width_multiplier))
-            retro_min_diwstart += (32 * width_multiplier);
-
          /* Normalize previous width */
          retrow_crop /= width_multiplier;
 
@@ -8314,14 +8315,16 @@ static bool retro_update_av_info(void)
    /* Crop mode preset calculations */
    if (crop_id > 0)
    {
-      float crop_dar    = 0;
-      float crop_par    = retro_get_aspect_ratio(0, 0, true);
+      float crop_dar         = 0;
+      float crop_par         = retro_get_aspect_ratio(0, 0, true);
+      unsigned retroh_normal = retroh / ((video_config & PUAE_VIDEO_DOUBLELINE) && !retro_doublescan ? 2 : 1);
 
       switch (crop_mode_id)
       {
          case CROP_MODE_BOTH:
             /* Calculate width in height chunks */
-            retrow_crop = (retrow / width_multiplier) - (retroh - retroh_crop) / 2;
+            if (crop_id != CROP_AUTO)
+               retrow_crop = (retrow / width_multiplier) - (retroh_normal - retroh_crop) / 2;
             break;
          /* Vertical disables horizontal crop */
          case CROP_MODE_VERTICAL:
@@ -8329,7 +8332,8 @@ static bool retro_update_av_info(void)
             break;
          /* Horizontal disables vertical crop and uses height chunks for width */
          case CROP_MODE_HORIZONTAL:
-            retrow_crop = (retrow / width_multiplier) - (retroh - retroh_crop) / 2;
+            if (crop_id != CROP_AUTO)
+               retrow_crop = (retrow / width_multiplier) - (retroh_normal - retroh_crop) / 2;
             retroh_crop = retroh;
             break;
          /* Wide modes prioritize height crop and calculate new width when height runs out */
