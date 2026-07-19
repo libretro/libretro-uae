@@ -1102,7 +1102,7 @@ static void retro_set_core_options()
             { NULL, NULL },
          },
 #if defined(__x86_64__)
-         "memory"
+         "exact"
 #else
          "normal"
 #endif
