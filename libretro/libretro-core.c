@@ -1482,7 +1482,7 @@ static void retro_set_core_options()
          "puae_vertical_pos",
          "Video > Vertical Position",
          "Vertical Position",
-         "'Automatic' keeps only cropped screens centered. Positive values move upward and negative values move downward.",
+         "'Automatic' keeps only cropped screens centered. 'Forced' centers regardless of available crop area. Positive values move upward and negative values move downward.",
          NULL,
          "video",
          {
@@ -2585,6 +2585,10 @@ static void retro_set_core_options()
 
          option_defs_us[i].values[j].value = "auto";
          option_defs_us[i].values[j].label = "Automatic";
+         ++j;
+
+         option_defs_us[i].values[j].value = "autoforce";
+         option_defs_us[i].values[j].label = "Automatic (Forced)";
          ++j;
 
          option_defs_us[i].values[j].value = "0";
@@ -4347,11 +4351,16 @@ static void update_variables(void)
    GET_VAR("vertical_pos")
    {
       opt_vertical_offset = 0;
+      opt_vertical_offset_auto = false;
       if (!strcmp(var.value, "auto"))
          opt_vertical_offset_auto = true;
+      else if (!strcmp(var.value, "autoforce"))
+      {
+         opt_vertical_offset_auto = true;
+         opt_vertical_offset = -1;
+      }
       else
       {
-         opt_vertical_offset_auto = false;
          int new_vertical_offset = atoi(var.value);
          if (new_vertical_offset >= -minfirstline && new_vertical_offset <= 70)
             opt_vertical_offset = new_vertical_offset;
@@ -7397,7 +7406,8 @@ static void update_video_center_vertical(void)
          && thisframe_y_adjust_new < thisframe_y_adjust && thisframe_y_adjust_new > 0)
    {
       int diff = thisframe_y_adjust - thisframe_y_adjust_new;
-      if (retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line < first_drawn_limit)
+      if (     retro_thisframe_last_drawn_line - retro_thisframe_first_drawn_line < first_drawn_limit
+            || !opt_vertical_offset)
          diff = 0;
 
       thisframe_y_adjust     -= diff;
