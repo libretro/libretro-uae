@@ -7509,6 +7509,10 @@ static void update_video_center_horizontal(void)
    if (retro_doublescan)
       visible_left_border = retro_min_diwstart;
 
+   /* Manual offset override */
+   if (!opt_horizontal_offset_auto)
+      visible_left_border = default_left_border + (opt_horizontal_offset * width_multiplier);
+
    /* Offset adjustments */
    visible_left_border_new -= visible_left_border;
    visible_left_border_new = (visible_left_border_new < 0) ? 0 : visible_left_border_new;
