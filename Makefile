@@ -200,11 +200,10 @@ else ifneq (,$(filter $(platform), ps3 psl1ght))
 	   CFLAGS += -D__PS3__
    endif
    CFLAGS += -DSDL_BYTEORDER=SDL_BIG_ENDIAN -DBYTE_ORDER=BIG_ENDIAN -D__BIG_ENDIAN__
-   CFLAGS += -DHAVE_MEMALIGN -DHAVE_ASPRINTF -DBIG_ENDIAN -I$(ZLIB_DIR) -I./deps-ps3
+   CFLAGS += -DHAVE_MEMALIGN -DHAVE_ASPRINTF -DBIG_ENDIAN -I./deps-ps3
    TARGET := $(TARGET_NAME)_libretro_$(platform).a
    CC = $(PS3DEV)/ppu/bin/ppu-$(COMMONLV)gcc$(EXE_EXT)
    AR = $(PS3DEV)/ppu/bin/ppu-$(COMMONLV)ar$(EXE_EXT)
-   ZLIB_DIR = $(LIBUTILS)/zlib/
    LDFLAGS := -lm -lpthread -lc
    SOURCES_C += $(CORE_DIR)/deps-ps3/ps3_functions.c
    STATIC_LINKING=0
@@ -213,7 +212,7 @@ else ifneq (,$(filter $(platform), ps3 psl1ght))
 # Emscripten
 else ifeq ($(platform), emscripten)
    TARGET := $(TARGET_NAME)_libretro_$(platform).bc
-   CFLAGS    += -DHAVE_MEMALIGN -DHAVE_ASPRINTF -I$(ZLIB_DIR)
+   CFLAGS    += -DHAVE_MEMALIGN -DHAVE_ASPRINTF
    STATIC_LINKING=1
 
 # iOS
