@@ -164,7 +164,11 @@ else ifneq (,$(filter $(platform), ngc wii wiiu))
    else ifneq (,$(findstring ngc,$(platform)))
       COMMONFLAGS += -DHW_DOL -mrvl
    endif
-   CFLAGS += $(COMMONFLAGS) -I$(DEVKITPRO)/portlibs/ppc/include -I$(CORE_DIR)/deps-wiiu
+   # The bundled zlib (deps/libz) must win over the devkitPro portlibs copy,
+   # otherwise zutil.h's <zlib.h> resolves to portlibs and its adler32/crc32
+   # prototypes conflict with our definitions.
+   CFLAGS += $(COMMONFLAGS) -I$(CORE_DIR)/libretro-common/include/compat/zlib
+   CFLAGS += -I$(DEVKITPRO)/portlibs/ppc/include -I$(CORE_DIR)/deps-wiiu
 
 # Nintendo Switch (libnx)
 else ifeq ($(platform), libnx)
