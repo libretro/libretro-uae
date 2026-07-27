@@ -210,7 +210,6 @@ ifeq ($(HAVE_MPEG2), 1)
         $(DEPS_DIR)/libmpeg2/src/slice.c
 endif
 
-ifneq ($(STATIC_LINKING), 1)
 SOURCES_C += \
 	$(DEPS_DIR)/libz/adler32.c \
 	$(DEPS_DIR)/libz/crc32.c \
@@ -242,6 +241,7 @@ SOURCES_C += \
 	$(DEPS_DIR)/7zip/Lzma2Dec.c \
 	$(DEPS_DIR)/7zip/LzmaDec.c
 
+ifneq ($(STATIC_LINKING), 1)
 SOURCES_C += \
 	$(LIBRETRO_COMM_DIR)/compat/compat_strl.c \
 	$(LIBRETRO_COMM_DIR)/compat/compat_strcasestr.c \
