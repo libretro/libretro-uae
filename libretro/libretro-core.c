@@ -42,16 +42,22 @@ static const TCHAR *csmode[] = { _T("ocs"), _T("ecs_agnus"), _T("ecs_denise"), _
 #define utf8_to_local_string_alloc strdup
 #endif
 
-#define CORE_OPTION_VALUE_RANGE(min, max) \
+#define CORE_OPTION_VALUE_RANGE(min, max, step, unit) \
 { \
    int value = min; \
    while (value <= max) \
    { \
-      char str[4]; \
+      char str[6]; \
       snprintf(str, sizeof(str), "%d", value); \
       if (!option_defs_us[i].values[j].value) \
          option_defs_us[i].values[j].value = strdup(str); \
-      ++value; \
+      if (unit) \
+      { \
+         snprintf(str, sizeof(str), "%d%s", value, unit); \
+         if (!option_defs_us[i].values[j].label) \
+            option_defs_us[i].values[j].label = strdup(str); \
+      } \
+      value += step; \
       ++j; \
    } \
 } \
@@ -917,7 +923,7 @@ static void retro_set_core_options()
          NULL,
          "system",
          {
-            /* Options filled dynamically in retro_set_environment() */
+            /* Options filled dynamically later */
             { NULL, NULL },
          },
          NULL
@@ -1326,7 +1332,7 @@ static void retro_set_core_options()
          NULL,
          "media",
          {
-            /* Options filled dynamically in retro_set_environment() */
+            /* Options filled dynamically later */
             { NULL, NULL },
          },
          NULL
@@ -1487,7 +1493,7 @@ static void retro_set_core_options()
          NULL,
          "video",
          {
-            /* Options filled dynamically in retro_set_environment() */
+            /* Options filled dynamically later */
             { NULL, NULL },
          },
          "auto"
@@ -1500,7 +1506,7 @@ static void retro_set_core_options()
          NULL,
          "video",
          {
-            /* Options filled dynamically in retro_set_environment() */
+            /* Options filled dynamically later */
             { NULL, NULL },
          },
          "auto"
@@ -2007,36 +2013,7 @@ static void retro_set_core_options()
          NULL,
          "input",
          {
-            { "10", "10%" },
-            { "20", "20%" },
-            { "30", "30%" },
-            { "40", "40%" },
-            { "50", "50%" },
-            { "60", "60%" },
-            { "70", "70%" },
-            { "80", "80%" },
-            { "90", "90%" },
-            { "100", "100%" },
-            { "110", "110%" },
-            { "120", "120%" },
-            { "130", "130%" },
-            { "140", "140%" },
-            { "150", "150%" },
-            { "160", "160%" },
-            { "170", "170%" },
-            { "180", "180%" },
-            { "190", "190%" },
-            { "200", "200%" },
-            { "210", "210%" },
-            { "220", "220%" },
-            { "230", "230%" },
-            { "240", "240%" },
-            { "250", "250%" },
-            { "260", "260%" },
-            { "270", "270%" },
-            { "280", "280%" },
-            { "290", "290%" },
-            { "300", "300%" },
+            /* Options filled dynamically later */
             { NULL, NULL },
          },
          "100"
@@ -2600,6 +2577,15 @@ static void retro_set_core_options()
          option_defs_us[i].values[j].value = NULL;
          option_defs_us[i].values[j].label = NULL;
       }
+      else if (!strcmp(option_defs_us[i].key, "puae_mouse_speed"))
+      {
+         j = 0;
+
+         CORE_OPTION_VALUE_RANGE(10, 1000, 10, "%");
+
+         option_defs_us[i].values[j].value = NULL;
+         option_defs_us[i].values[j].label = NULL;
+      }
       else if (!strcmp(option_defs_us[i].key, "puae_vertical_pos"))
       {
          j = 0;
@@ -2616,8 +2602,8 @@ static void retro_set_core_options()
          option_defs_us[i].values[j].label = "Default";
          ++j;
 
-         CORE_OPTION_VALUE_RANGE(1, 70);
-         CORE_OPTION_VALUE_RANGE(-20, -1);
+         CORE_OPTION_VALUE_RANGE(1, 70, 1, NULL);
+         CORE_OPTION_VALUE_RANGE(-20, -1, 1, NULL);
 
          option_defs_us[i].values[j].value = NULL;
          option_defs_us[i].values[j].label = NULL;
@@ -2634,8 +2620,8 @@ static void retro_set_core_options()
          option_defs_us[i].values[j].label = "Default";
          ++j;
 
-         CORE_OPTION_VALUE_RANGE(1, 40);
-         CORE_OPTION_VALUE_RANGE(-40, -1);
+         CORE_OPTION_VALUE_RANGE(1, 40, 1, NULL);
+         CORE_OPTION_VALUE_RANGE(-40, -1, 1, NULL);
 
          option_defs_us[i].values[j].value = NULL;
          option_defs_us[i].values[j].label = NULL;
