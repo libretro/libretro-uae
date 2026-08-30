@@ -46,7 +46,11 @@
 #endif
 
 /* ========================================================================= */
+#if 0
 uint32_t adler32(uint32_t adler, const uint8_t *buf, size_t len)
+#else
+uLong ZEXPORT adler32(uLong adler, const Bytef *buf, uInt len)
+#endif
 {
    int k;
    uint32_t s1 = adler & 0xffff;
