@@ -8723,8 +8723,18 @@ bool retro_load_game(const struct retro_game_info *info)
     *   since we use memory based save states */
    savestate_fname[0] = '\0';
 
-   /* Estimate necessary save state size */
+   /* Estimate necessary save state size
+    * > Headroom must cover more than just RAM: CPU/chipset state, device
+    *   state, and - critically for HD/WHDLoad content - the filesystem
+    *   FSYP/FSYS chunks and CONF chunk, none of which scale with RAM size.
+    *   A flat 128 KB alone (previously the only term here) can be too
+    *   small once WHDLoad "Files"/"HDFs" mode adds one or more virtual/
+    *   hardfile units with many open locks, silently truncating
+    *   retro_serialize() and corrupting the rewind buffer. Restore the
+    *   proportional margin on top of the flat floor instead of dropping
+    *   the floor entirely. */
    save_state_file_size = currprefs.chipmem.size + currprefs.bogomem.size + currprefs.fastmem[0].size + currprefs.z3fastmem[0].size;
+   save_state_file_size += (size_t)(((float)save_state_file_size * 0.05f) + 0.5f);
    save_state_file_size += 128 * 1000;
 
    struct retro_memory_descriptor memdesc[] = {
