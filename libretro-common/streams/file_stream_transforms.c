@@ -32,31 +32,27 @@ RFILE* rfopen(const char *path, const char *mode)
    unsigned int retro_mode = RETRO_VFS_FILE_ACCESS_READ;
    bool position_to_end    = false;
 
-   if (strstr(mode, "r"))
+   if (strchr(mode, 'r'))
    {
       retro_mode = RETRO_VFS_FILE_ACCESS_READ;
-      if (strstr(mode, "+"))
-      {
-         retro_mode = RETRO_VFS_FILE_ACCESS_READ_WRITE |
-            RETRO_VFS_FILE_ACCESS_UPDATE_EXISTING;
-      }
+      if (strchr(mode, '+'))
+         retro_mode = RETRO_VFS_FILE_ACCESS_READ_WRITE
+                    | RETRO_VFS_FILE_ACCESS_UPDATE_EXISTING;
    }
-   else if (strstr(mode, "w"))
+   else if (strchr(mode, 'w'))
    {
       retro_mode = RETRO_VFS_FILE_ACCESS_WRITE;
-      if (strstr(mode, "+"))
+      if (strchr(mode, '+'))
          retro_mode = RETRO_VFS_FILE_ACCESS_READ_WRITE;
    }
-   else if (strstr(mode, "a"))
+   else if (strchr(mode, 'a'))
    {
-      retro_mode = RETRO_VFS_FILE_ACCESS_WRITE |
-         RETRO_VFS_FILE_ACCESS_UPDATE_EXISTING;
+      retro_mode = RETRO_VFS_FILE_ACCESS_WRITE
+                 | RETRO_VFS_FILE_ACCESS_UPDATE_EXISTING;
       position_to_end = true;
-      if (strstr(mode, "+"))
-      {
-         retro_mode = RETRO_VFS_FILE_ACCESS_READ_WRITE |
-            RETRO_VFS_FILE_ACCESS_UPDATE_EXISTING;
-      }
+      if (strchr(mode, '+'))
+         retro_mode = RETRO_VFS_FILE_ACCESS_READ_WRITE
+                    | RETRO_VFS_FILE_ACCESS_UPDATE_EXISTING;
    }
 
    output = filestream_open(path, retro_mode,
@@ -102,8 +98,8 @@ int64_t rfseek(RFILE* stream, int64_t offset, int origin)
          seek_position = RETRO_VFS_SEEK_POSITION_END;
          break;
    }
-   /* Must enforce fseek behavior instead of lseek */
-   return filestream_seek(stream, offset, seek_position) < 0 ? -1 : 0;
+
+   return filestream_seek(stream, offset, seek_position);
 }
 
 int64_t rfread(void* buffer,
@@ -115,12 +111,11 @@ int64_t rfread(void* buffer,
    return (filestream_read(stream, buffer, elem_size * elem_count) / elem_size);
 }
 
-char *rfgets(char *buffer, int maxCount, RFILE* stream)
+char *rfgets(char *s, int maxCount, RFILE* stream)
 {
    if (!stream)
       return NULL;
-
-   return filestream_gets(stream, buffer, maxCount);
+   return filestream_gets(stream, s, maxCount);
 }
 
 int rfgetc(RFILE* stream)
@@ -158,16 +153,16 @@ int64_t rfflush(RFILE * stream)
 
 int rfprintf(RFILE * stream, const char * format, ...)
 {
-   int result;
+   int ret;
    va_list vl;
 
    if (!stream)
       return -1;
 
    va_start(vl, format);
-   result = filestream_vprintf(stream, format, vl);
+   ret = filestream_vprintf(stream, format, vl);
    va_end(vl);
-   return result;
+   return ret;
 }
 
 int rferror(RFILE* stream)
@@ -182,14 +177,14 @@ int rfeof(RFILE* stream)
 
 int rfscanf(RFILE * stream, const char * format, ...)
 {
-   int result;
+   int ret;
    va_list vl;
 
    if (!stream)
       return 0;
 
    va_start(vl, format);
-   result = filestream_vscanf(stream, format, &vl);
+   ret = filestream_vscanf(stream, format, &vl);
    va_end(vl);
-   return result;
+   return ret;
 }

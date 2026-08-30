@@ -11,7 +11,10 @@ extern int log_filesys;
 bool my_stat (const TCHAR *name, struct mystat *ms) {
 	struct stat sonuc;
 #ifdef USE_LIBRETRO_VFS
-	if (stat(utf8_to_local_string_alloc(name), &sonuc) == -1) {
+	char *name_local = utf8_to_local_string_alloc(name);
+	if (name_local && stat(name_local, &sonuc) == -1) {
+	   free(name_local);
+	   name_local = NULL;
 #else
 	if (stat(name, &sonuc) == -1) {
 #endif
@@ -127,11 +130,19 @@ int my_getvolumeinfo(const char *root)
 		write_log("my_getvolumeinfo '%s'\n", root);
 
 #ifdef USE_LIBRETRO_VFS
-	if (stat(utf8_to_local_string_alloc(root), &sonuc) == -1)
+	char *name_local = utf8_to_local_string_alloc(root);
+	if (name_local && stat(name_local, &sonuc) == -1)
+	{
+	   free(name_local);
+	   name_local = NULL;
+	   return -1;
+	}
+	free(name_local);
+	name_local = NULL;
 #else
 	if (stat(root, &sonuc) == -1)
-#endif
 		return -1;
+#endif
 	if (!S_ISDIR(sonuc.st_mode))
 		return -1;
 
@@ -201,7 +212,10 @@ int my_readdir(struct my_opendir_s* mod, TCHAR* name)
 	mod->dp = retro_readdir(mod->dh);
 	if (!mod->dp)
 		return 0;
-	_tcscpy (name, utf8_to_local_string_alloc(retro_dirent_get_name(mod->dh)));
+	char *name_local = utf8_to_local_string_alloc(retro_dirent_get_name(mod->dh));
+	_tcscpy (name, name_local);
+	free(name_local);
+	name_local = NULL;
 #if 0
 	if (log_filesys)
 		write_log("my_readdir '%s'\n", name);
@@ -287,18 +301,24 @@ struct my_openfile_s *my_open(const TCHAR *name, int flags)
 
 #ifdef USE_LIBRETRO_VFS
 	RFILE *fp = NULL;
-	int open_flags = RETRO_VFS_FILE_ACCESS_UPDATE_EXISTING;
-	if (flags & O_TRUNC || flags & O_CREAT)
-		open_flags = RETRO_VFS_FILE_ACCESS_READ_WRITE;
+	int open_flags = RETRO_VFS_FILE_ACCESS_READ;
 
 	if (flags & O_RDWR)
-		open_flags = open_flags | RETRO_VFS_FILE_ACCESS_READ_WRITE;
-	else if (flags & O_RDONLY)
-		open_flags = open_flags | RETRO_VFS_FILE_ACCESS_READ;
+	{
+		open_flags = RETRO_VFS_FILE_ACCESS_READ_WRITE;
+		if (!(flags & (O_TRUNC | O_CREAT)))
+			open_flags |= RETRO_VFS_FILE_ACCESS_UPDATE_EXISTING;
+	}
 	else if (flags & O_WRONLY)
-		open_flags = open_flags | RETRO_VFS_FILE_ACCESS_WRITE;
+	{
+		open_flags = RETRO_VFS_FILE_ACCESS_WRITE;
+		if (!(flags & (O_TRUNC | O_CREAT)))
+			open_flags |= RETRO_VFS_FILE_ACCESS_UPDATE_EXISTING;
+	}
 
 	fp = filestream_open(name_utf8, open_flags, RETRO_VFS_FILE_ACCESS_HINT_NONE);
+	if (!fp)
+	   return NULL;
 #elif defined(FD_OPEN)
 	int open_flags = O_BINARY;
 	if (flags & O_TRUNC)
@@ -353,7 +373,7 @@ void my_close(struct my_openfile_s* mos)
 	if (log_filesys)
 		write_log("my_close '%s'\n", mos->path);
 #ifdef USE_LIBRETRO_VFS
-	int result = filestream_close(mos->fp);
+	int result = (mos && mos->fp) ? filestream_close(mos->fp) : 1;
 #elif defined(FD_OPEN)
 	int result = close(mos->fd);
 #else

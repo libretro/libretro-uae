@@ -168,7 +168,9 @@
 #define MODE_COPY 1      /* copy input directly */
 #define MODE_GZIP 2      /* decompress a gzip stream */
 
+#if 0
 #include "gzfile.h"
+#endif
 
 /* internal gzip file state data structure */
 typedef struct {

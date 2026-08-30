@@ -248,11 +248,20 @@ bool dc_replace_file(dc_storage* dc, int index, const char* filename)
          FILE *zip_m3u;
          char zip_m3u_list[DC_MAX_SIZE][RETRO_PATH_MAX] = {0};
          char zip_m3u_path[RETRO_PATH_MAX] = {0};
-         snprintf(zip_m3u_path, sizeof(zip_m3u_path), "%s%s%s.m3u",
-               utf8_to_local_string_alloc(retro_temp_directory),
-               DIR_SEP_STR,
-               utf8_to_local_string_alloc(zip_basename));
          int zip_m3u_num = 0;
+
+         char *retro_temp_local   = utf8_to_local_string_alloc(retro_temp_directory);
+         char *zip_basename_local = utf8_to_local_string_alloc(zip_basename);
+
+         snprintf(zip_m3u_path, sizeof(zip_m3u_path), "%s%s%s.m3u",
+               retro_temp_local,
+               DIR_SEP_STR,
+               zip_basename_local);
+
+         free(retro_temp_local);
+         retro_temp_local = NULL;
+         free(zip_basename_local);
+         zip_basename_local = NULL;
 
          RDIR *zip_dir;
          zip_dir = retro_opendir(retro_temp_directory);

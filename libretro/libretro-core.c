@@ -5944,9 +5944,8 @@ static void whdload_prefs_copy(void)
 static void whdload_quitkey(void)
 {
    int i;
-
    if (     opt_use_whdload_nowritecache
-         || string_is_empty(currprefs.mountconfig[0].ci.volname))
+         || string_is_empty(currprefs.mountconfig[0].ci.devname))
       return;
 
    log_cb(RETRO_LOG_INFO, "WHDLoad QuitKey triggered...\n");
@@ -6335,11 +6334,20 @@ static bool retro_create_config(void)
          FILE *zip_m3u;
          char zip_m3u_list[DC_MAX_SIZE][RETRO_PATH_MAX] = {0};
          char zip_m3u_path[RETRO_PATH_MAX] = {0};
-         snprintf(zip_m3u_path, sizeof(zip_m3u_path), "%s%s%s.m3u",
-               utf8_to_local_string_alloc(retro_temp_directory),
-               DIR_SEP_STR,
-               utf8_to_local_string_alloc(zip_basename));
          int zip_m3u_num = 0;
+
+         char *retro_temp_local   = utf8_to_local_string_alloc(retro_temp_directory);
+         char *zip_basename_local = utf8_to_local_string_alloc(zip_basename);
+
+         snprintf(zip_m3u_path, sizeof(zip_m3u_path), "%s%s%s.m3u",
+               retro_temp_local,
+               DIR_SEP_STR,
+               zip_basename_local);
+
+         free(retro_temp_local);
+         retro_temp_local = NULL;
+         free(zip_basename_local);
+         zip_basename_local = NULL;
 
          RDIR *zip_dir;
          zip_dir = retro_opendir(retro_temp_directory);
@@ -6351,11 +6359,7 @@ static bool retro_create_config(void)
             if (name[0] == '.' || strendswith(name, "m3u") || zip_mode > 1 || browsed_file[0] != '\0')
                continue;
 
-#ifdef USE_LIBRETRO_VFS
-            zip_lastfile = strdup(name);
-#else
             zip_lastfile = utf8_to_local_string_alloc(name);
-#endif
 
             /* Multi file mode, generate playlist */
             if (dc_get_image_type(zip_lastfile) == DC_IMAGE_TYPE_FLOPPY ||
@@ -7315,8 +7319,7 @@ static bool retro_create_config(void)
    if (!real_ntsc && video_config & PUAE_VIDEO_NTSC)
       forced_video = RETRO_REGION_PAL;
 
-   if (tmp_str)
-      free(tmp_str);
+   free(tmp_str);
    tmp_str = NULL;
 
    return true;
