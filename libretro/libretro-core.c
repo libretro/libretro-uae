@@ -84,6 +84,7 @@ extern int diwlastword_total;
 extern int diwfirstword_total;
 extern int m68k_go(int may_quit, int resume);
 extern void compute_vsynctime(void);
+extern int nr_units(void);
 
 unsigned int opt_model_options_display = 0;
 unsigned int opt_audio_options_display = 0;
@@ -8732,10 +8733,16 @@ bool retro_load_game(const struct retro_game_info *info)
     *   hardfile units with many open locks, silently truncating
     *   retro_serialize() and corrupting the rewind buffer. Restore the
     *   proportional margin on top of the flat floor instead of dropping
-    *   the floor entirely. */
+    *   the floor entirely.
+    * > The 5%-of-RAM margin alone is still too thin on small-RAM configs:
+    *   each mounted filesystem unit's FSYS chunk is capped at ~100 KB
+    *   (see save_filesys()) and WHDLoad "Files" mode can mount up to
+    *   four of them, so account for that directly rather than relying
+    *   on RAM size to correlate with mounted unit count. */
    save_state_file_size = currprefs.chipmem.size + currprefs.bogomem.size + currprefs.fastmem[0].size + currprefs.z3fastmem[0].size;
    save_state_file_size += (size_t)(((float)save_state_file_size * 0.05f) + 0.5f);
    save_state_file_size += 128 * 1000;
+   save_state_file_size += (size_t)nr_units() * 100 * 1024;
 
    struct retro_memory_descriptor memdesc[] = {
       {RETRO_MEMDESC_SYSTEM_RAM, chipmem_bank.baseaddr, 0, 0, 0, 0, chipmem_bank.allocated_size, "CHIP"},
@@ -8819,6 +8826,11 @@ bool retro_serialize(void *data_, size_t size)
 
          if (len == state_file_size)
             success = true;
+      }
+      else
+      {
+         log_cb(RETRO_LOG_ERROR, "retro_serialize: save state buffer too small (%llu available, %lld required) - state not saved\n",
+               (unsigned long long)size, (long long)state_file_size);
       }
 
       zfile_fclose(state_file);
