@@ -10,9 +10,9 @@ INCFLAGS := \
 	-I$(CORE_DIR) \
 	-I$(RETRODEP) \
 	-I$(DEPS_DIR)/7zip \
+	-I$(DEPS_DIR)/libz \
 	-I$(LIBRETRO) \
 	-I$(LIBRETRO_COMM_DIR)/include \
-	-I$(LIBRETRO_COMM_DIR)/include/compat/zlib
 
 SOURCES_C += \
     $(LIBRETRO)/libretro-core.c \

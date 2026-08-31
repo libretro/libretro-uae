@@ -24,13 +24,17 @@
 #include "diskutil.h"
 #include "fdi2raw.h"
 
-#ifndef __LIBRETRO__
+#ifdef __LIBRETRO__
+#include "deps/libz/zlib.h"
+#else
 #include "archivers/zip/unzip.h"
 #endif
 #include "archivers/dms/cdata.h"
 #include "archivers/dms/pfile.h"
 #include "archivers/wrp/warp.h"
+#ifndef __LIBRETRO__
 #include <zlib.h>
+#endif
 #include <stdarg.h>
 #include "misc.h"
 #include "uae.h"

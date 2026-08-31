@@ -28,7 +28,9 @@
 #include "fsdb.h"
 #include "misc.h"
 
+#ifndef __LIBRETRO__
 #include <zlib.h>
+#endif
 
 #undef TZSET
 
