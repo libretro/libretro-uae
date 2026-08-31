@@ -586,6 +586,12 @@ static void close_filesys_unit (UnitInfo *uip)
 		sys_command_close (uip->cddevno);
 		isofs_unmount (uip->cdfs_superblock);
 	}
+#ifdef __LIBRETRO__
+	if (uip->zarchive) {
+		zfile_fclose_archive (uip->zarchive);
+		uip->zarchive = NULL;
+	}
+#endif
 
 	uip->unit_pipe = 0;
 	uip->back_pipe = 0;
@@ -9753,12 +9759,22 @@ static uae_u8 *restore_aino (UnitInfo *ui, Unit *u, uae_u8 *src)
 	xfree(p);
 	if (flags & 2) {
 		a->dir = 1;
+#ifdef __LIBRETRO__
+		if (u->volflags & (MYVOLUMEINFO_ARCHIVE | MYVOLUMEINFO_CDFS))
+			; /* no real host path to check/clean for archive/CDFS units */
+		else if (!my_existsdir(a->nname))
+#else
 		if (!my_existsdir(a->nname))
+#endif
 			write_log (_T("*** FS: Directory '%s' missing!\n"), a->nname);
 		else
 			fsdb_clean_dir (a);
 	} else {
+#ifdef __LIBRETRO__
+		if (!(u->volflags & (MYVOLUMEINFO_ARCHIVE | MYVOLUMEINFO_CDFS)) && !my_existsfile(a->nname))
+#else
 		if (!my_existsfile(a->nname))
+#endif
 			write_log (_T("*** FS: File '%s' missing!\n"), a->nname);
 	}
 	if (base) {
@@ -9822,7 +9838,19 @@ static uae_u8 *restore_key (UnitInfo *ui, Unit *u, uae_u8 *src)
 		k->aino = a;
 		if (a->uniq != uniq)
 			write_log (_T("*** FS: Open file '%s' aino id %d != %d\n"), p, uniq, a->uniq);
+#ifdef __LIBRETRO__
+		/* Archive- or CDFS-backed units (e.g. a WHDLoad game mounted
+		 * directly from a .lha) have no real host path to stat here -
+		 * pn is built from the archive's "file name" as if it were a
+		 * plain directory, so my_existsfile() would always say
+		 * "missing" and route every restore through the dummy-file
+		 * path below. fs_openfile() already knows how to resolve such
+		 * units via the archive volume/CDFS, exactly like normal
+		 * (non-restore) file access does, so skip straight to it. */
+		if (!(u->volflags & (MYVOLUMEINFO_ARCHIVE | MYVOLUMEINFO_CDFS)) && !my_existsfile (pn)) {
+#else
 		if (!my_existsfile (pn)) {
+#endif
 			write_log (_T("*** FS: Open file '%s' is missing, creating dummy file!\n"), p);
 			if (savedsize < 10 * 1024 * 1024) {
 				k->fd = fs_openfile (u, a, openmode | O_CREAT |O_BINARY);
@@ -9861,6 +9889,9 @@ static uae_u8 *restore_key (UnitInfo *ui, Unit *u, uae_u8 *src)
 		}
 	}
 	xfree (p);
+#ifdef __LIBRETRO__
+	xfree (pn);
+#endif
 	if (missing) {
 		xfree (k);
 	} else {
