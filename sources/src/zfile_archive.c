@@ -28,7 +28,9 @@
 #include "zarchive.h"
 #include "disk.h"
 
+#ifndef __LIBRETRO__
 #include <zlib.h>
+#endif
 
 #define unpack_log write_log
 #undef unpack_log

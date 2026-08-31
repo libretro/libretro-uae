@@ -31,7 +31,7 @@
 #endif
 
 #ifdef __LIBRETRO__
-#include <zlib.h>
+#include "deps/libz/zlib.h"
 #else
 #include "archivers/zip/unzip.h"
 #endif
