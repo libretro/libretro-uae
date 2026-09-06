@@ -115,12 +115,13 @@ static INLINE int pthread_detach(pthread_t thread)
 
 static INLINE int pthread_join(pthread_t thread, void **retval)
 {
+   OSThread *t = (OSThread *)thread;
    (void)retval;
    bool ret = OSJoinThread(thread, NULL);
    if(ret == true)
    {
-      free(thread->stackEnd);
-      free(thread);
+      free(t);
+      free(t);
    }
    return (ret == true) ? 0 : -1;
 }
