@@ -131,7 +131,7 @@ void uae_set_thread_priority (int pri)
 
 #ifdef WIIU
 
-//#include <wiiu_pthread.h>
+#include <wiiu_pthread.h>
 #include <wiiu/os/semaphore.h>
 
 #else /* WIIU */
