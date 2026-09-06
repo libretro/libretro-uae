@@ -36,8 +36,7 @@ STATIC_INLINE void uae_wait_thread (uae_thread_id tid)
 #else /* WIN32 */
 
 #ifdef WIIU
-// this include is no longer needed on more recent toolchains, uncomment if you use an older one
-//#include <wiiu_pthread.h>
+#include <wiiu_pthread.h>
 #include <wiiu/os/semaphore.h>
 
 typedef struct {

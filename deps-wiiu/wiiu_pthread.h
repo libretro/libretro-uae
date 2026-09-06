@@ -30,12 +30,26 @@
 #include <malloc.h>
 #define STACKSIZE (8 * 1024)
 
+/*
+ * Current devkitPPC already provides the pthread types - uncomment code
+ * below if older toolchain:
+ *
+ *   pthread_t
+ *   pthread_mutex_t
+ *   pthread_mutexattr_t
+ *   pthread_attr_t
+ *   pthread_cond_t
+ *   pthread_condattr_t
+*/
+
+/*
 typedef OSThread* pthread_t;
 typedef OSMutex* pthread_mutex_t;
 typedef void* pthread_mutexattr_t;
 typedef int pthread_attr_t;
 typedef OSCondition* pthread_cond_t;
 typedef OSCondition* pthread_condattr_t;
+*/
 
 static INLINE int pthread_create(pthread_t *thread,
       const pthread_attr_t *attr, void *(*start_routine)(void*), void *arg)
