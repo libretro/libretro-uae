@@ -761,11 +761,12 @@ typedef int8_t INT8;
 #ifdef VITA
 #include <psp2/types.h>
 #include <psp2/io/dirent.h>
+#include <psp2/io/stat.h>
 #include <psp2/kernel/threadmgr.h>
 #define mkdir(name, mode) sceIoMkdir(name, mode)
 #define rmdir(name) sceIoRmdir(name)
 #define chdir(name) 0
-#define chmod(a, b)
+#define chmod(a, b) 0
 #define timezone()
 #endif
 
