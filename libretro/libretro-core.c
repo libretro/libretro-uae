@@ -7055,11 +7055,18 @@ static bool retro_create_config(void)
                         log_cb(RETRO_LOG_INFO, "Disk (%d) inserted in drive DF%d: \"%s\".\n", floppy + 1, floppy, dc->files[i]);
                         tmp_str = utf8_to_local_string_alloc(dc->files[i]);
                         retro_config_append("floppy%d=%s\n", floppy, tmp_str);
+                        /* By default only DF0: is enabled, so floppyXtype needs to be set on the extra drives */
+                        retro_config_append("floppy%dtype=%d\n", floppy, 0); /* 0 = DRV_35_DD */
+
+                        if (libretro_runloop_active)
+                        {
+                           changed_prefs.floppyslots[i].dfxtype = 0;
+                           strcpy(changed_prefs.floppyslots[i].df, tmp_str);
+                        }
+
                         free(tmp_str);
                         tmp_str = NULL;
 
-                        /* By default only DF0: is enabled, so floppyXtype needs to be set on the extra drives */
-                        retro_config_append("floppy%dtype=%d\n", floppy, 0); /* 0 = 3.5" DD */
                         floppy++;
                      }
                      else
@@ -7067,6 +7074,15 @@ static bool retro_create_config(void)
                         log_cb(RETRO_LOG_WARN, "Too many disks for MultiDrive!\n");
                         break;
                      }
+                  }
+               }
+               else if (libretro_runloop_active)
+               {
+                  uint8_t i;
+                  for (i = 1; i < MAX_FLOPPY_DRIVES; i++)
+                  {
+                     changed_prefs.floppyslots[i].dfxtype = DRV_NONE;
+                     changed_prefs.floppyslots[i].df[0]   = 0;
                   }
                }
 
