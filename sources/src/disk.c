@@ -1145,7 +1145,12 @@ static int drive_insert (drive *drv, struct uae_prefs *p, int dnum, const TCHAR 
 	_tcsncpy (changed_prefs.floppyslots[dnum].df, filename, 255);
 	changed_prefs.floppyslots[dnum].df[255] = 0;
 	changed_prefs.floppyslots[dnum].forcedwriteprotect = forcedwriteprotect;
+#ifdef __LIBRETRO__
+	if (drv->newname != filename)
+		_tcscpy (drv->newname, filename);
+#else
 	_tcscpy (drv->newname, filename);
+#endif
 	drv->newnamewriteprotected = forcedwriteprotect;
 	gui_filename (dnum, filename);
 	free (filename);
