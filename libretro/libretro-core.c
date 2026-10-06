@@ -920,7 +920,7 @@ static void retro_set_core_options()
          "puae_kickstart",
          "System > Kickstart ROM",
          "Kickstart ROM",
-         "Kickstart ROMs are searched from 'system'.\nCore restart required.",
+         "Kickstart ROMs are searched from 'system'.\nCore reset required.",
          NULL,
          "system",
          {
@@ -933,7 +933,7 @@ static void retro_set_core_options()
          "puae_chipmem_size",
          "System > Chip RAM",
          "Chip RAM",
-         "'Automatic' defaults to the current preset model.\nCore restart required.",
+         "'Automatic' defaults to the current preset model.\nCore reset required.",
          NULL,
          "system",
          {
@@ -950,7 +950,7 @@ static void retro_set_core_options()
          "puae_bogomem_size",
          "System > Slow RAM",
          "Slow RAM",
-         "'Automatic' defaults to the current preset model.\nCore restart required.",
+         "'Automatic' defaults to the current preset model.\nCore reset required.",
          NULL,
          "system",
          {
@@ -968,7 +968,7 @@ static void retro_set_core_options()
          "puae_fastmem_size",
          "System > Z2 Fast RAM",
          "Z2 Fast RAM",
-         "'Automatic' defaults to the current preset model.\nCore restart required.",
+         "'Automatic' defaults to the current preset model.\nCore reset required.",
          NULL,
          "system",
          {
@@ -986,7 +986,7 @@ static void retro_set_core_options()
          "puae_z3mem_size",
          "System > Z3 Fast RAM",
          "Z3 Fast RAM",
-         "'Automatic' defaults to the current preset model.\nCore restart required.",
+         "'Automatic' defaults to the current preset model.\nCore reset required.",
          NULL,
          "system",
          {
@@ -1010,7 +1010,7 @@ static void retro_set_core_options()
          "puae_cpu_model",
          "System > CPU Model",
          "CPU Model",
-         "'Automatic' defaults to the current preset model.\nCore restart required.",
+         "'Automatic' defaults to the current preset model.\nCore reset required.",
          NULL,
          "system",
          {
@@ -1029,7 +1029,7 @@ static void retro_set_core_options()
          "puae_fpu_model",
          "System > FPU Model",
          "FPU Model",
-         "'Automatic' defaults to the current preset model.\nCore restart required.",
+         "'Automatic' defaults to the current preset model.\nCore reset required.",
          NULL,
          "system",
          {
@@ -1152,7 +1152,7 @@ static void retro_set_core_options()
          "puae_floppy_multidrive",
          "Media > Floppy MultiDrive",
          "Floppy MultiDrive",
-         "Insert each disk in different drives. Can be forced with '(MD)' file path tag. Maximum is 4 disks due to external drive limit! Not all games support external drives!\nCore restart required.",
+         "Insert each disk in different drives. Can be forced with '(MD)' file path tag. Maximum is 4 disks due to external drive limit! Not all games support external drives!\nCore reset required.",
          NULL,
          "media",
          {
@@ -1236,7 +1236,7 @@ static void retro_set_core_options()
          "puae_use_whdload",
          "Media > WHDLoad Support",
          "WHDLoad Support",
-         "Enable launching pre-installed WHDLoad installs. Creates a helper boot image for loading content and an empty image for saving. Legacy 'HDFs' mode is not recommended!\nCore restart required.\n- 'Files' creates data in directories\n- 'HDFs' creates data in images\n- 'OFF' boots hard drive images directly",
+         "Enable launching pre-installed WHDLoad installs. Creates a helper boot image for loading content and an empty image for saving. Legacy 'HDFs' mode is not recommended!\nCore reset required.\n- 'Files' creates data in directories\n- 'HDFs' creates data in images\n- 'OFF' boots hard drive images directly",
          NULL,
          "media",
          {
@@ -1251,7 +1251,7 @@ static void retro_set_core_options()
          "puae_use_whdload_theme",
          "Media > WHDLoad Theme",
          "WHDLoad Theme",
-         "AmigaOS 'system-configuration' color prefs in WHDLoad helper image. Available only with 'Files' mode.\nCore restart required.\n- 'Default' = Black/White/DarkGray/LightGray\n- 'Native' = Gray/Black/White/LightBlue",
+         "AmigaOS 'system-configuration' color prefs in WHDLoad helper image. Available only with 'Files' mode.\nCore reset required.\n- 'Default' = Black/White/DarkGray/LightGray\n- 'Native' = Gray/Black/White/LightBlue",
          NULL,
          "media",
          {
@@ -1265,7 +1265,7 @@ static void retro_set_core_options()
          "puae_use_whdload_prefs",
          "Media > WHDLoad Splash Screen",
          "WHDLoad Splash Screen",
-         "Space/Enter/Fire works as WHDLoad Start-button. Core restart required.\nOverride with buttons while booting:\n- 'Config': Hold 2nd fire / Blue\n- 'Splash': Hold LMB\n- 'Config + Splash': Hold RMB\n- ReadMe + MkCustom: Hold Red+Blue",
+         "Space/Enter/Fire works as WHDLoad Start-button. Core reset required.\nOverride with buttons while booting:\n- 'Config': Hold 2nd fire / Blue\n- 'Splash': Hold LMB\n- 'Config + Splash': Hold RMB\n- ReadMe + MkCustom: Hold Red+Blue",
          NULL,
          "media",
          {
@@ -1281,7 +1281,7 @@ static void retro_set_core_options()
          "puae_use_whdload_buttonwait",
          "Media > WHDLoad ButtonWait",
          "WHDLoad ButtonWait",
-         "Wait for a button press on internal loading sections if the slave supports it.\nCore restart required.",
+         "Wait for a button press on internal loading sections if the slave supports it.\nCore reset required.",
          NULL,
          "media",
          {
@@ -1295,7 +1295,7 @@ static void retro_set_core_options()
          "puae_use_whdload_nowritecache",
          "Media > WHDLoad NoWriteCache",
          "WHDLoad NoWriteCache",
-         "Write cache requires running the core a few frames after closing content to trigger WHDLoad quit and flush cache to disk.\nQuitKey = '$2b' = '#' = 'LCtrl + Backslash'.\nCore restart required.",
+         "Write cache requires running the core a few frames after closing content to trigger WHDLoad quit and flush cache to disk.\nQuitKey = '$2b' = '#' = 'LCtrl + Backslash'.\nCore reset required.",
          NULL,
          "media",
          {
@@ -1309,7 +1309,7 @@ static void retro_set_core_options()
          "puae_use_boot_hd",
          "Media > Global Boot HD",
          "Global Boot HD",
-         "Attach a hard disk meant for Workbench, not for WHDLoad! Enabling forces a model with HD interface. Changing HDF size will not replace or edit the existing HDF.\nCore restart required.",
+         "Attach a hard disk for Workbench, not for WHDLoad! Enabling forces HD interface model. CD launch enables AmigaCD mode. HDF size change will not alter existing HDFs.\nCore restart required.",
          NULL,
          "media",
          {
@@ -1356,7 +1356,7 @@ static void retro_set_core_options()
          "puae_video_allow_hz_change",
          "Video > Allow Hz Change",
          "Allow Hz Change",
-         "Let Amiga decide the exact refresh rate when interlace mode or PAL/NTSC changes. 'Locked' changes only when video standard changes.\nCore restart required.",
+         "Let Amiga decide the exact refresh rate when interlace mode or PAL/NTSC changes. 'Locked' changes only when video standard changes.\nCore reset required.",
          NULL,
          "video",
          {
@@ -7090,7 +7090,7 @@ static bool retro_create_config(void)
                {
                   uint8_t i;
                   uint8_t drive = 0;
-                  /* Attach CD disk */
+                  /* Attach optical disc */
                   for (i = 0; i < dc->count && !drive; i++)
                   {
                      if (dc->types[i] != DC_IMAGE_TYPE_CD)
@@ -7441,6 +7441,7 @@ static void retro_reset_hard(void)
    retro_create_config();
    update_variables();
 
+   target_cfgfile_load(&currprefs, "", 0, 0);
    uae_reset(1, 0); /* hardreset, keyboardreset */
 }
 
