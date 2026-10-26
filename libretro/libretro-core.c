@@ -1114,6 +1114,37 @@ static void retro_set_core_options()
 #endif
       },
       {
+         "puae_immediate_blits",
+         "System > Immediate/Waiting Blits",
+         "Immediate/Waiting Blits",
+         "- 'Immediate Blitter': Faster but less compatible blitter emulation.\n- 'Wait for Blitter': Compatibility hack for programs that don't wait for the blitter correctly.",
+         NULL,
+         "system",
+         {
+            { "false", "disabled" },
+            { "immediate", "Immediate Blitter" },
+            { "waiting", "Wait for Blitter" },
+            { NULL, NULL },
+         },
+         "waiting"
+      },
+      {
+         "puae_collision_level",
+         "System > Collision Level",
+         "Collision Level",
+         "'Sprites and Playfields' is recommended.",
+         NULL,
+         "system",
+         {
+            { "none", "None" },
+            { "sprites", "Sprites only" },
+            { "playfields", "Sprites and Playfields" },
+            { "full", "Full" },
+            { NULL, NULL },
+         },
+         "playfields"
+      },
+      {
          "puae_autoloadfastforward",
          "Media > Automatic Load Fast-Forward",
          "Automatic Load Fast-Forward",
@@ -1510,37 +1541,6 @@ static void retro_set_core_options()
             { NULL, NULL },
          },
          "auto"
-      },
-      {
-         "puae_immediate_blits",
-         "Video > Immediate/Waiting Blits",
-         "Immediate/Waiting Blits",
-         "- 'Immediate Blitter': Faster but less compatible blitter emulation.\n- 'Wait for Blitter': Compatibility hack for programs that don't wait for the blitter correctly.",
-         NULL,
-         "video",
-         {
-            { "false", "disabled" },
-            { "immediate", "Immediate Blitter" },
-            { "waiting", "Wait for Blitter" },
-            { NULL, NULL },
-         },
-         "waiting"
-      },
-      {
-         "puae_collision_level",
-         "Video > Collision Level",
-         "Collision Level",
-         "'Sprites and Playfields' is recommended.",
-         NULL,
-         "video",
-         {
-            { "none", "None" },
-            { "sprites", "Sprites only" },
-            { "playfields", "Sprites and Playfields" },
-            { "full", "Full" },
-            { NULL, NULL },
-         },
-         "playfields"
       },
       {
          "puae_gfx_flickerfixer",
