@@ -1,0 +1,491 @@
+[INFO] RetroArch 1.22.2 (Git 69a4f0e)
+[INFO] === Build =======================================
+[INFO] CPU Model Name: Intel(R) Xeon(R) E-2286M  CPU @ 2.40GHz
+[INFO] Capabilities: MMX MMXEXT SSE SSE2 SSE3 SSSE3 SSE4 SSE42 AES AVX AVX2 
+[INFO] Version: 1.22.2
+[INFO] Git: 69a4f0e
+[INFO] Built: Nov 20 2025
+[INFO] =================================================
+[INFO] [Input] Found input driver: "dinput".
+[INFO] [Core] Loading dynamic libretro core from: "C:\Projects\puae-runtime\RetroArch-Win64\cores\puae_bcd4827e5138_libretro.dll".
+[INFO] [Override] Redirecting save file to "C:/Projects/puae-runtime/profiles/02-baseline-A1200/saves/PUAE.srm".
+[INFO] [Override] Redirecting save state to "C:/Projects/puae-runtime/profiles/02-baseline-A1200/states/PUAE.state".
+[INFO] [Environ] GET_SYSTEM_DIRECTORY: "C:/Projects/puae-runtime/profiles/02-baseline-A1200/system".
+[INFO] [Environ] GET_CORE_ASSETS_DIRECTORY: "C:\Projects\puae-runtime\RetroArch-Win64\downloads".
+[INFO] [Environ] GET_SAVE_DIRECTORY: "C:/Projects/puae-runtime/profiles/02-baseline-A1200/saves".
+[INFO] [Environ] GET_CORE_OPTIONS_VERSION.
+[INFO] [Environ] SET_CORE_OPTIONS_V2.
+[INFO] [Environ] SET_CONTROLLER_INFO.
+[DEBUG]    Port 1:
+[DEBUG]       "Automatic" (1)
+[DEBUG]       "RetroPad" (257)
+[DEBUG]       "CD32 Pad" (517)
+[DEBUG]       "Analog Joystick" (773)
+[DEBUG]       "Arcadia" (513)
+[DEBUG]       "Trojan Phazer Lightgun" (260)
+[DEBUG]       "Lightpen" (516)
+[DEBUG]       "Joystick" (261)
+[DEBUG]       "Keyboard" (259)
+[DEBUG]       "None" (0)
+[DEBUG]    Port 2:
+[DEBUG]       "Automatic" (1)
+[DEBUG]       "RetroPad" (257)
+[DEBUG]       "CD32 Pad" (517)
+[DEBUG]       "Analog Joystick" (773)
+[DEBUG]       "Arcadia" (513)
+[DEBUG]       "Trojan Phazer Lightgun" (260)
+[DEBUG]       "Lightpen" (516)
+[DEBUG]       "Joystick" (261)
+[DEBUG]       "Keyboard" (259)
+[DEBUG]       "None" (0)
+[DEBUG]    Port 3:
+[DEBUG]       "Joystick" (261)
+[DEBUG]       "Keyboard" (259)
+[DEBUG]       "None" (0)
+[DEBUG]    Port 4:
+[DEBUG]       "Joystick" (261)
+[DEBUG]       "Keyboard" (259)
+[DEBUG]       "None" (0)
+[DEBUG]    Port 5:
+[DEBUG]       "Keyboard" (259)
+[DEBUG]       "None" (0)
+[DEBUG]    Port 6:
+[DEBUG]       "Keyboard" (259)
+[DEBUG]       "None" (0)
+[INFO] [Environ] SET_INPUT_DESCRIPTORS.
+[DEBUG]    Port 1:
+[DEBUG]       "D-Pad Up" => "Up"
+[DEBUG]       "D-Pad Down" => "Down"
+[DEBUG]       "D-Pad Left" => "Left"
+[DEBUG]       "D-Pad Right" => "Right"
+[DEBUG]       "B Button (Down)" => "B / Fire / Red"
+[DEBUG]       "A Button (Right)" => "A / 2nd fire / Blue"
+[DEBUG]       "Y Button (Left)" => "Y / Green"
+[DEBUG]       "X Button (Top)" => "X / Yellow"
+[DEBUG]       "Select Button" => "Select"
+[DEBUG]       "Start Button" => "Start / Play"
+[DEBUG]       "L Button (Shoulder)" => "L / Rewind"
+[DEBUG]       "R Button (Shoulder)" => "R / Forward"
+[DEBUG]       "L2 Button (Trigger)" => "L2"
+[DEBUG]       "R2 Button (Trigger)" => "R2"
+[DEBUG]       "L3 Button (Thumb)" => "L3"
+[DEBUG]       "R3 Button (Thumb)" => "R3"
+[DEBUG]       "Left Analog Y- (Up)" => "Left Analog Y"
+[DEBUG]       "Left Analog Y+ (Down)" => "Left Analog Y"
+[DEBUG]       "Left Analog X- (Left)" => "Left Analog X"
+[DEBUG]       "Left Analog X+ (Right)" => "Left Analog X"
+[DEBUG]       "Right Analog Y- (Up)" => "Right Analog Y"
+[DEBUG]       "Right Analog Y+ (Down)" => "Right Analog Y"
+[DEBUG]       "Right Analog X- (Left)" => "Right Analog X"
+[DEBUG]       "Right Analog X+ (Right)" => "Right Analog X"
+[DEBUG]    Port 2:
+[DEBUG]       "D-Pad Up" => "Up"
+[DEBUG]       "D-Pad Down" => "Down"
+[DEBUG]       "D-Pad Left" => "Left"
+[DEBUG]       "D-Pad Right" => "Right"
+[DEBUG]       "B Button (Down)" => "B / Fire / Red"
+[DEBUG]       "A Button (Right)" => "A / 2nd fire / Blue"
+[DEBUG]       "Y Button (Left)" => "Y / Green"
+[DEBUG]       "X Button (Top)" => "X / Yellow"
+[DEBUG]       "Select Button" => "Select"
+[DEBUG]       "Start Button" => "Start / Play"
+[DEBUG]       "L Button (Shoulder)" => "L / Rewind"
+[DEBUG]       "R Button (Shoulder)" => "R / Forward"
+[DEBUG]       "L2 Button (Trigger)" => "L2"
+[DEBUG]       "R2 Button (Trigger)" => "R2"
+[DEBUG]       "L3 Button (Thumb)" => "L3"
+[DEBUG]       "R3 Button (Thumb)" => "R3"
+[DEBUG]       "Left Analog Y- (Up)" => "Left Analog Y"
+[DEBUG]       "Left Analog Y+ (Down)" => "Left Analog Y"
+[DEBUG]       "Left Analog X- (Left)" => "Left Analog X"
+[DEBUG]       "Left Analog X+ (Right)" => "Left Analog X"
+[DEBUG]       "Right Analog Y- (Up)" => "Right Analog Y"
+[DEBUG]       "Right Analog Y+ (Down)" => "Right Analog Y"
+[DEBUG]       "Right Analog X- (Left)" => "Right Analog X"
+[DEBUG]       "Right Analog X+ (Right)" => "Right Analog X"
+[DEBUG]    Port 3:
+[DEBUG]       "D-Pad Up" => "Up"
+[DEBUG]       "D-Pad Down" => "Down"
+[DEBUG]       "D-Pad Left" => "Left"
+[DEBUG]       "D-Pad Right" => "Right"
+[DEBUG]       "B Button (Down)" => "B / Fire / Red"
+[DEBUG]       "A Button (Right)" => "A / 2nd fire / Blue"
+[DEBUG]       "Y Button (Left)" => "Y / Green"
+[DEBUG]       "X Button (Top)" => "X / Yellow"
+[DEBUG]       "Select Button" => "Select"
+[DEBUG]       "Start Button" => "Start / Play"
+[DEBUG]       "L Button (Shoulder)" => "L / Rewind"
+[DEBUG]       "R Button (Shoulder)" => "R / Forward"
+[DEBUG]       "L2 Button (Trigger)" => "L2"
+[DEBUG]       "R2 Button (Trigger)" => "R2"
+[DEBUG]       "L3 Button (Thumb)" => "L3"
+[DEBUG]       "R3 Button (Thumb)" => "R3"
+[DEBUG]       "Left Analog Y- (Up)" => "Left Analog Y"
+[DEBUG]       "Left Analog Y+ (Down)" => "Left Analog Y"
+[DEBUG]       "Left Analog X- (Left)" => "Left Analog X"
+[DEBUG]       "Left Analog X+ (Right)" => "Left Analog X"
+[DEBUG]       "Right Analog Y- (Up)" => "Right Analog Y"
+[DEBUG]       "Right Analog Y+ (Down)" => "Right Analog Y"
+[DEBUG]       "Right Analog X- (Left)" => "Right Analog X"
+[DEBUG]       "Right Analog X+ (Right)" => "Right Analog X"
+[DEBUG]    Port 4:
+[DEBUG]       "D-Pad Up" => "Up"
+[DEBUG]       "D-Pad Down" => "Down"
+[DEBUG]       "D-Pad Left" => "Left"
+[DEBUG]       "D-Pad Right" => "Right"
+[DEBUG]       "B Button (Down)" => "B / Fire / Red"
+[DEBUG]       "A Button (Right)" => "A / 2nd fire / Blue"
+[DEBUG]       "Y Button (Left)" => "Y / Green"
+[DEBUG]       "X Button (Top)" => "X / Yellow"
+[DEBUG]       "Select Button" => "Select"
+[DEBUG]       "Start Button" => "Start / Play"
+[DEBUG]       "L Button (Shoulder)" => "L / Rewind"
+[DEBUG]       "R Button (Shoulder)" => "R / Forward"
+[DEBUG]       "L2 Button (Trigger)" => "L2"
+[DEBUG]       "R2 Button (Trigger)" => "R2"
+[DEBUG]       "L3 Button (Thumb)" => "L3"
+[DEBUG]       "R3 Button (Thumb)" => "R3"
+[DEBUG]       "Left Analog Y- (Up)" => "Left Analog Y"
+[DEBUG]       "Left Analog Y+ (Down)" => "Left Analog Y"
+[DEBUG]       "Left Analog X- (Left)" => "Left Analog X"
+[DEBUG]       "Left Analog X+ (Right)" => "Left Analog X"
+[DEBUG]       "Right Analog Y- (Up)" => "Right Analog Y"
+[DEBUG]       "Right Analog Y+ (Down)" => "Right Analog Y"
+[DEBUG]       "Right Analog X- (Left)" => "Right Analog X"
+[DEBUG]       "Right Analog X+ (Right)" => "Right Analog X"
+[DEBUG]    Port 5:
+[DEBUG]       "D-Pad Up" => "Up"
+[DEBUG]       "D-Pad Down" => "Down"
+[DEBUG]       "D-Pad Left" => "Left"
+[DEBUG]       "D-Pad Right" => "Right"
+[DEBUG]       "B Button (Down)" => "B / Fire / Red"
+[DEBUG]       "A Button (Right)" => "A / 2nd fire / Blue"
+[DEBUG]       "Y Button (Left)" => "Y / Green"
+[DEBUG]       "X Button (Top)" => "X / Yellow"
+[DEBUG]       "Select Button" => "Select"
+[DEBUG]       "Start Button" => "Start / Play"
+[DEBUG]       "L Button (Shoulder)" => "L / Rewind"
+[DEBUG]       "R Button (Shoulder)" => "R / Forward"
+[DEBUG]       "L2 Button (Trigger)" => "L2"
+[DEBUG]       "R2 Button (Trigger)" => "R2"
+[DEBUG]       "L3 Button (Thumb)" => "L3"
+[DEBUG]       "R3 Button (Thumb)" => "R3"
+[DEBUG]       "Left Analog Y- (Up)" => "Left Analog Y"
+[DEBUG]       "Left Analog Y+ (Down)" => "Left Analog Y"
+[DEBUG]       "Left Analog X- (Left)" => "Left Analog X"
+[DEBUG]       "Left Analog X+ (Right)" => "Left Analog X"
+[DEBUG]       "Right Analog Y- (Up)" => "Right Analog Y"
+[DEBUG]       "Right Analog Y+ (Down)" => "Right Analog Y"
+[DEBUG]       "Right Analog X- (Left)" => "Right Analog X"
+[DEBUG]       "Right Analog X+ (Right)" => "Right Analog X"
+[DEBUG]    Port 6:
+[DEBUG]       "D-Pad Up" => "Up"
+[DEBUG]       "D-Pad Down" => "Down"
+[DEBUG]       "D-Pad Left" => "Left"
+[DEBUG]       "D-Pad Right" => "Right"
+[DEBUG]       "B Button (Down)" => "B / Fire / Red"
+[DEBUG]       "A Button (Right)" => "A / 2nd fire / Blue"
+[DEBUG]       "Y Button (Left)" => "Y / Green"
+[DEBUG]       "X Button (Top)" => "X / Yellow"
+[DEBUG]       "Select Button" => "Select"
+[DEBUG]       "Start Button" => "Start / Play"
+[DEBUG]       "L Button (Shoulder)" => "L / Rewind"
+[DEBUG]       "R Button (Shoulder)" => "R / Forward"
+[DEBUG]       "L2 Button (Trigger)" => "L2"
+[DEBUG]       "R2 Button (Trigger)" => "R2"
+[DEBUG]       "L3 Button (Thumb)" => "L3"
+[DEBUG]       "R3 Button (Thumb)" => "R3"
+[DEBUG]       "Left Analog Y- (Up)" => "Left Analog Y"
+[DEBUG]       "Left Analog Y+ (Down)" => "Left Analog Y"
+[DEBUG]       "Left Analog X- (Left)" => "Left Analog X"
+[DEBUG]       "Left Analog X+ (Right)" => "Left Analog X"
+[DEBUG]       "Right Analog Y- (Up)" => "Right Analog Y"
+[DEBUG]       "Right Analog Y+ (Down)" => "Right Analog Y"
+[DEBUG]       "Right Analog X- (Left)" => "Right Analog X"
+[DEBUG]       "Right Analog X+ (Right)" => "Right Analog X"
+[DEBUG]    Port 7:
+[DEBUG]    Port 8:
+[INFO] [Environ] SET_SUPPORT_NO_GAME: yes.
+[INFO] [Environ] GET_LED_INTERFACE.
+[INFO] [Environ] GET_VFS_INTERFACE. Core requested version >= V2, providing V3.
+[INFO] [Environ] GET_LOG_INTERFACE.
+[INFO] [Environ] GET_PERF_INTERFACE.
+[INFO] [Environ] GET_DISK_CONTROL_INTERFACE_VERSION.
+[INFO] [Environ] SET_DISK_CONTROL_EXT_INTERFACE.
+[INFO] [Environ] SET_KEYBOARD_CALLBACK.
+[INFO] [Environ] SET_SUPPORT_ACHIEVEMENTS: yes.
+[libretro DEBUG] Output audio buffer capacity set to 2048
+[DEBUG] [Environ] GET_VARIABLE: puae_model = "A1200"
+[DEBUG] [Environ] GET_VARIABLE: puae_model_fd = "A500"
+[DEBUG] [Environ] GET_VARIABLE: puae_model_hd = "A1200"
+[DEBUG] [Environ] GET_VARIABLE: puae_model_cd = "CD32"
+[DEBUG] [Environ] GET_VARIABLE: puae_kickstart = "auto"
+[DEBUG] [Environ] GET_VARIABLE: puae_cart_file = "none"
+[DEBUG] [Environ] GET_VARIABLE: puae_video_standard = "PAL"
+[DEBUG] [Environ] GET_VARIABLE: puae_video_aspect = "auto"
+[DEBUG] [Environ] GET_VARIABLE: puae_video_allow_hz_change = "locked"
+[DEBUG] [Environ] GET_VARIABLE: puae_video_resolution = "auto"
+[DEBUG] [Environ] GET_VARIABLE: puae_video_vresolution = "auto"
+[DEBUG] [Environ] GET_VARIABLE: puae_statusbar = "bottom"
+[DEBUG] [Environ] GET_VARIABLE: puae_statusbar_startup = "disabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_statusbar_messages = "disabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_vkbd_theme = "auto"
+[DEBUG] [Environ] GET_VARIABLE: puae_vkbd_transparency = "25%"
+[DEBUG] [Environ] GET_VARIABLE: puae_vkbd_dimming = "25%"
+[DEBUG] [Environ] GET_VARIABLE: puae_chipmem_size = "auto"
+[DEBUG] [Environ] GET_VARIABLE: puae_bogomem_size = "auto"
+[DEBUG] [Environ] GET_VARIABLE: puae_fastmem_size = "auto"
+[DEBUG] [Environ] GET_VARIABLE: puae_z3mem_size = "auto"
+[DEBUG] [Environ] GET_VARIABLE: puae_cpu_model = "auto"
+[DEBUG] [Environ] GET_VARIABLE: puae_fpu_model = "auto"
+[DEBUG] [Environ] GET_VARIABLE: puae_cpu_compatibility = "exact"
+[DEBUG] [Environ] GET_VARIABLE: puae_cpu_throttle = "0.0"
+[DEBUG] [Environ] GET_VARIABLE: puae_cpu_multiplier = "0"
+[DEBUG] [Environ] GET_VARIABLE: puae_sound_stereo_separation = "100%"
+[DEBUG] [Environ] GET_VARIABLE: puae_sound_interpol = "anti"
+[DEBUG] [Environ] GET_VARIABLE: puae_sound_filter = "emulated"
+[DEBUG] [Environ] GET_VARIABLE: puae_sound_filter_type = "auto"
+[DEBUG] [Environ] GET_VARIABLE: puae_sound_volume_cd = "100%"
+[DEBUG] [Environ] GET_VARIABLE: puae_autoloadfastforward = "disabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_cd_speed = "100"
+[DEBUG] [Environ] GET_VARIABLE: puae_floppy_speed = "100"
+[DEBUG] [Environ] GET_VARIABLE: puae_floppy_multidrive = "enabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_floppy_write_protection = "disabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_floppy_write_redirect = "disabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_floppy_sound = "80"
+[DEBUG] [Environ] GET_VARIABLE: puae_floppy_sound_empty_mute = "enabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_floppy_sound_type = "internal"
+[DEBUG] [Environ] GET_VARIABLE: puae_mouse_speed = "100"
+[DEBUG] [Environ] GET_VARIABLE: puae_immediate_blits = "waiting"
+[DEBUG] [Environ] GET_VARIABLE: puae_collision_level = "playfields"
+[DEBUG] [Environ] GET_VARIABLE: puae_gfx_framerate = "disabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_gfx_colors = "24bit"
+[DEBUG] [Environ] GET_VARIABLE: puae_gfx_gamma = "0"
+[DEBUG] [Environ] GET_VARIABLE: puae_gfx_flickerfixer = "disabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_crop = "disabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_crop_mode = "both"
+[DEBUG] [Environ] GET_VARIABLE: puae_crop_delay = "enabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_vertical_pos = "auto"
+[DEBUG] [Environ] GET_VARIABLE: puae_horizontal_pos = "auto"
+[DEBUG] [Environ] GET_VARIABLE: puae_use_whdload = "disabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_use_whdload_theme = "default"
+[DEBUG] [Environ] GET_VARIABLE: puae_use_whdload_prefs = "disabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_use_whdload_buttonwait = "enabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_use_whdload_nowritecache = "disabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_cd_startup_delayed_insert = "disabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_shared_nvram = "disabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_use_boot_hd = "disabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_joyport_pointer_color = "blue"
+[DEBUG] [Environ] GET_VARIABLE: puae_analogmouse = "both"
+[DEBUG] [Environ] GET_VARIABLE: puae_analogmouse_deadzone = "20"
+[DEBUG] [Environ] GET_VARIABLE: puae_analogmouse_speed = "1.0"
+[DEBUG] [Environ] GET_VARIABLE: puae_analogmouse_speed_right = "1.0"
+[DEBUG] [Environ] GET_VARIABLE: puae_dpadmouse_speed = "6"
+[DEBUG] [Environ] GET_VARIABLE: puae_physicalmouse = "enabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_keyrah_keypad_mappings = "disabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_physical_keyboard_pass_through = "disabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_model_options_display = "disabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapping_options_display = "enabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_video_options_display = "disabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_audio_options_display = "disabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_joyport = "joystick"
+[DEBUG] [Environ] GET_VARIABLE: puae_joyport_order = "1234"
+[DEBUG] [Environ] GET_VARIABLE: puae_retropad_options = "disabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_cd32pad_options = "disabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_turbo_fire = "disabled"
+[DEBUG] [Environ] GET_VARIABLE: puae_turbo_fire_button = "B"
+[DEBUG] [Environ] GET_VARIABLE: puae_turbo_pulse = "6"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_up = "---"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_down = "---"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_left = "---"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_right = "---"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_select = "TOGGLE_VKBD"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_start = "---"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_b = "---"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_a = "---"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_y = "---"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_x = "RETROK_SPACE"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_l = "---"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_r = "---"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_l2 = "MOUSE_LEFT_BUTTON"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_r2 = "MOUSE_RIGHT_BUTTON"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_l3 = "---"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_r3 = "---"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_lr = "---"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_ll = "---"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_ld = "---"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_lu = "---"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_rr = "---"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_rl = "---"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_rd = "---"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_ru = "---"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_vkbd = "---"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_statusbar = "RETROK_F12"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_mouse_toggle = "RETROK_RCTRL"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_reset = "---"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_aspect_ratio_toggle = "---"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_crop_toggle = "---"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_turbo_fire_toggle = "---"
+[DEBUG] [Environ] GET_VARIABLE: puae_mapper_save_disk_toggle = "---"
+[DEBUG] [Environ] SET_CORE_OPTIONS_DISPLAY: puae_crop_delay = hidden
+[DEBUG] [Environ] SET_CORE_OPTIONS_DISPLAY: puae_mapping_options_display = hidden
+[DEBUG] [Environ] SET_CORE_OPTIONS_DISPLAY: puae_video_options_display = hidden
+[DEBUG] [Environ] SET_CORE_OPTIONS_DISPLAY: puae_audio_options_display = hidden
+[DEBUG] [Environ] SET_CORE_OPTIONS_DISPLAY: puae_model_options_display = hidden
+[INFO] [Environ] SET_PIXEL_FORMAT: XRGB8888.
+[libretro INFO] Model: "A1200".
+[libretro INFO] Kickstart: "kick40068.A1200".
+[libretro DEBUG] Generated config:
+[libretro DEBUG] -----------------
+[libretro DEBUG] cpu_model=68020
+[libretro DEBUG] fpu_model=0
+[libretro DEBUG] mmu_model=0
+[libretro DEBUG] chipmem_size=4
+[libretro DEBUG] bogomem_size=0
+[libretro DEBUG] fastmem_size=8
+[libretro DEBUG] cpu_24bit_addressing=true
+[libretro DEBUG] chipset=aga
+[libretro DEBUG] chipset_compatible=A1200
+[libretro DEBUG] kickstart_rom_file=C:/Projects/puae-runtime/profiles/02-baseline-A1200/system\kick40068.A1200
+[libretro DEBUG] ntsc=false
+[libretro DEBUG] displaydata_pal=50.000000,locked,pal
+[libretro DEBUG] displaydata_ntsc=59.940000,locked,ntsc
+[libretro DEBUG] cpu_compatible=true
+[libretro DEBUG] cpu_cycle_exact=true
+[libretro DEBUG] cpu_memory_cycle_exact=true
+[libretro DEBUG] blitter_cycle_exact=true
+[libretro DEBUG] cpu_throttle=0.0
+[libretro DEBUG] cpu_multiplier=0
+[libretro DEBUG] sound_stereo_separation=10
+[libretro DEBUG] sound_interpol=anti
+[libretro DEBUG] sound_filter=emulated
+[libretro DEBUG] sound_volume_cd=0
+[libretro DEBUG] cd_speed=100
+[libretro DEBUG] floppy_speed=100
+[libretro DEBUG] floppy_volume=80
+[libretro DEBUG] floppy0sound=1
+[libretro DEBUG] floppy1sound=1
+[libretro DEBUG] floppy2sound=1
+[libretro DEBUG] floppy3sound=1
+[libretro DEBUG] input.mouse_speed=100
+[libretro DEBUG] immediate_blits=false
+[libretro DEBUG] waiting_blits=automatic
+[libretro DEBUG] collision_level=playfields
+[libretro DEBUG] gfx_flickerfixer=false
+[libretro DEBUG] gfx_resolution=hires
+[libretro DEBUG] gfx_linemode=none
+[libretro INFO] --------------------------------------------------------------------------------
+[libretro INFO] PUAE 5.3.1 73879370, Oct 27 2026 00:11:11
+[libretro INFO] --------------------------------------------------------------------------------
+[libretro INFO] KS ver = 40 (0x28)
+[libretro INFO] KS ver = 40 (0x28)
+[libretro INFO] KS ver = 40 (0x28)
+[libretro INFO] RTAREA located at 00F00000
+[libretro INFO] TRAP_ENTRY = 00f021da
+[libretro INFO] Known ROM 'KS ROM v3.1 (A1200)' loaded
+[libretro INFO] CPU cycleunit: 128 (0.250)
+[libretro INFO] 1872 CPU functions
+[libretro INFO] CPU cycleunit: 128 (0.250)
+[libretro INFO] Building CPU, 45912 opcodes (2 -2 1)
+[libretro INFO] CPU=68020, FPU=0, MMU=0, JIT=0. ~cycle-exact 24-bit
+[libretro INFO] Reset at 00000000. Chipset mask = 00000007
+[libretro INFO] PAL mode V=50.0000Hz H=15625.0879Hz (227x312+0) IDX=10 (PAL) D=0 RTG=0/0
+[libretro INFO] Autoconfig board list:
+[libretro INFO] Card 01: 
+[libretro INFO] '<no name>' no autoconfig 00da0000 - 00daffff.
+[libretro INFO] Card 02: 
+[libretro INFO] '<no name>' no autoconfig 00600000 - 00a7ffff.
+[libretro INFO] Card 03: 
+[libretro INFO] 'UAE Boot ROM' no autoconfig 00f00000 - 00f0ffff.
+[libretro INFO] Card 04: 
+[libretro INFO] 'Z2 Fast RAM'
+[libretro INFO]   e0.51.00.00.07.db.00.00.00.01.00.00.00.00.00.00
+[libretro INFO]   MID 2011 (07db) PID 81 (51) SER 00000001
+[libretro INFO]   Z2 0x00200000 0x00200000 8192K RAM 0
+[libretro INFO] Card 05: 
+[libretro INFO] 'UAE FS ROM'
+[libretro INFO]   d1.52.40.00.07.db.00.00.00.03.20.00.00.00.00.00
+[libretro INFO]   MID 2011 (07db) PID 82 (52) SER 00000003
+[libretro INFO]   Z2 0x00e90000 0x00e90000   64K ROM 0
+[libretro INFO] END
+[libretro INFO] Card 0: skipping autoconfig (not autoconfig)
+[libretro INFO] Card 2: skipping autoconfig (not autoconfig)
+[libretro INFO] CPU cycleunit: 128 (0.250)
+[libretro INFO] hardreset, memory cleared
+[libretro INFO] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[libretro INFO] rndseed = 00000001 (1)
+[INFO] [Environ] SET_MEMORY_MAPS.
+[DEBUG] ndx flags  ptr              offset   start    select   disconn  len      addrspace
+[DEBUG] 001 M1A1bc 0000000008c76040 00000000 00000000 FFE00000 00000000 00200000 CHIP
+[DEBUG] 002 M1A1bc 0000000000000000 00000000 00000000 00000000 00000000 00000000 SLOW
+[DEBUG] 003 M1A1bc 0000000008361040 00000000 00000000 00000000 00000000 00800000 FAST
+[INFO] [SRAM] Skipping SRAM load.
+[INFO] [Core] Version of libretro API: 1, Compiled against API: 1
+[INFO] [Core] Geometry: 360x287, Aspect: 1.254, FPS: 50.00, Sample rate: 44100.00 Hz.
+[INFO] [Video] Set video size to: 1080x861.
+[INFO] [XInput] Found XInput v1.4.
+[INFO] [Input] Found joypad driver: "dinput".
+[INFO] [D3D11] Device created (Feature Level: 11.0)
+[INFO] [D3D11] Flip model and tear control supported and enabled.
+[INFO] [D3D11] Requesting 1 maximum frame latency, using 1.
+[INFO] [D3D11] Found GPU at index 0: "NVIDIA Quadro P2200".
+[INFO] [D3D11] Found GPU at index 1: "Microsoft Basic Render Driver".
+[INFO] [D3D11] Using GPU index 0.
+[INFO] [Video] Found display server: "win32".
+[INFO] [Audio] Set audio input rate to: 44100.00 Hz.
+[INFO] [Video] Timings deviate too much. Will not adjust. (Target = 60.00 Hz, Game = 50.00 Hz)
+[DEBUG] [MMDevice] Initializing default eRender device...
+[DEBUG] [WASAPI] Requesting shared 16-bit 2-channel client with WAVE_FORMAT_PCM samples at 48000Hz 64ms.
+[DEBUG] [WASAPI] Default device period is 10.0ms.
+[DEBUG] [WASAPI] Minimum device period is 3.0ms.
+[DEBUG] [WASAPI] Shared stream latency is 0.0ms.
+[DEBUG] [WASAPI] Endpoint buffer size is 3072 frames (6144 samples, 12288 bytes, 64.0 ms).
+[INFO] [WASAPI] Client initialized (shared, PCM, 48000Hz, 64.0ms).
+[INFO] [Audio] Started synchronous audio driver.
+[DEBUG] [WASAPI mic] Initialized microphone driver context.
+[INFO] [Microphone] Initialized microphone driver.
+[INFO] [Display] Found display driver: "d3d11".
+[INFO] [MIDI] Output device: "Microsoft GS Wavetable Synth".
+[INFO] [Playlist] Loading favorites file: "C:/Projects/puae-runtime/profiles/02-baseline-A1200/playlists/builtin/content_favorites.lpl".
+[DEBUG] [Audio] Started audio driver "wasapi" (is_shutdown=false)
+[INFO] [Environ] SET_GEOMETRY: 720x287, Aspect: 1.306.
+[libretro INFO] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[libretro INFO] SERIAL: period=372, baud=9600, hsyncs=14, bits=8, PC=f8018a
+[libretro INFO] B-Trap F201 at 00F80CA0 -> 00F80CC0
+[libretro INFO] Card 4: Z2 0x00200000 8192K RAM Fast memory
+[libretro INFO] Card 5: Z2 0x00e90000   64K ROM Filesystem autoconfig
+[libretro INFO] 00000000    2048K/1 =    2048K ID* C32 Chip memory
+[libretro INFO] 00200000    8192K/1 =    8192K ID* F32 Fast memory
+[libretro INFO] 00A00000     512K/0 =     512K --  F32 <none>
+[libretro INFO] 00A80000    1024K/2 =     512K ID* F32 Kickstart ROM (1483A091)
+[libretro INFO] =KS ROM v3.1 (A1200) rev 40.68 (512k)
+[libretro INFO] 00B80000     448K/0 =     448K --  F32 <none>
+[libretro INFO] 00BF0000      64K/0 =      64K --  CIA CIA
+[libretro INFO] 00C00000    1536K/0 =    1536K --  F32 <none>
+[libretro INFO] 00D80000     256K/0 =     256K --  C16 Gayle (low)
+[libretro INFO] 00DC0000      64K/0 =      64K --  C16 Battery backed up clock (MSM6242B)
+[libretro INFO] 00DD0000      64K/0 =      64K --  C16 Gayle (low)
+[libretro INFO] 00DE0000      64K/0 =      64K --  C16 Gayle (high)
+[libretro INFO] 00DF0000      64K/0 =      64K --  C16 Custom chipset
+[libretro INFO] 00E00000     512K/1 =     512K ID* F32 Kickstart ROM (1483A091)
+[libretro INFO] =KS ROM v3.1 (A1200) rev 40.68 (512k)
+[libretro INFO] 00E80000      64K/0 =      64K --  F32 Autoconfig Z2
+[libretro INFO] 00E90000      64K/1 =      64K --* F32 Filesystem autoconfig
+[libretro INFO] 00EA0000     384K/0 =     384K --  F32 <none>
+[libretro INFO] 00F00000      64K/1 =      64K --* F32 UAE Boot ROM
+[libretro INFO] 00F10000     448K/0 =     448K --  F32 <none>
+[libretro INFO] 00F80000     512K/1 =     512K ID* F32 Kickstart ROM (1483A091)
+[libretro INFO] =KS ROM v3.1 (A1200) rev 40.68 (512k)
+[libretro INFO] filesystem: diagentry 00200098 configdev 00000c48
+[libretro INFO] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[libretro INFO] PAL mode V=50.0000Hz H=15625.0879Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
+[libretro INFO] SNDRATE 313.0*227.0*50.000000=3552550.000000
+[INFO] [Screenshot] Taking a screenshot before exiting...
+[DEBUG] [Audio] Started audio driver "wasapi" (is_shutdown=true)
+[INFO] [Runtime] Content ran for a total of: 00 hours, 00 minutes, 30 seconds.
+[INFO] [Core] Unloading game...
+[DEBUG] [Audio] Stopped audio driver "wasapi".
+[INFO] [Core] Unloading core...
+[INFO] [Core] Unloading core symbols...
+[INFO] [Core] Saved core options file to "C:/Projects/puae-runtime/profiles/02-baseline-A1200/config/PUAE/PUAE.opt".
+[DEBUG] [Video] Does not have enough samples for monitor refresh rate estimation. Requires to run for at least 4096 frames.

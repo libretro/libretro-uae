@@ -1,0 +1,237 @@
+## integrate-winuae-20261027
+ M Makefile
+ M Makefile.common
+ M libretro/libretro-core.c
+ M libretro/libretro-glue.c
+ M retrodep/gui.c
+ M retrodep/threaddep/thread.h
+ M sources/src/a2065.c
+ M sources/src/a2091.c
+ M sources/src/akiko.c
+ M sources/src/amax.c
+ M sources/src/ar.c
+ M sources/src/arcadia.c
+ M sources/src/aros.rom.c
+ M sources/src/audio.c
+ M sources/src/autoconf.c
+ M sources/src/blitfunc.c
+ M sources/src/blitter.c
+ M sources/src/blkdev.c
+ M sources/src/blkdev_cdimage.c
+ M sources/src/bsdsocket.c
+ M sources/src/calc.c
+ M sources/src/catweasel.c
+ M sources/src/cd32_fmv.c
+ M sources/src/cd32_fmv_genlock.c
+ M sources/src/cdtv.c
+ M sources/src/cdtvcr.c
+ M sources/src/cfgfile.c
+ M sources/src/cia.c
+ M sources/src/consolehook.c
+ M sources/src/cpuboard.c
+ M sources/src/cpuemu_0.c
+ M sources/src/cpuemu_20.c
+ M sources/src/cpuemu_21.c
+ M sources/src/cpuemu_22.c
+ M sources/src/cpuemu_23.c
+ M sources/src/cpuemu_24.c
+ M sources/src/cpuemu_31.c
+ M sources/src/cpuemu_32.c
+ M sources/src/cpuemu_33.c
+ M sources/src/cpuemu_34.c
+ M sources/src/cpuemu_35.c
+ M sources/src/cpuemu_40.c
+ M sources/src/cpuemu_50.c
+ M sources/src/cpummu.c
+ M sources/src/cpummu30.c
+ M sources/src/cpustbl.c
+ M sources/src/cputest.c
+ M sources/src/custom.c
+ M sources/src/debug.c
+ M sources/src/debugmem.c
+ M sources/src/devices.c
+ M sources/src/disasm.c
+ M sources/src/disk.c
+ M sources/src/dongle.c
+ M sources/src/draco.c
+ M sources/src/drawing.c
+ M sources/src/driveclick.c
+ M sources/src/dsp3210/DSP3210_emulation.c
+ M sources/src/enforcer.c
+ M sources/src/epsonprinter.c
+ M sources/src/ethernet.c
+ M sources/src/events.c
+ M sources/src/expansion.c
+ M sources/src/fdi2raw.c
+ M sources/src/filesys.c
+ M sources/src/flashrom.c
+ M sources/src/fpp.c
+ M sources/src/fpp_native.c
+ M sources/src/fpp_softfloat.c
+ M sources/src/framebufferboards.c
+ M sources/src/fsdb.c
+ M sources/src/fsusage.c
+ M sources/src/gayle.c
+ M sources/src/genblitter.c
+ M sources/src/gencpu.c
+ M sources/src/genlinetoscr.c
+ M sources/src/gfxboard.c
+ M sources/src/gfxutil.c
+ M sources/src/hardfile.c
+ M sources/src/ide.c
+ M sources/src/idecontrollers.c
+ M sources/src/identify.c
+ M sources/src/include/a2091.h
+ M sources/src/include/audio.h
+ M sources/src/include/autoconf.h
+ M sources/src/include/blit.h
+ M sources/src/include/blitter.h
+ M sources/src/include/cia.h
+ M sources/src/include/commpipe.h
+ M sources/src/include/consolehook.h
+ M sources/src/include/cpuboard.h
+ M sources/src/include/cpummu.h
+ M sources/src/include/cpummu030.h
+ M sources/src/include/custom.h
+ M sources/src/include/debug.h
+ M sources/src/include/debugmem.h
+ M sources/src/include/disk.h
+ M sources/src/include/drawing.h
+ M sources/src/include/driveclick.h
+ M sources/src/include/events.h
+ M sources/src/include/gayle.h
+ M sources/src/include/gfxboard.h
+ M sources/src/include/gfxfilter.h
+ M sources/src/include/gui.h
+ M sources/src/include/ide.h
+ M sources/src/include/idecontrollers.h
+ M sources/src/include/inputdevice.h
+ M sources/src/include/memory.h
+ M sources/src/include/misc.h
+ M sources/src/include/mmu_common.h
+ M sources/src/include/newcpu.h
+ M sources/src/include/options.h
+ M sources/src/include/rommgr.h
+ M sources/src/include/savestate.h
+ M sources/src/include/specialmonitors.h
+ M sources/src/include/statusline.h
+ M sources/src/include/sysdeps.h
+ M sources/src/include/tinyxml2.h
+ M sources/src/include/uae/time.h
+ M sources/src/include/xwin.h
+ M sources/src/include/zfile.h
+ M sources/src/inputdevice.c
+ M sources/src/inputrecord.c
+ M sources/src/jit/compemu_support.cpp
+ M sources/src/keybuf.c
+ M sources/src/main.c
+ M sources/src/memory.c
+ M sources/src/midiemu.c
+ M sources/src/misc.c
+ M sources/src/native2amiga.c
+ M sources/src/ncr9x_scsi.c
+ M sources/src/ncr_scsi.c
+ M sources/src/newcpu.c
+ M sources/src/pcem/cpu.cpp
+ M sources/src/pcem/device.h
+ M sources/src/pcem/dma.cpp
+ M sources/src/pcem/dma.h
+ M sources/src/pcem/ibm.h
+ M sources/src/pcem/keyboard_at.cpp
+ M sources/src/pcem/mem.cpp
+ M sources/src/pcem/model.h
+ M sources/src/pcem/nvr.cpp
+ M sources/src/pcem/pcemglue.cpp
+ M sources/src/pcem/pcemglue.h
+ M sources/src/pcem/pci.h
+ M sources/src/pcem/pic.cpp
+ M sources/src/pcem/sound.h
+ M sources/src/pcem/sound_cms.cpp
+ M sources/src/pcem/sound_opl.cpp
+ M sources/src/pcem/sound_speaker.cpp
+ M sources/src/pcem/thread.h
+ M sources/src/pcem/timer.h
+ M sources/src/pcem/vid_bt482_ramdac.c
+ M sources/src/pcem/vid_cl5429.cpp
+ M sources/src/pcem/vid_et4000.c
+ M sources/src/pcem/vid_et4000w32.c
+ M sources/src/pcem/vid_inmos.c
+ M sources/src/pcem/vid_ncr.c
+ M sources/src/pcem/vid_permedia2.c
+ M sources/src/pcem/vid_s3.cpp
+ M sources/src/pcem/vid_s3_virge.cpp
+ M sources/src/pcem/vid_sc1502x_ramdac.c
+ M sources/src/pcem/vid_sdac_ramdac.cpp
+ M sources/src/pcem/vid_svga.cpp
+ M sources/src/pcem/vid_svga.h
+ M sources/src/pcem/vid_svga_render.cpp
+ M sources/src/pcem/vid_voodoo.cpp
+ M sources/src/pcem/vid_voodoo_banshee.cpp
+ M sources/src/pcem/vid_voodoo_display.cpp
+ M sources/src/pcem/vid_voodoo_fb.cpp
+ M sources/src/pcem/vid_voodoo_fifo.cpp
+ M sources/src/pcem/vid_voodoo_reg.cpp
+ M sources/src/pcem/vid_voodoo_regs.h
+ M sources/src/pcem/vid_voodoo_render.cpp
+ M sources/src/pcem/video.h
+ M sources/src/pci.c
+ M sources/src/ppc/ppc.c
+ M sources/src/qemuvga/ne2000.c
+ M sources/src/qemuvga/qemu.cpp
+ M sources/src/qemuvga/qemuuaeglue.h
+ M sources/src/qemuvga/vga.cpp
+ M sources/src/readcpu.c
+ M sources/src/rommgr.c
+ M sources/src/sampler.c
+ M sources/src/sana2.c
+ M sources/src/savestate.c
+ M sources/src/scp.c
+ M sources/src/scsi.c
+ M sources/src/scsiemul.c
+ M sources/src/scsitape.c
+ M sources/src/slirp/tcp_input.cpp
+ M sources/src/slirp_uae.c
+ M sources/src/sndboard.c
+ M sources/src/softfloat/softfloat.c
+ M sources/src/softfloat/softfloat_fpsp.c
+ M sources/src/specialmonitors.c
+ M sources/src/statusline.c
+ M sources/src/tabletlibrary.c
+ M sources/src/tinyxml2.c
+ M sources/src/traps.c
+ M sources/src/uaeexe.c
+ M sources/src/uaeipc.c
+ M sources/src/uaelib.c
+ M sources/src/uaenative.c
+ M sources/src/uaeresource.c
+ M sources/src/uaeserial.c
+ M sources/src/vm.c
+ M sources/src/x86.c
+ M sources/src/zfile.c
+ M sources/src/zfile_archive.c
+?? docs/
+?? scripts/
+?? sources/src/custom.c.rej
+?? sources/src/include/keyboard_mcu.h
+?? sources/src/include/mos6502.h
+?? sources/src/kbmcu/
+?? sources/src/linetoscr_aga_fast.c
+?? sources/src/linetoscr_aga_fm0.c
+?? sources/src/linetoscr_aga_fm0_genlock.c
+?? sources/src/linetoscr_aga_fm1.c
+?? sources/src/linetoscr_aga_fm1_genlock.c
+?? sources/src/linetoscr_aga_fm2.c
+?? sources/src/linetoscr_aga_fm2_genlock.c
+?? sources/src/linetoscr_aga_genlock_fast.c
+?? sources/src/linetoscr_common.c
+?? sources/src/linetoscr_ecs_fast.c
+?? sources/src/linetoscr_ecs_genlock_fast.c
+?? sources/src/linetoscr_ecs_shres.c
+?? sources/src/linetoscr_ocs_ecs.c
+?? sources/src/linetoscr_ocs_ecs_genlock.c
+?? sources/src/linetoscr_ocs_ecs_ntsc.c
+?? sources/src/linetoscr_ocs_ecs_ntsc_genlock.c
+?? sources/src/mos6502.cpp
+?? sources/src/pcem/keyboard_at_draco.cpp
+?? sources/src/pcem/vid_mga.cpp
+?? sources/src/pcem/vid_tvp3026_ramdac.cpp

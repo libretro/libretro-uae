@@ -1,0 +1,32 @@
+{
+  "started_utc": "2026-10-26T22:32:03.7211160Z",
+  "head": "7387937066b1b693816c3b4e2b7a0c601d41363d",
+  "executable": "C:\\Projects\\puae-runtime\\RetroArch-Win64\\retroarch.exe",
+  "executable_sha256": "81c11b6f24932bf7918f05eee8928035bff3887335fd2a081507c75e9d94d06a",
+  "core": "C:\\Projects\\puae-runtime\\RetroArch-Win64\\cores\\puae_8aa0fa092541_libretro.dll",
+  "core_sha256": "8aa0fa092541b67feeeca351b46d2828797dd5b35eaf5915b2049852fa3814de",
+  "model": "A1200",
+  "color_depth": "16bit",
+  "kickstart_option": "auto",
+  "firmware_file": "kick40068.A1200",
+  "firmware_md5": "646773759326fbac3b2311fd8c8793ee",
+  "firmware_sha256": "6d43840d4099a74170ea0f0425b6257c3891ebcaa39c4d1840075a9ab22b5707",
+  "profile": "C:\\Projects\\puae-runtime\\profiles\\06-winuae603-A1200-16bit-lock",
+  "system_files_before": [
+    "C:\\Projects\\puae-runtime\\profiles\\06-winuae603-A1200-16bit-lock\\system\\kick40068.A1200"
+  ],
+  "content_files_before": [],
+  "working_directory": "C:\\Projects\\puae-runtime\\RetroArch-Win64",
+  "arguments": [
+    "--verbose",
+    "--config",
+    "\"C:\\Projects\\puae-runtime\\profiles\\06-winuae603-A1200-16bit-lock\\retroarch.cfg\"",
+    "-L",
+    "\"C:\\Projects\\puae-runtime\\RetroArch-Win64\\cores\\puae_8aa0fa092541_libretro.dll\"",
+    "--log-file=\"C:\\Projects\\puae\\docs\\runtime\\2026-10-27-kickstart-smoke\\06-winuae603-A1200-16bit-lock\\retroarch.log\"",
+    "--max-frames=1500",
+    "--max-frames-ss",
+    "--max-frames-ss-path=\"C:\\Projects\\puae\\docs\\runtime\\2026-10-27-kickstart-smoke\\06-winuae603-A1200-16bit-lock\\final-frame.png\""
+  ],
+  "max_frames": 1500
+}

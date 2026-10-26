@@ -1,0 +1,76 @@
+
+===================================================================
+RetroArch - Frontend for libretro
+Version: 1.22.2 (Git 69a4f0e) Nov 20 2025
+Compiler: MinGW (10.2.0) 64-bit
+===================================================================
+
+Usage: C:\Projects\puae-runtime\RetroArch-Win64\retroarch.exe [OPTIONS]... [FILE]
+
+  -h, --help                     Show this help message.
+  -v, --verbose                  Verbose logging.
+      --log-file=FILE            Log messages to FILE.
+  -V, --version                  Show version.
+      --features                 Print available features compiled into program.
+      --menu                     Do not require content or libretro core to be loaded,
+                                   starts directly in menu. If no arguments are passed to
+                                   the program, it is equivalent to using --menu as only argument.
+  -c, --config=FILE              Path for config file.
+                                   Defaults to retroarch.cfg in same directory as retroarch.exe.
+                                   If a default config is not found, the program will attempt to create one.
+      --appendconfig=FILE        Extra config files are loaded in, and take priority over
+                                   config selected in -c (or default). Multiple configs are
+                                   delimited by '|'.
+      --subsystem=NAME           Use a subsystem of the libretro core. Multiple content
+                                   files are loaded as multiple arguments. If a content
+                                   file is skipped, use a blank ("") command line argument.
+  -L, --libretro=FILE            Path to libretro implementation. Overrides any config setting.
+                                   FILE may be one of the following:
+                                   1. The full path to a core shared object library: path/to/<core_name>_libretro.<lib_ext>
+                                   2. A core shared object library 'file name' (*): <core_name>_libretro.<lib_ext>
+                                   3. A core 'short name' (*): <core_name>_libretro OR <core_name>
+                                   (*) If 'file name' or 'short name' do not correspond to an existing full file path,
+                                   the configured frontend 'cores' directory will be searched for a match.
+                                   Content must be loaded in an order which depends on the
+                                   particular subsystem used. See verbose log output to learn
+                                   how a particular subsystem wants content to be loaded.
+      --scan=PATH|FILE           Import content from path.
+  -f, --fullscreen               Start the program in fullscreen regardless of config setting.
+      --set-shader=PATH          Path to a shader (preset) that will be loaded each time content is loaded.
+                                   Effectively overrides automatic shader presets.
+                                   An empty argument "" will disable automatic shader presets.
+  -N, --nodevice=PORT            Disconnects controller device connected to PORT (1 to 16).
+  -A, --dualanalog=PORT          Connect a DualAnalog controller to PORT (1 to 16).
+  -d, --device=PORT:ID           Connect a generic device into PORT of the device (1 to 16).
+                                   Format is PORT:ID, where ID is a number corresponding to the particular device.
+  -M, --sram-mode=MODE           SRAM handling mode. MODE can be:
+                                   'noload-nosave', 'noload-save', 'load-nosave' or 'load-save'.
+                                   Note: 'noload-save' implies that save files *WILL BE OVERWRITTEN*.
+  -H, --host                     Host netplay as user 1.
+  -C, --connect=HOST             Connect to netplay server as user 2.
+      --port=PORT                Port used to netplay. Default is 55435.
+      --mitm-session=ID           MITM (relay) session ID to join.
+      --nick=NICK                Picks a username (for use with netplay). Not mandatory.
+      --check-frames=NUMBER      Check frames when using netplay.
+      --command                  Sends a command over UDP to an already running program process.
+                                   Available commands are listed if command is invalid.
+  -P, --play-replay=FILE         Playback a replay file.
+  -R, --record-replay=FILE       Start recording a replay file from the beginning.
+      --eof-exit                 Exit upon reaching the end of the replay file.
+  -r, --record=FILE              Path to record video file. Using mkv extension is recommended.
+      --recordconfig             Path to settings used during recording.
+      --size=WIDTHxHEIGHT        Overrides output video size when recording.
+  -D, --detach                   Detach program from the running console. Not relevant for all platforms.
+      --max-frames=NUMBER        Runs for the specified number of frames, then exits.
+  -U, --ups=FILE                 Specifies path for UPS patch that will be applied to content.
+      --bps=FILE                 Specifies path for BPS patch that will be applied to content.
+      --ips=FILE                 Specifies path for IPS patch that will be applied to content.
+      --xdelta=FILE              Specifies path for Xdelta patch that will be applied to content.
+      --no-patch                 Disables all forms of content patching.
+      --max-frames-ss            Takes a screenshot at the end of max-frames.
+      --max-frames-ss-path=FILE  Path to save the screenshot to at the end of max-frames.
+      --accessibility            Enables accessibility for blind users using text-to-speech.
+      --load-menu-on-error       Open menu instead of quitting if specified core or content fails to load.
+  -e, --entryslot=NUMBER         Slot from which to load an entry state.
+  -s, --save=PATH                Path for save files (*.srm). (DEPRECATED, use --appendconfig and savefile_directory)
+  -S, --savestate=PATH           Path for the save state files (*.state). (DEPRECATED, use --appendconfig and savestate_directory)

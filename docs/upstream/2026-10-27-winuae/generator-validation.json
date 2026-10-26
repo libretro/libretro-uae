@@ -1,0 +1,87 @@
+{
+  "generator_exit": 0,
+  "generated_file_count": 16,
+  "all_match_imported": true,
+  "files": [
+    {
+      "file": "linetoscr_aga_fast.c",
+      "generated_sha256_lf": "b00abc157075a4b97fe40621121f8bfff07970f077c290028132b6cd3b8aeeea",
+      "matches_imported_lf": true
+    },
+    {
+      "file": "linetoscr_aga_fm0.c",
+      "generated_sha256_lf": "853db456732ba4d96da5a7b79d7829641276dc26d7c966508f7e466c935a5a3c",
+      "matches_imported_lf": true
+    },
+    {
+      "file": "linetoscr_aga_fm0_genlock.c",
+      "generated_sha256_lf": "cc20821f93beae460068e4721980f8ff83aabf5faba185cbed5368bb49d1fe8c",
+      "matches_imported_lf": true
+    },
+    {
+      "file": "linetoscr_aga_fm1.c",
+      "generated_sha256_lf": "f698a400f7f6f6bd69219b8842ecdfecb4b43c48184777aebc4aff0e96807618",
+      "matches_imported_lf": true
+    },
+    {
+      "file": "linetoscr_aga_fm1_genlock.c",
+      "generated_sha256_lf": "fce08fca56a679bdfe86894480f0d92c682e1223fd4f58479dc9d0c8238486e4",
+      "matches_imported_lf": true
+    },
+    {
+      "file": "linetoscr_aga_fm2.c",
+      "generated_sha256_lf": "9744b71cfd6b39a25e453c5b355ed1244d8ee6c06b51bbfdfb999b3a06abb1ac",
+      "matches_imported_lf": true
+    },
+    {
+      "file": "linetoscr_aga_fm2_genlock.c",
+      "generated_sha256_lf": "e7846cc3696007cb9e8c09f5215ce35ee09d8a6671a0647362fcf32c32b196de",
+      "matches_imported_lf": true
+    },
+    {
+      "file": "linetoscr_aga_genlock_fast.c",
+      "generated_sha256_lf": "10c25f6bc916249918d80f02a55e85add21fe6748d112099d6b10be5dd3a1f64",
+      "matches_imported_lf": true
+    },
+    {
+      "file": "linetoscr_common.c",
+      "generated_sha256_lf": "7396f18ec76afd9a7f8857a47f409628036aa5a7c12580c53e14fd6776915649",
+      "matches_imported_lf": true
+    },
+    {
+      "file": "linetoscr_ecs_fast.c",
+      "generated_sha256_lf": "6812bb57c4dfe2a7b8b747ba785220ef7d83fa826cc087a47c9840bfff5b6cc1",
+      "matches_imported_lf": true
+    },
+    {
+      "file": "linetoscr_ecs_genlock_fast.c",
+      "generated_sha256_lf": "a1801507cb6e74ad3b79705e096bfce424a0681ecbbcc8789a9b806e7f2449d5",
+      "matches_imported_lf": true
+    },
+    {
+      "file": "linetoscr_ecs_shres.c",
+      "generated_sha256_lf": "d5fc5c16408a362b6d09ac73064efb38549d21db097504fc636ac39bca9b884b",
+      "matches_imported_lf": true
+    },
+    {
+      "file": "linetoscr_ocs_ecs.c",
+      "generated_sha256_lf": "1645f1673cabd3e2df95c3f90edf1be38396d882132d8907534325353f6d3ab5",
+      "matches_imported_lf": true
+    },
+    {
+      "file": "linetoscr_ocs_ecs_genlock.c",
+      "generated_sha256_lf": "4b4b1729af3448f0011ee89562704c11eef419cfe8bdcb1f41e52d48a3bb07a1",
+      "matches_imported_lf": true
+    },
+    {
+      "file": "linetoscr_ocs_ecs_ntsc.c",
+      "generated_sha256_lf": "659d27e240839678a3660bfca26b756e0842b3d2e9c25f22127ca98d8d5cfd39",
+      "matches_imported_lf": true
+    },
+    {
+      "file": "linetoscr_ocs_ecs_ntsc_genlock.c",
+      "generated_sha256_lf": "82d9dc0614364b853436a4824c044d715282ab765d01d4093b9a3f88bb657006",
+      "matches_imported_lf": true
+    }
+  ]
+}

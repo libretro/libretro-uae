@@ -1,0 +1,179 @@
+CFLAGS: -DWIN32 -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\"
+-------
+CC sources/src/custom.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/custom.o sources/src/custom.c
+CC sources/src/debug.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/debug.o sources/src/debug.c
+CC sources/src/draco.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/draco.o sources/src/draco.c
+CC sources/src/drawing.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/drawing.o sources/src/drawing.c
+CC sources/src/driveclick.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/driveclick.o sources/src/driveclick.c
+CC sources/src/ethernet.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/ethernet.o sources/src/ethernet.c
+CC sources/src/events.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/events.o sources/src/events.c
+CC sources/src/expansion.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/expansion.o sources/src/expansion.c
+sources/src/custom.c:303:15: error: unknown type name 'rgabuf'
+  303 | STATIC_INLINE rgabuf *read_rga_out(void)
+      |               ^~~~~~
+sources/src/custom.c: In function 'read_rga_out':
+sources/src/custom.c:306:16: error: returning 'struct rgabuf *' from a function with incompatible return type 'int *' [-Wincompatible-pointer-types]
+  306 |         return r;
+      |                ^
+sources/src/custom.c: At top level:
+sources/src/custom.c:308:15: error: unknown type name 'rgabuf'
+  308 | STATIC_INLINE rgabuf *read_rga_in(void)
+      |               ^~~~~~
+sources/src/custom.c: In function 'read_rga_in':
+sources/src/custom.c:311:16: error: returning 'struct rgabuf *' from a function with incompatible return type 'int *' [-Wincompatible-pointer-types]
+  311 |         return r;
+      |                ^
+sources/src/custom.c: In function 'COPJMP':
+sources/src/custom.c:3142:52: error: initialization of 'struct rgabuf *' from incompatible pointer type 'int *' [-Wincompatible-pointer-types]
+ 3142 |                                 struct rgabuf *r = read_rga_in();
+      |                                                    ^~~~~~~~~~~
+sources/src/custom.c: In function 'generate_copper':
+sources/src/custom.c:9530:54: error: initialization of 'struct rgabuf *' from incompatible pointer type 'int *' [-Wincompatible-pointer-types]
+ 9530 |                                 struct rgabuf *rga = read_rga_in();
+      |                                                      ^~~~~~~~~~~
+sources/src/custom.c:9551:46: error: initialization of 'struct rgabuf *' from incompatible pointer type 'int *' [-Wincompatible-pointer-types]
+ 9551 |                         struct rgabuf *rga = read_rga_in();
+      |                                              ^~~~~~~~~~~
+sources/src/custom.c:9569:46: error: initialization of 'struct rgabuf *' from incompatible pointer type 'int *' [-Wincompatible-pointer-types]
+ 9569 |                         struct rgabuf *rga = read_rga_in();
+      |                                              ^~~~~~~~~~~
+sources/src/custom.c: In function 'bitplane_rga_ptmod':
+sources/src/custom.c:9785:28: error: initialization of 'struct rgabuf *' from incompatible pointer type 'int *' [-Wincompatible-pointer-types]
+ 9785 |         struct rgabuf *r = read_rga_in();
+      |                            ^~~~~~~~~~~
+sources/src/custom.c: In function 'handle_rga_out':
+sources/src/custom.c:12095:36: error: initialization of 'struct rgabuf *' from incompatible pointer type 'int *' [-Wincompatible-pointer-types]
+12095 |                 struct rgabuf *r = read_rga_out();
+      |                                    ^~~~~~~~~~~~
+sources/src/custom.c: In function 'dma_cycle':
+sources/src/custom.c:12609:36: error: initialization of 'struct rgabuf *' from incompatible pointer type 'int *' [-Wincompatible-pointer-types]
+12609 |                 struct rgabuf *r = read_rga_out();
+      |                                    ^~~~~~~~~~~~
+sources/src/custom.c: In function 'is_cycle_ce':
+sources/src/custom.c:12899:36: error: initialization of 'struct rgabuf *' from incompatible pointer type 'int *' [-Wincompatible-pointer-types]
+12899 |                 struct rgabuf *r = read_rga_out();
+      |                                    ^~~~~~~~~~~~
+make: *** [Makefile:369: build-winuae603/./sources/src/custom.o] Error 1
+make: *** Waiting for unfinished jobs....
+sources/src/debug.c: In function 'saveloadmem':
+sources/src/debug.c:6077:14: error: implicit declaration of function 'uae_tfopen'; did you mean '_tfopen'? [-Wimplicit-function-declaration]
+ 6077 |         fp = uae_tfopen (name, save ? _T("wb") : _T("rb"));
+      |              ^~~~~~~~~~
+      |              _tfopen
+sources/src/debug.c:6077:12: error: assignment to 'RFILE *' from 'int' makes pointer from integer without a cast [-Wint-conversion]
+ 6077 |         fp = uae_tfopen (name, save ? _T("wb") : _T("rb"));
+      |            ^
+sources/src/draco.c:10: error: unterminated #ifdef
+   10 | #ifdef WITH_DRACO
+make: *** [Makefile:369: build-winuae603/./sources/src/debug.o] Error 1
+make: *** [Makefile:369: build-winuae603/./sources/src/draco.o] Error 1
+sources/src/events.c: In function 'MISC_handler':
+sources/src/events.c:356:17: error: unknown type name 'ev2'; use 'struct' keyword to refer to the type
+  356 |                 ev2 *e = &eventtab2[idx];
+      |                 ^~~
+      |                 struct 
+sources/src/events.c:356:26: error: initialization of 'int *' from incompatible pointer type 'struct ev2 *' [-Wincompatible-pointer-types]
+  356 |                 ev2 *e = &eventtab2[idx];
+      |                          ^
+sources/src/events.c:357:22: error: request for member 'active' in something not a structure or union
+  357 |                 if (e->active) {
+      |                      ^~
+sources/src/events.c:358:30: error: request for member 'evtime' in something not a structure or union
+  358 |                         if (e->evtime == ct) {
+      |                              ^~
+sources/src/events.c:359:34: error: request for member 'active' in something not a structure or union
+  359 |                                 e->active = false;
+      |                                  ^~
+sources/src/events.c:361:34: error: request for member 'handler' in something not a structure or union
+  361 |                                 e->handler(e->data);
+      |                                  ^~
+sources/src/events.c:361:45: error: request for member 'data' in something not a structure or union
+  361 |                                 e->handler(e->data);
+      |                                             ^~
+sources/src/events.c:369:52: error: request for member 'evtime' in something not a structure or union
+  369 |                                 evt_t eventtime = e->evtime - ct;
+      |                                                    ^~
+sources/src/events.c: In function 'event2_newevent_xx':
+sources/src/events.c:415:46: error: type defaults to 'int' in declaration of 'ev2' [-Wimplicit-int]
+  415 |                                         auto ev2 = &eventtab2[i];
+      |                                              ^~~
+sources/src/events.c:415:52: error: initialization of 'int' from 'struct ev2 *' makes integer from pointer without a cast [-Wint-conversion]
+  415 |                                         auto ev2 = &eventtab2[i];
+      |                                                    ^
+sources/src/events.c:416:48: error: invalid type argument of '->' (have 'int')
+  416 |                                         if (ev2->active && ev2->handler == func && ev2->evtime == et && func == event_doint_delay_do_ext) {
+      |                                                ^~
+sources/src/events.c:416:63: error: invalid type argument of '->' (have 'int')
+  416 |                                         if (ev2->active && ev2->handler == func && ev2->evtime == et && func == event_doint_delay_do_ext) {
+      |                                                               ^~
+sources/src/events.c:416:87: error: invalid type argument of '->' (have 'int')
+  416 |                                         if (ev2->active && ev2->handler == func && ev2->evtime == et && func == event_doint_delay_do_ext) {
+      |                                                                                       ^~
+sources/src/events.c:417:52: error: invalid type argument of '->' (have 'int')
+  417 |                                                 ev2->data |= data;
+      |                                                    ^~
+sources/src/events.c:444:9: error: unknown type name 'ev2'; use 'struct' keyword to refer to the type
+  444 |         ev2 *e = &eventtab2[no];
+      |         ^~~
+      |         struct 
+sources/src/events.c:444:18: error: initialization of 'int *' from incompatible pointer type 'struct ev2 *' [-Wincompatible-pointer-types]
+  444 |         ev2 *e = &eventtab2[no];
+      |                  ^
+sources/src/events.c:445:10: error: request for member 'active' in something not a structure or union
+  445 |         e->active = true;
+      |          ^~
+sources/src/events.c:446:10: error: request for member 'evtime' in something not a structure or union
+  446 |         e->evtime = et;
+      |          ^~
+sources/src/events.c:447:10: error: request for member 'handler' in something not a structure or union
+  447 |         e->handler = func;
+      |          ^~
+sources/src/events.c:448:10: error: request for member 'data' in something not a structure or union
+  448 |         e->data = data;
+      |          ^~
+In file included from sources/src/events.c:12:
+./sources/src/include/sysdeps.h:62:29: error: invalid operands to binary - (have 'int *' and 'struct ev2 *')
+   62 | #define addrdiff(a, b) ((a) - (b))
+      |                             ^
+      |                             |
+      |                             struct ev2 *
+sources/src/events.c:449:21: note: in expansion of macro 'addrdiff'
+  449 |         event2idx = addrdiff(e, eventtab2) + 1;
+      |                     ^~~~~~~~
+make: *** [Makefile:367: build-winuae603/./sources/src/events.o] Error 1
+sources/src/expansion.c:3839:13: error: conflicting types for 'expansion_init_cards'; have 'void(struct uae_prefs *, _Bool)'
+ 3839 | static void expansion_init_cards(struct uae_prefs *p, bool log)
+      |             ^~~~~~~~~~~~~~~~~~~~
+sources/src/expansion.c:2947:13: note: previous definition of 'expansion_init_cards' with type 'void(struct uae_prefs *)'
+ 2947 | static void expansion_init_cards(struct uae_prefs *p)
+      |             ^~~~~~~~~~~~~~~~~~~~
+sources/src/expansion.c: In function 'expansion_init_cards':
+sources/src/expansion.c:3842:9: error: too few arguments to function 'expansion_init_cards'; expected 2, have 1
+ 3842 |         expansion_init_cards(p);
+      |         ^~~~~~~~~~~~~~~~~~~~
+sources/src/expansion.c:3839:13: note: declared here
+ 3839 | static void expansion_init_cards(struct uae_prefs *p, bool log)
+      |             ^~~~~~~~~~~~~~~~~~~~
+sources/src/expansion.c: At top level:
+sources/src/expansion.c:6030:23: error: 'ncr_alf3_autoconfig_init' undeclared here (not in a function); did you mean 'ncr710_a4091_autoconfig_init'?
+ 6030 |                 NULL, ncr_alf3_autoconfig_init, NULL, alf3_add_scsi_unit, ROMTYPE_ALF3 | ROMTYPE_NONE, 0, 0, BOARD_AUTOCONFIG_Z2, false,
+      |                       ^~~~~~~~~~~~~~~~~~~~~~~~
+      |                       ncr710_a4091_autoconfig_init
+sources/src/expansion.c:6030:55: error: 'alf3_add_scsi_unit' undeclared here (not in a function); did you mean 'alf2_add_scsi_unit'?
+ 6030 |                 NULL, ncr_alf3_autoconfig_init, NULL, alf3_add_scsi_unit, ROMTYPE_ALF3 | ROMTYPE_NONE, 0, 0, BOARD_AUTOCONFIG_Z2, false,
+      |                                                       ^~~~~~~~~~~~~~~~~~
+      |                                                       alf2_add_scsi_unit
+sources/src/expansion.c:6451: error: unterminated #ifdef
+ 6451 | #ifdef CATWEASEL
+sources/src/expansion.c:6429:9: error: expected expression at end of input
+ 6429 |         },
+      |         ^
+make: *** [Makefile:367: build-winuae603/./sources/src/expansion.o] Error 1

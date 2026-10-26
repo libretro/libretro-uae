@@ -1,0 +1,14 @@
+{
+  "head": "7387937066b1b693816c3b4e2b7a0c601d41363d",
+  "started_utc": "2026-10-26T22:02:49.9666486Z",
+  "finished_utc": "2026-10-26T22:04:04.1872486Z",
+  "elapsed_seconds": 73.918,
+  "command": "make -j8 platform=win CC=gcc OBJDIR=build-winuae603 TARGET=puae603_libretro.dll",
+  "environment": "UCRT64",
+  "msys_root": "C:\\Users\\Onur\\AppData\\Local\\Programs\\msys64",
+  "exit_code": 2,
+  "tracked_files_unchanged_before": false,
+  "tracked_files_unchanged_after": false,
+  "output": "C:\\Projects\\puae\\puae603_libretro.dll",
+  "log": "C:\\Projects\\puae\\docs\\upstream\\2026-10-27-winuae\\build-03\\build.log"
+}

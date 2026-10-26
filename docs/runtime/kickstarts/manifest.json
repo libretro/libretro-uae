@@ -1,0 +1,110 @@
+{
+  "date": "2026-10-27",
+  "timezone": "Europe/Istanbul",
+  "original_archive": "C:\\Users\\Onur\\Downloads\\KickStartRoms.zip",
+  "archive_sha256": "7451f5a58fc1c812c76bdec69c2a5364a42d8d887770e5b38b56b4c3ca9afb8f",
+  "runtime_firmware_directory": "C:\\Projects\\puae-runtime\\firmware\\kickstarts",
+  "excluded": "__MACOSX metadata",
+  "file_count": 12,
+  "entries": [
+    {
+      "file": "kick33180.A500",
+      "bytes": 262144,
+      "md5": "85ad74194e87c08904327de1a9443b7a",
+      "sha256": "87cddb1f499e32758de20145e73031a84bab299e3f6e5c8487e76d02b2ee9d16",
+      "expected_md5": "85ad74194e87c08904327de1a9443b7a",
+      "matches_documented_md5": true
+    },
+    {
+      "file": "kick34005.A500",
+      "bytes": 262144,
+      "md5": "82a21c1890cae844b3df741f2762d48d",
+      "sha256": "ee05862d8102a08436ac4056da7d549db31625c7d47b24dfb7b3c9a5c113ca53",
+      "expected_md5": "82a21c1890cae844b3df741f2762d48d",
+      "matches_documented_md5": true
+    },
+    {
+      "file": "kick37175.A500",
+      "bytes": 524288,
+      "md5": "dc10d7bdd1b6f450773dfb558477c230",
+      "sha256": "d0b70e8a1772614b897f92c33cb299bed3fc8e3de488fc12f67f97fc2486eb79",
+      "expected_md5": "dc10d7bdd1b6f450773dfb558477c230",
+      "matches_documented_md5": true
+    },
+    {
+      "file": "kick34005.CDTV",
+      "bytes": 262144,
+      "md5": "89da1838a24460e4b93f4f0c5d92d48d",
+      "sha256": "6e48bb768539e8dae352553e5fdfa860682edaf9e26b105fadd8e26103171765",
+      "expected_md5": "89da1838a24460e4b93f4f0c5d92d48d",
+      "matches_documented_md5": true
+    },
+    {
+      "file": "kick37350.A600",
+      "bytes": 524288,
+      "md5": "465646c9b6729f77eea5314d1f057951",
+      "sha256": "8d57d6e9d976df42d91ff9d10a5eedaede1a00e3b4b34cad750ca5ff7229f28a",
+      "expected_md5": "465646c9b6729f77eea5314d1f057951",
+      "matches_documented_md5": true
+    },
+    {
+      "file": "kick39106.A1200",
+      "bytes": 524288,
+      "md5": "b7cc148386aa631136f510cd29e42fc3",
+      "sha256": "293beea59d7de4caab3e07223d66e844ad5268eb06a04f405b523a0a1543d64c",
+      "expected_md5": "b7cc148386aa631136f510cd29e42fc3",
+      "matches_documented_md5": true
+    },
+    {
+      "file": "kick39106.A4000",
+      "bytes": 524288,
+      "md5": "9b8bdd5a3fd32c2a5a6f5b1aefc799a5",
+      "sha256": "b859d9fb3d868a8328a4a363d44934eb1ee1c73955aa98576c7ffe3feed3d3ff",
+      "expected_md5": "9b8bdd5a3fd32c2a5a6f5b1aefc799a5",
+      "matches_documented_md5": true
+    },
+    {
+      "file": "kick40060.CD32",
+      "bytes": 524288,
+      "md5": "5f8924d013dd57a89cf349f4cdedc6b1",
+      "sha256": "3586355514947b5ab48c8755dc004fab94f188b19e7bce491c8f9693499e830b",
+      "expected_md5": "5f8924d013dd57a89cf349f4cdedc6b1",
+      "matches_documented_md5": true
+    },
+    {
+      "file": "kick40060.CD32.ext",
+      "bytes": 524288,
+      "md5": "bb72565701b1b6faece07d68ea5da639",
+      "sha256": "d964826432559994ffe329f643fd4e42dbbff313362d9434945725d7119cae87",
+      "expected_md5": "bb72565701b1b6faece07d68ea5da639",
+      "matches_documented_md5": true
+    },
+    {
+      "file": "kick40063.A600",
+      "bytes": 524288,
+      "md5": "e40a5dfb3d017ba8779faba30cbd1c8e",
+      "sha256": "8c8a0cf04f91b88eaf0c4f1126041987067e2286a8ee590bdbae447a8000c5ee",
+      "expected_md5": "e40a5dfb3d017ba8779faba30cbd1c8e",
+      "matches_documented_md5": true
+    },
+    {
+      "file": "kick40068.A1200",
+      "bytes": 524288,
+      "md5": "646773759326fbac3b2311fd8c8793ee",
+      "sha256": "6d43840d4099a74170ea0f0425b6257c3891ebcaa39c4d1840075a9ab22b5707",
+      "expected_md5": "646773759326fbac3b2311fd8c8793ee",
+      "matches_documented_md5": true
+    },
+    {
+      "file": "kick40068.A4000",
+      "bytes": 524288,
+      "md5": "9bdedde6a4f33555b4a270c8ca53297d",
+      "sha256": "71236ed62c85394a3ad7d0d8d65405bac7a10083e06ba6b82120dacc7a00fe9a",
+      "expected_md5": "9bdedde6a4f33555b4a270c8ca53297d",
+      "matches_documented_md5": true
+    }
+  ],
+  "rom_bytes_kept_outside_repository": true,
+  "original_archive_modified": false,
+  "smoke_policy": "Copy only the required matching ROM into each new isolated profile system directory; retain prior AROS evidence unchanged"
+}

@@ -1,0 +1,289 @@
+{
+  "prepared": 228,
+  "conflicted_files": 47,
+  "conflict_regions": 167,
+  "conflicts": [
+    {
+      "local": "sources/src/a2091.c",
+      "upstream": "a2091.cpp",
+      "conflicts": 5,
+      "exit_code": 5
+    },
+    {
+      "local": "sources/src/akiko.c",
+      "upstream": "akiko.cpp",
+      "conflicts": 3,
+      "exit_code": 3
+    },
+    {
+      "local": "sources/src/archivers/lha/lhamaketbl.c",
+      "upstream": "archivers/lha/lhamaketbl.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/aros.rom.c",
+      "upstream": "aros.rom.cpp",
+      "conflicts": 2,
+      "exit_code": 2
+    },
+    {
+      "local": "sources/src/audio.c",
+      "upstream": "audio.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/blitter.c",
+      "upstream": "blitter.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/blkdev_cdimage.c",
+      "upstream": "blkdev_cdimage.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/cd32_fmv.c",
+      "upstream": "cd32_fmv.cpp",
+      "conflicts": 2,
+      "exit_code": 2
+    },
+    {
+      "local": "sources/src/cdtv.c",
+      "upstream": "cdtv.cpp",
+      "conflicts": 10,
+      "exit_code": 10
+    },
+    {
+      "local": "sources/src/cfgfile.c",
+      "upstream": "cfgfile.cpp",
+      "conflicts": 2,
+      "exit_code": 2
+    },
+    {
+      "local": "sources/src/custom.c",
+      "upstream": "custom.cpp",
+      "conflicts": 53,
+      "exit_code": 53
+    },
+    {
+      "local": "sources/src/debug.c",
+      "upstream": "debug.cpp",
+      "conflicts": 8,
+      "exit_code": 8
+    },
+    {
+      "local": "sources/src/devices.c",
+      "upstream": "devices.cpp",
+      "conflicts": 2,
+      "exit_code": 2
+    },
+    {
+      "local": "sources/src/disk.c",
+      "upstream": "disk.cpp",
+      "conflicts": 2,
+      "exit_code": 2
+    },
+    {
+      "local": "sources/src/draco.c",
+      "upstream": "draco.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/drawing.c",
+      "upstream": "drawing.cpp",
+      "conflicts": 13,
+      "exit_code": 13
+    },
+    {
+      "local": "sources/src/dsp3210/dsp_glue.c",
+      "upstream": "dsp3210/dsp_glue.cpp",
+      "conflicts": 4,
+      "exit_code": 4
+    },
+    {
+      "local": "sources/src/ethernet.c",
+      "upstream": "ethernet.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/events.c",
+      "upstream": "events.cpp",
+      "conflicts": 4,
+      "exit_code": 4
+    },
+    {
+      "local": "sources/src/expansion.c",
+      "upstream": "expansion.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/fsdb_unix.c",
+      "upstream": "fsdb_unix.cpp",
+      "conflicts": 2,
+      "exit_code": 2
+    },
+    {
+      "local": "sources/src/gfxutil.c",
+      "upstream": "gfxutil.cpp",
+      "conflicts": 5,
+      "exit_code": 5
+    },
+    {
+      "local": "sources/src/include/debug.h",
+      "upstream": "include/debug.h",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/include/newcpu.h",
+      "upstream": "include/newcpu.h",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/include/rommgr.h",
+      "upstream": "include/rommgr.h",
+      "conflicts": 2,
+      "exit_code": 2
+    },
+    {
+      "local": "sources/src/include/specialmonitors.h",
+      "upstream": "include/specialmonitors.h",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/include/sysdeps.h",
+      "upstream": "include/sysdeps.h",
+      "conflicts": 2,
+      "exit_code": 2
+    },
+    {
+      "local": "sources/src/include/uae/string.h",
+      "upstream": "include/uae/string.h",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/include/zfile.h",
+      "upstream": "include/zfile.h",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/jit/compemu.c",
+      "upstream": "jit/compemu.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/jit/compemu.h",
+      "upstream": "jit/compemu.h",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/jit/compemu_fpp.c",
+      "upstream": "jit/compemu_fpp.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/jit/compemu_support.cpp",
+      "upstream": "jit/compemu_support.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/memory.c",
+      "upstream": "memory.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/newcpu.c",
+      "upstream": "newcpu.cpp",
+      "conflicts": 4,
+      "exit_code": 4
+    },
+    {
+      "local": "sources/src/ppc/ppc.c",
+      "upstream": "ppc/ppc.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/qemuvga/qemuuaeglue.h",
+      "upstream": "qemuvga/qemuuaeglue.h",
+      "conflicts": 2,
+      "exit_code": 2
+    },
+    {
+      "local": "sources/src/savestate.c",
+      "upstream": "savestate.cpp",
+      "conflicts": 10,
+      "exit_code": 10
+    },
+    {
+      "local": "sources/src/slirp/ip_input.cpp",
+      "upstream": "slirp/ip_input.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/slirp/mbuf.cpp",
+      "upstream": "slirp/mbuf.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/slirp/socket.cpp",
+      "upstream": "slirp/socket.cpp",
+      "conflicts": 2,
+      "exit_code": 2
+    },
+    {
+      "local": "sources/src/sndboard.c",
+      "upstream": "sndboard.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/softfloat/softfloat.h",
+      "upstream": "softfloat/softfloat.h",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/specialmonitors.c",
+      "upstream": "specialmonitors.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/statusline.c",
+      "upstream": "statusline.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/x86.c",
+      "upstream": "x86.cpp",
+      "conflicts": 2,
+      "exit_code": 2
+    },
+    {
+      "local": "sources/src/zfile.c",
+      "upstream": "zfile.cpp",
+      "conflicts": 2,
+      "exit_code": 2
+    }
+  ]
+}

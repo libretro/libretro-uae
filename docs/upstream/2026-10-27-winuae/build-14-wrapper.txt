@@ -1,0 +1,27 @@
+CFLAGS: -DWIN32 -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\"
+-------
+CC libretro/libretro-glue.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603-final/./libretro/libretro-glue.o libretro/libretro-glue.c
+libretro/libretro-glue.c: In function 'unlockscr':
+libretro/libretro-glue.c:858:31: error: 'thisframe_y_adjust' undeclared (first use in this function)
+  858 |          visible_left_border, thisframe_y_adjust);
+      |                               ^~~~~~~~~~~~~~~~~~
+libretro/libretro-glue.c:858:31: note: each undeclared identifier is reported only once for each function it appears in
+make: *** [Makefile:369: build-winuae603-final/./libretro/libretro-glue.o] Error 1
+make: Target 'default' not remade because of errors.
+{
+  "head": "7387937066b1b693816c3b4e2b7a0c601d41363d",
+  "started_utc": "2026-10-26T22:35:13.4691200Z",
+  "finished_utc": "2026-10-26T22:35:17.9322405Z",
+  "elapsed_seconds": 4.148,
+  "command": "make -k -j8 platform=win CC=gcc OBJDIR=build-winuae603-final TARGET=puae603_libretro.dll",
+  "environment": "UCRT64",
+  "msys_root": "C:\\Users\\Onur\\AppData\\Local\\Programs\\msys64",
+  "exit_code": 2,
+  "tracked_files_unchanged_before": false,
+  "tracked_files_unchanged_after": false,
+  "output": "C:\\Projects\\puae\\puae603_libretro.dll",
+  "log": "C:\\Projects\\puae\\docs\\upstream\\2026-10-27-winuae\\build-14-diagnostic\\build.log",
+  "output_bytes": 23354368,
+  "output_sha256": "2904393f2dcf22345c1237d3cb088e7975327deb402abc3ad827210616af8ac8"
+}

@@ -1,0 +1,127 @@
+MINGW64_NT-10.0-26100 nuc 3.6.11-00eb8435.x86_64 2026-10-16 10:03 UTC x86_64 Msys
+/ucrt64/bin/gcc
+/usr/bin/make
+/c/Users/Onur/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/git/cmd/git
+gcc.exe (Rev6, Built by MSYS2 project) 16.2.0
+Copyright (C) 2026 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+x86_64-w64-mingw32
+GNU Make 4.4.1
+Built for x86_64-pc-cygwin
+Copyright (C) 1988-2023 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+GNU ld (GNU Binutils) 2.47.20260726
+Copyright (C) 2026 Free Software Foundation, Inc.
+This program is free software; you may redistribute it under the terms of
+the GNU General Public License version 3 or (at your option) a later version.
+This program has absolutely no warranty.
+git version 2.53.0.windows.3
+base 2022.06-1
+bash 5.3.20-2
+bash-completion 2.18.0-1
+brotli 1.2.1-1
+bsdtar 3.8.10-2
+bzip2 1.0.8-4
+ca-certificates 20260816-2
+coreutils 8.32-5
+curl 8.23.0-1
+dash 0.5.13.5-1
+file 5.48-1
+filesystem 2026.10.17-1
+findutils 4.11.0-2
+gawk 5.4.1-1
+gcc-libs 16.2.0-1
+getent 2.18.90-6
+gettext 0.22.5-1
+gmp 6.3.0-2
+gnupg 2.4.9-3
+grep 1~3.0-7
+gzip 1.15-1
+inetutils 2.8-1
+info 7.2-3
+less 710-1
+libargp 20260115-1
+libasprintf 0.22.5-1
+libassuan 3.0.2-1
+libbz2 1.0.8-4
+libcurl 8.23.0-1
+libexpat 2.9.0-1
+libffi 3.8.0-1
+libgcrypt 1.12.4-1
+libgettextpo 0.22.5-1
+libgnutls 3.8.13-2
+libgpg-error 1.61-1
+libhogweed 4.0-1
+libiconv 1.19-1
+libidn2 2.3.8-1
+libintl 0.22.5-1
+libksba 1.8.1-1
+liblz4 1.10.0-1
+liblzma 5.8.4-1
+libnettle 4.0-1
+libnghttp2 1.70.0-1
+libnghttp3 1.18.0-1
+libngtcp2 1.25.0-1
+libnpth 1.8-1
+libopenssl 3.6.5-1
+libp11-kit 0.26.5-1
+libpcre 8.45-5
+libpcre2_8 10.49-1
+libpsl 0.23.2-1
+libreadline 8.3.006-1
+libsqlite 3.54.0-1
+libssh2 1.11.1-1
+libtasn1 4.21.0-1
+libunistring 1.4.2-1
+libutil-linux 2.40.2-2
+libxcrypt 4.5.2-1
+libzstd 1.5.7-1
+make 4.4.1-3
+mingw-w64-ucrt-x86_64-binutils 2.47-4
+mingw-w64-ucrt-x86_64-cc-libs 16.2.0-6
+mingw-w64-ucrt-x86_64-crt 14.0.0.r536.g7ce22f663-1
+mingw-w64-ucrt-x86_64-gcc 16.2.0-6
+mingw-w64-ucrt-x86_64-gettext-runtime 1.0-1
+mingw-w64-ucrt-x86_64-gmp 6.3.0-2
+mingw-w64-ucrt-x86_64-headers 14.0.0.r536.g7ce22f663-1
+mingw-w64-ucrt-x86_64-isl 0.28-1
+mingw-w64-ucrt-x86_64-libgcc 16.2.0-6
+mingw-w64-ucrt-x86_64-libiconv 1.19-1
+mingw-w64-ucrt-x86_64-libstdc++ 16.2.0-6
+mingw-w64-ucrt-x86_64-libwinpthread 14.0.0.r536.g7ce22f663-1
+mingw-w64-ucrt-x86_64-mpc 1.4.1-1
+mingw-w64-ucrt-x86_64-mpfr 4.2.2-3
+mingw-w64-ucrt-x86_64-tzdata 2026e-1
+mingw-w64-ucrt-x86_64-windows-default-manifest 20260815-1
+mingw-w64-ucrt-x86_64-winpthreads 14.0.0.r536.g7ce22f663-1
+mingw-w64-ucrt-x86_64-zlib 1.3.2-3
+mingw-w64-ucrt-x86_64-zstd 1.5.7-2
+mintty 1~3.8.3-1
+mpfr 4.2.2-1
+msys2-keyring 1~20260814-1
+msys2-launcher 1.5-3
+msys2-runtime 3.6.11-4
+nano 9.2-1
+ncurses 6.6-2
+nettle 4.0-1
+openssl 3.6.5-1
+p11-kit 0.26.5-1
+pacman 6.1.0-26
+pacman-contrib 1.10.6-2
+pacman-mirrors 20260129-1
+pinentry 1.3.3-1
+rebase 4.5.0-5
+sed 4.9-1
+tar 1.35-3
+time 1.10-1
+tzcode 2026e-1
+util-linux 2.40.2-2
+wget 1.25.0-4
+which 2.25-1
+xz 5.8.4-1
+zlib 1.3.2-1
+zstd 1.5.7-1

@@ -1,0 +1,14 @@
+{
+  "started_utc": "2026-10-26T22:40:20.0135141Z",
+  "finished_utc": "2026-10-26T22:40:33.2640512Z",
+  "elapsed_seconds": 13.251,
+  "exit_code": 0,
+  "timed_out": false,
+  "selected_external_firmware_confirmed": true,
+  "core_sha256_after": "7efeaf2836461574c9270b457947db196a07d57e5c3be8668dce26c1631443df",
+  "system_files_after": [
+    "C:\\Projects\\puae-runtime\\profiles\\11-winuae603-A500-blanking-limits\\system\\kick34005.A500"
+  ],
+  "profile": "C:\\Projects\\puae-runtime\\profiles\\11-winuae603-A500-blanking-limits",
+  "final_frame_exists": true
+}

@@ -1,0 +1,14 @@
+{
+  "started_utc": "2026-10-26T22:31:27.9143046Z",
+  "finished_utc": "2026-10-26T22:31:59.1054864Z",
+  "elapsed_seconds": 31.191,
+  "exit_code": 0,
+  "timed_out": false,
+  "selected_external_firmware_confirmed": true,
+  "core_sha256_after": "8aa0fa092541b67feeeca351b46d2828797dd5b35eaf5915b2049852fa3814de",
+  "system_files_after": [
+    "C:\\Projects\\puae-runtime\\profiles\\05-winuae603-A500-16bit-lock\\system\\kick34005.A500"
+  ],
+  "profile": "C:\\Projects\\puae-runtime\\profiles\\05-winuae603-A500-16bit-lock",
+  "final_frame_exists": true
+}

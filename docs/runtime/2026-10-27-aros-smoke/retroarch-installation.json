@@ -1,0 +1,14 @@
+{
+  "date": "2026-10-27",
+  "timezone": "Europe/Istanbul",
+  "version": "1.22.2",
+  "source_url": "https://buildbot.libretro.com/stable/1.22.2/windows/x86_64/RetroArch.7z",
+  "archive": "C:\\Users\\Onur\\AppData\\Local\\puae-runtime\\downloads\\RetroArch-1.22.2-Win64.7z",
+  "archive_sha256": "b2139b1d0f9d4526dc6b5ce23cbb3efdc766096fa6f2c3df016818b486ac6372",
+  "archive_bytes": 202509078,
+  "published_digest_compared": false,
+  "acquisition": "Official buildbot HTTPS download with local SHA256 recorded",
+  "runtime_root": "C:\\Projects\\puae-runtime",
+  "executable": "C:\\Projects\\puae-runtime\\RetroArch-Win64\\retroarch.exe",
+  "executable_sha256": "81c11b6f24932bf7918f05eee8928035bff3887335fd2a081507c75e9d94d06a"
+}

@@ -1,0 +1,217 @@
+{
+  "prepared": 201,
+  "conflicted_files": 35,
+  "conflict_regions": 139,
+  "conflicts": [
+    {
+      "local": "sources/src/a2091.c",
+      "upstream": "a2091.cpp",
+      "conflicts": 5,
+      "exit_code": 5
+    },
+    {
+      "local": "sources/src/aros.rom.c",
+      "upstream": "aros.rom.cpp",
+      "conflicts": 2,
+      "exit_code": 2
+    },
+    {
+      "local": "sources/src/audio.c",
+      "upstream": "audio.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/blitter.c",
+      "upstream": "blitter.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/blkdev_cdimage.c",
+      "upstream": "blkdev_cdimage.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/cd32_fmv.c",
+      "upstream": "cd32_fmv.cpp",
+      "conflicts": 2,
+      "exit_code": 2
+    },
+    {
+      "local": "sources/src/cdtv.c",
+      "upstream": "cdtv.cpp",
+      "conflicts": 10,
+      "exit_code": 10
+    },
+    {
+      "local": "sources/src/cfgfile.c",
+      "upstream": "cfgfile.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/custom.c",
+      "upstream": "custom.cpp",
+      "conflicts": 51,
+      "exit_code": 51
+    },
+    {
+      "local": "sources/src/debug.c",
+      "upstream": "debug.cpp",
+      "conflicts": 7,
+      "exit_code": 7
+    },
+    {
+      "local": "sources/src/devices.c",
+      "upstream": "devices.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/disk.c",
+      "upstream": "disk.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/draco.c",
+      "upstream": "draco.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/drawing.c",
+      "upstream": "drawing.cpp",
+      "conflicts": 13,
+      "exit_code": 13
+    },
+    {
+      "local": "sources/src/events.c",
+      "upstream": "events.cpp",
+      "conflicts": 3,
+      "exit_code": 3
+    },
+    {
+      "local": "sources/src/expansion.c",
+      "upstream": "expansion.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/gfxutil.c",
+      "upstream": "gfxutil.cpp",
+      "conflicts": 5,
+      "exit_code": 5
+    },
+    {
+      "local": "sources/src/include/debug.h",
+      "upstream": "include/debug.h",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/include/newcpu.h",
+      "upstream": "include/newcpu.h",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/include/rommgr.h",
+      "upstream": "include/rommgr.h",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/include/specialmonitors.h",
+      "upstream": "include/specialmonitors.h",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/include/sysdeps.h",
+      "upstream": "include/sysdeps.h",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/newcpu.c",
+      "upstream": "newcpu.cpp",
+      "conflicts": 4,
+      "exit_code": 4
+    },
+    {
+      "local": "sources/src/pcem/pcemglue.cpp",
+      "upstream": "pcem/pcemglue.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/pcem/vid_cl5429.cpp",
+      "upstream": "pcem/vid_cl5429.cpp",
+      "conflicts": 4,
+      "exit_code": 4
+    },
+    {
+      "local": "sources/src/pcem/vid_s3.cpp",
+      "upstream": "pcem/vid_s3.cpp",
+      "conflicts": 2,
+      "exit_code": 2
+    },
+    {
+      "local": "sources/src/pcem/vid_svga.cpp",
+      "upstream": "pcem/vid_svga.cpp",
+      "conflicts": 5,
+      "exit_code": 5
+    },
+    {
+      "local": "sources/src/pcem/vid_svga_render.cpp",
+      "upstream": "pcem/vid_svga_render.cpp",
+      "conflicts": 2,
+      "exit_code": 2
+    },
+    {
+      "local": "sources/src/pcem/vid_voodoo_render.cpp",
+      "upstream": "pcem/vid_voodoo_render.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/ppc/ppc.c",
+      "upstream": "ppc/ppc.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/savestate.c",
+      "upstream": "savestate.cpp",
+      "conflicts": 4,
+      "exit_code": 4
+    },
+    {
+      "local": "sources/src/specialmonitors.c",
+      "upstream": "specialmonitors.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/statusline.c",
+      "upstream": "statusline.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/x86.c",
+      "upstream": "x86.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    },
+    {
+      "local": "sources/src/zfile.c",
+      "upstream": "zfile.cpp",
+      "conflicts": 1,
+      "exit_code": 1
+    }
+  ]
+}

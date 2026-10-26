@@ -1,0 +1,103 @@
+CFLAGS: -DWIN32 -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\"
+-------
+CC libretro/libretro-core.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./libretro/libretro-core.o libretro/libretro-core.c
+CC libretro/libretro-mapper.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./libretro/libretro-mapper.o libretro/libretro-mapper.c
+CC libretro/libretro-dc.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./libretro/libretro-dc.o libretro/libretro-dc.c
+CC libretro/libretro-glue.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./libretro/libretro-glue.o libretro/libretro-glue.c
+CC libretro/libretro-vkbd.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./libretro/libretro-vkbd.o libretro/libretro-vkbd.c
+CC libretro/libretro-graph.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./libretro/libretro-graph.o libretro/libretro-graph.c
+CC deps/libz/unzip.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./deps/libz/unzip.o deps/libz/unzip.c
+CC deps/libz/ioapi.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./deps/libz/ioapi.o deps/libz/ioapi.c
+In file included from libretro/libretro-core.c:19:
+./sources/src/include/drawing.h:180:43: error: unknown type name 'nln_how'
+  180 | void draw_denise_line_queue(int gfx_ypos, nln_how how, uae_u32 linecnt, int startpos, int endpos, int startcycle, int endcycle, int skip, int skip2, int dtotal, int calib_start, int calib_len, bool lof, bool lol, int hdelay, bool blanked, bool finalseg, struct linestate *ls);
+      |                                           ^~~~~~~
+CC sources/src/a2065.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/a2065.o sources/src/a2065.c
+libretro/libretro-core.c: In function 'update_vresolution':
+libretro/libretro-core.c:7618:96: error: 'struct vidbuffer' has no member named 'tempbufferinuse'
+ 7618 |    int tmp_interlace_seen = retro_av_info_is_lace || retro_doublescan || gfxvidinfo->drawbuffer.tempbufferinuse;
+      |                                                                                                ^
+make: *** [Makefile:367: build-winuae603/./libretro/libretro-core.o] Error 1
+make: *** Waiting for unfinished jobs....
+In file included from libretro/libretro-glue.c:17:
+./sources/src/include/drawing.h:180:43: error: unknown type name 'nln_how'
+  180 | void draw_denise_line_queue(int gfx_ypos, nln_how how, uae_u32 linecnt, int startpos, int endpos, int startcycle, int endcycle, int skip, int skip2, int dtotal, int calib_start, int calib_len, bool lof, bool lol, int hdelay, bool blanked, bool finalseg, struct linestate *ls);
+      |                                           ^~~~~~~
+CC sources/src/a2091.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/a2091.o sources/src/a2091.c
+libretro/libretro-glue.c:820:5: error: conflicting types for 'lockscr'; have 'int(struct vidbuffer *, _Bool,  _Bool,  _Bool)'
+  820 | int lockscr(struct vidbuffer *vb, bool fullupdate, bool first, bool skip)
+      |     ^~~~~~~
+In file included from ./sources/src/include/options.h:24,
+                 from libretro/libretro-glue.h:6,
+                 from libretro/libretro-core.h:17,
+                 from libretro/libretro-glue.c:1:
+./sources/src/include/xwin.h:60:12: note: previous declaration of 'lockscr' with type 'int(struct vidbuffer *, _Bool,  _Bool)'
+   60 | extern int lockscr(struct vidbuffer*, bool, bool);
+      |            ^~~~~~~
+libretro/libretro-glue.c: In function 'unlockscr':
+libretro/libretro-glue.c:830:39: error: 'thisframe_first_drawn_line' undeclared (first use in this function); did you mean 'retro_thisframe_first_drawn_line'?
+  830 |    retro_thisframe_first_drawn_line = thisframe_first_drawn_line;
+      |                                       ^~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                       retro_thisframe_first_drawn_line
+libretro/libretro-glue.c:830:39: note: each undeclared identifier is reported only once for each function it appears in
+libretro/libretro-glue.c:831:39: error: 'thisframe_last_drawn_line' undeclared (first use in this function); did you mean 'retro_thisframe_last_drawn_line'?
+  831 |    retro_thisframe_last_drawn_line  = thisframe_last_drawn_line;
+      |                                       ^~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                       retro_thisframe_last_drawn_line
+libretro/libretro-glue.c:857:60: error: 'struct vidbuffer' has no member named 'tempbufferinuse'
+  857 |    if (!changed_prefs.cartfile[0] && gfxvidinfo->drawbuffer.tempbufferinuse)
+      |                                                            ^
+libretro/libretro-glue.c:858:29: error: 'struct vidbuffer' has no member named 'tempbufferinuse'
+  858 |       gfxvidinfo->drawbuffer.tempbufferinuse = false;
+      |                             ^
+libretro/libretro-glue.c:860:30: error: 'struct vidbuffer' has no member named 'tempbufferinuse'
+  860 |    if (gfxvidinfo->drawbuffer.tempbufferinuse)
+      |                              ^
+libretro/libretro-glue.c: In function 'graphics_init':
+libretro/libretro-glue.c:886:26: error: 'struct vidbuffer' has no member named 'linemem'
+  886 |    gfxvidinfo->drawbuffer.linemem            = 0;
+      |                          ^
+libretro/libretro-glue.c:887:26: error: 'struct vidbuffer' has no member named 'emergmem'
+  887 |    gfxvidinfo->drawbuffer.emergmem           = 0;
+      |                          ^
+libretro/libretro-glue.c: In function 'graphics_setup':
+libretro/libretro-glue.c:927:7: error: too many arguments to function 'alloc_colors64k'; expected 11, have 12
+  927 |       alloc_colors64k (0, 5, 6, 5, 11, 5, 0, 0, 0, 0, 0, false);
+      |       ^~~~~~~~~~~~~~~                                    ~~~~~
+./sources/src/include/xwin.h:78:13: note: declared here
+   78 | extern void alloc_colors64k (int monid, int, int, int, int, int, int, int, int, int, int);
+      |             ^~~~~~~~~~~~~~~
+libretro/libretro-glue.c:929:7: error: too many arguments to function 'alloc_colors64k'; expected 11, have 12
+  929 |       alloc_colors64k (0, 8, 8, 8, 16, 8, 0, 0, 0, 0, 0, false);
+      |       ^~~~~~~~~~~~~~~                                    ~~~~~
+./sources/src/include/xwin.h:78:13: note: declared here
+   78 | extern void alloc_colors64k (int monid, int, int, int, int, int, int, int, int, int, int);
+      |             ^~~~~~~~~~~~~~~
+libretro/libretro-glue.c: In function 'check_prefs_changed_gfx':
+libretro/libretro-glue.c:993:7: error: implicit declaration of function 'init_hz_normal' [-Wimplicit-function-declaration]
+  993 |       init_hz_normal();
+      |       ^~~~~~~~~~~~~~
+libretro/libretro-glue.c:1030:13: error: 'struct uae_prefs' has no member named 'color_mode'
+ 1030 |    currprefs.color_mode = (pix_bytes == 2) ? 2 : 5;
+      |             ^
+make: *** [Makefile:369: build-winuae603/./libretro/libretro-glue.o] Error 1
+In file included from sources/src/a2091.c:34:
+./retrodep/threaddep/thread.h:30:20: error: redefinition of 'uae_wait_thread'
+   30 | STATIC_INLINE void uae_wait_thread (uae_thread_id tid)
+      |                    ^~~~~~~~~~~~~~~
+In file included from ./sources/src/include/commpipe.h:13,
+                 from ./retrodep/threaddep/thread.h:28:
+./retrodep/threaddep/thread.h:30:20: note: previous definition of 'uae_wait_thread' with type 'void(void *)'
+   30 | STATIC_INLINE void uae_wait_thread (uae_thread_id tid)
+      |                    ^~~~~~~~~~~~~~~
+make: *** [Makefile:367: build-winuae603/./sources/src/a2091.o] Error 1

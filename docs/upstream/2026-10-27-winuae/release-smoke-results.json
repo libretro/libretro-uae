@@ -1,0 +1,82 @@
+{
+  "verified_utc": "2026-10-26T22:50:21.420566+00:00",
+  "core_sha256": "38578cee10c58bfcb1dabdde4df8a76263c0efcb4e8cc466d0a704be438b61d2",
+  "all_four_release_boots_pass": true,
+  "scope": "Diskless A500 Kickstart 1.3 and A1200 Kickstart 3.1 boot only",
+  "pixel_parity_claimed": false,
+  "placement_observation": "Boot artwork is horizontally shifted relative to the 5.3.1 reference captures; both captures retain 720x287 pixels.",
+  "runs": [
+    {
+      "run": "13-release-A500-16bit",
+      "model": "A500",
+      "pixel_format": "RGB565",
+      "frames": 1500,
+      "elapsed_seconds": 31.139,
+      "exit_code": 0,
+      "firmware": "kick34005.A500",
+      "firmware_sha256": "ee05862d8102a08436ac4056da7d549db31625c7d47b24dfb7b3c9a5c113ca53",
+      "core_sha256": "38578cee10c58bfcb1dabdde4df8a76263c0efcb4e8cc466d0a704be438b61d2",
+      "screenshot_dimensions": [
+        720,
+        287
+      ],
+      "screenshot_sha256": "e31a9681b8509d26a7398a20410cbc28e551393a633858d6df45a26e0b8dc273",
+      "visual_review": "Expected Kickstart boot screen, inspected in full",
+      "visual_pass": true
+    },
+    {
+      "run": "14-release-A1200-16bit",
+      "model": "A1200",
+      "pixel_format": "RGB565",
+      "frames": 1500,
+      "elapsed_seconds": 31.092,
+      "exit_code": 0,
+      "firmware": "kick40068.A1200",
+      "firmware_sha256": "6d43840d4099a74170ea0f0425b6257c3891ebcaa39c4d1840075a9ab22b5707",
+      "core_sha256": "38578cee10c58bfcb1dabdde4df8a76263c0efcb4e8cc466d0a704be438b61d2",
+      "screenshot_dimensions": [
+        720,
+        287
+      ],
+      "screenshot_sha256": "e2e5d425b4032b041298c0a28bb4277d33f241e7ea6f5e9074754dd2c495adcf",
+      "visual_review": "Expected Kickstart boot screen, inspected in full",
+      "visual_pass": true
+    },
+    {
+      "run": "15-release-A500-24bit",
+      "model": "A500",
+      "pixel_format": "XRGB8888",
+      "frames": 1500,
+      "elapsed_seconds": 30.987,
+      "exit_code": 0,
+      "firmware": "kick34005.A500",
+      "firmware_sha256": "ee05862d8102a08436ac4056da7d549db31625c7d47b24dfb7b3c9a5c113ca53",
+      "core_sha256": "38578cee10c58bfcb1dabdde4df8a76263c0efcb4e8cc466d0a704be438b61d2",
+      "screenshot_dimensions": [
+        720,
+        287
+      ],
+      "screenshot_sha256": "27017791144ae7f7e2487e89780c7a9da3e50caed08c2a4c324d184ebc60990b",
+      "visual_review": "Expected Kickstart boot screen, inspected in full",
+      "visual_pass": true
+    },
+    {
+      "run": "16-release-A1200-24bit",
+      "model": "A1200",
+      "pixel_format": "XRGB8888",
+      "frames": 1500,
+      "elapsed_seconds": 31.109,
+      "exit_code": 0,
+      "firmware": "kick40068.A1200",
+      "firmware_sha256": "6d43840d4099a74170ea0f0425b6257c3891ebcaa39c4d1840075a9ab22b5707",
+      "core_sha256": "38578cee10c58bfcb1dabdde4df8a76263c0efcb4e8cc466d0a704be438b61d2",
+      "screenshot_dimensions": [
+        720,
+        287
+      ],
+      "screenshot_sha256": "2c0de494761cb304aa8e76e33f7c5ad4453fcd3c554996a22deed61a33ae6cd1",
+      "visual_review": "Expected Kickstart boot screen, inspected in full",
+      "visual_pass": true
+    }
+  ]
+}

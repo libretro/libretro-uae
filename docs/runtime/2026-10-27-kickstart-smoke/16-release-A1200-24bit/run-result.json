@@ -1,0 +1,14 @@
+{
+  "started_utc": "2026-10-26T22:47:47.0767158Z",
+  "finished_utc": "2026-10-26T22:48:18.1861320Z",
+  "elapsed_seconds": 31.109,
+  "exit_code": 0,
+  "timed_out": false,
+  "selected_external_firmware_confirmed": true,
+  "core_sha256_after": "38578cee10c58bfcb1dabdde4df8a76263c0efcb4e8cc466d0a704be438b61d2",
+  "system_files_after": [
+    "C:\\Projects\\puae-runtime\\profiles\\16-release-A1200-24bit\\system\\kick40068.A1200"
+  ],
+  "profile": "C:\\Projects\\puae-runtime\\profiles\\16-release-A1200-24bit",
+  "final_frame_exists": true
+}

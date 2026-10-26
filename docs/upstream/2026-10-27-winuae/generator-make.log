@@ -1,0 +1,4 @@
+/bin/sh: line 1: git: command not found
+Building genlinetoscr
+mkdir -p sources/gen
+gcc  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  sources/src/genlinetoscr.c -o sources/gen/genlinetoscr.exe

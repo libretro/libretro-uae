@@ -1,0 +1,6 @@
+
+puae603_libretro.dll:     file format pei-x86-64
+architecture: i386:x86-64, flags 0x00000103:
+HAS_RELOC, EXEC_P, D_PAGED
+start address 0x0000000374b71320
+

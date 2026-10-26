@@ -1,0 +1,10 @@
+{
+  "started_utc": "2026-10-26T21:29:17.3908119Z",
+  "finished_utc": "2026-10-26T21:31:18.3628483Z",
+  "elapsed_seconds": 120.974,
+  "exit_code": 0,
+  "core_sha256_after": "bcd4827e5138a14e22a39535754aea0d3913ef0404b636d1cc666476aa3c19e8",
+  "system_files_after": [],
+  "profile": "C:\\Projects\\puae-runtime\\profiles\\02-aros-reset-state",
+  "final_frame_exists": true
+}

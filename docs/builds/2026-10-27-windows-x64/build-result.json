@@ -1,0 +1,16 @@
+{
+  "head": "7387937066b1b693816c3b4e2b7a0c601d41363d",
+  "started_utc": "2026-10-26T21:09:24.0591064Z",
+  "finished_utc": "2026-10-26T21:11:46.7439196Z",
+  "elapsed_seconds": 142.556,
+  "command": "make -j8 platform=win CC=gcc",
+  "environment": "UCRT64",
+  "msys_root": "C:\\Users\\Onur\\AppData\\Local\\Programs\\msys64",
+  "exit_code": 0,
+  "tracked_files_unchanged_before": true,
+  "tracked_files_unchanged_after": true,
+  "output": "C:\\Projects\\puae\\puae_libretro.dll",
+  "log": "C:\\Projects\\puae\\docs\\builds\\2026-10-27-windows-x64\\build.log",
+  "output_bytes": 17737728,
+  "output_sha256": "bcd4827e5138a14e22a39535754aea0d3913ef0404b636d1cc666476aa3c19e8"
+}

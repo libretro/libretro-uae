@@ -1,0 +1,171 @@
+{
+  "resolved_regions": 27,
+  "remaining_files": 41,
+  "remaining_regions": 140,
+  "remaining": [
+    {
+      "local": "sources/src/a2091.c",
+      "regions": 2
+    },
+    {
+      "local": "sources/src/archivers/lha/lhamaketbl.c",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/aros.rom.c",
+      "regions": 2
+    },
+    {
+      "local": "sources/src/audio.c",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/blkdev_cdimage.c",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/cd32_fmv.c",
+      "regions": 2
+    },
+    {
+      "local": "sources/src/cdtv.c",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/cfgfile.c",
+      "regions": 2
+    },
+    {
+      "local": "sources/src/custom.c",
+      "regions": 50
+    },
+    {
+      "local": "sources/src/debug.c",
+      "regions": 7
+    },
+    {
+      "local": "sources/src/devices.c",
+      "regions": 2
+    },
+    {
+      "local": "sources/src/disk.c",
+      "regions": 2
+    },
+    {
+      "local": "sources/src/draco.c",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/drawing.c",
+      "regions": 13
+    },
+    {
+      "local": "sources/src/dsp3210/dsp_glue.c",
+      "regions": 4
+    },
+    {
+      "local": "sources/src/ethernet.c",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/expansion.c",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/fsdb_unix.c",
+      "regions": 2
+    },
+    {
+      "local": "sources/src/gfxutil.c",
+      "regions": 5
+    },
+    {
+      "local": "sources/src/include/debug.h",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/include/newcpu.h",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/include/rommgr.h",
+      "regions": 2
+    },
+    {
+      "local": "sources/src/include/specialmonitors.h",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/include/sysdeps.h",
+      "regions": 2
+    },
+    {
+      "local": "sources/src/include/uae/string.h",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/jit/compemu.c",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/jit/compemu_fpp.c",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/jit/compemu_support.cpp",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/memory.c",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/newcpu.c",
+      "regions": 4
+    },
+    {
+      "local": "sources/src/qemuvga/qemuuaeglue.h",
+      "regions": 2
+    },
+    {
+      "local": "sources/src/savestate.c",
+      "regions": 10
+    },
+    {
+      "local": "sources/src/slirp/ip_input.cpp",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/slirp/mbuf.cpp",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/slirp/socket.cpp",
+      "regions": 2
+    },
+    {
+      "local": "sources/src/sndboard.c",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/softfloat/softfloat.h",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/specialmonitors.c",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/statusline.c",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/x86.c",
+      "regions": 2
+    },
+    {
+      "local": "sources/src/zfile.c",
+      "regions": 2
+    }
+  ]
+}

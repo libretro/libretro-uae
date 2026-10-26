@@ -1,0 +1,135 @@
+{
+  "resolved_regions": 22,
+  "remaining_files": 32,
+  "remaining_regions": 117,
+  "remaining": [
+    {
+      "local": "sources/src/a2091.c",
+      "regions": 2
+    },
+    {
+      "local": "sources/src/aros.rom.c",
+      "regions": 2
+    },
+    {
+      "local": "sources/src/audio.c",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/blkdev_cdimage.c",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/cd32_fmv.c",
+      "regions": 2
+    },
+    {
+      "local": "sources/src/cdtv.c",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/cfgfile.c",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/custom.c",
+      "regions": 49
+    },
+    {
+      "local": "sources/src/debug.c",
+      "regions": 7
+    },
+    {
+      "local": "sources/src/devices.c",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/disk.c",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/draco.c",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/drawing.c",
+      "regions": 12
+    },
+    {
+      "local": "sources/src/expansion.c",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/gfxutil.c",
+      "regions": 5
+    },
+    {
+      "local": "sources/src/include/debug.h",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/include/newcpu.h",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/include/rommgr.h",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/include/specialmonitors.h",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/include/sysdeps.h",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/newcpu.c",
+      "regions": 4
+    },
+    {
+      "local": "sources/src/pcem/pcemglue.cpp",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/pcem/vid_cl5429.cpp",
+      "regions": 3
+    },
+    {
+      "local": "sources/src/pcem/vid_s3.cpp",
+      "regions": 2
+    },
+    {
+      "local": "sources/src/pcem/vid_svga.cpp",
+      "regions": 4
+    },
+    {
+      "local": "sources/src/pcem/vid_svga_render.cpp",
+      "regions": 2
+    },
+    {
+      "local": "sources/src/pcem/vid_voodoo_render.cpp",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/savestate.c",
+      "regions": 4
+    },
+    {
+      "local": "sources/src/specialmonitors.c",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/statusline.c",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/x86.c",
+      "regions": 1
+    },
+    {
+      "local": "sources/src/zfile.c",
+      "regions": 1
+    }
+  ]
+}

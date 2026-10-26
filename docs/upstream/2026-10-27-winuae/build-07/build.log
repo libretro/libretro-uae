@@ -1,0 +1,182 @@
+CFLAGS: -DWIN32 -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\"
+-------
+CC sources/src/fpp_native.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/fpp_native.o sources/src/fpp_native.c
+CC sources/src/fpp_softfloat.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/fpp_softfloat.o sources/src/fpp_softfloat.c
+CC sources/src/misc.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/misc.o sources/src/misc.c
+CC sources/src/ncr_scsi.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/ncr_scsi.o sources/src/ncr_scsi.c
+CC sources/src/statusline.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/statusline.o sources/src/statusline.c
+CC retrodep/gui.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./retrodep/gui.o retrodep/gui.c
+CXX sources/src/kbmcu/keyboard_mcu_6500_1.cpp
+g++ -fPIC -DUAE -MMD -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -std=gnu++17 -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/kbmcu/keyboard_mcu_6500_1.o sources/src/kbmcu/keyboard_mcu_6500_1.cpp
+CXX sources/src/kbmcu/keyboard_mcu_6805.cpp
+g++ -fPIC -DUAE -MMD -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -std=gnu++17 -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/kbmcu/keyboard_mcu_6805.o sources/src/kbmcu/keyboard_mcu_6805.cpp
+In file included from ./sources/src/include/sysdeps.h:67,
+                 from sources/src/kbmcu/keyboard_mcu_6500_1.cpp:12:
+C:/Users/Onur/AppData/Local/Programs/msys64/ucrt64/include/c++/16.2.0/cstdbool:50:6: warning: #warning "<cstdbool> is deprecated in C++17, remove the #include" [-Wcpp]
+   50 | #    warning "<cstdbool> is deprecated in C++17, remove the #include"
+      |      ^~~~~~~
+CXX sources/src/kbmcu/keyboard_mcu_d8039hlc.cpp
+g++ -fPIC -DUAE -MMD -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -std=gnu++17 -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/kbmcu/keyboard_mcu_d8039hlc.o sources/src/kbmcu/keyboard_mcu_d8039hlc.cpp
+In file included from ./sources/src/include/sysdeps.h:67,
+                 from sources/src/kbmcu/keyboard_mcu_6805.cpp:10:
+C:/Users/Onur/AppData/Local/Programs/msys64/ucrt64/include/c++/16.2.0/cstdbool:50:6: warning: #warning "<cstdbool> is deprecated in C++17, remove the #include" [-Wcpp]
+   50 | #    warning "<cstdbool> is deprecated in C++17, remove the #include"
+      |      ^~~~~~~
+In file included from ./sources/src/include/sysdeps.h:67,
+                 from sources/src/kbmcu/keyboard_mcu_d8039hlc.cpp:10:
+C:/Users/Onur/AppData/Local/Programs/msys64/ucrt64/include/c++/16.2.0/cstdbool:50:6: warning: #warning "<cstdbool> is deprecated in C++17, remove the #include" [-Wcpp]
+   50 | #    warning "<cstdbool> is deprecated in C++17, remove the #include"
+      |      ^~~~~~~
+retrodep/gui.c:49:6: error: conflicting types for 'gui_fps'; have 'void(int,  int,  int)'
+   49 | void gui_fps (int fps, int idle, int color)
+      |      ^~~~~~~
+In file included from retrodep/gui.c:11:
+./sources/src/include/gui.h:19:13: note: previous declaration of 'gui_fps' with type 'void(int,  int,  _Bool,  int,  int)'
+   19 | extern void gui_fps (int fps, int lines, bool lace, int idle, int color);
+      |             ^~~~~~~
+make: *** [Makefile:367: build-winuae603/./retrodep/gui.o] Error 1
+In file included from ./sources/src/include/options.h:24,
+                 from sources/src/kbmcu/keyboard_mcu_6500_1.cpp:17:
+./sources/src/include/xwin.h:33:12: error: conflicting declaration of 'int isfullscreen()' with 'C' linkage
+   33 | extern int isfullscreen (void);
+      |            ^~~~~~~~~~~~
+In file included from ./sources/src/include/sysdeps.h:762:
+./sources/src/include/misc.h:158:5: note: previous declaration with 'C++' linkage
+  158 | int isfullscreen (void);
+      |     ^~~~~~~~~~~~
+./sources/src/include/xwin.h:42:13: error: conflicting declaration of 'bool vsync_switchmode(int, int)' with 'C' linkage
+   42 | extern bool vsync_switchmode(int monid, int hz);
+      |             ^~~~~~~~~~~~~~~~
+./sources/src/include/misc.h:186:6: note: previous declaration with 'C++' linkage
+  186 | bool vsync_switchmode (int monid, int hz);
+      |      ^~~~~~~~~~~~~~~~
+./sources/src/include/xwin.h:45:13: error: conflicting declaration of 'void doflashscreen()' with 'C' linkage
+   45 | extern void doflashscreen (void);
+      |             ^~~~~~~~~~~~~
+./sources/src/include/misc.h:188:6: note: previous declaration with 'C++' linkage
+  188 | void doflashscreen (void);
+      |      ^~~~~~~~~~~~~
+./sources/src/include/xwin.h:56:13: error: conflicting declaration of 'bool render_screen(int, int, bool)' with 'C' linkage
+   56 | extern bool render_screen(int monid, int, bool);
+      |             ^~~~~~~~~~~~~
+./sources/src/include/misc.h:163:6: note: previous declaration with 'C++' linkage
+  163 | bool render_screen (int monid, int mode, bool immediate);
+      |      ^~~~~~~~~~~~~
+./sources/src/include/xwin.h:57:13: error: conflicting declaration of 'void show_screen(int, int)' with 'C' linkage
+   57 | extern void show_screen(int monid, int mode);
+      |             ^~~~~~~~~~~
+./sources/src/include/misc.h:164:6: note: previous declaration with 'C++' linkage
+  164 | void show_screen (int monid, int mode);
+      |      ^~~~~~~~~~~
+./sources/src/include/xwin.h:58:13: error: conflicting declaration of 'bool show_screen_maybe(int, bool)' with 'C' linkage
+   58 | extern bool show_screen_maybe(int monid, bool);
+      |             ^~~~~~~~~~~~~~~~~
+./sources/src/include/misc.h:162:6: note: previous declaration with 'C++' linkage
+  162 | bool show_screen_maybe (int monid, bool show);
+      |      ^~~~~~~~~~~~~~~~~
+./sources/src/include/xwin.h:67:6: error: conflicting declaration of 'void getgfxoffset(int, float*, float*, float*, float*)' with 'C' linkage
+   67 | void getgfxoffset(int monid, float *dxp, float *dyp, float *mxp, float *myp);
+      |      ^~~~~~~~~~~~
+./sources/src/include/misc.h:157:6: note: previous declaration with 'C++' linkage
+  157 | void getgfxoffset(int monid, float *dxp, float *dyp, float *mxp, float *myp);
+      |      ^~~~~~~~~~~~
+make: *** [Makefile:376: build-winuae603/./sources/src/kbmcu/keyboard_mcu_6500_1.o] Error 1
+In file included from ./sources/src/include/options.h:24,
+                 from sources/src/kbmcu/keyboard_mcu_6805.cpp:13:
+./sources/src/include/xwin.h:33:12: error: conflicting declaration of 'int isfullscreen()' with 'C' linkage
+   33 | extern int isfullscreen (void);
+      |            ^~~~~~~~~~~~
+In file included from ./sources/src/include/sysdeps.h:762:
+./sources/src/include/misc.h:158:5: note: previous declaration with 'C++' linkage
+  158 | int isfullscreen (void);
+      |     ^~~~~~~~~~~~
+./sources/src/include/xwin.h:42:13: error: conflicting declaration of 'bool vsync_switchmode(int, int)' with 'C' linkage
+   42 | extern bool vsync_switchmode(int monid, int hz);
+      |             ^~~~~~~~~~~~~~~~
+./sources/src/include/misc.h:186:6: note: previous declaration with 'C++' linkage
+  186 | bool vsync_switchmode (int monid, int hz);
+      |      ^~~~~~~~~~~~~~~~
+./sources/src/include/xwin.h:45:13: error: conflicting declaration of 'void doflashscreen()' with 'C' linkage
+   45 | extern void doflashscreen (void);
+      |             ^~~~~~~~~~~~~
+./sources/src/include/misc.h:188:6: note: previous declaration with 'C++' linkage
+  188 | void doflashscreen (void);
+      |      ^~~~~~~~~~~~~
+./sources/src/include/xwin.h:56:13: error: conflicting declaration of 'bool render_screen(int, int, bool)' with 'C' linkage
+   56 | extern bool render_screen(int monid, int, bool);
+      |             ^~~~~~~~~~~~~
+./sources/src/include/misc.h:163:6: note: previous declaration with 'C++' linkage
+  163 | bool render_screen (int monid, int mode, bool immediate);
+      |      ^~~~~~~~~~~~~
+./sources/src/include/xwin.h:57:13: error: conflicting declaration of 'void show_screen(int, int)' with 'C' linkage
+   57 | extern void show_screen(int monid, int mode);
+      |             ^~~~~~~~~~~
+./sources/src/include/misc.h:164:6: note: previous declaration with 'C++' linkage
+  164 | void show_screen (int monid, int mode);
+      |      ^~~~~~~~~~~
+./sources/src/include/xwin.h:58:13: error: conflicting declaration of 'bool show_screen_maybe(int, bool)' with 'C' linkage
+   58 | extern bool show_screen_maybe(int monid, bool);
+      |             ^~~~~~~~~~~~~~~~~
+./sources/src/include/misc.h:162:6: note: previous declaration with 'C++' linkage
+  162 | bool show_screen_maybe (int monid, bool show);
+      |      ^~~~~~~~~~~~~~~~~
+./sources/src/include/xwin.h:67:6: error: conflicting declaration of 'void getgfxoffset(int, float*, float*, float*, float*)' with 'C' linkage
+   67 | void getgfxoffset(int monid, float *dxp, float *dyp, float *mxp, float *myp);
+      |      ^~~~~~~~~~~~
+./sources/src/include/misc.h:157:6: note: previous declaration with 'C++' linkage
+  157 | void getgfxoffset(int monid, float *dxp, float *dyp, float *mxp, float *myp);
+      |      ^~~~~~~~~~~~
+make: *** [Makefile:376: build-winuae603/./sources/src/kbmcu/keyboard_mcu_6805.o] Error 1
+In file included from ./sources/src/include/options.h:24,
+                 from sources/src/kbmcu/keyboard_mcu_d8039hlc.cpp:13:
+./sources/src/include/xwin.h:33:12: error: conflicting declaration of 'int isfullscreen()' with 'C' linkage
+   33 | extern int isfullscreen (void);
+      |            ^~~~~~~~~~~~
+In file included from ./sources/src/include/sysdeps.h:762:
+./sources/src/include/misc.h:158:5: note: previous declaration with 'C++' linkage
+  158 | int isfullscreen (void);
+      |     ^~~~~~~~~~~~
+./sources/src/include/xwin.h:42:13: error: conflicting declaration of 'bool vsync_switchmode(int, int)' with 'C' linkage
+   42 | extern bool vsync_switchmode(int monid, int hz);
+      |             ^~~~~~~~~~~~~~~~
+./sources/src/include/misc.h:186:6: note: previous declaration with 'C++' linkage
+  186 | bool vsync_switchmode (int monid, int hz);
+      |      ^~~~~~~~~~~~~~~~
+./sources/src/include/xwin.h:45:13: error: conflicting declaration of 'void doflashscreen()' with 'C' linkage
+   45 | extern void doflashscreen (void);
+      |             ^~~~~~~~~~~~~
+./sources/src/include/misc.h:188:6: note: previous declaration with 'C++' linkage
+  188 | void doflashscreen (void);
+      |      ^~~~~~~~~~~~~
+./sources/src/include/xwin.h:56:13: error: conflicting declaration of 'bool render_screen(int, int, bool)' with 'C' linkage
+   56 | extern bool render_screen(int monid, int, bool);
+      |             ^~~~~~~~~~~~~
+./sources/src/include/misc.h:163:6: note: previous declaration with 'C++' linkage
+  163 | bool render_screen (int monid, int mode, bool immediate);
+      |      ^~~~~~~~~~~~~
+./sources/src/include/xwin.h:57:13: error: conflicting declaration of 'void show_screen(int, int)' with 'C' linkage
+   57 | extern void show_screen(int monid, int mode);
+      |             ^~~~~~~~~~~
+./sources/src/include/misc.h:164:6: note: previous declaration with 'C++' linkage
+  164 | void show_screen (int monid, int mode);
+      |      ^~~~~~~~~~~
+./sources/src/include/xwin.h:58:13: error: conflicting declaration of 'bool show_screen_maybe(int, bool)' with 'C' linkage
+   58 | extern bool show_screen_maybe(int monid, bool);
+      |             ^~~~~~~~~~~~~~~~~
+./sources/src/include/misc.h:162:6: note: previous declaration with 'C++' linkage
+  162 | bool show_screen_maybe (int monid, bool show);
+      |      ^~~~~~~~~~~~~~~~~
+./sources/src/include/xwin.h:67:6: error: conflicting declaration of 'void getgfxoffset(int, float*, float*, float*, float*)' with 'C' linkage
+   67 | void getgfxoffset(int monid, float *dxp, float *dyp, float *mxp, float *myp);
+      |      ^~~~~~~~~~~~
+./sources/src/include/misc.h:157:6: note: previous declaration with 'C++' linkage
+  157 | void getgfxoffset(int monid, float *dxp, float *dyp, float *mxp, float *myp);
+      |      ^~~~~~~~~~~~
+make: *** [Makefile:376: build-winuae603/./sources/src/kbmcu/keyboard_mcu_d8039hlc.o] Error 1
+make: Target 'default' not remade because of errors.

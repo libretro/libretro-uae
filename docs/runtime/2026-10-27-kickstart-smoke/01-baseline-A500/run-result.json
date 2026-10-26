@@ -1,0 +1,12 @@
+{
+  "started_utc": "2026-10-26T21:46:41.7323377Z",
+  "finished_utc": "2026-10-26T21:47:12.8383663Z",
+  "elapsed_seconds": 31.108,
+  "exit_code": 0,
+  "core_sha256_after": "bcd4827e5138a14e22a39535754aea0d3913ef0404b636d1cc666476aa3c19e8",
+  "system_files_after": [
+    "C:\\Projects\\puae-runtime\\profiles\\01-baseline-A500\\system\\kick34005.A500"
+  ],
+  "profile": "C:\\Projects\\puae-runtime\\profiles\\01-baseline-A500",
+  "final_frame_exists": true
+}

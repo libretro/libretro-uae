@@ -1,0 +1,12 @@
+{
+  "started_utc": "2026-10-26T21:47:13.1389952Z",
+  "finished_utc": "2026-10-26T21:47:44.2441925Z",
+  "elapsed_seconds": 31.105,
+  "exit_code": 0,
+  "core_sha256_after": "bcd4827e5138a14e22a39535754aea0d3913ef0404b636d1cc666476aa3c19e8",
+  "system_files_after": [
+    "C:\\Projects\\puae-runtime\\profiles\\02-baseline-A1200\\system\\kick40068.A1200"
+  ],
+  "profile": "C:\\Projects\\puae-runtime\\profiles\\02-baseline-A1200",
+  "final_frame_exists": true
+}

@@ -1,0 +1,68 @@
+{
+  "verified_utc": "2026-10-26T22:45:02.746011+00:00",
+  "archive_sha256": "7451f5a58fc1c812c76bdec69c2a5364a42d8d887770e5b38b56b4c3ca9afb8f",
+  "archive_unchanged": true,
+  "all_roms_match": true,
+  "entries": [
+    {
+      "file": "kick33180.A500",
+      "matches_sha256": true,
+      "matches_md5": true
+    },
+    {
+      "file": "kick34005.A500",
+      "matches_sha256": true,
+      "matches_md5": true
+    },
+    {
+      "file": "kick37175.A500",
+      "matches_sha256": true,
+      "matches_md5": true
+    },
+    {
+      "file": "kick34005.CDTV",
+      "matches_sha256": true,
+      "matches_md5": true
+    },
+    {
+      "file": "kick37350.A600",
+      "matches_sha256": true,
+      "matches_md5": true
+    },
+    {
+      "file": "kick39106.A1200",
+      "matches_sha256": true,
+      "matches_md5": true
+    },
+    {
+      "file": "kick39106.A4000",
+      "matches_sha256": true,
+      "matches_md5": true
+    },
+    {
+      "file": "kick40060.CD32",
+      "matches_sha256": true,
+      "matches_md5": true
+    },
+    {
+      "file": "kick40060.CD32.ext",
+      "matches_sha256": true,
+      "matches_md5": true
+    },
+    {
+      "file": "kick40063.A600",
+      "matches_sha256": true,
+      "matches_md5": true
+    },
+    {
+      "file": "kick40068.A1200",
+      "matches_sha256": true,
+      "matches_md5": true
+    },
+    {
+      "file": "kick40068.A4000",
+      "matches_sha256": true,
+      "matches_md5": true
+    }
+  ]
+}

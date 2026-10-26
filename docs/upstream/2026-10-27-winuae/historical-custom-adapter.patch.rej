@@ -1,0 +1,81 @@
+diff a/sources/src/custom.c b/sources/src/custom.c	(rejected hunks)
+@@ -49,6 +49,14 @@
+ #include "devices.h"
+ #include "rommgr.h"
+ #include "specialmonitors.h"
++
++#ifdef __LIBRETRO__
++extern bool request_update_av_info;
++extern bool retro_av_info_change_timing;
++extern bool retro_av_info_is_ntsc;
++extern bool retro_av_info_is_lace;
++extern uint8_t video_config_allow_hz_change;
++#endif
+ 
+ #define BPL_ERASE_TEST 0
+ 
+@@ -6632,6 +6743,12 @@
+ 	if (!fake_vblank_hz)
+ 		fake_vblank_hz = vblank_hz;
+ 
++#ifdef __LIBRETRO__
++	vsynctimebase = 1;
++	syncbase      = 1000;
++	if (video_config_allow_hz_change < 2)
++	   syncadjust    = 1.0;
++#else
+ 	if (currprefs.turbo_emulation) {
+ 		if (currprefs.turbo_emulation_limit > 0) {
+ 			vsynctimebase = (frame_time_t)(syncbase / currprefs.turbo_emulation_limit);
+@@ -6641,6 +6758,7 @@
+ 	} else {
+ 		vsynctimebase = (frame_time_t)(syncbase / fake_vblank_hz);
+ 	}
++#endif /* __LIBRETRO__ */
+ 	vsynctimebase_orig = vsynctimebase;
+ 
+ 	if (linetoggle) {
+@@ -7187,6 +7312,13 @@
+ 	if (target_graphics_buffer_update(0, false)) {
+ 		reset_drawing();
+ 	}
++
++#ifdef __LIBRETRO__
++	request_update_av_info      = true;
++	retro_av_info_change_timing = true;
++	retro_av_info_is_ntsc       = isntsc;
++	retro_av_info_is_lace       = islace;
++#endif
+ }
+ 
+ /* set PAL/NTSC or custom timing variables */
+@@ -7215,7 +7347,11 @@
+ 		bemcon0_vsync_mask = BEAMCON0_VARVSYEN;
+ 	}
+ 
++#ifdef __LIBRETRO__
++	float clk = (float)(isntsc ? CHIPSET_CLOCK_NTSC : CHIPSET_CLOCK_PAL);
++#else
+ 	float clk = (float)(currprefs.ntscmode ? CHIPSET_CLOCK_NTSC : CHIPSET_CLOCK_PAL);
++#endif
+ 	int hardwired_vsstrt = 0;
+ 	if (!isntsc) {
+ 		maxvpos = MAXVPOS_PAL;
+@@ -14418,6 +14592,7 @@
+ 		}
+ 
+ 	} else if (!currprefs.cpu_thread) {
++#ifndef __LIBRETRO__
+ 
+ 		// the rest
+ 		static int nextwaitvpos;
+@@ -14613,7 +14789,9 @@
+ 	target_reset();
+ 	devices_reset(hardreset);
+ 	write_log(_T("Reset at %08X. Chipset mask = %08X\n"), M68K_GETPC, currprefs.chipset_mask);
++#ifndef __LIBRETRO__
+ 	memory_map_dump();
++#endif
+ 
+ 	bool ntsc = currprefs.ntscmode;
+ 

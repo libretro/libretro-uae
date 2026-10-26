@@ -1,0 +1,1167 @@
+[
+  {
+    "local": "sources/src/a2065.c",
+    "upstream": "a2065.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/a2091.c",
+    "upstream": "a2091.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/akiko.c",
+    "upstream": "akiko.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/amax.c",
+    "upstream": "amax.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/ar.c",
+    "upstream": "ar.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/arcadia.c",
+    "upstream": "arcadia.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/aros.rom.c",
+    "upstream": "aros.rom.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/audio.c",
+    "upstream": "audio.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/autoconf.c",
+    "upstream": "autoconf.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/blitfunc.c",
+    "upstream": "blitfunc.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/blitter.c",
+    "upstream": "blitter.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/blkdev.c",
+    "upstream": "blkdev.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/blkdev_cdimage.c",
+    "upstream": "blkdev_cdimage.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/bsdsocket.c",
+    "upstream": "bsdsocket.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/calc.c",
+    "upstream": "calc.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/catweasel.c",
+    "upstream": "catweasel.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/cd32_fmv.c",
+    "upstream": "cd32_fmv.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/cd32_fmv_genlock.c",
+    "upstream": "cd32_fmv_genlock.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/cdtv.c",
+    "upstream": "cdtv.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/cdtvcr.c",
+    "upstream": "cdtvcr.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/cfgfile.c",
+    "upstream": "cfgfile.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/cia.c",
+    "upstream": "cia.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/consolehook.c",
+    "upstream": "consolehook.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/cpuboard.c",
+    "upstream": "cpuboard.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/cpuemu_0.c",
+    "upstream": "cpuemu_0.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/cpuemu_20.c",
+    "upstream": "cpuemu_20.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/cpuemu_21.c",
+    "upstream": "cpuemu_21.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/cpuemu_22.c",
+    "upstream": "cpuemu_22.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/cpuemu_23.c",
+    "upstream": "cpuemu_23.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/cpuemu_24.c",
+    "upstream": "cpuemu_24.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/cpuemu_31.c",
+    "upstream": "cpuemu_31.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/cpuemu_32.c",
+    "upstream": "cpuemu_32.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/cpuemu_33.c",
+    "upstream": "cpuemu_33.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/cpuemu_34.c",
+    "upstream": "cpuemu_34.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/cpuemu_35.c",
+    "upstream": "cpuemu_35.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/cpuemu_40.c",
+    "upstream": "cpuemu_40.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/cpuemu_50.c",
+    "upstream": "cpuemu_50.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/cpummu.c",
+    "upstream": "cpummu.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/cpummu30.c",
+    "upstream": "cpummu30.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/cpustbl.c",
+    "upstream": "cpustbl.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/custom.c",
+    "upstream": "custom.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/debug.c",
+    "upstream": "debug.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/debugmem.c",
+    "upstream": "debugmem.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/devices.c",
+    "upstream": "devices.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/disasm.c",
+    "upstream": "disasm.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/disk.c",
+    "upstream": "disk.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/dongle.c",
+    "upstream": "dongle.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/draco.c",
+    "upstream": "draco.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/drawing.c",
+    "upstream": "drawing.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/driveclick.c",
+    "upstream": "driveclick.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/dsp3210/DSP3210_emulation.c",
+    "upstream": "dsp3210/DSP3210_emulation.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/enforcer.c",
+    "upstream": "enforcer.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/epsonprinter.c",
+    "upstream": "epsonprinter.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/ethernet.c",
+    "upstream": "ethernet.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/events.c",
+    "upstream": "events.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/expansion.c",
+    "upstream": "expansion.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/fdi2raw.c",
+    "upstream": "fdi2raw.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/filesys.c",
+    "upstream": "filesys.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/flashrom.c",
+    "upstream": "flashrom.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/fpp.c",
+    "upstream": "fpp.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/fpp_native.c",
+    "upstream": "fpp_native.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/fpp_softfloat.c",
+    "upstream": "fpp_softfloat.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/framebufferboards.c",
+    "upstream": "framebufferboards.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/fsdb.c",
+    "upstream": "fsdb.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/fsusage.c",
+    "upstream": "fsusage.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/gayle.c",
+    "upstream": "gayle.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/genblitter.c",
+    "upstream": "genblitter.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/gencpu.c",
+    "upstream": "gencpu.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/genlinetoscr.c",
+    "upstream": "genlinetoscr.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/gfxboard.c",
+    "upstream": "gfxboard.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/gfxutil.c",
+    "upstream": "gfxutil.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/hardfile.c",
+    "upstream": "hardfile.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/ide.c",
+    "upstream": "ide.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/idecontrollers.c",
+    "upstream": "idecontrollers.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/identify.c",
+    "upstream": "identify.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/a2091.h",
+    "upstream": "include/a2091.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/audio.h",
+    "upstream": "include/audio.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/autoconf.h",
+    "upstream": "include/autoconf.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/blit.h",
+    "upstream": "blit.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/blitter.h",
+    "upstream": "include/blitter.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/cia.h",
+    "upstream": "include/cia.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/commpipe.h",
+    "upstream": "include/commpipe.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/consolehook.h",
+    "upstream": "include/consolehook.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/cpuboard.h",
+    "upstream": "include/cpuboard.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/cpummu.h",
+    "upstream": "include/cpummu.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/cpummu030.h",
+    "upstream": "include/cpummu030.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/custom.h",
+    "upstream": "include/custom.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/debug.h",
+    "upstream": "include/debug.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/debugmem.h",
+    "upstream": "include/debugmem.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/disk.h",
+    "upstream": "include/disk.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/drawing.h",
+    "upstream": "include/drawing.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/driveclick.h",
+    "upstream": "include/driveclick.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/events.h",
+    "upstream": "include/events.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/gayle.h",
+    "upstream": "include/gayle.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/gfxboard.h",
+    "upstream": "include/gfxboard.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/gfxfilter.h",
+    "upstream": "include/gfxfilter.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/gui.h",
+    "upstream": "include/gui.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/ide.h",
+    "upstream": "include/ide.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/idecontrollers.h",
+    "upstream": "include/idecontrollers.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/inputdevice.h",
+    "upstream": "include/inputdevice.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/memory.h",
+    "upstream": "include/memory.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/mmu_common.h",
+    "upstream": "include/mmu_common.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/newcpu.h",
+    "upstream": "include/newcpu.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/options.h",
+    "upstream": "include/options.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/rommgr.h",
+    "upstream": "include/rommgr.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/savestate.h",
+    "upstream": "include/savestate.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/specialmonitors.h",
+    "upstream": "include/specialmonitors.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/statusline.h",
+    "upstream": "include/statusline.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/sysdeps.h",
+    "upstream": "include/sysdeps.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/tinyxml2.h",
+    "upstream": "include/tinyxml2.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/uae/time.h",
+    "upstream": "include/uae/time.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/xwin.h",
+    "upstream": "include/xwin.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/zfile.h",
+    "upstream": "include/zfile.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/inputdevice.c",
+    "upstream": "inputdevice.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/inputrecord.c",
+    "upstream": "inputrecord.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/jit/compemu_support.cpp",
+    "upstream": "jit/compemu_support.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/keybuf.c",
+    "upstream": "keybuf.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/main.c",
+    "upstream": "main.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/memory.c",
+    "upstream": "memory.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/midiemu.c",
+    "upstream": "midiemu.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/native2amiga.c",
+    "upstream": "native2amiga.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/ncr9x_scsi.c",
+    "upstream": "ncr9x_scsi.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/ncr_scsi.c",
+    "upstream": "ncr_scsi.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/newcpu.c",
+    "upstream": "newcpu.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/cpu.cpp",
+    "upstream": "pcem/cpu.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/device.h",
+    "upstream": "pcem/device.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/dma.cpp",
+    "upstream": "pcem/dma.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/dma.h",
+    "upstream": "pcem/dma.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/ibm.h",
+    "upstream": "pcem/ibm.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/keyboard_at.cpp",
+    "upstream": "pcem/keyboard_at.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/mem.cpp",
+    "upstream": "pcem/mem.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/model.h",
+    "upstream": "pcem/model.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/nvr.cpp",
+    "upstream": "pcem/nvr.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/pcemglue.cpp",
+    "upstream": "pcem/pcemglue.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/pcemglue.h",
+    "upstream": "pcem/pcemglue.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/pci.h",
+    "upstream": "pcem/pci.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/pic.cpp",
+    "upstream": "pcem/pic.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/sound.h",
+    "upstream": "pcem/sound.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/sound_cms.cpp",
+    "upstream": "pcem/sound_cms.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/sound_opl.cpp",
+    "upstream": "pcem/sound_opl.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/sound_speaker.cpp",
+    "upstream": "pcem/sound_speaker.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/thread.h",
+    "upstream": "pcem/thread.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/timer.h",
+    "upstream": "pcem/timer.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/vid_bt482_ramdac.c",
+    "upstream": "pcem/vid_bt482_ramdac.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/vid_cl5429.cpp",
+    "upstream": "pcem/vid_cl5429.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/vid_et4000.c",
+    "upstream": "pcem/vid_et4000.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/vid_et4000w32.c",
+    "upstream": "pcem/vid_et4000w32.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/vid_inmos.c",
+    "upstream": "pcem/vid_inmos.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/vid_ncr.c",
+    "upstream": "pcem/vid_ncr.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/vid_permedia2.c",
+    "upstream": "pcem/vid_permedia2.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/vid_s3.cpp",
+    "upstream": "pcem/vid_s3.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/vid_s3_virge.cpp",
+    "upstream": "pcem/vid_s3_virge.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/vid_sc1502x_ramdac.c",
+    "upstream": "pcem/vid_sc1502x_ramdac.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/vid_sdac_ramdac.cpp",
+    "upstream": "pcem/vid_sdac_ramdac.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/vid_svga.cpp",
+    "upstream": "pcem/vid_svga.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/vid_svga.h",
+    "upstream": "pcem/vid_svga.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/vid_svga_render.cpp",
+    "upstream": "pcem/vid_svga_render.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/vid_voodoo.cpp",
+    "upstream": "pcem/vid_voodoo.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/vid_voodoo_banshee.cpp",
+    "upstream": "pcem/vid_voodoo_banshee.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/vid_voodoo_display.cpp",
+    "upstream": "pcem/vid_voodoo_display.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/vid_voodoo_fb.cpp",
+    "upstream": "pcem/vid_voodoo_fb.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/vid_voodoo_fifo.cpp",
+    "upstream": "pcem/vid_voodoo_fifo.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/vid_voodoo_reg.cpp",
+    "upstream": "pcem/vid_voodoo_reg.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/vid_voodoo_regs.h",
+    "upstream": "pcem/vid_voodoo_regs.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/vid_voodoo_render.cpp",
+    "upstream": "pcem/vid_voodoo_render.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pcem/video.h",
+    "upstream": "pcem/video.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/pci.c",
+    "upstream": "pci.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/ppc/ppc.c",
+    "upstream": "ppc/ppc.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/qemuvga/ne2000.c",
+    "upstream": "qemuvga/ne2000.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/qemuvga/qemu.cpp",
+    "upstream": "qemuvga/qemu.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/qemuvga/qemuuaeglue.h",
+    "upstream": "qemuvga/qemuuaeglue.h",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/qemuvga/vga.cpp",
+    "upstream": "qemuvga/vga.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/readcpu.c",
+    "upstream": "readcpu.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/rommgr.c",
+    "upstream": "rommgr.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/sampler.c",
+    "upstream": "sampler.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/sana2.c",
+    "upstream": "sana2.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/savestate.c",
+    "upstream": "savestate.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/scp.c",
+    "upstream": "scp.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/scsi.c",
+    "upstream": "scsi.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/scsiemul.c",
+    "upstream": "scsiemul.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/scsitape.c",
+    "upstream": "scsitape.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/slirp/tcp_input.cpp",
+    "upstream": "slirp/tcp_input.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/slirp_uae.c",
+    "upstream": "slirp_uae.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/sndboard.c",
+    "upstream": "sndboard.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/softfloat/softfloat.c",
+    "upstream": "softfloat/softfloat.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/softfloat/softfloat_fpsp.c",
+    "upstream": "softfloat/softfloat_fpsp.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/specialmonitors.c",
+    "upstream": "specialmonitors.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/statusline.c",
+    "upstream": "statusline.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/tabletlibrary.c",
+    "upstream": "tabletlibrary.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/tinyxml2.c",
+    "upstream": "tinyxml2.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/traps.c",
+    "upstream": "traps.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/uaeexe.c",
+    "upstream": "uaeexe.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/uaeipc.c",
+    "upstream": "uaeipc.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/uaelib.c",
+    "upstream": "uaelib.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/uaenative.c",
+    "upstream": "uaenative.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/uaeresource.c",
+    "upstream": "uaeresource.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/uaeserial.c",
+    "upstream": "uaeserial.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/vm.c",
+    "upstream": "vm.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/x86.c",
+    "upstream": "x86.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/zfile.c",
+    "upstream": "zfile.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/zfile_archive.c",
+    "upstream": "zfile_archive.cpp",
+    "kind": "three-way shared-source integration"
+  },
+  {
+    "local": "sources/src/include/keyboard_mcu.h",
+    "upstream": "include/keyboard_mcu.h",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/include/mos6502.h",
+    "upstream": "include/mos6502.h",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/kbmcu/8048/co8048.cpp",
+    "upstream": "kbmcu/8048/co8048.cpp",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/kbmcu/8048/co8048.h",
+    "upstream": "kbmcu/8048/co8048.h",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/kbmcu/keyboard_mcu_6500_1.cpp",
+    "upstream": "kbmcu/keyboard_mcu_6500_1.cpp",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/kbmcu/keyboard_mcu_6805.cpp",
+    "upstream": "kbmcu/keyboard_mcu_6805.cpp",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/kbmcu/keyboard_mcu_d8039hlc.cpp",
+    "upstream": "kbmcu/keyboard_mcu_d8039hlc.cpp",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/kbmcu/m6805/m68_internal.h",
+    "upstream": "kbmcu/m6805/m68_internal.h",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/kbmcu/m6805/m68_ops.cpp",
+    "upstream": "kbmcu/m6805/m68_ops.cpp",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/kbmcu/m6805/m68_optab_hc05.h",
+    "upstream": "kbmcu/m6805/m68_optab_hc05.h",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/kbmcu/m6805/m68emu.cpp",
+    "upstream": "kbmcu/m6805/m68emu.cpp",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/kbmcu/m6805/m68emu.h",
+    "upstream": "kbmcu/m6805/m68emu.h",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/linetoscr_aga_fast.c",
+    "upstream": "linetoscr_aga_fast.cpp",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/linetoscr_aga_fm0.c",
+    "upstream": "linetoscr_aga_fm0.cpp",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/linetoscr_aga_fm0_genlock.c",
+    "upstream": "linetoscr_aga_fm0_genlock.cpp",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/linetoscr_aga_fm1.c",
+    "upstream": "linetoscr_aga_fm1.cpp",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/linetoscr_aga_fm1_genlock.c",
+    "upstream": "linetoscr_aga_fm1_genlock.cpp",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/linetoscr_aga_fm2.c",
+    "upstream": "linetoscr_aga_fm2.cpp",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/linetoscr_aga_fm2_genlock.c",
+    "upstream": "linetoscr_aga_fm2_genlock.cpp",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/linetoscr_aga_genlock_fast.c",
+    "upstream": "linetoscr_aga_genlock_fast.cpp",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/linetoscr_common.c",
+    "upstream": "linetoscr_common.cpp",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/linetoscr_ecs_fast.c",
+    "upstream": "linetoscr_ecs_fast.cpp",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/linetoscr_ecs_genlock_fast.c",
+    "upstream": "linetoscr_ecs_genlock_fast.cpp",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/linetoscr_ecs_shres.c",
+    "upstream": "linetoscr_ecs_shres.cpp",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/linetoscr_ocs_ecs.c",
+    "upstream": "linetoscr_ocs_ecs.cpp",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/linetoscr_ocs_ecs_genlock.c",
+    "upstream": "linetoscr_ocs_ecs_genlock.cpp",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/linetoscr_ocs_ecs_ntsc.c",
+    "upstream": "linetoscr_ocs_ecs_ntsc.cpp",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/linetoscr_ocs_ecs_ntsc_genlock.c",
+    "upstream": "linetoscr_ocs_ecs_ntsc_genlock.cpp",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/mos6502.cpp",
+    "upstream": "mos6502.cpp",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/pcem/keyboard_at_draco.cpp",
+    "upstream": "pcem/keyboard_at_draco.cpp",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/pcem/vid_mga.cpp",
+    "upstream": "pcem/vid_mga.cpp",
+    "kind": "new shared source"
+  },
+  {
+    "local": "sources/src/pcem/vid_tvp3026_ramdac.cpp",
+    "upstream": "pcem/vid_tvp3026_ramdac.cpp",
+    "kind": "new shared source"
+  }
+]

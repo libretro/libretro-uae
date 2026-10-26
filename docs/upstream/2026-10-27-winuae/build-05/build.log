@@ -1,0 +1,81 @@
+CFLAGS: -DWIN32 -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\"
+-------
+CC sources/src/custom.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/custom.o sources/src/custom.c
+CC sources/src/debug.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/debug.o sources/src/debug.c
+CC sources/src/devices.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/devices.o sources/src/devices.c
+CC sources/src/disasm.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/disasm.o sources/src/disasm.c
+CC sources/src/disk.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/disk.o sources/src/disk.c
+CC sources/src/diskutil.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/diskutil.o sources/src/diskutil.c
+CC sources/src/dongle.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/dongle.o sources/src/dongle.c
+CC sources/src/draco.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/draco.o sources/src/draco.c
+sources/src/custom.c:303:15: error: unknown type name 'rgabuf'
+  303 | STATIC_INLINE rgabuf *read_rga_out(void)
+      |               ^~~~~~
+sources/src/custom.c: In function 'read_rga_out':
+sources/src/custom.c:306:16: error: returning 'struct rgabuf *' from a function with incompatible return type 'int *' [-Wincompatible-pointer-types]
+  306 |         return r;
+      |                ^
+sources/src/custom.c: At top level:
+sources/src/custom.c:308:15: error: unknown type name 'rgabuf'
+  308 | STATIC_INLINE rgabuf *read_rga_in(void)
+      |               ^~~~~~
+sources/src/custom.c: In function 'read_rga_in':
+sources/src/custom.c:311:16: error: returning 'struct rgabuf *' from a function with incompatible return type 'int *' [-Wincompatible-pointer-types]
+  311 |         return r;
+      |                ^
+sources/src/custom.c: In function 'COPJMP':
+sources/src/custom.c:3142:52: error: initialization of 'struct rgabuf *' from incompatible pointer type 'int *' [-Wincompatible-pointer-types]
+ 3142 |                                 struct rgabuf *r = read_rga_in();
+      |                                                    ^~~~~~~~~~~
+sources/src/custom.c: In function 'generate_copper':
+sources/src/custom.c:9530:54: error: initialization of 'struct rgabuf *' from incompatible pointer type 'int *' [-Wincompatible-pointer-types]
+ 9530 |                                 struct rgabuf *rga = read_rga_in();
+      |                                                      ^~~~~~~~~~~
+sources/src/custom.c:9551:46: error: initialization of 'struct rgabuf *' from incompatible pointer type 'int *' [-Wincompatible-pointer-types]
+ 9551 |                         struct rgabuf *rga = read_rga_in();
+      |                                              ^~~~~~~~~~~
+sources/src/custom.c:9569:46: error: initialization of 'struct rgabuf *' from incompatible pointer type 'int *' [-Wincompatible-pointer-types]
+ 9569 |                         struct rgabuf *rga = read_rga_in();
+      |                                              ^~~~~~~~~~~
+sources/src/custom.c: In function 'bitplane_rga_ptmod':
+sources/src/custom.c:9785:28: error: initialization of 'struct rgabuf *' from incompatible pointer type 'int *' [-Wincompatible-pointer-types]
+ 9785 |         struct rgabuf *r = read_rga_in();
+      |                            ^~~~~~~~~~~
+sources/src/custom.c: In function 'handle_rga_out':
+sources/src/custom.c:12095:36: error: initialization of 'struct rgabuf *' from incompatible pointer type 'int *' [-Wincompatible-pointer-types]
+12095 |                 struct rgabuf *r = read_rga_out();
+      |                                    ^~~~~~~~~~~~
+sources/src/custom.c: In function 'dma_cycle':
+sources/src/custom.c:12609:36: error: initialization of 'struct rgabuf *' from incompatible pointer type 'int *' [-Wincompatible-pointer-types]
+12609 |                 struct rgabuf *r = read_rga_out();
+      |                                    ^~~~~~~~~~~~
+sources/src/custom.c: In function 'is_cycle_ce':
+sources/src/custom.c:12899:36: error: initialization of 'struct rgabuf *' from incompatible pointer type 'int *' [-Wincompatible-pointer-types]
+12899 |                 struct rgabuf *r = read_rga_out();
+      |                                    ^~~~~~~~~~~~
+make: *** [Makefile:369: build-winuae603/./sources/src/custom.o] Error 1
+make: *** Waiting for unfinished jobs....
+In file included from sources/src/devices.c:37:
+./sources/src/include/blitter.h:59:29: warning: 'struct rgabuf' declared inside parameter list will not be visible outside of this definition or declaration
+   59 | void process_blitter(struct rgabuf *rga);
+      |                             ^~~~~~
+sources/src/debug.c: In function 'saveloadmem':
+sources/src/debug.c:6077:14: error: implicit declaration of function 'uae_tfopen'; did you mean '_tfopen'? [-Wimplicit-function-declaration]
+ 6077 |         fp = uae_tfopen (name, save ? _T("wb") : _T("rb"));
+      |              ^~~~~~~~~~
+      |              _tfopen
+sources/src/debug.c:6077:12: error: assignment to 'RFILE *' from 'int' makes pointer from integer without a cast [-Wint-conversion]
+ 6077 |         fp = uae_tfopen (name, save ? _T("wb") : _T("rb"));
+      |            ^
+make: *** [Makefile:369: build-winuae603/./sources/src/debug.o] Error 1
+sources/src/draco.c:10: error: unterminated #ifdef
+   10 | #ifdef WITH_DRACO
+make: *** [Makefile:367: build-winuae603/./sources/src/draco.o] Error 1

@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-27",
+  "timezone": "Europe/Istanbul",
+  "release": "2026-09-27",
+  "release_url": "https://github.com/msys2/msys2-installer/releases/tag/2026-09-27",
+  "asset_url": "https://github.com/msys2/msys2-installer/releases/download/2026-09-27/msys2-base-x86_64-20260927.tar.xz",
+  "archive": "C:\\Users\\Onur\\AppData\\Local\\puae-build-tools\\downloads\\msys2-base-x86_64-20260927.tar.xz",
+  "bytes": 42860696,
+  "sha256": "ea2f31a0b6ade63914ce441ffb022f0f6aa96982bfefa2326460a26d5fb01322",
+  "published_sha256": "ea2f31a0b6ade63914ce441ffb022f0f6aa96982bfefa2326460a26d5fb01322",
+  "github_digest": "sha256:ea2f31a0b6ade63914ce441ffb022f0f6aa96982bfefa2326460a26d5fb01322",
+  "install_root": "C:\\Users\\Onur\\AppData\\Local\\Programs\\msys64",
+  "environment": "UCRT64",
+  "packages": [
+    "make",
+    "mingw-w64-ucrt-x86_64-gcc"
+  ]
+}

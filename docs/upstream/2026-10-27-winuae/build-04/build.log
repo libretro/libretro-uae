@@ -1,0 +1,215 @@
+CFLAGS: -DWIN32 -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\"
+-------
+CC libretro/libretro-core.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./libretro/libretro-core.o libretro/libretro-core.c
+CC libretro/libretro-glue.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./libretro/libretro-glue.o libretro/libretro-glue.c
+CC sources/src/cpummu30.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/cpummu30.o sources/src/cpummu30.c
+CC sources/src/cpustbl.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/cpustbl.o sources/src/cpustbl.c
+CC sources/src/crc32.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/crc32.o sources/src/crc32.c
+CC sources/src/custom.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/custom.o sources/src/custom.c
+CC sources/src/debug.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/debug.o sources/src/debug.c
+CC sources/src/debugmem.c
+gcc -fPIC -Wstringop-overflow=0 -O3 -Wno-format -Wno-format-security -Wno-free-nonheap-object -DHAVE_ZLIB -DHAVE_7ZIP -D_7ZIP_ST -std=gnu99 -DINLINE="inline" -D__LIBRETRO__ -MMD -DUSE_LIBRETRO_VFS -DWITH_MPEG2 -DWITH_CHD -DZSTD_DISABLE_ASM -DGIT_VERSION=\"" 738793706"\" -DWIN32  -I./sources/src -I./sources/src/include -I. -I./retrodep -I./deps/7zip -I./deps/libz -I./deps/libmpeg2/include -I./libretro -I./libretro-common/include  -I./deps/libchdr/include -I./deps/zstd/lib  -c -o build-winuae603/./sources/src/debugmem.o sources/src/debugmem.c
+sources/src/custom.c: In function 'handle_pipelined_custom_write':
+sources/src/custom.c:175:38: error: type defaults to 'int' in declaration of 'f' [-Wimplicit-int]
+  175 |                                 auto f = p->func;
+      |                                      ^
+sources/src/custom.c:175:42: error: initialization of 'int' from 'evfunc2' {aka 'void (*)(unsigned int)'} makes integer from pointer without a cast [-Wint-conversion]
+  175 |                                 auto f = p->func;
+      |                                          ^
+sources/src/custom.c:177:33: error: called object 'f' is not a function or function pointer
+  177 |                                 f(p->v);
+      |                                 ^
+sources/src/custom.c:175:38: note: declared here
+  175 |                                 auto f = p->func;
+      |                                      ^
+sources/src/custom.c: At top level:
+sources/src/custom.c:298:15: error: unknown type name 'rgabuf'
+  298 | STATIC_INLINE rgabuf *read_rga_out(void)
+      |               ^~~~~~
+sources/src/custom.c: In function 'read_rga_out':
+sources/src/custom.c:301:16: error: returning 'struct rgabuf *' from a function with incompatible return type 'int *' [-Wincompatible-pointer-types]
+  301 |         return r;
+      |                ^
+sources/src/custom.c: At top level:
+sources/src/custom.c:303:15: error: unknown type name 'rgabuf'
+  303 | STATIC_INLINE rgabuf *read_rga_in(void)
+      |               ^~~~~~
+sources/src/custom.c: In function 'read_rga_in':
+sources/src/custom.c:306:16: error: returning 'struct rgabuf *' from a function with incompatible return type 'int *' [-Wincompatible-pointer-types]
+  306 |         return r;
+      |                ^
+sources/src/custom.c: At top level:
+sources/src/custom.c:695:9: error: expected ';', identifier or '(' before 'enum'
+  695 | typedef enum diw_states diw_states;
+      |         ^~~~
+sources/src/custom.c:706:19: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'vdiwstate'
+  706 | static diw_states vdiwstate, hdiwstate;
+      |                   ^~~~~~~~~
+sources/src/custom.c:751:9: error: expected ';', identifier or '(' before 'enum'
+  751 | typedef enum copper_states copper_states;
+      |         ^~~~
+sources/src/custom.c: In function 'compute_vsynctime':
+sources/src/custom.c:1389:13: error: 'video_config_allow_hz_change' undeclared (first use in this function)
+ 1389 |         if (video_config_allow_hz_change < 2)
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+sources/src/custom.c:1389:13: note: each undeclared identifier is reported only once for each function it appears in
+sources/src/custom.c: In function 'compute_framesync':
+sources/src/custom.c:1759:9: error: 'request_update_av_info' undeclared (first use in this function)
+ 1759 |         request_update_av_info = true;
+      |         ^~~~~~~~~~~~~~~~~~~~~~
+sources/src/debug.c: In function 'saveloadmem':
+sources/src/debug.c:6077:14: error: implicit declaration of function 'uae_tfopen'; did you mean '_tfopen'? [-Wimplicit-function-declaration]
+ 6077 |         fp = uae_tfopen (name, save ? _T("wb") : _T("rb"));
+      |              ^~~~~~~~~~
+      |              _tfopen
+sources/src/debug.c:6077:12: error: assignment to 'RFILE *' from 'int' makes pointer from integer without a cast [-Wint-conversion]
+ 6077 |         fp = uae_tfopen (name, save ? _T("wb") : _T("rb"));
+      |            ^
+sources/src/custom.c:1760:9: error: 'retro_av_info_change_timing' undeclared (first use in this function)
+ 1760 |         retro_av_info_change_timing = true;
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+make: *** [Makefile:369: build-winuae603/./sources/src/debug.o] Error 1
+make: *** Waiting for unfinished jobs....
+sources/src/custom.c:1761:9: error: 'retro_av_info_is_ntsc' undeclared (first use in this function)
+ 1761 |         retro_av_info_is_ntsc = isntsc;
+      |         ^~~~~~~~~~~~~~~~~~~~~
+sources/src/custom.c:1762:9: error: 'retro_av_info_is_lace' undeclared (first use in this function)
+ 1762 |         retro_av_info_is_lace = islace;
+      |         ^~~~~~~~~~~~~~~~~~~~~
+sources/src/custom.c: In function 'COPJMP':
+sources/src/custom.c:3137:52: error: initialization of 'struct rgabuf *' from incompatible pointer type 'int *' [-Wincompatible-pointer-types]
+ 3137 |                                 struct rgabuf *r = read_rga_in();
+      |                                                    ^~~~~~~~~~~
+sources/src/custom.c: In function 'FMODE':
+sources/src/custom.c:3894:25: error: implicit declaration of function 'specialmonitor_store_fmode' [-Wimplicit-function-declaration]
+ 3894 |                         specialmonitor_store_fmode(vpos, agnus_hpos, v);
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~
+sources/src/custom.c: In function 'dmal_emu_audio':
+sources/src/custom.c:5519:9: error: too many arguments to function 'AUDxDAT'; expected 2, have 3
+ 5519 |         AUDxDAT(nr, dat, pt);
+      |         ^~~~~~~          ~~
+In file included from sources/src/custom.c:22:
+./sources/src/include/audio.h:17:6: note: declared here
+   17 | void AUDxDAT (int nr, uae_u16 value);
+      |      ^~~~~~~
+In file included from ./sources/src/include/uae/types.h:66,
+                 from ./sources/src/include/sysdeps.h:260,
+                 from sources/src/custom.c:14:
+sources/src/custom.c: In function 'uae_quit_check':
+sources/src/custom.c:6620:64: error: passing argument 2 of 'save_state' makes integer from pointer without a cast [-Wint-conversion]
+ 6620 |                         save_state(currprefs.quitstatefile, _T(""));
+      |                                                                ^~
+      |                                                                |
+      |                                                                char *
+In file included from sources/src/custom.c:40:
+./sources/src/include/savestate.h:263:67: note: expected 'long long unsigned int' but argument is of type 'char *'
+  263 | extern struct zfile *save_state(const TCHAR *description, uae_u64 size);
+sources/src/custom.c: In function 'custom_reset':
+sources/src/custom.c:6853:17: error: 'vdiwstate' undeclared (first use in this function); did you mean 'diw_states'?
+ 6853 |                 vdiwstate = DIW_waiting_start;
+      |                 ^~~~~~~~~
+      |                 diw_states
+sources/src/custom.c:6939:17: error: 'hdiwstate' undeclared (first use in this function); did you mean 'diw_states'?
+ 6939 |                 hdiwstate = DIW_waiting_start; // this does not reset at vblank
+      |                 ^~~~~~~~~
+      |                 diw_states
+sources/src/custom.c: In function 'dumpcustom':
+sources/src/custom.c:7136:17: error: 'hdiwstate' undeclared (first use in this function); did you mean 'diw_states'?
+ 7136 |                 hdiwstate == DIW_waiting_start ? 0 : 1, vdiwstate == DIW_waiting_start ? 0 : 1);
+      |                 ^~~~~~~~~
+      |                 diw_states
+sources/src/custom.c:7136:57: error: 'vdiwstate' undeclared (first use in this function); did you mean 'diw_states'?
+ 7136 |                 hdiwstate == DIW_waiting_start ? 0 : 1, vdiwstate == DIW_waiting_start ? 0 : 1);
+      |                                                         ^~~~~~~~~
+      |                                                         diw_states
+sources/src/custom.c: In function 'custom_wput_1':
+sources/src/custom.c:7752:42: error: passing argument 2 of 'write_drga' makes integer from pointer without a cast [-Wint-conversion]
+ 7752 |                         write_drga(addr, NULL, v);
+      |                                          ^~~~
+      |                                          |
+      |                                          void *
+sources/src/custom.c:193:45: note: expected 'uaecptr' {aka 'unsigned int'} but argument is of type 'void *'
+  193 | static void write_drga(uae_u16 rga, uaecptr pt, uae_u32 v)
+      |                                     ~~~~~~~~^~
+sources/src/custom.c: In function 'restore_custom':
+sources/src/custom.c:7988:9: error: 'hdiwstate' undeclared (first use in this function); did you mean 'diw_states'?
+ 7988 |         hdiwstate = (diwhigh & 0x4000) ? DIW_waiting_stop : DIW_waiting_start;
+      |         ^~~~~~~~~
+      |         diw_states
+sources/src/custom.c:7989:9: error: 'vdiwstate' undeclared (first use in this function); did you mean 'diw_states'?
+ 7989 |         vdiwstate = (diwhigh & 0x0080) ? DIW_waiting_start : DIW_waiting_stop;
+      |         ^~~~~~~~~
+      |         diw_states
+sources/src/custom.c: In function 'save_custom':
+sources/src/custom.c:8236:56: error: 'hdiwstate' undeclared (first use in this function); did you mean 'diw_states'?
+ 8236 |         SW(diwhigh | (diwhigh_written ? 0x8000 : 0) | (hdiwstate == DIW_waiting_stop ? 0x4000 : 0) | (vdiwstate == DIW_waiting_start ? 0x0080 : 0)); /* 1E4 DIWHIGH */
+      |                                                        ^~~~~~~~~
+./sources/src/include/savestate.h:56:42: note: in definition of macro 'save_u16'
+   56 | #define save_u16(x) save_u16_func(&dst, (x))
+      |                                          ^
+sources/src/custom.c:8236:9: note: in expansion of macro 'SW'
+ 8236 |         SW(diwhigh | (diwhigh_written ? 0x8000 : 0) | (hdiwstate == DIW_waiting_stop ? 0x4000 : 0) | (vdiwstate == DIW_waiting_start ? 0x0080 : 0)); /* 1E4 DIWHIGH */
+      |         ^~
+sources/src/custom.c:8236:103: error: 'vdiwstate' undeclared (first use in this function); did you mean 'diw_states'?
+ 8236 |         SW(diwhigh | (diwhigh_written ? 0x8000 : 0) | (hdiwstate == DIW_waiting_stop ? 0x4000 : 0) | (vdiwstate == DIW_waiting_start ? 0x0080 : 0)); /* 1E4 DIWHIGH */
+      |                                                                                                       ^~~~~~~~~
+./sources/src/include/savestate.h:56:42: note: in definition of macro 'save_u16'
+   56 | #define save_u16(x) save_u16_func(&dst, (x))
+      |                                          ^
+sources/src/custom.c:8236:9: note: in expansion of macro 'SW'
+ 8236 |         SW(diwhigh | (diwhigh_written ? 0x8000 : 0) | (hdiwstate == DIW_waiting_stop ? 0x4000 : 0) | (vdiwstate == DIW_waiting_start ? 0x0080 : 0)); /* 1E4 DIWHIGH */
+      |         ^~
+sources/src/custom.c: In function 'generate_copper':
+sources/src/custom.c:9523:54: error: initialization of 'struct rgabuf *' from incompatible pointer type 'int *' [-Wincompatible-pointer-types]
+ 9523 |                                 struct rgabuf *rga = read_rga_in();
+      |                                                      ^~~~~~~~~~~
+sources/src/custom.c:9544:46: error: initialization of 'struct rgabuf *' from incompatible pointer type 'int *' [-Wincompatible-pointer-types]
+ 9544 |                         struct rgabuf *rga = read_rga_in();
+      |                                              ^~~~~~~~~~~
+sources/src/custom.c:9562:46: error: initialization of 'struct rgabuf *' from incompatible pointer type 'int *' [-Wincompatible-pointer-types]
+ 9562 |                         struct rgabuf *rga = read_rga_in();
+      |                                              ^~~~~~~~~~~
+sources/src/custom.c: In function 'bitplane_rga_ptmod':
+sources/src/custom.c:9778:28: error: initialization of 'struct rgabuf *' from incompatible pointer type 'int *' [-Wincompatible-pointer-types]
+ 9778 |         struct rgabuf *r = read_rga_in();
+      |                            ^~~~~~~~~~~
+sources/src/custom.c: In function 'decide_bpl':
+sources/src/custom.c:9917:20: error: 'vdiwstate' undeclared (first use in this function); did you mean 'diw_states'?
+ 9917 |         bool diw = vdiwstate == DIW_waiting_stop;
+      |                    ^~~~~~~~~
+      |                    diw_states
+sources/src/custom.c: In function 'check_bpl_vdiw':
+sources/src/custom.c:10161:17: error: 'vdiwstate' undeclared (first use in this function); did you mean 'diw_states'?
+10161 |                 vdiwstate = DIW_waiting_stop;
+      |                 ^~~~~~~~~
+      |                 diw_states
+sources/src/custom.c: In function 'getlinetype':
+sources/src/custom.c:10732:20: error: 'vdiwstate' undeclared (first use in this function); did you mean 'diw_states'?
+10732 |         } else if (vdiwstate == DIW_waiting_start || GET_PLANES(bplcon0) == 0 || !dmaen(DMA_BITPLANE)) {
+      |                    ^~~~~~~~~
+      |                    diw_states
+sources/src/custom.c: In function 'custom_trigger_start':
+sources/src/custom.c:11413:13: error: 'vdiwstate' undeclared (first use in this function); did you mean 'diw_states'?
+11413 |         if (vdiwstate == DIW_waiting_stop && dmaen(DMA_BITPLANE)) {
+      |             ^~~~~~~~~
+      |             diw_states
+sources/src/custom.c: In function 'handle_rga_out':
+sources/src/custom.c:12088:36: error: initialization of 'struct rgabuf *' from incompatible pointer type 'int *' [-Wincompatible-pointer-types]
+12088 |                 struct rgabuf *r = read_rga_out();
+      |                                    ^~~~~~~~~~~~
+sources/src/custom.c: In function 'dma_cycle':
+sources/src/custom.c:12602:36: error: initialization of 'struct rgabuf *' from incompatible pointer type 'int *' [-Wincompatible-pointer-types]
+12602 |                 struct rgabuf *r = read_rga_out();
+      |                                    ^~~~~~~~~~~~
+sources/src/custom.c: In function 'is_cycle_ce':
+sources/src/custom.c:12892:36: error: initialization of 'struct rgabuf *' from incompatible pointer type 'int *' [-Wincompatible-pointer-types]
+12892 |                 struct rgabuf *r = read_rga_out();
+      |                                    ^~~~~~~~~~~~
+make: *** [Makefile:367: build-winuae603/./sources/src/custom.o] Error 1

@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-27",
+  "timezone": "Europe/Istanbul",
+  "completed_test": "01-aros-boot",
+  "status": "passed bounded diskless AROS boot",
+  "max_frames": 3000,
+  "elapsed_seconds": 61.42,
+  "exit_code": 0,
+  "visible_result": "AROS logo and Waiting for bootable media",
+  "system_files_before": [],
+  "system_files_after": [],
+  "core_sha256": "bcd4827e5138a14e22a39535754aea0d3913ef0404b636d1cc666476aa3c19e8",
+  "tracked_source_unchanged": true,
+  "computer_use_stopped_by_user": true,
+  "further_ui_input_stopped": true,
+  "input_acceptance": "not verified",
+  "reset_acceptance": "not verified",
+  "savestate_acceptance": "not verified",
+  "audible_output": "not assessed",
+  "second_run": "02-aros-reset-state; launched bounded, interaction checks interrupted, excluded from acceptance",
+  "second_run_result_present": false
+}
