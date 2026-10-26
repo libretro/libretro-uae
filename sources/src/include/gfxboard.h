@@ -5,6 +5,7 @@
 #include "rtgmodes.h"
 #endif
 #include "picasso96.h"
+#include "rtgmodes.h"
 
 extern bool gfxboard_init_memory (struct autoconfig_info*);
 extern bool gfxboard_init_memory_p4_z2(struct autoconfig_info*);
@@ -19,6 +20,7 @@ extern int gfxboard_get_vram_min (struct rtgboardconfig*);
 extern int gfxboard_get_vram_max (struct rtgboardconfig*);
 extern bool gfxboard_need_byteswap (struct rtgboardconfig*);
 extern int gfxboard_get_autoconfig_size(struct rtgboardconfig*);
+extern bool gfxboard_get_switcher(struct rtgboardconfig *rbc);
 extern double gfxboard_get_vsync (void);
 extern void gfxboard_refresh (int monid);
 extern int gfxboard_toggle (int monid, int mode, int msg);
@@ -31,6 +33,8 @@ extern struct gfxboard_func *gfxboard_get_func(struct rtgboardconfig *rbc);
 extern int gfxboard_get_index_from_id(int);
 extern int gfxboard_get_id_from_index(int);
 extern bool gfxboard_switch_away(int monid);
+extern int gfxboard_monitor_visible(int monid);
+extern void gfxboard_reset_init(void);
 
 extern bool gfxboard_allocate_slot(int, int);
 extern void gfxboard_free_slot(int);
@@ -61,6 +65,8 @@ void gfxboard_free_vram(int index);
 int gfxboard_get_devnum(struct uae_prefs *p, int index);
 
 int pcem_getvramsize(void);
+
+void gfxboard_intreq(void *p, int act, bool safe);
 
 #define GFXBOARD_UAE_Z2 0
 #define GFXBOARD_UAE_Z3 1
@@ -101,8 +107,12 @@ int pcem_getvramsize(void);
 #define GFXBOARD_ID_GRAFFITY_Z2 34
 #define GFXBOARD_ID_GRAFFITY_Z3 35
 #define GFXBOARD_ID_RAINBOWII 36
-#define GFXBOARD_ID_GD5446_PCI 37
-#define GFXBOARD_ID_VOODOO5_PCI 38
+#define GFXBOARD_ID_MATROX_MILLENNIUM_PCI 37
+#define GFXBOARD_ID_MATROX_MILLENNIUM_II_PCI 38
+#define GFXBOARD_ID_MATROX_MYSTIQUE_PCI 39
+#define GFXBOARD_ID_MATROX_MYSTIQUE220_PCI 40
+#define GFXBOARD_ID_GD5446_PCI 41
+#define GFXBOARD_ID_VOODOO5_PCI 42
 
 #define GFXBOARD_BUSTYPE_Z 0
 #define GFXBOARD_BUSTYPE_PCI 1

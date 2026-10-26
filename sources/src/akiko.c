@@ -151,7 +151,6 @@
 
 #include "options.h"
 #include "memory.h"
-#include "events.h"
 #include "savestate.h"
 #include "blkdev.h"
 #include "zfile.h"
@@ -198,11 +197,15 @@ static void *cd32_eeprom;
 static uae_u8 cd32_i2c_direction;
 static bool cd32_i2c_data_scl, cd32_i2c_data_sda;
 struct zfile *cd32_flashfile;
+#ifdef ARCADIA
 extern uae_u8 *cubo_nvram;
+#endif
 
 static void nvram_read (void)
 {
+#ifdef ARCADIA
 	cubo_nvram = NULL;
+#endif
 	zfile_fclose(cd32_flashfile);
 	cd32_flashfile = NULL;
 	eeprom_free(cd32_eeprom);
@@ -219,9 +222,11 @@ static void nvram_read (void)
 		cd32_nvram = xmalloc(uae_u8, maxlen);
 	}
 	memset(cd32_nvram, 0, maxlen);
+#ifdef ARCADIA
 	if (is_board_enabled(&currprefs, ROMTYPE_CUBO, 0)) {
 		cubo_nvram = cd32_nvram + currprefs.cs_cd32nvram_size;
 	}
+#endif
 	TCHAR path[MAX_DPATH];
 	cfgfile_resolve_path_out_load(currprefs.flashfile, path, MAX_DPATH, PATH_ROM);
 	cd32_flashfile = zfile_fopen (path, _T("rb+"), ZFD_NORMAL);
@@ -229,8 +234,10 @@ static void nvram_read (void)
 		cd32_flashfile = zfile_fopen (path, _T("wb"), 0);
 	if (cd32_flashfile) {
 		size_t size = zfile_fread(cd32_nvram, 1, currprefs.cs_cd32nvram_size, cd32_flashfile);
+#ifdef ARCADIA
 		if (size == currprefs.cs_cd32nvram_size && maxlen > currprefs.cs_cd32nvram_size)
 			size += zfile_fread(cubo_nvram, 1, maxlen - currprefs.cs_cd32nvram_size, cd32_flashfile);
+#endif
 		if (size < maxlen)
 			zfile_fwrite(cd32_nvram + size, 1, maxlen - size, cd32_flashfile);
 	}
@@ -486,7 +493,7 @@ static int cdrom_tx_dma_delay, cdrom_rx_dma_delay;
 
 static uae_u8 *sector_buffer_1, *sector_buffer_2;
 static int sector_buffer_sector_1, sector_buffer_sector_2;
-#define	SECTOR_BUFFER_SIZE 64
+#define	SECTOR_BUFFER_SIZE 128
 static uae_u8 *sector_buffer_info_1, *sector_buffer_info_2;
 
 static int unitnum = -1;
@@ -1596,35 +1603,52 @@ static void akiko_thread (void *null)
 			(sector_buffer_sector_1 < 0 || sector < sector_buffer_sector_1 || sector >= sector_buffer_sector_1 + SECTOR_BUFFER_SIZE * 2 / 3 || secnum != SECTOR_BUFFER_SIZE)) {
 			int blocks;
 			memset (sector_buffer_info_2, 0, SECTOR_BUFFER_SIZE);
-#if AKIKO_DEBUG_IO_CMD
-			if (log_cd32 > 0)
-				write_log (_T("CD32: filling buffer sector=%d\n"), sector);
-#endif
 			sector_buffer_sector_2 = sector;
-			if (!is_valid_data_sector(sector + SECTOR_BUFFER_SIZE)) {
-				for (blocks = SECTOR_BUFFER_SIZE; blocks > 0; blocks--) {
+			secnum = 0;
+			if (sector_buffer_sector_1 >= 0 && sector >= sector_buffer_sector_1 && sector < sector_buffer_sector_1 + SECTOR_BUFFER_SIZE) {
+				int secoff = sector - sector_buffer_sector_1;
+				while (secoff < SECTOR_BUFFER_SIZE) {
+					memcpy(sector_buffer_2 + secnum * 2352, sector_buffer_1 + secoff * 2352, 2352);
+					sector_buffer_info_2[secnum] = 3;
+					secnum++;
+					secoff++;
+				}
+			}
+			if (!is_valid_data_sector(sector + SECTOR_BUFFER_SIZE - 1)) {
+				for (blocks = SECTOR_BUFFER_SIZE - 1; blocks > secnum; blocks--) {
 					if (is_valid_data_sector(sector + blocks))
 						break;
 				}
 			} else {
-				blocks = SECTOR_BUFFER_SIZE;
+				blocks = SECTOR_BUFFER_SIZE - secnum;
 			}
 			if (blocks) {
+#if AKIKO_DEBUG_IO_CMD
+				if (1)
+					write_log(_T("CD32: filling buffer sector=%d-%d, blocks=%d\n"), sector, sector + blocks - 1, blocks);
+#endif
+				uae_sem_post(&akiko_sem);
 				int ok = sys_command_cd_rawread (unitnum, sector_buffer_2, sector, blocks, 2352);
 				if (!ok) {
-					int offset = 0;
+					int offset = secnum;
 					while (offset < SECTOR_BUFFER_SIZE) {
 						int readok = 0;
-						if (is_valid_data_sector(sector))
+						if (is_valid_data_sector(sector)) {
 							readok = sys_command_cd_rawread (unitnum, sector_buffer_2 + offset * 2352, sector, 1, 2352);
+						}
 						sector_buffer_info_2[offset] = readok ? 3 : 0;
 						offset++;
 						sector++;
 					}
 				} else {
-					for (int i = 0; i < SECTOR_BUFFER_SIZE; i++)
+					for (int i = 0; i < SECTOR_BUFFER_SIZE; i++) {
 						sector_buffer_info_2[i] = i < blocks ? 3 : 0;
+					}
 				}
+				uae_sem_wait(&akiko_sem);
+			}
+			if (blocks || secnum) {
+				uae_sem_post(&akiko_sem);
 				tmp1 = sector_buffer_info_1;
 				sector_buffer_info_1 = sector_buffer_info_2;
 				sector_buffer_info_2 = tmp1;
@@ -1634,6 +1658,7 @@ static void akiko_thread (void *null)
 				tmp3 = sector_buffer_sector_1;
 				sector_buffer_sector_1 = sector_buffer_sector_2;
 				sector_buffer_sector_2 = tmp3;
+				uae_sem_wait(&akiko_sem);
 			}
 		}
 		uae_sem_post (&akiko_sem);

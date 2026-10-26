@@ -14,8 +14,6 @@
 #include "options.h"
 #include "zfile.h"
 #include "flashrom.h"
-#include "memory.h"
-#include "newcpu.h"
 #include "debug.h"
 #include "gui.h"
 
@@ -318,7 +316,7 @@ typedef struct bitbang_i2c_interface {
 	uae_u8 *memory;
 	struct zfile *zf;
 
-	uae_u8(*read_func)(uae_u8 addr);
+	uae_u8 (*read_func)(uae_u8 addr);
 	void(*write_func)(uae_u8 addr, uae_u8 v);
 } bitbang_i2c_interface;
 

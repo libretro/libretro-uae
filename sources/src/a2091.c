@@ -29,23 +29,20 @@
 #include "uae.h"
 #include "memory.h"
 #include "rommgr.h"
-#include "custom.h"
 #include "newcpu.h"
-#include "debug.h"
 #include "scsi.h"
 #include "threaddep/thread.h"
 #include "a2091.h"
-#include "blkdev.h"
-#include "gui.h"
 #include "zfile.h"
 #include "filesys.h"
 #include "autoconf.h"
 #include "cdtv.h"
-#include "savestate.h"
 #include "cpuboard.h"
 #include "rtc.h"
 #include "devices.h"
+#ifdef WITH_DSP
 #include "dsp3210/dsp_glue.h"
+#endif
 
 #define DMAC_8727_ROM_VECTOR 0x8000
 #define CDMAC_ROM_VECTOR 0x2000
@@ -1709,7 +1706,7 @@ uae_u8 wdscsi_get (struct wd_chip_state *wd, struct wd_state *wds)
 	return v;
 }
 
-uae_u8 wdscsi_get_data(struct wd_chip_state *wd, struct wd_state *wds)
+static uae_u8 wdscsi_get_data(struct wd_chip_state *wd, struct wd_state *wds)
 {
 	uae_u8 sasr = wd->sasr;
 	wd->sasr = WD_DATA;
@@ -3056,8 +3053,6 @@ static void REGPARAM2 comspec_lput (uaecptr addr, uae_u32 b)
 
 /* GVP Series I and II */
 
-extern const addrbank gvp_bank;
-
 static uae_u32 dmac_gvp_read_byte(struct wd_state *wd, uaecptr addr)
 {
 	uae_u32 v = 0;
@@ -3628,9 +3623,11 @@ static void mbdmac_write_word (struct wd_state *wd, uae_u32 addr, uae_u32 val)
 		break;
 	case 0x5e:
 	case 0x80:
+#ifdef WITH_DSP
 		if (is_dsp_installed) {
 			dsp_write(val);
 		}
+#endif
 		break;
 	}
 }
@@ -3654,9 +3651,11 @@ static void mbdmac_write_byte (struct wd_state *wd, uae_u32 addr, uae_u32 val)
 		break;
 	case 0x5f:
 	case 0x80:
+#ifdef WITH_DSP
 		if (is_dsp_installed) {
 			dsp_write(val);
 		}
+#endif
 		break;
 	default:
 		if (addr & 1)
@@ -3726,9 +3725,11 @@ static uae_u32 mbdmac_read_word (struct wd_state *wd, uae_u32 addr)
 		break;
 	case 0x5e:
 	case 0x80:
+#ifdef WITH_DSP
 		if (is_dsp_installed) {
 			v = dsp_read();
 		}
+#endif
 		break;
 	}
 #if A3000_DEBUG_IO > 1
@@ -3762,9 +3763,11 @@ static uae_u32 mbdmac_read_byte (struct wd_state *wd, uae_u32 addr)
 		break;
 	case 0x5f:
 	case 0x80:
+#ifdef WITH_DSP
 		if (is_dsp_installed) {
 			v = dsp_read();
 		}
+#endif
 		break;
 	}
 #if A3000_DEBUG_IO > 1
@@ -4120,7 +4123,7 @@ bool a2091_init (struct autoconfig_info *aci)
 	wd->autoconfig = true;
 	wd->board_mask = 65535;
 	memcpy(&wd->bank, &dmaca2091_bank, sizeof(addrbank));
-	memcpy(wd->dmacmemory, aci->autoconfig_raw, sizeof(wd->dmacmemory));
+	memcpy(wd->dmacmemory, aci->autoconfig_raw, sizeof wd->dmacmemory);
 
 	alloc_expansion_bank(&wd->bank, aci);
 
@@ -4207,7 +4210,7 @@ static bool a2090x_init (struct autoconfig_info *aci, bool combitec)
 	wd->autoconfig = true;
 	wd->board_mask = 65535;
 	memcpy(&wd->bank, &dmaca2091_bank, sizeof(addrbank));
-	memcpy(wd->dmacmemory, aci->autoconfig_raw, sizeof(wd->dmacmemory));
+	memcpy(wd->dmacmemory, aci->autoconfig_raw, sizeof wd->dmacmemory);
 
 	alloc_expansion_bank(&wd->bank, aci);
 
@@ -4541,7 +4544,7 @@ bool comspec_preinit (struct autoconfig_info *aci)
 	wd->board_mask = 65535;
 	wd->wc.resetnodelay = true;
 	memcpy(&wd->bank, &comspec_bank, sizeof(addrbank));
-	memcpy(wd->dmacmemory, aci->autoconfig_raw, sizeof(wd->dmacmemory));
+	memcpy(wd->dmacmemory, aci->autoconfig_raw, sizeof wd->dmacmemory);
 
 	alloc_expansion_bank(&wd->bank, aci);
 

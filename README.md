@@ -1,6 +1,10 @@
 # PUAE LIBRETRO
 
-Based on WinUAE 5.3.1, git commit `51b7be351f359dc97f967f051da390283bc4b409`
+Based on WinUAE 6.0.3 (stable tag `6030`), git commit `857f48fcb09399d4d95527e29a2fdeaedb41f827`.
+
+The libretro integration retains PUAE's frontend and platform adapters. See
+[integration notes](docs/upstream/2026-10-27-winuae/INTEGRATION_STATUS.md) for scope,
+build evidence, and the current validation status.
 
 ## Default controls
 

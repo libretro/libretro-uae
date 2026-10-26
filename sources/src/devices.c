@@ -7,15 +7,21 @@
 #include "threaddep/thread.h"
 #include "memory.h"
 #include "audio.h"
+#ifdef GFXBOARD
 #include "gfxboard.h"
+#endif
 #include "scsi.h"
 #include "scsidev.h"
 #include "sana2.h"
 #include "clipboard.h"
 #include "cpuboard.h"
+#ifdef WITH_SNDBOARD
 #include "sndboard.h"
+#endif
 #include "statusline.h"
+#ifdef WITH_PPC
 #include "uae/ppc.h"
+#endif
 #ifdef CD32
 #include "cd32_fmv.h"
 #include "akiko.h"
@@ -47,24 +53,33 @@
 #include "uaenative.h"
 #endif
 #include "tabletlibrary.h"
+#ifdef WITH_LUA
 #include "luascript.h"
+#endif
 #ifdef DRIVESOUND
 #include "driveclick.h"
 #endif
+#ifdef WITH_X86
 #include "x86.h"
+#endif
 #include "ethernet.h"
 #include "drawing.h"
+#ifdef AVIOUTPUT
 #include "videograb.h"
-#include "rommgr.h"
-#include "newcpu.h"
+#endif
 #ifdef WITH_MIDIEMU
 #include "midiemu.h"
 #endif
 #ifdef RETROPLATFORM
 #include "rp.h"
 #endif
+#ifdef WITH_DRACO
 #include "draco.h"
+#endif
+#ifdef WITH_DSP
 #include "dsp3210/dsp_glue.h"
+#endif
+#include "keyboard_mcu.h"
 
 #define MAX_DEVICE_ITEMS 64
 
@@ -194,12 +209,17 @@ void devices_reset(int hardreset)
 #if NATMEM_OFFSET
 	init_shm();
 #endif
+
+#ifdef GFXBOARD
+	// must be before memory_reset()
+	gfxboard_reset();
+#endif
 	memory_reset();
 #ifdef AUTOCONFIG
 	rtarea_reset();
 #endif
 	DISK_reset();
-	CIA_reset();
+	CIA_reset(hardreset);
 	a1000_reset();
 #ifdef JIT
 	compemu_reset();
@@ -212,9 +232,6 @@ void devices_reset(int hardreset)
 	scsi_reset();
 	scsidev_reset();
 	scsidev_start_threads();
-#endif
-#ifdef GFXBOARD
-	gfxboard_reset ();
 #endif
 #ifdef DRIVESOUND
 	driveclick_reset();
@@ -245,6 +262,9 @@ void devices_reset(int hardreset)
 #ifdef RETROPLATFORM
 	rp_reset();
 #endif
+	keymcu_reset();
+	keymcu2_reset();
+	keymcu3_reset();
 	uae_int_requested = 0;
 }
 
@@ -271,7 +291,6 @@ void devices_hsync(void)
 {
 	DISK_hsync();
 	audio_hsync();
-	CIA_hsync_prehandler();
 
 	decide_blitter(-1);
 #ifdef SERIAL_PORT
@@ -300,9 +319,13 @@ void devices_rethink(void)
 void devices_update_sound(float clk, float syncadjust)
 {
 	update_sound (clk);
+#ifdef WITH_SNDBOARD
 	update_sndboard_sound (clk / syncadjust);
+#endif
 	update_cda_sound(clk / syncadjust);
+#ifdef WITH_X86
 	x86_update_sound(clk / syncadjust);
+#endif
 #ifdef WITH_MIDIEMU
 	midi_update_sound(clk / syncadjust);
 #endif
@@ -346,7 +369,9 @@ void virtualdevice_free(void)
 #ifdef WITH_LUA
 	uae_lua_free();
 #endif
+#ifdef GFXBOARD
 	gfxboard_free();
+#endif
 	savestate_free();
 	memory_cleanup();
 #if NATMEM_OFFSET
@@ -358,9 +383,13 @@ void virtualdevice_free(void)
 #endif
 	ethernet_enumerate_free();
 	rtarea_free();
+	drawing_free();
 #ifdef WITH_DRACO
 	draco_free();
 #endif
+	keymcu_free();
+	keymcu2_free();
+	keymcu3_free();
 	execute_device_items(device_leaves, device_leave_cnt);
 }
 
@@ -422,6 +451,9 @@ void virtualdevice_init (void)
 #ifdef WITH_DRACO
 	draco_init();
 #endif
+	keymcu_init();
+	keymcu2_init();
+	keymcu3_init();
 }
 
 void devices_restore_start(void)
@@ -429,7 +461,6 @@ void devices_restore_start(void)
 	restore_audio_start();
 	restore_cia_start();
 	restore_blkdev_start();
-	restore_blitter_start();
 	restore_custom_start();
 	changed_prefs.bogomem.size = 0;
 	changed_prefs.chipmem.size = 0;
@@ -444,7 +475,9 @@ void devices_restore_start(void)
 
 void devices_syncchange(void)
 {
+#ifdef WITH_X86
 	x86_bridge_sync_change();
+#endif
 }
 
 void devices_pause(void)
@@ -459,7 +492,9 @@ void devices_pause(void)
 #ifdef RETROPLATFORM
 	rp_pause(1);
 #endif
+#ifdef AVIOUTPUT
 	pausevideograb(1);
+#endif
 	ethernet_pause(1);
 }
 
@@ -475,7 +510,9 @@ void devices_unpause(void)
 #ifdef WITH_DSP
 	dsp_pause(0);
 #endif
+#ifdef AVIOUTPUT
 	pausevideograb(0);
+#endif
 	ethernet_pause(0);
 }
 

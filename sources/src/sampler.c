@@ -9,7 +9,6 @@
 
 #include "options.h"
 #include "events.h"
-#include "custom.h"
 #include "sampler.h"
 
 #ifdef HAVE_SAMPLER

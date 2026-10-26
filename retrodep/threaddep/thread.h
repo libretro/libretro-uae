@@ -1,3 +1,6 @@
+#ifndef PUAE_THREADDEP_THREAD_H
+#define PUAE_THREADDEP_THREAD_H
+
  /*
   * UAE - The Un*x Amiga Emulator
   *
@@ -208,6 +211,7 @@ STATIC_INLINE int uae_sem_getvalue (uae_sem_t *sem, int *sval)
 
 #endif
 
+
 #include "commpipe.h"
 
 typedef pthread_t uae_thread_id;
@@ -272,3 +276,5 @@ STATIC_INLINE void uae_set_thread_priority (uae_thread_id *tid, int pri)
 }
 
 #endif
+
+#endif /* PUAE_THREADDEP_THREAD_H */

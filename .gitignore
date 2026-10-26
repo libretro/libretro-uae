@@ -5,3 +5,15 @@
 
 *.dll
 sources/gen/
+
+# Keep externally supplied Kickstart firmware and its archive out of Git.
+[Kk][Ii][Cc][Kk][Ss][Tt][Aa][Rr][Tt][Rr][Oo][Mm][Ss]*.[Zz][Ii][Pp]
+[Kk][Ii][Cc][Kk][0-9]*.[Aa]500
+[Kk][Ii][Cc][Kk][0-9]*.[Aa]600
+[Kk][Ii][Cc][Kk][0-9]*.[Aa]1200
+[Kk][Ii][Cc][Kk][0-9]*.[Aa]4000
+[Kk][Ii][Cc][Kk][0-9]*.[Cc][Dd]32
+[Kk][Ii][Cc][Kk][0-9]*.[Cc][Dd]32.[Ee][Xx][Tt]
+[Kk][Ii][Cc][Kk][0-9]*.[Cc][Dd][Tt][Vv]
+[Kk][Ii][Cc][Kk]*.[Rr][Oo][Mm]
+[Kk][Ii][Cc][Kk]*.[Bb][Ii][Nn]

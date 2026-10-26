@@ -394,7 +394,7 @@
 #define HAVE__BOOL 1
 
 /* Version number of package */
-#define VERSION "5.3.1"
+#define VERSION "6.0.3"
 
 /* Name of package */
 #define PACKAGE "puae"

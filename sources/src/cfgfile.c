@@ -36,11 +36,15 @@
 #include "calc.h"
 #include "gfxboard.h"
 #include "cpuboard.h"
+#ifdef WITH_LUA
 #include "luascript.h"
+#endif
 #include "ethernet.h"
-#include "native2amiga_api.h"
 #include "ini.h"
+#ifdef WITH_SPECIALMONITORS
 #include "specialmonitors.h"
+#endif
+#include "ide.h"
 
 #define cfgfile_warning write_log
 #define cfgfile_warning_obsolete write_log
@@ -103,7 +107,6 @@ static const struct cfg_lines opttable[] =
 	{_T("gfx_center_horizontal"), _T("Center display horizontally?") },
 	{_T("gfx_center_vertical"), _T("Center display vertically?") },
 	{_T("gfx_colour_mode"), _T("") },
-	{_T("32bit_blits"), _T("Enable 32 bit blitter emulation") },
 	{_T("immediate_blits"), _T("Perform blits immediately") },
 	{_T("show_leds"), _T("LED display") },
 	{_T("keyboard_leds"), _T("Keyboard LEDs") },
@@ -145,7 +148,14 @@ static const struct cfg_lines opttable[] =
 static const TCHAR *guimode1[] = { _T("no"), _T("yes"), _T("nowait"), 0 };
 static const TCHAR *guimode2[] = { _T("false"), _T("true"), _T("nowait"), 0 };
 static const TCHAR *guimode3[] = { _T("0"), _T("1"), _T("nowait"), 0 };
-static const TCHAR *csmode[] = { _T("ocs"), _T("ecs_agnus"), _T("ecs_denise"), _T("ecs"), _T("aga"), 0 };
+static const TCHAR *csmode[] = {
+	_T("a1000_noehb"), _T("a1000"),
+	_T("ocs"), // OCS Agnus + OCS Denise
+	_T("ecs_agnus"), // ECS Agnus + OCS Denise
+	_T("ecs_denise"), // OCS Agnus + ECS Denise
+	_T("ecs"), // ECS Agnus + ECS Denise
+	_T("aga"),
+	NULL};
 static const TCHAR *linemode[] = {
 	_T("none"),
 	_T("double"), _T("scanlines"), _T("scanlines2p"), _T("scanlines3p"),
@@ -153,8 +163,6 @@ static const TCHAR *linemode[] = {
 	_T("double3"), _T("scanlines3"), _T("scanlines3p2"), _T("scanlines3p3"),
 	0 };
 static const TCHAR *speedmode[] = { _T("max"), _T("real"), 0 };
-static const TCHAR *colormode1[] = { _T("8bit"), _T("15bit"), _T("16bit"), _T("8bit_dither"), _T("4bit_dither"), _T("32bit"), 0 };
-static const TCHAR *colormode2[] = { _T("8"), _T("15"), _T("16"), _T("8d"), _T("4d"), _T("32"), 0 };
 static const TCHAR *soundmode1[] = { _T("none"), _T("interrupts"), _T("normal"), _T("exact"), 0 };
 static const TCHAR *soundmode2[] = { _T("none"), _T("interrupts"), _T("good"), _T("best"), 0 };
 static const TCHAR *centermode1[] = { _T("none"), _T("simple"), _T("smart"), 0 };
@@ -188,6 +196,7 @@ static const TCHAR *cscompa[] = {
 	_T("Velvet"), _T("Casablanca"), _T("DraCo"),
 	NULL
 };
+static const TCHAR *displayopts[] = { _T("full"), _T("partial"), _T("none"), NULL };
 static const TCHAR *qsmodes[] = {
 	_T("A500"), _T("A500+"), _T("A600"), _T("A1000"), _T("A1200"), _T("A3000"), _T("A4000"), _T(""), _T("CD32"), _T("CDTV"), _T("CDTV-CR"), _T("ARCADIA"), NULL };
 /* 3-state boolean! */
@@ -260,6 +269,18 @@ static const TCHAR *eclocksync[] = { _T("default"), _T("68000"), _T("Gayle"), _T
 static const TCHAR *agnusmodel[] = { _T("default"), _T("velvet"), _T("a1000"), _T("ocs"), _T("ecs"), _T("aga"), 0 };
 static const TCHAR *agnussize[] = { _T("default"), _T("512k"), _T("1m"), _T("2m"), 0 };
 static const TCHAR *denisemodel[] = { _T("default"), _T("velvet"), _T("a1000_noehb"), _T("a1000"), _T("ocs"), _T("ecs"), _T("aga"), 0 };
+static const TCHAR *kbtype[] = {
+	_T("disconnected"),
+	_T("UAE"),
+	_T("a500_6570-036"),
+	_T("a600_6570-036"),
+	_T("a1000_6500-1"),
+	_T("a1000_6570-036"),
+	_T("a1200_6805"),
+	_T("a2000_8039"),
+	_T("ax000_6570-036"),
+	NULL
+};
 
 struct hdcontrollerconfig
 {
@@ -293,7 +314,7 @@ static const TCHAR *uaescsidevmodes[] = {
 };
 static const TCHAR *uaebootrom[] = {
 	_T("automatic"),
-	_T("disabled"), 
+	_T("disabled"),
 	_T("min"),
 	_T("full"),
 	NULL
@@ -1306,7 +1327,9 @@ static void write_filesys_config (struct uae_prefs *p, struct zfile *f)
 		if (ci->type == UAEDEV_DIR) {
 			_stprintf (tmp, _T("%s,%s:%s:%s,%d"), ci->readonly ? _T("ro") : _T("rw"),
 				ci->devname ? ci->devname : _T(""), ci->volname, str1c, bp);
-			cfgfile_write_str (f, _T("filesystem2"), tmp);
+			if (p->got_fs2_hdf2 >= 0) {
+				cfgfile_write_str (f, _T("filesystem2"), tmp);
+			}
 			_tcscpy (tmp3, tmp);
 #if 0
 			_stprintf (tmp2, _T("filesystem=%s,%s:%s"), uci->readonly ? _T("ro") : _T("rw"),
@@ -1387,8 +1410,9 @@ static void write_filesys_config (struct uae_prefs *p, struct zfile *f)
 				_tcscat(tmp3, _T(",identity"));
 			}
 
-			if (ci->type == UAEDEV_HDF)
+			if (ci->type == UAEDEV_HDF && p->got_fs2_hdf2 >= 0) {
 				cfgfile_write_str (f, _T("hardfile2"), tmp);
+			}
 #if 0
 			_stprintf (tmp2, _T("hardfile=%s,%d,%d,%d,%d,%s"),
 				uci->readonly ? "ro" : "rw", uci->sectors,
@@ -2171,11 +2195,13 @@ void cfgfile_save_options (struct zfile *f, struct uae_prefs *p, int type)
 		}
 	}
 
+#ifdef WITH_LUA
 	for (i = 0; i < MAX_LUA_STATES; i++) {
 		if (p->luafiles[i][0]) {
 			cfgfile_write_path2(f, _T("lua"), p->luafiles[i], PATH_NONE);
 		}
 	}
+#endif
 
 	if (p->trainerfile[0])
 		cfgfile_write_path2(f, _T("trainerfile"), p->trainerfile, PATH_NONE);
@@ -2184,6 +2210,8 @@ void cfgfile_save_options (struct zfile *f, struct uae_prefs *p, int type)
 		cfgfile_write_path2(f, _T("statefile"), p->statefile, PATH_NONE);
 	if (p->quitstatefile[0])
 		cfgfile_write_path2(f, _T("statefile_quit"), p->quitstatefile, PATH_NONE);
+	if (p->statefile_path[0])
+		cfgfile_dwrite_path2(f, _T("statefile_path"), p->statefile_path, PATH_NONE);
 
 	cfgfile_write (f, _T("nr_floppies"), _T("%d"), p->nr_floppies);
 	cfgfile_dwrite_bool (f, _T("floppy_write_protect"), p->floppy_read_only);
@@ -2471,7 +2499,7 @@ void cfgfile_save_options (struct zfile *f, struct uae_prefs *p, int type)
 	cfgfile_write_strarr(f, _T("gfx_fullscreen_picasso"), fullmodes, p->gfx_apmode[1].gfx_fullscreen);
 	cfgfile_write_strarr(f, _T("gfx_center_horizontal"), centermode1, p->gfx_xcenter);
 	cfgfile_write_strarr(f, _T("gfx_center_vertical"), centermode1, p->gfx_ycenter);
-	cfgfile_write_strarr(f, _T("gfx_colour_mode"), colormode1, p->color_mode);
+	cfgfile_write_str(f, _T("gfx_colour_mode"), _T("32bit"));
 	cfgfile_write_bool(f, _T("gfx_blacker_than_black"), p->gfx_blackerthanblack);
 	cfgfile_dwrite_bool(f, _T("gfx_monochrome"), p->gfx_grayscale);
 	cfgfile_dwrite_strarr(f, _T("gfx_atari_palette_fix"), threebitcolors, p->gfx_threebitcolors);
@@ -2487,6 +2515,8 @@ void cfgfile_save_options (struct zfile *f, struct uae_prefs *p, int type)
 	cfgfile_dwrite_strarr(f, _T("gfx_overscanmode"), overscanmodes, p->gfx_overscanmode);
 	cfgfile_dwrite(f, _T("gfx_monitorblankdelay"), _T("%d"), p->gfx_monitorblankdelay);
 	cfgfile_dwrite(f, _T("gfx_rotation"), _T("%d"), p->gfx_rotation);
+	cfgfile_dwrite(f, _T("gfx_bordercolor"), _T("0x%08x"), p->gfx_bordercolor);
+	cfgfile_dwrite_bool(f, _T("gfx_ntscpixels"), p->gfx_ntscpixels);
 
 #ifdef GFXFILTER
 	for (int j = 0; j < MAX_FILTERDATA; j++) {
@@ -2515,19 +2545,7 @@ void cfgfile_save_options (struct zfile *f, struct uae_prefs *p, int type)
 				d3dfound = true;
 			}
 			if (!d3dfound) {
-				if (gf->gfx_filter > 0) {
-					int i = 0;
-					struct uae_filter *uf;
-					while (uaefilters[i].name) {
-						uf = &uaefilters[i];
-						if (uf->type == gf->gfx_filter) {
-							cfgfile_dwrite_str (f, _T("gfx_filter"), ext, uf->cfgname);
-						}
-						i++;
-					}
-				} else {
-					cfgfile_dwrite_ext (f, _T("gfx_filter"), ext, _T("no"));
-				}
+				cfgfile_dwrite_ext(f, _T("gfx_filter"), ext, _T("null"));
 			}
 		}
 		cfgfile_dwrite_strarr(f, _T("gfx_filter_mode"), ext, filtermode2, gf->gfx_filter_filtermodeh);
@@ -2581,8 +2599,8 @@ void cfgfile_save_options (struct zfile *f, struct uae_prefs *p, int type)
 	cfgfile_dwrite (f, _T("gfx_gamma_g"), _T("%d"), p->gfx_gamma_ch[1]);
 	cfgfile_dwrite (f, _T("gfx_gamma_b"), _T("%d"), p->gfx_gamma_ch[2]);
 
-	cfgfile_dwrite (f, _T("gfx_center_horizontal_position"), _T("%d"), p->gfx_xcenter_pos);
-	cfgfile_dwrite (f, _T("gfx_center_vertical_position"), _T("%d"), p->gfx_ycenter_pos);
+	cfgfile_dwrite (f, _T("gfx_center_horizontal_position"), _T("%d"), p->gfx_xcenter_pos < MANUAL_SCALE_MIN_RANGE ? -1 : (p->gfx_xcenter_pos < 0 ? p->gfx_xcenter_pos - 1 : p->gfx_xcenter_pos));
+	cfgfile_dwrite (f, _T("gfx_center_vertical_position"), _T("%d"), p->gfx_ycenter_pos < MANUAL_SCALE_MIN_RANGE ? -1 : (p->gfx_ycenter_pos < 0 ? p->gfx_ycenter_pos - 1 : p->gfx_ycenter_pos));
 	cfgfile_dwrite (f, _T("gfx_center_horizontal_size"), _T("%d"), p->gfx_xcenter_size);
 	cfgfile_dwrite (f, _T("gfx_center_vertical_size"), _T("%d"), p->gfx_ycenter_size);
 
@@ -2637,11 +2655,12 @@ void cfgfile_save_options (struct zfile *f, struct uae_prefs *p, int type)
 		}
 		cfgfile_dwrite_str(f, _T("genlock_effects"), tmp);
 	}
-
-
+#ifdef WITH_SPECIALMONITORS
 	cfgfile_dwrite_strarr(f, _T("monitoremu"), specialmonitorconfignames, p->monitoremu);
+#endif
 	cfgfile_dwrite(f, _T("monitoremu_monitor"), _T("%d"), p->monitoremu_mon);
-	cfgfile_dwrite_coords(f, _T("lightpen_offset"), p->lightpen_offset[0], p->lightpen_offset[1]);
+	cfgfile_dwrite_coords(f, _T("lightpen_offset"), p->lightpen_offset[0][0], p->lightpen_offset[0][1]);
+	cfgfile_dwrite_coords(f, _T("lightpen_offset_gfx"), p->lightpen_offset[1][0], p->lightpen_offset[1][1]);
 	cfgfile_dwrite_bool(f, _T("lightpen_crosshair"), p->lightpen_crosshair);
 
 	cfgfile_dwrite_bool (f, _T("show_leds"), !!(p->leds_on_screen & STATUSLINE_CHIPSET));
@@ -2664,18 +2683,23 @@ void cfgfile_save_options (struct zfile *f, struct uae_prefs *p, int type)
 	cfgfile_dwrite (f, _T("keyboard_leds"), _T("numlock:%s,capslock:%s,scrolllock:%s"),
 		kbleds[p->keyboard_leds[0]], kbleds[p->keyboard_leds[1]], kbleds[p->keyboard_leds[2]]);
 	if (p->chipset_mask & CSMASK_AGA)
-		cfgfile_write (f, _T("chipset"),_T("aga"));
+		cfgfile_write (f, _T("chipset"), _T("aga"));
 	else if ((p->chipset_mask & CSMASK_ECS_AGNUS) && (p->chipset_mask & CSMASK_ECS_DENISE))
-		cfgfile_write (f, _T("chipset"),_T("ecs"));
+		cfgfile_write (f, _T("chipset"), _T("ecs"));
 	else if (p->chipset_mask & CSMASK_ECS_AGNUS)
-		cfgfile_write (f, _T("chipset"),_T("ecs_agnus"));
+		cfgfile_write (f, _T("chipset"), _T("ecs_agnus"));
 	else if (p->chipset_mask & CSMASK_ECS_DENISE)
-		cfgfile_write (f, _T("chipset"),_T("ecs_denise"));
+		cfgfile_write (f, _T("chipset"), _T("ecs_denise"));
+	else if (p->chipset_mask & CSMASK_A1000_NOEHB)
+		cfgfile_write (f, _T("chipset"), _T("a1000_noehb"));
+	else if (p->chipset_mask & CSMASK_A1000)
+		cfgfile_write (f, _T("chipset"), _T("a1000"));
 	else
 		cfgfile_write (f, _T("chipset"), _T("ocs"));
 	if (p->chipset_refreshrate > 0)
 		cfgfile_write (f, _T("chipset_refreshrate"), _T("%f"), p->chipset_refreshrate);
 	cfgfile_dwrite_bool(f, _T("chipset_subpixel"), p->chipset_hr);
+	cfgfile_dwrite_bool(f, _T("chipset_black_level_calibration"), p->display_calibration);
 
 	for (int i = 0; i < MAX_CHIPSET_REFRESH_TOTAL; i++) {
 		struct chipset_refresh *cr = &p->cr[i];
@@ -2757,6 +2781,7 @@ void cfgfile_save_options (struct zfile *f, struct uae_prefs *p, int type)
 	cfgfile_write_strarr(f, _T("collision_level"), collmode, p->collision_level);
 
 	cfgfile_write_strarr(f, _T("chipset_compatible"), cscompa, p->cs_compatible);
+	cfgfile_write_strarr(f, _T("display_optimizations"), displayopts, p->cs_optimizations);
 	cfgfile_dwrite_strarr(f, _T("ciaatod"), ciaatodmode, p->cs_ciaatod);
 	cfgfile_dwrite_strarr(f, _T("rtc"), rtctype, p->cs_rtc);
 	cfgfile_dwrite(f, _T("chipset_rtc_adjust"), _T("%d"), p->cs_rtc_adjust);
@@ -2840,8 +2865,10 @@ void cfgfile_save_options (struct zfile *f, struct uae_prefs *p, int type)
 		}
 		cfgfile_writeramboard(p, f, _T("fastmem"), i, &p->fastmem[i]);
 	}
+#ifdef DEBUGGER
 	cfgfile_write(f, _T("debugmem_start"), _T("0x%x"), p->debugmem_start);
 	cfgfile_write(f, _T("debugmem_size"), _T("%d"), p->debugmem_size / 0x100000);
+#endif
 	cfgfile_write(f, _T("mem25bit_size"), _T("%d"), p->mem25bit.size / 0x100000);
 	cfgfile_writeramboard(p, f, _T("mem25bit"), 0, &p->mem25bit);
 	cfgfile_write(f, _T("a3000mem_size"), _T("%d"), p->mbresmem_low.size / 0x100000);
@@ -2909,6 +2936,16 @@ void cfgfile_save_options (struct zfile *f, struct uae_prefs *p, int type)
 				if (tmp2)
 					_tcscat(tmp2, _T(","));
 				_stprintf(tmp2 + _tcslen(tmp2), _T("monitor=%d"), rbc->monitor_id);
+			}
+			if (!rbc->autoswitch) {
+				if (tmp2)
+					_tcscat(tmp2, _T(","));
+				_tcscat(tmp2 + _tcslen(tmp2), _T("noautoswitch"));
+			}
+			if (rbc->initial_active) {
+				if (tmp2)
+					_tcscat(tmp2, _T(","));
+				_tcscat(tmp2 + _tcslen(tmp2), _T("initial"));
 			}
 			if (tmp2[0]) {
 				if (i > 0)
@@ -2998,6 +3035,7 @@ void cfgfile_save_options (struct zfile *f, struct uae_prefs *p, int type)
 
 	cfgfile_write_bool (f, _T("rtg_nocustom"), p->picasso96_nocustom);
 	cfgfile_write (f, _T("rtg_modes"), _T("0x%x"), p->picasso96_modeflags);
+	cfgfile_write_bool(f, _T("rtg_noautomodes"), p->picasso96_noautomodes);
 
 	cfgfile_write_bool(f, _T("debug_mem"), p->debug_mem);
 	cfgfile_write_bool(f, _T("log_illegal_mem"), p->illegal_mem);
@@ -3014,7 +3052,9 @@ void cfgfile_save_options (struct zfile *f, struct uae_prefs *p, int type)
 	cfgfile_write_bool(f, _T("fm801_pci"), p->obs_sound_fm801);
 #endif
 
-	cfgfile_dwrite_bool(f, _T("keyboard_connected"), p->keyboard_connected);
+	cfgfile_dwrite_bool(f, _T("keyboard_connected"), p->keyboard_mode >= 0);
+	cfgfile_dwrite_bool(f, _T("keyboard_nkro"), p->keyboard_nkro);
+	cfgfile_dwrite_strarr(f, _T("keyboard_type"), kbtype, p->keyboard_mode + 1);
 	cfgfile_write_str (f, _T("kbd_lang"), (p->keyboard_lang == KBD_LANG_DE ? _T("de")
 		: p->keyboard_lang == KBD_LANG_DK ? _T("dk")
 		: p->keyboard_lang == KBD_LANG_ES ? _T("es")
@@ -3480,10 +3520,12 @@ static int cfgfile_option_bool(TCHAR *s, const TCHAR *option)
 }
 static void set_chipset_mask (struct uae_prefs *p, int val)
 {
-	p->chipset_mask = (val == 0 ? 0
-		: val == 1 ? CSMASK_ECS_AGNUS
-		: val == 2 ? CSMASK_ECS_DENISE
-		: val == 3 ? CSMASK_ECS_DENISE | CSMASK_ECS_AGNUS
+	p->chipset_mask = (val == 0 ? CSMASK_A1000_NOEHB
+		: val == 1 ? CSMASK_A1000
+		: val == 2 ? CSMASK_OCS
+		: val == 3 ? CSMASK_ECS_AGNUS
+		: val == 4 ? CSMASK_ECS_DENISE
+		: val == 5 ? CSMASK_ECS_DENISE | CSMASK_ECS_AGNUS
 		: CSMASK_AGA | CSMASK_ECS_DENISE | CSMASK_ECS_AGNUS);
 }
 
@@ -3619,6 +3661,7 @@ static int cfgfile_parse_host (struct uae_prefs *p, TCHAR *option, TCHAR *value)
 		}
 	}
 
+#ifdef WITH_LUA
 	if (!_tcsicmp (option, _T("lua"))) {
 		for (i = 0; i < MAX_LUA_STATES; i++) {
 			if (!p->luafiles[i][0]) {
@@ -3628,7 +3671,8 @@ static int cfgfile_parse_host (struct uae_prefs *p, TCHAR *option, TCHAR *value)
 		}
 		return 1;
 	}
-		
+#endif
+
 	if (cfgfile_strval (option, value, _T("gfx_autoresolution_min_vertical"), &p->gfx_autoresolution_minv, vertmode, 0)) {
 		p->gfx_autoresolution_minv--;
 		return 1;
@@ -3685,8 +3729,6 @@ static int cfgfile_parse_host (struct uae_prefs *p, TCHAR *option, TCHAR *value)
 		|| cfgfile_yesno(option, value, _T("gfx_resize_windowed"), &p->gfx_windowed_resize)
 		|| cfgfile_intval(option, value, _T("gfx_black_frame_insertion_ratio"), &p->lightboost_strobo_ratio, 1)
 
-		|| cfgfile_intval (option, value, _T("gfx_center_horizontal_position"), &p->gfx_xcenter_pos, 1)
-		|| cfgfile_intval (option, value, _T("gfx_center_vertical_position"), &p->gfx_ycenter_pos, 1)
 		|| cfgfile_intval (option, value, _T("gfx_center_horizontal_size"), &p->gfx_xcenter_size, 1)
 		|| cfgfile_intval (option, value, _T("gfx_center_vertical_size"), &p->gfx_ycenter_size, 1)
 
@@ -3709,6 +3751,8 @@ static int cfgfile_parse_host (struct uae_prefs *p, TCHAR *option, TCHAR *value)
 		|| cfgfile_intval(option, value, _T("gfx_horizontal_extra"), &p->gfx_extrawidth, 1)
 		|| cfgfile_intval(option, value, _T("gfx_vertical_extra"), &p->gfx_extraheight, 1)
 		|| cfgfile_intval(option, value, _T("gfx_monitorblankdelay"), &p->gfx_monitorblankdelay, 1)
+		|| cfgfile_intval(option, value, _T("gfx_bordercolor"), &p->gfx_bordercolor, 1)
+		|| cfgfile_yesno(option, value, _T("gfx_ntscpixels"), &p->gfx_ntscpixels)
 
 		|| cfgfile_intval (option, value, _T("floppy0sound"), &p->floppyslots[0].dfxclick, 1)
 		|| cfgfile_intval (option, value, _T("floppy1sound"), &p->floppyslots[1].dfxclick, 1)
@@ -3783,10 +3827,6 @@ static int cfgfile_parse_host (struct uae_prefs *p, TCHAR *option, TCHAR *value)
 		|| cfgfile_strval (option, value, _T("gfx_center_vertical"), &p->gfx_ycenter, centermode1, 1)
 		|| cfgfile_strval (option, value, _T("gfx_center_horizontal"), &p->gfx_xcenter, centermode2, 0)
 		|| cfgfile_strval (option, value, _T("gfx_center_vertical"), &p->gfx_ycenter, centermode2, 0)
-		|| cfgfile_strval (option, value, _T("gfx_colour_mode"), &p->color_mode, colormode1, 1)
-		|| cfgfile_strval (option, value, _T("gfx_colour_mode"), &p->color_mode, colormode2, 0)
-		|| cfgfile_strval (option, value, _T("gfx_color_mode"), &p->color_mode, colormode1, 1)
-		|| cfgfile_strval (option, value, _T("gfx_color_mode"), &p->color_mode, colormode2, 0)
 		|| cfgfile_strval (option, value, _T("gfx_max_horizontal"), &p->gfx_max_horizontal, maxhoriz, 0)
 		|| cfgfile_strval (option, value, _T("gfx_max_vertical"), &p->gfx_max_vertical, maxvert, 0)
 		|| cfgfile_strval(option, value, _T("gfx_api"), &p->gfx_api, filterapi, 0)
@@ -3797,14 +3837,39 @@ static int cfgfile_parse_host (struct uae_prefs *p, TCHAR *option, TCHAR *value)
 		|| cfgfile_strval (option, value, _T("absolute_mouse"), &p->input_tablet, abspointers, 0))
 		return 1;
 
+	if (cfgfile_intval(option, value, _T("gfx_center_horizontal_position"), &p->gfx_xcenter_pos, 1)) {
+		// -1 = old "null" position.
+		if (p->gfx_xcenter_pos == -1) {
+			p->gfx_xcenter_pos = MANUAL_SCALE_MIN_RANGE - 1;
+		} else if (p->gfx_xcenter_pos < 0 && p->gfx_xcenter_pos >= MANUAL_SCALE_MIN_RANGE) {
+			p->gfx_xcenter_pos++;
+		}
+		return 1;
+	}
+	if (cfgfile_intval(option, value, _T("gfx_center_vertical_position"), &p->gfx_ycenter_pos, 1)) {
+		if (p->gfx_ycenter_pos == -1) {
+			p->gfx_ycenter_pos = MANUAL_SCALE_MIN_RANGE - 1;
+		} else if (p->gfx_ycenter_pos < 0 && p->gfx_ycenter_pos >= MANUAL_SCALE_MIN_RANGE) {
+			p->gfx_ycenter_pos++;
+		}
+		return 1;
+	}
+
+
+	if (cfgfile_string(option, value, _T("gfx_colour_mode"), tmpbuf, sizeof tmpbuf / sizeof(TCHAR))) {
+		return 1;
+	}
+
 	if (cfgfile_intval(option, value, _T("gfx_rotation"), &p->gfx_rotation, 1)) {
 		p->gf[GF_NORMAL].gfx_filter_rotation = p->gfx_rotation;
 		p->gf[GF_INTERLACE].gfx_filter_rotation = p->gfx_rotation;
 		return 1;
 	}	
 
+#ifdef DEBUGGER
 	if (cfgfile_multichoice(option, value, _T("debugging_features"), &p->debugging_features, debugfeatures))
 		return 1;
+#endif
 
 	if (cfgfile_yesno(option, value, _T("gfx_api_hdr"), &vb)) {
 		if (vb && p->gfx_api == 2) {
@@ -4153,14 +4218,7 @@ static int cfgfile_parse_host (struct uae_prefs *p, TCHAR *option, TCHAR *value)
 				if (!p->gfx_api)
 					p->gfx_api = 1; // forwards compatibiity
 			} else {
-				int i = 0;
-				while(uaefilters[i].name) {
-					if (!_tcscmp (uaefilters[i].cfgname, value)) {
-						gf->gfx_filter = uaefilters[i].type;
-						break;
-					}
-					i++;
-				}
+				gf->gfx_filter = 0;
 			}
 			return 1;
 		}
@@ -4368,6 +4426,12 @@ static int cfgfile_parse_host (struct uae_prefs *p, TCHAR *option, TCHAR *value)
 
 	if (cfgfile_path(option, value, _T("statefile_quit"), p->quitstatefile, sizeof p->quitstatefile / sizeof (TCHAR)))
 		return 1;
+
+	if (cfgfile_path(option, value, _T("statefile_path"), p->statefile_path, sizeof p->statefile_path / sizeof(TCHAR))) {
+		_tcscpy(path_statefile, p->statefile_path);
+		target_setdefaultstatefilename(path_statefile);
+		return 1;
+	}
 
 	if (cfgfile_string (option, value, _T("statefile_name"), tmpbuf, sizeof tmpbuf / sizeof (TCHAR))) {
 		fetch_statefilepath (savestate_fname, sizeof savestate_fname / sizeof (TCHAR));
@@ -4843,8 +4907,10 @@ struct uaedev_config_data *add_filesys_config (struct uae_prefs *p, int index, s
 		}
 		if (ci->type == UAEDEV_CD) {
 			for (i = 0; i < p->mountitems; i++) {
-				if (p->mountconfig[i].ci.type == ci->type)
+				// duplicate check
+				if (p->mountconfig[i].ci.type == ci->type && p->mountconfig[i].ci.device_emu_unit == ci->device_emu_unit) {
 					return NULL;
+				}
 			}
 		}
 		uci = getuci (p);
@@ -5172,9 +5238,6 @@ static bool parse_geo (const TCHAR *tname, struct uaedev_config_info *uci, struc
 		ret = true;
 	}
 
-	void ata_parse_identity(uae_u8 *out, struct uaedev_config_info *uci, bool *lba, bool *lba48, int *max_multiple);
-	bool ata_get_identity(struct ini_data *ini, uae_u8 *out, bool overwrite);
-
 	uae_u8 ident[512];
 	if (ata_get_identity(ini, ident, true)) {
 		bool lba, lba48;
@@ -5309,7 +5372,8 @@ static int cfgfile_parse_newfilesys (struct uae_prefs *p, int nr, int type, TCHA
 		_tcscpy (uci.devname, devname);
 		if (! getintval (&tmpp, &uci.bootpri, 0))
 			goto empty_fs;
-	} else if (type == 1 || ((type == 2 || type == 3) && uaehfentry)) {
+	} else if (type == 1 || ((type == 2 || type == 3 || type == 4) && uaehfentry)) {
+		bool midmarker = false;
 		tmpp = _tcschr (value, ':');
 		if (tmpp == 0)
 			goto invalid_fs;
@@ -5325,13 +5389,27 @@ static int cfgfile_parse_newfilesys (struct uae_prefs *p, int nr, int type, TCHA
 			_tcscpy (uci.rootdir, n);
 			xfree(n);
 			tmpp = (TCHAR*)end;
-			*tmpp++ = 0;
+			midmarker = *tmpp == ':'; // <real hd path>:<optional extra path/drive letter>?
+			if (!midmarker) {
+				*tmpp++ = 0;
+			}
 		} else {
 			tmpp = _tcschr (tmpp, ',');
 			if (tmpp == 0)
 				goto invalid_fs;
 			*tmpp++ = 0;
 			_tcscpy (uci.rootdir, tmpp2);
+		}
+		if (type == 4 && midmarker) {
+			// get optional extra path
+			const TCHAR *tmppr = tmpp;
+			const TCHAR *tmppr2 = tmpp;
+			TCHAR *root2 = getnextentry(&tmppr, ',');
+			if (root2) {
+				_tcscat(uci.rootdir, root2);
+				xfree(root2);
+			}
+			tmpp += tmppr - tmppr2;
 		}
 		if (uci.rootdir[0] != ':')
 			get_hd_geometry (&uci);
@@ -5467,6 +5545,9 @@ static int cfgfile_parse_filesys (struct uae_prefs *p, const TCHAR *option, TCHA
 		TCHAR tmp[100];
 		_stprintf (tmp, _T("uaehf%d"), i);
 		if (!_tcscmp (option, tmp)) {
+			if (!p->got_fs2_hdf2) {
+				p->got_fs2_hdf2 = -1;
+			}
 			for (;;) {
 				int type = -1;
 				int unit = -1;
@@ -5475,9 +5556,12 @@ static int cfgfile_parse_filesys (struct uae_prefs *p, const TCHAR *option, TCHA
 					return 1;
 				*tmpp++ = 0;
 				if (_tcsicmp (value, _T("hdf")) == 0) {
-					type = 1;
-					cfgfile_parse_partial_newfilesys (p, -1, type, tmpp, unit, true);
-					return 1;
+					if (p->got_fs2_hdf2 > 0) {
+						type = 1;
+						cfgfile_parse_partial_newfilesys (p, -1, type, tmpp, unit, true);
+						return 1;
+					}
+					type = 4;
 				} else if (_tcsnicmp (value, _T("cd"), 2) == 0 && (value[2] == 0 || value[3] == 0)) {
 					unit = 0;
 					if (value[2] > 0)
@@ -5492,9 +5576,11 @@ static int cfgfile_parse_filesys (struct uae_prefs *p, const TCHAR *option, TCHA
 					if (unit >= 0 && unit <= MAX_TOTAL_SCSI_DEVICES) {
 						type = 3;
 					}
-				} else if (_tcsicmp (value, _T("dir")) != 0) {
+				} else if (_tcsicmp (value, _T("dir")) == 0) {
+					if (p->got_fs2_hdf2 > 0) {
+						return 1;
+					}
 					type = 0;
-					return 1;  /* ignore for now */
 				}
 				if (type >= 0)
 					cfgfile_parse_newfilesys (p, -1, type, tmpp, unit, true);
@@ -5587,10 +5673,14 @@ invalid_fs:
 
 	}
 
-	if (_tcscmp (option, _T("filesystem2")) == 0)
+	if (_tcscmp (option, _T("filesystem2")) == 0) {
+		p->got_fs2_hdf2 = 1;
 		return cfgfile_parse_newfilesys (p, -1, 0, value, -1, false);
-	if (_tcscmp (option, _T("hardfile2")) == 0)
+	}
+	if (_tcscmp (option, _T("hardfile2")) == 0) {
+		p->got_fs2_hdf2 = 1;
 		return cfgfile_parse_newfilesys (p, -1, 1, value, -1, false);
+	}
 	if (_tcscmp (option, _T("filesystem_extra")) == 0) {
 		int idx = 0;
 		TCHAR *s = value;
@@ -5899,6 +5989,14 @@ static int cfgfile_parse_hardware (struct uae_prefs *p, const TCHAR *option, TCH
 		}
 		return 1;
 	}
+	if (cfgfile_yesno(option, value, _T("keyboard_connected"), &dummybool)) {
+		p->keyboard_mode = dummybool ? 0 : -1;
+		return 1;
+	}
+	if (cfgfile_strval(option, value, _T("keyboard_type"), &p->keyboard_mode, kbtype, 0)) {
+		p->keyboard_mode--;
+		return 1;
+	}
 
 	if (cfgfile_yesno(option, value, _T("immediate_blits"), &p->immediate_blits)
 		|| cfgfile_yesno(option, value, _T("fpu_no_unimplemented"), &p->fpu_no_unimplemented)
@@ -5929,8 +6027,8 @@ static int cfgfile_parse_hardware (struct uae_prefs *p, const TCHAR *option, TCH
 		|| cfgfile_yesno(option, value, _T("gfxcard_dacswitch"), &p->rtg_dacswitch)
 		|| cfgfile_yesno(option, value, _T("gfxcard_multithread"), &p->rtg_multithread)
 		|| cfgfile_yesno(option, value, _T("synchronize_clock"), &p->tod_hack)
-		|| cfgfile_yesno(option, value, _T("keyboard_connected"), &p->keyboard_connected)
-		|| cfgfile_coords(option, value, _T("lightpen_offset"), &p->lightpen_offset[0], &p->lightpen_offset[1])
+		|| cfgfile_coords(option, value, _T("lightpen_offset"), &p->lightpen_offset[0][0], &p->lightpen_offset[0][1])
+		|| cfgfile_coords(option, value, _T("lightpen_offset_gfx"), &p->lightpen_offset[1][0], &p->lightpen_offset[1][1])
 		|| cfgfile_yesno(option, value, _T("lightpen_crosshair"), &p->lightpen_crosshair)
 
 		|| cfgfile_yesno(option, value, _T("kickshifter"), &p->kickshifter)
@@ -5963,10 +6061,12 @@ static int cfgfile_parse_hardware (struct uae_prefs *p, const TCHAR *option, TCH
 #endif
 		|| cfgfile_yesno(option, value, _T("jit_inhibit"), &p->cachesize_inhibit)
 		|| cfgfile_yesno(option, value, _T("rtg_nocustom"), &p->picasso96_nocustom)
+		|| cfgfile_yesno(option, value, _T("rtg_noautomodes"), &p->picasso96_noautomodes)
 		|| cfgfile_yesno(option, value, _T("floppy_write_protect"), &p->floppy_read_only)
 		|| cfgfile_yesno(option, value, _T("harddrive_write_protect"), &p->harddrive_read_only)
 		|| cfgfile_yesno(option, value, _T("uae_hide_autoconfig"), &p->uae_hide_autoconfig)
 		|| cfgfile_yesno(option, value, _T("board_custom_order"), &p->autoconfig_custom_sort)
+		|| cfgfile_yesno(option, value, _T("keyboard_nkro"), &p->keyboard_nkro)
 		|| cfgfile_yesno(option, value, _T("uaeserial"), &p->uaeserial))
 		return 1;
 
@@ -6029,7 +6129,9 @@ static int cfgfile_parse_hardware (struct uae_prefs *p, const TCHAR *option, TCH
 		|| cfgfile_strval(option, value, _T("comp_trustnaddr"), &p->comptrustnaddr, compmode, 0)
 		|| cfgfile_strval(option, value, _T("collision_level"), &p->collision_level, collmode, 0)
 		|| cfgfile_strval(option, value, _T("parallel_matrix_emulation"), &p->parallel_matrix_emulation, epsonprinter, 0)
+#ifdef WITH_SPECIALMONITORS
 		|| cfgfile_strval(option, value, _T("monitoremu"), &p->monitoremu, specialmonitorconfignames, 0)
+#endif
 		|| cfgfile_strval(option, value, _T("genlockmode"), &p->genlock_image, genlockmodes, 0)
 		|| cfgfile_strval(option, value, _T("waiting_blits"), &p->waiting_blits, waitblits, 0)
 		|| cfgfile_strval(option, value, _T("floppy_auto_extended_adf"), &p->floppy_auto_ext2, autoext2, 0)
@@ -6099,7 +6201,7 @@ static int cfgfile_parse_hardware (struct uae_prefs *p, const TCHAR *option, TCH
 		return 1;
 	}
 
-	if (cfgfile_readromboard(option, value, &p->romboards[0])) {
+	if (cfgfile_readromboard(option, value, p->romboards)) {
 		return 1;
 	}
 
@@ -6109,7 +6211,7 @@ static int cfgfile_parse_hardware (struct uae_prefs *p, const TCHAR *option, TCH
 	if (cfgfile_readramboard(option, value, _T("bogomem"), &p->bogomem)) {
 		return 1;
 	}
-	if (cfgfile_readramboard(option, value, _T("fastmem"), &p->fastmem[0])) {
+	if (cfgfile_readramboard(option, value, _T("fastmem"), p->fastmem)) {
 		return 1;
 	}
 	if (cfgfile_readramboard(option, value, _T("mem25bit"), &p->mem25bit)) {
@@ -6121,7 +6223,7 @@ static int cfgfile_parse_hardware (struct uae_prefs *p, const TCHAR *option, TCH
 	if (cfgfile_readramboard(option, value, _T("mbresmem"), &p->mbresmem_high)) {
 		return 1;
 	}
-	if (cfgfile_readramboard(option, value, _T("z3mem"), &p->z3fastmem[0])) {
+	if (cfgfile_readramboard(option, value, _T("z3mem"), p->z3fastmem)) {
 		return 1;
 	}
 	if (cfgfile_readramboard(option, value, _T("megachipmem"), &p->z3chipmem)) {
@@ -6229,12 +6331,18 @@ static int cfgfile_parse_hardware (struct uae_prefs *p, const TCHAR *option, TCH
 				rbc->monitor_id = _tstol(s);
 				xfree(s);
 			}
+			rbc->autoswitch = !cfgfile_option_find(value, _T("noautoswitch"));
+			rbc->initial_active = cfgfile_option_find(value, _T("initial"));
+			if (cfgfile_option_find(value, _T("autoswitch"))) {
+				rbc->autoswitch = true;
+			}
 			return 1;
 		}
-		if (i > 0)
+		if (i > 0) {
 			_stprintf(tmp, _T("gfxcard%d_type"), i + 1);
-		else
+		} else {
 			_tcscpy(tmp, _T("gfxcard_type"));
+		}
 		if (cfgfile_string(option, value, tmp, tmpbuf, sizeof tmpbuf / sizeof(TCHAR))) {
 			rbc->rtgmem_type = 0;
 			rbc->rtg_index = i;
@@ -6279,8 +6387,11 @@ static int cfgfile_parse_hardware (struct uae_prefs *p, const TCHAR *option, TCH
 		return 1;
 	}
 
-	if (cfgfile_strval (option, value, _T("chipset_compatible"), &p->cs_compatible, cscompa, 0)) {
-		built_in_chipset_prefs (p);
+	if (cfgfile_strval(option, value, _T("chipset_compatible"), &p->cs_compatible, cscompa, 0)) {
+		built_in_chipset_prefs(p);
+		return 1;
+	}
+	if (cfgfile_strval(option, value, _T("display_optimizations"), &p->cs_optimizations, displayopts, 0)) {
 		return 1;
 	}
 
@@ -6349,8 +6460,11 @@ static int cfgfile_parse_hardware (struct uae_prefs *p, const TCHAR *option, TCH
 		set_chipset_mask (p, tmpval);
 		return 1;
 	}
-
+	
 	if (cfgfile_yesno(option, value, _T("chipset_subpixel"), &p->chipset_hr)) {
+		return 1;
+	}
+	if (cfgfile_yesno(option, value, _T("chipset_black_level_calibration"), &p->display_calibration)) {
 		return 1;
 	}
 
@@ -7680,7 +7794,9 @@ int parse_cmdline_option (struct uae_prefs *p, TCHAR c, const TCHAR *arg)
 
 		/* case 'g': p->use_gfxlib = 1; break; */
 	case 'G': p->start_gui = 0; break;
+#ifdef DEBUGGER
 	case 'D': p->start_debugger = 1; break;
+#endif
 
 	case 'n':
 		if (_tcschr (arg, 'i') != 0)
@@ -7745,13 +7861,6 @@ int parse_cmdline_option (struct uae_prefs *p, TCHAR c, const TCHAR *arg)
 
 		break;
 
-	case 'H':
-		p->color_mode = _tstoi (arg);
-		if (p->color_mode < 0) {
-			write_log (_T("Bad color mode selected. Using default.\n"));
-			p->color_mode = 0;
-		}
-		break;
 	default:
 		write_log (_T("Unknown option `-%c'!\n"), c);
 		break;
@@ -8046,9 +8155,13 @@ static int execcmdline(struct uae_prefs *prefs, int argv, TCHAR **argc, TCHAR *o
 						}
 					}
 					filesys_shellexecute2(cmd, NULL, NULL, 0, 0, 0, flags, NULL, 0, shellexec_cb, NULL);
-				} else if (!_tcsicmp(argc[i], _T("dbg"))) {
+				} 
+#ifdef DEBUGGER
+		else if (!_tcsicmp(argc[i], _T("dbg"))) {
 					debug_parser(argc[i + 1], out, outsize);
-				} else if (!inputdevice_uaelib(argc[i], argc[i + 1])) {
+				}
+#endif
+				else if (!inputdevice_uaelib(argc[i], argc[i + 1])) {
 					if (!cfgfile_parse_uaelib_option(prefs, argc[i], argc[i + 1], 0)) {
 						if (!cfgfile_parse_option(prefs, argc[i], argc[i + 1], 0)) {
 							ret = 5;
@@ -8421,6 +8534,7 @@ void default_prefs (struct uae_prefs *p, bool reset, int type)
 	p->gfx_scandoubler = false;
 	p->start_gui = true;
 	p->start_debugger = false;
+	p->got_fs2_hdf2 = 0;
 
 	p->all_lines = 0;
 	/* Note to porters: please don't change any of these options! UAE is supposed
@@ -8457,7 +8571,8 @@ void default_prefs (struct uae_prefs *p, bool reset, int type)
 	}
 #endif
 	p->keyboard_lang = KBD_LANG_US;
-	p->keyboard_connected = true;
+	p->keyboard_mode = 0;
+	p->keyboard_nkro = true;
 
 	p->produce_sound = 3;
 	p->sound_stereo = SND_STEREO;
@@ -8506,15 +8621,14 @@ void default_prefs (struct uae_prefs *p, bool reset, int type)
 	p->gfx_apmode[0].gfx_fullscreen = GFX_WINDOW;
 	p->gfx_apmode[1].gfx_fullscreen = GFX_WINDOW;
 	p->gfx_xcenter = 0; p->gfx_ycenter = 0;
-	p->gfx_xcenter_pos = -1;
-	p->gfx_ycenter_pos = -1;
+	p->gfx_xcenter_pos = MANUAL_SCALE_MIN_RANGE - 1;
+	p->gfx_ycenter_pos = MANUAL_SCALE_MIN_RANGE - 1;
 	p->gfx_xcenter_size = -1;
 	p->gfx_ycenter_size = -1;
 	p->gfx_max_horizontal = RES_HIRES;
 	p->gfx_max_vertical = VRES_DOUBLE;
 	p->gfx_autoresolution_minv = 0;
 	p->gfx_autoresolution_minh = 0;
-	p->color_mode = 2;
 	p->gfx_blackerthanblack = 0;
 	p->gfx_autoresolution_vga = true;
 	p->gfx_apmode[0].gfx_backbuffers = 2;
@@ -8526,7 +8640,7 @@ void default_prefs (struct uae_prefs *p, bool reset, int type)
 
 	p->immediate_blits = 0;
 	p->waiting_blits = 0;
-	p->collision_level = 2;
+	p->collision_level = 3;
 	p->leds_on_screen = 0;
 	p->leds_on_screen_mask[0] = p->leds_on_screen_mask[1] = (1 << LED_MAX) - 1;
 	p->keyboard_leds_in_use = 0;
@@ -8605,6 +8719,7 @@ void default_prefs (struct uae_prefs *p, bool reset, int type)
 		f->enable = true;
 	}
 	p->gf[2].enable = false;
+	p->gfx_ntscpixels = 1;
 
 	p->rtg_horiz_zoom_mult = 1.0;
 	p->rtg_vert_zoom_mult = 1.0;
@@ -8616,10 +8731,11 @@ void default_prefs (struct uae_prefs *p, bool reset, int type)
 	_tcscpy (p->floppyslots[3].df, _T("df3.adf"));
 #endif
 
+#ifdef WITH_LUA
 	for (int i = 0; i < MAX_LUA_STATES; i++) {
 		p->luafiles[i][0] = 0;
 	}
-
+#endif
 	configure_rom (p, roms, 0);
 	_tcscpy (p->romextfile, _T(""));
 	_tcscpy (p->romextfile2, _T(""));
@@ -8652,11 +8768,12 @@ void default_prefs (struct uae_prefs *p, bool reset, int type)
 	p->m68k_speed = 0;
 	p->cpu_compatible = 1;
 	p->address_space_24 = 1;
-	p->cpu_cycle_exact = 0;
-	p->cpu_memory_cycle_exact = 0;
-	p->blitter_cycle_exact = 0;
+	p->cpu_cycle_exact = true;
+	p->cpu_memory_cycle_exact = true;
+	p->blitter_cycle_exact = true;
 	p->chipset_mask = CSMASK_ECS_AGNUS;
 	p->chipset_hr = false;
+	p->display_calibration = false;
 	p->genlock = 0;
 	p->genlock_image = 0;
 	p->genlock_mix = 0;
@@ -8674,6 +8791,7 @@ void default_prefs (struct uae_prefs *p, bool reset, int type)
 	p->bogomem.chipramtiming = true;
 	for (int i = 0; i < MAX_RTG_BOARDS; i++) {
 		p->rtgboards[i].rtg_index = i;
+		p->rtgboards[i].autoswitch = true;
 	}
 	p->rtgboards[0].rtgmem_size = 0x00000000;
 	p->rtgboards[0].rtgmem_type = GFXBOARD_UAE_Z3;
@@ -8706,6 +8824,7 @@ void default_prefs (struct uae_prefs *p, bool reset, int type)
 	p->statecapturebuffersize = 100;
 	p->statecapturerate = 5 * 50;
 	p->inprec_autoplay = true;
+	p->statefile_path[0] = 0;
 
 #ifdef UAE_MINI
 	default_prefs_mini (p, 0);
@@ -8821,7 +8940,7 @@ static void buildin_default_prefs (struct uae_prefs *p)
 	p->chipset_mask = CSMASK_ECS_AGNUS;
 	p->immediate_blits = 0;
 	p->waiting_blits = 0;
-	p->collision_level = 2;
+	p->collision_level = 3;
 	if (p->produce_sound < 1)
 		p->produce_sound = 1;
 	p->scsi = 0;
@@ -9043,11 +9162,13 @@ static int bip_a4000 (struct uae_prefs *p, int config, int compa, int romcheck)
 		case 2:
 		p->cpu_model = 68060;
 		p->fpu_model = 68060;
+#ifdef WITH_PPC
 		p->ppc_mode = 1;
 		cpuboard_setboard(p, BOARD_CYBERSTORM, BOARD_CYBERSTORM_SUB_PPC);
 		p->cpuboardmem1.size = 128 * 1024 * 1024;
-		int roms_ppc[] = { 98, -1 };
+		int roms_ppc[] = { 98, 326, 327, -1 };
 		configure_rom(p, roms_ppc, romcheck);
+#endif
 		break;
 	}
 	p->chipset_mask = CSMASK_AGA | CSMASK_ECS_AGNUS | CSMASK_ECS_DENISE;
@@ -9104,7 +9225,7 @@ static int bip_a4000t (struct uae_prefs *p, int config, int compa, int romcheck)
 
 static void bip_velvet(struct uae_prefs *p, int config, int compa, int romcheck)
 {
-	p->chipset_mask = 0;
+	p->chipset_mask = CSMASK_A1000;
 	p->bogomem.size = 0;
 	p->sound_filter = FILTER_SOUND_ON;
 	set_68000_compa (p, compa);
@@ -9124,18 +9245,16 @@ static int bip_a1000 (struct uae_prefs *p, int config, int compa, int romcheck)
 
 	roms[0] = 24;
 	roms[1] = -1;
-	p->chipset_mask = 0;
+	p->chipset_mask = CSMASK_A1000;
 	p->bogomem.size = 0;
 	p->sound_filter = FILTER_SOUND_ON;
 	set_68000_compa (p, compa);
 	p->floppyslots[1].dfxtype = DRV_NONE;
 	p->cs_compatible = CP_A1000;
 	p->bogomem.chipramtiming = false;
-	p->cs_agnusmodel = AGNUSMODEL_A1000;
-	p->cs_denisemodel = DENISEMODEL_A1000;
 	built_in_chipset_prefs (p);
 	if (config > 0) {
-		p->cs_denisemodel = DENISEMODEL_A1000NOEHB;
+		p->chipset_mask = CSMASK_A1000_NOEHB;
 	}
 	if (config > 1)
 		p->chipmem.size = 0x40000;
@@ -9263,7 +9382,7 @@ static int bip_cd32 (struct uae_prefs *p, int config, int compa, int romcheck)
 static int bip_a1200 (struct uae_prefs *p, int config, int compa, int romcheck)
 {
 	int roms[4];
-	int roms_bliz[2];
+	int roms_bliz[4];
 
 	buildin_default_prefs_68020 (p);
 	roms[0] = 11;
@@ -9272,55 +9391,69 @@ static int bip_a1200 (struct uae_prefs *p, int config, int compa, int romcheck)
 	roms[3] = -1;
 	roms_bliz[0] = -1;
 	roms_bliz[1] = -1;
+	roms_bliz[2] = -1;
+	roms_bliz[3] = -1;
 	p->cs_rtc = 0;
 	p->cs_compatible = CP_A1200;
 	built_in_chipset_prefs (p);
-	switch (config)
-	{
-		case 1:
-		p->fastmem[0].size = 0x400000;
-		p->cs_rtc = 1;
-		break;
-		case 2:
-		cpuboard_setboard(p, BOARD_BLIZZARD, BOARD_BLIZZARD_SUB_1230IV);
-		p->cpuboardmem1.size = 32 * 1024 * 1024;
-		p->cpu_model = 68030;
-		p->cs_rtc = 1;
-		roms_bliz[0] = 89;
-		configure_rom(p, roms_bliz, romcheck);
-		break;
-		case 3:
-		cpuboard_setboard(p, BOARD_BLIZZARD, BOARD_BLIZZARD_SUB_1260);
-		p->cpuboardmem1.size = 32 * 1024 * 1024;
-		p->cpu_model = 68040;
-		p->fpu_model = 68040;
-		p->cs_rtc = 1;
-		roms_bliz[0] = 90;
-		configure_rom(p, roms_bliz, romcheck);
-		break;
-		case 4:
-		cpuboard_setboard(p, BOARD_BLIZZARD, BOARD_BLIZZARD_SUB_1260);
-		p->cpuboardmem1.size = 32 * 1024 * 1024;
-		p->cpu_model = 68060;
-		p->fpu_model = 68060;
-		p->cs_rtc = 1;
-		roms_bliz[0] = 90;
-		configure_rom(p, roms_bliz, romcheck);
-		break;
-		case 5:
-		cpuboard_setboard(p, BOARD_BLIZZARD, BOARD_BLIZZARD_SUB_PPC);
-		p->cpuboardmem1.size = 256 * 1024 * 1024;
-		p->cpu_model = 68060;
-		p->fpu_model = 68060;
-		p->ppc_mode = 1;
-		p->cs_rtc = 1;
-		roms[0] = 15;
-		roms[1] = 11;
-		roms[2] = -1;
-		roms_bliz[0] = 100;
-		configure_rom(p, roms_bliz, romcheck);
-		break;
-	}
+    switch (config)
+    {
+        case 1:
+            p->fastmem[0].size = 0x400000;
+            p->cs_rtc = 1;
+            break;
+#ifdef WITH_CPUBOARD
+        case 2:
+            cpuboard_setboard(p, BOARD_BLIZZARD, BOARD_BLIZZARD_SUB_1230IV);
+            p->cpuboardmem1.size = 32 * 1024 * 1024;
+            p->cpu_model = 68030;
+            p->cs_rtc = 1;
+            roms_bliz[0] = 89;
+            configure_rom(p, roms_bliz, romcheck);
+            break;
+        case 3:
+            cpuboard_setboard(p, BOARD_BLIZZARD, BOARD_BLIZZARD_SUB_1260);
+            p->cpuboardmem1.size = 32 * 1024 * 1024;
+            p->cpu_model = 68040;
+            p->fpu_model = 68040;
+            p->cs_rtc = 1;
+            roms_bliz[0] = 90;
+            configure_rom(p, roms_bliz, romcheck);
+            break;
+        case 4:
+            cpuboard_setboard(p, BOARD_BLIZZARD, BOARD_BLIZZARD_SUB_1260);
+            p->cpuboardmem1.size = 32 * 1024 * 1024;
+            p->cpu_model = 68060;
+            p->fpu_model = 68060;
+            p->cs_rtc = 1;
+            roms_bliz[0] = 90;
+            configure_rom(p, roms_bliz, romcheck);
+            break;
+#ifdef WITH_PPC
+        case 5:
+            cpuboard_setboard(p, BOARD_BLIZZARD, BOARD_BLIZZARD_SUB_PPC);
+            p->cpuboardmem1.size = 256 * 1024 * 1024;
+            p->cpu_model = 68060;
+            p->fpu_model = 68060;
+            p->ppc_mode = 1;
+            p->cs_rtc = 1;
+            roms[0] = 15;
+            roms[1] = 11;
+            roms[2] = -1;
+			roms_bliz[0] = 100;
+			roms_bliz[1] = 329;
+			roms_bliz[2] = 330;
+			configure_rom(p, roms_bliz, romcheck);
+            break;
+#endif
+#else
+        case 2:
+            p->fastmem[0].size = 0x800000;
+            p->cs_rtc = 1;
+            break;
+#endif
+	default: break;
+    }
 	set_68020_compa (p, compa, 0);
 	return configure_rom (p, roms, romcheck);
 }
@@ -9378,7 +9511,7 @@ static int bip_a500 (struct uae_prefs *p, int config, int compa, int romcheck)
 	case 0: // KS 1.3, OCS Agnus, 0.5M Chip + 0.5M Slow
 		roms[0] = 6;
 		roms[1] = 32;
-		p->chipset_mask = 0;
+		p->chipset_mask = CSMASK_OCS;
 		break;
 	case 1: // KS 1.3, ECS Agnus, 0.5M Chip + 0.5M Slow
 		roms[0] = 6;
@@ -9394,7 +9527,7 @@ static int bip_a500 (struct uae_prefs *p, int config, int compa, int romcheck)
 		roms[0] = 6;
 		roms[1] = 32;
 		p->bogomem.size = 0;
-		p->chipset_mask = 0;
+		p->chipset_mask = CSMASK_OCS;
 		p->cs_rtc = 0;
 		p->floppyslots[1].dfxtype = DRV_NONE;
 		break;
@@ -9402,14 +9535,14 @@ static int bip_a500 (struct uae_prefs *p, int config, int compa, int romcheck)
 		roms[0] = 5;
 		roms[1] = 4;
 		p->bogomem.size = 0;
-		p->chipset_mask = 0;
+		p->chipset_mask = CSMASK_OCS;
 		p->cs_rtc = 0;
 		p->floppyslots[1].dfxtype = DRV_NONE;
 		break;
 	case 5: // KS 1.2, OCS Agnus, 0.5M Chip + 0.5M Slow
 		roms[0] = 5;
 		roms[1] = 4;
-		p->chipset_mask = 0;
+		p->chipset_mask = CSMASK_OCS;
 		break;
 	}
 	set_68000_compa (p, compa);
@@ -9571,7 +9704,7 @@ static int bip_casablanca(struct uae_prefs *p, int config, int compa, int romche
 	p->immediate_blits = 0;
 	p->produce_sound = 2;
 	p->nr_floppies = 0;
-	p->keyboard_connected = false;
+	p->keyboard_mode = -1;
 	p->floppyslots[0].dfxtype = DRV_NONE;
 	p->floppyslots[1].dfxtype = DRV_NONE;
 	p->floppyslots[2].dfxtype = DRV_PC_35_ONLY_80;
@@ -9596,7 +9729,7 @@ static int bip_draco(struct uae_prefs *p, int config, int compa, int romcheck)
 	p->immediate_blits = 0;
 	p->produce_sound = 2;
 	p->nr_floppies = 0;
-	p->keyboard_connected = false;
+	p->keyboard_mode = -1;
 	p->cpuboard_settings |= 0x10;
 	p->floppyslots[0].dfxtype = DRV_NONE;
 	p->floppyslots[1].dfxtype = DRV_NONE;

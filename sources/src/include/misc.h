@@ -12,6 +12,10 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef WIN32
 
 #ifndef UINT
@@ -191,5 +195,9 @@ void enumeratedisplays (void);
 void sortdisplays (void);
 extern TCHAR start_path_data[MAX_DPATH];
 extern void clipboard_reset (void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SRC_MISC_H_INCLUDED */

@@ -56,8 +56,12 @@ int retro_thisframe_last_drawn_line;
 int retro_min_diwstart;
 int retro_max_diwstop;
 int retro_doublescan;
-extern int min_diwstart;
-extern int max_diwstop;
+/* WinUAE 6 renders in XRGB8888. Keep the frontend's RGB565 option by
+ * converting at the frame boundary, before drawing libretro overlays. */
+static uae_u32 retro_native_bmp[RETRO_BMP_SIZE / 2];
+static uae_u32 retro_redcolors[256], retro_greencolors[256], retro_bluecolors[256];
+extern int diwfirstword_total, diwlastword_total;
+extern int plffirstline_total, plflastline_total;
 extern int doublescan;
 extern bool video_productivity;
 
@@ -298,7 +302,18 @@ void display_current_image(const char *image, bool inserted)
 }
 
 #include "statusline.h"
-extern void draw_status_line(int monid, int line, int statusy);
+extern void retro_draw_status_line_single(int monid, uae_u8 *buf, int bpp, int y, int totalwidth,
+      uae_u32 *rc, uae_u32 *gc, uae_u32 *bc, uae_u32 *alpha);
+static void draw_status_line(int monid, int line, int statusy)
+{
+   if (line < 0 || line >= retroh)
+      return;
+   uae_u8 *buf = (uae_u8*)retro_bmp + (size_t)line * retrow * pix_bytes;
+   retro_draw_status_line_single(monid, buf, pix_bytes, statusy, retrow,
+         pix_bytes == 2 ? retro_redcolors : xredcolors,
+         pix_bytes == 2 ? retro_greencolors : xgreencolors,
+         pix_bytes == 2 ? retro_bluecolors : xbluecolors, NULL);
+}
 static void retro_draw_frame_extras(void)
 {
    struct amigadisplay *ad = &adisplays[0];
@@ -817,20 +832,50 @@ void retro_lightpen_update(void)
 
 
 /* Graphics */
-int lockscr(struct vidbuffer *vb, bool fullupdate, bool first, bool skip)
+int lockscr(struct vidbuffer *vb, bool fullupdate, bool skip)
 {
+   /* The desktop host normally refreshes Denise's visible/blanking limits. */
+   check_custom_limits();
+   vb->locked = true;
    return 1;
 }
 
 void unlockscr(struct vidbuffer *vb, int y_start, int y_end)
 {
+   vb->locked = false;
+   /* Reconfiguration can release a newly locked surface before any line was
+    * drawn. It must not publish a frame or yield the CPU to the frontend. */
+   if (y_start == 0 && y_end < 0)
+      return;
+   size_t width = retrow < vb->width_allocated ? retrow : vb->width_allocated;
+   size_t height = retroh < vb->height_allocated ? retroh : vb->height_allocated;
+   if (vb->bufmem && width && height &&
+         (size_t)retrow * height * pix_bytes <= sizeof(retro_bmp))
+   {
+      for (size_t y = 0; y < height; y++)
+      {
+         const uae_u32 *src = (const uae_u32*)(vb->bufmem + y * vb->rowbytes);
+         if (pix_bytes == 4)
+            memcpy((uae_u8*)retro_bmp + y * retrow * 4, src, width * 4);
+         else
+         {
+            uae_u16 *dst = retro_bmp + y * retrow;
+            for (size_t x = 0; x < width; x++)
+            {
+               uae_u32 color = src[x];
+               dst[x] = ((color >> 8) & 0xf800) | ((color >> 5) & 0x07e0) | ((color >> 3) & 0x001f);
+            }
+         }
+      }
+   }
    /* These values must be cached here, since the
     * source variables will be reset before the frame
     * ends and control is returned to the frontend */
-   retro_thisframe_first_drawn_line = thisframe_first_drawn_line;
-   retro_thisframe_last_drawn_line  = thisframe_last_drawn_line;
-   retro_min_diwstart               = min_diwstart;
-   retro_max_diwstop                = max_diwstop;
+   /* WinUAE 6 tracks display bounds in Agnus lines and superhires pixels. */
+   retro_thisframe_first_drawn_line = plffirstline_total < 30000 ? plffirstline_total : -1;
+   retro_thisframe_last_drawn_line  = plflastline_total > 0 ? plflastline_total : -1;
+   retro_min_diwstart               = diwfirstword_total < 30000 ? diwfirstword_total >> (RES_MAX - currprefs.gfx_resolution) : 30000;
+   retro_max_diwstop                = diwlastword_total >> (RES_MAX - currprefs.gfx_resolution);
    retro_doublescan                 = doublescan > 0;
 
    /* Align the resulting Automatic Crop screen height to even number */
@@ -854,10 +899,10 @@ void unlockscr(struct vidbuffer *vb, int y_start, int y_end)
 
 #ifdef WITH_MPEG2
    /* CD32 FMV exceptions */
-   if (!changed_prefs.cartfile[0] && gfxvidinfo->drawbuffer.tempbufferinuse)
-      gfxvidinfo->drawbuffer.tempbufferinuse = false;
+   if (!changed_prefs.cartfile[0] && gfxvidinfo->inbuffer == &gfxvidinfo->tempbuffer)
+      gfxvidinfo->inbuffer = &gfxvidinfo->drawbuffer;
 
-   if (gfxvidinfo->drawbuffer.tempbufferinuse)
+   if (gfxvidinfo->inbuffer == &gfxvidinfo->tempbuffer)
    {
       retro_thisframe_first_drawn_line = thisframe_first_drawn_line = minfirstline;
       retro_thisframe_last_drawn_line  = thisframe_last_drawn_line  = minfirstline + (retroh / 2);
@@ -871,7 +916,7 @@ int graphics_init(bool mousecapture)
    if (pixbuf != NULL)
       return 1;
 
-   pixbuf = (unsigned short int*) &retro_bmp[0];
+   pixbuf = (unsigned short int*) &retro_native_bmp[0];
    if (pixbuf == NULL)
    {
       log_cb(RETRO_LOG_ERROR, "Error: not enough memory to initialize screen buffer!\n");
@@ -880,18 +925,22 @@ int graphics_init(bool mousecapture)
 
    gfxvidinfo->drawbuffer.width_allocated    = defaultw;
    gfxvidinfo->drawbuffer.height_allocated   = defaulth;
-   gfxvidinfo->drawbuffer.pixbytes           = pix_bytes;
+   gfxvidinfo->drawbuffer.inwidth            = defaultw;
+   gfxvidinfo->drawbuffer.outwidth           = defaultw;
+   gfxvidinfo->drawbuffer.inheight           = defaulth;
+   gfxvidinfo->drawbuffer.outheight          = defaulth;
+   gfxvidinfo->drawbuffer.pixbytes           = 4;
    gfxvidinfo->drawbuffer.rowbytes           = gfxvidinfo->drawbuffer.width_allocated * gfxvidinfo->drawbuffer.pixbytes;
    gfxvidinfo->drawbuffer.bufmem             = (unsigned char*)pixbuf;
-   gfxvidinfo->drawbuffer.linemem            = 0;
-   gfxvidinfo->drawbuffer.emergmem           = 0;
+   gfxvidinfo->drawbuffer.bufmem_allocated   = (unsigned char*)pixbuf;
+   gfxvidinfo->drawbuffer.bufmemend          = (unsigned char*)pixbuf + (defaulth - 1) * gfxvidinfo->drawbuffer.rowbytes;
 
    reset_drawing();
    graphics_setup();
    display_change_requested = 0;
 
 #ifdef WITH_MPEG2
-   allocvidbuffer(0, &gfxvidinfo->tempbuffer, defaultw, defaulth, pix_bytes * 8);
+   allocvidbuffer(0, &gfxvidinfo->tempbuffer, defaultw, defaulth, 32);
    gfxvidinfo->tempbuffer.bufmem             = (unsigned char*)pixbuf;
 #endif
 
@@ -923,10 +972,13 @@ int is_vsync (void)
 int graphics_setup(void)
 {
    /* monid, Rw,Gw,Bw, Rs,Gs,Bs, Aw,As,Alpha, swap, yuv */
-   if (pix_bytes == 2)
-      alloc_colors64k (0, 5, 6, 5, 11, 5, 0, 0, 0, 0, 0, false);
-   else
-      alloc_colors64k (0, 8, 8, 8, 16, 8, 0, 0, 0, 0, 0, false);
+   alloc_colors64k(0, 8, 8, 8, 16, 8, 0, 0, 0, 0, 0);
+   for (unsigned i = 0; i < 256; i++)
+   {
+      retro_redcolors[i] = (i >> 3) << 11;
+      retro_greencolors[i] = (i >> 2) << 5;
+      retro_bluecolors[i] = i >> 3;
+   }
 
    return 1;
 }
@@ -986,11 +1038,14 @@ int check_prefs_changed_gfx (void)
 
       gfxvidinfo->drawbuffer.width_allocated  = defaultw;
       gfxvidinfo->drawbuffer.height_allocated = defaulth;
+      gfxvidinfo->drawbuffer.inwidth          = defaultw;
+      gfxvidinfo->drawbuffer.inheight         = defaulth;
       gfxvidinfo->drawbuffer.outwidth         = defaultw;
       gfxvidinfo->drawbuffer.outheight        = defaulth;
       gfxvidinfo->drawbuffer.rowbytes         = gfxvidinfo->drawbuffer.width_allocated * gfxvidinfo->drawbuffer.pixbytes;
+      gfxvidinfo->drawbuffer.bufmemend        = gfxvidinfo->drawbuffer.bufmem + (defaulth - 1) * gfxvidinfo->drawbuffer.rowbytes;
 
-      init_hz_normal();
+      init_hz();
 
 #if 0
    printf("%s: %dx%d, res=%d vres=%d\n", __func__,
@@ -1027,7 +1082,6 @@ int check_prefs_changed_gfx (void)
    }
 
    /* 2 = 16bit, 5 = 32bit */
-   currprefs.color_mode = (pix_bytes == 2) ? 2 : 5;
 
    return changed;
 }

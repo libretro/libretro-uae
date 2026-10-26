@@ -416,9 +416,9 @@ static void voodoo_writel(uint32_t addr, uint32_t val, void *p)
                 
                 case SST_swapbufferCMD:
                 voodoo->cmd_written++;
-                thread_lock_mutex(voodoo->swap_mutex);
+                thread_wait_mutex(voodoo->swap_mutex);
                 voodoo->swap_count++;
-                thread_unlock_mutex(voodoo->swap_mutex);
+                thread_release_mutex(voodoo->swap_mutex);
                 if (voodoo->fbiInit7 & FBIINIT7_CMDFIFO_ENABLE)
                         return;
                 voodoo_queue_command(voodoo, addr | FIFO_WRITEL_REG, val);
@@ -499,9 +499,9 @@ static void voodoo_writel(uint32_t addr, uint32_t val, void *p)
                         if ((voodoo->fbiInit1 & FBIINIT1_VIDEO_RESET) && !(val & FBIINIT1_VIDEO_RESET))
                         {
                                 voodoo->line = 0;
-                                thread_lock_mutex(voodoo->swap_mutex);
+                                thread_wait_mutex(voodoo->swap_mutex);
                                 voodoo->swap_count = 0;
-                                thread_unlock_mutex(voodoo->swap_mutex);
+                                thread_release_mutex(voodoo->swap_mutex);
                                 voodoo->retrace_count = 0;
                         }
                         voodoo->fbiInit1 = (val & ~5) | (voodoo->fbiInit1 & 5);
@@ -1085,7 +1085,9 @@ void *voodoo_card_init()
                 ai88[c].b = c & 0xff;
         }
 #ifndef NO_CODEGEN
+#if (defined WIN32 || defined WIN64)
         voodoo_codegen_init(voodoo);
+#endif
 #endif
 
         voodoo->disp_buffer = 0;
@@ -1203,7 +1205,9 @@ void *voodoo_2d3d_card_init(int type)
                 ai88[c].b = c & 0xff;
         }
 #ifndef NO_CODEGEN
+#if (defined WIN32 || defined WIN64)
         voodoo_codegen_init(voodoo);
+#endif
 #endif
 
         voodoo->disp_buffer = 0;
@@ -1212,7 +1216,7 @@ void *voodoo_2d3d_card_init(int type)
         return voodoo;
 }
 
-void *voodoo_init()
+void *voodoo_init(const device_t *info)
 {
         voodoo_set_t *voodoo_set = (voodoo_set_t*)malloc(sizeof(voodoo_set_t));
         uint32_t tmuConfig = 1;
@@ -1318,7 +1322,9 @@ void voodoo_card_close(voodoo_t *voodoo)
                 free(voodoo->texture_cache[0][c].data);
         }
 #ifndef NO_CODEGEN
+#if (defined WIN32 || defined WIN64)
         voodoo_codegen_close(voodoo);
+#endif
 #endif
         if (voodoo->type < VOODOO_BANSHEE && voodoo->fb_mem)
         {
@@ -1470,13 +1476,12 @@ static device_config_t voodoo_config[] =
 
 device_t voodoo_device =
 {
-        "3DFX Voodoo Graphics",
-        DEVICE_PCI,
+        "3DFX Voodoo Graphics", NULL,
+        DEVICE_PCI, 0,
         voodoo_init,
         voodoo_close,
         NULL,
-        voodoo_speed_changed,
         NULL,
-        voodoo_add_status_info,
-        voodoo_config
+        voodoo_speed_changed,
+        NULL
 };

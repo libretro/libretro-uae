@@ -181,7 +181,7 @@ struct autoconfig_info
 	// never direct maps RAM
 	bool indirect;
 	const TCHAR *label;
-	addrbank *addrbank;
+	struct addrbank *addrbank;
 	uaecptr write_bank_address;
 	struct romconfig *rc;
 	uae_u32 last_high_ram;

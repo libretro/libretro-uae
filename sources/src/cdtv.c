@@ -30,10 +30,11 @@
 #include "zfile.h"
 #include "threaddep/thread.h"
 #include "filesys.h"
+#ifdef A2091
 #include "a2091.h"
+#endif
 #include "uae.h"
 #include "savestate.h"
-#include "scsi.h"
 #include "devices.h"
 #include "rommgr.h"
 
@@ -112,6 +113,8 @@ static void INT2 (void)
 static volatile int cdrom_command_cnt_out, cdrom_command_size_out;
 static uae_u8 cdrom_command_output[16];
 
+// scor = subchannel frame
+// sbcp = subchannel data byte
 static volatile int stch, sten, scor, sbcp;
 static volatile int cmd, enable, xaen, dten;
 
@@ -485,11 +488,13 @@ static int read_toc (int track, int msflsn, uae_u8 *out)
 
 static int cdrom_modeset (uae_u8 *cmd)
 {
-	cdtv_sectorsize = (cmd[2] << 8) | cmd[3];
-	if (cdtv_sectorsize != 2048 && cdtv_sectorsize != 2336 && cdtv_sectorsize != 2352 && cdtv_sectorsize != 2328) {
+	int sectorsize = (cmd[2] << 8) | cmd[3];
+	if (sectorsize != 512 && sectorsize != 1024 && sectorsize != 2048 && sectorsize != 2052 && sectorsize != 2336 && sectorsize != 2340) {
 		write_log (_T("CDTV: tried to set unknown sector size %d\n"), cdtv_sectorsize);
-		cdtv_sectorsize = 2048;
+		cd_error = 1;
+		return 0;
 	}
+	cdtv_sectorsize = sectorsize;
 	return 0;
 }
 
@@ -527,6 +532,14 @@ static void cdrom_command_thread (uae_u8 b)
 
 	switch (cdrom_command_input[0])
 	{
+	case 0x00:
+	case 0x80:
+		if (cdrom_command_cnt_in == 2) {
+			cdrom_command_output[0] = 0xaa;
+			cdrom_command_output[1] = 0x55;
+			cdrom_command_accepted(2, s, &cdrom_command_cnt_in);
+		}
+		break;
 	case 0x01: /* seek */
 		if (cdrom_command_cnt_in == 7) {
 			cdrom_command_accepted (0, s, &cdrom_command_cnt_in);
@@ -603,15 +616,43 @@ static void cdrom_command_thread (uae_u8 b)
 			cdrom_command_accepted (uaestrlen(MODEL_NAME), s, &cdrom_command_cnt_in);
 			cd_finished = 1;
 		}
-	case 0x84:
+		break;
+	case 0x84: /* mode set */
 		if (cdrom_command_cnt_in == 7) {
 			cdrom_command_accepted (cdrom_modeset (cdrom_command_input), s, &cdrom_command_cnt_in);
 			cd_finished = 1;
 		}
 		break;
+	case 0x85: /* mode sense */
+		if (cdrom_command_cnt_in == 1) {
+			cdrom_command_output[0] = cdtv_sectorsize >> 8;
+			cdrom_command_output[1] = cdtv_sectorsize >> 0;
+			cdrom_command_accepted(2, s, &cdrom_command_cnt_in);
+		}
+		break;
+	case 0x86: /* capacity */
+		if (cdrom_command_cnt_in == 1) {
+			int size = toc.lastaddress - 1;
+			cdrom_command_output[0] = size >> 16;
+			cdrom_command_output[1] = size >> 8;
+			cdrom_command_output[2] = size >> 0;
+			cdrom_command_output[3] = cdtv_sectorsize >> 8;
+			cdrom_command_output[4] = cdtv_sectorsize >> 0;
+			if (ismedia() <= 0) {
+				cd_error = 1;
+			}
+			cdrom_command_accepted(ismedia() <= 0 ? -1 : 5, s, &cdrom_command_cnt_in);
+		}
+		break;
 	case 0x87: /* subq */
 		if (cdrom_command_cnt_in == 7) {
 			cdrom_command_accepted (cdrom_subq (cdrom_command_output, cdrom_command_input[1] & 2), s, &cdrom_command_cnt_in);
+		}
+		break;
+	case 0x88:
+		if (cdrom_command_cnt_in == 1) {
+			memset(cdrom_command_output, 0, 14);
+			cdrom_command_accepted(14, s, &cdrom_command_cnt_in);
 		}
 		break;
 	case 0x89:
@@ -629,6 +670,15 @@ static void cdrom_command_thread (uae_u8 b)
 			pause_audio (s[1] == 0x00 ? 1 : 0);
 			cdrom_command_accepted (0, s, &cdrom_command_cnt_in);
 			cd_finished = 1;
+		}
+		break;
+	case 0xa2:
+		if (cdrom_command_cnt_in == 1) {
+			cdrom_command_output[0] = 0;
+			cdrom_command_output[1] = 0;
+			cdrom_command_output[2] = 0;
+			cdrom_command_output[3] = 0;
+			cdrom_command_accepted(4, s, &cdrom_command_cnt_in);
 		}
 		break;
 	case 0xa3: /* front panel */
@@ -669,14 +719,17 @@ static void dma_do_thread (void)
 		uae_u8 buffer[2352];
 		if (!didread || readsector != (cdrom_offset / cdtv_sectorsize)) {
 			readsector = cdrom_offset / cdtv_sectorsize;
-			if (cdtv_sectorsize != 2048)
-				didread = sys_command_cd_rawread (unitnum, buffer, readsector, 1, cdtv_sectorsize);
-			else
-				didread = sys_command_cd_read (unitnum, buffer, readsector, 1);
+			if (cdtv_sectorsize < 2048) {
+				didread = 0;
+			} else if (cdtv_sectorsize != 2048) {
+				didread = sys_command_cd_rawread(unitnum, buffer, readsector, 1, cdtv_sectorsize);
+			} else {
+				didread = sys_command_cd_read(unitnum, buffer, readsector, 1);
+			}
 			if (!didread) {
 				cd_error = 1;
 				activate_stch = 1;
-				write_log (_T("CDTV: CD read error!\n"));
+				write_log(_T("CDTV: CD read error, sectorsize=%d\n"), cdtv_sectorsize);;
 				break;
 			}
 
@@ -946,38 +999,36 @@ static void tp_bput (int addr, uae_u8 v)
 
 static uae_u8 subtransferbuf[SUB_CHANNEL_SIZE];
 
-#define SUBCODE_CYCLES (2 * maxhpos)
+#define SUBCODE_CYCLES (460)
 static int subcode_activecnt;
 
-static void subcode_interrupt (uae_u32 v)
+static void subcode_interrupt(uae_u32 v)
 {
-	subcode_activecnt--;
-	if (subcode_activecnt > 0) {
-		if (subcode_activecnt > 1)
-			subcode_activecnt = 1;
+	if (subcodeoffset < -1) {
 		return;
 	}
-
-	if (subcodeoffset < -1)
-		return;
+	if (scor < 0) {
+		scor = 0;
+		tp_check_interrupts();
+	}
+	subcode_activecnt--;
+	if (subcode_activecnt > 0) {
+		if (sbcp || scor) {
+			event2_newevent2(SUBCODE_CYCLES, 0, subcode_interrupt);
+			return;
+		}
+	}
 	if (sbcp && scor == 0) {
 		sbcp = 0;
 		// CD+G interrupt didn't read data fast enough, just abort until next packet
 		return;
 	}
-	if (scor < 0) {
-		scor = 0;
-		if (issub ()) {
-			subcodeoffset = 0;
-		}
-		tp_check_interrupts ();
+	if (subcodeoffset >= 0) {
+		sbcp = 1;
+		tp_check_interrupts();
 	}
-	if (subcodeoffset >= SUB_CHANNEL_SIZE)
-		return;
-	sbcp = 1;
-	tp_check_interrupts ();
-	subcode_activecnt++;
-	event2_newevent2 (SUBCODE_CYCLES, 0, subcode_interrupt);
+	subcode_activecnt = 2;
+	event2_newevent2(SUBCODE_CYCLES, 0, subcode_interrupt);
 }
 
 static uae_u8 tp_bget (int addr)
@@ -1004,10 +1055,11 @@ static uae_u8 tp_bget (int addr)
 			tp_a |= (v << 5) & 64;
 			tp_a |= (v << 7) & 128;
 			v = tp_a;
-			subcodeoffset++;
 			sbcp = 0;
-			if (subcodeoffset >= SUB_CHANNEL_SIZE)
+			subcodeoffset++;
+			if (subcodeoffset >= SUB_CHANNEL_SIZE) {
 				subcodeoffset = -2;
+			}
 		}
 		break;
 	case 1:
@@ -1066,17 +1118,23 @@ static void dmac_start_dma (void)
 {
 	if (!(dmac_cntr & CNTR_PDMD)) { // non-scsi dma
 		write_comm_pipe_u32 (&requests, 0x0100, 1);
-	} else {
+	}
+#ifdef A2091
+	else {
 		scsi_dmac_a2091_start_dma (wd_cdtv);
 	}
+#endif
 }
 static void dmac_stop_dma (void)
 {
 	if (!(dmac_cntr & CNTR_PDMD)) { // non-scsi dma
 		;
-	} else {
+	}
+#ifdef A2091
+	else {
 		scsi_dmac_a2091_stop_dma (wd_cdtv);
 	}
+#endif
 }
 
 void cdtv_getdmadata (uae_u32 *acr)
@@ -1087,12 +1145,13 @@ void cdtv_getdmadata (uae_u32 *acr)
 static void cdtv_checkint (void)
 {
 	int irq = 0;
-
+#ifdef A2091
 	if (cdtvscsi && (wdscsi_getauxstatus (&wd_cdtv->wc) & 0x80)) {
 		dmac_istr |= ISTR_INTS;
 		if ((dmac_cntr & CNTR_INTEN) && (dmac_istr & ISTR_INTS))
 			irq = 1;
 	}
+#endif
 	if ((dmac_cntr & CNTR_INTEN) && (dmac_istr & ISTR_E_INT))
 		irq = 1;
 	if (irq)
@@ -1162,7 +1221,7 @@ static void CDTV_hsync_handler (void)
 	}
 
 	static int subchannelcounter;
-	int cntmax = (int)(maxvpos * vblank_hz / 75 - 6);
+	int cntmax = (int)(maxvpos * vblank_hz / 75 - 2);
 	if (subchannelcounter > 0)
 		subchannelcounter--;
 	if (subchannelcounter <= 0) {
@@ -1182,7 +1241,9 @@ static void CDTV_hsync_handler (void)
 						subcodebufferoffset -= MAX_SUBCODEBUFFER;
 					sbcp = 0;
 					scor = 1;
-					subcode_activecnt++;
+					subcodeoffset = 0;
+					subcode_activecnt = 5;
+					event2_newevent_x_remove(subcode_interrupt);
 					event2_newevent2 (SUBCODE_CYCLES, 0, subcode_interrupt);
 					tp_check_interrupts ();
 				}
@@ -1218,7 +1279,7 @@ static void CDTV_hsync_handler (void)
 
 	subqcnt--;
 	if (subqcnt < 0) {
-		write_comm_pipe_u32 (&requests, 0x0101, 1);
+		write_comm_pipe_u32(&requests, 0x0101, 1);
 		if (cd_playing)
 			subqcnt = 10;
 		else
@@ -1226,7 +1287,7 @@ static void CDTV_hsync_handler (void)
 	}
 
 	if (activate_stch)
-		do_stch ();
+		do_stch();
 }
 
 static void do_stch (void)
@@ -1279,14 +1340,18 @@ static uae_u32 dmac_bget2 (uaecptr addr)
 		v = dmac_cntr;
 		break;
 	case 0x91:
+#ifdef A2091
 		if (cdtvscsi)
 			v = wdscsi_getauxstatus (&wd_cdtv->wc);
+#endif
 		break;
 	case 0x93:
+#ifdef A2091
 		if (cdtvscsi) {
 			v = wdscsi_get (&wd_cdtv->wc, wd_cdtv);
 			cdtv_checkint ();
 		}
+#endif
 		break;
 	case 0xa1:
 		sten = 0;
@@ -1386,16 +1451,20 @@ static void dmac_bput2 (uaecptr addr, uae_u32 b)
 		dmac_dawr |= b << 0;
 		break;
 	case 0x91:
+#ifdef A2091
 		if (cdtvscsi) {
 			wdscsi_sasr (&wd_cdtv->wc, b);
 			cdtv_checkint ();
 		}
+#endif
 		break;
 	case 0x93:
+#ifdef A2091
 		if (cdtvscsi) {
 			wdscsi_put (&wd_cdtv->wc, wd_cdtv, b);
 			cdtv_checkint ();
 		}
+#endif
 		break;
 	case 0xa1:
 		cdrom_command (b);
@@ -1773,8 +1842,10 @@ bool cdtvscsi_init(struct autoconfig_info *aci)
 	if (!aci->doinit)
 		return true;
 	cdtvscsi = true;
+#ifdef A2091
 	init_wd_scsi(wd_cdtv, aci->rc->dma24bit);
 	wd_cdtv->dmac_type = COMMODORE_DMAC;
+#endif
 	if (configured > 0)
 		map_banks_z2(&dmac_bank, configured, 0x10000 >> 16);
 	return true;

@@ -38,7 +38,7 @@ typedef struct ncr_t
         uint32_t linear_base, linear_size;
         uint32_t mmio_base, mmio_size;
 
-        uint32_t bank[4];
+        uint32_t bankr[4], bankw[4];
         uint32_t vram_mask;
         
         float (*getclock)(int clock, void *p);
@@ -86,14 +86,14 @@ static int ncr_vga_vsync_enabled(ncr_t *ncr)
 static void ncr_update_irqs(ncr_t *ncr)
 {
     if (ncr->vblank_irq > 0 && ncr_vga_vsync_enabled(ncr))
-        pci_set_irq(NULL, PCI_INTA);
+        pci_set_irq(NULL, PCI_INTA, NULL);
     else
-        pci_clear_irq(NULL, PCI_INTA);
+        pci_clear_irq(NULL, PCI_INTA, NULL);
 }
 
 static void ncr_vblank_start(svga_t *svga)
 {
-    ncr_t *ncr = (ncr_t *)svga->p;
+    ncr_t *ncr = (ncr_t *)svga->priv;
     if (ncr->vblank_irq >= 0) {
         ncr->vblank_irq = 1;
         ncr_update_irqs(ncr);
@@ -103,7 +103,7 @@ static void ncr_vblank_start(svga_t *svga)
 
 void ncr_hwcursor_draw(svga_t *svga, int displine)
 {
-    ncr_t *ncr = (ncr_t*)svga->p;
+    ncr_t *ncr = (ncr_t*)svga->priv;
     int x;
     uint8_t dat[2];
     uint32_t c[2];
@@ -138,7 +138,7 @@ void ncr_hwcursor_draw(svga_t *svga, int displine)
     if ((svga->bpp == 16 || svga->bpp == 15) && svga->hwcursor.h_acc > 0) {
         xdbl = 1 << (svga->hwcursor.h_acc - 1);
     }
-    for (x = 0; x < svga->hwcursor.xsize; x += 8)
+    for (x = 0; x < svga->hwcursor.cur_xsize; x += 8)
     {
             if (x == 32) {
                 addr += (64 / 8);
@@ -146,7 +146,7 @@ void ncr_hwcursor_draw(svga_t *svga, int displine)
             addr--;
             uint32_t addroffset = addr & svga->vram_display_mask;
             dat[0] = svga->vram[addroffset];
-            addroffset = (addr + (svga->hwcursor.xsize / 8)) & svga->vram_display_mask;
+            addroffset = (addr + (svga->hwcursor.cur_xsize / 8)) & svga->vram_display_mask;
             dat[1] = svga->vram[addroffset];
             for (xx = 0; xx < 8; xx++)
             {
@@ -166,7 +166,7 @@ void ncr_hwcursor_draw(svga_t *svga, int displine)
                 dat[1] <<= 1;
             }
     }
-    svga->hwcursor_latch.addr += (svga->hwcursor.xsize / 8) * 2;
+    svga->hwcursor_latch.addr += (svga->hwcursor.cur_xsize / 8) * 2;
 
     if (svga->interlace && !svga->hwcursor_oddeven)
         svga->hwcursor_latch.addr += line_offset;
@@ -213,8 +213,8 @@ void ncr_out(uint16_t addr, uint8_t val, void *p)
                         case 0x0c:
                             svga->hwcursor.ena = val & 1;
                             svga->hwcursor.h_acc = (val >> 5) & 3;
-                            svga->hwcursor.ysize = 16 << ((val >> 1) & 3);
-                            svga->hwcursor.xsize = (val & 0x80) && ncr->chip == NCR_TYPE_32BLT ? 64 : 32;
+                            svga->hwcursor.cur_ysize = 16 << ((val >> 1) & 3);
+                            svga->hwcursor.cur_xsize = (val & 0x80) && ncr->chip == NCR_TYPE_32BLT ? 64 : 32;
                             break;
                         case 0x0d:
                         case 0x0e:
@@ -254,8 +254,10 @@ void ncr_out(uint16_t addr, uint8_t val, void *p)
                             if (ncr->blt_bpp > 24) {
                                 ncr->blt_bpp = 24;
                             }
+                            svga->fb_only = 1;
                         } else {
                             ncr->blt_bpp = 8;
+                            svga->fb_only = 0;
                         }
                         break;
                         case 0x30:
@@ -264,6 +266,14 @@ void ncr_out(uint16_t addr, uint8_t val, void *p)
                         case 0x33:
                             ncr_updatemapping(ncr);
                         break;
+
+                        case 0x20:
+							svga->packed_chain4 = (val & 0x02) != 0;
+                            if (svga->packed_chain4) {
+                                svga->chain4 = 1;
+                            }
+                            ncr_updatebanking(ncr);
+                            break;
                     }
                     if (old != val)
                     {
@@ -359,7 +369,7 @@ static const int fontwidths[] =
 
 void ncr_recalctimings(svga_t *svga)
 {
-        ncr_t *ncr = (ncr_t*)svga->p;
+        ncr_t *ncr = (ncr_t*)svga->priv;
         bool ext_end = (svga->crtc[0x30] & 0x20) != 0;
 
         svga->hdisp = svga->crtc[1] - ((svga->crtc[5] & 0x60) >> 5);
@@ -441,8 +451,13 @@ static void ncr_write(uint32_t addr, uint8_t val, void *p)
     ncr_t *ncr = (ncr_t *)p;
     svga_t *svga = &ncr->svga;
 
-    addr = (addr & 0xffff) + ncr->bank[(addr >> 15) & 3];
+    if (!svga->fb_only) {
+        svga->write_bank = ncr->bankw[(addr >> 15) & 3];
+        svga_write(addr, val, svga);
+        return;
+    }
 
+    addr = (addr & svga->banked_mask) + ncr->bankw[(addr >> 15) & 3];
     addr &= svga->decode_mask;
     if (addr >= svga->vram_max)
         return;
@@ -455,8 +470,13 @@ static void ncr_writew(uint32_t addr, uint16_t val, void *p)
     ncr_t *ncr = (ncr_t *)p;
     svga_t *svga = &ncr->svga;
 
-    addr = (addr & 0xffff) + ncr->bank[(addr >> 15) & 3];
+    if (!svga->fb_only) {
+        svga->write_bank = ncr->bankw[(addr >> 15) & 3];
+        svga_writew(addr, val, svga);
+        return;
+    }
 
+    addr = (addr & svga->banked_mask) + ncr->bankw[(addr >> 15) & 3];
     addr &= svga->decode_mask;
     if (addr >= svga->vram_max)
         return;
@@ -469,8 +489,13 @@ static void ncr_writel(uint32_t addr, uint32_t val, void *p)
     ncr_t *ncr = (ncr_t *)p;
     svga_t *svga = &ncr->svga;
 
-    addr = (addr & 0xffff) + ncr->bank[(addr >> 15) & 3];
+    if (!svga->fb_only) {
+        svga->write_bank = ncr->bankw[(addr >> 15) & 3];
+        svga_write(addr, val, svga);
+        return;
+    }
 
+    addr = (addr & svga->banked_mask) + ncr->bankw[(addr >> 15) & 3];
     addr &= svga->decode_mask;
     if (addr >= svga->vram_max)
         return;
@@ -484,8 +509,12 @@ static uint8_t ncr_read(uint32_t addr, void *p)
     ncr_t *ncr = (ncr_t *)p;
     svga_t *svga = &ncr->svga;
 
-    addr = (addr & 0xffff) + ncr->bank[(addr >> 15) & 3];
+    if (!svga->fb_only) {
+        svga->read_bank= ncr->bankr[(addr >> 15) & 3];
+        return svga_read(addr, svga);
+    }
 
+    addr = (addr & svga->banked_mask) + ncr->bankr[(addr >> 15) & 3];
     addr &= svga->decode_mask;
     if (addr >= svga->vram_max)
         return 0xff;
@@ -497,8 +526,12 @@ static uint16_t ncr_readw(uint32_t addr, void *p)
     ncr_t *ncr = (ncr_t *)p;
     svga_t *svga = &ncr->svga;
 
-    addr = (addr & 0xffff) + ncr->bank[(addr >> 15) & 3];
+    if (!svga->fb_only) {
+        svga->read_bank = ncr->bankr[(addr >> 15) & 3];
+        return svga_readw(addr, svga);
+    }
 
+    addr = (addr & svga->banked_mask) + ncr->bankr[(addr >> 15) & 3];
     addr &= svga->decode_mask;
     if (addr >= svga->vram_max)
         return 0xffff;
@@ -509,8 +542,12 @@ static uint32_t ncr_readl(uint32_t addr, void *p)
     ncr_t *ncr = (ncr_t *)p;
     svga_t *svga = &ncr->svga;
 
-    addr = (addr & 0xffff) + ncr->bank[(addr >> 15) & 3];
+    if (!svga->fb_only) {
+        svga->read_bank = ncr->bankr[(addr >> 15) & 3];
+        return svga_readl(addr, svga);
+    }
 
+    addr = (addr & svga->banked_mask) + ncr->bankr[(addr >> 15) & 3];
     addr &= svga->decode_mask;
     if (addr >= svga->vram_max)
         return 0xffff;
@@ -958,19 +995,19 @@ static uint32_t ncr_mmio_readl(uint32_t addr, void *p)
 static void ncr_write_linear(uint32_t addr, uint8_t val, void *p)
 {
     svga_t *svga = (svga_t *)p;
-    ncr_t *ncr = (ncr_t *)svga->p;
+    ncr_t *ncr = (ncr_t *)svga->priv;
     svga_write_linear(addr, val, p);
 }
 static void ncr_writew_linear(uint32_t addr, uint16_t val, void *p)
 {
     svga_t *svga = (svga_t *)p;
-    ncr_t *ncr = (ncr_t *)svga->p;
+    ncr_t *ncr = (ncr_t *)svga->priv;
     svga_writew_linear(addr, val, p);
 }
 static void ncr_writel_linear(uint32_t addr, uint32_t val, void *p)
 {
     svga_t *svga = (svga_t *)p;
-    ncr_t *ncr = (ncr_t *)svga->p;
+    ncr_t *ncr = (ncr_t *)svga->priv;
     if (ncr->blt_fifo_write > 0) {
         blitter_write_fifo(ncr, val);
         return;
@@ -982,35 +1019,69 @@ static void ncr_writel_linear(uint32_t addr, uint32_t val, void *p)
 void ncr_updatebanking(ncr_t *ncr)
 {
     svga_t *svga = &ncr->svga;
+    bool rwsep = false;
+	uint32_t bankprimary, banksecondary;
 
-    svga->banked_mask = 0xffff;
-    ncr->bank[0] = (svga->seqregs[0x18] << 8) | svga->seqregs[0x19];
-    if (svga->seqregs[0x1e] & 0x4) {
-        ncr->bank[1] = (svga->seqregs[0x1c] << 8) | svga->seqregs[0x1d];
-    } else {
-        ncr->bank[1] = ncr->bank[0] + 0x8000;
-    }
+    svga->banked_mask = (svga->seqregs[0x20] & 1) ? 0xffff : 0x7fff;
     if (svga->seqregs[0x1e] & 0x10) {
-        ncr->bank[0] <<= 6;
-        ncr->bank[1] <<= 6;
-    }
-    int mode = svga->seqregs[0x1e] >> 5;
-    if (mode != 2 && mode != 3 && mode != 6) {
-        pclog("unsupported banking mode %d\n", mode);
-    }
-    // Primary at A0000h-AFFFFh, Secondary at B0000h-BFFFFh. Both Read / Write.
-    if (mode == 2) {
-        ncr->bank[2] = ncr->bank[1];
-        ncr->bank[3] = ncr->bank[1];
-        ncr->bank[1] = ncr->bank[0];
+        bankprimary = (svga->seqregs[0x18] << 8) | svga->seqregs[0x19];
+        bankprimary <<= 6;
+		ncr->bankr[0] = bankprimary;
+        ncr->bankr[1] = bankprimary + 0x8000;
+        ncr->bankr[2] = bankprimary + 0x10000;
+        ncr->bankr[3] = bankprimary + 0x18000;
     } else {
-        ncr->bank[2] = ncr->bank[0];
-        ncr->bank[3] = ncr->bank[1];
+        ncr->bankr[0] = 0x0000;
+        ncr->bankr[1] = 0x8000;
+        ncr->bankr[2] = 0x10000;
+        ncr->bankr[3] = 0x18000;
     }
-    // Read and Write to Secondary only
-    if (mode == 3) {
-        ncr->bank[0] = ncr->bank[1];
-        ncr->bank[2] = ncr->bank[3];
+
+    if ((svga->seqregs[0x1e] & 0x14) == 0x14) {
+        bankprimary = (svga->seqregs[0x18] << 8) | svga->seqregs[0x19];
+        banksecondary = (svga->seqregs[0x1c] << 8) | svga->seqregs[0x1d];
+        bankprimary <<= 6;
+        banksecondary <<= 6;
+        int mode = svga->seqregs[0x1e] >> 5;
+        if (mode != 0 && mode != 2 && mode != 3 && mode != 6) {
+            pclog("unsupported banking mode %d\n", mode);
+        }
+        if (mode == 0) {
+            // Write to Primary, Read From Secondary
+            ncr->bankw[0] = bankprimary;
+            ncr->bankw[1] = bankprimary + 0x8000;
+            ncr->bankw[2] = bankprimary + 0x10000;
+            ncr->bankw[3] = bankprimary + 0x18000;
+            ncr->bankr[0] = banksecondary;
+            ncr->bankr[1] = banksecondary + 0x8000;
+            ncr->bankr[2] = banksecondary + 0x10000;
+            ncr->bankr[3] = banksecondary + 0x18000;
+            rwsep = true;
+        } if (mode == 2) {
+            // Primary at A0000h-AFFFFh, Secondary at B0000h-BFFFFh. Both Read / Write.
+            ncr->bankr[0] = bankprimary;
+            ncr->bankr[1] = bankprimary + 0x8000;
+            ncr->bankr[2] = banksecondary;
+            ncr->bankr[3] = banksecondary + 0x8000;
+            // Read and Write to Secondary only
+        } else if (mode == 3) {
+            ncr->bankr[0] = banksecondary;
+            ncr->bankr[1] = banksecondary + 0x8000;
+            ncr->bankr[2] = banksecondary + 0x10000;
+            ncr->bankr[3] = banksecondary + 0x18000;
+        } else if (mode == 6) {
+            // Reads/writes Primary on A0, Secondary on A8.
+            ncr->bankr[0] = bankprimary;
+			ncr->bankr[1] = banksecondary;
+            ncr->bankr[2] = bankprimary + 0x8000;
+            ncr->bankr[3] = banksecondary + 0x8000;
+        }
+    }
+    if (!rwsep) {
+        ncr->bankw[0] = ncr->bankr[0];
+        ncr->bankw[1] = ncr->bankr[1];
+        ncr->bankw[2] = ncr->bankr[2];
+        ncr->bankw[3] = ncr->bankr[3];
     }
 }
 
@@ -1112,7 +1183,7 @@ static void *ncr_init(char *bios_fn, int chip)
 
         rom_init(&ncr->bios_rom, bios_fn, 0xc0000, 0x8000, 0x7fff, 0, MEM_MAPPING_EXTERNAL);
 
-        svga_init(&ncr->svga, ncr, vram_size,
+        svga_init(NULL, &ncr->svga, ncr, vram_size,
             ncr_recalctimings,
             ncr_in, ncr_out,
             ncr_hwcursor_draw,
@@ -1159,7 +1230,7 @@ static void *ncr_init(char *bios_fn, int chip)
         return ncr;
 }
 
-void *ncr_retina_z2_init()
+void *ncr_retina_z2_init(const device_t *info)
 {
     ncr_t *ncr = (ncr_t *)ncr_init("ncr.bin", NCR_TYPE_22EP);
 
@@ -1173,7 +1244,7 @@ void *ncr_retina_z2_init()
     return ncr;
 }
 
-void *ncr_retina_z3_init()
+void *ncr_retina_z3_init(const device_t *info)
 {
     ncr_t *ncr = (ncr_t *)ncr_init("ncr.bin", NCR_TYPE_32BLT);
 
@@ -1229,26 +1300,24 @@ void ncr_add_status_info(char *s, int max_len, void *p)
 
 device_t ncr_retina_z2_device =
 {
-    "NCR 77C22E+",
-    0,
+    "NCR 77C22E+", NULL,
+    0, 0,
     ncr_retina_z2_init,
     ncr_close,
     NULL,
+    NULL,
     ncr_speed_changed,
     ncr_force_redraw,
-    ncr_add_status_info,
-    NULL
 };
 
 device_t ncr_retina_z3_device =
 {
-    "NCR 77C32BLT",
-    0,
+    "NCR 77C32BLT", NULL,
+    0, 0,
     ncr_retina_z3_init,
     ncr_close,
     NULL,
+    NULL,
     ncr_speed_changed,
     ncr_force_redraw,
-    ncr_add_status_info,
-    NULL
 };

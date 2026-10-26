@@ -16,7 +16,6 @@
 #include "options.h"
 #include "zfile.h"
 #include "disk.h"
-#include "gui.h"
 #include "crc32.h"
 #include "fsdb.h"
 #include "fsusage.h"
@@ -25,6 +24,13 @@
 #include "fdi2raw.h"
 #include "uae/io.h"
 #include "misc.h"
+// OS X does not have off64_t, fopen64, fseeko64 or ftello64, the functions are already 64bit
+#ifdef __MACH__
+#  define off64_t off_t
+#  define fopen64 fopen
+#  define fseeko64 fseeko
+#  define ftello64 ftello
+#endif
 
 #ifdef CAPS
 #include "caps.h"
@@ -140,7 +146,7 @@ static void zcache_close (void)
 	while (zc) {
 		struct zcache *n = zc->next;
 		zcache_free_data (zc);
-		xfree (n);
+		xfree(zc);
 		zc = n;
 	}
 }

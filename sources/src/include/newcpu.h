@@ -13,7 +13,10 @@
 #include "readcpu.h"
 #include "machdep/m68k.h"
 #include "events.h"
+
+#ifdef WITH_SOFTFLOAT
 #include <softfloat/softfloat.h>
+#endif
 
 #ifndef SET_CFLG
 
@@ -70,7 +73,9 @@ struct cputbl {
 	uae_s8 length;
 	uae_s8 disp020[2];
 	uae_s8 branch;
+#ifdef JIT
 	uae_u16 specific;
+#endif
 };
 
 #ifdef JIT
@@ -96,7 +101,9 @@ extern cpuop_func *loop_mode_table[];
 
 extern uae_u32 REGPARAM3 op_illg(uae_u32) REGPARAM;
 extern void REGPARAM3 op_illg_noret(uae_u32) REGPARAM;
+void REGPARAM3 op_illg_1_noret(uae_u32 opcode) REGPARAM;
 extern void REGPARAM3 op_unimpl(uae_u32) REGPARAM;
+void REGPARAM3 op_unimpl_1_noret(uae_u32 opcode) REGPARAM;
 
 typedef uae_u8 flagtype;
 
@@ -163,7 +170,9 @@ typedef struct {
 
 typedef struct
 {
+#ifdef WITH_SOFTFLOAT
 	floatx80 fpx;
+#endif
 #ifdef MSVC_LONG_DOUBLE
 	union {
 		fptype fp;
@@ -323,7 +332,7 @@ extern bool m68k_interrupt_delay;
 extern void safe_interrupt_set(int, int, bool);
 
 #define SPCFLAG_CPUINRESET 2
-#define SPCFLAG_COPPER 4
+#define SPCFLAG_CPU_SLOW 4
 #define SPCFLAG_INT 8
 #define SPCFLAG_BRK 16
 #define SPCFLAG_UAEINT 32
@@ -729,6 +738,7 @@ extern int m68k_movec2 (int, uae_u32 *);
 extern int m68k_divl (uae_u32, uae_u32, uae_u16, uaecptr);
 extern int m68k_mull (uae_u32, uae_u32, uae_u16);
 extern void init_m68k (void);
+extern void m68k_run(void);
 #ifdef __LIBRETRO__
 extern int m68k_go (int, int);
 #else
@@ -736,7 +746,6 @@ extern void m68k_go (int);
 #endif
 extern void m68k_dumpstate(uaecptr *, uaecptr);
 extern void m68k_dumpcache(bool);
-extern bool m68k_readcache(uaecptr memaddr, bool dc, uae_u32* valp);
 extern int getMulu68kCycles(uae_u16 src);
 extern int getMuls68kCycles(uae_u16 src);
 extern int getDivu68kCycles (uae_u32 dividend, uae_u16 divisor);
@@ -895,5 +904,8 @@ extern bool can_cpu_tracer (void);
 
 uae_u32 process_cpu_indirect_memory_read(uae_u32 addr, int size);
 void process_cpu_indirect_memory_write(uae_u32 addr, uae_u32 data, int size);
+
+const struct cputbl *uaegetjitcputbl(void);
+const struct cputbl *getjitcputbl(int cpulvl, int direct);
 
 #endif /* UAE_NEWCPU_H */

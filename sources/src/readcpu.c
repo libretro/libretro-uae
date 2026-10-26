@@ -81,7 +81,7 @@ struct mnemolookup lookuptab[] = {
 	{ i_DIVS, _T("DIVS"), NULL, 1 },
 	{ i_MULU, _T("MULU"), NULL, 1 },
 	{ i_MULS, _T("MULS"), NULL, 1 },
-	{ i_ASR, _T("ASR"), NULL,  },
+	{ i_ASR, _T("ASR"), NULL, 0 },
 	{ i_ASL, _T("ASL"), NULL, 0 },
 	{ i_LSR, _T("LSR"), NULL, 0 },
 	{ i_LSL, _T("LSL"), NULL, 0 },
@@ -867,9 +867,11 @@ static void handle_merges (long int opcode)
 	for (srcreg=0; srcreg < sbitdst; srcreg++) {
 		for (dstreg=0; dstreg < dstend; dstreg++) {
 			uae_u16 code = (uae_u16)opcode;
+			uae_u8 spos = (table68k[opcode].spos < 0) ? 0 : table68k[opcode].spos;
+			uae_u8 dpos = (table68k[opcode].dpos < 0) ? 0 : table68k[opcode].dpos;
 
-			code = (code & ~smsk) | (srcreg << table68k[opcode].spos);
-			code = (code & ~dmsk) | (dstreg << table68k[opcode].dpos);
+			code = (code & ~smsk) | (srcreg << spos);
+			code = (code & ~dmsk) | (dstreg << dpos);
 
 			/* Check whether this is in fact the same instruction.
 			* The instructions should never differ, except for the

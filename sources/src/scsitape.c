@@ -11,13 +11,9 @@
 #include "sysdeps.h"
 
 #include "options.h"
-#include "filesys.h"
 #include "scsi.h"
 #include "blkdev.h"
 #include "zfile.h"
-#include "memory.h"
-#include "threaddep/thread.h"
-#include "a2091.h"
 #include "fsdb.h"
 
 int log_tapeemu = 1;

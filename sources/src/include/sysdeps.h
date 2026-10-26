@@ -64,7 +64,6 @@ using namespace std;
 
 #if defined(__cplusplus)
 #include <cstddef>
-#include <cstdbool>
 #else
 #include <stddef.h>
 /* Note: stdbool.h has a __cplusplus section, but as it is stated in
@@ -499,6 +498,9 @@ extern void mallocemu_free (void *ptr);
 #define error_log     write_log
 #define uae_log       write_log
 #define write_dlog    write_log
+extern bool is_interactive_console(void);
+extern void deactivate_console(void);
+extern void set_console_input_mode(int);
 #define write_log_err write_log
 #define console_out   write_log
 #define console_out_f

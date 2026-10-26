@@ -156,6 +156,9 @@ int saveimageoriginalpath = 0;
 int key_swap_hack = 0;
 
 int pissoff_value = 15000 * CYCLE_UNIT;
+int pissoff_nojit_value = 160 * CYCLE_UNIT;
+/* libretro yields at frame boundaries and renders synchronously. */
+int multithread_enabled = 0;
 
 uae_u8 *save_log (int bootlog, int *len)
 {
@@ -1682,7 +1685,7 @@ void clipboard_unsafeperiod (void) {}
 int amiga_clipboard_want_data(TrapContext *ctx) { return 0; }
 
 void statusline_updated(int monid) {}
-void statusline_render(int monid, uae_u8 *buf, int bpp, int pitch, int width, int height, uae_u32 *rc, uae_u32 *gc, uae_u32 *bc, uae_u32 *alpha) {}
+void statusline_render(int monid, uae_u8 *buf, int pitch, int width, int height, uae_u32 *rc, uae_u32 *gc, uae_u32 *bc, uae_u32 *alpha) {}
 
 bool softstatusline(void)
 {
@@ -1706,6 +1709,7 @@ void uaeexe_install (void) {}
 void uaenative_install (void) {}
 
 int consolehook_activate (void) { return 0; }
+void consolehook_shutdown(void) {}
 void consolehook_ret(TrapContext *ctx, uaecptr condev, uaecptr oldbeginio) {}
 uaecptr consolehook_beginio(TrapContext *ctx, uaecptr request) {}
 
@@ -1735,6 +1739,10 @@ void update_memdump(uae_u32 addr) {}
 int console_get(TCHAR *out, int maxlen) { return 0; }
 void console_flush(void) {}
 void open_console(void) {}
+/* RetroArch owns input and logging; there is no native interactive console. */
+bool is_interactive_console(void) { return false; }
+void deactivate_console(void) {}
+void set_console_input_mode(int mode) {}
 
 void setchflagsvideograb(int chflags, bool mute)
 {

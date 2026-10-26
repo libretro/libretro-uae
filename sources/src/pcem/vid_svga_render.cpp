@@ -1,9 +1,27 @@
+
+#include <stdlib.h>
 #include "ibm.h"
 #include "mem.h"
+#include "device.h"
 #include "video.h"
 #include "vid_svga.h"
 #include "vid_svga_render.h"
 #include "vid_svga_render_remap.h"
+
+
+uint32_t
+svga_lookup_lut_ram(svga_t *svga, uint32_t val)
+{
+    if (!svga->lut_map)
+        return val;
+
+    uint8_t r = getcolr(svga->pallook[getcolr(val)]);
+    uint8_t g = getcolg(svga->pallook[getcolg(val)]);
+    uint8_t b = getcolb(svga->pallook[getcolb(val)]);
+    return makecol32(r, g, b) | (val & 0xFF000000);
+}
+
+#define lookup_lut(val) svga_lookup_lut_ram(svga, val)
 
 void svga_render_null(svga_t *svga)
 {

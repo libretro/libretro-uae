@@ -334,6 +334,11 @@ CXXFLAGS += -DUAE -MMD
 
 include Makefile.common
 
+CXXFLAGS += $(filter-out -std=gnu99,$(CFLAGS)) -std=gnu++17
+ifeq ($(platform), win)
+   SHARED += -static-libstdc++ -static
+endif
+
 OBJECTS     += $(SOURCES_C:.c=.o) $(SOURCES_CXX:.cpp=.o) $(SOURCES_ASM:.S=.o)
 
 OBJDIR      := build
@@ -349,13 +354,13 @@ info:
 
 all: $(TARGET)
 
--include $(OBJECTS:.o=.d))
+-include $(OBJECTS:.o=.d)
 
 $(TARGET): $(OBJECTS)
 ifeq ($(STATIC_LINKING_LINK),1)
 	$(AR) rcs $@ $(OBJECTS)
 else
-	$(CC) $(fpic) $(SHARED) $(INCDIRS) -o $@ $(OBJECTS) $(LDFLAGS)
+	$(if $(SOURCES_CXX),$(CXX),$(CC)) $(fpic) $(SHARED) $(INCDIRS) -o $@ $(OBJECTS) $(LDFLAGS)
 endif
 
 $(OBJDIR)/%.o: %.c
@@ -415,14 +420,16 @@ gen/cpudefs.c: sources/gen/build68k$(EXEEXT) sources/src/table68k
 	sources/gen/build68k$(EXEEXT) < sources/src/table68k > sources/src/cpudefs.c
 
 ### genlinetoscr ###
-gen/genlinetoscr:
+gen/genlinetoscr: sources/gen/genlinetoscr$(EXEEXT)
+
+sources/gen/genlinetoscr$(EXEEXT): sources/src/genlinetoscr.c
 	$(info Building genlinetoscr)
+	mkdir -p sources/gen
 	$(CC) $(INCDIRS) sources/src/genlinetoscr.c -o sources/gen/genlinetoscr$(EXEEXT)
 
 gen/linetoscr.c: sources/gen/genlinetoscr$(EXEEXT)
 	$(info Generating linetoscr)
-	sources/gen/genlinetoscr$(EXEEXT) > sources/src/linetoscr.c
-	sources/gen/genlinetoscr$(EXEEXT) -b > sources/src/linetoscr-be.c
+	cd sources/src && ../gen/genlinetoscr$(EXEEXT)
 
 ### genblitter ###
 gen/genblitter:
@@ -476,3 +483,4 @@ gen/compemu.c: sources/gen/gencomp$(EXEEXT)
 
 
 .PHONY: all clean objectclean targetclean gen
+

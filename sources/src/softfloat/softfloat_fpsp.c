@@ -688,8 +688,6 @@ floatx80 floatx80_etox(floatx80 a, float_status *status)
 	
 	SET_PREC;
 	
-	adjflag = 0;
-	
 	if (aExp >= 0x3FBE) { // |X| >= 2^(-65)
 		compact = floatx80_make_compact(aExp, aSig);
 		
@@ -698,7 +696,7 @@ floatx80 floatx80_etox(floatx80 a, float_status *status)
 			fp1 = a;
 			fp0 = floatx80_mul(fp0, float32_to_floatx80(0x42B8AA3B, status), status); // 64/log2 * X
 			adjflag = 0;
-			n = floatx80_to_int32(fp0, status); // int(64/log2*X)
+			n = floatx80_to_int32(fp0, status); // (int)(64/log2*X)
 			fp0 = int32_to_floatx80(n);
 			
 			j = n & 0x3F; // J = N mod 64
@@ -764,7 +762,7 @@ floatx80 floatx80_etox(floatx80 a, float_status *status)
 				fp1 = a;
 				fp0 = floatx80_mul(fp0, float32_to_floatx80(0x42B8AA3B, status), status); // 64/log2 * X
 				adjflag = 1;
-				n = floatx80_to_int32(fp0, status); // int(64/log2*X)
+				n = floatx80_to_int32(fp0, status); // (int)(64/log2*X)
 				fp0 = int32_to_floatx80(n);
 				
 				j = n & 0x3F; // J = N mod 64
@@ -830,7 +828,7 @@ floatx80 floatx80_etoxm1(floatx80 a, float_status *status)
 			fp0 = a;
 			fp1 = a;
 			fp0 = floatx80_mul(fp0, float32_to_floatx80(0x42B8AA3B, status), status); // 64/log2 * X
-			n = floatx80_to_int32(fp0, status); // int(64/log2*X)
+			n = floatx80_to_int32(fp0, status); // (int)(64/log2*X)
 			fp0 = int32_to_floatx80(n);
 			
 			j = n & 0x3F; // J = N mod 64
@@ -1257,8 +1255,6 @@ floatx80 floatx80_lognp1(floatx80 a, float_status *status)
 	}
 	
 	SET_PREC;
-	
-	compact = floatx80_make_compact(aExp, aSig);
 	
 	fp0 = a; // Z
 	fp1 = a;

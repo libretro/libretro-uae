@@ -10,7 +10,6 @@
 #endif
 #include "threaddep/thread.h"
 #include "options.h"
-#include "traps.h"
 #include "sana2.h"
 #include "uae/slirp.h"
 #include "gui.h"
@@ -81,6 +80,7 @@ void ethernet_trigger (struct netdriverdata *ndd, void *vsd)
 	gui_flicker_led(LED_NET, 0, gui_data.net | 2);
 	switch (ndd->type)
 	{
+#ifdef WITH_SLIRP
 		case UAENET_SLIRP:
 		case UAENET_SLIRP_INBOUND:
 		{
@@ -100,6 +100,7 @@ void ethernet_trigger (struct netdriverdata *ndd, void *vsd)
 			}
 		}
 		return;
+#endif
 #ifdef WITH_UAENET_PCAP
 		case UAENET_PCAP:
 		uaenet_trigger (vsd);
@@ -112,6 +113,7 @@ int ethernet_open (struct netdriverdata *ndd, void *vsd, void *user, ethernet_go
 {
 	switch (ndd->type)
 	{
+#ifdef WITH_SLIRP
 		case UAENET_SLIRP:
 		case UAENET_SLIRP_INBOUND:
 		{
@@ -159,6 +161,7 @@ int ethernet_open (struct netdriverdata *ndd, void *vsd, void *user, ethernet_go
 			uae_slirp_start ();
 		}
 		return 1;
+#endif
 #ifdef WITH_UAENET_PCAP
 		case UAENET_PCAP:
 		if (uaenet_open (vsd, ndd, user, gotfunc, getfunc, promiscuous, mac)) {
@@ -177,6 +180,7 @@ void ethernet_close (struct netdriverdata *ndd, void *vsd)
 		return;
 	switch (ndd->type)
 	{
+#ifdef WITH_SLIRP
 		case UAENET_SLIRP:
 		case UAENET_SLIRP_INBOUND:
 		if (slirp_data) {
@@ -187,6 +191,7 @@ void ethernet_close (struct netdriverdata *ndd, void *vsd)
 			uae_sem_destroy (&slirp_sem2);
 		}
 		return;
+#endif
 #ifdef WITH_UAENET_PCAP
 		case UAENET_PCAP:
 		return uaenet_close (vsd);

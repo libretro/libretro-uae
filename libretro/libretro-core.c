@@ -7615,7 +7615,7 @@ static void update_video_center_horizontal(void)
 
 static bool update_vresolution(bool update)
 {
-   int tmp_interlace_seen = retro_av_info_is_lace || retro_doublescan || gfxvidinfo->drawbuffer.tempbufferinuse;
+   int tmp_interlace_seen = retro_av_info_is_lace || retro_doublescan || (gfxvidinfo->inbuffer == &gfxvidinfo->tempbuffer);
 
    /* Lores force to single line */
    if (!(video_config & PUAE_VIDEO_HIRES) && !(video_config & PUAE_VIDEO_SUPERHIRES))

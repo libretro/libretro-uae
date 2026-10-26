@@ -14,22 +14,17 @@
 #define NCR_DEBUG 0
 
 #include "options.h"
-#include "uae.h"
 #include "memory.h"
 #include "rommgr.h"
-#include "custom.h"
 #include "newcpu.h"
 #include "ncr_scsi.h"
 #include "scsi.h"
 #include "filesys.h"
 #include "zfile.h"
-#include "blkdev.h"
 #include "cpuboard.h"
 #include "qemuvga/qemuuaeglue.h"
 #include "qemuvga/queue.h"
 #include "qemuvga/scsi/scsi.h"
-#include "autoconf.h"
-#include "gui.h"
 #include "devices.h"
 
 #define BOARD_SIZE 16777216
@@ -1094,6 +1089,7 @@ bool ncr710_magnum40_autoconfig_init(struct autoconfig_info *aci)
 
 bool ncr710_draco_init(struct autoconfig_info *aci)
 {
+#ifdef WITH_DRACO
 	device_add_reset(ncr_reset);
 	if (!aci->doinit) {
 		return true;
@@ -1112,6 +1108,9 @@ bool ncr710_draco_init(struct autoconfig_info *aci)
 
 	aci->addrbank = &ncr_bank_generic;
 	return true;
+#else
+	return false;
+#endif
 }
 
 
@@ -1268,10 +1267,12 @@ extern void draco_set_scsi_irq(int, int);
 
 void draco_add_scsi_unit(int ch, struct uaedev_config_info *ci, struct romconfig *rc)
 {
+#ifdef WITH_DRACO
 	ncr_add_scsi_unit(&ncr_cpuboard, ch, ci, rc, false);
 	ncr_cpuboard->irq_func = draco_set_scsi_irq;
 	ncr_cpuboard->irqlevel = true;
 	ncr_cpuboard->bank = &ncr_bank_generic;
+#endif
 }
 
 #endif

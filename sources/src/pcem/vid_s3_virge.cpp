@@ -328,15 +328,15 @@ static int virge_vga_vsync_enabled(virge_t *virge)
 static void s3_virge_update_irqs(virge_t *virge)
 {
         if (((virge->subsys_stat & virge->subsys_cntl & INT_MASK) && virge->svga.crtc[0x32] & 0x10) || virge_vga_vsync_enabled(virge))
-                pci_set_irq(virge->card, PCI_INTA);
+                pci_set_irq(virge->card, PCI_INTA, NULL);
         else
-                pci_clear_irq(virge->card, PCI_INTA);
+                pci_clear_irq(virge->card, PCI_INTA, NULL);
 }
 
 static void s3_virge_update_irqs_thread(virge_t* virge, int mask)
 {
     if ((virge->subsys_stat & virge->subsys_cntl & INT_MASK & mask) && virge->svga.crtc[0x32] & 0x10)
-        pci_set_irq(virge->card, PCI_INTA);
+        pci_set_irq(virge->card, PCI_INTA, NULL);
 }
 
 
@@ -354,17 +354,27 @@ static void s3_virge_out(uint16_t addr, uint8_t val, void *p)
         switch (addr)
         {
                 case 0x3c5:
-                if (svga->seqaddr >= 0x10)
-                {
-                        svga->seqregs[svga->seqaddr & 0x1f]=val;
+                    if (svga->seqaddr >= 0x10) {
+                        svga->seqregs[svga->seqaddr] = val;
                         svga_recalctimings(svga);
                         return;
-                }
-                if (svga->seqaddr == 4) /*Chain-4 - update banking*/
-                {
-                        if (val & 8) svga->write_bank = svga->read_bank = virge->bank << 16;
-                        else         svga->write_bank = svga->read_bank = virge->bank << 14;
-                }
+                    }
+                    if (svga->seqaddr == 4) { /*Chain-4 - update banking*/
+                        if (val & 8)
+                            svga->write_bank = svga->read_bank = virge->bank << 16;
+                        else
+                            svga->write_bank = svga->read_bank = virge->bank << 14;
+                    }
+                    else if (svga->seqaddr == 0x08) {
+                        svga->seqregs[svga->seqaddr] = val & 0x0f;
+                        return;
+                    }
+                    else if ((svga->seqaddr == 0x0d) && (svga->seqregs[0x08] == 0x06)) {
+                        svga->seqregs[svga->seqaddr] = val;
+                        svga->dpms = (svga->seqregs[0x0d] & 0x50) || (svga->crtc[0x56] & 0x06);
+                        svga_recalctimings(svga);
+                        return;
+                    }
                 break;
                 
                 //case 0x3C6: case 0x3C7: case 0x3C8: case 0x3C9:
@@ -498,6 +508,11 @@ static void s3_virge_out(uint16_t addr, uint8_t val, void *p)
                         s3_virge_updatemapping(virge);
                         break;
                         
+                        case 0x56:
+                            svga->dpms = (svga->seqregs[0x0d] & 0x50) || (svga->crtc[0x56] & 0x06);
+                            old = ~val; /* force recalc */
+                        break;
+
                         case 0x67:
                         switch (val >> 4)
                         {
@@ -593,7 +608,7 @@ static uint8_t s3_virge_in(uint16_t addr, void *p)
 
 static void s3_virge_recalctimings(svga_t *svga)
 {
-        virge_t *virge = (virge_t *)svga->p;
+        virge_t *virge = (virge_t *)svga->priv;
 
         svga->hdisp = svga->crtc[1];
         svga->hdisp++;
@@ -682,7 +697,7 @@ static void s3_virge_recalctimings(svga_t *svga)
                 
                 svga->overlay.x = virge->streams.sec_x - virge->streams.pri_x;
                 svga->overlay.y = virge->streams.sec_y - virge->streams.pri_y;
-                svga->overlay.ysize = virge->streams.sec_h;
+                svga->overlay.cur_ysize = virge->streams.sec_h;
 
                 if (virge->streams.buffer_ctrl & 2)
                         svga->overlay.addr = virge->streams.sec_fb1;
@@ -822,7 +837,7 @@ static void s3_virge_updatemapping(virge_t *virge)
 
 static void s3_virge_vblank_start(svga_t *svga)
 {
-        virge_t *virge = (virge_t *)svga->p;
+        virge_t *virge = (virge_t *)svga->priv;
 
         if (virge->vblank_irq >= 0) {
             virge->vblank_irq = 1;
@@ -1052,7 +1067,6 @@ static void fifo_thread(void *param)
 {
         virge_t *virge = (virge_t *)param;
         
-        virge->fifo_thread_state = 1;
         while (virge->fifo_thread_state > 0)
         {
                 thread_set_event(virge->fifo_not_full_event);
@@ -3457,7 +3471,6 @@ static void render_thread(void *param)
 {
         virge_t *virge = (virge_t *)param;
         
-        virge->render_thread_state = 1;
         while (virge->render_thread_state > 0)
         {
                 thread_wait_event(virge->wake_render_thread, -1);
@@ -3496,7 +3509,7 @@ static void queue_triangle(virge_t *virge)
 
 static void s3_virge_hwcursor_draw(svga_t *svga, int displine)
 {
-        virge_t *virge = (virge_t *)svga->p;
+        virge_t *virge = (virge_t *)svga->priv;
         int x;
         uint16_t dat[2];
         int xx;
@@ -3801,7 +3814,7 @@ static void s3_virge_hwcursor_draw(svga_t *svga, int displine)
 
 static void s3_virge_overlay_draw(svga_t *svga, int displine)
 {
-        virge_t *virge = (virge_t *)svga->p;
+        virge_t *virge = (virge_t *)svga->priv;
         int offset = (virge->streams.sec_x - virge->streams.pri_x) + 1;
         int h_acc = virge->streams.dda_horiz_accumulator;
         int r[8], g[8], b[8];
@@ -3946,7 +3959,7 @@ static void s3_virge_pci_write(int func, int addr, uint8_t val, void *p)
         }
 }
 
-static void *s3_virge_init()
+static void *s3_virge_init(const device_t *info)
 {
         virge_t *virge = (virge_t*)malloc(sizeof(virge_t));
         memset(virge, 0, sizeof(virge_t));
@@ -3955,7 +3968,7 @@ static void *s3_virge_init()
         virge->dithering_enabled = device_get_config_int("dithering");
         virge->memory_size = device_get_config_int("memory");
         
-        svga_init(&virge->svga, virge, virge->memory_size << 20,
+        svga_init(NULL, &virge->svga, virge, virge->memory_size << 20,
                    s3_virge_recalctimings,
                    s3_virge_in, s3_virge_out,
                    s3_virge_hwcursor_draw,
@@ -4032,10 +4045,12 @@ static void *s3_virge_init()
         virge->wake_render_thread = thread_create_event();
         virge->wake_main_thread = thread_create_event();
         virge->not_full_event = thread_create_event();
+        virge->render_thread_state = 1;
         virge->render_thread = thread_create(render_thread, virge);
 
         virge->wake_fifo_thread = thread_create_event();
         virge->fifo_not_full_event = thread_create_event();
+        virge->fifo_thread_state = 1;
         virge->fifo_thread = thread_create(fifo_thread, virge);
  
         //ddc_init();
@@ -4054,7 +4069,7 @@ static void *s3_virge_375_init()
         virge->dithering_enabled = device_get_config_int("dithering");
         virge->memory_size = device_get_config_int("memory");
 
-        svga_init(&virge->svga, virge, virge->memory_size << 20,
+        svga_init(NULL, &virge->svga, virge, virge->memory_size << 20,
                    s3_virge_recalctimings,
                    s3_virge_in, s3_virge_out,
                    s3_virge_hwcursor_draw,
@@ -4133,10 +4148,12 @@ static void *s3_virge_375_init()
         virge->wake_render_thread = thread_create_event();
         virge->wake_main_thread = thread_create_event();
         virge->not_full_event = thread_create_event();
+        virge->render_thread_state = 1;
         virge->render_thread = thread_create(render_thread, virge);
 
         virge->wake_fifo_thread = thread_create_event();
         virge->fifo_not_full_event = thread_create_event();
+        virge->fifo_thread_state = 1;
         virge->fifo_thread = thread_create(fifo_thread, virge);
 
         //ddc_init();
@@ -4274,14 +4291,14 @@ static device_config_t s3_virge_config[] =
 
 device_t s3_virge_device =
 {
-        "Diamond Stealth 3D 2000 (S3 ViRGE)",
-        0,
+        "Diamond Stealth 3D 2000 (S3 ViRGE)", NULL,
+        0, 0,
         s3_virge_init,
         s3_virge_close,
+        NULL,
         s3_virge_available,
         s3_virge_speed_changed,
         s3_virge_force_redraw,
-        s3_virge_add_status_info,
 #ifndef UAE
         s3_virge_config
 #endif
@@ -4291,7 +4308,7 @@ device_t s3_virge_device =
 device_t s3_virge_375_device =
 {
         "S3 ViRGE/DX",
-        0,
+        0, 0,
         s3_virge_375_init,
         s3_virge_close,
         s3_virge_375_available,

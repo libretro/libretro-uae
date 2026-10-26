@@ -24,15 +24,9 @@
 
 #include "options.h"
 #include "memory.h"
-#include "uae/attributes.h"
-#include "uae/vm.h"
-#include "custom.h"
-#include "events.h"
 #include "newcpu.h"
 #include "fpp.h"
 #include "savestate.h"
-#include "cpu_prefetch.h"
-#include "cpummu.h"
 #include "cpummu030.h"
 #include "debug.h"
 #include "uae.h"
@@ -3707,7 +3701,9 @@ void fpu_reset (void)
 	}
 
 #if defined(CPU_i386) || defined(CPU_x86_64)
+#ifndef __MACH__
 	init_fpucw_x87();
+#endif
 #ifdef MSVC_LONG_DOUBLE
 	init_fpucw_x87_80();
 #endif

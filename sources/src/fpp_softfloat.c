@@ -24,8 +24,8 @@
 #include "memory.h"
 #include "newcpu.h"
 #include "fpp.h"
-#include "newcpu.h"
 
+#ifdef WITH_SOFTFLOAT
 #include "softfloat/softfloat-macros.h"
 #include "softfloat/softfloat-specialize.h"
 
@@ -837,3 +837,5 @@ void fp_init_softfloat(int fpu_model)
 	fpp_move = fp_move;
 }
 
+
+#endif /* WITH_SOFTFLOAT */

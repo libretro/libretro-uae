@@ -251,7 +251,11 @@ void blkdev_fix_prefs (struct uae_prefs *p)
 #endif
 		if (p->cdslots[i].inuse || p->cdslots[i].name[0]) {
 			TCHAR *name = p->cdslots[i].name;
+#ifdef _WIN32
 			if (_tcslen (name) == 3 && name[1] == ':' && name[2] == '\\') {
+#else
+			if (name[0] == '/' && name[1] == 'd' && name[2] == 'e' && name[3] == 'v' && name[4] == '/') {
+#endif
 				if (currprefs.scsi && (currprefs.win32_uaescsimode == UAESCSI_SPTI || currprefs.win32_uaescsimode == UAESCSI_SPTISCAN))
 					cdscsidevicetype[i] = SCSI_UNIT_SPTI;
 				else
@@ -423,6 +427,7 @@ static int get_standard_cd_unit2 (struct uae_prefs *p, enum cd_standard_unit csu
 		return unitnum;
 	}
 	device_func_init (SCSI_UNIT_IOCTL);
+#ifdef _WIN32
 	for (int drive = 'C'; drive <= 'Z'; ++drive) {
 		TCHAR vol[100];
 		_stprintf (vol, _T("%c:\\"), drive);
@@ -435,6 +440,7 @@ static int get_standard_cd_unit2 (struct uae_prefs *p, enum cd_standard_unit csu
 			}
 		}
 	}
+#endif
 	if (isaudio) {
 		TCHAR vol[100];
 		_stprintf (vol, _T("%c:\\"), isaudio);
@@ -1089,17 +1095,23 @@ int sys_command_ismedia (int unitnum, int quick)
 struct device_info *sys_command_info_session (int unitnum, struct device_info *di, int quick, int session)
 {
 	struct blkdevstate *st = &state[unitnum];
-	if (failunit (unitnum))
+	if (failunit (unitnum)) {
 		return NULL;
-	if (!getsem (unitnum))
+	}
+	if (!getsem (unitnum)) {
 		return 0;
-	if (st->device_func->info == NULL)
+	}
+	if (st->device_func->info == NULL) {
+		freesem(unitnum);
 		return 0;
+	}
 	struct device_info *di2 = st->device_func->info (unitnum, di, quick, -1);
-	if (di2)
+	if (di2) {
 		st->type = di2->type;
-	if (di2 && st->delayed)
+	}
+	if (di2 && st->delayed) {
 		di2->media_inserted = 0;
+	}
 	freesem (unitnum);
 	return di2;
 }

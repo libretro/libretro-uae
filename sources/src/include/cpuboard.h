@@ -35,8 +35,9 @@ uae_u8 *REGPARAM3 cyberstorm_scsi_ram_xlate(uaecptr addr) REGPARAM;
 void cyberstorm_mk3_ppc_irq(int id, int level);
 void blizzardppc_irq(int id, int level);
 void cyberstorm_mk3_ppc_irq_setonly(int id, int level);
-void blizzardppc_irq_setonly(int id, int level);
 void cpuboard_gvpmaprom(int);
+
+bool cpuboard_fc_check(uaecptr addr, uae_u32 *v, int size, bool write);
 
 #define BOARD_MEMORY_Z2 1
 #define BOARD_MEMORY_Z3 2
@@ -74,7 +75,8 @@ void cpuboard_gvpmaprom(int);
 #define BOARD_GVP_SUB_A1230SI 6
 #define BOARD_GVP_SUB_A1230SII 7
 #define BOARD_GVP_SUB_QUIKPAK 8
-#define BOARD_GVP_SUB_TREXII 9
+#define BOARD_GVP_SUB_QUIKPAKXP 9
+#define BOARD_GVP_SUB_TREXII 10
 
 #define BOARD_KUPKE 6
 

@@ -158,6 +158,15 @@ SOURCES_C += \
 #SOURCES_CXX += \
 #	$(EMU)/jit/compemu_support.cpp
 
+SOURCES_CXX += \
+	$(EMU)/mos6502.cpp \
+	$(EMU)/kbmcu/keyboard_mcu_6500_1.cpp \
+	$(EMU)/kbmcu/keyboard_mcu_6805.cpp \
+	$(EMU)/kbmcu/keyboard_mcu_d8039hlc.cpp \
+	$(EMU)/kbmcu/8048/co8048.cpp \
+	$(EMU)/kbmcu/m6805/m68_ops.cpp \
+	$(EMU)/kbmcu/m6805/m68emu.cpp
+
 SOURCES_C += \
 	$(RETRODEP)/gui.c \
 	$(RETRODEP)/main.c \
