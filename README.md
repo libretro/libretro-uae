@@ -383,6 +383,7 @@ HDF format is not recommended due to potential corruption especially with save s
 
 #### Latest changes
 
+- Updated WHDLoad to 20.1 (2026-10-13).
 - Legacy HDF mode removed.
 - Updated WHDLoad to 20.0 (2026-03-27).
 - Updated WHDLoad to 19.2 (2025-10-28).
