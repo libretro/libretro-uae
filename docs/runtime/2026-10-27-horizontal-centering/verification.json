@@ -1,0 +1,68 @@
+{
+  "baseline_revision": "a9fe5714",
+  "baseline_core_sha256": "3e1e21e213e7e1bb9ab9dff2901d6a91bb50c0cddd390b9b4ec776f14db829a0",
+  "fixed_core_sha256": "6b6c9a961270987d6ed581cb748c16bb1c626137a13de0edc0e51ab769879658",
+  "platform": "macOS arm64",
+  "optimization": "-O3",
+  "source_sha256": {
+    "sources/src/drawing.c": "dbcce9b2b5c858ec7c37a993904064f37ce18b00089b303a115aafcc36a59861",
+    "sources/src/include/drawing.h": "ab3bfaa131796515731231cb341a43c79f68e105009f800e76b297b7f58263ac",
+    "libretro/libretro-glue.c": "fc220adccafddff400a54802a2ef5dc354da3767b5e6efccb9b8caf1b3df72fe"
+  },
+  "automatic_release_cases": 48,
+  "automatic_release_passed": 48,
+  "dynamic_resolution_release_cases": 16,
+  "dynamic_resolution_release_passed": 16,
+  "manual_offset_diagnostic_cases": 18,
+  "manual_offset_diagnostic_passed": 18,
+  "baseline_phase": {
+    "name": "initial",
+    "width": 720,
+    "height": 287,
+    "left": 76,
+    "right": 715,
+    "rows": 256,
+    "diw_start": 186,
+    "border": 220,
+    "crop_x": 0
+  },
+  "fixed_phases": [
+    {
+      "name": "initial",
+      "width": 720,
+      "height": 287,
+      "left": 40,
+      "right": 679,
+      "rows": 256,
+      "diw_start": 258,
+      "border": 218,
+      "crop_x": 0
+    },
+    {
+      "name": "shifted",
+      "width": 720,
+      "height": 287,
+      "left": 37,
+      "right": 676,
+      "rows": 256,
+      "diw_start": 290,
+      "border": 218,
+      "crop_x": 35
+    },
+    {
+      "name": "returned",
+      "width": 720,
+      "height": 287,
+      "left": 40,
+      "right": 679,
+      "rows": 256,
+      "diw_start": 258,
+      "border": 218,
+      "crop_x": 0
+    }
+  ],
+  "limits": [
+    "Synthetic raster and mode changes only; no Lotus 2 gameplay or iOS deployment.",
+    "Interlace and productivity modes not exercised."
+  ]
+}

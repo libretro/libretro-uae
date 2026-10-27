@@ -23,3 +23,8 @@ __pycache__/
 *.state
 *.state[0-9]*
 *.uss
+
+# Local deployment packages, signing material, and compiled Apple cores.
+artifacts/
+*.dylib
+*.ipa

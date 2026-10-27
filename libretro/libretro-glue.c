@@ -871,11 +871,13 @@ void unlockscr(struct vidbuffer *vb, int y_start, int y_end)
    /* These values must be cached here, since the
     * source variables will be reset before the frame
     * ends and control is returned to the frontend */
-   /* WinUAE 6 tracks display bounds in Agnus lines and superhires pixels. */
+   /* WinUAE 6 tracks display bounds in Agnus lines and superhires pixels
+    * relative to the Denise line buffer, rather than the hardware DIW origin. */
+   int diw_offset = libretro_diw_hcounter_offset() * (1 << currprefs.gfx_resolution);
    retro_thisframe_first_drawn_line = plffirstline_total < 30000 ? plffirstline_total : -1;
    retro_thisframe_last_drawn_line  = plflastline_total > 0 ? plflastline_total : -1;
-   retro_min_diwstart               = diwfirstword_total < 30000 ? diwfirstword_total >> (RES_MAX - currprefs.gfx_resolution) : 30000;
-   retro_max_diwstop                = diwlastword_total >> (RES_MAX - currprefs.gfx_resolution);
+   retro_min_diwstart               = diwfirstword_total < 30000 ? (diwfirstword_total >> (RES_MAX - currprefs.gfx_resolution)) + diw_offset : 30000;
+   retro_max_diwstop                = diwlastword_total > 0 ? (diwlastword_total >> (RES_MAX - currprefs.gfx_resolution)) + diw_offset : 0;
    retro_doublescan                 = doublescan > 0;
 
    /* Align the resulting Automatic Crop screen height to even number */

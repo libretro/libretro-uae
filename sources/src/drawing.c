@@ -515,6 +515,15 @@ static int denise_y_start, denise_y_end;
 
 static int denise_pixtotal, denise_pixtotalv, denise_linecnt, denise_startpos, denise_cck, denise_endcycle;
 static int denise_pixtotalskip, denise_pixtotalskip2, denise_hdelay;
+
+#ifdef __LIBRETRO__
+/* Denise's line buffer starts after the hardware horizontal counter origin.
+ * Libretro's DIW detection and centering use hardware pixel coordinates. */
+int libretro_diw_hcounter_offset(void)
+{
+	return (hdisplay_left_border - denise_pixtotalskip) * 2;
+}
+#endif
 static int denise_pixtotal_max;
 static uae_u32 *buf1, *buf2, *buf_d;
 static uae_u8 *gbuf;
@@ -1361,6 +1370,7 @@ static void center_image(void)
 	int maxdiw = denisehtotal >> hresolution_inv;
 	int xoffset = 0;
 
+#ifndef __LIBRETRO__
 	if (currprefs.gfx_overscanmode <= OVERSCANMODE_OVERSCAN && diwlastword_total > 0 && diwlastword_total > diwfirstword_total && cancenter()) {
 
 		visible_left_border = maxdiw - w;
@@ -1407,6 +1417,7 @@ static void center_image(void)
 			visible_left_border = vidinfo->inbuffer->inxoffset << currprefs.gfx_resolution;
 		}
 	}
+#endif
 
 	if (visible_left_border > maxdiw - 32) {
 		visible_left_border = maxdiw - 32;
@@ -1414,6 +1425,7 @@ static void center_image(void)
 	if (visible_left_border < 0) {
 		visible_left_border = 0;
 	}
+#ifndef __LIBRETRO__
 	if (currprefs.gfx_overscanmode <= OVERSCANMODE_OVERSCAN) {
 		if (ecs_denise) {
 			visible_left_border += 1 << currprefs.gfx_resolution;
@@ -1427,6 +1439,7 @@ static void center_image(void)
 			visible_left_border += 4 << currprefs.gfx_resolution;
 		}
 	}
+#endif
 	visible_left_border &= ~((1 << currprefs.gfx_resolution) - 1);
 
 	//write_log (_T("%d %d %d %d\n"), max_diwlastword, vidinfo->inbuffer->width, currprefs.gfx_resolution, visible_left_border);
@@ -5680,6 +5693,14 @@ static void get_line(int monid, int gfx_ypos, enum nln_how how, int lol_shift_pr
 	}
 	
 	denise_pixtotal *= 2;
+
+#ifdef __LIBRETRO__
+	/* Libretro owns the horizontal origin, including delayed DIW changes.
+	 * Convert its hardware origin to Denise's lores pixel counter. The first
+	 * output pixel follows the counter comparison by one lores pixel. */
+	denise_pixtotal = libretro_diw_hcounter_offset()
+		- (visible_left_border >> currprefs.gfx_resolution) - 1;
+#endif
 
 	if (buf1) {
 		int maxw = (uae_u32*)xlinebuffer_end - buf1;
