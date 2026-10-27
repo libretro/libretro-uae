@@ -24,6 +24,8 @@
 #include "memory.h"
 #include "sounddep/sound.h"
 
+#include "libretro-whdload.h"
+
 #ifndef MAX_STOP
 #define MAX_STOP 30000
 #endif
@@ -6822,6 +6824,8 @@ static bool retro_create_config(void)
                   /* Attach directory */
                   if (path_is_directory(whdload_path) && path_is_directory(whdload_c_path))
                   {
+                     whdload_refresh_files(whdload_path);
+
 #ifdef WIN32
                      tmp_str = string_replace_substring(whdload_path, strlen(whdload_path), "\\", strlen("\\"), "\\\\", strlen("\\\\"));
 #else

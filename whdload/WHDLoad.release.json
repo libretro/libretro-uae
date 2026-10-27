@@ -1,0 +1,34 @@
+{
+  "version": "20.1",
+  "build": 7190,
+  "release_date": "2026-10-13",
+  "source_url": "https://whdload.de/whdload/WHDLoad_usr.lha",
+  "archive_sha256": "725b9255e6f55c57a57b2dd52dec221b223df5560d29153607088ffff6ae1bc1",
+  "assets": {
+    "C/WHDLoad": {
+      "bytes": 162674,
+      "sha256": "e904dbe9494f85475fedf926b53ee8597dcdf581209f00122d7baf7b7df4cd8e",
+      "crc32": "1654051a"
+    },
+    "C/WHDLoad.VFS": {
+      "bytes": 19132,
+      "sha256": "98542ddaa6fc06a8f7900b126e4be6ea3f5c8950b6fb34020064ace57b635062",
+      "crc32": "97ac5706"
+    },
+    "C/WHDLoad.VFS.020": {
+      "bytes": 18936,
+      "sha256": "1a424c03591e32a09b0c7b30598e97b6dc9b1a7132edd9353a9a99f77564b548",
+      "crc32": "24ca983d"
+    },
+    "C/WArc": {
+      "bytes": 19324,
+      "sha256": "368d480d6431ceb03e6d6e558b156bd4792318ed2c6c073d806ccd4c67fcf38f",
+      "crc32": "ad7a3ba6"
+    },
+    "Docs/WHDLoad-Copyright.html": {
+      "bytes": 3286,
+      "sha256": "608b490a7e7c394baf685babd5b38d4eb0dc123dd475ed51ca596cf32a901c1e",
+      "crc32": "9733cf01"
+    }
+  }
+}

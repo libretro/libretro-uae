@@ -335,7 +335,10 @@ Pre-installed WHDLoad LHA archives can be launched directly without any kind of 
 - `WHDLoad.prefs` & `WHDLoad.key` & `rom.key` will be copied from `system` to the helper image.
 - Kickstarts will be copied automatically to the helper image.
 - Saves are redirected to `WHDSaves:`.
-- To update `WHDLoad:` simply delete the directory or the HDF.
+- WHDLoad **20.1** and its archive plugin are bundled in every core build; no separate runtime download is needed.
+- Files mode automatically upgrades recognized older bundled WHDLoad binaries, keeps a `.pre-20.1` backup, and installs missing archive tools. User-supplied binaries, preferences, scripts, keys, Kickstarts, and `WHDSaves:` are preserved.
+- Existing HDF helpers are preserved. To refresh legacy HDF mode, back up custom helper changes and recreate only `WHDLoad.hdf`; keep `WHDSaves.hdf` and your system preferences.
+- See [WHDLoad bundle maintenance and validation](docs/WHDLOAD_UPDATE.md) for release provenance, regeneration, and tests.
 
 - WHDLoad quit key is hardcoded to unused `$2B` = `AK_NUMBERSIGN` = `RETROK_HASH` which does not exist in modern keyboards.
     - Keyboard shortcut: LCtrl + Backslash
@@ -385,6 +388,8 @@ Pre-installed WHDLoad LHA archives can be launched directly without any kind of 
     - `ReadDelay=0` & `WriteDelay=50` (These speed up OS switching on loadings and savings. Saves tend to corrupt HDFs with WriteDelay below 50).
 
 #### Latest changes
+
+- Updated bundled WHDLoad to 20.1 build 7190 (2026-10-13), added generic and optional 68020 archive plugins plus WArc to Files and HDF helpers. Files mode upgrades older bundled binaries without replacing user customizations.
 
 - Updated WHDLoad to 20.0 (2026-03-27).
 - Updated WHDLoad to 19.2 (2025-10-28).
