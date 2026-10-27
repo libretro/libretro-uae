@@ -7369,6 +7369,9 @@ static void retro_reset_hard(void)
    update_variables();
 
    target_cfgfile_load(&currprefs, "", 0, 0);
+   if (inputdevice_finalized)
+      inputdevice_updateconfig(NULL, &currprefs);
+
    uae_reset(1, 0); /* hardreset, keyboardreset */
 }
 
