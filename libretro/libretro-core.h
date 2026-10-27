@@ -262,6 +262,7 @@ struct puae_core_option_info
 #define PUAE_VIDEO_1x1          0x10
 #define PUAE_VIDEO_DOUBLELINE   0x20
 #define PUAE_VIDEO_QUADLINE     0x40
+#define PUAE_VIDEO_NTSCAUTO     0x80
 
 #define PUAE_VIDEO_PAL_LO       PUAE_VIDEO_PAL
 #define PUAE_VIDEO_PAL_HI       PUAE_VIDEO_PAL|PUAE_VIDEO_HIRES

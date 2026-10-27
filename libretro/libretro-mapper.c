@@ -271,6 +271,8 @@ void emu_function(int function)
          else if (video_config_aspect == PUAE_VIDEO_PAL)
             video_config_aspect = PUAE_VIDEO_NTSC;
          else if (video_config_aspect == PUAE_VIDEO_NTSC)
+            video_config_aspect = PUAE_VIDEO_NTSCAUTO;
+         else if (video_config_aspect == PUAE_VIDEO_NTSCAUTO)
             video_config_aspect = PUAE_VIDEO_1x1;
          else if (video_config_aspect == PUAE_VIDEO_1x1)
             video_config_aspect = PUAE_VIDEO_PAL;
@@ -280,7 +282,7 @@ void emu_function(int function)
          /* Statusbar notification */
          statusbar_message_show(5, "%s %s",
                "Pixel Aspect",
-               (video_config_aspect == PUAE_VIDEO_PAL) ? "PAL" : (video_config_aspect == PUAE_VIDEO_NTSC) ? "NTSC" : "1:1");
+               (video_config_aspect == PUAE_VIDEO_PAL) ? "PAL" : (video_config_aspect == PUAE_VIDEO_NTSC) ? "NTSC" : (video_config_aspect == PUAE_VIDEO_NTSCAUTO) ? "NTSC auto" : "1:1");
          break;
       case EMU_CROP:
          if (crop_id == 0 && opt_crop_id == 0)
