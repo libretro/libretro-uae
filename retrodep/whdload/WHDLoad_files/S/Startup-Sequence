@@ -76,6 +76,8 @@ ELSE
             CD "$SLAVEDIR" >NIL:
             IF EXISTS "$SLAVEDIR.slave"
                SETENV SLAVE "$SLAVEDIR.slave"
+            ELSE
+               C:List #?.slav#? QUICK NOHEAD TO ENV:SLAVE
             ENDIF
          ENDIF
       ENDIF

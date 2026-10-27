@@ -6693,7 +6693,7 @@ static bool retro_create_config(void)
                   if ((whdload_prefs_gz_fp = fopen(whdload_prefs_gz_path, "wb")))
                   {
                      /* Write GZ */
-                     fwrite(___whdload_WHDLoad_prefs_gz, ___whdload_WHDLoad_prefs_gz_len, 1, whdload_prefs_gz_fp);
+                     fwrite(whdload_WHDLoad_prefs_gz, whdload_WHDLoad_prefs_gz_len, 1, whdload_prefs_gz_fp);
                      fclose(whdload_prefs_gz_fp);
 
                      /* Extract GZ */
@@ -6804,7 +6804,7 @@ static bool retro_create_config(void)
                   if ((whdload_files_zip_fp = fopen(whdload_files_zip_path, "wb")))
                   {
                      /* Write ZIP */
-                     fwrite(___whdload_WHDLoad_files_zip, ___whdload_WHDLoad_files_zip_len, 1, whdload_files_zip_fp);
+                     fwrite(whdload_WHDLoad_files_zip, whdload_WHDLoad_files_zip_len, 1, whdload_files_zip_fp);
                      fclose(whdload_files_zip_fp);
 
                      /* Extract ZIP */
