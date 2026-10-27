@@ -203,7 +203,7 @@ Compatible CAPSIMG libraries for Windows, macOS and Linux can be found at [http:
 
 Compatible CAPSIMG libraries for Android can be found at [https://github.com/rsn8887/capsimg/releases/latest](https://github.com/rsn8887/capsimg/releases/latest)
 
-Please be aware that there are 32-bits and 64-bits versions of the library. Choose the one corresponding to your RetroArch executable.
+Please be aware that there are 32-bits and 64-bits versions of the library. Choose the one corresponding to the RetroArch executable.
 
 #### Android
 
@@ -326,12 +326,13 @@ Libretro LED interface is presented in the following order:
 ## WHDLoad
 
 Pre-installed WHDLoad LHA archives can be launched directly without any kind of manual preparing and downloading.
+HDF format is not recommended due to potential corruption especially with save states.
 
-- WHDLoad helper files (Directory or HDF) will be generated to `saves`, `WHDLoad.prefs` will be generated to `system`.
+- WHDLoad helper files will be generated to `saves`, `WHDLoad.prefs` will be generated to `system`.
 - `WHDLoad.prefs` & `WHDLoad.key` & `rom.key` will be copied from `system` to the helper image.
 - Kickstarts will be copied automatically to the helper image.
 - Saves are redirected to `WHDSaves:`.
-- To update `WHDLoad:` simply delete the directory or the HDF.
+- To update the WHDLoad helper image to the current core embedded version simply delete the directory.
 
 - WHDLoad quit key is hardcoded to unused `$2B` = `AK_NUMBERSIGN` = `RETROK_HASH` which does not exist in modern keyboards.
     - Keyboard shortcut: LCtrl + Backslash
@@ -353,7 +354,7 @@ Pre-installed WHDLoad LHA archives can be launched directly without any kind of 
 - **(RMB)** Hold right mouse button for WHDLoad Config+Splash
     - Always waits for user input at the splash screen
 
-### New WHDLoad.hdf features for old users
+### New WHDLoad features for old users
 
 #### Major changes
 
@@ -361,16 +362,16 @@ Pre-installed WHDLoad LHA archives can be launched directly without any kind of 
 - Kickstarts will be copied automatically from `system` if they do not exist in the helper image.
 - `WHDLoad.key` will be copied from `system` if it does not exist in the helper image.
 - `WHDLoad.prefs` will be copied from `system` on every run.
-- Supports a file named `custom` in the root of the game.hdf for passing specific WHDLoad parameters when the slave does not support the config screen or when it should be the default, for example `Custom1=1`. It always overrides `WHDLoad.prefs`.
+- Supports a file named `custom` in the root of the game image for passing specific WHDLoad parameters when the slave does not support the config screen or when it should be the default, for example `Custom1=1`. It always overrides `WHDLoad.prefs`.
     - Use `MkCustom` script for simplest `custom` file handling. Launches after quitting WHDLoad.
     - `MkCustom` will create a slave-based `custom_$SLAVE` in `WHDSaves:`. Essential with readonly images.
-- Supports a file named `load` in the root of the game.hdf which overrides the whole launch command, aimed at non-WHDLoad installs.
-- If `.slave` is not in the root of the HDF, it will also be searched under the first found directory.
-- Saves will be redirected to `WHDSaves.hdf` when using legacy HDF mode.
+- Supports a file named `load` in the root of the game image which overrides startup-sequence, aimed at non-WHDLoad installs.
+- If `.slave` is not in the root of the game image, it will also be searched under the first found directory.
+- ~~Saves will be redirected to `WHDSaves.hdf` when using legacy HDF mode.~~
 
 #### Minor changes
 
-- Both HDF-files (`WHDLoad.hdf` & `WHDSaves.hdf`) can be located in either RA `system` or `saves`.
+- ~~Both HDF-files (`WHDLoad.hdf` & `WHDSaves.hdf`) can be located in either RA `system` or `saves`.~~
 - "WHDLoad Support" core option does not need to be disabled when launching a non-WHDLoad HDF which has `S/Startup-Sequence`.
 - `NTSC` parameter can be used with WHDLoad.
 - Included `ClickNot` for suppressing drive clicking when drive sound emulation is enabled.
@@ -382,6 +383,7 @@ Pre-installed WHDLoad LHA archives can be launched directly without any kind of 
 
 #### Latest changes
 
+- Legacy HDF mode removed.
 - Updated WHDLoad to 20.0 (2026-03-27).
 - Updated WHDLoad to 19.2 (2025-10-28).
 - Included `SetPatch` for better compatibility.
@@ -434,7 +436,7 @@ The final generated configuration output is available in debug level log.
 
 ***Note that the use of configuration files is no longer encouraged or necessary. The core has been modified to always use the core options as a base, so that all custom configurations will be appended to the created configuration, effectively overriding the core options. The problem with this is that changing any core option while the core is running will reset all duplicate configurations. Therefore only add configurations which will require a restart or do not exist in the core options, if you must use a custom uae. If there is an option missing that is a must have, please make an issue about it.***
 
-Example 1: You want to mount four non-RDB HDF files. You have one bootable 1000 MB file called `System.hdf` created with `surfaces=1`, and three non-bootable 2000 MB files called `WHDGamesA.hdf`, `WHDGamesB.hdf`, `WHDGamesC.hdf` created with `surfaces=2`. Your HDF files are located in the folder with absolute path `/emuroms/amiga/hdf/`. For that scenario, you should create a `.uae` text file with the following content:
+Example 1: You want to mount four non-RDB HDF files. You have one bootable 1000 MB file called `System.hdf` created with `surfaces=1`, and three non-bootable 2000 MB files called `WHDGamesA.hdf`, `WHDGamesB.hdf`, `WHDGamesC.hdf` created with `surfaces=2`. The HDF files are located in the folder with absolute path `/emuroms/amiga/hdf/`. For that scenario, you should create a `.uae` text file with the following content:
 
 ```
 hardfile=read-write,32,1,2,512,/emuroms/amiga/hdf/System.hdf
