@@ -1,0 +1,29 @@
+{
+  "model": "A500",
+  "core_sha256": "38578cee10c58bfcb1dabdde4df8a76263c0efcb4e8cc466d0a704be438b61d2",
+  "rom": "kick34005.A500",
+  "rom_sha256": "ee05862d8102a08436ac4056da7d549db31625c7d47b24dfb7b3c9a5c113ca53",
+  "executable_sha256": "81c11b6f24932bf7918f05eee8928035bff3887335fd2a081507c75e9d94d06a",
+  "profile": "C:\\Projects\\puae-runtime\\profiles\\06-retroarch-A500",
+  "commands_port": 55406,
+  "checks": {},
+  "arguments": [
+    "C:\\Projects\\puae-runtime\\RetroArch-Win64\\retroarch.exe",
+    "--verbose",
+    "--config",
+    "C:\\Projects\\puae-runtime\\profiles\\06-retroarch-A500\\retroarch.cfg",
+    "-L",
+    "C:\\Projects\\puae\\puae603_libretro.dll",
+    "--log-file=C:\\Projects\\puae\\docs\\runtime\\2026-10-27-guest-roundtrip\\06-retroarch-A500\\retroarch.log",
+    "--max-frames=5000",
+    "C:\\Projects\\puae-runtime\\profiles\\06-retroarch-A500\\content\\guest_input_probe.adf"
+  ],
+  "pid": 14952,
+  "error": "[WinError 10054] An existing connection was forcibly closed by the remote host",
+  "forced_cleanup": true,
+  "exit_code": 1,
+  "elapsed_seconds": 3.076,
+  "all_checks_pass": false,
+  "core_sha256_after": "38578cee10c58bfcb1dabdde4df8a76263c0efcb4e8cc466d0a704be438b61d2",
+  "fixture_sha256_after": "082b3571a9e52cb9af26ac5b7944276a851e0ba2034527b738ebf4cc6a802512"
+}

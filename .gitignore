@@ -17,3 +17,9 @@ sources/gen/
 [Kk][Ii][Cc][Kk][0-9]*.[Cc][Dd][Tt][Vv]
 [Kk][Ii][Cc][Kk]*.[Rr][Oo][Mm]
 [Kk][Ii][Cc][Kk]*.[Bb][Ii][Nn]
+
+# Test caches and binary save-states stay local.
+__pycache__/
+*.state
+*.state[0-9]*
+*.uss

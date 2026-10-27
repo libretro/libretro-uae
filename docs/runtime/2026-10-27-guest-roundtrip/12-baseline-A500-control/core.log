@@ -1,0 +1,359 @@
+[0] Output audio buffer capacity set to 2048
+[1] Model: "A500".
+[1] Kickstart: "kick34005.A500".
+[1] Disk (1) inserted in drive DF0: "C:\Projects\puae-runtime\profiles\12-baseline-A500-control\content\guest_input_probe.adf".
+[0] Generated config:
+[0] -----------------
+[0] cpu_model=68000
+[0] fpu_model=0
+[0] mmu_model=0
+[0] chipmem_size=1
+[0] bogomem_size=2
+[0] fastmem_size=0
+[0] cpu_24bit_addressing=true
+[0] chipset=ocs
+[0] chipset_compatible=A500
+[0] kickstart_rom_file=C:\Projects\puae-runtime\profiles\12-baseline-A500-control\system\kick34005.A500
+[0] floppy0=C:\Projects\puae-runtime\profiles\12-baseline-A500-control\content\guest_input_probe.adf
+[0] ntsc=false
+[0] displaydata_pal=50.000000,locked,pal
+[0] displaydata_ntsc=59.940000,locked,ntsc
+[0] cpu_compatible=true
+[0] cpu_cycle_exact=true
+[0] cpu_memory_cycle_exact=true
+[0] blitter_cycle_exact=true
+[0] cpu_throttle=0.0
+[0] cpu_multiplier=0
+[0] sound_stereo_separation=10
+[0] sound_interpol=anti
+[0] sound_filter=emulated
+[0] sound_volume_cd=0
+[0] cd_speed=100
+[0] floppy_speed=100
+[0] floppy_write_protect=true
+[0] floppy_volume=80
+[0] floppy0sound=1
+[0] floppy1sound=1
+[0] floppy2sound=1
+[0] floppy3sound=1
+[0] input.mouse_speed=100
+[0] immediate_blits=false
+[0] waiting_blits=automatic
+[0] collision_level=playfields
+[0] gfx_flickerfixer=false
+[0] gfx_resolution=hires
+[0] gfx_linemode=none
+[1] --------------------------------------------------------------------------------
+[1] PUAE 5.3.1 73879370, Oct 27 2026 00:11:11
+[1] --------------------------------------------------------------------------------
+[1] Wait for blitter is not available in 68000/68010 cycle exact modes.
+[1] KS ver = 34 (0x22)
+[1] KS ver = 34 (0x22)
+[1] KS ver = 34 (0x22)
+[1] RTAREA located at 00F00000
+[1] TRAP_ENTRY = 00f021da
+[1] Known ROM 'KS ROM v1.3 (A500,A1000,A2000)' loaded
+[1] CPU cycleunit: 256 (0.500)
+[1] 1872 CPU functions
+[1] CPU cycleunit: 256 (0.500)
+[1] Building CPU, 44274 opcodes (0 -2 1)
+[1] CPU=68000, FPU=0, MMU=0, JIT=0. prefetch and cycle-exact 24-bit
+[1] Reset at 00000000. Chipset mask = 00000000
+[1] PAL mode V=50.0000Hz H=15625.0879Hz (227x312+0) IDX=10 (PAL) D=0 RTG=0/0
+[1] Autoconfig board list:
+[1] Card 01: 
+[1] 'UAE Boot ROM' no autoconfig 00f00000 - 00f0ffff.
+[1] Card 02: 
+[1] 'UAE FS ROM'
+[1]   d1.52.40.00.07.db.00.00.00.03.20.00.00.00.00.00
+[1]   MID 2011 (07db) PID 82 (52) SER 00000003
+[1]   Z2 0x00e90000 0x00e90000   64K ROM 0
+[1] END
+[1] Card 0: skipping autoconfig (not autoconfig)
+[1] CPU cycleunit: 256 (0.500)
+[1] hardreset, memory cleared
+[1] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[1] rndseed = 00000001 (1)
+[1] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[1] Illegal instruction: 4e7b at 00FC0564 -> 00FC0582
+[1] SERIAL: period=372, baud=9600, hsyncs=14, bits=8, PC=fc2234
+[1] Card 2: Z2 0x00e90000   64K ROM Filesystem autoconfig
+[1] 00000000    2048K/4 =     512K ID* C16 Chip memory
+[1] 00200000    8192K/0 =    8192K --  F16 <none>
+[1] 00A00000    2048K/0 =    2048K --  CIA CIA
+[1] 00C00000     512K/1 =     512K ID* C16 Slow memory
+[1] 00C80000    1024K/0 =    1024K --  F16 Custom chipset
+[1] 00D80000     256K/0 =     256K --  C16 <none>
+[1] 00DC0000      64K/0 =      64K --  C16 Battery backed up clock (MSM6242B)
+[1] 00DD0000      64K/0 =      64K --  C16 <none>
+[1] 00DE0000     128K/0 =     128K --  C16 Custom chipset
+[1] 00E00000     512K/2 =     256K ID* F16 Kickstart ROM (C4F0F55F)
+[1] =KS ROM v1.3 (A500,A1000,A2000) rev 34.5 (256k) [315093-02]
+[1] 00E80000      64K/0 =      64K --  F16 <none>
+[1] 00E90000      64K/1 =      64K --* F16 Filesystem autoconfig
+[1] 00EA0000     384K/0 =     384K --  F16 <none>
+[1] 00F00000      64K/1 =      64K --* F16 UAE Boot ROM
+[1] 00F10000     448K/0 =     448K --  F16 <none>
+[1] 00F80000     512K/2 =     256K ID* F16 Kickstart ROM (C4F0F55F)
+[1] =KS ROM v1.3 (A500,A1000,A2000) rev 34.5 (256k) [315093-02]
+[1] filesystem: diagentry 00c01630 configdev 00c015d8
+[1] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[1] PAL mode V=50.0000Hz H=15625.0879Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
+[1] SNDRATE 313.0*227.0*50.000000=3552550.000000
+[1] Wait for blitter is not available in 68000/68010 cycle exact modes.
+[1] KS ver = 34 (0x22)
+[1] Model: "A500".
+[1] Kickstart: "kick34005.A500".
+[1] Disk (1) inserted in drive DF0: "C:\Projects\puae-runtime\profiles\12-baseline-A500-control\content\guest_input_probe.adf".
+[0] Generated config:
+[0] -----------------
+[0] cpu_model=68000
+[0] fpu_model=0
+[0] mmu_model=0
+[0] chipmem_size=1
+[0] bogomem_size=2
+[0] fastmem_size=0
+[0] cpu_24bit_addressing=true
+[0] chipset=ocs
+[0] chipset_compatible=A500
+[0] kickstart_rom_file=C:\Projects\puae-runtime\profiles\12-baseline-A500-control\system\kick34005.A500
+[0] floppy0=C:\Projects\puae-runtime\profiles\12-baseline-A500-control\content\guest_input_probe.adf
+[0] ntsc=false
+[0] displaydata_pal=50.000000,locked,pal
+[0] displaydata_ntsc=59.940000,locked,ntsc
+[0] cpu_compatible=true
+[0] cpu_cycle_exact=true
+[0] cpu_memory_cycle_exact=true
+[0] blitter_cycle_exact=true
+[0] cpu_throttle=0.0
+[0] cpu_multiplier=0
+[0] sound_stereo_separation=10
+[0] sound_interpol=anti
+[0] sound_filter=emulated
+[0] sound_volume_cd=0
+[0] cd_speed=100
+[0] floppy_speed=100
+[0] floppy_write_protect=true
+[0] floppy_volume=80
+[0] floppy0sound=1
+[0] floppy1sound=1
+[0] floppy2sound=1
+[0] floppy3sound=1
+[0] input.mouse_speed=100
+[0] immediate_blits=false
+[0] waiting_blits=automatic
+[0] collision_level=playfields
+[0] gfx_flickerfixer=false
+[0] gfx_resolution=hires
+[0] gfx_linemode=none
+[1] Wait for blitter is not available in 68000/68010 cycle exact modes.
+[1] KS ver = 34 (0x22)
+[1] Wait for blitter is not available in 68000/68010 cycle exact modes.
+[1] KS ver = 34 (0x22)
+[1] Building CPU, 44274 opcodes (0 -2 1)
+[1] CPU=68000, FPU=0, MMU=0, JIT=0. prefetch and cycle-exact 24-bit
+[1] Reset at 0000160A. Chipset mask = 00000000
+[1] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[1] PAL mode V=50.0000Hz H=15625.0879Hz (227x312+0) IDX=10 (PAL) D=0 RTG=0/0
+[1] Autoconfig board list:
+[1] Card 01: 
+[1] 'UAE Boot ROM' no autoconfig 00f00000 - 00f0ffff.
+[1] Card 02: 
+[1] 'UAE FS ROM'
+[1]   d1.52.40.00.07.db.00.00.00.03.20.00.00.00.00.00
+[1]   MID 2011 (07db) PID 82 (52) SER 00000003
+[1]   Z2 0x00e90000 0x00e90000   64K ROM 0
+[1] END
+[1] Card 0: skipping autoconfig (not autoconfig)
+[1] CPU cycleunit: 256 (0.500)
+[1] hardreset, memory cleared
+[1] rndseed = 00000001 (1)
+[1] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[1] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[1] PAL mode V=50.0000Hz H=15625.0879Hz (227x312+0) IDX=10 (PAL) D=0 RTG=0/0
+[1] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[1] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[1] PAL mode V=50.0000Hz H=15625.0879Hz (227x312+0) IDX=10 (PAL) D=0 RTG=0/0
+[1] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[1] Illegal instruction: 4e7b at 00FC0564 -> 00FC0582
+[1] Card 2: Z2 0x00e90000   64K ROM Filesystem autoconfig
+[1] 00000000    2048K/4 =     512K ID* C16 Chip memory
+[1] 00200000    8192K/0 =    8192K --  F16 <none>
+[1] 00A00000    2048K/0 =    2048K --  CIA CIA
+[1] 00C00000     512K/1 =     512K ID* C16 Slow memory
+[1] 00C80000    1024K/0 =    1024K --  F16 Custom chipset
+[1] 00D80000     256K/0 =     256K --  C16 <none>
+[1] 00DC0000      64K/0 =      64K --  C16 Battery backed up clock (MSM6242B)
+[1] 00DD0000      64K/0 =      64K --  C16 <none>
+[1] 00DE0000     128K/0 =     128K --  C16 Custom chipset
+[1] 00E00000     512K/2 =     256K ID* F16 Kickstart ROM (C4F0F55F)
+[1] =KS ROM v1.3 (A500,A1000,A2000) rev 34.5 (256k) [315093-02]
+[1] 00E80000      64K/0 =      64K --  F16 <none>
+[1] 00E90000      64K/1 =      64K --* F16 Filesystem autoconfig
+[1] 00EA0000     384K/0 =     384K --  F16 <none>
+[1] 00F00000      64K/1 =      64K --* F16 UAE Boot ROM
+[1] 00F10000     448K/0 =     448K --  F16 <none>
+[1] 00F80000     512K/2 =     256K ID* F16 Kickstart ROM (C4F0F55F)
+[1] =KS ROM v1.3 (A500,A1000,A2000) rev 34.5 (256k) [315093-02]
+[1] filesystem: diagentry 00c01630 configdev 00c015d8
+[1] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[1] PAL mode V=50.0000Hz H=15625.0879Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
+[1] SNDRATE 313.0*227.0*50.000000=3552550.000000
+[1] unknown event2 handler 00007ffab875a3a0
+[1] 0 pending events saved
+[1] Saved with: 'UAE 5.3.1', description: 'libretro'
+[1] CPU: 68EC000, PC=0000160A
+[1] ignored event type 0 (00000004) restored
+[1] ROM detected (path) as 'C:\Projects\puae-runtime\profiles\12-baseline-A500-control\system\kick34005.A500'
+[1] Building CPU, 44274 opcodes (0 -2 1)
+[1] CPU=68000, FPU=0, MMU=0, JIT=0. prefetch and cycle-exact 24-bit
+[1] Reset at 0000160A. Chipset mask = 00000000
+[1] SNDRATE 313.0*227.0*50.000000=3552550.000000
+[1] PAL mode V=50.0000Hz H=15625.0879Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
+[1] SERIAL: period=372, baud=9600, hsyncs=14, bits=8, PC=160a
+[1] CPU=68000 Chipset=OCS PAL
+[1] State restored
+[1] CPU cycleunit: 256 (0.500)
+[1] hardreset, memory cleared
+[1] CPU cycleunit: 256 (0.500)
+[1] 1872 CPU functions
+[1] SNDRATE 313.0*227.0*50.000000=3552550.000000
+[1] PAL mode V=50.0000Hz H=15625.0879Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
+[1] SNDRATE 313.0*227.0*50.000000=3552550.000000
+[1] Saved with: 'UAE 5.3.1', description: 'libretro'
+[1] CPU: 68EC000, PC=0000160A
+[1] ignored event type 0 (00000004) restored
+[1] ROM detected (path) as 'C:\Projects\puae-runtime\profiles\12-baseline-A500-control\system\kick34005.A500'
+[1] Building CPU, 44274 opcodes (0 -2 1)
+[1] CPU=68000, FPU=0, MMU=0, JIT=0. prefetch and cycle-exact 24-bit
+[1] Reset at 0000160A. Chipset mask = 00000000
+[1] SNDRATE 313.0*227.0*50.000000=3552550.000000
+[1] PAL mode V=50.0000Hz H=15625.0879Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
+[1] SERIAL: period=372, baud=9600, hsyncs=14, bits=8, PC=160a
+[1] CPU=68000 Chipset=OCS PAL
+[1] State restored
+[1] CPU cycleunit: 256 (0.500)
+[1] hardreset, memory cleared
+[1] CPU cycleunit: 256 (0.500)
+[1] 1872 CPU functions
+[1] SNDRATE 313.0*227.0*50.000000=3552550.000000
+[1] PAL mode V=50.0000Hz H=15625.0879Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
+[1] SNDRATE 313.0*227.0*50.000000=3552550.000000
+[1] Wait for blitter is not available in 68000/68010 cycle exact modes.
+[1] KS ver = 34 (0x22)
+[1] Model: "A500".
+[1] Kickstart: "kick34005.A500".
+[1] Disk (1) inserted in drive DF0: "C:\Projects\puae-runtime\profiles\12-baseline-A500-control\content\guest_input_probe.adf".
+[0] Generated config:
+[0] -----------------
+[0] cpu_model=68000
+[0] fpu_model=0
+[0] mmu_model=0
+[0] chipmem_size=1
+[0] bogomem_size=2
+[0] fastmem_size=0
+[0] cpu_24bit_addressing=true
+[0] chipset=ocs
+[0] chipset_compatible=A500
+[0] kickstart_rom_file=C:\Projects\puae-runtime\profiles\12-baseline-A500-control\system\kick34005.A500
+[0] floppy0=C:\Projects\puae-runtime\profiles\12-baseline-A500-control\content\guest_input_probe.adf
+[0] ntsc=false
+[0] displaydata_pal=50.000000,locked,pal
+[0] displaydata_ntsc=59.940000,locked,ntsc
+[0] cpu_compatible=true
+[0] cpu_cycle_exact=true
+[0] cpu_memory_cycle_exact=true
+[0] blitter_cycle_exact=true
+[0] cpu_throttle=0.0
+[0] cpu_multiplier=0
+[0] sound_stereo_separation=10
+[0] sound_interpol=anti
+[0] sound_filter=emulated
+[0] sound_volume_cd=0
+[0] cd_speed=100
+[0] floppy_speed=100
+[0] floppy_write_protect=true
+[0] floppy_volume=80
+[0] floppy0sound=1
+[0] floppy1sound=1
+[0] floppy2sound=1
+[0] floppy3sound=1
+[0] input.mouse_speed=100
+[0] immediate_blits=false
+[0] waiting_blits=automatic
+[0] collision_level=playfields
+[0] gfx_flickerfixer=false
+[0] gfx_resolution=hires
+[0] gfx_linemode=none
+[1] Wait for blitter is not available in 68000/68010 cycle exact modes.
+[1] KS ver = 34 (0x22)
+[1] Wait for blitter is not available in 68000/68010 cycle exact modes.
+[1] KS ver = 34 (0x22)
+[1] Building CPU, 44274 opcodes (0 -2 1)
+[1] CPU=68000, FPU=0, MMU=0, JIT=0. prefetch and cycle-exact 24-bit
+[1] Reset at 0000160A. Chipset mask = 00000000
+[1] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[1] PAL mode V=50.0000Hz H=15625.0879Hz (227x312+0) IDX=10 (PAL) D=0 RTG=0/0
+[1] Autoconfig board list:
+[1] Card 01: 
+[1] 'UAE Boot ROM' no autoconfig 00f00000 - 00f0ffff.
+[1] Card 02: 
+[1] 'UAE FS ROM'
+[1]   d1.52.40.00.07.db.00.00.00.03.20.00.00.00.00.00
+[1]   MID 2011 (07db) PID 82 (52) SER 00000003
+[1]   Z2 0x00e90000 0x00e90000   64K ROM 0
+[1] END
+[1] Card 0: skipping autoconfig (not autoconfig)
+[1] CPU cycleunit: 256 (0.500)
+[1] hardreset, memory cleared
+[1] rndseed = 00000001 (1)
+[1] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[1] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[1] PAL mode V=50.0000Hz H=15625.0879Hz (227x312+0) IDX=10 (PAL) D=0 RTG=0/0
+[1] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[1] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[1] PAL mode V=50.0000Hz H=15625.0879Hz (227x312+0) IDX=10 (PAL) D=0 RTG=0/0
+[1] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[1] Illegal instruction: 4e7b at 00FC0564 -> 00FC0582
+[1] Card 2: Z2 0x00e90000   64K ROM Filesystem autoconfig
+[1] 00000000    2048K/4 =     512K ID* C16 Chip memory
+[1] 00200000    8192K/0 =    8192K --  F16 <none>
+[1] 00A00000    2048K/0 =    2048K --  CIA CIA
+[1] 00C00000     512K/1 =     512K ID* C16 Slow memory
+[1] 00C80000    1024K/0 =    1024K --  F16 Custom chipset
+[1] 00D80000     256K/0 =     256K --  C16 <none>
+[1] 00DC0000      64K/0 =      64K --  C16 Battery backed up clock (MSM6242B)
+[1] 00DD0000      64K/0 =      64K --  C16 <none>
+[1] 00DE0000     128K/0 =     128K --  C16 Custom chipset
+[1] 00E00000     512K/2 =     256K ID* F16 Kickstart ROM (C4F0F55F)
+[1] =KS ROM v1.3 (A500,A1000,A2000) rev 34.5 (256k) [315093-02]
+[1] 00E80000      64K/0 =      64K --  F16 <none>
+[1] 00E90000      64K/1 =      64K --* F16 Filesystem autoconfig
+[1] 00EA0000     384K/0 =     384K --  F16 <none>
+[1] 00F00000      64K/1 =      64K --* F16 UAE Boot ROM
+[1] 00F10000     448K/0 =     448K --  F16 <none>
+[1] 00F80000     512K/2 =     256K ID* F16 Kickstart ROM (C4F0F55F)
+[1] =KS ROM v1.3 (A500,A1000,A2000) rev 34.5 (256k) [315093-02]
+[1] filesystem: diagentry 00c01630 configdev 00c015d8
+[1] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[1] PAL mode V=50.0000Hz H=15625.0879Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
+[1] SNDRATE 313.0*227.0*50.000000=3552550.000000
+[1] Saved with: 'UAE 5.3.1', description: 'libretro'
+[1] CPU: 68EC000, PC=0000160A
+[1] ignored event type 0 (00000004) restored
+[1] ROM detected (path) as 'C:\Projects\puae-runtime\profiles\12-baseline-A500-control\system\kick34005.A500'
+[1] Building CPU, 44274 opcodes (0 -2 1)
+[1] CPU=68000, FPU=0, MMU=0, JIT=0. prefetch and cycle-exact 24-bit
+[1] Reset at 0000160A. Chipset mask = 00000000
+[1] SNDRATE 313.0*227.0*50.000000=3552550.000000
+[1] PAL mode V=50.0000Hz H=15625.0879Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
+[1] SERIAL: period=372, baud=9600, hsyncs=14, bits=8, PC=160a
+[1] CPU=68000 Chipset=OCS PAL
+[1] State restored
+[1] CPU cycleunit: 256 (0.500)
+[1] hardreset, memory cleared
+[1] CPU cycleunit: 256 (0.500)
+[1] 1872 CPU functions
+[1] SNDRATE 313.0*227.0*50.000000=3552550.000000
+[1] PAL mode V=50.0000Hz H=15625.0879Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
+[1] SNDRATE 313.0*227.0*50.000000=3552550.000000

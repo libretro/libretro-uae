@@ -52,4 +52,8 @@ Candidate runs `03` through `10` are failed integration diagnostics, despite the
 
 [Machine-readable release results](upstream/2026-10-27-winuae/release-smoke-results.json) link the ROM/core/screenshot hashes and process results. [Integration details](upstream/2026-10-27-winuae/INTEGRATION_STATUS.md) record the source and build adaptations. [ROM reverification](runtime/kickstarts/reverification.json) confirms all twelve extracted files and the original ZIP remain unchanged.
 
-These passes do not cover game/media boot, guest input, reset, save-state round trips, old-state compatibility, audible audio quality, advanced display modes/cropping, or other machines and platforms.
+These diskless passes do not cover game/media boot, guest input, reset, save-state round trips, old-state compatibility, audible audio quality, advanced display modes/cropping, or other machines and platforms.
+
+## Subsequent guest tests
+
+[Guest input, reset, and save-state results](GUEST_ROUNDTRIP_TESTS.md) record later tests with this exact DLL and these external ROMs. An original diagnostic floppy booted, and keyboard/mouse/joystick and hard reset passed on both models. Restore testing found access violations: A500 crashed in RetroArch, while A1200 passed one native round trip but failed in direct API testing. Save-state reliability remains unaccepted. Results and scripts are recorded on `integrate-winuae-20261027` with all trials retained.

@@ -12,7 +12,7 @@ Use a fresh evidence directory and a separate object directory for changes to bu
   -EvidenceDirectory C:\Projects\puae\docs\builds\mychange
 ```
 
-Normal builds consume the checked-in generated CPU and renderer sources. The engine uses GNU C99 plus seven C++17 keyboard MCU units, and the final link uses G++. Further work should add input/reset/save-state and representative media coverage before making compatibility or fidelity claims. Other architectures have not been built in this workspace.
+Normal builds consume the checked-in generated CPU and renderer sources. The engine uses GNU C99 plus seven C++17 keyboard MCU units, and the final link uses G++. [Guest input and hard reset now pass on A500 and A1200](GUEST_ROUNDTRIP_TESTS.md) using the unchanged updated DLL and the user's Kickstarts. Save-state tests found restore access violations, including an A500 RetroArch crash; fixing and rechecking restoration is the next blocker. Representative game/media coverage and other architectures remain untested.
 
 ## Historical baseline readiness
 
@@ -141,6 +141,6 @@ git log --oneline HEAD..upstream/master
 git diff --stat HEAD upstream/master
 ```
 
-Fetch does not merge updates. Decide how to integrate them after reviewing the current branch and local changes. Use `origin` for future project pushes. Intake and build setup left the emulator source unchanged. No generators, emulator sessions, commits, or pushes were performed.
+Fetch does not merge updates. Decide how to integrate them after reviewing the current branch and local changes. Use `origin` for future project pushes. The later WinUAE 6.0.3 integration and documentation were committed and pushed to `origin/integrate-winuae-20261027`; [publication record](upstream/2026-10-27-winuae/PUBLICATION.md) preserves that boundary. Subsequent [guest test tools and results](GUEST_ROUNDTRIP_TESTS.md) are recorded on the same branch, with emulator source and core binaries unchanged.
 
-For the next session, read `docs/REPOSITORY_ANALYSIS.md`, `docs/BUILD_WINDOWS_X64.md`, `docs/AROS_SMOKE_TEST.md`, this guide, and `docs/repository-baseline.json`, then refresh Git status. The unchanged Windows x64 build and bounded AROS boot are complete. Input/reset/state acceptance and diagnostic or game-media checks remain separate next steps.
+For the next session, read `docs/upstream/2026-10-27-winuae/INTEGRATION_STATUS.md`, `docs/GUEST_ROUNDTRIP_TESTS.md`, this guide, and the repository/build analysis, then refresh Git status. Preserve `puae603_libretro.dll` as the failing release reference. Reproduce the save-state access violation, obtain a native crash stack from a separate debug build, and recheck both models after a fix. The bounded input, hard-reset, diagnostic boot, and earlier diskless boot passes do not establish game compatibility or save-state reliability.

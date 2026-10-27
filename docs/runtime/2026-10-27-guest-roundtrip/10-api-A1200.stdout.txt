@@ -1,0 +1,298 @@
+Registering callback: environment
+Environment initialization: 9
+Environment initialization: 30
+Environment initialization: 31
+Environment initialization: 52
+Environment initialization: 67
+Environment initialization: 35
+Environment initialization: 11
+Environment initialization: 18
+Environment initialization: 65582
+Environment initialization: 65581
+Registering callback: video_refresh
+Registering callback: audio_sample
+Registering callback: audio_sample_batch
+Registering callback: input_poll
+Registering callback: input_state
+Callbacks registered
+Calling retro_init
+Environment initialization: 27
+Environment initialization: 28
+Environment initialization: 57
+Environment initialization: 58
+Environment initialization: 12
+Environment initialization: 69
+Environment initialization: 65587
+Environment initialization: 64
+Environment initialization: 65578
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 55
+Environment initialization: 55
+Environment initialization: 55
+Environment initialization: 55
+Environment initialization: 55
+Calling retro_load_game
+Environment initialization: 10
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\system\kick40068.A1200' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\system\kick40068.A1200' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\system\kick40068.A1200' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\system\kick40068.A1200' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\system/rom.key' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 1  
+Environment initialization: 65572
+Environment initialization: 17
+Environment initialization: 32
+boot-ready {'ready': True, 'ram_bytes': 2097152, 'boot_count': 1, 'ticks': 36, 'joy0': 0, 'joy1': 0, 'cia_buttons': 252, 'potgor': 21760, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'register_ticks': 36, 'rom_version': 40, 'rom_revision': 68, 'frontend_frame': 111}
+mouse-moved {'ready': True, 'ram_bytes': 2097152, 'boot_count': 1, 'ticks': 40, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 21760, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'register_ticks': 40, 'rom_version': 40, 'rom_revision': 68, 'frontend_frame': 115}
+mouse-left-held {'ready': True, 'ram_bytes': 2097152, 'boot_count': 1, 'ticks': 44, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 188, 'potgor': 21760, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'register_ticks': 44, 'rom_version': 40, 'rom_revision': 68, 'frontend_frame': 119}
+mouse-right-held {'ready': True, 'ram_bytes': 2097152, 'boot_count': 1, 'ticks': 48, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 20736, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'register_ticks': 48, 'rom_version': 40, 'rom_revision': 68, 'frontend_frame': 123}
+mouse-released {'ready': True, 'ram_bytes': 2097152, 'boot_count': 1, 'ticks': 52, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 21760, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'register_ticks': 52, 'rom_version': 40, 'rom_revision': 68, 'frontend_frame': 127}
+joystick-up-held {'ready': True, 'ram_bytes': 2097152, 'boot_count': 1, 'ticks': 56, 'joy0': 3092, 'joy1': 256, 'cia_buttons': 252, 'potgor': 21760, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'register_ticks': 56, 'rom_version': 40, 'rom_revision': 68, 'frontend_frame': 131}
+joystick-up-released {'ready': True, 'ram_bytes': 2097152, 'boot_count': 1, 'ticks': 60, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 21760, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'register_ticks': 60, 'rom_version': 40, 'rom_revision': 68, 'frontend_frame': 135}
+joystick-down-held {'ready': True, 'ram_bytes': 2097152, 'boot_count': 1, 'ticks': 64, 'joy0': 3092, 'joy1': 1, 'cia_buttons': 252, 'potgor': 21760, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'register_ticks': 64, 'rom_version': 40, 'rom_revision': 68, 'frontend_frame': 139}
+joystick-down-released {'ready': True, 'ram_bytes': 2097152, 'boot_count': 1, 'ticks': 68, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 21760, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'register_ticks': 68, 'rom_version': 40, 'rom_revision': 68, 'frontend_frame': 143}
+joystick-left-held {'ready': True, 'ram_bytes': 2097152, 'boot_count': 1, 'ticks': 72, 'joy0': 3092, 'joy1': 65280, 'cia_buttons': 252, 'potgor': 21760, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'register_ticks': 72, 'rom_version': 40, 'rom_revision': 68, 'frontend_frame': 147}
+joystick-left-released {'ready': True, 'ram_bytes': 2097152, 'boot_count': 1, 'ticks': 76, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 21760, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'register_ticks': 76, 'rom_version': 40, 'rom_revision': 68, 'frontend_frame': 151}
+joystick-right-held {'ready': True, 'ram_bytes': 2097152, 'boot_count': 1, 'ticks': 80, 'joy0': 3092, 'joy1': 255, 'cia_buttons': 252, 'potgor': 21760, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'register_ticks': 80, 'rom_version': 40, 'rom_revision': 68, 'frontend_frame': 155}
+joystick-right-released {'ready': True, 'ram_bytes': 2097152, 'boot_count': 1, 'ticks': 84, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 21760, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'register_ticks': 84, 'rom_version': 40, 'rom_revision': 68, 'frontend_frame': 159}
+joystick-fire-held {'ready': True, 'ram_bytes': 2097152, 'boot_count': 1, 'ticks': 88, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 124, 'potgor': 21760, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'register_ticks': 88, 'rom_version': 40, 'rom_revision': 68, 'frontend_frame': 163}
+joystick-fire-released {'ready': True, 'ram_bytes': 2097152, 'boot_count': 1, 'ticks': 92, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 21760, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'register_ticks': 92, 'rom_version': 40, 'rom_revision': 68, 'frontend_frame': 167}
+keyboard-a-held {'ready': True, 'ram_bytes': 2097152, 'boot_count': 1, 'ticks': 130, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 21760, 'last_serial': 191, 'keyboard_count': 1, 'marker': 584, 'serial_ring': [191, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'register_ticks': 130, 'rom_version': 40, 'rom_revision': 68, 'frontend_frame': 205}
+keyboard-a-released {'ready': True, 'ram_bytes': 2097152, 'boot_count': 1, 'ticks': 138, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 21760, 'last_serial': 190, 'keyboard_count': 2, 'marker': 584, 'serial_ring': [191, 190, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'register_ticks': 138, 'rom_version': 40, 'rom_revision': 68, 'frontend_frame': 213}
+before-reset {'ready': True, 'ram_bytes': 2097152, 'boot_count': 1, 'ticks': 138, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 21760, 'last_serial': 190, 'keyboard_count': 2, 'marker': 584, 'serial_ring': [191, 190, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'register_ticks': 138, 'rom_version': 40, 'rom_revision': 68, 'frontend_frame': 213}
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\system\kick40068.A1200' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\system\kick40068.A1200' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\system\kick40068.A1200' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 1  
+reset-request-applied {'ready': False, 'ram_bytes': 2097152, 'boot_count': 4294967295, 'ticks': 0, 'joy0': 0, 'joy1': 0, 'cia_buttons': 255, 'potgor': 65535, 'last_serial': 255, 'keyboard_count': 0, 'marker': 0, 'serial_ring': [255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0], 'register_ticks': 4294967295, 'rom_version': 0, 'rom_revision': 0, 'frontend_frame': 215}
+after-reset-boot {'ready': True, 'ram_bytes': 2097152, 'boot_count': 1, 'ticks': 6, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 21760, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'register_ticks': 6, 'rom_version': 40, 'rom_revision': 68, 'frontend_frame': 296}
+state-a-guest {'ready': True, 'ram_bytes': 2097152, 'boot_count': 1, 'ticks': 14, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 21760, 'last_serial': 0, 'keyboard_count': 0, 'marker': 1162, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'register_ticks': 14, 'rom_version': 40, 'rom_revision': 68, 'frontend_frame': 304}
+state-a-before-serialize {'ready': True, 'ram_bytes': 2097152, 'boot_count': 1, 'ticks': 14, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 21760, 'last_serial': 0, 'keyboard_count': 0, 'marker': 1162, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'register_ticks': 14, 'rom_version': 40, 'rom_revision': 68, 'frontend_frame': 304}
+state-a-saved {'ready': True, 'ram_bytes': 2097152, 'boot_count': 1, 'ticks': 14, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 21760, 'last_serial': 0, 'keyboard_count': 0, 'marker': 1162, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'register_ticks': 14, 'rom_version': 40, 'rom_revision': 68, 'frontend_frame': 304}
+state-a-mutated {'ready': True, 'ram_bytes': 2097152, 'boot_count': 1, 'ticks': 74, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 21760, 'last_serial': 0, 'keyboard_count': 0, 'marker': 2626, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'register_ticks': 74, 'rom_version': 40, 'rom_revision': 68, 'frontend_frame': 364}
+roundtrip-1-before-unserialize {'ready': True, 'ram_bytes': 2097152, 'boot_count': 1, 'ticks': 74, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 21760, 'last_serial': 0, 'keyboard_count': 0, 'marker': 2626, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'register_ticks': 74, 'rom_version': 40, 'rom_revision': 68, 'frontend_frame': 364}
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\10-api-A1200\saves\guest_input_probe_save.adf' 1  
+Traceback (most recent call last):
+  File "C:\Projects\puae\scripts\Test-GuestRoundTrip.py", line 367, in main
+    restored = host.restore('roundtrip-1', state)
+  File "C:\Projects\puae\scripts\Test-GuestRoundTrip.py", line 256, in restore
+    ok = self.lib.retro_unserialize(buf, len(buf))
+OSError: exception: access violation reading 0x0000000000000000
+
+{
+  "model": "A1200",
+  "core_variant": "updated",
+  "core_sha256": "38578cee10c58bfcb1dabdde4df8a76263c0efcb4e8cc466d0a704be438b61d2",
+  "firmware": "kick40068.A1200",
+  "firmware_sha256": "6d43840d4099a74170ea0f0425b6257c3891ebcaa39c4d1840075a9ab22b5707",
+  "profile": "C:\\Projects\\puae-runtime\\profiles\\10-api-A1200",
+  "pixel_option": "16bit",
+  "checks": {
+    "kickstart_booted_diagnostic": true,
+    "executing_rom_header": true,
+    "mouse_motion": true,
+    "mouse_left_press_release": true,
+    "mouse_right_press_release": true,
+    "joystick-up": true,
+    "joystick-down": true,
+    "joystick-left": true,
+    "joystick-right": true,
+    "joystick-fire": true,
+    "keyboard_a_make_break": true,
+    "reset_reboots_same_diagnostic": true,
+    "state_serialization": true,
+    "state_roundtrip_1": false
+  },
+  "state_bytes_kept_outside_git": true,
+  "harness_sha256": "473d357dfeda28890c5db5563819f1825a1f9edc3cc7c317138b7af0c0fe39e8",
+  "generator_sha256": "cd7519ee310a285117ac9385394701e0e8a540f105d6cec42b2b953dcb9223a8",
+  "logger_sha256": "ef5120ba7f97e9ae92d91bbd768d1cd11bf03729c412c73fb09c195c726b605f",
+  "settle_frames": 8,
+  "error": "exception: access violation reading 0x0000000000000000",
+  "traceback": "Traceback (most recent call last):\n  File \"C:\\Projects\\puae\\scripts\\Test-GuestRoundTrip.py\", line 367, in main\n    restored = host.restore('roundtrip-1', state)\n  File \"C:\\Projects\\puae\\scripts\\Test-GuestRoundTrip.py\", line 256, in restore\n    ok = self.lib.retro_unserialize(buf, len(buf))\nOSError: exception: access violation reading 0x0000000000000000\n",
+  "all_checks_pass": false,
+  "elapsed_seconds": 5.07,
+  "core_sha256_after": "38578cee10c58bfcb1dabdde4df8a76263c0efcb4e8cc466d0a704be438b61d2",
+  "fixture_sha256_after": "6f99078e0ea5ff8db1d97284b57d0ccb3dfe2d38c762cd88ed46fd91ae0ffa6e",
+  "timestamp_utc": "2026-10-26T23:28:26.109109+00:00"
+}

@@ -1,0 +1,19 @@
+[
+  {
+    "event": "launched",
+    "elapsed": 0.007,
+    "pid": 14952
+  },
+  {
+    "event": "failure",
+    "elapsed": 0.011,
+    "error": "[WinError 10054] An existing connection was forcibly closed by the remote host",
+    "process_exit": null
+  },
+  {
+    "event": "command",
+    "elapsed": 0.016,
+    "command": "QUIT",
+    "response": null
+  }
+]

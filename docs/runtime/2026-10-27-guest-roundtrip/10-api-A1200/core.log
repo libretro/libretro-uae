@@ -1,0 +1,331 @@
+[0] Output audio buffer capacity set to 2048
+[1] Model: "A1200".
+[1] Kickstart: "kick40068.A1200".
+[1] Disk (1) inserted in drive DF0: "C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe.adf".
+[0] Generated config:
+[0] -----------------
+[0] cpu_model=68020
+[0] fpu_model=0
+[0] mmu_model=0
+[0] chipmem_size=4
+[0] bogomem_size=0
+[0] fastmem_size=8
+[0] cpu_24bit_addressing=true
+[0] chipset=aga
+[0] chipset_compatible=A1200
+[0] kickstart_rom_file=C:\Projects\puae-runtime\profiles\10-api-A1200\system\kick40068.A1200
+[0] floppy0=C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe.adf
+[0] ntsc=false
+[0] displaydata_pal=50.000000,locked,pal
+[0] displaydata_ntsc=59.940000,locked,ntsc
+[0] cpu_compatible=true
+[0] cpu_cycle_exact=true
+[0] cpu_memory_cycle_exact=true
+[0] blitter_cycle_exact=true
+[0] cpu_throttle=0.0
+[0] cpu_multiplier=0
+[0] sound_stereo_separation=10
+[0] sound_interpol=anti
+[0] sound_filter=emulated
+[0] sound_volume_cd=0
+[0] cd_speed=100
+[0] floppy_speed=100
+[0] floppy_write_protect=true
+[0] floppy_volume=80
+[0] floppy0sound=1
+[0] floppy1sound=1
+[0] floppy2sound=1
+[0] floppy3sound=1
+[0] input.mouse_speed=100
+[0] immediate_blits=false
+[0] waiting_blits=automatic
+[0] collision_level=playfields
+[0] gfx_flickerfixer=false
+[0] gfx_resolution=hires
+[0] gfx_linemode=none
+[1] --------------------------------------------------------------------------------
+[1] PUAE 6.0.3 738793706, Oct 27 2026 01:23:39
+[1] --------------------------------------------------------------------------------
+[1] KS ver = 40 (0x28)
+[1] KS ver = 40 (0x28)
+[1] KS ver = 40 (0x28)
+[1] RTAREA located at 00F00000
+[1] TRAP_ENTRY = 00f021da
+[1] Known ROM 'KS ROM v3.1 (A1200)' loaded
+[1] CPU cycleunit: 128 (0.250)
+[1] 1872 CPU functions
+[1] CPU cycleunit: 128 (0.250)
+[1] Building CPU, 45912 opcodes (2 -2 1)
+[1] CPU=68020, FPU=0, MMU=0, JIT=0. ~cycle-exact 24-bit
+[1] Reset at 00000000. Chipset mask = 00000007
+[1] 00000000    2048K/4 =     512K ID* F32 Kickstart ROM (1483A091)
+[1] =KS ROM v3.1 (A1200) rev 40.68 (512k)
+[1] 00200000    8704K/0 =    8704K --  F32 <none>
+[1] 00A80000    1024K/2 =     512K ID* F32 Kickstart ROM (1483A091)
+[1] =KS ROM v3.1 (A1200) rev 40.68 (512k)
+[1] 00B80000     448K/0 =     448K --  F32 <none>
+[1] 00BF0000      64K/0 =      64K --  CIA CIA
+[1] 00C00000    1536K/0 =    1536K --  F32 <none>
+[1] 00D80000     256K/0 =     256K --  C16 Gayle (low)
+[1] 00DC0000      64K/0 =      64K --  C16 Battery backed up clock (none)
+[1] 00DD0000      64K/0 =      64K --  C16 Gayle (low)
+[1] 00DE0000      64K/0 =      64K --  C16 Gayle (high)
+[1] 00DF0000      64K/0 =      64K --  C16 Custom chipset
+[1] 00E00000     512K/1 =     512K ID* F32 Kickstart ROM (1483A091)
+[1] =KS ROM v3.1 (A1200) rev 40.68 (512k)
+[1] 00E80000      64K/0 =      64K --  F32 Autoconfig Z2
+[1] 00E90000     448K/0 =     448K --  F32 <none>
+[1] 00F00000      64K/1 =      64K --* F32 UAE Boot ROM
+[1] 00F10000     448K/0 =     448K --  F32 <none>
+[1] 00F80000     512K/1 =     512K ID* F32 Kickstart ROM (1483A091)
+[1] =KS ROM v3.1 (A1200) rev 40.68 (512k)
+[1] PAL mode V=50.0000Hz H=15625.0879Hz (227x312+0) IDX=10 (PAL) D=0 RTG=0/0
+[1] Autoconfig board list:
+[1] Card 01: 
+[1] '<no name>' no autoconfig 00da0000 - 00daffff.
+[1] Card 02: 
+[1] '<no name>' no autoconfig 00600000 - 00a7ffff.
+[1] Card 03: 
+[1] 'UAE Boot ROM' no autoconfig 00f00000 - 00f0ffff.
+[1] Card 04: 
+[1] 'Z2 Fast RAM'
+[1]   e0.51.00.00.07.db.00.00.00.01.00.00.00.00.00.00
+[1]   MID 2011 (07db) PID 81 (51) SER 00000001
+[1]   Z2 0x00200000 0x00200000 8192K RAM 0
+[1] Card 05: 
+[1] 'UAE FS ROM'
+[1]   d1.52.40.00.07.db.00.00.00.03.20.00.00.00.00.00
+[1]   MID 2011 (07db) PID 82 (52) SER 00000003
+[1]   Z2 0x00e90000 0x00e90000   64K ROM 0
+[1] END
+[1] Card 0: skipping autoconfig (not autoconfig)
+[1] Card 2: skipping autoconfig (not autoconfig)
+[1] CPU cycleunit: 128 (0.250)
+[1] hardreset, memory cleared
+[1] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[1] rndseed = 00000001 (1)
+[1] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[1] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[1] SERIAL: period=372, baud=9600, hsyncs=14, bits=8, PC=f8018a
+[1] B-Trap F201 at 00F80CA0 -> 00F80CC0
+[1] Card 4: Z2 0x00200000 8192K RAM Fast memory
+[1] Card 5: Z2 0x00e90000   64K ROM Filesystem autoconfig
+[1] 00000000    2048K/1 =    2048K ID* C32 Chip memory
+[1] 00200000    8192K/1 =    8192K ID* F32 Fast memory
+[1] 00A00000     512K/0 =     512K --  F32 <none>
+[1] 00A80000    1024K/2 =     512K ID* F32 Kickstart ROM (1483A091)
+[1] =KS ROM v3.1 (A1200) rev 40.68 (512k)
+[1] 00B80000     448K/0 =     448K --  F32 <none>
+[1] 00BF0000      64K/0 =      64K --  CIA CIA
+[1] 00C00000    1536K/0 =    1536K --  F32 <none>
+[1] 00D80000     256K/0 =     256K --  C16 Gayle (low)
+[1] 00DC0000      64K/0 =      64K --  C16 Battery backed up clock (MSM6242B)
+[1] 00DD0000      64K/0 =      64K --  C16 Gayle (low)
+[1] 00DE0000      64K/0 =      64K --  C16 Gayle (high)
+[1] 00DF0000      64K/0 =      64K --  C16 Custom chipset
+[1] 00E00000     512K/1 =     512K ID* F32 Kickstart ROM (1483A091)
+[1] =KS ROM v3.1 (A1200) rev 40.68 (512k)
+[1] 00E80000      64K/0 =      64K --  F32 Autoconfig Z2
+[1] 00E90000      64K/1 =      64K --* F32 Filesystem autoconfig
+[1] 00EA0000     384K/0 =     384K --  F32 <none>
+[1] 00F00000      64K/1 =      64K --* F32 UAE Boot ROM
+[1] 00F10000     448K/0 =     448K --  F32 <none>
+[1] 00F80000     512K/1 =     512K ID* F32 Kickstart ROM (1483A091)
+[1] =KS ROM v3.1 (A1200) rev 40.68 (512k)
+[1] filesystem: diagentry 00200098 configdev 00000c48
+[0] Output audio buffer capacity set to 3078
+[0] Output audio buffer capacity set to 4623
+[1] SNDRATE 313.0*227.0*50.000000=3552550.000000
+[1] PAL mode V=50.0000Hz H=15625.0879Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
+[1] SNDRATE 313.0*227.0*50.000000=3552550.000000
+[1] SNDRATE 313.0*227.0*50.000000=3552550.000000
+[1] PAL mode V=50.0000Hz H=15625.0879Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
+[1] SNDRATE 313.0*227.0*50.000000=3552550.000000
+[1] KS ver = 40 (0x28)
+[1] Model: "A1200".
+[1] Kickstart: "kick40068.A1200".
+[1] Disk (1) inserted in drive DF0: "C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe.adf".
+[0] Generated config:
+[0] -----------------
+[0] cpu_model=68020
+[0] fpu_model=0
+[0] mmu_model=0
+[0] chipmem_size=4
+[0] bogomem_size=0
+[0] fastmem_size=8
+[0] cpu_24bit_addressing=true
+[0] chipset=aga
+[0] chipset_compatible=A1200
+[0] kickstart_rom_file=C:\Projects\puae-runtime\profiles\10-api-A1200\system\kick40068.A1200
+[0] floppy0=C:\Projects\puae-runtime\profiles\10-api-A1200\content\guest_input_probe.adf
+[0] ntsc=false
+[0] displaydata_pal=50.000000,locked,pal
+[0] displaydata_ntsc=59.940000,locked,ntsc
+[0] cpu_compatible=true
+[0] cpu_cycle_exact=true
+[0] cpu_memory_cycle_exact=true
+[0] blitter_cycle_exact=true
+[0] cpu_throttle=0.0
+[0] cpu_multiplier=0
+[0] sound_stereo_separation=10
+[0] sound_interpol=anti
+[0] sound_filter=emulated
+[0] sound_volume_cd=0
+[0] cd_speed=100
+[0] floppy_speed=100
+[0] floppy_write_protect=true
+[0] floppy_volume=80
+[0] floppy0sound=1
+[0] floppy1sound=1
+[0] floppy2sound=1
+[0] floppy3sound=1
+[0] input.mouse_speed=100
+[0] immediate_blits=false
+[0] waiting_blits=automatic
+[0] collision_level=playfields
+[0] gfx_flickerfixer=false
+[0] gfx_resolution=hires
+[0] gfx_linemode=none
+[1] KS ver = 40 (0x28)
+[1] KS ver = 40 (0x28)
+[1] Building CPU, 45912 opcodes (2 -2 0)
+[1] CPU=68020, FPU=0, MMU=0, JIT=0. ~cycle-exact
+[1] Reset at 0020E18A. Chipset mask = 00000007
+[1] 00000000    2048K/4 =     512K ID* F32 Kickstart ROM (1483A091)
+[1] =KS ROM v3.1 (A1200) rev 40.68 (512k)
+[1] 00200000    8704K/0 =    8704K --  F32 <none>
+[1] 00A80000    1024K/2 =     512K ID* F32 Kickstart ROM (1483A091)
+[1] =KS ROM v3.1 (A1200) rev 40.68 (512k)
+[1] 00B80000     448K/0 =     448K --  F32 <none>
+[1] 00BF0000      64K/0 =      64K --  CIA CIA
+[1] 00C00000    1536K/0 =    1536K --  F32 <none>
+[1] 00D80000     256K/0 =     256K --  C16 Gayle (low)
+[1] 00DC0000      64K/0 =      64K --  C16 Battery backed up clock (MSM6242B)
+[1] 00DD0000      64K/0 =      64K --  C16 Gayle (low)
+[1] 00DE0000      64K/0 =      64K --  C16 Gayle (high)
+[1] 00DF0000      64K/0 =      64K --  C16 Custom chipset
+[1] 00E00000     512K/1 =     512K ID* F32 Kickstart ROM (1483A091)
+[1] =KS ROM v3.1 (A1200) rev 40.68 (512k)
+[1] 00E80000      64K/0 =      64K --  F32 Autoconfig Z2
+[1] 00E90000     448K/0 =     448K --  F32 <none>
+[1] 00F00000      64K/1 =      64K --* F32 UAE Boot ROM
+[1] 00F10000     448K/0 =     448K --  F32 <none>
+[1] 00F80000     512K/1 =     512K ID* F32 Kickstart ROM (1483A091)
+[1] =KS ROM v3.1 (A1200) rev 40.68 (512k)
+[1] 01000000    4080M/0 =    4080M --  F32 <none>
+[1] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[1] PAL mode V=50.0000Hz H=15625.0879Hz (227x312+0) IDX=10 (PAL) D=0 RTG=0/0
+[1] Autoconfig board list:
+[1] Card 01: 
+[1] '<no name>' no autoconfig 00da0000 - 00daffff.
+[1] Card 02: 
+[1] '<no name>' no autoconfig 00600000 - 00a7ffff.
+[1] Card 03: 
+[1] 'UAE Boot ROM' no autoconfig 00f00000 - 00f0ffff.
+[1] Card 04: 
+[1] 'Z2 Fast RAM'
+[1]   e0.51.00.00.07.db.00.00.00.01.00.00.00.00.00.00
+[1]   MID 2011 (07db) PID 81 (51) SER 00000001
+[1]   Z2 0x00200000 0x00200000 8192K RAM 0
+[1] Card 05: 
+[1] 'UAE FS ROM'
+[1]   d1.52.40.00.07.db.00.00.00.03.20.00.00.00.00.00
+[1]   MID 2011 (07db) PID 82 (52) SER 00000003
+[1]   Z2 0x00e90000 0x00e90000   64K ROM 0
+[1] END
+[1] Card 0: skipping autoconfig (not autoconfig)
+[1] Card 2: skipping autoconfig (not autoconfig)
+[1] CPU cycleunit: 128 (0.250)
+[1] hardreset, memory cleared
+[1] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[1] rndseed = 00000001 (1)
+[1] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[1] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[1] PAL mode V=50.0000Hz H=15625.0879Hz (227x312+0) IDX=10 (PAL) D=0 RTG=0/0
+[1] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[1] PAL mode V=50.0000Hz H=15625.0879Hz (227x312+0) IDX=10 (PAL) D=0 RTG=0/0
+[1] SNDRATE 312.0*227.0*50.000000=3541200.000000
+[1] B-Trap F201 at 00F80CA0 -> 00F80CC0
+[1] Card 4: Z2 0x00200000 8192K RAM Fast memory
+[1] Card 5: Z2 0x00e90000   64K ROM Filesystem autoconfig
+[1] 00000000    2048K/1 =    2048K ID* C32 Chip memory
+[1] 00200000    8192K/1 =    8192K ID* F32 Fast memory
+[1] 00A00000     512K/0 =     512K --  F32 <none>
+[1] 00A80000    1024K/2 =     512K ID* F32 Kickstart ROM (1483A091)
+[1] =KS ROM v3.1 (A1200) rev 40.68 (512k)
+[1] 00B80000     448K/0 =     448K --  F32 <none>
+[1] 00BF0000      64K/0 =      64K --  CIA CIA
+[1] 00C00000    1536K/0 =    1536K --  F32 <none>
+[1] 00D80000     256K/0 =     256K --  C16 Gayle (low)
+[1] 00DC0000      64K/0 =      64K --  C16 Battery backed up clock (MSM6242B)
+[1] 00DD0000      64K/0 =      64K --  C16 Gayle (low)
+[1] 00DE0000      64K/0 =      64K --  C16 Gayle (high)
+[1] 00DF0000      64K/0 =      64K --  C16 Custom chipset
+[1] 00E00000     512K/1 =     512K ID* F32 Kickstart ROM (1483A091)
+[1] =KS ROM v3.1 (A1200) rev 40.68 (512k)
+[1] 00E80000      64K/0 =      64K --  F32 Autoconfig Z2
+[1] 00E90000      64K/1 =      64K --* F32 Filesystem autoconfig
+[1] 00EA0000     384K/0 =     384K --  F32 <none>
+[1] 00F00000      64K/1 =      64K --* F32 UAE Boot ROM
+[1] 00F10000     448K/0 =     448K --  F32 <none>
+[1] 00F80000     512K/1 =     512K ID* F32 Kickstart ROM (1483A091)
+[1] =KS ROM v3.1 (A1200) rev 40.68 (512k)
+[1] 01000000    4064M/0 =    4064M --  F32 <none>
+[1] FF000000      64K/0 =      64K --  F32 Autoconfig Z3
+[1] FF010000   16320K/0 =   16320K --  F32 <none>
+[1] filesystem: diagentry 00200098 configdev 00000c48
+[1] SNDRATE 313.0*227.0*50.000000=3552550.000000
+[1] PAL mode V=50.0000Hz H=15625.0879Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
+[1] SNDRATE 313.0*227.0*50.000000=3552550.000000
+[1] SNDRATE 313.0*227.0*50.000000=3552550.000000
+[1] PAL mode V=50.0000Hz H=15625.0879Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
+[1] SNDRATE 313.0*227.0*50.000000=3552550.000000
+[1] 0 00da0000 00010000 00000000 ide_mb
+[1]  - 00100044 00000000
+[1] 1 00600000 00480000 00000000 pcmcia_mb
+[1]  - 00100047 00000000
+[1] 2 00f00000 00010000 00000010 UAEBOOTROM
+[1] 3 00200000 00800000 00000000 Z2Fast
+[1] 4 00e90000 00010000 00000010 UAEFS
+[1] Saved with: 'UAE 6.0.3', description: 'libretro'
+[1] CPU: 68020, PC=0020E18A
+[1] Chunk 'BLIT' total size 63 bytes but read 4 bytes!
+[1] 0 00da0000 00010000 00000000 00100044 ide_mb
+[1] 1 00600000 00480000 00000000 00100047 pcmcia_mb
+[1] 2 00f00000 00010000 00000010 ffffffff UAEBOOTROM
+[1] 3 00200000 00800000 00000000 ffffffff Z2Fast
+[1] 4 00e90000 00010000 00000010 ffffffff UAEFS
+[1] ROM detected (path) as 'C:\Projects\puae-runtime\profiles\10-api-A1200\system\kick40068.A1200'
+[1] Building CPU, 45912 opcodes (2 -2 0)
+[1] CPU=68020, FPU=0, MMU=0, JIT=0. ~cycle-exact
+[1] Reset at 0020E18A. Chipset mask = 00000007
+[1] 00000000    2048K/1 =    2048K ID* C32 Chip memory
+[1] 00200000    8704K/0 =    8704K --  F32 <none>
+[1] 00A80000    1024K/2 =     512K ID* F32 Kickstart ROM (1483A091)
+[1] =KS ROM v3.1 (A1200) rev 40.68 (512k)
+[1] 00B80000     448K/0 =     448K --  F32 <none>
+[1] 00BF0000      64K/0 =      64K --  CIA CIA
+[1] 00C00000    1536K/0 =    1536K --  F32 <none>
+[1] 00D80000     256K/0 =     256K --  C16 Gayle (low)
+[1] 00DC0000      64K/0 =      64K --  C16 Battery backed up clock (MSM6242B)
+[1] 00DD0000      64K/0 =      64K --  C16 Gayle (low)
+[1] 00DE0000      64K/0 =      64K --  C16 Gayle (high)
+[1] 00DF0000      64K/0 =      64K --  C16 Custom chipset
+[1] 00E00000     512K/1 =     512K ID* F32 Kickstart ROM (1483A091)
+[1] =KS ROM v3.1 (A1200) rev 40.68 (512k)
+[1] 00E80000      64K/0 =      64K --  F32 Autoconfig Z2
+[1] 00E90000     448K/0 =     448K --  F32 <none>
+[1] 00F00000      64K/1 =      64K --* F32 UAE Boot ROM
+[1] 00F10000     448K/0 =     448K --  F32 <none>
+[1] 00F80000     512K/1 =     512K ID* F32 Kickstart ROM (1483A091)
+[1] =KS ROM v3.1 (A1200) rev 40.68 (512k)
+[1] 01000000    4080M/0 =    4080M --  F32 <none>
+[1] SNDRATE 313.0*227.0*50.000000=3552550.000000
+[1] PAL mode V=50.0000Hz H=15625.0879Hz (227x312+1) IDX=10 (PAL) D=0 RTG=0/0
+[1] SERIAL: period=372, baud=9600, hsyncs=14, bits=8, PC=20e18a
+[1] CPU=68020 Chipset=AGA PAL
+[1] State restored
+[1] CPU cycleunit: 128 (0.250)
+[1] hardreset, memory cleared
+[1] CPU cycleunit: 128 (0.250)
+[1] 1872 CPU functions

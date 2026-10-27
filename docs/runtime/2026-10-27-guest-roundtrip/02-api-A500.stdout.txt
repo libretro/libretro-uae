@@ -1,0 +1,27 @@
+Registering callback: environment
+Environment initialization: 9
+Environment initialization: 30
+Environment initialization: 31
+Environment initialization: 52
+Environment initialization: 67
+Environment initialization: 35
+Environment initialization: 11
+Environment initialization: 18
+Environment initialization: 65582
+Environment initialization: 65581
+Registering callback: video_refresh
+Registering callback: audio_sample
+Registering callback: audio_sample_batch
+Registering callback: input_poll
+Registering callback: input_state
+Callbacks registered
+Calling retro_init
+Environment initialization: 27
+Environment initialization: 28
+Environment initialization: 57
+Environment initialization: 58
+Environment initialization: 12
+Environment initialization: 69
+Environment initialization: 65587
+Environment initialization: 64
+Environment initialization: 65578

@@ -1,0 +1,288 @@
+[
+  {
+    "event": "launched",
+    "elapsed": 0.008,
+    "pid": 38500
+  },
+  {
+    "event": "command",
+    "elapsed": 0.013,
+    "command": "VERSION",
+    "response": null
+  },
+  {
+    "event": "command",
+    "elapsed": 0.268,
+    "command": "VERSION",
+    "response": null
+  },
+  {
+    "event": "command",
+    "elapsed": 0.524,
+    "command": "VERSION",
+    "response": null
+  },
+  {
+    "event": "command",
+    "elapsed": 0.778,
+    "command": "VERSION",
+    "response": null
+  },
+  {
+    "event": "command",
+    "elapsed": 1.037,
+    "command": "VERSION",
+    "response": "1.22.2"
+  },
+  {
+    "event": "command",
+    "elapsed": 1.054,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 1.317,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 1.587,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 1.847,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 2.107,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 2.367,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 04 00 00 00 00 FC 00 55 00 00 00 00 00 00 00 00 00 00 00 02 48 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 04 00 28 00 44 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 2.627,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 11 00 00 00 00 FC 00 55 00 00 00 00 00 00 00 00 00 00 00 02 48 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 11 00 28 00 44 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 3.647,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 44 00 00 00 00 FC 00 55 00 00 00 00 00 00 00 00 00 00 00 02 48 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 44 00 28 00 44 00 00 00 00"
+  },
+  {
+    "event": "before-reset",
+    "elapsed": 3.649,
+    "guest": {
+      "signature": "GTI1",
+      "ticks": 68,
+      "marker": 584,
+      "register_ticks": 68,
+      "rom_version": 40,
+      "rom_revision": 68
+    }
+  },
+  {
+    "event": "command",
+    "elapsed": 3.65,
+    "command": "RESET",
+    "response": null
+  },
+  {
+    "event": "command",
+    "elapsed": 4.167,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 4.427,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 4.687,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 4.947,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 5.207,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 5.467,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 0C 00 00 00 00 FC 00 55 00 00 00 00 00 00 00 00 00 00 00 02 48 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0C 00 28 00 44 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 5.487,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 0D 00 00 00 00 FC 00 55 00 00 00 00 00 00 00 00 00 00 00 02 48 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0D 00 28 00 44 00 00 00 00"
+  },
+  {
+    "event": "reset-complete",
+    "elapsed": 5.488,
+    "guest": {
+      "signature": "GTI1",
+      "ticks": 13,
+      "marker": 584,
+      "register_ticks": 13,
+      "rom_version": 40,
+      "rom_revision": 68
+    }
+  },
+  {
+    "event": "command",
+    "elapsed": 5.49,
+    "command": "SCREENSHOT",
+    "response": null
+  },
+  {
+    "event": "command",
+    "elapsed": 5.907,
+    "command": "WRITE_CORE_MEMORY 7001c 00 00 04 8a",
+    "response": "WRITE_CORE_MEMORY 7001c 4"
+  },
+  {
+    "event": "command",
+    "elapsed": 6.027,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 28 00 00 00 00 FC 00 55 00 00 00 00 00 00 00 00 00 00 00 04 8A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 28 00 28 00 44 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 6.029,
+    "command": "SAVE_STATE",
+    "response": null
+  },
+  {
+    "event": "command",
+    "elapsed": 6.647,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 47 00 00 00 00 FC 00 55 00 00 00 00 00 00 00 00 00 00 00 04 8A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 47 00 28 00 44 00 00 00 00"
+  },
+  {
+    "event": "saved",
+    "elapsed": 6.649,
+    "guest": {
+      "signature": "GTI1",
+      "ticks": 71,
+      "marker": 1162,
+      "register_ticks": 71,
+      "rom_version": 40,
+      "rom_revision": 68
+    },
+    "states": [
+      {
+        "path": "C:\\Projects\\puae-runtime\\profiles\\13-retroarch-A1200\\states\\guest_input_probe.state",
+        "bytes": 41481,
+        "sha256": "bae5855cb9ca3741e4eb69afc2220cc51666eb7e0c41962fee737f11be80f92c"
+      }
+    ]
+  },
+  {
+    "event": "command",
+    "elapsed": 6.667,
+    "command": "WRITE_CORE_MEMORY 7001c 00 00 0a 42",
+    "response": "WRITE_CORE_MEMORY 7001c 4"
+  },
+  {
+    "event": "command",
+    "elapsed": 8.187,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 94 00 00 00 00 FC 00 55 00 00 00 00 00 00 00 00 00 00 00 0A 42 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 94 00 28 00 44 00 00 00 00"
+  },
+  {
+    "event": "advanced-before-load",
+    "elapsed": 8.189,
+    "guest": {
+      "signature": "GTI1",
+      "ticks": 148,
+      "marker": 2626,
+      "register_ticks": 148,
+      "rom_version": 40,
+      "rom_revision": 68
+    }
+  },
+  {
+    "event": "command",
+    "elapsed": 8.19,
+    "command": "LOAD_STATE",
+    "response": null
+  },
+  {
+    "event": "load-state-sent",
+    "elapsed": 8.192
+  },
+  {
+    "event": "command",
+    "elapsed": 8.357,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 2F 00 00 00 00 FC 00 55 00 00 00 00 00 00 00 00 00 00 00 04 8A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 2F 00 28 00 44 00 00 00 00"
+  },
+  {
+    "event": "restored",
+    "elapsed": 8.36,
+    "guest": {
+      "signature": "GTI1",
+      "ticks": 47,
+      "marker": 1162,
+      "register_ticks": 47,
+      "rom_version": 40,
+      "rom_revision": 68
+    }
+  },
+  {
+    "event": "command",
+    "elapsed": 8.361,
+    "command": "SCREENSHOT",
+    "response": null
+  },
+  {
+    "event": "command",
+    "elapsed": 9.267,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 5E 00 00 00 00 FC 00 55 00 00 00 00 00 00 00 00 00 00 00 04 8A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 5E 00 28 00 44 00 00 00 00"
+  },
+  {
+    "event": "replay",
+    "elapsed": 9.269,
+    "guest": {
+      "signature": "GTI1",
+      "ticks": 94,
+      "marker": 1162,
+      "register_ticks": 94,
+      "rom_version": 40,
+      "rom_revision": 68
+    }
+  },
+  {
+    "event": "command",
+    "elapsed": 9.271,
+    "command": "QUIT",
+    "response": null
+  }
+]

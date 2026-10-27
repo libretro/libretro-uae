@@ -1,0 +1,413 @@
+{
+  "timestamp_utc": "2026-10-26T23:38:55.498781+00:00",
+  "source_head": "f0fbc678818ec509212a59316f31b4ed2e626df5",
+  "branch": "integrate-winuae-20261027",
+  "integration_source_count": 243,
+  "integration_source_mismatches": [],
+  "cores": [
+    {
+      "file": "puae603_libretro.dll",
+      "bytes": 23353856,
+      "sha256": "38578cee10c58bfcb1dabdde4df8a76263c0efcb4e8cc466d0a704be438b61d2",
+      "matches_before_tests": true
+    },
+    {
+      "file": "puae_libretro.dll",
+      "bytes": 17737728,
+      "sha256": "bcd4827e5138a14e22a39535754aea0d3913ef0404b636d1cc666476aa3c19e8",
+      "matches_before_tests": true
+    }
+  ],
+  "retroarch_sha256": "81c11b6f24932bf7918f05eee8928035bff3887335fd2a081507c75e9d94d06a",
+  "archive": {
+    "path": "C:\\Users\\Onur\\Downloads\\KickStartRoms.zip",
+    "sha256": "7451f5a58fc1c812c76bdec69c2a5364a42d8d887770e5b38b56b4c3ca9afb8f"
+  },
+  "roms": [
+    {
+      "file": "kick33180.A500",
+      "sha256": "87cddb1f499e32758de20145e73031a84bab299e3f6e5c8487e76d02b2ee9d16",
+      "matches_original_manifest": true
+    },
+    {
+      "file": "kick34005.A500",
+      "sha256": "ee05862d8102a08436ac4056da7d549db31625c7d47b24dfb7b3c9a5c113ca53",
+      "matches_original_manifest": true
+    },
+    {
+      "file": "kick37175.A500",
+      "sha256": "d0b70e8a1772614b897f92c33cb299bed3fc8e3de488fc12f67f97fc2486eb79",
+      "matches_original_manifest": true
+    },
+    {
+      "file": "kick34005.CDTV",
+      "sha256": "6e48bb768539e8dae352553e5fdfa860682edaf9e26b105fadd8e26103171765",
+      "matches_original_manifest": true
+    },
+    {
+      "file": "kick37350.A600",
+      "sha256": "8d57d6e9d976df42d91ff9d10a5eedaede1a00e3b4b34cad750ca5ff7229f28a",
+      "matches_original_manifest": true
+    },
+    {
+      "file": "kick39106.A1200",
+      "sha256": "293beea59d7de4caab3e07223d66e844ad5268eb06a04f405b523a0a1543d64c",
+      "matches_original_manifest": true
+    },
+    {
+      "file": "kick39106.A4000",
+      "sha256": "b859d9fb3d868a8328a4a363d44934eb1ee1c73955aa98576c7ffe3feed3d3ff",
+      "matches_original_manifest": true
+    },
+    {
+      "file": "kick40060.CD32",
+      "sha256": "3586355514947b5ab48c8755dc004fab94f188b19e7bce491c8f9693499e830b",
+      "matches_original_manifest": true
+    },
+    {
+      "file": "kick40060.CD32.ext",
+      "sha256": "d964826432559994ffe329f643fd4e42dbbff313362d9434945725d7119cae87",
+      "matches_original_manifest": true
+    },
+    {
+      "file": "kick40063.A600",
+      "sha256": "8c8a0cf04f91b88eaf0c4f1126041987067e2286a8ee590bdbae447a8000c5ee",
+      "matches_original_manifest": true
+    },
+    {
+      "file": "kick40068.A1200",
+      "sha256": "6d43840d4099a74170ea0f0425b6257c3891ebcaa39c4d1840075a9ab22b5707",
+      "matches_original_manifest": true
+    },
+    {
+      "file": "kick40068.A4000",
+      "sha256": "71236ed62c85394a3ad7d0d8d65405bac7a10083e06ba6b82120dacc7a00fe9a",
+      "matches_original_manifest": true
+    }
+  ],
+  "tools": [
+    {
+      "file": "scripts/Generate-GuestInputProbe.py",
+      "bytes": 5196,
+      "sha256": "cd7519ee310a285117ac9385394701e0e8a540f105d6cec42b2b953dcb9223a8",
+      "python_syntax_valid": true
+    },
+    {
+      "file": "scripts/Test-GuestRoundTrip.py",
+      "bytes": 20389,
+      "sha256": "473d357dfeda28890c5db5563819f1825a1f9edc3cc7c317138b7af0c0fe39e8",
+      "python_syntax_valid": true
+    },
+    {
+      "file": "scripts/Test-RetroArchGuestState.py",
+      "bytes": 10881,
+      "sha256": "85e3c41f0db6d29aabc63c64d8a1f2467da95721f3b89d1066ecbda6f9dcd1bb",
+      "python_syntax_valid": true
+    },
+    {
+      "file": "scripts/libretro-test-log.c",
+      "bytes": 533,
+      "sha256": "46ad36382a27267316cb3474ea122113e5ef265b4e472338b88a727514708c7b",
+      "python_syntax_valid": null
+    },
+    {
+      "file": "build-test-tools/libretro-test-log.dll",
+      "bytes": 24522,
+      "sha256": "ef5120ba7f97e9ae92d91bbd768d1cd11bf03729c412c73fb09c195c726b605f",
+      "python_syntax_valid": null
+    }
+  ],
+  "profile_artifacts": [
+    {
+      "run": "01-api-A500",
+      "fixture_path": "C:\\Projects\\puae-runtime\\profiles\\01-api-A500\\content\\guest_input_probe.adf",
+      "fixture_sha256": "082b3571a9e52cb9af26ac5b7944276a851e0ba2034527b738ebf4cc6a802512",
+      "fixture_matches": true,
+      "rom_copies": [
+        {
+          "file": "C:\\Projects\\puae-runtime\\profiles\\01-api-A500\\system\\kick34005.A500",
+          "sha256": "ee05862d8102a08436ac4056da7d549db31625c7d47b24dfb7b3c9a5c113ca53",
+          "matches_manifest": true
+        }
+      ],
+      "states": []
+    },
+    {
+      "run": "02-api-A500",
+      "fixture_path": "C:\\Projects\\puae-runtime\\profiles\\02-api-A500\\content\\guest_input_probe.adf",
+      "fixture_sha256": "082b3571a9e52cb9af26ac5b7944276a851e0ba2034527b738ebf4cc6a802512",
+      "fixture_matches": true,
+      "rom_copies": [
+        {
+          "file": "C:\\Projects\\puae-runtime\\profiles\\02-api-A500\\system\\kick34005.A500",
+          "sha256": "ee05862d8102a08436ac4056da7d549db31625c7d47b24dfb7b3c9a5c113ca53",
+          "matches_manifest": true
+        }
+      ],
+      "states": []
+    },
+    {
+      "run": "03-api-A500",
+      "fixture_path": "C:\\Projects\\puae-runtime\\profiles\\03-api-A500\\content\\guest_input_probe.adf",
+      "fixture_sha256": "082b3571a9e52cb9af26ac5b7944276a851e0ba2034527b738ebf4cc6a802512",
+      "fixture_matches": true,
+      "rom_copies": [
+        {
+          "file": "C:\\Projects\\puae-runtime\\profiles\\03-api-A500\\system\\kick34005.A500",
+          "sha256": "ee05862d8102a08436ac4056da7d549db31625c7d47b24dfb7b3c9a5c113ca53",
+          "matches_manifest": true
+        }
+      ],
+      "states": [
+        {
+          "path": "C:\\Projects\\puae-runtime\\profiles\\03-api-A500\\states\\state-a.state",
+          "bytes": 1229005,
+          "sha256": "17ba08a15aae7a6f1708aaf57bc6bfe5b82d4ad7e83c163bcc7606e5369ddc10",
+          "outside_checkout": true
+        }
+      ]
+    },
+    {
+      "run": "04-api-A1200",
+      "fixture_path": "C:\\Projects\\puae-runtime\\profiles\\04-api-A1200\\content\\guest_input_probe.adf",
+      "fixture_sha256": "082b3571a9e52cb9af26ac5b7944276a851e0ba2034527b738ebf4cc6a802512",
+      "fixture_matches": true,
+      "rom_copies": [
+        {
+          "file": "C:\\Projects\\puae-runtime\\profiles\\04-api-A1200\\system\\kick40068.A1200",
+          "sha256": "6d43840d4099a74170ea0f0425b6257c3891ebcaa39c4d1840075a9ab22b5707",
+          "matches_manifest": true
+        }
+      ],
+      "states": [
+        {
+          "path": "C:\\Projects\\puae-runtime\\profiles\\04-api-A1200\\states\\state-a.state",
+          "bytes": 11138048,
+          "sha256": "a65abe4114b4ba7e79c2ef7208256bae0c434a4ea4fbfff22424ff863fa61379",
+          "outside_checkout": true
+        }
+      ]
+    },
+    {
+      "run": "05-baseline-A500-control",
+      "fixture_path": "C:\\Projects\\puae-runtime\\profiles\\05-baseline-A500-control\\content\\guest_input_probe.adf",
+      "fixture_sha256": "082b3571a9e52cb9af26ac5b7944276a851e0ba2034527b738ebf4cc6a802512",
+      "fixture_matches": true,
+      "rom_copies": [
+        {
+          "file": "C:\\Projects\\puae-runtime\\profiles\\05-baseline-A500-control\\system\\kick34005.A500",
+          "sha256": "ee05862d8102a08436ac4056da7d549db31625c7d47b24dfb7b3c9a5c113ca53",
+          "matches_manifest": true
+        }
+      ],
+      "states": [
+        {
+          "path": "C:\\Projects\\puae-runtime\\profiles\\05-baseline-A500-control\\states\\state-a.state",
+          "bytes": 1229005,
+          "sha256": "8377d04aa3a8f3501fd79e7c023f8e6cf43c7ad63cd90ea43bc5dcc7761f94bd",
+          "outside_checkout": true
+        }
+      ]
+    },
+    {
+      "run": "06-retroarch-A500",
+      "fixture_path": "C:\\Projects\\puae-runtime\\profiles\\06-retroarch-A500\\content\\guest_input_probe.adf",
+      "fixture_sha256": "082b3571a9e52cb9af26ac5b7944276a851e0ba2034527b738ebf4cc6a802512",
+      "fixture_matches": true,
+      "rom_copies": [
+        {
+          "file": "C:\\Projects\\puae-runtime\\profiles\\06-retroarch-A500\\system\\kick34005.A500",
+          "sha256": "ee05862d8102a08436ac4056da7d549db31625c7d47b24dfb7b3c9a5c113ca53",
+          "matches_manifest": true
+        }
+      ],
+      "states": []
+    },
+    {
+      "run": "07-retroarch-A500",
+      "fixture_path": "C:\\Projects\\puae-runtime\\profiles\\07-retroarch-A500\\content\\guest_input_probe.adf",
+      "fixture_sha256": "082b3571a9e52cb9af26ac5b7944276a851e0ba2034527b738ebf4cc6a802512",
+      "fixture_matches": true,
+      "rom_copies": [
+        {
+          "file": "C:\\Projects\\puae-runtime\\profiles\\07-retroarch-A500\\system\\kick34005.A500",
+          "sha256": "ee05862d8102a08436ac4056da7d549db31625c7d47b24dfb7b3c9a5c113ca53",
+          "matches_manifest": true
+        }
+      ],
+      "states": []
+    },
+    {
+      "run": "08-retroarch-A500",
+      "fixture_path": "C:\\Projects\\puae-runtime\\profiles\\08-retroarch-A500\\content\\guest_input_probe.adf",
+      "fixture_sha256": "082b3571a9e52cb9af26ac5b7944276a851e0ba2034527b738ebf4cc6a802512",
+      "fixture_matches": true,
+      "rom_copies": [
+        {
+          "file": "C:\\Projects\\puae-runtime\\profiles\\08-retroarch-A500\\system\\kick34005.A500",
+          "sha256": "ee05862d8102a08436ac4056da7d549db31625c7d47b24dfb7b3c9a5c113ca53",
+          "matches_manifest": true
+        }
+      ],
+      "states": [
+        {
+          "path": "C:\\Projects\\puae-runtime\\profiles\\08-retroarch-A500\\states\\guest_input_probe.state",
+          "bytes": 18581,
+          "sha256": "e85c80d2f9a0cde85d1a8d7405f410b069c3ff168ca2518eb6ee0d17bd1a661f",
+          "outside_checkout": true
+        }
+      ]
+    },
+    {
+      "run": "09-api-A500-early",
+      "fixture_path": "C:\\Projects\\puae-runtime\\profiles\\09-api-A500-early\\content\\guest_input_probe.adf",
+      "fixture_sha256": "6f99078e0ea5ff8db1d97284b57d0ccb3dfe2d38c762cd88ed46fd91ae0ffa6e",
+      "fixture_matches": true,
+      "rom_copies": [
+        {
+          "file": "C:\\Projects\\puae-runtime\\profiles\\09-api-A500-early\\system\\kick34005.A500",
+          "sha256": "ee05862d8102a08436ac4056da7d549db31625c7d47b24dfb7b3c9a5c113ca53",
+          "matches_manifest": true
+        }
+      ],
+      "states": [
+        {
+          "path": "C:\\Projects\\puae-runtime\\profiles\\09-api-A500-early\\states\\state-a.state",
+          "bytes": 1229005,
+          "sha256": "48a80be53ef9e09e0b3e9e307b9e61b5afad708dbaab3aff7432d594cebad48a",
+          "outside_checkout": true
+        }
+      ]
+    },
+    {
+      "run": "10-api-A1200",
+      "fixture_path": "C:\\Projects\\puae-runtime\\profiles\\10-api-A1200\\content\\guest_input_probe.adf",
+      "fixture_sha256": "6f99078e0ea5ff8db1d97284b57d0ccb3dfe2d38c762cd88ed46fd91ae0ffa6e",
+      "fixture_matches": true,
+      "rom_copies": [
+        {
+          "file": "C:\\Projects\\puae-runtime\\profiles\\10-api-A1200\\system\\kick40068.A1200",
+          "sha256": "6d43840d4099a74170ea0f0425b6257c3891ebcaa39c4d1840075a9ab22b5707",
+          "matches_manifest": true
+        }
+      ],
+      "states": [
+        {
+          "path": "C:\\Projects\\puae-runtime\\profiles\\10-api-A1200\\states\\state-a.state",
+          "bytes": 11138048,
+          "sha256": "3311532fd4773a56de560536921be6ea607718ad540d7afd3d98487d7b39d793",
+          "outside_checkout": true
+        }
+      ]
+    },
+    {
+      "run": "11-api-A500-settled",
+      "fixture_path": "C:\\Projects\\puae-runtime\\profiles\\11-api-A500-settled\\content\\guest_input_probe.adf",
+      "fixture_sha256": "6f99078e0ea5ff8db1d97284b57d0ccb3dfe2d38c762cd88ed46fd91ae0ffa6e",
+      "fixture_matches": true,
+      "rom_copies": [
+        {
+          "file": "C:\\Projects\\puae-runtime\\profiles\\11-api-A500-settled\\system\\kick34005.A500",
+          "sha256": "ee05862d8102a08436ac4056da7d549db31625c7d47b24dfb7b3c9a5c113ca53",
+          "matches_manifest": true
+        }
+      ],
+      "states": [
+        {
+          "path": "C:\\Projects\\puae-runtime\\profiles\\11-api-A500-settled\\states\\state-a.state",
+          "bytes": 1229005,
+          "sha256": "219e318a9d19522c1f4b009d28f595c764ac2acab690e884f715a449aad2af68",
+          "outside_checkout": true
+        }
+      ]
+    },
+    {
+      "run": "12-baseline-A500-control",
+      "fixture_path": "C:\\Projects\\puae-runtime\\profiles\\12-baseline-A500-control\\content\\guest_input_probe.adf",
+      "fixture_sha256": "6f99078e0ea5ff8db1d97284b57d0ccb3dfe2d38c762cd88ed46fd91ae0ffa6e",
+      "fixture_matches": true,
+      "rom_copies": [
+        {
+          "file": "C:\\Projects\\puae-runtime\\profiles\\12-baseline-A500-control\\system\\kick34005.A500",
+          "sha256": "ee05862d8102a08436ac4056da7d549db31625c7d47b24dfb7b3c9a5c113ca53",
+          "matches_manifest": true
+        }
+      ],
+      "states": [
+        {
+          "path": "C:\\Projects\\puae-runtime\\profiles\\12-baseline-A500-control\\states\\state-a.state",
+          "bytes": 1229005,
+          "sha256": "6848fc4933f38c154ac765a2cccc1f027c61d61dce3484be3b25d854047069ed",
+          "outside_checkout": true
+        }
+      ]
+    },
+    {
+      "run": "13-retroarch-A1200",
+      "fixture_path": "C:\\Projects\\puae-runtime\\profiles\\13-retroarch-A1200\\content\\guest_input_probe.adf",
+      "fixture_sha256": "6f99078e0ea5ff8db1d97284b57d0ccb3dfe2d38c762cd88ed46fd91ae0ffa6e",
+      "fixture_matches": true,
+      "rom_copies": [
+        {
+          "file": "C:\\Projects\\puae-runtime\\profiles\\13-retroarch-A1200\\system\\kick40068.A1200",
+          "sha256": "6d43840d4099a74170ea0f0425b6257c3891ebcaa39c4d1840075a9ab22b5707",
+          "matches_manifest": true
+        }
+      ],
+      "states": [
+        {
+          "path": "C:\\Projects\\puae-runtime\\profiles\\13-retroarch-A1200\\states\\guest_input_probe.state",
+          "bytes": 41481,
+          "sha256": "bae5855cb9ca3741e4eb69afc2220cc51666eb7e0c41962fee737f11be80f92c",
+          "outside_checkout": true
+        }
+      ]
+    },
+    {
+      "run": "14-retroarch-A500",
+      "fixture_path": "C:\\Projects\\puae-runtime\\profiles\\14-retroarch-A500\\content\\guest_input_probe.adf",
+      "fixture_sha256": "6f99078e0ea5ff8db1d97284b57d0ccb3dfe2d38c762cd88ed46fd91ae0ffa6e",
+      "fixture_matches": true,
+      "rom_copies": [
+        {
+          "file": "C:\\Projects\\puae-runtime\\profiles\\14-retroarch-A500\\system\\kick34005.A500",
+          "sha256": "ee05862d8102a08436ac4056da7d549db31625c7d47b24dfb7b3c9a5c113ca53",
+          "matches_manifest": true
+        }
+      ],
+      "states": [
+        {
+          "path": "C:\\Projects\\puae-runtime\\profiles\\14-retroarch-A500\\states\\guest_input_probe.state",
+          "bytes": 18607,
+          "sha256": "08a366fd44f10469eb9be62344ca82eda31abf763099848b4056541395d307b8",
+          "outside_checkout": true
+        }
+      ]
+    }
+  ],
+  "modified_tracked_files": [
+    ".gitignore",
+    "docs/GETTING_STARTED.md",
+    "docs/KICKSTART_SMOKE_TEST.md",
+    "docs/upstream/2026-10-27-winuae/INTEGRATION_STATUS.md"
+  ],
+  "staged_files": [],
+  "unexpected_new_files": [],
+  "checks": {
+    "all_243_integration_sources_match": true,
+    "no_emulator_source_modified": true,
+    "all_roms_unchanged": true,
+    "archive_unchanged": true,
+    "both_core_dlls_unchanged": true,
+    "all_generated_fixtures_unchanged": true,
+    "all_profile_rom_copies_match": true,
+    "all_states_outside_checkout": true,
+    "exclusion_rules_verified": true,
+    "no_tracked_binary_states": true,
+    "no_unexpected_new_file_extensions": true,
+    "index_unchanged": true,
+    "retroarch_executable_unchanged": true
+  },
+  "all_integrity_checks_pass": true,
+  "note": "This verifies preservation and evidence custody, not emulator test acceptance."
+}

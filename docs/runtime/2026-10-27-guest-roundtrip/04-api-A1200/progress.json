@@ -1,0 +1,43 @@
+{
+  "event": "final",
+  "guest": {
+    "ready": true,
+    "ram_bytes": 2097152,
+    "boot_count": 1,
+    "ticks": 39,
+    "joy0": 3092,
+    "joy1": 0,
+    "cia_buttons": 252,
+    "potgor": 21760,
+    "last_serial": 0,
+    "keyboard_count": 0,
+    "marker": 1162,
+    "serial_ring": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "frontend_frame": 528
+  },
+  "screenshot": {
+    "file": "05-restored.png",
+    "sha256": "58a036d4aba9fff6024807c4035ae1c9590403414aa7b0e6817b9de73fdf4a61",
+    "dimensions": [
+      720,
+      287
+    ]
+  }
+}

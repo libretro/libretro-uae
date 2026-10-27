@@ -1,0 +1,29 @@
+{
+  "model": "A500",
+  "core_sha256": "38578cee10c58bfcb1dabdde4df8a76263c0efcb4e8cc466d0a704be438b61d2",
+  "firmware": "kick34005.A500",
+  "firmware_sha256": "ee05862d8102a08436ac4056da7d549db31625c7d47b24dfb7b3c9a5c113ca53",
+  "profile": "C:\\Projects\\puae-runtime\\profiles\\03-api-A500",
+  "pixel_option": "16bit",
+  "checks": {
+    "kickstart_booted_diagnostic": true,
+    "mouse_motion": true,
+    "mouse_left_press_release": true,
+    "mouse_right_press_release": true,
+    "joystick-up": true,
+    "joystick-down": true,
+    "joystick-left": true,
+    "joystick-right": true,
+    "joystick-fire": true,
+    "keyboard_a_make_break": true,
+    "reset_reboots_same_diagnostic": true
+  },
+  "state_bytes_kept_outside_git": true,
+  "error": "exception: access violation reading 0x0000000000000000",
+  "traceback": "Traceback (most recent call last):\n  File \"C:\\Projects\\puae\\scripts\\Test-GuestRoundTrip.py\", line 355, in main\n    restored = host.restore('roundtrip-1', state)\n  File \"C:\\Projects\\puae\\scripts\\Test-GuestRoundTrip.py\", line 254, in restore\n    ok = self.lib.retro_unserialize(buf, len(buf))\nOSError: exception: access violation reading 0x0000000000000000\n",
+  "all_checks_pass": false,
+  "elapsed_seconds": 5.58,
+  "core_sha256_after": "38578cee10c58bfcb1dabdde4df8a76263c0efcb4e8cc466d0a704be438b61d2",
+  "fixture_sha256_after": "082b3571a9e52cb9af26ac5b7944276a851e0ba2034527b738ebf4cc6a802512",
+  "timestamp_utc": "2026-10-26T23:16:15.359537+00:00"
+}

@@ -1,0 +1,35 @@
+{
+  "event": "roundtrip-1-before-unserialize",
+  "guest": {
+    "ready": true,
+    "ram_bytes": 524288,
+    "boot_count": 1,
+    "ticks": 74,
+    "joy0": 3092,
+    "joy1": 0,
+    "cia_buttons": 252,
+    "potgor": 17664,
+    "last_serial": 0,
+    "keyboard_count": 0,
+    "marker": 2626,
+    "serial_ring": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "frontend_frame": 623
+  }
+}

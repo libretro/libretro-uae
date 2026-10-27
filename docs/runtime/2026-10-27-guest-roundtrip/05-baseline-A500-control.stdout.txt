@@ -1,0 +1,372 @@
+Registering callback: environment
+Environment initialization: 9
+Environment initialization: 30
+Environment initialization: 31
+Environment initialization: 52
+Environment initialization: 67
+Environment initialization: 35
+Environment initialization: 11
+Environment initialization: 18
+Environment initialization: 65582
+Environment initialization: 65581
+Registering callback: video_refresh
+Registering callback: audio_sample
+Registering callback: audio_sample_batch
+Registering callback: input_poll
+Registering callback: input_state
+Callbacks registered
+Calling retro_init
+Environment initialization: 27
+Environment initialization: 28
+Environment initialization: 57
+Environment initialization: 58
+Environment initialization: 12
+Environment initialization: 69
+Environment initialization: 65587
+Environment initialization: 64
+Environment initialization: 65578
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 15
+Environment initialization: 55
+Environment initialization: 55
+Environment initialization: 55
+Environment initialization: 55
+Environment initialization: 55
+Calling retro_load_game
+Environment initialization: 10
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\system\kick34005.A500' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\system\kick34005.A500' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\system\kick34005.A500' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\system\kick34005.A500' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\system/rom.key' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+Environment initialization: 65572
+Environment initialization: 17
+Environment initialization: 32
+boot-ready {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 36, 'joy0': 0, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 240}
+mouse-moved {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 40, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 244}
+mouse-left-held {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 44, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 188, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 248}
+mouse-right-held {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 48, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 16640, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 252}
+mouse-released {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 52, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 256}
+joystick-up-held {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 56, 'joy0': 3092, 'joy1': 256, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 260}
+joystick-up-released {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 60, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 264}
+joystick-down-held {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 64, 'joy0': 3092, 'joy1': 1, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 268}
+joystick-down-released {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 68, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 272}
+joystick-left-held {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 72, 'joy0': 3092, 'joy1': 65280, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 276}
+joystick-left-released {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 76, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 280}
+joystick-right-held {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 80, 'joy0': 3092, 'joy1': 255, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 284}
+joystick-right-released {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 84, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 288}
+joystick-fire-held {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 88, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 124, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 292}
+joystick-fire-released {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 92, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 296}
+keyboard-a-held {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 130, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 191, 'keyboard_count': 1, 'marker': 584, 'serial_ring': [191, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 334}
+keyboard-a-released {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 138, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 190, 'keyboard_count': 2, 'marker': 584, 'serial_ring': [191, 190, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 342}
+before-reset {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 138, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 190, 'keyboard_count': 2, 'marker': 584, 'serial_ring': [191, 190, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 342}
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\system\kick34005.A500' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\system\kick34005.A500' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\system\kick34005.A500' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+reset-request-applied {'ready': False, 'ram_bytes': 524288, 'boot_count': 4294967295, 'ticks': 4294967295, 'joy0': 65535, 'joy1': 65535, 'cia_buttons': 255, 'potgor': 65535, 'last_serial': 255, 'keyboard_count': 4294967295, 'marker': 4294967295, 'serial_ring': [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255], 'frontend_frame': 344}
+after-reset-boot {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 6, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 554}
+state-a-guest {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 14, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 1162, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 562}
+state-a-before-serialize {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 14, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 1162, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 562}
+state-a-saved {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 14, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 1162, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 562}
+state-a-mutated {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 74, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 2626, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 622}
+roundtrip-1-before-unserialize {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 74, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 2626, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 622}
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+roundtrip-1-after-unserialize {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 15, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 1162, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 622}
+roundtrip-1-settled {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 19, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 1162, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 626}
+roundtrip-1-replay {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 39, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 1162, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 646}
+roundtrip-2-before-unserialize {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 69, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 2748, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 676}
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+roundtrip-2-after-unserialize {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 15, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 1162, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 676}
+roundtrip-2-settled {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 19, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 1162, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 680}
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\system\kick34005.A500' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\system\kick34005.A500' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\system\kick34005.A500' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+fresh-reset-before-state-restore {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 6, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 892}
+restore-after-reset-before-unserialize {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 6, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 584, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 892}
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+restore-after-reset-after-unserialize {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 15, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 1162, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 892}
+restore-after-reset-settled {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 19, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 1162, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 896}
+final {'ready': True, 'ram_bytes': 524288, 'boot_count': 1, 'ticks': 39, 'joy0': 3092, 'joy1': 0, 'cia_buttons': 252, 'potgor': 17664, 'last_serial': 0, 'keyboard_count': 0, 'marker': 1162, 'serial_ring': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'frontend_frame': 916}
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe.save_adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 7  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\saves\guest_input_probe_save.adf' 1  
+retro_vfs_file_open_impl 'C:\Projects\puae-runtime\profiles\05-baseline-A500-control\content\guest_input_probe.adf' 7  
+{
+  "model": "A500",
+  "core_variant": "baseline",
+  "core_sha256": "bcd4827e5138a14e22a39535754aea0d3913ef0404b636d1cc666476aa3c19e8",
+  "firmware": "kick34005.A500",
+  "firmware_sha256": "ee05862d8102a08436ac4056da7d549db31625c7d47b24dfb7b3c9a5c113ca53",
+  "profile": "C:\\Projects\\puae-runtime\\profiles\\05-baseline-A500-control",
+  "pixel_option": "16bit",
+  "checks": {
+    "kickstart_booted_diagnostic": true,
+    "mouse_motion": true,
+    "mouse_left_press_release": true,
+    "mouse_right_press_release": true,
+    "joystick-up": true,
+    "joystick-down": true,
+    "joystick-left": true,
+    "joystick-right": true,
+    "joystick-fire": true,
+    "keyboard_a_make_break": true,
+    "reset_reboots_same_diagnostic": true,
+    "state_serialization": true,
+    "state_roundtrip_1": true,
+    "execution_after_restore": true,
+    "state_roundtrip_2": true,
+    "state_restore_after_reset": true
+  },
+  "state_bytes_kept_outside_git": true,
+  "all_checks_pass": true,
+  "clean_unload": true,
+  "elapsed_seconds": 6.591,
+  "core_sha256_after": "bcd4827e5138a14e22a39535754aea0d3913ef0404b636d1cc666476aa3c19e8",
+  "fixture_sha256_after": "082b3571a9e52cb9af26ac5b7944276a851e0ba2034527b738ebf4cc6a802512",
+  "timestamp_utc": "2026-10-26T23:20:30.365618+00:00"
+}

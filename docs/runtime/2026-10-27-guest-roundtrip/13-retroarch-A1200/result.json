@@ -1,0 +1,42 @@
+{
+  "model": "A1200",
+  "core_sha256": "38578cee10c58bfcb1dabdde4df8a76263c0efcb4e8cc466d0a704be438b61d2",
+  "rom": "kick40068.A1200",
+  "rom_sha256": "6d43840d4099a74170ea0f0425b6257c3891ebcaa39c4d1840075a9ab22b5707",
+  "executable_sha256": "81c11b6f24932bf7918f05eee8928035bff3887335fd2a081507c75e9d94d06a",
+  "profile": "C:\\Projects\\puae-runtime\\profiles\\13-retroarch-A1200",
+  "commands_port": 55413,
+  "checks": {
+    "executing_rom_header": true,
+    "frontend_reset": true,
+    "frontend_save_state": true,
+    "frontend_state_roundtrip": true,
+    "frontend_cpu_register_roundtrip": true,
+    "frontend_execution_after_restore": true
+  },
+  "arguments": [
+    "C:\\Projects\\puae-runtime\\RetroArch-Win64\\retroarch.exe",
+    "--verbose",
+    "--config",
+    "C:\\Projects\\puae-runtime\\profiles\\13-retroarch-A1200\\retroarch.cfg",
+    "-L",
+    "C:\\Projects\\puae\\puae603_libretro.dll",
+    "--log-file=C:\\Projects\\puae\\docs\\runtime\\2026-10-27-guest-roundtrip\\13-retroarch-A1200\\retroarch.log",
+    "--max-frames=5000",
+    "C:\\Projects\\puae-runtime\\profiles\\13-retroarch-A1200\\content\\guest_input_probe.adf"
+  ],
+  "pid": 38500,
+  "state_files": [
+    {
+      "path": "C:\\Projects\\puae-runtime\\profiles\\13-retroarch-A1200\\states\\guest_input_probe.state",
+      "bytes": 41481,
+      "sha256": "bae5855cb9ca3741e4eb69afc2220cc51666eb7e0c41962fee737f11be80f92c"
+    }
+  ],
+  "exit_code": 0,
+  "clean_exit": true,
+  "elapsed_seconds": 9.577,
+  "all_checks_pass": true,
+  "core_sha256_after": "38578cee10c58bfcb1dabdde4df8a76263c0efcb4e8cc466d0a704be438b61d2",
+  "fixture_sha256_after": "6f99078e0ea5ff8db1d97284b57d0ccb3dfe2d38c762cd88ed46fd91ae0ffa6e"
+}

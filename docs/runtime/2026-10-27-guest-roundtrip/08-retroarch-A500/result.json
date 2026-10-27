@@ -1,0 +1,40 @@
+{
+  "model": "A500",
+  "core_sha256": "38578cee10c58bfcb1dabdde4df8a76263c0efcb4e8cc466d0a704be438b61d2",
+  "rom": "kick34005.A500",
+  "rom_sha256": "ee05862d8102a08436ac4056da7d549db31625c7d47b24dfb7b3c9a5c113ca53",
+  "executable_sha256": "81c11b6f24932bf7918f05eee8928035bff3887335fd2a081507c75e9d94d06a",
+  "profile": "C:\\Projects\\puae-runtime\\profiles\\08-retroarch-A500",
+  "commands_port": 55408,
+  "checks": {
+    "frontend_reset": true,
+    "frontend_save_state": true,
+    "frontend_state_roundtrip": true,
+    "frontend_execution_after_restore": true
+  },
+  "arguments": [
+    "C:\\Projects\\puae-runtime\\RetroArch-Win64\\retroarch.exe",
+    "--verbose",
+    "--config",
+    "C:\\Projects\\puae-runtime\\profiles\\08-retroarch-A500\\retroarch.cfg",
+    "-L",
+    "C:\\Projects\\puae\\puae603_libretro.dll",
+    "--log-file=C:\\Projects\\puae\\docs\\runtime\\2026-10-27-guest-roundtrip\\08-retroarch-A500\\retroarch.log",
+    "--max-frames=5000",
+    "C:\\Projects\\puae-runtime\\profiles\\08-retroarch-A500\\content\\guest_input_probe.adf"
+  ],
+  "pid": 20760,
+  "state_files": [
+    {
+      "path": "C:\\Projects\\puae-runtime\\profiles\\08-retroarch-A500\\states\\guest_input_probe.state",
+      "bytes": 18581,
+      "sha256": "e85c80d2f9a0cde85d1a8d7405f410b069c3ff168ca2518eb6ee0d17bd1a661f"
+    }
+  ],
+  "exit_code": 0,
+  "clean_exit": true,
+  "elapsed_seconds": 14.761,
+  "all_checks_pass": true,
+  "core_sha256_after": "38578cee10c58bfcb1dabdde4df8a76263c0efcb4e8cc466d0a704be438b61d2",
+  "fixture_sha256_after": "082b3571a9e52cb9af26ac5b7944276a851e0ba2034527b738ebf4cc6a802512"
+}

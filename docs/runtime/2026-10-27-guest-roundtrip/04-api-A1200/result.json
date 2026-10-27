@@ -1,0 +1,32 @@
+{
+  "model": "A1200",
+  "core_sha256": "38578cee10c58bfcb1dabdde4df8a76263c0efcb4e8cc466d0a704be438b61d2",
+  "firmware": "kick40068.A1200",
+  "firmware_sha256": "6d43840d4099a74170ea0f0425b6257c3891ebcaa39c4d1840075a9ab22b5707",
+  "profile": "C:\\Projects\\puae-runtime\\profiles\\04-api-A1200",
+  "pixel_option": "16bit",
+  "checks": {
+    "kickstart_booted_diagnostic": true,
+    "mouse_motion": true,
+    "mouse_left_press_release": true,
+    "mouse_right_press_release": true,
+    "joystick-up": true,
+    "joystick-down": true,
+    "joystick-left": true,
+    "joystick-right": true,
+    "joystick-fire": true,
+    "keyboard_a_make_break": true,
+    "reset_reboots_same_diagnostic": true,
+    "state_roundtrip_1": true,
+    "execution_after_restore": true,
+    "state_roundtrip_2": true,
+    "state_restore_after_reset": true
+  },
+  "state_bytes_kept_outside_git": true,
+  "all_checks_pass": true,
+  "clean_unload": true,
+  "elapsed_seconds": 8.033,
+  "core_sha256_after": "38578cee10c58bfcb1dabdde4df8a76263c0efcb4e8cc466d0a704be438b61d2",
+  "fixture_sha256_after": "082b3571a9e52cb9af26ac5b7944276a851e0ba2034527b738ebf4cc6a802512",
+  "timestamp_utc": "2026-10-26T23:17:18.560108+00:00"
+}

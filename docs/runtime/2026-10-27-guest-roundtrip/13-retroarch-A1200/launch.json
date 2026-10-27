@@ -1,0 +1,21 @@
+{
+  "model": "A1200",
+  "core_sha256": "38578cee10c58bfcb1dabdde4df8a76263c0efcb4e8cc466d0a704be438b61d2",
+  "rom": "kick40068.A1200",
+  "rom_sha256": "6d43840d4099a74170ea0f0425b6257c3891ebcaa39c4d1840075a9ab22b5707",
+  "executable_sha256": "81c11b6f24932bf7918f05eee8928035bff3887335fd2a081507c75e9d94d06a",
+  "profile": "C:\\Projects\\puae-runtime\\profiles\\13-retroarch-A1200",
+  "commands_port": 55413,
+  "checks": {},
+  "arguments": [
+    "C:\\Projects\\puae-runtime\\RetroArch-Win64\\retroarch.exe",
+    "--verbose",
+    "--config",
+    "C:\\Projects\\puae-runtime\\profiles\\13-retroarch-A1200\\retroarch.cfg",
+    "-L",
+    "C:\\Projects\\puae\\puae603_libretro.dll",
+    "--log-file=C:\\Projects\\puae\\docs\\runtime\\2026-10-27-guest-roundtrip\\13-retroarch-A1200\\retroarch.log",
+    "--max-frames=5000",
+    "C:\\Projects\\puae-runtime\\profiles\\13-retroarch-A1200\\content\\guest_input_probe.adf"
+  ]
+}

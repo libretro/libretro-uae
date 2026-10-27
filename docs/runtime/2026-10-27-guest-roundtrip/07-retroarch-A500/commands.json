@@ -1,0 +1,157 @@
+[
+  {
+    "event": "launched",
+    "elapsed": 0.008,
+    "pid": 31824
+  },
+  {
+    "event": "command",
+    "elapsed": 0.012,
+    "command": "VERSION",
+    "response": null
+  },
+  {
+    "event": "command",
+    "elapsed": 0.267,
+    "command": "VERSION",
+    "response": null
+  },
+  {
+    "event": "command",
+    "elapsed": 0.521,
+    "command": "VERSION",
+    "response": null
+  },
+  {
+    "event": "command",
+    "elapsed": 0.776,
+    "command": "VERSION",
+    "response": null
+  },
+  {
+    "event": "command",
+    "elapsed": 1.042,
+    "command": "VERSION",
+    "response": "1.22.2"
+  },
+  {
+    "event": "command",
+    "elapsed": 1.059,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF"
+  },
+  {
+    "event": "command",
+    "elapsed": 1.327,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF"
+  },
+  {
+    "event": "command",
+    "elapsed": 1.587,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 F2 D4 B6 98 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF"
+  },
+  {
+    "event": "command",
+    "elapsed": 1.846,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 2.106,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 2.366,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 2.626,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 2.886,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 3.146,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 3.406,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 3.666,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 3.926,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 4.186,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 4.446,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 4.707,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 4.966,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 07 00 00 00 00 FC 00 45 00 00 00 00 00 00 00 00 00 00 00 02 48 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 5.969,
+    "command": "PAUSE_TOGGLE",
+    "response": null
+  },
+  {
+    "event": "command",
+    "elapsed": 6.377,
+    "command": "GET_STATUS",
+    "response": null
+  },
+  {
+    "event": "failure",
+    "elapsed": 6.379,
+    "error": "None",
+    "process_exit": null
+  },
+  {
+    "event": "command",
+    "elapsed": 6.38,
+    "command": "QUIT",
+    "response": null
+  }
+]

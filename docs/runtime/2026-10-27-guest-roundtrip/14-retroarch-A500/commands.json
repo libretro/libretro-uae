@@ -1,0 +1,394 @@
+[
+  {
+    "event": "launched",
+    "elapsed": 0.009,
+    "pid": 16472
+  },
+  {
+    "event": "command",
+    "elapsed": 0.013,
+    "command": "VERSION",
+    "response": null
+  },
+  {
+    "event": "command",
+    "elapsed": 0.268,
+    "command": "VERSION",
+    "response": null
+  },
+  {
+    "event": "command",
+    "elapsed": 0.523,
+    "command": "VERSION",
+    "response": null
+  },
+  {
+    "event": "command",
+    "elapsed": 0.778,
+    "command": "VERSION",
+    "response": null
+  },
+  {
+    "event": "command",
+    "elapsed": 1.032,
+    "command": "VERSION",
+    "response": "1.22.2"
+  },
+  {
+    "event": "command",
+    "elapsed": 1.049,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF"
+  },
+  {
+    "event": "command",
+    "elapsed": 1.308,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF"
+  },
+  {
+    "event": "command",
+    "elapsed": 1.568,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF"
+  },
+  {
+    "event": "command",
+    "elapsed": 1.828,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 F2 D4 B6 98 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF"
+  },
+  {
+    "event": "command",
+    "elapsed": 2.087,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 2.348,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 2.608,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 2.868,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 3.128,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 3.388,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 3.648,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 3.908,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 4.168,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 4.428,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 4.688,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 4.948,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 01 00 00 00 00 FC 00 45 00 00 00 00 00 00 00 00 00 00 00 02 48 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 22 00 05 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 5.208,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 0E 00 00 00 00 FC 00 45 00 00 00 00 00 00 00 00 00 00 00 02 48 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0E 00 22 00 05 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 6.228,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 41 00 00 00 00 FC 00 45 00 00 00 00 00 00 00 00 00 00 00 02 48 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 41 00 22 00 05 00 00 00 00"
+  },
+  {
+    "event": "before-reset",
+    "elapsed": 6.23,
+    "guest": {
+      "signature": "GTI1",
+      "ticks": 65,
+      "marker": 584,
+      "register_ticks": 65,
+      "rom_version": 34,
+      "rom_revision": 5
+    }
+  },
+  {
+    "event": "command",
+    "elapsed": 6.232,
+    "command": "RESET",
+    "response": null
+  },
+  {
+    "event": "command",
+    "elapsed": 6.748,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF"
+  },
+  {
+    "event": "command",
+    "elapsed": 7.008,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF"
+  },
+  {
+    "event": "command",
+    "elapsed": 7.268,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 F2 D4 B6 98 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF"
+  },
+  {
+    "event": "command",
+    "elapsed": 7.528,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 7.788,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 8.047,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 8.318,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 8.588,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 8.847,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 9.108,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 9.378,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 9.638,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 9.898,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 10.158,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 10.417,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 02 00 00 00 00 FC 00 45 00 00 00 00 00 00 00 00 00 00 00 02 48 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 00 22 00 05 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 10.678,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 0F 00 00 00 00 FC 00 45 00 00 00 00 00 00 00 00 00 00 00 02 48 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0F 00 22 00 05 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 10.698,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 10 00 00 00 00 FC 00 45 00 00 00 00 00 00 00 00 00 00 00 02 48 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 10 00 22 00 05 00 00 00 00"
+  },
+  {
+    "event": "reset-complete",
+    "elapsed": 10.699,
+    "guest": {
+      "signature": "GTI1",
+      "ticks": 16,
+      "marker": 584,
+      "register_ticks": 16,
+      "rom_version": 34,
+      "rom_revision": 5
+    }
+  },
+  {
+    "event": "command",
+    "elapsed": 10.701,
+    "command": "SCREENSHOT",
+    "response": null
+  },
+  {
+    "event": "command",
+    "elapsed": 11.118,
+    "command": "WRITE_CORE_MEMORY 7001c 00 00 04 8a",
+    "response": "WRITE_CORE_MEMORY 7001c 4"
+  },
+  {
+    "event": "command",
+    "elapsed": 11.238,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 2B 00 00 00 00 FC 00 45 00 00 00 00 00 00 00 00 00 00 00 04 8A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 2B 00 22 00 05 00 00 00 00"
+  },
+  {
+    "event": "command",
+    "elapsed": 11.241,
+    "command": "SAVE_STATE",
+    "response": null
+  },
+  {
+    "event": "command",
+    "elapsed": 11.858,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 4A 00 00 00 00 FC 00 45 00 00 00 00 00 00 00 00 00 00 00 04 8A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 4A 00 22 00 05 00 00 00 00"
+  },
+  {
+    "event": "saved",
+    "elapsed": 11.86,
+    "guest": {
+      "signature": "GTI1",
+      "ticks": 74,
+      "marker": 1162,
+      "register_ticks": 74,
+      "rom_version": 34,
+      "rom_revision": 5
+    },
+    "states": [
+      {
+        "path": "C:\\Projects\\puae-runtime\\profiles\\14-retroarch-A500\\states\\guest_input_probe.state",
+        "bytes": 18607,
+        "sha256": "08a366fd44f10469eb9be62344ca82eda31abf763099848b4056541395d307b8"
+      }
+    ]
+  },
+  {
+    "event": "command",
+    "elapsed": 11.878,
+    "command": "WRITE_CORE_MEMORY 7001c 00 00 0a 42",
+    "response": "WRITE_CORE_MEMORY 7001c 4"
+  },
+  {
+    "event": "command",
+    "elapsed": 13.398,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": "READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 97 00 00 00 00 FC 00 45 00 00 00 00 00 00 00 00 00 00 00 0A 42 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 97 00 22 00 05 00 00 00 00"
+  },
+  {
+    "event": "advanced-before-load",
+    "elapsed": 13.399,
+    "guest": {
+      "signature": "GTI1",
+      "ticks": 151,
+      "marker": 2626,
+      "register_ticks": 151,
+      "rom_version": 34,
+      "rom_revision": 5
+    }
+  },
+  {
+    "event": "command",
+    "elapsed": 13.401,
+    "command": "LOAD_STATE",
+    "response": null
+  },
+  {
+    "event": "load-state-sent",
+    "elapsed": 13.402
+  },
+  {
+    "event": "command",
+    "elapsed": 13.814,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": null
+  },
+  {
+    "event": "restored",
+    "elapsed": 13.816,
+    "guest": null
+  },
+  {
+    "event": "command",
+    "elapsed": 13.818,
+    "command": "SCREENSHOT",
+    "response": null
+  },
+  {
+    "event": "command",
+    "elapsed": 14.982,
+    "command": "READ_CORE_MEMORY 70000 64",
+    "response": null
+  },
+  {
+    "event": "replay",
+    "elapsed": 14.984,
+    "guest": null
+  },
+  {
+    "event": "command",
+    "elapsed": 14.986,
+    "command": "QUIT",
+    "response": null
+  }
+]

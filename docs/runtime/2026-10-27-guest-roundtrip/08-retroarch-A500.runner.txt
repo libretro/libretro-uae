@@ -1,0 +1,101 @@
+{'event': 'launched', 'elapsed': 0.009, 'pid': 20760}
+{'event': 'command', 'elapsed': 0.014, 'command': 'VERSION', 'response': None}
+{'event': 'command', 'elapsed': 0.27, 'command': 'VERSION', 'response': None}
+{'event': 'command', 'elapsed': 0.525, 'command': 'VERSION', 'response': None}
+{'event': 'command', 'elapsed': 0.779, 'command': 'VERSION', 'response': None}
+{'event': 'command', 'elapsed': 1.046, 'command': 'VERSION', 'response': '1.22.2'}
+{'event': 'command', 'elapsed': 1.063, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF'}
+{'event': 'command', 'elapsed': 1.316, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF'}
+{'event': 'command', 'elapsed': 1.575, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF'}
+{'event': 'command', 'elapsed': 1.835, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 F2 D4 B6 98 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF'}
+{'event': 'command', 'elapsed': 2.095, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'command', 'elapsed': 2.355, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'command', 'elapsed': 2.615, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'command', 'elapsed': 2.875, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'command', 'elapsed': 3.135, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'command', 'elapsed': 3.395, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'command', 'elapsed': 3.655, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'command', 'elapsed': 3.915, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'command', 'elapsed': 4.175, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'command', 'elapsed': 4.435, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'command', 'elapsed': 4.695, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'command', 'elapsed': 4.955, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'command', 'elapsed': 5.215, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 0B 00 00 00 00 FC 00 45 00 00 00 00 00 00 00 00 00 00 00 02 48 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'command', 'elapsed': 6.235, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 3E 00 00 00 00 FC 00 45 00 00 00 00 00 00 00 00 00 00 00 02 48 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'before-reset', 'elapsed': 6.237, 'guest': {'signature': 'GTI1', 'ticks': 62, 'marker': 584}}
+{'event': 'command', 'elapsed': 6.239, 'command': 'RESET', 'response': None}
+{'event': 'command', 'elapsed': 6.755, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF'}
+{'event': 'command', 'elapsed': 7.015, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF'}
+{'event': 'command', 'elapsed': 7.275, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 F2 D4 B6 98 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF'}
+{'event': 'command', 'elapsed': 7.535, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'command', 'elapsed': 7.795, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'command', 'elapsed': 8.055, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'command', 'elapsed': 8.325, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'command', 'elapsed': 8.595, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'command', 'elapsed': 8.855, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'command', 'elapsed': 9.115, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'command', 'elapsed': 9.385, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'command', 'elapsed': 9.645, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'command', 'elapsed': 9.905, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'command', 'elapsed': 10.165, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'command', 'elapsed': 10.425, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 02 00 00 00 00 FC 00 45 00 00 00 00 00 00 00 00 00 00 00 02 48 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'command', 'elapsed': 10.685, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 0F 00 00 00 00 FC 00 45 00 00 00 00 00 00 00 00 00 00 00 02 48 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'command', 'elapsed': 10.705, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 10 00 00 00 00 FC 00 45 00 00 00 00 00 00 00 00 00 00 00 02 48 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'reset-complete', 'elapsed': 10.707, 'guest': {'signature': 'GTI1', 'ticks': 16, 'marker': 584}}
+{'event': 'command', 'elapsed': 10.709, 'command': 'SCREENSHOT', 'response': None}
+{'event': 'command', 'elapsed': 11.125, 'command': 'WRITE_CORE_MEMORY 7001c 00 00 04 8a', 'response': 'WRITE_CORE_MEMORY 7001c 4'}
+{'event': 'command', 'elapsed': 11.245, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 2B 00 00 00 00 FC 00 45 00 00 00 00 00 00 00 00 00 00 00 04 8A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'command', 'elapsed': 11.247, 'command': 'SAVE_STATE', 'response': None}
+{'event': 'command', 'elapsed': 11.865, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 4A 00 00 00 00 FC 00 45 00 00 00 00 00 00 00 00 00 00 00 04 8A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'saved', 'elapsed': 11.868, 'guest': {'signature': 'GTI1', 'ticks': 74, 'marker': 1162}, 'states': [{'path': 'C:\\Projects\\puae-runtime\\profiles\\08-retroarch-A500\\states\\guest_input_probe.state', 'bytes': 18581, 'sha256': 'e85c80d2f9a0cde85d1a8d7405f410b069c3ff168ca2518eb6ee0d17bd1a661f'}]}
+{'event': 'command', 'elapsed': 11.885, 'command': 'WRITE_CORE_MEMORY 7001c 00 00 0a 42', 'response': 'WRITE_CORE_MEMORY 7001c 4'}
+{'event': 'command', 'elapsed': 13.405, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 97 00 00 00 00 FC 00 45 00 00 00 00 00 00 00 00 00 00 00 0A 42 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'advanced-before-load', 'elapsed': 13.408, 'guest': {'signature': 'GTI1', 'ticks': 151, 'marker': 2626}}
+{'event': 'command', 'elapsed': 13.409, 'command': 'LOAD_STATE', 'response': None}
+{'event': 'load-state-sent', 'elapsed': 13.411}
+{'event': 'command', 'elapsed': 13.569, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 33 00 00 00 00 FC 00 45 00 00 00 00 00 00 00 00 00 00 00 04 8A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'restored', 'elapsed': 13.571, 'guest': {'signature': 'GTI1', 'ticks': 51, 'marker': 1162}}
+{'event': 'command', 'elapsed': 13.573, 'command': 'SCREENSHOT', 'response': None}
+{'event': 'command', 'elapsed': 14.485, 'command': 'READ_CORE_MEMORY 70000 64', 'response': 'READ_CORE_MEMORY 70000 47 54 49 31 00 00 00 01 00 00 00 61 00 00 00 00 FC 00 45 00 00 00 00 00 00 00 00 00 00 00 04 8A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}
+{'event': 'replay', 'elapsed': 14.487, 'guest': {'signature': 'GTI1', 'ticks': 97, 'marker': 1162}}
+{'event': 'command', 'elapsed': 14.489, 'command': 'QUIT', 'response': None}
+{
+  "model": "A500",
+  "core_sha256": "38578cee10c58bfcb1dabdde4df8a76263c0efcb4e8cc466d0a704be438b61d2",
+  "rom": "kick34005.A500",
+  "rom_sha256": "ee05862d8102a08436ac4056da7d549db31625c7d47b24dfb7b3c9a5c113ca53",
+  "executable_sha256": "81c11b6f24932bf7918f05eee8928035bff3887335fd2a081507c75e9d94d06a",
+  "profile": "C:\\Projects\\puae-runtime\\profiles\\08-retroarch-A500",
+  "commands_port": 55408,
+  "checks": {
+    "frontend_reset": true,
+    "frontend_save_state": true,
+    "frontend_state_roundtrip": true,
+    "frontend_execution_after_restore": true
+  },
+  "arguments": [
+    "C:\\Projects\\puae-runtime\\RetroArch-Win64\\retroarch.exe",
+    "--verbose",
+    "--config",
+    "C:\\Projects\\puae-runtime\\profiles\\08-retroarch-A500\\retroarch.cfg",
+    "-L",
+    "C:\\Projects\\puae\\puae603_libretro.dll",
+    "--log-file=C:\\Projects\\puae\\docs\\runtime\\2026-10-27-guest-roundtrip\\08-retroarch-A500\\retroarch.log",
+    "--max-frames=5000",
+    "C:\\Projects\\puae-runtime\\profiles\\08-retroarch-A500\\content\\guest_input_probe.adf"
+  ],
+  "pid": 20760,
+  "state_files": [
+    {
+      "path": "C:\\Projects\\puae-runtime\\profiles\\08-retroarch-A500\\states\\guest_input_probe.state",
+      "bytes": 18581,
+      "sha256": "e85c80d2f9a0cde85d1a8d7405f410b069c3ff168ca2518eb6ee0d17bd1a661f"
+    }
+  ],
+  "exit_code": 0,
+  "clean_exit": true,
+  "elapsed_seconds": 14.761,
+  "all_checks_pass": true,
+  "core_sha256_after": "38578cee10c58bfcb1dabdde4df8a76263c0efcb4e8cc466d0a704be438b61d2",
+  "fixture_sha256_after": "082b3571a9e52cb9af26ac5b7944276a851e0ba2034527b738ebf4cc6a802512"
+}
