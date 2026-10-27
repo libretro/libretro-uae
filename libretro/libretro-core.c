@@ -1417,11 +1417,12 @@ static void retro_set_core_options()
          "puae_video_aspect",
          "Video > Pixel Aspect Ratio",
          "Pixel Aspect Ratio",
-         "Hotkey toggling disables this option until core restart.\n- 'PAL': 26/25 = 1.04\n- 'NTSC': 43/50 = 0.86",
+         "'Automatic' follows video standard, 'Automatic NTSC' prefers NTSC ratio when cropped height is under PAL height.\nHotkey toggling disables this option until core restart.\n- 'PAL': 26/25 = 1.04\n- 'NTSC': 43/50 = 0.86",
          NULL,
          "video",
          {
             { "auto", "Automatic" },
+            { "NTSC auto", "Automatic NTSC" },
             { "PAL", NULL },
             { "NTSC", NULL },
             { "1:1", NULL },
@@ -3457,10 +3458,11 @@ static void update_variables(void)
    {
       int video_config_aspect_prev = video_config_aspect;
 
-      if      (!strcmp(var.value, "PAL"))  video_config_aspect = PUAE_VIDEO_PAL;
-      else if (!strcmp(var.value, "NTSC")) video_config_aspect = PUAE_VIDEO_NTSC;
-      else if (!strcmp(var.value, "1:1"))  video_config_aspect = PUAE_VIDEO_1x1;
-      else                                 video_config_aspect = 0;
+      if      (!strcmp(var.value, "PAL"))       video_config_aspect = PUAE_VIDEO_PAL;
+      else if (!strcmp(var.value, "NTSC"))      video_config_aspect = PUAE_VIDEO_NTSC;
+      else if (!strcmp(var.value, "NTSC auto")) video_config_aspect = PUAE_VIDEO_NTSCAUTO;
+      else if (!strcmp(var.value, "1:1"))       video_config_aspect = PUAE_VIDEO_1x1;
+      else                                      video_config_aspect = 0;
 
       /* Revert if aspect ratio is locked */
       if (opt_aspect_ratio_locked)
@@ -5145,7 +5147,8 @@ float retro_get_aspect_ratio(unsigned int width, unsigned int height, bool pixel
    double ar  = 1;
    double par = 1;
 
-   if (video_config_geometry & PUAE_VIDEO_NTSC || video_config_aspect == PUAE_VIDEO_NTSC)
+   if (     (video_config_geometry & PUAE_VIDEO_NTSC || video_config_aspect == PUAE_VIDEO_NTSC)
+         || (video_config_aspect == PUAE_VIDEO_NTSCAUTO && retroh_crop <= PUAE_VIDEO_HEIGHT_NTSC / ((video_config & PUAE_VIDEO_DOUBLELINE) && !retro_doublescan ? 1 : 2)))
       par = 28512.0f / 33173.0f; /* 43:50 */
    else if (video_config_geometry & PUAE_VIDEO_PAL || video_config_aspect == PUAE_VIDEO_PAL)
       par = 9600000.0f / 9221927.0f; /* 26:25 */

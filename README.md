@@ -106,12 +106,12 @@ CD32 requires either separate ROMs (Kickstart + extended ROM) or the combined RO
 
 These parameters control the output resolution of the core (default bolded):
 
-| Name                 | Values                                  |
-|----------------------|-----------------------------------------|
-| Video Standard       | **PAL 50Hz**, NTSC 60Hz                 |
-| Video Resolution     | **Automatic**, Low, High, Super-High    |
-| Video Line Mode      | **Automatic**, Single Line, Double Line |
-| Aspect Ratio         | **Automatic**, PAL, NTSC, 1:1           |
+| Name                 | Values                                   |
+|----------------------|------------------------------------------|
+| Video Standard       | **PAL 50Hz**, NTSC 60Hz                  |
+| Video Resolution     | **Automatic**, Low, High, Super-High     |
+| Video Line Mode      | **Automatic**, Single Line, Double Line  |
+| Aspect Ratio         | **Automatic**, PAL, NTSC, NTSC auto, 1:1 |
 
 With these settings all the standard resolutions are available:
 
