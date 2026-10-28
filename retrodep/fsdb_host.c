@@ -13,15 +13,21 @@ bool my_stat (const TCHAR *name, struct mystat *ms) {
 #ifdef USE_LIBRETRO_VFS
 	char *name_local = utf8_to_local_string_alloc(name);
 	if (name_local && stat(name_local, &sonuc) == -1) {
-	   free(name_local);
-	   name_local = NULL;
-#else
-	if (stat(name, &sonuc) == -1) {
-#endif
+		free(name_local);
+		name_local = NULL;
 		if (log_filesys)
 			write_log("my_stat '%s' failed\n", name);
 		return false;
 	}
+	free(name_local);
+	name_local = NULL;
+#else
+	if (stat(name, &sonuc) == -1) {
+		if (log_filesys)
+			write_log("my_stat '%s' failed\n", name);
+		return false;
+	}
+#endif
 	if (log_filesys)
 		write_log("my_stat '%s' size=%d\n", name, sonuc.st_size);
 	ms->size = sonuc.st_size;
@@ -34,9 +40,6 @@ bool my_stat (const TCHAR *name, struct mystat *ms) {
 	}
 	ms->mtime.tv_sec = sonuc.st_mtime;
 	ms->mtime.tv_usec = 0;
-#ifdef HAVE_STRUCT_STAT_ST_BLOCKS
-	ms->st_blocks = sonuc.blocks;
-#endif
 	return true;
 }
 
