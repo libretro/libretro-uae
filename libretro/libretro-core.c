@@ -5618,11 +5618,10 @@ static void retro_config_kickstart(void)
       path_join(kickstart_ext, retro_system_directory, uae_kickstart_ext);
 
       /* Decide if CD32 ROM is combined based on filesize */
-      struct stat kickstart_st;
-      stat(kickstart, &kickstart_st);
+      const uint64_t ks_size = fsize(uae_kickstart);
 
       /* Verify extended ROM if external */
-      if (kickstart_st.st_size <= ROM_SIZE_512)
+      if (ks_size <= ROM_SIZE_512)
       {
          valid = path_is_valid(kickstart_ext);
 
@@ -5682,7 +5681,7 @@ static void retro_config_kickstart(void)
       {
          snprintf(flash_filename, sizeof(flash_filename), "%s.nvr", LIBRETRO_PUAE_PREFIX);
          /* CDTV suffix */
-         if (kickstart_st.st_size == ROM_SIZE_256)
+         if (ks_size == ROM_SIZE_256)
             snprintf(flash_filename, sizeof(flash_filename), "%s_cdtv.nvr", LIBRETRO_PUAE_PREFIX);
       }
       /* Per game */
@@ -5784,7 +5783,7 @@ static void retro_config_harddrives(void)
 
 #define KS_NUM 4
 
-static void whdload_kscopy(bool legacy)
+static void whdload_kscopy(void)
 {
    char ks_src[RETRO_PATH_MAX] = {0};
    char ks_dst[RETRO_PATH_MAX] = {0};
@@ -5806,8 +5805,6 @@ static void whdload_kscopy(bool legacy)
       ROM_SIZE_512
    };
 
-   struct stat ks_stat;
-
    for (x = 0; x < KS_NUM; x++)
    {
       bool valid        = false;
@@ -5816,14 +5813,8 @@ static void whdload_kscopy(bool legacy)
       snprintf(ks_src, sizeof(ks_src), "%s%s%s",
             retro_system_directory, DIR_SEP_STR, kickstart[x]);
 
-      /* Legacy HDF mode makes sure correctly named files
-       * are available for copying in place inside emulation */
-      if (legacy)
-         snprintf(ks_dst, sizeof(ks_dst), "%s%s%s",
-               retro_system_directory, DIR_SEP_STR, kickstart[x]);
-      else
-         snprintf(ks_dst, sizeof(ks_dst), "%s%sWHDLoad%sDevs%sKickstarts%s%s",
-               retro_save_directory, DIR_SEP_STR, DIR_SEP_STR, DIR_SEP_STR, DIR_SEP_STR, kickstart[x]);
+      snprintf(ks_dst, sizeof(ks_dst), "%s%sWHDLoad%sDevs%sKickstarts%s%s",
+            retro_save_directory, DIR_SEP_STR, DIR_SEP_STR, DIR_SEP_STR, DIR_SEP_STR, kickstart[x]);
 
       valid = path_is_valid(ks_src);
       if (!valid)
@@ -5863,12 +5854,12 @@ static void whdload_kscopy(bool legacy)
 
       if (valid && !path_is_valid(ks_dst))
       {
-         stat(ks_src, &ks_stat);
+         const uint64_t ks_src_size = fsize(ks_src);
 
          /* Allow size exception */
-         if (     ks_stat.st_size != ks_size[x]
-               && ks_stat.st_size - key_extra != ks_size[x])
-            log_cb(RETRO_LOG_INFO, "WHDLoad not installing Kickstart \"%s\" due to incorrect size, %d != %d.\n", path_basename(ks_src), ks_stat.st_size, ks_size[x]);
+         if (     ks_src_size != ks_size[x]
+               && ks_src_size - key_extra != ks_size[x])
+            log_cb(RETRO_LOG_INFO, "WHDLoad not installing Kickstart \"%s\" due to incorrect size, %d != %d.\n", path_basename(ks_src), ks_src_size, ks_size[x]);
          else if (fcopy(ks_src, ks_dst) < 0)
             log_cb(RETRO_LOG_INFO, "WHDLoad failed to install \"%s\" to \"%s\".\n", path_basename(ks_src), ks_dst);
          else
@@ -6752,7 +6743,7 @@ static bool retro_create_config(void)
                   tmp_str = NULL;
 
                   /* Check and copy Kickstarts */
-                  whdload_kscopy(false);
+                  whdload_kscopy();
 
                   /* Copy required files host-wise with file mode */
                   if (path_is_valid(whdload_prefs_path))
