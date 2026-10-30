@@ -3,7 +3,10 @@ ROOT_DIR  := .
 PLATFLAGS :=
 SOURCES_C :=
 TARGET_NAME := puae2021
-SILENT    := 0
+
+ifneq ($(SILENT),1)
+    E := 1
+endif
 
 ifeq ($(platform),)
 platform = unix
@@ -341,7 +344,7 @@ info:
 
 all: $(TARGET)
 
--include $(OBJECTS:.o=.d))
+-include $(OBJECTS:.o=.d)
 
 $(TARGET): $(OBJECTS)
 ifeq ($(STATIC_LINKING_LINK),1)
@@ -352,23 +355,17 @@ endif
 
 $(OBJDIR)/%.o: %.c
 	@mkdir -p $(dir $@)
-	@if [ $(SILENT) -ne 1 ]; then\
-		$(if $@, $(shell echo echo CC $<),);\
-	fi
+	@$(if $(E), $(shell echo echo CC $<),)
 	$(CC) $(fpic) $(CFLAGS) $(PLATFLAGS) $(INCDIRS) -c -o $@ $<
 
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(dir $@)
-	@if [ $(SILENT) -ne 1 ]; then\
-		$(if $@, $(shell echo echo CXX $<),);\
-	fi
+	@$(if $(E), $(shell echo echo CXX $<),)
 	$(CXX) $(fpic) $(CXXFLAGS) $(PLATFLAGS) $(INCDIRS) -c -o $@ $<
 
 $(OBJDIR)/%.o: %.S
 	@mkdir -p $(dir $@)
-	@if [ $(SILENT) -ne 1 ]; then\
-		$(if $@, $(shell echo echo CC_AS $<),);\
-	fi
+	@$(if $(E), $(shell echo echo CC_AS $<),)
 	$(CC_AS) $(CFLAGS) -c $^ -o $@
 
 clean:
