@@ -831,7 +831,9 @@ static void retro_set_core_options()
             { "auto", "Automatic" },
             { "A500OG", "A500 (v1.3, 0.5M Chip)" },
             { "A500", "A500 (v1.3, 0.5M Chip + 0.5M Slow)" },
+            { "A500ECS", "A500 (v1.3, 1.0M Chip)" },
             { "A500PLUS", "A500+ (v2.04, 1M Chip)" },
+            { "A600OG", "A600 (v3.1, 2M Chip)" },
             { "A600", "A600 (v3.1, 2M Chip + 8M Fast)" },
             { "A1200OG", "A1200 (v3.1, 2M Chip)" },
             { "A1200", "A1200 (v3.1, 2M Chip + 8M Fast)" },
@@ -870,7 +872,9 @@ static void retro_set_core_options()
          {
             { "A500OG", "A500 (v1.3, 0.5M Chip)" },
             { "A500", "A500 (v1.3, 0.5M Chip + 0.5M Slow)" },
+            { "A500ECS", "A500 (v1.3, 1.0M Chip)" },
             { "A500PLUS", "A500+ (v2.04, 1M Chip)" },
+            { "A600OG", "A600 (v3.1, 2M Chip)" },
             { "A600", "A600 (v3.1, 2M Chip + 8M Fast)" },
             { "A1200OG", "A1200 (v3.1, 2M Chip)" },
             { "A1200", "A1200 (v3.1, 2M Chip + 8M Fast)" },
@@ -890,6 +894,7 @@ static void retro_set_core_options()
          NULL,
          "system",
          {
+            { "A600OG", "A600 (v3.1, 2M Chip)" },
             { "A600", "A600 (v3.1, 2M Chip + 8M Fast)" },
             { "A1200OG", "A1200 (v3.1, 2M Chip)" },
             { "A1200", "A1200 (v3.1, 2M Chip + 8M Fast)" },
@@ -6038,8 +6043,10 @@ static char* emu_config_string(const char *mode, int config)
       {
          case EMU_CONFIG_A500:      return "A500";
          case EMU_CONFIG_A500OG:    return "A500OG";
+         case EMU_CONFIG_A500ECS:   return "A500ECS";
          case EMU_CONFIG_A500PLUS:  return "A500PLUS";
          case EMU_CONFIG_A600:      return "A600";
+         case EMU_CONFIG_A600OG:    return "A600OG";
          case EMU_CONFIG_A1200:     return "A1200";
          case EMU_CONFIG_A1200OG:   return "A1200OG";
          case EMU_CONFIG_A2000:     return "A2000";
@@ -6057,8 +6064,10 @@ static char* emu_config_string(const char *mode, int config)
       {
          case EMU_CONFIG_A500:      return uae_kickstarts[A500_KS13_ROM].normal;
          case EMU_CONFIG_A500OG:    return uae_kickstarts[A500_KS13_ROM].normal;
+         case EMU_CONFIG_A500ECS:   return uae_kickstarts[A500_KS13_ROM].normal;
          case EMU_CONFIG_A500PLUS:  return uae_kickstarts[A500_KS204_ROM].normal;
          case EMU_CONFIG_A600:      return uae_kickstarts[A600_KS31_ROM].normal;
+         case EMU_CONFIG_A600OG:    return uae_kickstarts[A600_KS31_ROM].normal;
          case EMU_CONFIG_A1200:     return uae_kickstarts[A1200_KS31_ROM].normal;
          case EMU_CONFIG_A1200OG:   return uae_kickstarts[A1200_KS31_ROM].normal;
          case EMU_CONFIG_A2000:     return uae_kickstarts[A600_KS31_ROM].normal;
@@ -6087,8 +6096,10 @@ static int emu_config_int(const char *model)
 {
    if      (!strcmp(model, "A500"))      return EMU_CONFIG_A500;
    else if (!strcmp(model, "A500OG"))    return EMU_CONFIG_A500OG;
+   else if (!strcmp(model, "A500ECS"))   return EMU_CONFIG_A500ECS;
    else if (!strcmp(model, "A500PLUS"))  return EMU_CONFIG_A500PLUS;
    else if (!strcmp(model, "A600"))      return EMU_CONFIG_A600;
+   else if (!strcmp(model, "A600OG"))    return EMU_CONFIG_A600OG;
    else if (!strcmp(model, "A1200"))     return EMU_CONFIG_A1200;
    else if (!strcmp(model, "A1200OG"))   return EMU_CONFIG_A1200OG;
    else if (!strcmp(model, "A2000"))     return EMU_CONFIG_A2000;
@@ -6175,6 +6186,14 @@ static char* emu_config(int config)
          preset_opt.cs_compatible = CP_A500;
          break;
 
+      case EMU_CONFIG_A500ECS:
+         preset_opt.chipmem_size  = 2;
+         preset_opt.bogomem_size  = 0;
+         preset_opt.fastmem_size  = 0;
+         preset_opt.chipset       = 1;
+         preset_opt.cs_compatible = CP_A500;
+         break;
+
       case EMU_CONFIG_A500PLUS:
          preset_opt.chipmem_size  = 2;
          preset_opt.bogomem_size  = 0;
@@ -6187,6 +6206,14 @@ static char* emu_config(int config)
          preset_opt.chipmem_size  = 4;
          preset_opt.bogomem_size  = 0;
          preset_opt.fastmem_size  = 8;
+         preset_opt.chipset       = 3;
+         preset_opt.cs_compatible = CP_A600;
+         break;
+
+      case EMU_CONFIG_A600OG:
+         preset_opt.chipmem_size  = 4;
+         preset_opt.bogomem_size  = 0;
+         preset_opt.fastmem_size  = 0;
          preset_opt.chipset       = 3;
          preset_opt.cs_compatible = CP_A600;
          break;
@@ -6534,6 +6561,11 @@ static bool retro_create_config(void)
                log_cb(RETRO_LOG_INFO, "Found \"(A1200)\" in: \"%s\".\n", full_path);
                retro_config_preset("A1200");
             }
+            else if (strstr(full_path, "(A600OG)") || strstr(full_path, "(A600NF)"))
+            {
+               log_cb(RETRO_LOG_INFO, "Found \"(A600OG)\" or \"(A600NF)\" in: \"%s\".\n", full_path);
+               retro_config_preset("A600OG");
+            }
             else if (strstr(full_path, "(A600)"))
             {
                log_cb(RETRO_LOG_INFO, "Found \"(A600)\" in: \"%s\".\n", full_path);
@@ -6543,6 +6575,11 @@ static bool retro_create_config(void)
             {
                log_cb(RETRO_LOG_INFO, "Found \"(A500+)\" or \"(A500PLUS)\" in: \"%s\".\n", full_path);
                retro_config_preset("A500PLUS");
+            }
+            else if (strstr(full_path, "(A500ECS)"))
+            {
+               log_cb(RETRO_LOG_INFO, "Found \"(A500ECS)\" in: \"%s\".\n", full_path);
+               retro_config_preset("A500ECS");
             }
             else if (strstr(full_path, "(A500OG)") || strstr(full_path, "(512K)") || strstr(full_path, "(512KB)"))
             {
