@@ -54,7 +54,9 @@ The following model presets are provided:
 |---------|----------------|-----------|---------|---------------------------------|
 | A500OG  | Amiga 500      | v1.3      | OCS     | 0.5MB Chip RAM                  |
 | A500    | Amiga 500      | v1.3      | OCS     | 0.5MB Chip RAM + 0.5MB Slow RAM |
+| A500ECS | Amiga 500      | v1.3      | ECS     | 1MB Chip RAM                    |
 | A500+   | Amiga 500+     | v2.04     | ECS     | 1MB Chip RAM                    |
+| A600OG  | Amiga 600      | v3.1      | ECS     | 2MB Chip RAM                    |
 | A600    | Amiga 600      | v3.1      | ECS     | 2MB Chip RAM + 8MB Fast RAM     |
 | A1200OG | Amiga 1200     | v3.1      | AGA     | 2MB Chip RAM                    |
 | A1200   | Amiga 1200     | v3.1      | AGA     | 2MB Chip RAM + 8MB Fast RAM     |
@@ -157,7 +159,9 @@ The whole path (filename and directory) will be searched for the following tags 
 |--------|--------|-------|---------------------------------------------|----------------------------------------------|
 | **x**  | **x**  |       | **(A500OG)**, **(512K)**, **(512KB)**       | Amiga 500 (0.5MB Chip RAM)                   |
 | **x**  | **x**  |       | **(A500)**, **OCS**                         | Amiga 500 (0.5MB Chip RAM + 0.5MB Slow RAM)  |
+| **x**  | **x**  |       | **(A500ECS)**                               | Amiga 500 (1MB Chip RAM)                     |
 | **x**  | **x**  |       | **(A500+)**, **(A500PLUS)**                 | Amiga 500+ (1MB Chip RAM)                    |
+| **x**  | **x**  |       | **(A600OG)**, **(A600NF)**                  | Amiga 600 (2MB Chip RAM)                     |
 | **x**  | **x**  |       | **(A600)**, **ECS**                         | Amiga 600 (2MB Chip RAM + 8MB Fast RAM)      |
 | **x**  | **x**  |       | **(A1200OG)**, **(A1200NF)**                | Amiga 1200 (2MB Chip RAM)                    |
 | **x**  | **x**  |       | **(A1200)**, **AGA**, **CD32**, **AmigaCD** | Amiga 1200 (2MB Chip RAM + 8MB Fast RAM)     |
