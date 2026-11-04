@@ -431,7 +431,7 @@ If `puae_libretro_[model].uae` exists in RetroArch `saves` it will be appended t
 
 If `puae_libretro_global.uae` exists in RetroArch `saves` it will be appended to the configuration.
 
-If `[content].uae` exists in RetroArch `saves` it will be appended to the configuration.
+If `[content].uae` exists in content path or RetroArch `saves` it will be appended to the configuration.
 
 The final generated configuration output is available in debug level log.
 

@@ -153,6 +153,7 @@ extern uae_u32 natmem_size;
 #endif
 
 char full_path[RETRO_PATH_MAX] = {0};
+char info_path[RETRO_PATH_MAX] = {0};
 static char *uae_argv[] = { "puae" };
 static int restart_pending = 0;
 static struct puae_core_option_info puae_carts[RETRO_NUM_CORE_OPTION_VALUES_MAX] = {0};
@@ -7181,10 +7182,28 @@ static bool retro_create_config(void)
    }
 
    /* Append content-specific config */
+   char content_path[RETRO_PATH_MAX];
+   tmp_str = utf8_to_local_string_alloc(info_path);
+   path_basedir(tmp_str);
+   strlcpy(content_path, tmp_str, sizeof(content_path));
+   free(tmp_str);
+
    tmp_str = utf8_to_local_string_alloc(full_path);
    path_remove_extension(tmp_str);
-   snprintf(configfile_path, sizeof(configfile_path), "%s%s%s%s",
-         retro_save_directory, DIR_SEP_STR, path_basename(tmp_str), ".uae");
+
+   /* First search content path, then 'saves' (path_basedir leaves ending slash) */
+   snprintf(configfile_path, sizeof(configfile_path), "%s%s%s",
+         content_path, path_basename(tmp_str), ".uae");
+
+   if (!path_is_valid(configfile_path))
+   {
+      tmp_str = utf8_to_local_string_alloc(full_path);
+      path_remove_extension(tmp_str);
+
+      snprintf(configfile_path, sizeof(configfile_path), "%s%s%s%s",
+            retro_save_directory, DIR_SEP_STR, path_basename(tmp_str), ".uae");
+   }
+
    if (path_is_valid(configfile_path))
    {
       log_cb(RETRO_LOG_INFO, "Appending content configuration: \"%s\".\n", configfile_path);
@@ -8548,6 +8567,8 @@ bool retro_load_game(const struct retro_game_info *info)
    {
       /* path_is_valid() requires raw path */
       strlcpy(full_path, info->path, sizeof(full_path));
+      /* Content-dir uae conf requires original path */
+      strlcpy(info_path, info->path, sizeof(info_path));
    }
 
    /* UAE config */
