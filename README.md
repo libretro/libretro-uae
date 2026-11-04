@@ -157,10 +157,10 @@ The whole path (filename and directory) will be searched for the following tags 
 
 | Floppy | HD/LHA | CD    | String                                      | Result                                       |
 |--------|--------|-------|---------------------------------------------|----------------------------------------------|
-| **x**  | **x**  |       | **(A500OG)**, **(512K)**, **(512KB)**       | Amiga 500 (0.5MB Chip RAM)                   |
-| **x**  | **x**  |       | **(A500)**, **OCS**                         | Amiga 500 (0.5MB Chip RAM + 0.5MB Slow RAM)  |
-| **x**  | **x**  |       | **(A500ECS)**                               | Amiga 500 (1MB Chip RAM)                     |
-| **x**  | **x**  |       | **(A500+)**, **(A500PLUS)**                 | Amiga 500+ (1MB Chip RAM)                    |
+| **x**  |        |       | **(A500OG)**, **(512K)**, **(512KB)**       | Amiga 500 (0.5MB Chip RAM)                   |
+| **x**  |        |       | **(A500)**, **OCS**                         | Amiga 500 (0.5MB Chip RAM + 0.5MB Slow RAM)  |
+| **x**  |        |       | **(A500ECS)**                               | Amiga 500 (1MB Chip RAM)                     |
+| **x**  |        |       | **(A500+)**, **(A500PLUS)**                 | Amiga 500+ (1MB Chip RAM)                    |
 | **x**  | **x**  |       | **(A600OG)**, **(A600NF)**                  | Amiga 600 (2MB Chip RAM)                     |
 | **x**  | **x**  |       | **(A600)**, **ECS**                         | Amiga 600 (2MB Chip RAM + 8MB Fast RAM)      |
 | **x**  | **x**  |       | **(A1200OG)**, **(A1200NF)**                | Amiga 1200 (2MB Chip RAM)                    |
