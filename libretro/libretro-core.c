@@ -2645,19 +2645,20 @@ static void retro_set_core_options()
          /* Scan system directory for Kickstarts */
          if (path_is_directory(retro_system_directory))
          {
-            DIR *dir;
-            struct dirent *dirp;
+            RDIR *dir;
+            dir = retro_opendir(retro_system_directory);
 
-            dir = opendir(retro_system_directory);
-            while ((dirp = readdir(dir)) != NULL && j < RETRO_NUM_CORE_OPTION_VALUES_MAX - 1)
+            while (retro_readdir(dir) && j < RETRO_NUM_CORE_OPTION_VALUES_MAX - 1)
             {
-               if (  strstartswith(dirp->d_name, "kick")
-                  || strstartswith(dirp->d_name, "amiga-os")
-                  || strstartswith(dirp->d_name, "KS ROM")
+               const char *name = retro_dirent_get_name(dir);
+
+               if (  strstartswith(name, "kick")
+                  || strstartswith(name, "amiga-os")
+                  || strstartswith(name, "KS ROM")
                   )
                {
                   char value[RETRO_PATH_MAX] = {0};
-                  snprintf(value, sizeof(value), "%s", dirp->d_name);
+                  snprintf(value, sizeof(value), "%s", name);
 
                   puae_kickstarts[j].value = strdup(value);
 
@@ -2668,7 +2669,7 @@ static void retro_set_core_options()
                puae_kickstarts[j].value = NULL;
                puae_kickstarts[j].label = NULL;
             }
-            closedir(dir);
+            retro_closedir(dir);
          }
 
          option_defs_us[i].values[j].value = NULL;
@@ -2684,18 +2685,20 @@ static void retro_set_core_options()
          /* Scan system data directory for cartridges */
          if (path_is_directory(retro_system_data_directory))
          {
-            DIR *dir;
-            struct dirent *dirp;
+            RDIR *dir;
+            dir = retro_opendir(retro_system_data_directory);
 
-            dir = opendir(retro_system_data_directory);
-            while ((dirp = readdir(dir)) != NULL && j < RETRO_NUM_CORE_OPTION_VALUES_MAX - 1)
+            while (retro_readdir(dir) && j < RETRO_NUM_CORE_OPTION_VALUES_MAX - 1)
             {
-               if (strendswith(dirp->d_name, "rom"))
+               const char *name = retro_dirent_get_name(dir);
+
+               if (strendswith(name, "rom"))
                {
                   char value[RETRO_PATH_MAX] = {0};
                   char label[128]            = {0};
-                  snprintf(value, sizeof(value), "%s", dirp->d_name);
-                  snprintf(label, sizeof(label), "%s", path_remove_extension(dirp->d_name));
+                  snprintf(value, sizeof(value), "%s", name);
+                  snprintf(label, sizeof(label), "%s", name);
+                  path_remove_extension(label);
 
                   puae_carts[j].value = strdup(value);
                   puae_carts[j].label = strdup(label);
@@ -2708,7 +2711,7 @@ static void retro_set_core_options()
                puae_carts[j].value = NULL;
                puae_carts[j].label = NULL;
             }
-            closedir(dir);
+            retro_closedir(dir);
          }
 
          option_defs_us[i].values[j].value = NULL;
