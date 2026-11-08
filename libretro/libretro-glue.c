@@ -1506,7 +1506,6 @@ int retro_rmdir(const char *path)
 
 int remove_recurse(const char *path)
 {
-   struct dirent *dirp;
    char filename[RETRO_PATH_MAX];
    int ret   = 0;
    RDIR *dir = retro_opendir(path);
